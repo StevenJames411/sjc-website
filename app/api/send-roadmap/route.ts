@@ -772,18 +772,18 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: styles.panelBullet },
-            "• Wired into your CRM, email, calendar, and reporting. They actually do the work — book appointments, follow up on leads, send invoices, surface KPIs — not just answer questions."
+            "• Wired into your tech stack — your CRM, email, calendar, and reporting. They actually do the work: book appointments, follow up on leads, send invoices, surface KPIs — not just answer questions."
           ),
 
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8 }] },
-            `The ~${fmt$(MONTHLY_TOOLING)}/month`
+            `The ~${fmt$(MONTHLY_TOOLING)}/month — your monthly operating fee (a utility bill for your AI employees)`
           ),
           React.createElement(
             Text,
             { style: styles.panelBody },
-            `That's ~$${Math.round(MONTHLY_TOOLING / 12)}/month per AI employee to keep all 12 running 24/7 — less than a third of what a part-time virtual assistant costs, and one AI employee does the work of several VAs. Two things you're paying for:`
+            `That works out to ~$${Math.round(MONTHLY_TOOLING / 12)}/month per AI employee to keep all 12 running 24/7 — less than a third of what a part-time virtual assistant costs, and one AI employee does the work of several VAs. Two things you're paying for:`
           ),
           React.createElement(
             Text,
@@ -1203,11 +1203,11 @@ export async function POST(req: NextRequest) {
   <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
     <li style="margin-bottom:6px;"><strong>Trained on your brand voice.</strong> I capture how you talk to customers — the words you use, the words you'd never use, your tone, your sales style — and bake it in. When the AI messages a prospect, it sounds like you wrote it, not like a generic chatbot.</li>
     <li style="margin-bottom:6px;"><strong>Trained on your business.</strong> Services, pricing, processes, team. On day one, it knows what a seasoned human employee would know.</li>
-    <li style="margin-bottom:6px;"><strong>Wired into your stack.</strong> CRM, email, calendar, reporting — it actually does the work (books appointments, follows up on leads, sends invoices, surfaces KPIs), not just answers questions.</li>
+    <li style="margin-bottom:6px;"><strong>Wired into your tech stack.</strong> CRM, email, calendar, reporting — it actually does the work (books appointments, follows up on leads, sends invoices, surfaces KPIs), not just answers questions.</li>
   </ul>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
-    <strong>The ~$1,100/month</strong> is <strong>~$${perEmployeeMonthly}/month per AI employee</strong> to keep all 12 running 24/7 — less than a third of what a part-time VA costs, and one AI employee does the work of several VAs. You're paying for two things:
+    <strong>The ~$1,100/month is your monthly operating fee — basically a utility bill for your AI employees.</strong> That works out to <strong>~$${perEmployeeMonthly}/month per AI employee</strong> to keep all 12 running 24/7 — less than a third of what a part-time VA costs, and one AI employee does the work of several VAs. Two things you're paying for:
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
     <li style="margin-bottom:6px;"><strong>Tokens</strong> — the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower.</li>
