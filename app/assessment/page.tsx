@@ -92,7 +92,7 @@ const ROLES = [
   },
 ];
 
-type Stage = "intro" | "asking" | "results" | "form" | "submitted";
+type Stage = "intro" | "asking" | "results" | "form" | "submitting" | "submitted";
 
 // Each role gets one of three answers:
 //   "self"   — visitor is doing this work themselves (wearing the hat)
@@ -219,6 +219,8 @@ export default function AuditPage() {
       source: "12-Role Assessment",
     };
 
+    setStage("submitting");
+
     try {
       await fetch("/api/send-roadmap", {
         method: "POST",
@@ -259,6 +261,8 @@ export default function AuditPage() {
         )}
 
         {stage === "form" && <FormSection onSubmit={handleFormSubmit} />}
+
+        {stage === "submitting" && <SubmittingSection />}
 
         {stage === "submitted" && <SubmittedSection />}
       </main>
@@ -635,6 +639,43 @@ function FormSection({ onSubmit }: { onSubmit: (e: React.FormEvent<HTMLFormEleme
   );
 }
 
+function SubmittingSection() {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
+      <div className="mx-auto max-w-2xl px-6 py-20 text-center md:py-28">
+        <div className="mx-auto h-16 w-16">
+          <svg
+            className="h-16 w-16 animate-spin text-[color:var(--color-sjc-blue)]"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25" />
+            <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+        </div>
+        <h1 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-blue)] md:text-4xl">
+          Building your roadmap...
+        </h1>
+        <p className="mt-4 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
+          We&apos;re generating your custom PDF and sending it to your email. This usually takes 15&ndash;30 seconds.
+        </p>
+        <p className="mt-8 inline-block rounded-lg bg-white px-6 py-4 text-2xl font-bold tabular-nums text-[color:var(--color-sjc-ink)] shadow">
+          {elapsed}s elapsed
+        </p>
+        <p className="mt-8 text-base font-semibold text-[color:var(--color-sjc-blue)] md:text-lg">
+          Please don&apos;t close this window.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function SubmittedSection() {
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
@@ -652,7 +693,8 @@ function SubmittedSection() {
           spam folder.
         </p>
         <p className="mt-8 text-base text-gray-600 md:text-lg">
-          One more thing: your family is counting on you. Don&apos;t wait three months to open the email.
+          One more thing: you&apos;re already in the one percent &mdash; the founders willing to face the gap
+          instead of grinding through it. Follow through and take action. You&apos;re on the right path.
         </p>
       </div>
     </section>
