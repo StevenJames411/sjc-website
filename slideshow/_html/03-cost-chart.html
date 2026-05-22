@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Slide 03 — Cost Comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --sjc-blue: #2563eb;
+    --sjc-navy: #1e3a6e;
+    --sjc-green: #22c55e;
+    --sjc-ink: #111827;
+    --sjc-mute: #4b5563;
+    --sjc-line: #e5e7eb;
+    --sjc-bg-soft: #f3f4f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; }
+  body {
+    font-family: "Lexend", ui-sans-serif, system-ui, sans-serif;
+    background: #fff;
+    color: var(--sjc-ink);
+  }
+  .head {
+    background: var(--sjc-navy);
+    color: #fff;
+    text-align: center;
+    padding: 56px 64px 44px;
+  }
+  .head .eyebrow {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    opacity: 0.78;
+    margin-bottom: 22px;
+  }
+  .head h2 {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1.18;
+    max-width: 1500px;
+    margin: 0 auto;
+    letter-spacing: -0.01em;
+  }
+  .body {
+    padding: 60px 160px 0;
+  }
+  .totals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 56px;
+  }
+  .col {
+    border: 1px solid var(--sjc-line);
+    border-radius: 24px;
+    padding: 44px 48px;
+    text-align: center;
+    background: #fff;
+  }
+  .col.human { background: var(--sjc-bg-soft); }
+  .col.ai { background: #eff6ff; border-color: #bfdbfe; }
+  .col .label {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--sjc-mute);
+    margin-bottom: 20px;
+  }
+  .col.ai .label { color: var(--sjc-blue); }
+  .col .amt {
+    font-size: 132px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--sjc-ink);
+  }
+  .col.ai .amt { color: var(--sjc-blue); }
+  .col .sub {
+    margin-top: 14px;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--sjc-mute);
+  }
+  .savings {
+    text-align: center;
+    border-top: 1px solid var(--sjc-line);
+    padding-top: 48px;
+  }
+  .savings .label {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--sjc-mute);
+    margin-bottom: 16px;
+  }
+  .savings .big {
+    font-size: 104px;
+    font-weight: 800;
+    color: var(--sjc-blue);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .savings .caption {
+    margin-top: 18px;
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--sjc-ink);
+    max-width: 1300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .savings .caption b { color: var(--sjc-blue); }
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">Cost Comparison &mdash; 12-seat org chart</p>
+    <h2>Typical human org chart vs. typical AI employee org chart &mdash; two different planets.</h2>
+  </div>
+  <div class="body">
+    <div class="totals">
+      <div class="col human">
+        <p class="label">Human team</p>
+        <p class="amt">$532k</p>
+        <p class="sub">/ year &middot; out of reach for a solo entrepreneur</p>
+      </div>
+      <div class="col ai">
+        <p class="label">AI employee team</p>
+        <p class="amt">$82k</p>
+        <p class="sub">/ year &middot; $67k is your own CEO pay</p>
+      </div>
+    </div>
+    <div class="savings">
+      <p class="label">True incremental cost</p>
+      <p class="big">$15,000 / yr</p>
+      <p class="caption">That investment gets you an entire executive team &mdash; a <b>$450,000</b> payroll saving every year moving forward.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,10 +1,22 @@
-const AUDIT_URL = "https://ai-audit-tool-pearl.vercel.app";
+import Link from "next/link";
 
-export default function CtaButton({ className = "" }: { className?: string }) {
+const ASSESSMENT_URL = "/assessment";
+
+type CtaButtonProps = {
+  title?: string;
+  subtitle?: string;
+  className?: string;
+};
+
+export default function CtaButton({
+  title = "Want your business to run without you?",
+  subtitle = "Take the assessment. Get your full roadmap.",
+  className = "",
+}: CtaButtonProps) {
   return (
-    <a href={AUDIT_URL} className={`btn-cta ${className}`}>
-      <span>Find out where you stand.</span>
-      <span className="sub">60-Second AI Audit</span>
-    </a>
+    <Link href={ASSESSMENT_URL} className={`btn-cta ${className}`}>
+      <span>{title}</span>
+      <span className="sub">{subtitle}</span>
+    </Link>
   );
 }

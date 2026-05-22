@@ -1,10 +1,9 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
-import ProblemFraming from "@/components/ProblemFraming";
-import AuditReveals from "@/components/AuditReveals";
-import StatCta from "@/components/StatCta";
+import Story from "@/components/Story";
+import PainPillars from "@/components/PainPillars";
+import Solution from "@/components/Solution";
 import About from "@/components/About";
-import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -13,11 +12,10 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
-        <ProblemFraming />
-        <AuditReveals />
-        <StatCta />
+        <Story />
+        <PainPillars />
+        <Solution />
         <About />
-        <Contact />
       </main>
       <Footer />
     </>

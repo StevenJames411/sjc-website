@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Slide 01 — Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --sjc-blue: #2563eb;
+    --sjc-navy: #1e3a6e;
+    --sjc-green: #22c55e;
+    --sjc-ink: #111827;
+    --sjc-mute: #4b5563;
+    --sjc-line: #e5e7eb;
+    --sjc-bg-soft: #f3f4f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; }
+  body {
+    font-family: "Lexend", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--sjc-bg-soft);
+    color: var(--sjc-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 160px;
+  }
+  .wrap { max-width: 1480px; }
+  .eyebrow {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--sjc-blue);
+    margin-bottom: 36px;
+  }
+  h1 {
+    font-size: 96px;
+    font-weight: 700;
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    color: var(--sjc-ink);
+  }
+  h1 .trap { color: var(--sjc-blue); }
+  .sub {
+    margin-top: 56px;
+    font-size: 44px;
+    font-weight: 600;
+    color: var(--sjc-blue);
+    line-height: 1.25;
+    max-width: 1300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .brand {
+    position: absolute;
+    bottom: 56px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--sjc-mute);
+    opacity: 0.65;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">Steven James Consulting</p>
+    <h1>AI Employee Operating Systems<br/>for solo entrepreneurs<br/><span class="trap">trapped in their own business.</span></h1>
+    <p class="sub">If tragedy happened and you couldn&rsquo;t work for 30 to 90 days,<br/>would your business thrive &mdash; or implode?</p>
+  </div>
+  <div class="brand">stevenjames.consulting</div>
+</body>
+</html>

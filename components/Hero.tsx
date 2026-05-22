@@ -1,31 +1,36 @@
-import CtaButton from "./CtaButton";
-
 export default function Hero() {
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-2 md:items-center md:py-24">
-        <div>
-          <h1 className="text-4xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl">
-            Has AI made your company invisible?
-          </h1>
-          <p className="mt-6 text-lg text-[color:var(--color-sjc-ink)]">
-            Customers aren&apos;t using Google anymore.
-          </p>
-          <p className="mt-1 text-lg text-[color:var(--color-sjc-ink)]">
-            They&apos;re asking AI.
-          </p>
-          <div className="mt-8">
-            <CtaButton />
-          </div>
-        </div>
+      <div className="mx-auto max-w-4xl px-6 pt-6 pb-16 text-center md:pt-10 md:pb-24">
+        <h1 className="text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
+          AI Employee Operating Systems for solo entrepreneurs trapped in their own business.
+        </h1>
+        <p className="mt-5 text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl">
+          If tragedy happened and you couldn&apos;t work for 30 to 90 days, would your business thrive &mdash; or implode?
+        </p>
 
-        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[color:var(--color-sjc-ink)] shadow-lg">
-          {/* Video placeholder — will be replaced with VSL embed once filmed */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--color-sjc-blue)] shadow-xl">
-              <svg viewBox="0 0 24 24" fill="white" className="ml-1 h-7 w-7">
-                <path d="M8 5v14l11-7z" />
-              </svg>
+        <div className="mt-10 overflow-hidden rounded-2xl shadow-lg">
+          <div className="relative aspect-video w-full bg-gradient-to-br from-[#1e3a6e] to-[#0f1f3d]">
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 ring-2 ring-white/30 backdrop-blur-sm">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  className="ml-1 h-9 w-9 text-white"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-white/90 md:text-base">
+                Video Sales Letter
+              </p>
+              <p className="mt-2 max-w-md text-xs text-white/70 md:text-sm">
+                The full business model &mdash; in one watch.
+              </p>
+            </div>
+            <div className="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">
+              Placeholder
             </div>
           </div>
         </div>

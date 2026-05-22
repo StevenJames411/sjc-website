@@ -4,6 +4,8 @@
   --color-sjc-navy: #1e3a6e;
   --color-sjc-blue: #2563eb;
   --color-sjc-blue-hover: #1d4fd7;
+  --color-sjc-green: #22c55e;
+  --color-sjc-green-hover: #16a34a;
   --color-sjc-ink: #111827;
   --color-sjc-mute: #4b5563;
   --color-sjc-line: #e5e7eb;
@@ -34,5 +36,5 @@ body {
   line-height: 1.15;
   transition: background 120ms ease;
 }
-.btn-cta:hover { background: var(--color-sjc-blue-hover); }
+.btn-cta:hover { background: var(--color-sjc-green); }
 .btn-cta .sub { font-size: 0.85rem; font-weight: 600; opacity: 0.9; margin-top: 2px; }

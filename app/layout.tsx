@@ -69,7 +69,7 @@ const faqSchema = {
       name: "Who is the audit for?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Owner-led businesses doing $1M–$5M in revenue who hit the wall where the founder is the system. If your competitors are getting recommended by AI and you're not, this is the gap to close.",
+        text: "Owner-led businesses doing between one and five million in revenue who hit the wall where the solo entrepreneur is the system. If your competitors are getting recommended by AI and you're not, this is the gap to close.",
       },
     },
     {
