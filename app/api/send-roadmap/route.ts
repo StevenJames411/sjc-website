@@ -7,7 +7,9 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // === Tunable constants ============================================================
-const BUILD_FEE = 22000;
+const BUILD_FEE_LIST = 40000;
+const BUILD_FEE_FOUNDER = 28000;
+const FOUNDER_SPOTS_REMAINING = 5;
 const MONTHLY_TOOLING = 1100;
 const TRADITIONAL_PAYROLL = 532000;
 const WEBSITE_URL = "https://www.stevenjamesconsulting.com";
@@ -327,11 +329,43 @@ const styles = StyleSheet.create({
   panelPrice: {
     fontSize: 20,
     fontFamily: "Helvetica-Bold",
-    color: SJC_INK,
+    color: SJC_BLUE,
+  },
+  panelPriceStrike: {
+    fontSize: 13,
+    color: "#94a3b8",
+    textDecoration: "line-through",
+    marginLeft: 6,
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
   },
   panelPriceUnit: {
     fontSize: 9,
     color: SUBTLE,
+  },
+  founderBadge: {
+    backgroundColor: "#fef3c7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: "flex-start",
+    marginTop: 8,
+    marginBottom: 6,
+  },
+  founderBadgeText: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#92400e",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  founderNote: {
+    fontSize: 10,
+    color: SUBTLE,
+    marginBottom: 12,
+    fontFamily: "Helvetica-Oblique",
   },
   panelBody: {
     fontSize: 10.5,
@@ -487,7 +521,7 @@ function BucketCard({
 }
 
 function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
-  const perEmployee = Math.round(BUILD_FEE / 12);
+  const perEmployee = Math.round(BUILD_FEE_FOUNDER / 12);
   const firstName = p.firstName || p.name.split(" ")[0] || "there";
 
   return React.createElement(
@@ -682,12 +716,17 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
               View,
               { style: styles.panelHeadLeft },
               React.createElement(Text, { style: styles.panelEyebrowRecommended }, "Tier 3 · Recommended"),
-              React.createElement(Text, { style: styles.panelTitle }, "Build with me")
+              React.createElement(Text, { style: styles.panelTitle }, "I build the AI Operating System for you")
             ),
             React.createElement(
               View,
               { style: styles.panelPriceWrap },
-              React.createElement(Text, { style: styles.panelPrice }, fmt$(BUILD_FEE)),
+              React.createElement(
+                View,
+                { style: styles.priceRow },
+                React.createElement(Text, { style: styles.panelPrice }, fmt$(BUILD_FEE_FOUNDER)),
+                React.createElement(Text, { style: styles.panelPriceStrike }, fmt$(BUILD_FEE_LIST))
+              ),
               React.createElement(
                 Text,
                 { style: styles.panelPriceUnit },
@@ -695,11 +734,25 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
               )
             )
           ),
+          React.createElement(
+            View,
+            { style: styles.founderBadge },
+            React.createElement(
+              Text,
+              { style: styles.founderBadgeText },
+              `Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining`
+            )
+          ),
+          React.createElement(
+            Text,
+            { style: styles.founderNote },
+            `Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this engagement moves to ${fmt$(BUILD_FEE_LIST)} list.`
+          ),
 
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 4 }] },
-            `The ${fmt$(BUILD_FEE)} one-time fee`
+            `The ${fmt$(BUILD_FEE_FOUNDER)} founder build fee`
           ),
           React.createElement(
             Text,
@@ -750,7 +803,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 6 }] },
-            "Here's the math that should make the decision: even the cheapest human role on your 12-seat org chart costs $40,000 a year — that's $3,333 a month for one entry-level position. You're getting twelve professional AI employees for $1,100 a month total. A third the cost of one cheap human, for twelve times the headcount. This is a no-brainer. I'm only priced this low while I'm building my case study roster — take action before rates go up."
+            `Here's the math: even the cheapest human role on your 12-seat org chart costs $40,000 a year — $3,333 a month for one entry-level position. That same $40,000 is our list price for the entire build of TWELVE AI employees. One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying $${BUILD_FEE_FOUNDER.toLocaleString()} for the twelve. Plus $1,100/month in operating fees: a third the cost of one cheap human's monthly salary, for twelve times the headcount. This is a no-brainer. Only ${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()} — after that, this engagement moves to $${BUILD_FEE_LIST.toLocaleString()} list. Take action before that happens.`
           ),
 
           React.createElement(
@@ -759,7 +812,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
             React.createElement(
               Text,
               { style: styles.panelCalloutText },
-              `${fmt$(BUILD_FEE)} to plug the gap. ${fmt$(TRADITIONAL_PAYROLL)} to plug it with humans. Same gap. Same 12 roles. The math isn't close.`
+              `${fmt$(BUILD_FEE_FOUNDER)} to plug the gap. ${fmt$(TRADITIONAL_PAYROLL)} to plug it with humans. Same gap. Same 12 roles. The math isn't close.`
             )
           )
         )
@@ -977,7 +1030,7 @@ export async function POST(req: NextRequest) {
   //    the contact's conversation thread + uses the location's email sender.
   const firstName = payload.firstName || payload.name.split(" ")[0] || "there";
   const subject = `${firstName}, your 12-Role Roadmap`;
-  const perEmployeeFee = Math.round(BUILD_FEE / 12);
+  const perEmployeeFee = Math.round(BUILD_FEE_FOUNDER / 12);
   const perEmployeeMonthly = Math.round(MONTHLY_TOOLING / 12);
   const seatVerb = payload.vacant_count === 1 ? "seat is" : "seats are";
   const filledCount = payload.worn_count + payload.staff_count;
@@ -1025,7 +1078,18 @@ export async function POST(req: NextRequest) {
   </p>
 
   <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:bold;margin:22px 0 4px 0;">Tier 3 · Recommended</div>
-  <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 14px 0;">I build the AI Operating System for you — <span style="color:#475569;font-weight:normal;">$22,000 + ~$1,100/month operating fees</span></div>
+  <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 10px 0;">I build the AI Operating System for you</div>
+  <div style="margin:0 0 4px 0;">
+    <span style="font-size:24px;font-weight:bold;color:#1d4ed8;">$${BUILD_FEE_FOUNDER.toLocaleString()}</span>
+    <span style="font-size:16px;color:#94a3b8;text-decoration:line-through;margin-left:10px;">$${BUILD_FEE_LIST.toLocaleString()}</span>
+    <span style="font-size:14px;color:#475569;margin-left:8px;">+ ~$1,100/month operating fees</span>
+  </div>
+  <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:11px;font-weight:bold;padding:5px 12px;border-radius:4px;margin:10px 0 6px 0;text-transform:uppercase;letter-spacing:0.8px;">
+    Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining
+  </div>
+  <p style="font-size:13px;color:#475569;font-style:italic;margin:0 0 14px 0;">
+    Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this engagement moves to $${BUILD_FEE_LIST.toLocaleString()} list.
+  </p>
 
   <div style="background:#eff6ff;border:1px solid #c7d7fe;padding:14px 18px;border-radius:6px;margin:0 0 18px 0;">
     <p style="font-size:15px;color:#0f172a;margin:0 0 8px 0;">
@@ -1041,7 +1105,7 @@ export async function POST(req: NextRequest) {
   </div>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
-    <strong>The $22,000 one-time fee</strong> works out to <strong>~$${perEmployeeFee.toLocaleString()} per AI employee</strong>, custom-built for your business. Each one is:
+    <strong>The $${BUILD_FEE_FOUNDER.toLocaleString()} founder build fee</strong> works out to <strong>~$${perEmployeeFee.toLocaleString()} per AI employee</strong>, custom-built for your business. Each one is:
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
     <li style="margin-bottom:6px;"><strong>Trained on your brand voice.</strong> I capture how you talk to customers — the words you use, the words you'd never use, your tone, your sales style — and bake it in. When the AI messages a prospect, it sounds like you wrote it, not like a generic chatbot.</li>
@@ -1058,16 +1122,16 @@ export async function POST(req: NextRequest) {
   </ul>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    After year one, the <strong>$22,000 build fee is paid in full</strong>. All you keep paying is the monthly utility bill — the <strong>tokens</strong> (your AI employees' thinking power) and the <strong>hosting</strong> (the cloud servers they live on). That's <strong>~$1,100/month for twelve professional AI employees</strong> running 24/7. No raises. No turnover. No benefits. No retraining. Costs only go down as AI models get more efficient.
+    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. All you keep paying is the monthly utility bill — the <strong>tokens</strong> (your AI employees' thinking power) and the <strong>hosting</strong> (the cloud servers they live on). That's <strong>~$1,100/month for twelve professional AI employees</strong> running 24/7. No raises. No turnover. No benefits. No retraining. Costs only go down as AI models get more efficient.
   </p>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    Here's the math that should make the decision: even the <strong>cheapest human role on your 12-seat org chart costs $40,000 a year — that's $3,333 a month for one entry-level position</strong>. You're getting <strong>twelve professional AI employees for $1,100 a month total</strong>. A third the cost of one cheap human, for twelve times the headcount. This is a no-brainer. I'm only priced this low while I'm building my case study roster — take action before rates go up.
+    Here's the math: even the cheapest human role on your 12-seat org chart costs <strong>$40,000 a year</strong> — $3,333 a month for one entry-level position. <strong>That same $40,000 is our list price for the entire build of TWELVE AI employees.</strong> One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying <strong>$${BUILD_FEE_FOUNDER.toLocaleString()}</strong> for the twelve. Plus <strong>$1,100/month in operating fees</strong>: a third the cost of one cheap human's monthly salary, for twelve times the headcount. This is a no-brainer. Only <strong>${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()}</strong> — after that, this engagement moves to $${BUILD_FEE_LIST.toLocaleString()} list. Take action before that happens.
   </p>
 
   <div style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:16px 18px;margin:24px 0;">
     <p style="font-size:17px;font-weight:bold;color:#0f172a;margin:0;line-height:1.45;">
-      $22,000 to plug the gap. $532,000 to plug it with humans. Same gap. Same 12 roles. The math isn't close.
+      $${BUILD_FEE_FOUNDER.toLocaleString()} to plug the gap. $532,000 to plug it with humans. Same gap. Same 12 roles. The math isn't close.
     </p>
   </div>
 
