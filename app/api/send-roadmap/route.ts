@@ -10,7 +10,12 @@ export const maxDuration = 60;
 const BUILD_FEE_LIST = 40000;
 const BUILD_FEE_FOUNDER = 28000;
 const FOUNDER_SPOTS_REMAINING = 5;
-const MONTHLY_TOOLING = 1800;
+// Monthly is two separate components:
+//   MONTHLY_UTILITY = AI tokens + cloud hosting, passed through to vendors at cost
+//   MONTHLY_RETAINER_* = SJC fractional CTO retainer (founder rate locked for 12 months)
+const MONTHLY_UTILITY = 1100;
+const MONTHLY_RETAINER_LIST = 3000;
+const MONTHLY_RETAINER_FOUNDER = 1500;
 const TRADITIONAL_PAYROLL = 532000;
 const WEBSITE_URL = "https://www.stevenjamesconsulting.com";
 const CALENDAR_URL = "https://api.leadconnectorhq.com/widget/bookings/find-your-gap";
@@ -758,7 +763,12 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
                 React.createElement(
                   Text,
                   { style: styles.panelPriceUnit },
-                  `+ ${fmt$(MONTHLY_TOOLING)}/mo maintenance/utility`
+                  `+ ${fmt$(MONTHLY_RETAINER_FOUNDER)}/mo CTO retainer (${fmt$(MONTHLY_RETAINER_LIST)} list)`
+                ),
+                React.createElement(
+                  Text,
+                  { style: styles.panelPriceUnit },
+                  `+ ${fmt$(MONTHLY_UTILITY)}/mo utility (pass-through, no markup)`
                 )
               )
             ),
@@ -774,7 +784,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
             React.createElement(
               Text,
               { style: [styles.founderNote, { marginBottom: 0 }] },
-              `Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this investment moves back to the ${fmt$(BUILD_FEE_LIST)} list price.`
+              `Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders. After spot #${FOUNDER_SPOTS_REMAINING}, list price moves to ${fmt$(BUILD_FEE_LIST)} build + ${fmt$(MONTHLY_RETAINER_LIST)}/mo retainer. Your build fee locks at signing; the ${fmt$(MONTHLY_RETAINER_FOUNDER)}/mo retainer holds for your first 12 months — then we re-evaluate together based on where the technology has moved. Stay, take it over yourself, or move to another vendor — your call.`
             )
           ),
 
@@ -807,12 +817,17 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8 }] },
-            `The ~${fmt$(MONTHLY_TOOLING)}/month — your monthly maintenance/utility fee (a utility bill for your AI employees, plus your new fractional Chief Technology Officer)`
+            `Your monthly costs — two separate line items`
           ),
           React.createElement(
             Text,
             { style: styles.panelBody },
-            `That works out to ~$${Math.round(MONTHLY_TOOLING / 12)}/month per AI employee to keep all 12 running 24/7 — and that's with a Chief Technology Officer included. Three things you're paying for:`
+            `${fmt$(MONTHLY_UTILITY)}/month utility (pass-through) + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month CTO retainer (founder pricing). ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month total. Here's what each one is:`
+          ),
+          React.createElement(
+            Text,
+            { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8, marginBottom: 2 }] },
+            `Utility — ${fmt$(MONTHLY_UTILITY)}/month, pass-through at cost`
           ),
           React.createElement(
             Text,
@@ -826,18 +841,28 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           ),
           React.createElement(
             Text,
+            { style: [styles.panelBody, { fontSize: 10, fontStyle: "italic", marginLeft: 10, marginTop: 2 }] },
+            "We pass these straight through to the vendors at cost. No markup. Full transparency on what runs your AI workforce."
+          ),
+          React.createElement(
+            Text,
+            { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 10, marginBottom: 2 }] },
+            `Fractional CTO retainer — ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month founder pricing (${fmt$(MONTHLY_RETAINER_LIST)}/month list)`
+          ),
+          React.createElement(
+            Text,
             { style: styles.panelBullet },
             "• Your new fractional Chief Technology Officer (CTO) — that's Steven James Consulting on 24/7 retainer, keeping your system working. \"Fractional\" means we're an outside vendor working on your behalf, not a full-time hire on your payroll. We watch over every AI employee, update workflows as your business grows, and fix issues before they cost you money."
           ),
           React.createElement(
             Text,
-            { style: [styles.panelBody, { marginTop: 6 }] },
-            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. All you keep paying is the monthly maintenance/utility bill — tokens, hosting, and your fractional CTO on retainer. ${fmt$(MONTHLY_TOOLING)}/month for twelve professional AI employees plus a CTO. No raises. No turnover. No benefits. No retraining.`
+            { style: [styles.panelBody, { marginTop: 8 }] },
+            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. From year two onward you're paying ${fmt$(MONTHLY_UTILITY)}/month for the utility pass-through + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month for the fractional CTO retainer — ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month total at founder pricing. Your retainer rate holds for 12 months at a time; we re-evaluate together at year-end.`
           ),
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 6 }] },
-            `Here's the math: even the cheapest human role on your 12-seat org chart costs $40,000 a year — $3,333 a month for one entry-level position. That same $40,000 is our list price for the entire build of TWELVE AI employees. One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying ${fmt$(BUILD_FEE_FOUNDER)} for the twelve. Plus ${fmt$(MONTHLY_TOOLING)}/month in maintenance/utilities — that's about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS your fractional Chief Technology Officer keeping it all running. This is a no-brainer. Only ${FOUNDER_SPOTS_REMAINING} founder spots remain at ${fmt$(BUILD_FEE_FOUNDER)} — after that, this investment moves back to the ${fmt$(BUILD_FEE_LIST)} list price.`
+            `Here's the math: the cheapest human role on your 12-seat org chart costs $40,000/year — exactly our list price for the entire build of TWELVE AI employees. On the monthly side, small businesses already pay $1,500–$3,000/month to a marketing agency just for Facebook ads. You're paying ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month at founder pricing for twelve AI employees + a fractional Chief Technology Officer managing your entire tech stack — same range, exponentially more output. Only ${FOUNDER_SPOTS_REMAINING} founder spots remain at ${fmt$(BUILD_FEE_FOUNDER)} build + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month — after that, list pricing moves to ${fmt$(BUILD_FEE_LIST)} build + ${fmt$(MONTHLY_RETAINER_LIST)}/month.`
           ),
 
           React.createElement(
@@ -1158,7 +1183,8 @@ export async function POST(req: NextRequest) {
   const firstName = payload.firstName || payload.name.split(" ")[0] || "there";
   const subject = `${firstName}, your 12-Role Roadmap`;
   const perEmployeeFee = Math.round(BUILD_FEE_FOUNDER / 12);
-  const perEmployeeMonthly = Math.round(MONTHLY_TOOLING / 12);
+  const monthlyTotalFounder = MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER;
+  const monthlyTotalList = MONTHLY_UTILITY + MONTHLY_RETAINER_LIST;
   const seatVerb = payload.vacant_count === 1 ? "seat is" : "seats are";
   const filledCount = payload.worn_count + payload.staff_count;
   const pdfFooterBlock = pdfUrl
@@ -1211,14 +1237,19 @@ export async function POST(req: NextRequest) {
     <span style="font-size:16px;color:#94a3b8;text-decoration:line-through;margin-left:10px;">$${BUILD_FEE_LIST.toLocaleString()}</span>
     <span style="font-size:14px;color:#475569;margin-left:8px;">one-time build fee investment</span>
   </div>
+  <div style="font-size:14px;color:#475569;margin:0 0 2px 0;">
+    + <strong style="color:#1d4ed8;">$${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month</strong>
+    <span style="color:#94a3b8;text-decoration:line-through;margin-left:6px;">$${MONTHLY_RETAINER_LIST.toLocaleString()}</span>
+    <span style="margin-left:6px;">fractional CTO retainer</span>
+  </div>
   <div style="font-size:14px;color:#475569;margin:0 0 8px 0;">
-    + <strong style="color:#0f172a;">$${MONTHLY_TOOLING.toLocaleString()}/month</strong> maintenance/utility fee
+    + <strong style="color:#0f172a;">$${MONTHLY_UTILITY.toLocaleString()}/month</strong> utility (pass-through to vendors at cost, no markup)
   </div>
   <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:11px;font-weight:bold;padding:5px 12px;border-radius:4px;margin:10px 0 6px 0;text-transform:uppercase;letter-spacing:0.8px;">
     Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining
   </div>
   <p style="font-size:13px;color:#475569;font-style:italic;margin:0 0 14px 0;">
-    Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this investment moves back to the $${BUILD_FEE_LIST.toLocaleString()} list price.
+    Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders. After spot #${FOUNDER_SPOTS_REMAINING}, list price moves to $${BUILD_FEE_LIST.toLocaleString()} build + $${MONTHLY_RETAINER_LIST.toLocaleString()}/mo retainer. Your build fee locks at signing; the $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/mo retainer holds for your first 12 months — then we re-evaluate together based on where the technology has moved. Stay, take it over yourself, or move to another vendor — your call.
   </p>
 
   <div style="background:#eff6ff;border:1px solid #c7d7fe;padding:14px 18px;border-radius:6px;margin:0 0 18px 0;">
@@ -1244,20 +1275,33 @@ export async function POST(req: NextRequest) {
   </ul>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
-    <strong>The ~$${MONTHLY_TOOLING.toLocaleString()}/month is your monthly maintenance/utility fee — a utility bill for your AI employees, plus your new fractional Chief Technology Officer (CTO) on retainer.</strong> That works out to <strong>~$${perEmployeeMonthly}/month per AI employee</strong> to keep all 12 running 24/7 — and that's with a Chief Technology Officer included in the package. Three things you're paying for:
+    <strong>Your monthly costs are two separate line items.</strong> $${MONTHLY_UTILITY.toLocaleString()}/month utility (pass-through) + $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month CTO retainer (founder pricing). <strong>$${monthlyTotalFounder.toLocaleString()}/month total.</strong> Here's what each one is:
   </p>
-  <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
+
+  <p style="font-size:15px;font-weight:bold;color:#0f172a;margin:14px 0 4px 0;">
+    Utility &mdash; $${MONTHLY_UTILITY.toLocaleString()}/month, pass-through at cost
+  </p>
+  <ul style="font-size:15px;padding-left:22px;margin:0 0 6px 0;">
     <li style="margin-bottom:6px;"><strong>Tokens</strong> — the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower.</li>
     <li style="margin-bottom:6px;"><strong>Hosting</strong> — the cloud servers your AI employees live on. Same as hosting a website — they need a place to run from.</li>
+  </ul>
+  <p style="font-size:13px;color:#475569;font-style:italic;margin:0 0 14px 22px;">
+    We pass these straight through to the vendors at cost. No markup. Full transparency on what runs your AI workforce.
+  </p>
+
+  <p style="font-size:15px;font-weight:bold;color:#0f172a;margin:14px 0 4px 0;">
+    Fractional CTO retainer &mdash; $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month founder pricing ($${MONTHLY_RETAINER_LIST.toLocaleString()}/month list)
+  </p>
+  <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
     <li style="margin-bottom:6px;"><strong>Your new fractional Chief Technology Officer (CTO).</strong> That's Steven James Consulting on 24/7 retainer, keeping your system working. &ldquo;Fractional&rdquo; means we're an outside vendor working on your behalf, not a full-time hire on your payroll. We watch over every AI employee, update workflows as your business grows, and fix issues before they cost you money.</li>
   </ul>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. All you keep paying is the monthly maintenance/utility bill — tokens, hosting, and your fractional CTO on retainer. That's <strong>~$${MONTHLY_TOOLING.toLocaleString()}/month for twelve professional AI employees plus a fractional CTO managing them</strong>, running 24/7. No raises. No turnover. No benefits. No retraining.
+    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. From year two onward, you're paying <strong>$${MONTHLY_UTILITY.toLocaleString()}/month for the utility pass-through</strong> (tokens + hosting, straight to vendors at cost) + <strong>$${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month for the fractional CTO retainer</strong> &mdash; <strong>$${monthlyTotalFounder.toLocaleString()}/month total at founder pricing</strong>. Your retainer rate holds for 12 months at a time; we re-evaluate together at year-end.
   </p>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    Here's the math: even the cheapest human role on your 12-seat org chart costs <strong>$40,000 a year</strong> — $3,333 a month for one entry-level position. <strong>That same $40,000 is our list price for the entire build of TWELVE AI employees.</strong> One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying <strong>$${BUILD_FEE_FOUNDER.toLocaleString()}</strong> for the twelve. Plus <strong>$${MONTHLY_TOOLING.toLocaleString()}/month in maintenance/utilities</strong> — about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS your fractional Chief Technology Officer keeping it all running. This is a no-brainer. Only <strong>${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()}</strong> — after that, this investment moves back to the $${BUILD_FEE_LIST.toLocaleString()} list price.
+    Here's the math: the cheapest human role on your 12-seat org chart costs <strong>$40,000/year</strong> — exactly our list price for the entire build of TWELVE AI employees. On the monthly side, small businesses already pay <strong>$1,500&ndash;$3,000/month to a marketing agency just for Facebook ads</strong>. You're paying <strong>$${monthlyTotalFounder.toLocaleString()}/month at founder pricing</strong> for twelve AI employees + a fractional Chief Technology Officer managing your entire tech stack &mdash; same range, exponentially more output. Only <strong>${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()} build + $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month</strong> — after that, list pricing moves to $${BUILD_FEE_LIST.toLocaleString()} build + $${MONTHLY_RETAINER_LIST.toLocaleString()}/month.
   </p>
 
   <div style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:16px 18px;margin:24px 0;">
