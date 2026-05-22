@@ -714,7 +714,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: styles.panelBullet },
-            "• Trained on your services, pricing, processes, and team. Day one, the AI employee knows your business as well as a 6-month human employee would."
+            "• Trained on your services, pricing, processes, and team. On day one, the AI employee knows your business as well as a seasoned human employee would."
           ),
           React.createElement(
             Text,
@@ -1040,7 +1040,7 @@ export async function POST(req: NextRequest) {
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
     <li style="margin-bottom:6px;"><strong>Trained on your brand voice.</strong> I capture how you talk to customers — the words you use, the words you'd never use, your tone, your sales style — and bake it in. When the AI messages a prospect, it sounds like you wrote it, not like a generic chatbot.</li>
-    <li style="margin-bottom:6px;"><strong>Trained on your business.</strong> Services, pricing, processes, team. Day one, it knows what a 6-month human employee would know.</li>
+    <li style="margin-bottom:6px;"><strong>Trained on your business.</strong> Services, pricing, processes, team. On day one, it knows what a seasoned human employee would know.</li>
     <li style="margin-bottom:6px;"><strong>Wired into your stack.</strong> CRM, email, calendar, reporting — it actually does the work (books appointments, follows up on leads, sends invoices, surfaces KPIs), not just answers questions.</li>
   </ul>
 
