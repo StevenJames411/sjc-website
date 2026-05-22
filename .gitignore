@@ -1,3 +1,4 @@
+# Build artifacts and local-only config
 node_modules
 .next
 out
