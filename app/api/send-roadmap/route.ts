@@ -330,12 +330,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Helvetica-Bold",
     color: SJC_BLUE,
+    lineHeight: 1.1,
   },
   panelPriceStrike: {
     fontSize: 13,
     color: "#94a3b8",
     textDecoration: "line-through",
     marginLeft: 6,
+    lineHeight: 1.1,
   },
   priceRow: {
     flexDirection: "row",
@@ -344,6 +346,8 @@ const styles = StyleSheet.create({
   panelPriceUnit: {
     fontSize: 9,
     color: SUBTLE,
+    marginTop: 5,
+    lineHeight: 1.3,
   },
   founderBadge: {
     backgroundColor: "#fef3c7",
