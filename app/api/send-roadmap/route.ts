@@ -11,7 +11,7 @@ const BUILD_FEE_LIST = 40000;
 const BUILD_FEE_FOUNDER = 28000;
 const FOUNDER_SPOTS_REMAINING = 5;
 // Monthly is two separate components:
-//   MONTHLY_UTILITY = AI tokens + cloud hosting, passed through to vendors at cost
+//   MONTHLY_UTILITY = AI tokens + cloud hosting, base cost passed to the client (zero markup)
 //   MONTHLY_RETAINER_* = SJC fractional CTO retainer (founder rate locked for 12 months)
 const MONTHLY_UTILITY = 1100;
 const MONTHLY_RETAINER_LIST = 3000;
@@ -768,7 +768,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
                 React.createElement(
                   Text,
                   { style: styles.panelPriceUnit },
-                  `+ ${fmt$(MONTHLY_UTILITY)}/mo utility (pass-through, no markup)`
+                  `+ ${fmt$(MONTHLY_UTILITY)}/mo utility — base price passed to you, zero markup`
                 )
               )
             ),
@@ -822,12 +822,12 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: styles.panelBody },
-            `${fmt$(MONTHLY_UTILITY)}/month utility (pass-through) + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month CTO retainer (founder pricing). ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month total. Here's what each one is:`
+            `${fmt$(MONTHLY_UTILITY)}/month utility (base cost passed to you) + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month CTO retainer (founder pricing). ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month total. Here's what each one is:`
           ),
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8, marginBottom: 2 }] },
-            `Utility — ${fmt$(MONTHLY_UTILITY)}/month, pass-through at cost`
+            `Utility — ${fmt$(MONTHLY_UTILITY)}/month, base price passed to you (zero markup)`
           ),
           React.createElement(
             Text,
@@ -842,7 +842,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontSize: 10, fontStyle: "italic", marginLeft: 10, marginTop: 2 }] },
-            "We pass these straight through to the vendors at cost. No markup. Full transparency on what runs your AI workforce."
+            "We pass the base prices straight through to you. Zero markup from us. You pay the actual utility cost — full transparency on what runs your AI workforce."
           ),
           React.createElement(
             Text,
@@ -857,7 +857,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 8 }] },
-            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. From year two onward you're paying ${fmt$(MONTHLY_UTILITY)}/month for the utility pass-through + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month for the fractional CTO retainer — ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month total at founder pricing. Your retainer rate holds for 12 months at a time; we re-evaluate together at year-end.`
+            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. From year two onward you're paying ${fmt$(MONTHLY_UTILITY)}/month for the utility (base price passed to you, zero markup) + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month for the fractional CTO retainer — ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month total at founder pricing. Your retainer rate holds for 12 months at a time; we re-evaluate together at year-end.`
           ),
           React.createElement(
             Text,
@@ -1243,7 +1243,7 @@ export async function POST(req: NextRequest) {
     <span style="margin-left:6px;">your fractional Chief Technology Officer (CTO) retainer</span>
   </div>
   <div style="font-size:14px;color:#475569;margin:0 0 8px 0;">
-    + <strong style="color:#0f172a;">$${MONTHLY_UTILITY.toLocaleString()}/month</strong> utility (pass-through to vendors at cost, no markup)
+    + <strong style="color:#0f172a;">$${MONTHLY_UTILITY.toLocaleString()}/month</strong> utility — base price passed to you, zero markup
   </div>
   <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:11px;font-weight:bold;padding:5px 12px;border-radius:4px;margin:10px 0 6px 0;text-transform:uppercase;letter-spacing:0.8px;">
     Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining
@@ -1275,18 +1275,18 @@ export async function POST(req: NextRequest) {
   </ul>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
-    <strong>Your monthly costs are two separate line items.</strong> $${MONTHLY_UTILITY.toLocaleString()}/month utility (pass-through) + $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month CTO retainer (founder pricing). <strong>$${monthlyTotalFounder.toLocaleString()}/month total.</strong> Here's what each one is:
+    <strong>Your monthly costs are two separate line items.</strong> $${MONTHLY_UTILITY.toLocaleString()}/month utility (base cost passed to you) + $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month CTO retainer (founder pricing). <strong>$${monthlyTotalFounder.toLocaleString()}/month total.</strong> Here's what each one is:
   </p>
 
   <p style="font-size:15px;font-weight:bold;color:#0f172a;margin:14px 0 4px 0;">
-    Utility &mdash; $${MONTHLY_UTILITY.toLocaleString()}/month, pass-through at cost
+    Utility &mdash; $${MONTHLY_UTILITY.toLocaleString()}/month, base price passed to you (zero markup)
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 6px 0;">
     <li style="margin-bottom:6px;"><strong>Tokens</strong> — the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower.</li>
     <li style="margin-bottom:6px;"><strong>Hosting</strong> — the cloud servers your AI employees live on. Same as hosting a website — they need a place to run from.</li>
   </ul>
   <p style="font-size:13px;color:#475569;font-style:italic;margin:0 0 14px 22px;">
-    We pass these straight through to the vendors at cost. No markup. Full transparency on what runs your AI workforce.
+    We pass the base prices straight through to you. Zero markup from us. You pay the actual utility cost &mdash; full transparency on what runs your AI workforce.
   </p>
 
   <p style="font-size:15px;font-weight:bold;color:#0f172a;margin:14px 0 4px 0;">
@@ -1297,7 +1297,7 @@ export async function POST(req: NextRequest) {
   </ul>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. From year two onward, you're paying <strong>$${MONTHLY_UTILITY.toLocaleString()}/month for the utility pass-through</strong> (tokens + hosting, straight to vendors at cost) + <strong>$${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month for the fractional CTO retainer</strong> &mdash; <strong>$${monthlyTotalFounder.toLocaleString()}/month total at founder pricing</strong>. Your retainer rate holds for 12 months at a time; we re-evaluate together at year-end.
+    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. From year two onward, you're paying <strong>$${MONTHLY_UTILITY.toLocaleString()}/month for the utility</strong> (tokens + hosting, base price passed to you with zero markup) + <strong>$${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month for the fractional CTO retainer</strong> &mdash; <strong>$${monthlyTotalFounder.toLocaleString()}/month total at founder pricing</strong>. Your retainer rate holds for 12 months at a time; we re-evaluate together at year-end.
   </p>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
