@@ -747,6 +747,11 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
             { style: [styles.panelBody, { marginTop: 6 }] },
             "After year one, that's all you keep paying. No raises. No turnover. No benefits. Costs only go down as AI models get more efficient."
           ),
+          React.createElement(
+            Text,
+            { style: [styles.panelBody, { marginTop: 6 }] },
+            "Here's the math that should make the decision: even the cheapest human role on your 12-seat org chart costs $40,000 a year — that's $3,333 a month for one entry-level position. You're getting twelve professional AI employees for $1,100 a month total. A third the cost of one cheap human, for twelve times the headcount. This is a no-brainer. I'm only priced this low while I'm building my case study roster — take action before rates go up."
+          ),
 
           React.createElement(
             View,
@@ -1054,6 +1059,10 @@ export async function POST(req: NextRequest) {
 
   <p style="font-size:15px;margin:0 0 16px 0;">
     After year one, the <strong>$22,000 build fee is paid in full</strong>. All you keep paying is the monthly utility bill — the <strong>tokens</strong> (your AI employees' thinking power) and the <strong>hosting</strong> (the cloud servers they live on). That's <strong>~$1,100/month for twelve professional AI employees</strong> running 24/7. No raises. No turnover. No benefits. No retraining. Costs only go down as AI models get more efficient.
+  </p>
+
+  <p style="font-size:15px;margin:0 0 16px 0;">
+    Here's the math that should make the decision: even the <strong>cheapest human role on your 12-seat org chart costs $40,000 a year — that's $3,333 a month for one entry-level position</strong>. You're getting <strong>twelve professional AI employees for $1,100 a month total</strong>. A third the cost of one cheap human, for twelve times the headcount. This is a no-brainer. I'm only priced this low while I'm building my case study roster — take action before rates go up.
   </p>
 
   <div style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:16px 18px;margin:24px 0;">
