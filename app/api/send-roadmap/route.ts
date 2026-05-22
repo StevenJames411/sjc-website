@@ -712,7 +712,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
         // ===== TIER 3 =====
         React.createElement(
           View,
-          { style: styles.panelRecommended, wrap: false, break: true },
+          { style: styles.panelRecommended, break: true },
           React.createElement(
             View,
             { style: styles.panelHeadRow },
