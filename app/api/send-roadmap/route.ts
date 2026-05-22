@@ -881,6 +881,54 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
 
 // --- Route handler ----------------------------------------------------------------
 
+// Normalize a phone string to E.164 (the format GHL stores). Conservative — assumes US
+// when 10 or 11 digits, otherwise just keeps the digits with a leading "+". Returns null
+// if the input has no digits at all.
+function normalizePhone(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  const digits = String(raw).replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return `+${digits}`;
+}
+
+// Look up an existing GHL contact by phone. Returns the contactId if a single record
+// claims that phone, otherwise null. Used to merge phone-only records (e.g. from FB lead
+// forms) with assessment submissions that supply both email + phone — without this guard
+// GHL's email-keyed upsert silently drops the phone when it conflicts with another contact.
+async function findContactIdByPhone(
+  phone: string,
+  locationId: string,
+  authHeader: string
+): Promise<string | null> {
+  try {
+    const res = await fetch("https://services.leadconnectorhq.com/contacts/search", {
+      method: "POST",
+      headers: {
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+        Version: "2021-07-28",
+      },
+      body: JSON.stringify({
+        locationId,
+        pageLimit: 5,
+        filters: [{ field: "phone", operator: "eq", value: phone }],
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      console.warn("[send-roadmap] phone lookup failed:", res.status, body);
+      return null;
+    }
+    const data = (await res.json()) as { contacts?: Array<{ id: string }> };
+    return data.contacts?.[0]?.id ?? null;
+  } catch (err) {
+    console.warn("[send-roadmap] phone lookup error:", err);
+    return null;
+  }
+}
+
 function slugify(name: string) {
   return (
     name
@@ -967,62 +1015,107 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const authHeader = `Bearer ${pit}`;
   const ghlHeaders = {
-    Authorization: `Bearer ${pit}`,
+    Authorization: authHeader,
     "Content-Type": "application/json",
   };
 
-  const upsertBody = {
-    locationId,
-    firstName: payload.firstName,
-    lastName: payload.lastName,
-    name: payload.name,
-    email: payload.email,
-    phone: payload.phone,
-    source: payload.source,
-    tags: ["assessment-completed"],
-    customFields: [
-      { id: GHL_FIELD_IDS.worn_count, field_value: payload.worn_count },
-      { id: GHL_FIELD_IDS.staff_count, field_value: payload.staff_count },
-      { id: GHL_FIELD_IDS.vacant_count, field_value: payload.vacant_count },
-      { id: GHL_FIELD_IDS.worn_hours_per_week, field_value: payload.worn_hours_per_week },
-      { id: GHL_FIELD_IDS.staff_hours_per_week, field_value: payload.staff_hours_per_week },
-      { id: GHL_FIELD_IDS.vacant_hours_per_week, field_value: payload.vacant_hours_per_week },
-      { id: GHL_FIELD_IDS.total_hours_per_week, field_value: payload.total_hours_per_week },
-      { id: GHL_FIELD_IDS.worn_jobs, field_value: payload.worn_jobs },
-      { id: GHL_FIELD_IDS.staff_jobs, field_value: payload.staff_jobs },
-      { id: GHL_FIELD_IDS.vacant_jobs, field_value: payload.vacant_jobs },
-      { id: GHL_FIELD_IDS.worn_human_cost, field_value: payload.worn_human_cost },
-      { id: GHL_FIELD_IDS.worn_ai_cost, field_value: payload.worn_ai_cost },
-      { id: GHL_FIELD_IDS.vacant_human_cost, field_value: payload.vacant_human_cost },
-      { id: GHL_FIELD_IDS.vacant_ai_cost, field_value: payload.vacant_ai_cost },
-      { id: GHL_FIELD_IDS.pdfurl, field_value: pdfUrl ?? "" },
-    ],
-  };
+  // Custom fields are shared between the phone-match PUT path and the email-keyed
+  // upsert path — define once, reuse below.
+  const customFields = [
+    { id: GHL_FIELD_IDS.worn_count, field_value: payload.worn_count },
+    { id: GHL_FIELD_IDS.staff_count, field_value: payload.staff_count },
+    { id: GHL_FIELD_IDS.vacant_count, field_value: payload.vacant_count },
+    { id: GHL_FIELD_IDS.worn_hours_per_week, field_value: payload.worn_hours_per_week },
+    { id: GHL_FIELD_IDS.staff_hours_per_week, field_value: payload.staff_hours_per_week },
+    { id: GHL_FIELD_IDS.vacant_hours_per_week, field_value: payload.vacant_hours_per_week },
+    { id: GHL_FIELD_IDS.total_hours_per_week, field_value: payload.total_hours_per_week },
+    { id: GHL_FIELD_IDS.worn_jobs, field_value: payload.worn_jobs },
+    { id: GHL_FIELD_IDS.staff_jobs, field_value: payload.staff_jobs },
+    { id: GHL_FIELD_IDS.vacant_jobs, field_value: payload.vacant_jobs },
+    { id: GHL_FIELD_IDS.worn_human_cost, field_value: payload.worn_human_cost },
+    { id: GHL_FIELD_IDS.worn_ai_cost, field_value: payload.worn_ai_cost },
+    { id: GHL_FIELD_IDS.vacant_human_cost, field_value: payload.vacant_human_cost },
+    { id: GHL_FIELD_IDS.vacant_ai_cost, field_value: payload.vacant_ai_cost },
+    { id: GHL_FIELD_IDS.pdfurl, field_value: pdfUrl ?? "" },
+  ];
+
+  // Phone-first lookup. If the submitted phone already belongs to a contact (e.g. they
+  // first hit a Facebook lead form months ago), update that record so we don't fork the
+  // identity into two contacts (one phone-only, one email-only).
+  const normalizedPhone = normalizePhone(payload.phone);
+  const phoneMatchId = normalizedPhone
+    ? await findContactIdByPhone(normalizedPhone, locationId, authHeader)
+    : null;
 
   let contactId: string | undefined;
-  try {
-    const upsertRes = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
-      method: "POST",
-      headers: { ...ghlHeaders, Version: "2021-07-28" },
-      body: JSON.stringify(upsertBody),
-    });
 
-    if (!upsertRes.ok) {
-      const body = await upsertRes.text();
-      console.error("[send-roadmap] GHL upsert failed:", upsertRes.status, body);
+  if (phoneMatchId) {
+    // PUT path — merge new info into the existing phone-keyed contact. Phone is omitted
+    // (already on this record) to avoid format-normalization surprises.
+    console.log("[send-roadmap] phone matched existing contact, merging:", phoneMatchId);
+    try {
+      const patchRes = await fetch(`https://services.leadconnectorhq.com/contacts/${phoneMatchId}`, {
+        method: "PUT",
+        headers: { ...ghlHeaders, Version: "2021-07-28" },
+        body: JSON.stringify({
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          name: payload.name,
+          email: payload.email,
+          source: payload.source,
+          tags: ["assessment-completed"],
+          customFields,
+        }),
+      });
+      if (!patchRes.ok) {
+        const body = await patchRes.text();
+        console.error("[send-roadmap] GHL phone-match PUT failed:", patchRes.status, body);
+        return NextResponse.json({ error: "Failed to save contact" }, { status: 500 });
+      }
+      contactId = phoneMatchId;
+    } catch (err) {
+      console.error("[send-roadmap] GHL phone-match PUT error:", err);
       return NextResponse.json({ error: "Failed to save contact" }, { status: 500 });
     }
+  } else {
+    // Existing email-keyed upsert path.
+    const upsertBody = {
+      locationId,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+      source: payload.source,
+      tags: ["assessment-completed"],
+      customFields,
+    };
 
-    const upsertJson = (await upsertRes.json()) as { contact?: { id?: string } };
-    contactId = upsertJson.contact?.id;
-  } catch (err) {
-    console.error("[send-roadmap] GHL upsert error:", err);
-    return NextResponse.json({ error: "Failed to save contact" }, { status: 500 });
+    try {
+      const upsertRes = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
+        method: "POST",
+        headers: { ...ghlHeaders, Version: "2021-07-28" },
+        body: JSON.stringify(upsertBody),
+      });
+
+      if (!upsertRes.ok) {
+        const body = await upsertRes.text();
+        console.error("[send-roadmap] GHL upsert failed:", upsertRes.status, body);
+        return NextResponse.json({ error: "Failed to save contact" }, { status: 500 });
+      }
+
+      const upsertJson = (await upsertRes.json()) as { contact?: { id?: string } };
+      contactId = upsertJson.contact?.id;
+    } catch (err) {
+      console.error("[send-roadmap] GHL upsert error:", err);
+      return NextResponse.json({ error: "Failed to save contact" }, { status: 500 });
+    }
   }
 
   if (!contactId) {
-    console.error("[send-roadmap] upsert returned no contact id");
+    console.error("[send-roadmap] no contact id from GHL");
     return NextResponse.json({ error: "Failed to save contact" }, { status: 500 });
   }
 
