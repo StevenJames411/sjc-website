@@ -758,7 +758,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
                 React.createElement(
                   Text,
                   { style: styles.panelPriceUnit },
-                  `+ ${fmt$(MONTHLY_TOOLING)}/mo maintenance & utility`
+                  `+ ${fmt$(MONTHLY_TOOLING)}/mo maintenance/utility`
                 )
               )
             ),
@@ -807,7 +807,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8 }] },
-            `The ~${fmt$(MONTHLY_TOOLING)}/month — your monthly maintenance & utility fee (a utility bill for your AI employees, plus me as your CTO)`
+            `The ~${fmt$(MONTHLY_TOOLING)}/month — your monthly maintenance/utility fee (a utility bill for your AI employees, plus me as your CTO)`
           ),
           React.createElement(
             Text,
@@ -832,12 +832,12 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 6 }] },
-            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. All you keep paying is the monthly maintenance & utility bill — tokens, hosting, and me on retainer. ${fmt$(MONTHLY_TOOLING)}/month for twelve professional AI employees plus a CTO. No raises. No turnover. No benefits. No retraining.`
+            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. All you keep paying is the monthly maintenance/utility bill — tokens, hosting, and me on retainer. ${fmt$(MONTHLY_TOOLING)}/month for twelve professional AI employees plus a CTO. No raises. No turnover. No benefits. No retraining.`
           ),
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 6 }] },
-            `Here's the math: even the cheapest human role on your 12-seat org chart costs $40,000 a year — $3,333 a month for one entry-level position. That same $40,000 is our list price for the entire build of TWELVE AI employees. One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying ${fmt$(BUILD_FEE_FOUNDER)} for the twelve. Plus ${fmt$(MONTHLY_TOOLING)}/month in maintenance & utilities — that's about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS me as your fractional CTO keeping it all running. This is a no-brainer. Only ${FOUNDER_SPOTS_REMAINING} founder spots remain at ${fmt$(BUILD_FEE_FOUNDER)} — after that, this investment moves back to the ${fmt$(BUILD_FEE_LIST)} list price.`
+            `Here's the math: even the cheapest human role on your 12-seat org chart costs $40,000 a year — $3,333 a month for one entry-level position. That same $40,000 is our list price for the entire build of TWELVE AI employees. One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying ${fmt$(BUILD_FEE_FOUNDER)} for the twelve. Plus ${fmt$(MONTHLY_TOOLING)}/month in maintenance/utilities — that's about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS me as your fractional CTO keeping it all running. This is a no-brainer. Only ${FOUNDER_SPOTS_REMAINING} founder spots remain at ${fmt$(BUILD_FEE_FOUNDER)} — after that, this investment moves back to the ${fmt$(BUILD_FEE_LIST)} list price.`
           ),
 
           React.createElement(
@@ -1212,7 +1212,7 @@ export async function POST(req: NextRequest) {
     <span style="font-size:14px;color:#475569;margin-left:8px;">one-time build fee investment</span>
   </div>
   <div style="font-size:14px;color:#475569;margin:0 0 8px 0;">
-    + <strong style="color:#0f172a;">$${MONTHLY_TOOLING.toLocaleString()}/month</strong> maintenance & utility fee
+    + <strong style="color:#0f172a;">$${MONTHLY_TOOLING.toLocaleString()}/month</strong> maintenance/utility fee
   </div>
   <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:11px;font-weight:bold;padding:5px 12px;border-radius:4px;margin:10px 0 6px 0;text-transform:uppercase;letter-spacing:0.8px;">
     Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining
@@ -1244,7 +1244,7 @@ export async function POST(req: NextRequest) {
   </ul>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
-    <strong>The ~$${MONTHLY_TOOLING.toLocaleString()}/month is your monthly maintenance & utility fee — a utility bill for your AI employees, plus me as your fractional CTO on retainer.</strong> That works out to <strong>~$${perEmployeeMonthly}/month per AI employee</strong> to keep all 12 running 24/7 — and that's with a CTO included in the package. Three things you're paying for:
+    <strong>The ~$${MONTHLY_TOOLING.toLocaleString()}/month is your monthly maintenance/utility fee — a utility bill for your AI employees, plus me as your fractional CTO on retainer.</strong> That works out to <strong>~$${perEmployeeMonthly}/month per AI employee</strong> to keep all 12 running 24/7 — and that's with a CTO included in the package. Three things you're paying for:
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
     <li style="margin-bottom:6px;"><strong>Tokens</strong> — the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower.</li>
@@ -1253,11 +1253,11 @@ export async function POST(req: NextRequest) {
   </ul>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. All you keep paying is the monthly maintenance & utility bill — tokens, hosting, and me on retainer as your CTO. That's <strong>~$${MONTHLY_TOOLING.toLocaleString()}/month for twelve professional AI employees plus a fractional CTO managing them</strong>, running 24/7. No raises. No turnover. No benefits. No retraining.
+    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. All you keep paying is the monthly maintenance/utility bill — tokens, hosting, and me on retainer as your CTO. That's <strong>~$${MONTHLY_TOOLING.toLocaleString()}/month for twelve professional AI employees plus a fractional CTO managing them</strong>, running 24/7. No raises. No turnover. No benefits. No retraining.
   </p>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    Here's the math: even the cheapest human role on your 12-seat org chart costs <strong>$40,000 a year</strong> — $3,333 a month for one entry-level position. <strong>That same $40,000 is our list price for the entire build of TWELVE AI employees.</strong> One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying <strong>$${BUILD_FEE_FOUNDER.toLocaleString()}</strong> for the twelve. Plus <strong>$${MONTHLY_TOOLING.toLocaleString()}/month in maintenance & utilities</strong> — about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS me as your fractional CTO keeping it all running. This is a no-brainer. Only <strong>${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()}</strong> — after that, this investment moves back to the $${BUILD_FEE_LIST.toLocaleString()} list price.
+    Here's the math: even the cheapest human role on your 12-seat org chart costs <strong>$40,000 a year</strong> — $3,333 a month for one entry-level position. <strong>That same $40,000 is our list price for the entire build of TWELVE AI employees.</strong> One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying <strong>$${BUILD_FEE_FOUNDER.toLocaleString()}</strong> for the twelve. Plus <strong>$${MONTHLY_TOOLING.toLocaleString()}/month in maintenance/utilities</strong> — about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS me as your fractional CTO keeping it all running. This is a no-brainer. Only <strong>${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()}</strong> — after that, this investment moves back to the $${BUILD_FEE_LIST.toLocaleString()} list price.
   </p>
 
   <div style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:16px 18px;margin:24px 0;">
