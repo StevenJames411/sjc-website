@@ -666,7 +666,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
             React.createElement(
               Text,
               { style: styles.panelCalloutText },
-              `The price says $0. The real price is hat #13 — another 80–100 hours per week you don't have, learning skills it took me years to develop. Free, the same way a free puppy is free.`
+              `The price says $0. The real price is hat #13 — another 80–100 hours per week you don't have, learning skills it took me years to develop.`
             )
           )
         ),
@@ -1016,7 +1016,7 @@ export async function POST(req: NextRequest) {
   <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#475569;margin:22px 0 4px 0;">Tier 2</div>
   <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 8px 0;">Build it yourself — <span style="color:#475569;font-weight:normal;">$0 build fee</span></div>
   <p style="font-size:15px;margin:0 0 16px 0;">
-    You become the technical lead. Learn to build AI agents that follow instructions reliably and don't hallucinate. Wire up a CRM so the AI employees can read customer info, update records, and communicate with each other and with you. Connect email, SMS, calendars, payments, and reporting. Train each AI employee on your services, pricing, processes, and brand voice. Maintain all of it as AI platforms change. The price says zero. The real price is <strong>hat #13 — another 80–100 hours per week</strong> you don't have, learning skills it took me years to develop. Free, the same way a free puppy is free.
+    You become the technical lead. Learn to build AI agents that follow instructions reliably and don't hallucinate. Wire up a CRM so the AI employees can read customer info, update records, and communicate with each other and with you. Connect email, SMS, calendars, payments, and reporting. Train each AI employee on your services, pricing, processes, and brand voice. Maintain all of it as AI platforms change. The price says zero. The real price is <strong>hat #13 — another 80–100 hours per week</strong> you don't have, learning skills it took me years to develop.
   </p>
 
   <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:bold;margin:22px 0 4px 0;">Tier 3 · Recommended</div>
