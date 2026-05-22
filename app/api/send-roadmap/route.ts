@@ -975,9 +975,9 @@ export async function POST(req: NextRequest) {
   const perEmployeeFee = Math.round(BUILD_FEE / 12);
   const perEmployeeMonthly = Math.round(MONTHLY_TOOLING / 12);
   const seatVerb = payload.vacant_count === 1 ? "seat is" : "seats are";
-  const pdfBlock = pdfUrl
-    ? `<p style="font-size:16px;margin:0 0 22px 0;">Your full roadmap is attached as a PDF: <a href="${pdfUrl}" style="color:#1d4ed8;">download here</a>.</p>`
-    : `<p style="font-size:16px;margin:0 0 22px 0;">Your full roadmap is on its way — we'll follow up shortly.</p>`;
+  const pdfFooterBlock = pdfUrl
+    ? `<p style="font-size:14px;color:#475569;margin:20px 0 24px 0;text-align:center;">Want to bring a printed copy to the call? <a href="${pdfUrl}" style="color:#1d4ed8;font-weight:bold;">Download the full PDF</a>.</p>`
+    : `<p style="font-size:14px;color:#475569;margin:20px 0 24px 0;text-align:center;">Your full PDF is on its way — we'll follow up shortly.</p>`;
 
   const html = `
 <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:640px;margin:0 auto;color:#0f172a;line-height:1.6;padding:8px;">
@@ -1003,8 +1003,6 @@ export async function POST(req: NextRequest) {
   <p style="font-size:16px;margin:0 0 22px 0;">
     Those empty seats — plus the work you're personally absorbing instead of running the business — are your blind spots. The hours not being seen, because you're inside doing them.
   </p>
-
-  ${pdfBlock}
 
   <h2 style="font-size:20px;color:#0f172a;margin:28px 0 14px 0;border-top:1px solid #e2e8f0;padding-top:22px;">Three ways to plug your gap</h2>
 
@@ -1056,19 +1054,21 @@ export async function POST(req: NextRequest) {
       Bring this PDF to a working call. We'll go seat by seat — the order to fill them, the tools to use, the KPIs to track. Run with it yourself, or let me execute it with you.
     </p>
     <p style="margin:0;">
-      <a href="${CALENDAR_URL}" style="display:inline-block;background:#ffffff;color:#1d4ed8;padding:12px 22px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Find Your Gap →</a>
+      <a href="${CALENDAR_URL}" style="display:inline-block;background:#ffffff;color:#1d4ed8;padding:12px 22px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Book a call →</a>
     </p>
     <p style="font-size:14px;color:#dbeafe;margin:16px 0 0 0;">
       Or call me direct: <a href="tel:${PHONE_TEL}" style="color:#ffffff;font-weight:bold;text-decoration:underline;">${PHONE_DISPLAY}</a>
     </p>
   </div>
 
+  ${pdfFooterBlock}
+
   <div style="border-top:1px solid #e2e8f0;padding-top:20px;margin-top:32px;font-size:14px;color:#475569;line-height:1.7;">
     <p style="margin:0 0 2px 0;"><strong style="color:#0f172a;font-size:15px;">Steven Barchetti</strong></p>
     <p style="margin:0 0 10px 0;">Steven James Consulting</p>
     <p style="margin:0;">
       Call direct: <a href="tel:${PHONE_TEL}" style="color:#1d4ed8;text-decoration:none;">${PHONE_DISPLAY}</a><br>
-      Book a call: <a href="${CALENDAR_URL}" style="color:#1d4ed8;text-decoration:none;">Find Your Gap</a><br>
+      Book a call: <a href="${CALENDAR_URL}" style="color:#1d4ed8;text-decoration:none;">click here</a><br>
       Website: <a href="${WEBSITE_URL}" style="color:#1d4ed8;text-decoration:none;">stevenjamesconsulting.com</a>
     </p>
   </div>
