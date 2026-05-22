@@ -294,6 +294,15 @@ const styles = StyleSheet.create({
     borderColor: SJC_BLUE,
     backgroundColor: "#eff6ff",
   },
+  recommendedHeaderCard: {
+    borderWidth: 2,
+    borderColor: SJC_BLUE,
+    borderRadius: 8,
+    backgroundColor: "#eff6ff",
+    padding: 14,
+    marginBottom: 14,
+    marginTop: 4,
+  },
   panelHeadRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -710,47 +719,55 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
         ),
 
         // ===== TIER 3 =====
+        // Outer wrapper is `panel` (gray top border + flowing content), same as Tier 1/2.
+        // The "Recommended" emphasis lives in a smaller bordered header card at the top
+        // (recommendedHeaderCard) — that way the long supporting copy below can span pages
+        // without trying to keep an oversized bordered container intact.
         React.createElement(
           View,
-          { style: styles.panelRecommended, break: true },
+          { style: styles.panel, break: true },
           React.createElement(
             View,
-            { style: styles.panelHeadRow },
+            { style: styles.recommendedHeaderCard, wrap: false },
             React.createElement(
               View,
-              { style: styles.panelHeadLeft },
-              React.createElement(Text, { style: styles.panelEyebrowRecommended }, "Tier 3 · Recommended"),
-              React.createElement(Text, { style: styles.panelTitle }, "I build the AI Operating System for you")
+              { style: styles.panelHeadRow },
+              React.createElement(
+                View,
+                { style: styles.panelHeadLeft },
+                React.createElement(Text, { style: styles.panelEyebrowRecommended }, "Tier 3 · Recommended"),
+                React.createElement(Text, { style: styles.panelTitle }, "I build the AI Operating System for you")
+              ),
+              React.createElement(
+                View,
+                { style: styles.panelPriceWrap },
+                React.createElement(
+                  View,
+                  { style: styles.priceRow },
+                  React.createElement(Text, { style: styles.panelPrice }, fmt$(BUILD_FEE_FOUNDER)),
+                  React.createElement(Text, { style: styles.panelPriceStrike }, fmt$(BUILD_FEE_LIST))
+                ),
+                React.createElement(
+                  Text,
+                  { style: styles.panelPriceUnit },
+                  `one-time + ~${fmt$(MONTHLY_TOOLING)}/mo`
+                )
+              )
             ),
             React.createElement(
               View,
-              { style: styles.panelPriceWrap },
-              React.createElement(
-                View,
-                { style: styles.priceRow },
-                React.createElement(Text, { style: styles.panelPrice }, fmt$(BUILD_FEE_FOUNDER)),
-                React.createElement(Text, { style: styles.panelPriceStrike }, fmt$(BUILD_FEE_LIST))
-              ),
+              { style: styles.founderBadge },
               React.createElement(
                 Text,
-                { style: styles.panelPriceUnit },
-                `one-time + ~${fmt$(MONTHLY_TOOLING)}/mo`
+                { style: styles.founderBadgeText },
+                `Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining`
               )
-            )
-          ),
-          React.createElement(
-            View,
-            { style: styles.founderBadge },
+            ),
             React.createElement(
               Text,
-              { style: styles.founderBadgeText },
-              `Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining`
+              { style: [styles.founderNote, { marginBottom: 0 }] },
+              `Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this engagement moves to ${fmt$(BUILD_FEE_LIST)} list.`
             )
-          ),
-          React.createElement(
-            Text,
-            { style: styles.founderNote },
-            `Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this engagement moves to ${fmt$(BUILD_FEE_LIST)} list.`
           ),
 
           React.createElement(
