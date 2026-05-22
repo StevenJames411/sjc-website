@@ -975,6 +975,7 @@ export async function POST(req: NextRequest) {
   const perEmployeeFee = Math.round(BUILD_FEE / 12);
   const perEmployeeMonthly = Math.round(MONTHLY_TOOLING / 12);
   const seatVerb = payload.vacant_count === 1 ? "seat is" : "seats are";
+  const filledCount = payload.worn_count + payload.staff_count;
   const pdfFooterBlock = pdfUrl
     ? `<p style="font-size:14px;color:#475569;margin:20px 0 24px 0;text-align:center;">Want to bring a printed copy to the call? <a href="${pdfUrl}" style="color:#1d4ed8;font-weight:bold;">Download the full PDF</a>.</p>`
     : `<p style="font-size:14px;color:#475569;margin:20px 0 24px 0;text-align:center;">Your full PDF is on its way — we'll follow up shortly.</p>`;
@@ -1019,7 +1020,20 @@ export async function POST(req: NextRequest) {
   </p>
 
   <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:bold;margin:22px 0 4px 0;">Tier 3 · Recommended</div>
-  <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 10px 0;">Build with me — <span style="color:#475569;font-weight:normal;">$22,000 + ~$1,100/month</span></div>
+  <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 14px 0;">I build the AI Operating System for you — <span style="color:#475569;font-weight:normal;">$22,000 + ~$1,100/month operating fees</span></div>
+
+  <div style="background:#eff6ff;border:1px solid #c7d7fe;padding:14px 18px;border-radius:6px;margin:0 0 18px 0;">
+    <p style="font-size:15px;color:#0f172a;margin:0 0 8px 0;">
+      <strong>Your assessment told me exactly what to build for you.</strong> You're personally wearing <strong>${payload.worn_count}</strong> hats. Your staff covers <strong>${payload.staff_count}</strong>. <strong>${payload.vacant_count}</strong> ${seatVerb} sitting empty. Here's how I plug it:
+    </p>
+    <ul style="font-size:15px;padding-left:22px;margin:0 0 8px 0;color:#0f172a;">
+      <li style="margin-bottom:6px;"><strong>${payload.vacant_count} stand-alone AI ${payload.vacant_count === 1 ? "employee" : "employees"}</strong> to fully cover the ${payload.vacant_count === 1 ? "empty seat" : "empty seats"} nobody is running today. They own the job end-to-end.</li>
+      <li style="margin-bottom:0;"><strong>${filledCount} AI executive ${filledCount === 1 ? "assistant" : "assistants"}</strong> paired with you and your staff. Each person keeps their seat — the AI does the heavy lifting around them, so the human can focus on the 20% only a human can do.</li>
+    </ul>
+    <p style="font-size:14px;color:#475569;margin:0;">
+      Twelve AI employees total — the exact org chart your business needs to run without you putting out fires.
+    </p>
+  </div>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
     <strong>The $22,000 one-time fee</strong> works out to <strong>~$${perEmployeeFee.toLocaleString()} per AI employee</strong>, custom-built for your business. Each one is:
@@ -1039,7 +1053,7 @@ export async function POST(req: NextRequest) {
   </ul>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    After year one, that's all you keep paying. No raises. No turnover. No benefits. Costs only go down as AI models get more efficient.
+    After year one, the <strong>$22,000 build fee is paid in full</strong>. All you keep paying is the monthly utility bill — the <strong>tokens</strong> (your AI employees' thinking power) and the <strong>hosting</strong> (the cloud servers they live on). That's <strong>~$1,100/month for twelve professional AI employees</strong> running 24/7. No raises. No turnover. No benefits. No retraining. Costs only go down as AI models get more efficient.
   </p>
 
   <div style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:16px 18px;margin:24px 0;">
