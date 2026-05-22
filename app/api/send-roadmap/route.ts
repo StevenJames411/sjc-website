@@ -807,12 +807,12 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8 }] },
-            `The ~${fmt$(MONTHLY_TOOLING)}/month — your monthly maintenance/utility fee (a utility bill for your AI employees, plus your CTO team)`
+            `The ~${fmt$(MONTHLY_TOOLING)}/month — your monthly maintenance/utility fee (a utility bill for your AI employees, plus your new fractional Chief Technology Officer)`
           ),
           React.createElement(
             Text,
             { style: styles.panelBody },
-            `That works out to ~$${Math.round(MONTHLY_TOOLING / 12)}/month per AI employee to keep all 12 running 24/7 — and that's with a fractional CTO team included. Three things you're paying for:`
+            `That works out to ~$${Math.round(MONTHLY_TOOLING / 12)}/month per AI employee to keep all 12 running 24/7 — and that's with a Chief Technology Officer included. Three things you're paying for:`
           ),
           React.createElement(
             Text,
@@ -827,17 +827,17 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: styles.panelBullet },
-            "• Your CTO team on retainer. Steven James Consulting watches over every AI employee, updates workflows as your business grows, and fixes issues before they cost you money. A team — not a solo consultant — backing your stack 24/7."
+            "• Your new fractional Chief Technology Officer (CTO) — that's Steven James Consulting on 24/7 retainer, keeping your system working. \"Fractional\" means we're an outside vendor working on your behalf, not a full-time hire on your payroll. We watch over every AI employee, update workflows as your business grows, and fix issues before they cost you money."
           ),
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 6 }] },
-            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. All you keep paying is the monthly maintenance/utility bill — tokens, hosting, and your CTO team on retainer. ${fmt$(MONTHLY_TOOLING)}/month for twelve professional AI employees plus a CTO team. No raises. No turnover. No benefits. No retraining.`
+            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. All you keep paying is the monthly maintenance/utility bill — tokens, hosting, and your fractional CTO on retainer. ${fmt$(MONTHLY_TOOLING)}/month for twelve professional AI employees plus a CTO. No raises. No turnover. No benefits. No retraining.`
           ),
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 6 }] },
-            `Here's the math: even the cheapest human role on your 12-seat org chart costs $40,000 a year — $3,333 a month for one entry-level position. That same $40,000 is our list price for the entire build of TWELVE AI employees. One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying ${fmt$(BUILD_FEE_FOUNDER)} for the twelve. Plus ${fmt$(MONTHLY_TOOLING)}/month in maintenance/utilities — that's about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS your CTO team keeping it all running. This is a no-brainer. Only ${FOUNDER_SPOTS_REMAINING} founder spots remain at ${fmt$(BUILD_FEE_FOUNDER)} — after that, this investment moves back to the ${fmt$(BUILD_FEE_LIST)} list price.`
+            `Here's the math: even the cheapest human role on your 12-seat org chart costs $40,000 a year — $3,333 a month for one entry-level position. That same $40,000 is our list price for the entire build of TWELVE AI employees. One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying ${fmt$(BUILD_FEE_FOUNDER)} for the twelve. Plus ${fmt$(MONTHLY_TOOLING)}/month in maintenance/utilities — that's about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS your fractional Chief Technology Officer keeping it all running. This is a no-brainer. Only ${FOUNDER_SPOTS_REMAINING} founder spots remain at ${fmt$(BUILD_FEE_FOUNDER)} — after that, this investment moves back to the ${fmt$(BUILD_FEE_LIST)} list price.`
           ),
 
           React.createElement(
@@ -1244,20 +1244,20 @@ export async function POST(req: NextRequest) {
   </ul>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
-    <strong>The ~$${MONTHLY_TOOLING.toLocaleString()}/month is your monthly maintenance/utility fee — a utility bill for your AI employees, plus your CTO team on retainer.</strong> That works out to <strong>~$${perEmployeeMonthly}/month per AI employee</strong> to keep all 12 running 24/7 — and that's with a CTO team included in the package. Three things you're paying for:
+    <strong>The ~$${MONTHLY_TOOLING.toLocaleString()}/month is your monthly maintenance/utility fee — a utility bill for your AI employees, plus your new fractional Chief Technology Officer (CTO) on retainer.</strong> That works out to <strong>~$${perEmployeeMonthly}/month per AI employee</strong> to keep all 12 running 24/7 — and that's with a Chief Technology Officer included in the package. Three things you're paying for:
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
     <li style="margin-bottom:6px;"><strong>Tokens</strong> — the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower.</li>
     <li style="margin-bottom:6px;"><strong>Hosting</strong> — the cloud servers your AI employees live on. Same as hosting a website — they need a place to run from.</li>
-    <li style="margin-bottom:6px;"><strong>Your CTO team on retainer.</strong> Steven James Consulting watches over every AI employee, updates workflows as your business grows, and fixes issues before they cost you money. A team — not a solo consultant — backing your stack 24/7.</li>
+    <li style="margin-bottom:6px;"><strong>Your new fractional Chief Technology Officer (CTO).</strong> That's Steven James Consulting on 24/7 retainer, keeping your system working. &ldquo;Fractional&rdquo; means we're an outside vendor working on your behalf, not a full-time hire on your payroll. We watch over every AI employee, update workflows as your business grows, and fix issues before they cost you money.</li>
   </ul>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. All you keep paying is the monthly maintenance/utility bill — tokens, hosting, and your CTO team on retainer. That's <strong>~$${MONTHLY_TOOLING.toLocaleString()}/month for twelve professional AI employees plus a fractional CTO team managing them</strong>, running 24/7. No raises. No turnover. No benefits. No retraining.
+    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. All you keep paying is the monthly maintenance/utility bill — tokens, hosting, and your fractional CTO on retainer. That's <strong>~$${MONTHLY_TOOLING.toLocaleString()}/month for twelve professional AI employees plus a fractional CTO managing them</strong>, running 24/7. No raises. No turnover. No benefits. No retraining.
   </p>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    Here's the math: even the cheapest human role on your 12-seat org chart costs <strong>$40,000 a year</strong> — $3,333 a month for one entry-level position. <strong>That same $40,000 is our list price for the entire build of TWELVE AI employees.</strong> One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying <strong>$${BUILD_FEE_FOUNDER.toLocaleString()}</strong> for the twelve. Plus <strong>$${MONTHLY_TOOLING.toLocaleString()}/month in maintenance/utilities</strong> — about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS your CTO team keeping it all running. This is a no-brainer. Only <strong>${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()}</strong> — after that, this investment moves back to the $${BUILD_FEE_LIST.toLocaleString()} list price.
+    Here's the math: even the cheapest human role on your 12-seat org chart costs <strong>$40,000 a year</strong> — $3,333 a month for one entry-level position. <strong>That same $40,000 is our list price for the entire build of TWELVE AI employees.</strong> One human for a year, or twelve AI employees for life — same price. At founder pricing, you're paying <strong>$${BUILD_FEE_FOUNDER.toLocaleString()}</strong> for the twelve. Plus <strong>$${MONTHLY_TOOLING.toLocaleString()}/month in maintenance/utilities</strong> — about half the cost of ONE entry-level human, and you're getting twelve AI employees PLUS your fractional Chief Technology Officer keeping it all running. This is a no-brainer. Only <strong>${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()}</strong> — after that, this investment moves back to the $${BUILD_FEE_LIST.toLocaleString()} list price.
   </p>
 
   <div style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:16px 18px;margin:24px 0;">
