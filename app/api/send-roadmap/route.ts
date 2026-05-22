@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: SUBTLE,
     lineHeight: 1.3,
+    marginBottom: 14,
   },
 
   intro: {
@@ -544,17 +545,19 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
       Page,
       { size: "A4", style: styles.page, wrap: true },
 
-      // Header
+      // Header — fixed so brand + title repeat on every page.
       React.createElement(
         View,
         { style: styles.header, fixed: true },
         React.createElement(Text, { style: styles.brand }, "Steven James Consulting · 12-Role Roadmap"),
-        React.createElement(Text, { style: styles.title }, `${firstName}'s Roadmap`),
-        React.createElement(
-          Text,
-          { style: styles.subtitle },
-          `12-Role Assessment · ${p.total_hours_per_week} hrs/week mapped · ${today}`
-        )
+        React.createElement(Text, { style: styles.title }, `${firstName}'s Roadmap`)
+      ),
+
+      // Page-1 only subtitle (in-flow, not fixed, so it only appears once at the top of page 1)
+      React.createElement(
+        Text,
+        { style: styles.subtitle },
+        `12-Role Assessment · ${p.total_hours_per_week} hrs/week mapped · ${today}`
       ),
 
       // Intro
@@ -750,7 +753,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
                 React.createElement(
                   Text,
                   { style: styles.panelPriceUnit },
-                  `one-time + ~${fmt$(MONTHLY_TOOLING)}/mo`
+                  "one-time build fee investment"
                 )
               )
             ),
@@ -766,7 +769,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
             React.createElement(
               Text,
               { style: [styles.founderNote, { marginBottom: 0 }] },
-              `Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this engagement moves to ${fmt$(BUILD_FEE_LIST)} list.`
+              `Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this investment moves back to the ${fmt$(BUILD_FEE_LIST)} list price.`
             )
           ),
 
@@ -1196,13 +1199,13 @@ export async function POST(req: NextRequest) {
   <div style="margin:0 0 4px 0;">
     <span style="font-size:24px;font-weight:bold;color:#1d4ed8;">$${BUILD_FEE_FOUNDER.toLocaleString()}</span>
     <span style="font-size:16px;color:#94a3b8;text-decoration:line-through;margin-left:10px;">$${BUILD_FEE_LIST.toLocaleString()}</span>
-    <span style="font-size:14px;color:#475569;margin-left:8px;">+ ~$1,100/month operating fees</span>
+    <span style="font-size:14px;color:#475569;margin-left:8px;">one-time build fee investment</span>
   </div>
   <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:11px;font-weight:bold;padding:5px 12px;border-radius:4px;margin:10px 0 6px 0;text-transform:uppercase;letter-spacing:0.8px;">
     Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining
   </div>
   <p style="font-size:13px;color:#475569;font-style:italic;margin:0 0 14px 0;">
-    Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this engagement moves to $${BUILD_FEE_LIST.toLocaleString()} list.
+    Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders to close. After spot #${FOUNDER_SPOTS_REMAINING}, this investment moves back to the $${BUILD_FEE_LIST.toLocaleString()} list price.
   </p>
 
   <div style="background:#eff6ff;border:1px solid #c7d7fe;padding:14px 18px;border-radius:6px;margin:0 0 18px 0;">
