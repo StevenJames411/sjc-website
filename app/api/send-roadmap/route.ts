@@ -763,7 +763,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
                 React.createElement(
                   Text,
                   { style: styles.panelPriceUnit },
-                  `+ ${fmt$(MONTHLY_RETAINER_FOUNDER)}/mo CTO retainer (${fmt$(MONTHLY_RETAINER_LIST)} list)`
+                  `+ ${fmt$(MONTHLY_RETAINER_FOUNDER)}/mo (${fmt$(MONTHLY_RETAINER_LIST)} list) — your fractional Chief Technology Officer (CTO) retainer`
                 ),
                 React.createElement(
                   Text,
@@ -1240,7 +1240,7 @@ export async function POST(req: NextRequest) {
   <div style="font-size:14px;color:#475569;margin:0 0 2px 0;">
     + <strong style="color:#1d4ed8;">$${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month</strong>
     <span style="color:#94a3b8;text-decoration:line-through;margin-left:6px;">$${MONTHLY_RETAINER_LIST.toLocaleString()}</span>
-    <span style="margin-left:6px;">fractional CTO retainer</span>
+    <span style="margin-left:6px;">your fractional Chief Technology Officer (CTO) retainer</span>
   </div>
   <div style="font-size:14px;color:#475569;margin:0 0 8px 0;">
     + <strong style="color:#0f172a;">$${MONTHLY_UTILITY.toLocaleString()}/month</strong> utility (pass-through to vendors at cost, no markup)
