@@ -10,7 +10,10 @@ export const maxDuration = 60;
 const BUILD_FEE = 22000;
 const MONTHLY_TOOLING = 1100;
 const TRADITIONAL_PAYROLL = 532000;
-const BOOKING_URL = "https://www.stevenjamesconsulting.com";
+const WEBSITE_URL = "https://www.stevenjamesconsulting.com";
+const CALENDAR_URL = "https://api.leadconnectorhq.com/widget/bookings/find-your-gap";
+const PHONE_DISPLAY = "(210) 851-4906";
+const PHONE_TEL = "+12108514906";
 // ==================================================================================
 
 type RolePayload = {
@@ -268,6 +271,96 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
   },
 
+  // Pricing intro & tier panels (vertical layout)
+  pricingIntro: {
+    fontSize: 10.5,
+    color: SJC_INK,
+    lineHeight: 1.55,
+    marginBottom: 14,
+  },
+  panel: {
+    marginBottom: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: BORDER,
+  },
+  panelRecommended: {
+    marginBottom: 14,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: SJC_BLUE,
+    backgroundColor: "#eff6ff",
+  },
+  panelHeadRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginBottom: 8,
+  },
+  panelHeadLeft: {
+    flex: 1,
+  },
+  panelEyebrow: {
+    fontSize: 9,
+    color: SUBTLE,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 3,
+  },
+  panelEyebrowRecommended: {
+    fontSize: 9,
+    color: SJC_BLUE,
+    fontFamily: "Helvetica-Bold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 3,
+  },
+  panelTitle: {
+    fontSize: 16,
+    fontFamily: "Helvetica-Bold",
+    color: SJC_INK,
+  },
+  panelPriceWrap: {
+    alignItems: "flex-end",
+  },
+  panelPrice: {
+    fontSize: 20,
+    fontFamily: "Helvetica-Bold",
+    color: SJC_INK,
+  },
+  panelPriceUnit: {
+    fontSize: 9,
+    color: SUBTLE,
+  },
+  panelBody: {
+    fontSize: 10.5,
+    color: SJC_INK,
+    lineHeight: 1.55,
+    marginBottom: 6,
+  },
+  panelBullet: {
+    fontSize: 10,
+    color: SJC_INK,
+    marginLeft: 10,
+    marginBottom: 3,
+    lineHeight: 1.45,
+  },
+  panelCallout: {
+    backgroundColor: "#ffffff",
+    borderLeftWidth: 3,
+    borderLeftColor: SJC_BLUE,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginTop: 8,
+  },
+  panelCalloutText: {
+    fontSize: 10.5,
+    fontFamily: "Helvetica-Bold",
+    color: SJC_INK,
+    lineHeight: 1.4,
+  },
+
   // CTA
   ctaBox: {
     backgroundColor: SJC_BLUE,
@@ -284,8 +377,23 @@ const styles = StyleSheet.create({
   ctaBody: {
     fontSize: 10.5,
     color: "#dbeafe",
-    marginBottom: 10,
+    marginBottom: 12,
     lineHeight: 1.45,
+  },
+  ctaContactRow: {
+    flexDirection: "row",
+    marginBottom: 4,
+    alignItems: "baseline",
+  },
+  ctaContactLabel: {
+    fontSize: 10,
+    color: "#bfdbfe",
+    width: 78,
+  },
+  ctaContactValue: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: "#ffffff",
   },
   ctaLink: {
     fontSize: 11,
@@ -409,11 +517,9 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
         React.createElement(
           Text,
           { style: styles.introBody },
-          `Here's the picture, ${firstName}. You're personally holding ${p.worn_count} ${pluralizeJob(
-            p.worn_count
-          )}. Your current staff handles ${p.staff_count}. And ${p.vacant_count} ${
+          `Here's the picture, ${firstName}. Your business needs 12 roles filled to run without you constantly putting out fires — that's ${p.total_hours_per_week} hours of work per week. You're personally holding ${p.worn_count} of them. Your current staff covers ${p.staff_count}. ${p.vacant_count} ${
             p.vacant_count === 1 ? "seat is" : "seats are"
-          } sitting empty. Below are the three groups, the hours each one demands, and the cost comparison for filling them with a full human team versus an AI-augmented build.`
+          } sitting empty. That's your gap — your blind spots — the work nobody is doing, plus the work you're doing instead of running the business. The next pages show what's in the gap, then three ways to plug it.`
         )
       ),
 
@@ -437,62 +543,219 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
         totalHours: p.vacant_hours_per_week,
       }),
 
-      // Cost comparison
+      // Cost comparison — vertical, layman explanations per tier
       React.createElement(
         View,
         { style: styles.costSection, break: true },
-        React.createElement(Text, { style: styles.sectionHead }, "The three ways to fill the org chart"),
+        React.createElement(Text, { style: styles.sectionHead }, "Three ways to fill YOUR org chart"),
         React.createElement(
           Text,
           { style: styles.sectionSub },
-          "All twelve seats, three different paths. AI augments the team — it doesn't replace it."
+          "AI augments the team — it doesn't replace it. Same 12 seats, three different paths to staffing them."
         ),
         React.createElement(
+          Text,
+          { style: styles.pricingIntro },
+          `Your business needs 12 roles filled. Most founders try to do it with 3, 4, or 5 people — that's the gap, and that's why you're working nights and weekends. Here are the three ways to actually plug it.`
+        ),
+
+        // ===== TIER 1 =====
+        React.createElement(
           View,
-          { style: styles.tierRow },
-          // Tier 1 — Hire 12 humans
+          { style: styles.panel, wrap: false },
           React.createElement(
             View,
-            { style: styles.tier },
-            React.createElement(Text, { style: styles.tierEyebrow }, "Tier 1"),
-            React.createElement(Text, { style: styles.tierName }, "Hire 12 humans"),
-            React.createElement(Text, { style: styles.tierPrice }, fmt$(TRADITIONAL_PAYROLL)),
-            React.createElement(Text, { style: styles.tierPriceUnit }, "per year in payroll"),
-            React.createElement(Text, { style: styles.tierLine }, "• 12 full-time humans, every seat staffed"),
-            React.createElement(Text, { style: styles.tierLine }, "• Hiring, benefits, management overhead"),
-            React.createElement(Text, { style: styles.tierLine }, "• Training cost not even included")
-          ),
-          // Tier 2 — Build it yourself
-          React.createElement(
-            View,
-            { style: styles.tier },
-            React.createElement(Text, { style: styles.tierEyebrow }, "Tier 2"),
-            React.createElement(Text, { style: styles.tierName }, "Build it yourself"),
-            React.createElement(Text, { style: styles.tierPrice }, "$0"),
-            React.createElement(Text, { style: styles.tierPriceUnit }, "build fee — you wire it up"),
-            React.createElement(Text, { style: styles.tierLine }, "• Same 12 seats, you build the AI employees"),
-            React.createElement(Text, { style: styles.tierLine }, "• You learn the stack — hat #13"),
-            React.createElement(Text, { style: styles.tierLine }, "• Costs nothing, if you know how")
-          ),
-          // Tier 3 — Build with Steven
-          React.createElement(
-            View,
-            { style: [styles.tier, styles.tierRecommended] },
-            React.createElement(Text, { style: styles.tierEyebrowBlue }, "Tier 3 · Recommended"),
-            React.createElement(Text, { style: styles.tierName }, "Build with me"),
-            React.createElement(Text, { style: styles.tierPrice }, fmt$(BUILD_FEE)),
+            { style: styles.panelHeadRow },
             React.createElement(
-              Text,
-              { style: styles.tierPriceUnit },
-              `one-time build + ~${fmt$(MONTHLY_TOOLING)}/mo tooling`
+              View,
+              { style: styles.panelHeadLeft },
+              React.createElement(Text, { style: styles.panelEyebrow }, "Tier 1"),
+              React.createElement(Text, { style: styles.panelTitle }, "Hire 12 humans")
             ),
             React.createElement(
+              View,
+              { style: styles.panelPriceWrap },
+              React.createElement(Text, { style: styles.panelPrice }, fmt$(TRADITIONAL_PAYROLL)),
+              React.createElement(Text, { style: styles.panelPriceUnit }, "per year in payroll")
+            )
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBody },
+            "Twelve full-time salaries averaging ~$44K each, plus benefits and payroll overhead. That gets the seats filled — but the $532K is just the starting point."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Training is on top of that. Each new hire takes 60–90 days before they're productive. Industry average is $5K–$15K per employee in lost productivity and onboarding. Across 12 hires that's another $60K–$180K in year one."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• You'll need a manager to manage them. Two managers once you cross 8+ employees."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• ~20% annual turnover is normal. You're not hiring once — you're re-hiring 2–3 of them every year."
+          ),
+          React.createElement(
+            View,
+            { style: styles.panelCallout },
+            React.createElement(
               Text,
-              { style: styles.tierLine },
-              `• 12 AI employees, custom-built (~${fmt$(perEmployee)} each)`
+              { style: styles.panelCalloutText },
+              "Real year-one cost: closer to $700K–$800K once training and management overhead are factored in."
+            )
+          )
+        ),
+
+        // ===== TIER 2 =====
+        React.createElement(
+          View,
+          { style: styles.panel, wrap: false },
+          React.createElement(
+            View,
+            { style: styles.panelHeadRow },
+            React.createElement(
+              View,
+              { style: styles.panelHeadLeft },
+              React.createElement(Text, { style: styles.panelEyebrow }, "Tier 2"),
+              React.createElement(Text, { style: styles.panelTitle }, "Build it yourself")
             ),
-            React.createElement(Text, { style: styles.tierLine }, "• Trained on your brand voice"),
-            React.createElement(Text, { style: styles.tierLine }, "• After year one, just tokens and hosting")
+            React.createElement(
+              View,
+              { style: styles.panelPriceWrap },
+              React.createElement(Text, { style: styles.panelPrice }, "$0"),
+              React.createElement(Text, { style: styles.panelPriceUnit }, "build fee — you wire it up")
+            )
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBody },
+            "You don't pay me. You build all 12 AI employees yourself. That means you become the technical lead for your business. Here's what that actually involves:"
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Learning how to build AI agents that follow instructions reliably and don't make things up."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Wiring up a CRM so your AI employees can read customer info, update records, and communicate with each other and with you."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Connecting email, SMS, calendars, payment systems, and reporting dashboards."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Training each AI employee on your services, pricing, processes, and brand voice."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Maintaining all of it as AI platforms change and your business evolves."
+          ),
+          React.createElement(
+            View,
+            { style: styles.panelCallout },
+            React.createElement(
+              Text,
+              { style: styles.panelCalloutText },
+              `The price says $0. The real price is hat #13 — another 80–100 hours per week you don't have, learning skills it took me years to develop. Free, the same way a free puppy is free.`
+            )
+          )
+        ),
+
+        // ===== TIER 3 =====
+        React.createElement(
+          View,
+          { style: styles.panelRecommended, wrap: false, break: true },
+          React.createElement(
+            View,
+            { style: styles.panelHeadRow },
+            React.createElement(
+              View,
+              { style: styles.panelHeadLeft },
+              React.createElement(Text, { style: styles.panelEyebrowRecommended }, "Tier 3 · Recommended"),
+              React.createElement(Text, { style: styles.panelTitle }, "Build with me")
+            ),
+            React.createElement(
+              View,
+              { style: styles.panelPriceWrap },
+              React.createElement(Text, { style: styles.panelPrice }, fmt$(BUILD_FEE)),
+              React.createElement(
+                Text,
+                { style: styles.panelPriceUnit },
+                `one-time + ~${fmt$(MONTHLY_TOOLING)}/mo`
+              )
+            )
+          ),
+
+          React.createElement(
+            Text,
+            { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 4 }] },
+            `The ${fmt$(BUILD_FEE)} one-time fee`
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBody },
+            `That's ~${fmt$(perEmployee)} per AI employee, custom-built for your business. Each one is:`
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Trained on your brand voice. I sit down with you, capture how you talk to customers — the words you use, the words you'd never use, your tone, your sales style — and bake it into the AI employee. When it messages a prospect, it sounds like you wrote it, not like a generic chatbot."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Trained on your services, pricing, processes, and team. Day one, the AI employee knows your business as well as a 6-month human employee would."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Wired into your CRM, email, calendar, and reporting. They actually do the work — book appointments, follow up on leads, send invoices, surface KPIs — not just answer questions."
+          ),
+
+          React.createElement(
+            Text,
+            { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8 }] },
+            `The ~${fmt$(MONTHLY_TOOLING)}/month`
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBody },
+            `That's ~$${Math.round(MONTHLY_TOOLING / 12)}/month per AI employee to keep all 12 running 24/7 — less than a third of what a part-time virtual assistant costs, and one AI employee does the work of several VAs. Two things you're paying for:`
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Tokens — the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower."
+          ),
+          React.createElement(
+            Text,
+            { style: styles.panelBullet },
+            "• Hosting — the cloud servers your AI employees live on. Same as hosting a website — they need a place to run from."
+          ),
+          React.createElement(
+            Text,
+            { style: [styles.panelBody, { marginTop: 6 }] },
+            "After year one, that's all you keep paying. No raises. No turnover. No benefits. Costs only go down as AI models get more efficient."
+          ),
+
+          React.createElement(
+            View,
+            { style: styles.panelCallout },
+            React.createElement(
+              Text,
+              { style: styles.panelCalloutText },
+              `${fmt$(BUILD_FEE)} to plug the gap. ${fmt$(TRADITIONAL_PAYROLL)} to plug it with humans. Same gap. Same 12 roles. The math isn't close.`
+            )
           )
         )
       ),
@@ -504,14 +767,43 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
         React.createElement(
           Text,
           { style: styles.ctaTitle },
-          "Want to walk through your roadmap together?"
+          "Ready to plug your gap?"
         ),
         React.createElement(
           Text,
           { style: styles.ctaBody },
-          "Bring this PDF to a working call. We'll go seat by seat — the order to fill them, the tooling to use, the KPIs to track. Run with it yourself, or let me execute it for you."
+          "Bring this PDF to a working call. We'll go seat by seat — the order to fill them, the tools to use, the KPIs to track. Run with it yourself, or let me execute it for you."
         ),
-        React.createElement(Link, { src: BOOKING_URL, style: styles.ctaLink }, BOOKING_URL)
+        React.createElement(
+          View,
+          { style: styles.ctaContactRow },
+          React.createElement(Text, { style: styles.ctaContactLabel }, "Book a call:"),
+          React.createElement(
+            Link,
+            { src: CALENDAR_URL, style: styles.ctaLink },
+            "Find Your Gap →"
+          )
+        ),
+        React.createElement(
+          View,
+          { style: styles.ctaContactRow },
+          React.createElement(Text, { style: styles.ctaContactLabel }, "Call direct:"),
+          React.createElement(
+            Link,
+            { src: `tel:${PHONE_TEL}`, style: styles.ctaLink },
+            PHONE_DISPLAY
+          )
+        ),
+        React.createElement(
+          View,
+          { style: styles.ctaContactRow },
+          React.createElement(Text, { style: styles.ctaContactLabel }, "Website:"),
+          React.createElement(
+            Link,
+            { src: WEBSITE_URL, style: styles.ctaLink },
+            "stevenjamesconsulting.com"
+          )
+        )
       ),
 
       // Footer
@@ -680,20 +972,108 @@ export async function POST(req: NextRequest) {
   //    the contact's conversation thread + uses the location's email sender.
   const firstName = payload.firstName || payload.name.split(" ")[0] || "there";
   const subject = `${firstName}, your 12-Role Roadmap`;
-  const pdfLine = pdfUrl
-    ? `<p>Your roadmap is attached as a PDF: <a href="${pdfUrl}">${pdfUrl}</a></p>`
-    : `<p>Your roadmap is on its way — we'll follow up shortly.</p>`;
+  const perEmployeeFee = Math.round(BUILD_FEE / 12);
+  const perEmployeeMonthly = Math.round(MONTHLY_TOOLING / 12);
+  const seatVerb = payload.vacant_count === 1 ? "seat is" : "seats are";
+  const pdfBlock = pdfUrl
+    ? `<p style="font-size:16px;margin:0 0 22px 0;">Your full roadmap is attached as a PDF: <a href="${pdfUrl}" style="color:#1d4ed8;">download here</a>.</p>`
+    : `<p style="font-size:16px;margin:0 0 22px 0;">Your full roadmap is on its way — we'll follow up shortly.</p>`;
+
   const html = `
-<p>Hi ${firstName},</p>
-<p>Here's the picture from your assessment:</p>
-<ul>
-  <li>You're personally holding <strong>${payload.worn_count}</strong> of the 12 roles.</li>
-  <li>A current staff member handles <strong>${payload.staff_count}</strong>.</li>
-  <li><strong>${payload.vacant_count}</strong> ${payload.vacant_count === 1 ? "seat is" : "seats are"} sitting empty.</li>
-</ul>
-${pdfLine}
-<p>The roadmap walks every role, the order to fill them, the tooling to use, and the KPIs to track. Run with it yourself or book a working call and I'll execute it with you: <a href="${BOOKING_URL}">${BOOKING_URL}</a>.</p>
-<p>— Steven<br>Steven James Consulting</p>
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:640px;margin:0 auto;color:#0f172a;line-height:1.6;padding:8px;">
+
+  <div style="border-bottom:2px solid #1d4ed8;padding-bottom:14px;margin-bottom:22px;">
+    <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:6px;">Steven James Consulting · 12-Role Roadmap</div>
+    <h1 style="font-size:24px;font-weight:bold;color:#0f172a;margin:0;line-height:1.2;">${firstName}, your roadmap is ready</h1>
+  </div>
+
+  <p style="font-size:16px;margin:0 0 16px 0;">Hi ${firstName},</p>
+
+  <p style="font-size:16px;margin:0 0 16px 0;">
+    Your assessment exposed your <strong>gap</strong> — the work happening (or not happening) in the 12 roles your business needs to actually run without you putting out fires all day. Here's what we found:
+  </p>
+
+  <ul style="font-size:16px;padding-left:22px;margin:0 0 22px 0;">
+    <li style="margin-bottom:6px;">You're personally holding <strong>${payload.worn_count}</strong> of the 12 roles.</li>
+    <li style="margin-bottom:6px;">A current staff member handles <strong>${payload.staff_count}</strong>.</li>
+    <li style="margin-bottom:6px;"><strong>${payload.vacant_count}</strong> ${seatVerb} sitting empty — nobody is doing this work.</li>
+    <li style="margin-bottom:6px;">Total work mapped: <strong>${payload.total_hours_per_week} hours per week</strong>.</li>
+  </ul>
+
+  <p style="font-size:16px;margin:0 0 22px 0;">
+    Those empty seats — plus the work you're personally absorbing instead of running the business — are your blind spots. The hours not being seen, because you're inside doing them.
+  </p>
+
+  ${pdfBlock}
+
+  <h2 style="font-size:20px;color:#0f172a;margin:28px 0 14px 0;border-top:1px solid #e2e8f0;padding-top:22px;">Three ways to plug your gap</h2>
+
+  <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#475569;margin:18px 0 4px 0;">Tier 1</div>
+  <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 8px 0;">Hire 12 humans — <span style="color:#475569;font-weight:normal;">$532,000/year</span></div>
+  <p style="font-size:15px;margin:0 0 16px 0;">
+    Twelve full-time salaries averaging ~$44K, plus benefits and payroll overhead. That gets the seats filled, but $532K is just the starting point. Training is on top — 60–90 days per hire before they're productive, ~$5K–$15K each in onboarding costs. Across 12 hires that's another $60K–$180K in year one. Add ~20% annual turnover and the manager(s) you'll need to run them, and <strong>real year-one cost lands closer to $700K–$800K</strong>.
+  </p>
+
+  <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#475569;margin:22px 0 4px 0;">Tier 2</div>
+  <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 8px 0;">Build it yourself — <span style="color:#475569;font-weight:normal;">$0 build fee</span></div>
+  <p style="font-size:15px;margin:0 0 16px 0;">
+    You become the technical lead. Learn to build AI agents that follow instructions reliably and don't hallucinate. Wire up a CRM so the AI employees can read customer info, update records, and communicate with each other and with you. Connect email, SMS, calendars, payments, and reporting. Train each AI employee on your services, pricing, processes, and brand voice. Maintain all of it as AI platforms change. The price says zero. The real price is <strong>hat #13 — another 80–100 hours per week</strong> you don't have, learning skills it took me years to develop. Free, the same way a free puppy is free.
+  </p>
+
+  <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:bold;margin:22px 0 4px 0;">Tier 3 · Recommended</div>
+  <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 10px 0;">Build with me — <span style="color:#475569;font-weight:normal;">$22,000 + ~$1,100/month</span></div>
+
+  <p style="font-size:15px;margin:0 0 8px 0;">
+    <strong>The $22,000 one-time fee</strong> works out to <strong>~$${perEmployeeFee.toLocaleString()} per AI employee</strong>, custom-built for your business. Each one is:
+  </p>
+  <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
+    <li style="margin-bottom:6px;"><strong>Trained on your brand voice.</strong> I capture how you talk to customers — the words you use, the words you'd never use, your tone, your sales style — and bake it in. When the AI messages a prospect, it sounds like you wrote it, not like a generic chatbot.</li>
+    <li style="margin-bottom:6px;"><strong>Trained on your business.</strong> Services, pricing, processes, team. Day one, it knows what a 6-month human employee would know.</li>
+    <li style="margin-bottom:6px;"><strong>Wired into your stack.</strong> CRM, email, calendar, reporting — it actually does the work (books appointments, follows up on leads, sends invoices, surfaces KPIs), not just answers questions.</li>
+  </ul>
+
+  <p style="font-size:15px;margin:0 0 8px 0;">
+    <strong>The ~$1,100/month</strong> is <strong>~$${perEmployeeMonthly}/month per AI employee</strong> to keep all 12 running 24/7 — less than a third of what a part-time VA costs, and one AI employee does the work of several VAs. You're paying for two things:
+  </p>
+  <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
+    <li style="margin-bottom:6px;"><strong>Tokens</strong> — the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower.</li>
+    <li style="margin-bottom:6px;"><strong>Hosting</strong> — the cloud servers your AI employees live on. Same as hosting a website — they need a place to run from.</li>
+  </ul>
+
+  <p style="font-size:15px;margin:0 0 16px 0;">
+    After year one, that's all you keep paying. No raises. No turnover. No benefits. Costs only go down as AI models get more efficient.
+  </p>
+
+  <div style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:16px 18px;margin:24px 0;">
+    <p style="font-size:17px;font-weight:bold;color:#0f172a;margin:0;line-height:1.45;">
+      $22,000 to plug the gap. $532,000 to plug it with humans. Same gap. Same 12 roles. The math isn't close.
+    </p>
+  </div>
+
+  <div style="background:#1d4ed8;border-radius:8px;padding:24px;margin:28px 0;color:#ffffff;">
+    <h2 style="font-size:19px;font-weight:bold;color:#ffffff;margin:0 0 8px 0;">Ready to plug your gap?</h2>
+    <p style="font-size:15px;color:#dbeafe;margin:0 0 18px 0;line-height:1.5;">
+      Bring this PDF to a working call. We'll go seat by seat — the order to fill them, the tools to use, the KPIs to track. Run with it yourself, or let me execute it with you.
+    </p>
+    <p style="margin:0;">
+      <a href="${CALENDAR_URL}" style="display:inline-block;background:#ffffff;color:#1d4ed8;padding:12px 22px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;">Find Your Gap →</a>
+    </p>
+    <p style="font-size:14px;color:#dbeafe;margin:16px 0 0 0;">
+      Or call me direct: <a href="tel:${PHONE_TEL}" style="color:#ffffff;font-weight:bold;text-decoration:underline;">${PHONE_DISPLAY}</a>
+    </p>
+  </div>
+
+  <div style="border-top:1px solid #e2e8f0;padding-top:20px;margin-top:32px;font-size:14px;color:#475569;line-height:1.7;">
+    <p style="margin:0 0 2px 0;"><strong style="color:#0f172a;font-size:15px;">Steven Barchetti</strong></p>
+    <p style="margin:0 0 10px 0;">Steven James Consulting</p>
+    <p style="margin:0;">
+      Call direct: <a href="tel:${PHONE_TEL}" style="color:#1d4ed8;text-decoration:none;">${PHONE_DISPLAY}</a><br>
+      Book a call: <a href="${CALENDAR_URL}" style="color:#1d4ed8;text-decoration:none;">Find Your Gap</a><br>
+      Website: <a href="${WEBSITE_URL}" style="color:#1d4ed8;text-decoration:none;">stevenjamesconsulting.com</a>
+    </p>
+  </div>
+
+</div>
 `.trim();
 
   try {
