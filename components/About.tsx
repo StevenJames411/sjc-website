@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function About() {
   return (
-    <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
+    <section className="bg-white">
       <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-[1.4fr_1fr] md:items-center md:py-24">
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]">
@@ -14,8 +14,8 @@ export default function About() {
           <div className="mt-6 space-y-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
             <p>
               I&apos;m Steven Barchetti. I&apos;ve been the tech lead in my own businesses for 40 years.
-              Five different companies across five industries &mdash; a restaurant in 1986, a mortgage company,
-              a roofing contractor, a trucking company I ran for 20 years, and now this.
+              Five different companies across five industries &mdash; a restaurant in 1986, a mortgage
+              company, a roofing contractor, a trucking company I ran for 20 years, and now this.
             </p>
             <p>
               In every single one, I was great at the work &mdash; and stuck running every other job in the
@@ -56,8 +56,8 @@ export default function About() {
             className="w-52 rounded-xl shadow-lg md:w-60"
           />
           <div className="mt-4 w-52 text-center md:w-60">
-            <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">CTO</p>
-            <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">Systems Engineer</p>
+            <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">Founder</p>
+            <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">40-Year Tech Lead</p>
           </div>
         </div>
       </div>

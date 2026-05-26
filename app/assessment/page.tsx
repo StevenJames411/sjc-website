@@ -279,6 +279,9 @@ function IntroSection({ onStart }: { onStart: () => void }) {
           Twelve roles every business needs to run without you. Let&apos;s count yours.
         </h1>
         <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
+          <p className="font-semibold text-[color:var(--color-sjc-blue)]">
+            Want to see where you stand before talking to us? Walk through the twelve roles yourself.
+          </p>
           <p>
             When you opened your business, you knew you were the best at the work. You were never
             supposed to be the marketer, the bookkeeper, the scheduler too &mdash; that just happened
@@ -556,7 +559,7 @@ function ResultsSection({ answers, yesCount, nobodyCount, onContinue }: ResultsP
           </p>
         </div>
 
-        <div className="mt-10 flex justify-center">
+        <div className="mt-10 flex flex-col items-center gap-4">
           <button
             onClick={onContinue}
             className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-8 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-[color:var(--color-sjc-green)]"
@@ -566,6 +569,12 @@ function ResultsSection({ answers, yesCount, nobodyCount, onContinue }: ResultsP
               <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+          <a
+            href="#intake"
+            className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
+          >
+            Or skip the email and book a call now
+          </a>
         </div>
       </div>
     </section>

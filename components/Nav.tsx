@@ -7,7 +7,7 @@ const LOGO_URL =
 
 const NAV_LINKS = [
   { href: "/discover-the-lies", label: "Discover the Lies" },
-  { href: "/faqs", label: "FAQs" },
+  { href: "/case-study", label: "Case Study" },
   { href: "/about", label: "About" },
 ];
 
@@ -33,10 +33,10 @@ export default function Nav() {
             </a>
           ))}
           <a
-            href="/assessment"
+            href="#intake"
             className="rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--color-sjc-green)]"
           >
-            Find Your Gap &rarr;
+            Book an Intake Call &rarr;
           </a>
         </nav>
 
@@ -76,11 +76,11 @@ export default function Nav() {
               </a>
             ))}
             <a
-              href="/assessment"
+              href="#intake"
               onClick={() => setOpen(false)}
               className="mt-5 rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-3 text-center text-base font-semibold text-white shadow-sm"
             >
-              Find Your Gap &rarr;
+              Book an Intake Call &rarr;
             </a>
           </div>
         </nav>

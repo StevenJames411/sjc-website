@@ -2,6 +2,7 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import CtaButton from "@/components/CtaButton";
+import CaseStudyCallout from "@/components/CaseStudyCallout";
 
 export type PainPageProps = {
   eyebrow: string;
@@ -86,15 +87,29 @@ export default function PainPage(props: PainPageProps) {
             <p className="mt-10 text-xl font-bold leading-snug text-[color:var(--color-sjc-blue)] md:text-2xl">
               {props.closer}
             </p>
+
+            {/* Case Study Zero teaser */}
+            <div className="mt-10">
+              <CaseStudyCallout />
+            </div>
+
             <div className="mt-10 flex justify-center">
               <CtaButton title={props.ctaTitle} subtitle={props.ctaSubtitle} />
+            </div>
+            <div className="mt-4 text-center">
+              <Link
+                href="/assessment"
+                className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
+              >
+                Or take the self-service assessment
+              </Link>
             </div>
             <div className="mt-12 text-center">
               <Link
                 href="/discover-the-lies"
                 className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
               >
-                ← Back to the other lies
+                &larr; Back to the other lies
               </Link>
             </div>
           </div>

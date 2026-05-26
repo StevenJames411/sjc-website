@@ -31,7 +31,7 @@ export default function MasterTrap() {
       ]}
       closer="The Master who opened the business gets to be the Master again."
       ctaTitle="Stuck being the Master AND the business?"
-      ctaSubtitle="Find the seats keeping you in the technician chair. Take the assessment."
+      ctaSubtitle="Book an intake call. We'll show you the way out."
     />
   );
 }

@@ -1,6 +1,4 @@
-import CostComparisonChart from "./CostComparisonChart";
-
-export default function PerfectStorm() {
+export default function GerberTrifecta() {
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
       <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
@@ -18,7 +16,7 @@ export default function PerfectStorm() {
           </p>
         </div>
 
-        {/* The Trifecta */}
+        {/* The Trifecta — lead with what you GET, not who prescribed it */}
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           <div className="rounded-2xl border border-gray-200 bg-white p-7 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-blue)]">
@@ -28,8 +26,9 @@ export default function PerfectStorm() {
               Rock star talent &mdash; cloned from you.
             </h3>
             <p className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)]">
-              Your voice. Your judgment calls. Your way of handling customers. Captured, trained,
-              and deployed &mdash; so your best employees sound exactly like you on your best day.
+              Your voice. Your judgment calls. Your way of handling customers. Captured from your
+              actual recorded calls &mdash; not a template &mdash; and deployed so your best employees
+              sound exactly like you on your best day.
             </p>
           </div>
 
@@ -41,8 +40,9 @@ export default function PerfectStorm() {
               Unbreakable systems running 24/7.
             </h3>
             <p className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)]">
-              They don&apos;t quit. They don&apos;t get sick. They don&apos;t forget. They follow the
-              playbook every single time &mdash; and they compound, getting sharper every week they run.
+              They don&apos;t quit. They don&apos;t get sick. They don&apos;t forget. Position
+              contracts, guardrails, and monitoring &mdash; they follow the playbook every single
+              time and compound, getting sharper every week they run.
             </p>
           </div>
 
@@ -64,10 +64,11 @@ export default function PerfectStorm() {
         <div className="mt-12 rounded-2xl border border-gray-200 bg-white p-8 md:p-10">
           <div className="space-y-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
             <p>
-              Michael Gerber prescribed exactly this 40 years ago in{" "}
-              <em>The E-Myth Revisited</em>. He was right about the prescription &mdash; build
-              systems, fill every seat, treat your business like a franchise prototype that runs
-              without you.
+              A guy named Michael Gerber prescribed exactly this 40 years ago in a book called{" "}
+              <em>The E-Myth Revisited</em> &mdash; the most influential book ever written about
+              small business, over 5 million copies sold. He was right about the prescription:
+              build systems, fill every seat, treat your business like a franchise prototype that
+              runs without you.
             </p>
             <p>
               But his only mechanism was hiring humans. That meant the small business owner who
@@ -75,27 +76,12 @@ export default function PerfectStorm() {
             </p>
             <p className="font-semibold">
               Now you get both the rock star AND the system &mdash; and the price tag just collapsed
-              from half a million dollars a year to a fraction of one employee&apos;s salary.
+              from half a million dollars a year to a fraction of one employee&apos;s salary. We
+              call them AI employees. Not chatbots. Not copilots. Employees that hold a role,
+              follow a position contract, execute the work end to end, and report back when
+              it&apos;s done.
             </p>
           </div>
-        </div>
-
-        {/* Name the mechanism */}
-        <div className="mt-12 space-y-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-          <p>
-            We call them <strong>AI employees</strong>. Not chatbots. Not copilots. Not tools you
-            have to babysit. Employees that hold a role, follow a position contract, execute the work
-            end to end, and report back when it&apos;s done &mdash; the same way a human employee would.
-          </p>
-          <p>
-            We install the org chart your business should already have, and put an AI employee behind
-            every seat. <strong>Your role becomes managing the org chart &mdash; not doing the work.</strong>
-          </p>
-        </div>
-
-        {/* Cost comparison */}
-        <div className="mt-12">
-          <CostComparisonChart />
         </div>
       </div>
     </section>

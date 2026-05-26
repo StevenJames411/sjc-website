@@ -1,39 +1,39 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import CtaButton from "@/components/CtaButton";
+import Link from "next/link";
 
 const FAQS = [
   {
-    q: "What does the assessment actually give me?",
-    a: "A few minutes of questions about the twelve roles every business needs to run without you. You'll see which jobs are landing on your plate, which your current staff handles, and which are sitting vacant. Then I email you the full roadmap — every seat, every move, the path to take each one off your plate. Yours to keep, whether we work together or not.",
+    q: "What exactly do you install?",
+    a: "An AI Employee Operating System — 5-6 AI employees covering the seats in your org chart that are either empty or sitting on the owner's plate. 2-3 of those are superhuman seats, cloned from your actual talent (sales calls, customer interactions, objection handling). The rest are utility seats (scheduling, follow-up, admin). Every employee is wired into your existing tools — CRM, calendar, email, pipeline.",
   },
   {
     q: "What does this cost?",
-    a: "Assessment: free. Email roadmap: free. The build itself is priced per scope — usually a one-time installation fee plus monthly tooling that runs you a fraction of what those salaries would cost. No SaaS lock-in. No agency-forever traps. I'll quote real numbers after I see your assessment.",
+    a: "$40-70K for the install, depending on scope. $3-5K/month retainer for ongoing maintenance. One year of an executive assistant's salary buys you an entire org chart. No SaaS lock-in. No agency-forever traps. The technology we install is yours.",
   },
   {
-    q: "What if I already have a team?",
-    a: "Even better. AI sits as a layer above your humans — they keep doing the work that takes judgment (closing, creating, deciding) while AI absorbs the routine that's eating their week. Your team does more without costing more. Nobody gets laid off.",
+    q: "How is this different from hiring a VA or buying ChatGPT?",
+    a: "A VA replaces tasks. ChatGPT is a chat window. We install an operating system. Position contracts per role, monitoring, repair routines, and full integration into your tools. The AI employees don't just answer questions — they sell, they book, they follow up, they report. And they carry the owner's actual brain, not a generic template.",
   },
   {
-    q: "Won't AI replace ME?",
-    a: "No. AI replaces the work you don't want to be doing — inbox, scheduling, first drafts, routine follow-up. What it doesn't replace: your judgment, your taste, your relationships, your strategic calls. You stay CEO. Everything else gets covered.",
-  },
-  {
-    q: "How is this different from buying ChatGPT and figuring it out myself?",
-    a: "ChatGPT is a chat window. I install an operating system — position contracts per role, monitoring, repair routines, and full integration into your CRM, email, calendar, and pipeline. The DIY path is real, and it's hat number thirteen — you're now in the org-chart-building business on top of running your actual business. I do the build so you don't have to.",
-  },
-  {
-    q: "Isn't this just hiring a VA?",
-    a: "VAs replace tasks. AI replaces seats. VAs need training, management, schedules, and have human limits. AI employees follow position contracts, scale instantly, and live inside the tools you already use. VAs are humans. AI is infrastructure.",
+    q: "What do you mean by 'cloned from the owner'?",
+    a: "We extract the owner's recorded sales calls, customer interactions, and decision-making patterns — sometimes millions of characters of real transcripts. We train the AI employee on that material. The result sounds like the owner personally trained her, because he did. But the clone is curated — we absorb the best qualities and filter out the liability. The AI knows everything the owner knows, but it only says what it should say.",
   },
   {
     q: "How long does the install take?",
-    a: "Most builds run 4–8 weeks depending on scope. I don't drag projects out — every week you're still wearing the hats is a week the business depends on you to function. We move fast.",
+    a: "4-8 weeks depending on scope. We don't drag projects out. Every week you're still wearing the hats is a week the business depends on you to function.",
   },
   {
-    q: "Doesn't Gerber say I need a real team?",
-    a: "He wrote The E-Myth in 1986. The principle — build systems so the business runs without you — is right. The mechanism — hire humans into seats — was the only option then. In 2026, AI employees fill those seats following the same position contracts. Same org chart, same accountability, no payroll, no turnover, no HR.",
+    q: "What happens if I want to leave?",
+    a: "Everything we build is yours. Every vendor is swappable. There is zero lock-in. You can take the entire system to another provider, run it yourself, or shut it down. The retainer covers our ongoing maintenance — cancel it and the system still works, you just maintain it yourself.",
+  },
+  {
+    q: "Will this increase my exit valuation?",
+    a: "Yes. The biggest risk buyers see in small businesses is owner dependency. An operating system with documented position contracts, modular architecture, and commodity vendors removes that risk. The org chart runs without the owner. The system IS the asset.",
+  },
+  {
+    q: "Who is this for?",
+    a: "Founder-led businesses doing $1-2M in revenue. You've got humans who are good at what they do, but leads are slipping, follow-up is inconsistent, and the owner is still wearing too many hats. If your business would implode without you for 90 days, this is for you.",
   },
 ];
 
@@ -48,10 +48,10 @@ export default function FAQs() {
               FAQs
             </p>
             <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-              Questions before you find your gap.
+              Questions before you book.
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-              The assessment shows you which of the twelve roles you&apos;re wearing, which your team covers, and which are sitting vacant. Here&apos;s what people ask before they take it.
+              Everything you need to know about what we install, what it costs, and how it works.
             </p>
           </div>
         </section>
@@ -76,13 +76,25 @@ export default function FAQs() {
         <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
           <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-20">
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              Ready to find your gap?
+              Ready to see what your org chart should look like?
             </h2>
             <p className="mt-4 text-base text-[color:var(--color-sjc-ink)] md:text-lg">
-              Take the assessment. You&apos;ll see exactly which seats you&apos;re still wearing &mdash; and get the roadmap to hand each one off.
+              Book an intake call. We&apos;ll identify which seats need filling, which
+              need clones vs. utilities, and what the install looks like for your specific business.
             </p>
-            <div className="mt-8 flex justify-center">
-              <CtaButton />
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <a
+                href="#intake"
+                className="btn-cta"
+              >
+                <span>Book an Intake Call</span>
+              </a>
+              <Link
+                href="/assessment"
+                className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
+              >
+                Or take the self-service assessment
+              </Link>
             </div>
           </div>
         </section>

@@ -30,8 +30,8 @@ export default function About() {
                 className="w-52 rounded-xl shadow-lg md:w-60"
               />
               <div className="mt-4 w-52 text-center md:w-60">
-                <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">CTO</p>
-                <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">Systems Engineer</p>
+                <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">Founder</p>
+                <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">40-Year Tech Lead</p>
               </div>
             </div>
           </div>
@@ -49,11 +49,11 @@ export default function About() {
                 I&apos;m writing about them because I fell for every one of them.
               </p>
               <p>
-                My first business was a restaurant in 1986. Then a mortgage company. Then six years running
-                roofing crews &mdash; bidding jobs, ordering materials, replacing roofs. Then a trucking
-                company I ran for 20 years. In every single one, two things were true: I was great at the
-                actual work, and I was also the guy who built the websites, set up the CRMs, fixed the email
-                systems. The technician AND the tech lead. Same person, wearing every hat.
+                My first business was a restaurant in 1986. Then a mortgage company with my brother. Then
+                six years of roofing &mdash; bidding jobs, ordering materials, managing crews. Then a
+                trucking company I ran for 20 years. In every single business, two things were true: I was
+                great at the actual work, and I was also the guy who built the websites, set up the CRMs,
+                fixed the email systems. The technician AND the tech lead. Same person, wearing every hat.
               </p>
               <p>
                 The lie was the same every time. I&apos;d be great at the craft. Then I&apos;d open my own
@@ -114,20 +114,20 @@ export default function About() {
               <p>
                 I&apos;m not talking about a chatbot that answers questions. I&apos;m talking about an
                 employee that runs an entire role end to end &mdash; receives a task, breaks it into steps,
-                executes each one, checks its own work, and reports back when it&apos;s done. The same way
-                a human employee would.
+                executes each one, checks its own work, and reports back when it&apos;s done. The same way a
+                human employee would.
               </p>
               <p>
-                They don&apos;t quit. They don&apos;t get poached. They don&apos;t burn out. They compound &mdash;
-                every month they&apos;re a little better than the last, because the training from last
-                quarter is still inside them.
+                They don&apos;t quit. They don&apos;t get poached. They don&apos;t burn out. They
+                compound &mdash; every month they&apos;re a little better than the last, because the
+                training from last quarter is still inside them.
               </p>
               <p>
                 Here&apos;s what that does to the math. Filling a real org chart with human employees has
-                always been the bottleneck &mdash; not because the people aren&apos;t worth it, but because there
-                isn&apos;t enough revenue early on to support the payroll. Most small businesses never built a
-                real org chart at all, because the price tag was a number they could never reach. That wasn&apos;t
-                a leadership failure. It was a math problem.
+                always been the bottleneck &mdash; not because the people aren&apos;t worth it, but because
+                there isn&apos;t enough revenue early on to support the payroll. Most small businesses never
+                built a real org chart at all, because the price tag was a number they could never reach.
+                That wasn&apos;t a leadership failure. It was a math problem.
               </p>
             </div>
 
@@ -143,16 +143,10 @@ export default function About() {
               </p>
               <p>
                 Now that the cost has collapsed, a solo entrepreneur could afford five of these systems
-                if they wanted to. The bottleneck has moved. The new problem isn&apos;t affording the team
-                &mdash; it&apos;s finding someone capable of installing it. Most people calling themselves
-                consultants right now are reselling tools. The talent to actually build an AI employee
-                org chart end to end is rare, and the few of us who do it are filling up fast.
-              </p>
-              <p>
-                This isn&apos;t a marginal improvement. It&apos;s a generational shift in what a small
-                business can afford to be. My own career as a systems engineer is only possible because
-                of what&apos;s happened in the last 24 months. I&apos;m not hyping it. The numbers in
-                that chart are why I have a business to offer at all.
+                if they wanted to. The bottleneck has moved. The new problem isn&apos;t affording the
+                team &mdash; it&apos;s finding someone capable of installing it. Most people calling
+                themselves consultants right now are reselling tools. The talent to actually build an AI
+                employee org chart end to end is rare, and the few of us who do it are filling up fast.
               </p>
               <div
                 id="the-perfect-storm"
@@ -162,12 +156,12 @@ export default function About() {
                   The Perfect Storm.
                 </h3>
                 <p className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-                  Over the last 24 months, the landscape has matured enough to launch this new
-                  org chart. I&apos;ve watched the space evolve through chatbots, voicebots,
-                  website builders, and so forth. The tools have finally come together enough that I
-                  can build a real modular system for a small business &mdash; and when a tool becomes
-                  obsolete, we swap it out and your system keeps humming along in the background.
-                  That&apos;s a true first-principles systems engineering approach.
+                  Over the last 24 months, the landscape has matured enough to launch this. I&apos;ve
+                  watched the space evolve through chatbots, voicebots, website builders, and so forth.
+                  The tools have finally come together enough that I can build a real modular system for
+                  a small business &mdash; and when a tool becomes obsolete, we swap it out and your
+                  system keeps humming along in the background. That&apos;s a true first-principles
+                  systems engineering approach.
                 </p>
               </div>
             </div>
@@ -182,17 +176,21 @@ export default function About() {
             </h2>
             <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
               <p>
-                I&apos;ve been a systems engineer since I was a kid tearing apart motorcycles between races,
-                staring at the manufacturer&apos;s choices and asking:{" "}
-                <em>why the hell did they put it together like this?</em> The engineers who designed it
-                didn&apos;t care about my time. They built it the way it had always been built.
+                I&apos;ve been a systems engineer across five businesses and forty years. I just
+                didn&apos;t know what to call it.
+              </p>
+              <p>
+                Racing my own motorcycles, I&apos;d tear the whole bike apart between races to keep it in
+                top condition. Every time I did, I&apos;d find myself staring at the manufacturer&apos;s
+                choices and asking the same question: <em>why the hell did they put it together like
+                this?</em> The engineers who designed it didn&apos;t care about my time. They built it the
+                way it had always been built.
               </p>
               <p>
                 That question &mdash; <em>why is this done this way, and how should it be done?</em> &mdash;
                 has followed me through every business I&apos;ve worked in since. An org chart is a system.
                 A sales process is a system. A hiring process is a system. I could always <em>see</em> those
-                systems, in every business. I just couldn&apos;t install them at scale on my own &mdash; not
-                without a team of engineers I couldn&apos;t afford.
+                systems, in every business. I just couldn&apos;t install them at scale on my own.
               </p>
               <p>
                 That&apos;s what changed. The tools got good enough to be the team of engineers. Now I can
@@ -200,11 +198,8 @@ export default function About() {
               </p>
               <p>
                 Steven James Consulting runs on its own AI employee org chart. Every seat except CEO is an
-                AI employee. That&apos;s not a future plan; it&apos;s how the work for clients gets done
-                today. When I install the same system for you, I&apos;m installing what I already run on
-                myself. The shape of your org chart will look a little different &mdash; some seats wearing
-                multiple hats, sized to your business &mdash; but the structure is the same one every successful
-                company uses.
+                AI employee. That&apos;s not a future plan; it&apos;s how the work gets done today. When I
+                install the same system for you, I&apos;m installing what I already run on myself.
               </p>
             </div>
           </div>
@@ -216,59 +211,38 @@ export default function About() {
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
               Who this is for.
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-              I work with two kinds of businesses.
-            </p>
-
-            <div className="mt-8 grid gap-6 md:grid-cols-2">
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 md:p-7">
-                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[color:var(--color-sjc-blue)]">
-                  The Solo Entrepreneur
-                </p>
-                <p className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-                  You&apos;re doing every job in the company yourself. I install the full org chart
-                  around you &mdash; AI employees in every seat &mdash; so you stop being the marketing
-                  department, the sales department, operations, and customer service all at once.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 md:p-7">
-                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[color:var(--color-sjc-blue)]">
-                  The Small Team (3&ndash;5 people)
-                </p>
-                <p className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-                  You&apos;ve got a real team, but you&apos;re still outsized by much larger competitors.
-                  I give every person on your team their own AI assistant. Now your 3&ndash;5 humans can
-                  output like a company many times your size &mdash; and compete on a different field
-                  entirely.
-                </p>
-              </div>
+            <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
+              <p>
+                Founder-led businesses doing $1-2M in revenue. You&apos;ve got humans &mdash; they&apos;re
+                good. But leads are slipping through the cracks because nobody&apos;s working them fast
+                enough. The org chart has gaps nobody&apos;s filling. The AI employees don&apos;t replace
+                your people &mdash; they give every human seat a counterpart that handles the volume.
+              </p>
             </div>
           </div>
         </section>
 
-        {/* Section 7 — Assessment teaser */}
+        {/* Section 7 — Intake call CTA */}
         <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
           <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              Ready to see what your org chart actually looks like?
+              Ready to see what your org chart should look like?
             </h2>
             <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
               <p>
-                You&apos;re a rock star at the work. I&apos;m a rock star at the systems behind it.
-                For the first time, we can actually team up &mdash; which means you stop wearing
-                every hat, get back to the work you opened the doors to do, and finally get the
-                time, the money, the legacy you opened it for.
-              </p>
-              <p>
-                The assessment maps your company seat by seat. You walk away with a full plan
-                &mdash; every role, every cost, every move. Build it with me, or build it yourself
-                if you want another hat to wear.
+                Book an intake call. We&apos;ll identify which seats need filling, which need
+                clones vs. utilities, and what the install looks like for your specific business.
               </p>
             </div>
-            <div className="mt-8 flex justify-center">
-              <Link href="/assessment" className="btn-cta">
-                <span>Take the Assessment &rarr;</span>
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <a href="#intake" className="btn-cta">
+                <span>Book an Intake Call</span>
+              </a>
+              <Link
+                href="/assessment"
+                className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
+              >
+                Or take the self-service assessment
               </Link>
             </div>
           </div>

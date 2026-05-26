@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.stevenjamesconsulting.com"),
   title: "Steven James Consulting — The Org Chart Your Business Should Already Have",
   description:
-    "You're wearing every hat in the company. We install the full org chart — AI employees in every seat — so your business runs without you. Built by a founder who's been in the trap for 40 years.",
+    "You're wearing every hat in the company. We install the full org chart — AI employees in every seat, cloned from your best talent — so your business runs without you. $40-70K install. $3-5K/month retainer.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Steven James Consulting — Build the Org Chart That Runs Without You",
     description:
-      "You're wearing every hat. We install AI employees in every seat so your business runs without you.",
+      "You're wearing every hat. We install the org chart your business should already have — every seat filled, cloned from your best talent. $40-70K install. $3-5K/month retainer.",
     url: "https://www.stevenjamesconsulting.com",
     siteName: "Steven James Consulting",
     type: "website",
@@ -37,19 +37,25 @@ const organizationSchema = {
   telephone: "+1-210-298-2343",
   founder: { "@type": "Person", name: "Steven Barchetti" },
   description:
-    "Systems engineer and fractional CTO who installs AI employee org charts for solo entrepreneurs trapped in their own business.",
+    "Systems engineer and fractional CTO who installs AI employee org charts for solo entrepreneurs trapped in their own business. 40 years of founder experience across 5 industries.",
 };
 
 const serviceSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
-  name: "AI Employee Org Chart Installation",
-  serviceType: "AI Implementation Consulting",
+  name: "AI Employee Operating System Installation",
+  serviceType: "AI Employee Operating System",
   provider: { "@type": "Organization", name: "Steven James Consulting" },
   areaServed: "United States",
   description:
-    "We audit your business seat by seat, then install AI employees trained on your voice and process into every role — so your business runs without you.",
-  offers: { "@type": "Offer", price: "40000", priceCurrency: "USD" },
+    "Custom AI employee installation — 5-6 AI employees covering your org chart, cloned from the owner's actual talent. $40-70K install, $3-5K/month retainer. 4-8 week build.",
+  offers: {
+    "@type": "AggregateOffer",
+    lowPrice: "40000",
+    highPrice: "70000",
+    priceCurrency: "USD",
+    offerCount: "1",
+  },
 };
 
 const faqSchema = {
@@ -58,26 +64,26 @@ const faqSchema = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "What is an AI employee org chart?",
+      name: "What exactly do you install?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The twelve roles every business needs to run without the owner — from executive assistant to marketing to bookkeeping — filled by AI employees instead of human hires. Same org chart, same accountability, a fraction of the cost.",
+        text: "An AI employee org chart — 5-6 AI employees covering the seats that are either empty or sitting on the owner's plate. 2-3 superhuman seats cloned from your actual talent, plus utility seats for scheduling, follow-up, and admin. Wired into your CRM, calendar, email, and pipeline.",
       },
     },
     {
       "@type": "Question",
-      name: "Who is this for?",
+      name: "What does this cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Solo entrepreneurs and small teams doing between one and two million in revenue who are stuck wearing every hat in the company. If your business can't function without you showing up every day, this is the fix.",
+        text: "$40-70K for the install, depending on scope. $3-5K/month retainer for ongoing maintenance. One year of an executive assistant's salary buys you an entire org chart. No SaaS lock-in. No agency-forever traps.",
       },
     },
     {
       "@type": "Question",
-      name: "How is this different from buying ChatGPT?",
+      name: "How long does the install take?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "ChatGPT is a chat window. We install an operating system — position contracts per role, monitoring, repair routines, and full integration into your existing tools. The DIY path is real, but it's hat number thirteen.",
+        text: "4-8 weeks depending on scope. Every week you're still wearing the hats is a week the business depends on you to function.",
       },
     },
   ],

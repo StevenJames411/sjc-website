@@ -16,8 +16,9 @@ export default function Footer() {
               <span className="text-lg font-semibold">Steven James Consulting</span>
             </div>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">
-              We install the org chart your business should already have &mdash; every seat filled
-              by an AI employee &mdash; so your business runs without you.
+              We install the org chart your business should already have &mdash; every seat
+              filled, cloned from your best talent, not from a template. Your business runs
+              without you.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a
@@ -51,6 +52,9 @@ export default function Footer() {
                 <a href="/discover-the-lies" className="text-white/80 hover:text-white">Discover the Lies</a>
               </li>
               <li>
+                <a href="/case-study" className="text-white/80 hover:text-white">Case Study</a>
+              </li>
+              <li>
                 <a href="/about" className="text-white/80 hover:text-white">About</a>
               </li>
             </ul>
@@ -63,7 +67,7 @@ export default function Footer() {
                 <a href="/faqs" className="text-white/80 hover:text-white">FAQs</a>
               </li>
               <li>
-                <a href="/assessment" className="text-white/80 hover:text-white">Find Your Gap</a>
+                <a href="#intake" className="text-white/80 hover:text-white">Book an Intake Call</a>
               </li>
               <li>
                 <a href="mailto:support@stevenjamesconsulting.com" className="text-white/80 hover:text-white">

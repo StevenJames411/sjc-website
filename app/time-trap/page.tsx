@@ -31,7 +31,7 @@ export default function TimeTrap() {
       ]}
       closer="30 days off isn't a fantasy. It's an org chart problem."
       ctaTitle="Want your time back?"
-      ctaSubtitle="Find the seats eating your week. Take the assessment."
+      ctaSubtitle="Book an intake call. We'll show you the way out."
     />
   );
 }
