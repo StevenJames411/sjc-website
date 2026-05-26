@@ -6,7 +6,7 @@ export default function Hero() {
           If you were hospitalized tomorrow, would your business be open in 90 days?
         </h1>
         <p className="mt-5 text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl">
-          Most small businesses can&apos;t survive without the owner. We fix that.
+          You&apos;re one accident away from letting your family down.
         </p>
 
         <div className="mt-10 overflow-hidden rounded-2xl shadow-lg">
