@@ -19,14 +19,15 @@ export default function OfferSection() {
             wired into your existing tools, running 24/7.
           </p>
           <p>
-            <strong>The install: $40-70K</strong> (depends on scope &mdash; how many seats, how
-            much transcript extraction, how complex your tech stack). This is a one-time build.
-            Your AI employees are trained on your business, your voice, your processes.
-            They&apos;re wired into your CRM, calendar, email, and pipeline. They actually do
-            the work &mdash; book appointments, follow up on leads, handle objections, surface KPIs.
+            <strong>The install</strong> is a one-time build. The investment depends on scope
+            &mdash; how many seats, how much transcript extraction, how complex your tech
+            stack. We cover all of that on a discovery call. Your AI employees are trained on
+            your business, your voice, your processes. They&apos;re wired into your CRM,
+            calendar, email, and pipeline. They actually do the work &mdash; book appointments,
+            follow up on leads, handle objections, surface KPIs.
           </p>
           <p>
-            <strong>The retainer: $3-5K/month.</strong> We stay on as your fractional Chief
+            <strong>The retainer</strong> keeps it running. We stay on as your fractional Chief
             Technology Officer (CTO). Every AI employee gets monitored, updated, and improved.
             When your business evolves, the system evolves with it. When platforms release new
             capabilities, your employees get upgraded. You never touch the technical layer.

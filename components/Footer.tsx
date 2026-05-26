@@ -52,9 +52,6 @@ export default function Footer() {
                 <a href="/discover-the-lies" className="text-white/80 hover:text-white">Discover the Lies</a>
               </li>
               <li>
-                <a href="/case-study" className="text-white/80 hover:text-white">Case Study</a>
-              </li>
-              <li>
                 <a href="/about" className="text-white/80 hover:text-white">About</a>
               </li>
             </ul>
@@ -67,7 +64,7 @@ export default function Footer() {
                 <a href="/faqs" className="text-white/80 hover:text-white">FAQs</a>
               </li>
               <li>
-                <a href="#intake" className="text-white/80 hover:text-white">Book an Intake Call</a>
+                <a href="/assessment" className="text-white/80 hover:text-white">Take the Audit</a>
               </li>
               <li>
                 <a href="mailto:support@stevenjamesconsulting.com" className="text-white/80 hover:text-white">

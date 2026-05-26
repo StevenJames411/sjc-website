@@ -222,28 +222,28 @@ export default function About() {
           </div>
         </section>
 
-        {/* Section 7 — Intake call CTA */}
+        {/* Section 7 — Assessment CTA */}
         <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
           <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              Ready to see what your org chart should look like?
+              Think your business could survive without you?
             </h2>
             <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
               <p>
-                Book an intake call. We&apos;ll identify which seats need filling, which need
-                clones vs. utilities, and what the install looks like for your specific business.
+                Take the 30-second audit. You&apos;ll see exactly how many hats you&apos;re
+                wearing &mdash; and what happens if you can&apos;t wear them tomorrow.
               </p>
             </div>
             <div className="mt-8 flex flex-col items-center gap-4">
-              <a href="#intake" className="btn-cta">
-                <span>Book an Intake Call</span>
-              </a>
-              <Link
-                href="/assessment"
+              <Link href="/assessment" className="btn-cta">
+                <span>Take the Audit</span>
+              </Link>
+              <a
+                href="tel:+12102982343"
                 className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
               >
-                Or take the self-service assessment
-              </Link>
+                Or call us directly: (210) 298-2343
+              </a>
             </div>
           </div>
         </section>

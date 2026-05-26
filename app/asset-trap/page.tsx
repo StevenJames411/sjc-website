@@ -29,7 +29,7 @@ export default function AssetTrap() {
       ]}
       closer="Build the business you can actually walk away from."
       ctaTitle="Want a business you can actually sell?"
-      ctaSubtitle="Book an intake call. We'll show you the way out."
+      ctaSubtitle="Take the 30-second audit. See how exposed your business really is."
     />
   );
 }

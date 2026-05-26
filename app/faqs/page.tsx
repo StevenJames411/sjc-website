@@ -9,7 +9,7 @@ const FAQS = [
   },
   {
     q: "What does this cost?",
-    a: "$40-70K for the install, depending on scope. $3-5K/month retainer for ongoing maintenance. One year of an executive assistant's salary buys you an entire org chart. No SaaS lock-in. No agency-forever traps. The technology we install is yours.",
+    a: "It depends on scope — the number of seats, the complexity of your systems, and how much owner talent needs to be extracted. We walk through all of that on a discovery call. What we can tell you: it’s a fraction of what you’d pay to hire humans for the same roles. No SaaS lock-in. No agency-forever traps. The technology we install is yours.",
   },
   {
     q: "How is this different from hiring a VA or buying ChatGPT?",
@@ -51,7 +51,7 @@ export default function FAQs() {
               Questions before you book.
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-              Everything you need to know about what we install, what it costs, and how it works.
+              Everything you need to know about what we install and how it works.
             </p>
           </div>
         </section>
@@ -76,25 +76,25 @@ export default function FAQs() {
         <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
           <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-20">
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              Ready to see what your org chart should look like?
+              Think your business could survive without you?
             </h2>
             <p className="mt-4 text-base text-[color:var(--color-sjc-ink)] md:text-lg">
-              Book an intake call. We&apos;ll identify which seats need filling, which
-              need clones vs. utilities, and what the install looks like for your specific business.
+              Take the 30-second audit. You&apos;ll see exactly how many hats you&apos;re
+              wearing &mdash; and what happens if you can&apos;t wear them tomorrow.
             </p>
             <div className="mt-8 flex flex-col items-center gap-4">
-              <a
-                href="#intake"
-                className="btn-cta"
-              >
-                <span>Book an Intake Call</span>
-              </a>
               <Link
                 href="/assessment"
+                className="btn-cta"
+              >
+                <span>Take the Audit</span>
+              </Link>
+              <a
+                href="tel:+12102982343"
                 className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
               >
-                Or take the self-service assessment
-              </Link>
+                Or call us directly: (210) 298-2343
+              </a>
             </div>
           </div>
         </section>

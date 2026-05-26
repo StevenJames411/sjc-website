@@ -2,7 +2,6 @@ import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import Story from "@/components/Story";
 import GerberTrifecta from "@/components/GerberTrifecta";
-import CaseStudyTeaser from "@/components/CaseStudyTeaser";
 import TwoTierModel from "@/components/TwoTierModel";
 import About from "@/components/About";
 import OfferSection from "@/components/OfferSection";
@@ -21,17 +20,15 @@ export default function Home() {
         <Story />
         {/* 3. THE PERFECT STORM — trifecta, then Gerber as context */}
         <GerberTrifecta />
-        {/* 4. CASE STUDY ZERO — proof it works (Chloe's numbers) */}
-        <CaseStudyTeaser />
-        {/* 5. THE TWO-TIER MODEL — superhuman vs utility seats */}
+        {/* 4. THE TWO-TIER MODEL — superhuman vs utility seats */}
         <TwoTierModel />
-        {/* 6. THE BUILDER — 5 businesses, 40 years, same trenches */}
+        {/* 5. THE BUILDER — 5 businesses, 40 years, same trenches */}
         <About />
-        {/* 7. THE OFFER — install + retainer pricing */}
+        {/* 6. THE OFFER — install + retainer pricing */}
         <OfferSection />
-        {/* 8. YOUR EXIT — the system is the asset */}
+        {/* 7. YOUR EXIT — the system is the asset */}
         <ExitValuation />
-        {/* 9. THE CLOSE — "We build it for you" */}
+        {/* 8. THE CLOSE — assessment funnel */}
         <IntakeCTA />
       </main>
       <Footer />

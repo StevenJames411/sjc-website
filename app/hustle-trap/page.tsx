@@ -31,7 +31,7 @@ export default function HustleTrap() {
       ]}
       closer="Hustle is what you do when you don't have leverage. We give you leverage."
       ctaTitle="Done out-hustling a broken system?"
-      ctaSubtitle="Book an intake call. We'll show you the way out."
+      ctaSubtitle="Take the 30-second audit. See how exposed your business really is."
     />
   );
 }

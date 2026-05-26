@@ -30,7 +30,7 @@ export default function FinancialTrap() {
       ]}
       closer="Stop trading hours. Start owning a system."
       ctaTitle="Want real financial freedom?"
-      ctaSubtitle="Book an intake call. We'll show you the way out."
+      ctaSubtitle="Take the 30-second audit. See how exposed your business really is."
     />
   );
 }

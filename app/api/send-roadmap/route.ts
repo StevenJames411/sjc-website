@@ -7,15 +7,9 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // === Tunable constants ============================================================
-const BUILD_FEE_LIST = 40000;
-const BUILD_FEE_FOUNDER = 28000;
-const FOUNDER_SPOTS_REMAINING = 5;
-// Monthly is two separate components:
-//   MONTHLY_UTILITY = AI tokens + cloud hosting, base cost passed to the client (zero markup)
-//   MONTHLY_RETAINER_* = SJC fractional CTO retainer (founder rate locked for 12 months)
-const MONTHLY_UTILITY = 1100;
-const MONTHLY_RETAINER_LIST = 3000;
-const MONTHLY_RETAINER_FOUNDER = 1500;
+// NOTE: Specific SJC pricing ($BUILD_FEE, $MONTHLY_RETAINER, etc.) removed from
+// public-facing website + PDF/email assets — pricing is now discussed on the
+// discovery call. The Tier 1 human-payroll figure stays as a concept illustration.
 const TRADITIONAL_PAYROLL = 532000;
 const WEBSITE_URL = "https://www.stevenjamesconsulting.com";
 const CALENDAR_URL = "https://api.leadconnectorhq.com/widget/bookings/find-your-gap";
@@ -540,7 +534,6 @@ function BucketCard({
 }
 
 function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
-  const perEmployee = Math.round(BUILD_FEE_FOUNDER / 12);
   const firstName = p.firstName || p.name.split(" ")[0] || "there";
 
   return React.createElement(
@@ -749,54 +742,35 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
               React.createElement(
                 View,
                 { style: styles.panelPriceWrap },
+                React.createElement(Text, { style: styles.panelPrice }, "Pricing on call"),
                 React.createElement(
-                  View,
-                  { style: styles.priceRow },
-                  React.createElement(Text, { style: styles.panelPrice }, fmt$(BUILD_FEE_FOUNDER)),
-                  React.createElement(Text, { style: styles.panelPriceStrike }, fmt$(BUILD_FEE_LIST))
+                  Text,
+                  { style: styles.panelPriceUnit },
+                  "one-time build + monthly retainer"
                 ),
                 React.createElement(
                   Text,
                   { style: styles.panelPriceUnit },
-                  "one-time build fee investment"
-                ),
-                React.createElement(
-                  Text,
-                  { style: styles.panelPriceUnit },
-                  `+ ${fmt$(MONTHLY_RETAINER_FOUNDER)}/mo (${fmt$(MONTHLY_RETAINER_LIST)} list) — your fractional Chief Technology Officer (CTO) retainer`
-                ),
-                React.createElement(
-                  Text,
-                  { style: styles.panelPriceUnit },
-                  `+ ${fmt$(MONTHLY_UTILITY)}/mo utility — base price passed to you, zero markup`
+                  "scope-dependent — we walk through it together"
                 )
-              )
-            ),
-            React.createElement(
-              View,
-              { style: styles.founderBadge },
-              React.createElement(
-                Text,
-                { style: styles.founderBadgeText },
-                `Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining`
               )
             ),
             React.createElement(
               Text,
               { style: [styles.founderNote, { marginBottom: 0 }] },
-              `Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders. After spot #${FOUNDER_SPOTS_REMAINING}, list price moves to ${fmt$(BUILD_FEE_LIST)} build + ${fmt$(MONTHLY_RETAINER_LIST)}/mo retainer. Your build fee locks at signing; the ${fmt$(MONTHLY_RETAINER_FOUNDER)}/mo retainer holds for your first 12 months — then we re-evaluate together based on where the technology has moved. Stay, take it over yourself, or move to another vendor — your call.`
+              "The investment depends on scope — how many seats, how complex your tech stack, how much owner talent needs to be extracted. We cover all of that on a discovery call. What we can tell you: it's a fraction of what you'd pay to hire humans for the same roles."
             )
           ),
 
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 4 }] },
-            `The ${fmt$(BUILD_FEE_FOUNDER)} founder build fee`
+            "The one-time build"
           ),
           React.createElement(
             Text,
             { style: styles.panelBody },
-            `That's ~${fmt$(perEmployee)} per AI employee, custom-built for your business. Each one is:`
+            "Custom-built AI employees for your business. Each one is:"
           ),
           React.createElement(
             Text,
@@ -817,17 +791,17 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8 }] },
-            `Your monthly costs — two separate line items`
+            "Your monthly costs — two separate line items"
           ),
           React.createElement(
             Text,
             { style: styles.panelBody },
-            `${fmt$(MONTHLY_UTILITY)}/month utility (base cost passed to you) + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month CTO retainer (founder pricing). ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month total. Here's what each one is:`
+            "A utility fee (AI tokens + cloud hosting, base cost passed to you at zero markup) plus a fractional CTO retainer. We discuss exact numbers on the discovery call based on your scope."
           ),
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 8, marginBottom: 2 }] },
-            `Utility — ${fmt$(MONTHLY_UTILITY)}/month, base price passed to you (zero markup)`
+            "Utility — base price passed to you (zero markup)"
           ),
           React.createElement(
             Text,
@@ -847,7 +821,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { fontFamily: "Helvetica-Bold", marginTop: 10, marginBottom: 2 }] },
-            `Fractional CTO retainer — ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month founder pricing (${fmt$(MONTHLY_RETAINER_LIST)}/month list)`
+            "Fractional CTO retainer"
           ),
           React.createElement(
             Text,
@@ -857,12 +831,12 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 8 }] },
-            `After year one, the ${fmt$(BUILD_FEE_FOUNDER)} build fee is paid in full. From year two onward you're paying ${fmt$(MONTHLY_UTILITY)}/month for the utility (base price passed to you, zero markup) + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month for the fractional CTO retainer — ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month total at founder pricing. Your retainer rate holds for 12 months at a time; we re-evaluate together at year-end.`
+            "After year one, the build fee is paid in full. From year two onward you're paying the utility (base cost, zero markup) plus the fractional CTO retainer. No SaaS lock-in. No agency-forever trap. The technology is yours — stay, take it over yourself, or move to another vendor."
           ),
           React.createElement(
             Text,
             { style: [styles.panelBody, { marginTop: 6 }] },
-            `Here's the math: the cheapest human role on your 12-seat org chart costs $40,000/year — exactly our list price for the entire build of TWELVE AI employees. On the monthly side, small businesses already pay $1,500–$3,000/month to a marketing agency just for Facebook ads. You're paying ${fmt$(MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER)}/month at founder pricing for twelve AI employees + a fractional Chief Technology Officer managing your entire tech stack — same range, exponentially more output. Only ${FOUNDER_SPOTS_REMAINING} founder spots remain at ${fmt$(BUILD_FEE_FOUNDER)} build + ${fmt$(MONTHLY_RETAINER_FOUNDER)}/month — after that, list pricing moves to ${fmt$(BUILD_FEE_LIST)} build + ${fmt$(MONTHLY_RETAINER_LIST)}/month.`
+            `Here's what matters: the cheapest human role on your 12-seat org chart costs $40,000/year. The AI alternative covers all twelve seats for a fraction of that. On the monthly side, small businesses already pay $1,500-$3,000/month to a marketing agency just for Facebook ads. Your ongoing cost lands in the same range — for twelve AI employees plus a fractional CTO managing your entire tech stack.`
           ),
 
           React.createElement(
@@ -871,7 +845,7 @@ function RoadmapPDF({ p, today }: { p: Payload; today: string }) {
             React.createElement(
               Text,
               { style: styles.panelCalloutText },
-              `${fmt$(BUILD_FEE_FOUNDER)} to plug the gap. ${fmt$(TRADITIONAL_PAYROLL)} to plug it with humans. Same gap. Same 12 roles. The math isn't close.`
+              `A fraction of ${fmt$(TRADITIONAL_PAYROLL)} to plug the same gap with AI. Same 12 roles. The math isn't close. We'll walk through your exact numbers on the discovery call.`
             )
           )
         )
@@ -1182,9 +1156,6 @@ export async function POST(req: NextRequest) {
   //    the contact's conversation thread + uses the location's email sender.
   const firstName = payload.firstName || payload.name.split(" ")[0] || "there";
   const subject = `${firstName}, your 12-Role Roadmap`;
-  const perEmployeeFee = Math.round(BUILD_FEE_FOUNDER / 12);
-  const monthlyTotalFounder = MONTHLY_UTILITY + MONTHLY_RETAINER_FOUNDER;
-  const monthlyTotalList = MONTHLY_UTILITY + MONTHLY_RETAINER_LIST;
   const seatVerb = payload.vacant_count === 1 ? "seat is" : "seats are";
   const filledCount = payload.worn_count + payload.staff_count;
   const pdfFooterBlock = pdfUrl
@@ -1233,23 +1204,10 @@ export async function POST(req: NextRequest) {
   <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:bold;margin:22px 0 4px 0;">Tier 3 · Recommended</div>
   <div style="font-size:17px;font-weight:bold;color:#0f172a;margin:0 0 10px 0;">I build the AI Operating System for you</div>
   <div style="margin:0 0 4px 0;">
-    <span style="font-size:24px;font-weight:bold;color:#1d4ed8;">$${BUILD_FEE_FOUNDER.toLocaleString()}</span>
-    <span style="font-size:16px;color:#94a3b8;text-decoration:line-through;margin-left:10px;">$${BUILD_FEE_LIST.toLocaleString()}</span>
-    <span style="font-size:14px;color:#475569;margin-left:8px;">one-time build fee investment</span>
+    <span style="font-size:20px;font-weight:bold;color:#1d4ed8;">One-time build + monthly retainer</span>
   </div>
-  <div style="font-size:14px;color:#475569;margin:0 0 2px 0;">
-    + <strong style="color:#1d4ed8;">$${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month</strong>
-    <span style="color:#94a3b8;text-decoration:line-through;margin-left:6px;">$${MONTHLY_RETAINER_LIST.toLocaleString()}</span>
-    <span style="margin-left:6px;">your fractional Chief Technology Officer (CTO) retainer</span>
-  </div>
-  <div style="font-size:14px;color:#475569;margin:0 0 8px 0;">
-    + <strong style="color:#0f172a;">$${MONTHLY_UTILITY.toLocaleString()}/month</strong> utility — base price passed to you, zero markup
-  </div>
-  <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:11px;font-weight:bold;padding:5px 12px;border-radius:4px;margin:10px 0 6px 0;text-transform:uppercase;letter-spacing:0.8px;">
-    Founder Pricing · ${FOUNDER_SPOTS_REMAINING} spots remaining
-  </div>
-  <p style="font-size:13px;color:#475569;font-style:italic;margin:0 0 14px 0;">
-    Locked in for the next ${FOUNDER_SPOTS_REMAINING} founders. After spot #${FOUNDER_SPOTS_REMAINING}, list price moves to $${BUILD_FEE_LIST.toLocaleString()} build + $${MONTHLY_RETAINER_LIST.toLocaleString()}/mo retainer. Your build fee locks at signing; the $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/mo retainer holds for your first 12 months — then we re-evaluate together based on where the technology has moved. Stay, take it over yourself, or move to another vendor — your call.
+  <p style="font-size:14px;color:#475569;font-style:italic;margin:0 0 14px 0;">
+    The investment depends on scope &mdash; how many seats, how complex your tech stack, how much owner talent needs to be extracted. We walk through all of that on a discovery call. What we can tell you: it's a fraction of what you'd pay to hire humans for the same roles. No SaaS lock-in. No agency-forever trap. The technology is yours.
   </p>
 
   <div style="background:#eff6ff;border:1px solid #c7d7fe;padding:14px 18px;border-radius:6px;margin:0 0 18px 0;">
@@ -1258,55 +1216,55 @@ export async function POST(req: NextRequest) {
     </p>
     <ul style="font-size:15px;padding-left:22px;margin:0 0 8px 0;color:#0f172a;">
       <li style="margin-bottom:6px;"><strong>${payload.vacant_count} stand-alone AI ${payload.vacant_count === 1 ? "employee" : "employees"}</strong> to fully cover the ${payload.vacant_count === 1 ? "empty seat" : "empty seats"} nobody is running today. They own the job end-to-end.</li>
-      <li style="margin-bottom:0;"><strong>${filledCount} AI executive ${filledCount === 1 ? "assistant" : "assistants"}</strong> paired with you and your staff. Each person keeps their seat — the AI does the heavy lifting around them, so the human can focus on the 20% only a human can do.</li>
+      <li style="margin-bottom:0;"><strong>${filledCount} AI executive ${filledCount === 1 ? "assistant" : "assistants"}</strong> paired with you and your staff. Each person keeps their seat &mdash; the AI does the heavy lifting around them, so the human can focus on the 20% only a human can do.</li>
     </ul>
     <p style="font-size:14px;color:#475569;margin:0;">
-      Twelve AI employees total — the exact org chart your business needs to run without you putting out fires.
+      Twelve AI employees total &mdash; the exact org chart your business needs to run without you putting out fires.
     </p>
   </div>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
-    <strong>The $${BUILD_FEE_FOUNDER.toLocaleString()} founder build fee</strong> works out to <strong>~$${perEmployeeFee.toLocaleString()} per AI employee</strong>, custom-built for your business. Each one is:
+    <strong>The one-time build</strong> &mdash; custom AI employees for your business. Each one is:
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
-    <li style="margin-bottom:6px;"><strong>Trained on your brand voice.</strong> I capture how you talk to customers — the words you use, the words you'd never use, your tone, your sales style — and bake it in. When the AI messages a prospect, it sounds like you wrote it, not like a generic chatbot.</li>
+    <li style="margin-bottom:6px;"><strong>Trained on your brand voice.</strong> I capture how you talk to customers &mdash; the words you use, the words you'd never use, your tone, your sales style &mdash; and bake it in. When the AI messages a prospect, it sounds like you wrote it, not like a generic chatbot.</li>
     <li style="margin-bottom:6px;"><strong>Trained on your business.</strong> Services, pricing, processes, team. On day one, it knows what a seasoned human employee would know.</li>
-    <li style="margin-bottom:6px;"><strong>Wired into your tech stack.</strong> CRM, email, calendar, reporting — it actually does the work (books appointments, follows up on leads, sends invoices, surfaces KPIs), not just answers questions.</li>
+    <li style="margin-bottom:6px;"><strong>Wired into your tech stack.</strong> CRM, email, calendar, reporting &mdash; it actually does the work (books appointments, follows up on leads, sends invoices, surfaces KPIs), not just answers questions.</li>
   </ul>
 
   <p style="font-size:15px;margin:0 0 8px 0;">
-    <strong>Your monthly costs are two separate line items.</strong> $${MONTHLY_UTILITY.toLocaleString()}/month utility (base cost passed to you) + $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month CTO retainer (founder pricing). <strong>$${monthlyTotalFounder.toLocaleString()}/month total.</strong> Here's what each one is:
+    <strong>Your monthly costs are two separate line items.</strong> A utility fee (AI tokens + cloud hosting, base cost passed to you at zero markup) plus a fractional CTO retainer. We discuss exact numbers on the discovery call based on your scope.
   </p>
 
   <p style="font-size:15px;font-weight:bold;color:#0f172a;margin:14px 0 4px 0;">
-    Utility &mdash; $${MONTHLY_UTILITY.toLocaleString()}/month, base price passed to you (zero markup)
+    Utility &mdash; base price passed to you (zero markup)
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 6px 0;">
-    <li style="margin-bottom:6px;"><strong>Tokens</strong> — the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower.</li>
-    <li style="margin-bottom:6px;"><strong>Hosting</strong> — the cloud servers your AI employees live on. Same as hosting a website — they need a place to run from.</li>
+    <li style="margin-bottom:6px;"><strong>Tokens</strong> &mdash; the AI's thinking power. Every time an AI employee responds or processes a request, that's tokens. Like electricity for a machine, except the electricity is brainpower.</li>
+    <li style="margin-bottom:6px;"><strong>Hosting</strong> &mdash; the cloud servers your AI employees live on. Same as hosting a website &mdash; they need a place to run from.</li>
   </ul>
   <p style="font-size:13px;color:#475569;font-style:italic;margin:0 0 14px 22px;">
     We pass the base prices straight through to you. Zero markup from us. You pay the actual utility cost &mdash; full transparency on what runs your AI workforce.
   </p>
 
   <p style="font-size:15px;font-weight:bold;color:#0f172a;margin:14px 0 4px 0;">
-    Fractional CTO retainer &mdash; $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month founder pricing ($${MONTHLY_RETAINER_LIST.toLocaleString()}/month list)
+    Fractional CTO retainer
   </p>
   <ul style="font-size:15px;padding-left:22px;margin:0 0 14px 0;">
     <li style="margin-bottom:6px;"><strong>Your new fractional Chief Technology Officer (CTO).</strong> That's Steven James Consulting on 24/7 retainer, keeping your system working. &ldquo;Fractional&rdquo; means we're an outside vendor working on your behalf, not a full-time hire on your payroll. We watch over every AI employee, update workflows as your business grows, and fix issues before they cost you money.</li>
   </ul>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    After year one, the <strong>$${BUILD_FEE_FOUNDER.toLocaleString()} build fee is paid in full</strong>. From year two onward, you're paying <strong>$${MONTHLY_UTILITY.toLocaleString()}/month for the utility</strong> (tokens + hosting, base price passed to you with zero markup) + <strong>$${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month for the fractional CTO retainer</strong> &mdash; <strong>$${monthlyTotalFounder.toLocaleString()}/month total at founder pricing</strong>. Your retainer rate holds for 12 months at a time; we re-evaluate together at year-end.
+    After year one, the build fee is paid in full. From year two onward, you're paying the utility (base cost, zero markup) plus the fractional CTO retainer. No SaaS lock-in. The technology is yours &mdash; stay, take it over yourself, or move to another vendor.
   </p>
 
   <p style="font-size:15px;margin:0 0 16px 0;">
-    Here's the math: the cheapest human role on your 12-seat org chart costs <strong>$40,000/year</strong> — exactly our list price for the entire build of TWELVE AI employees. On the monthly side, small businesses already pay <strong>$1,500&ndash;$3,000/month to a marketing agency just for Facebook ads</strong>. You're paying <strong>$${monthlyTotalFounder.toLocaleString()}/month at founder pricing</strong> for twelve AI employees + a fractional Chief Technology Officer managing your entire tech stack &mdash; same range, exponentially more output. Only <strong>${FOUNDER_SPOTS_REMAINING} founder spots remain at $${BUILD_FEE_FOUNDER.toLocaleString()} build + $${MONTHLY_RETAINER_FOUNDER.toLocaleString()}/month</strong> — after that, list pricing moves to $${BUILD_FEE_LIST.toLocaleString()} build + $${MONTHLY_RETAINER_LIST.toLocaleString()}/month.
+    Here's what matters: the cheapest human role on your 12-seat org chart costs <strong>$40,000/year</strong>. The AI alternative covers all twelve seats for a fraction of that. On the monthly side, small businesses already pay <strong>$1,500&ndash;$3,000/month to a marketing agency just for Facebook ads</strong>. Your ongoing cost lands in the same range &mdash; for twelve AI employees plus a fractional CTO managing your entire tech stack.
   </p>
 
   <div style="background:#eff6ff;border-left:4px solid #1d4ed8;padding:16px 18px;margin:24px 0;">
     <p style="font-size:17px;font-weight:bold;color:#0f172a;margin:0;line-height:1.45;">
-      $${BUILD_FEE_FOUNDER.toLocaleString()} to plug the gap. $532,000 to plug it with humans. Same gap. Same 12 roles. The math isn't close.
+      A fraction of $532,000 to plug the same gap with AI. Same 12 roles. The math isn't close. We'll walk through your exact numbers on the discovery call.
     </p>
   </div>
 

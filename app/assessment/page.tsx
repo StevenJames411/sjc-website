@@ -570,7 +570,9 @@ function ResultsSection({ answers, yesCount, nobodyCount, onContinue }: ResultsP
             </svg>
           </button>
           <a
-            href="#intake"
+            href="https://api.leadconnectorhq.com/widget/bookings/find-your-gap"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
           >
             Or skip the email and book a call now
@@ -695,16 +697,36 @@ function SubmittedSection() {
           </svg>
         </div>
         <h1 className="mt-6 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-          Check your email.
+          Now you know how many hats you&apos;re wearing.
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
-          Your full roadmap is on the way. If you don&apos;t see it in a few minutes, check your
-          spam folder.
+          Your full roadmap is hitting your inbox now. Check spam if you don&apos;t see it
+          in a few minutes.
         </p>
-        <p className="mt-8 text-base text-gray-600 md:text-lg">
-          One more thing: you&apos;re already in the one percent &mdash; the founders willing to face the gap
-          instead of grinding through it. Follow through and take action. You&apos;re on the right path.
+        <p className="mt-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
+          Let&apos;s talk about taking them off. On the call we&apos;ll go seat by seat
+          &mdash; the order to fill them, the tools to use, and the path to a business that
+          runs without you.
         </p>
+        <div className="mt-10 flex flex-col items-center gap-4">
+          <a
+            href="https://api.leadconnectorhq.com/widget/bookings/find-your-gap"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-8 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-[color:var(--color-sjc-green)]"
+          >
+            Book a Discovery Call
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-5 w-5">
+              <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
+          <a
+            href="tel:+12102982343"
+            className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
+          >
+            Or call us directly: (210) 298-2343
+          </a>
+        </div>
       </div>
     </section>
   );

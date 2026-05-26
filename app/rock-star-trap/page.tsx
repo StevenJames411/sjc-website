@@ -31,7 +31,7 @@ export default function RockStarTrap() {
       ]}
       closer="You don't need a rock star. You need a system that doesn't require one."
       ctaTitle="Done hiring rock stars who become bottlenecks?"
-      ctaSubtitle="Book an intake call. We'll show you the way out."
+      ctaSubtitle="Take the 30-second audit. See how exposed your business really is."
     />
   );
 }

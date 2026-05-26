@@ -1,7 +1,5 @@
 import Link from "next/link";
 
-const INTAKE_URL = "#intake";
-
 type CtaButtonProps = {
   title?: string;
   subtitle?: string;
@@ -10,10 +8,10 @@ type CtaButtonProps = {
 };
 
 export default function CtaButton({
-  title = "Ready to see what your org chart should look like?",
-  subtitle = "Book an intake call. We'll show you the way out.",
+  title = "See How Many Hats You're Wearing",
+  subtitle = "Take the 30-second audit. Find out how vulnerable your business really is.",
   className = "",
-  href = INTAKE_URL,
+  href = "/assessment",
 }: CtaButtonProps) {
   return (
     <Link href={href} className={`btn-cta ${className}`}>

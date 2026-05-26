@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.stevenjamesconsulting.com"),
   title: "Steven James Consulting — The Org Chart Your Business Should Already Have",
   description:
-    "You're wearing every hat in the company. We install the full org chart — AI employees in every seat, cloned from your best talent — so your business runs without you. $40-70K install. $3-5K/month retainer.",
+    "You're wearing every hat in the company. We install the full org chart — AI employees in every seat, cloned from your best talent — so your business runs without you.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Steven James Consulting — Build the Org Chart That Runs Without You",
     description:
-      "You're wearing every hat. We install the org chart your business should already have — every seat filled, cloned from your best talent. $40-70K install. $3-5K/month retainer.",
+      "You're wearing every hat. We install the org chart your business should already have — every seat filled, cloned from your best talent, running without you.",
     url: "https://www.stevenjamesconsulting.com",
     siteName: "Steven James Consulting",
     type: "website",
@@ -48,14 +48,7 @@ const serviceSchema = {
   provider: { "@type": "Organization", name: "Steven James Consulting" },
   areaServed: "United States",
   description:
-    "Custom AI employee installation — 5-6 AI employees covering your org chart, cloned from the owner's actual talent. $40-70K install, $3-5K/month retainer. 4-8 week build.",
-  offers: {
-    "@type": "AggregateOffer",
-    lowPrice: "40000",
-    highPrice: "70000",
-    priceCurrency: "USD",
-    offerCount: "1",
-  },
+    "Custom AI employee installation — 5-6 AI employees covering your org chart, cloned from the owner's actual talent. Scope-dependent pricing discussed on discovery call. 4-8 week build.",
 };
 
 const faqSchema = {
@@ -75,7 +68,7 @@ const faqSchema = {
       name: "What does this cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "$40-70K for the install, depending on scope. $3-5K/month retainer for ongoing maintenance. One year of an executive assistant's salary buys you an entire org chart. No SaaS lock-in. No agency-forever traps.",
+        text: "It depends on scope — the number of seats, the complexity of your systems, and how much owner talent needs to be extracted. It's a fraction of what you'd pay to hire humans for the same roles. No SaaS lock-in. No agency-forever traps.",
       },
     },
     {
