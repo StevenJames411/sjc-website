@@ -23,7 +23,7 @@ export default function FinancialTrap() {
         "If you took next week off, what would you actually earn?",
         "How much of your monthly revenue is leveraged — meaning, would it happen with or without you on the calendar?",
       ]}
-      solutionHeadline="Replace your hours with an AI team."
+      solutionHeadline="Replace your hours with a team that runs without you."
       solutionBody={[
         "Financial freedom doesn't come from charging more. It comes from earning while you sleep — and that requires operators in your business who aren't you.",
         "Our AI Employee Operating System installs the seats your business needs — sales, marketing, bookings, operations, office management, all of it — running 24/7 at a fraction of the cost of human hires. Sized to your business. The work doesn't stop when you do. The revenue doesn't either.",

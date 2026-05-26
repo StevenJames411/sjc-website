@@ -16,8 +16,8 @@ export default function Footer() {
               <span className="text-lg font-semibold">Steven James Consulting</span>
             </div>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">
-              AI Employee Operating Systems for solo entrepreneurs trapped in their own business.
-              Stay solo, or build a team.
+              We install the org chart your business should already have &mdash; every seat filled
+              by an AI employee &mdash; so your business runs without you.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a

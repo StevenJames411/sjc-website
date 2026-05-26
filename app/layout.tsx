@@ -11,14 +11,14 @@ const lexend = Lexend({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stevenjamesconsulting.com"),
-  title: "Steven James Consulting — AI Visibility Audit for Owner-Led Businesses",
+  title: "Steven James Consulting — The Org Chart Your Business Should Already Have",
   description:
-    "Customers aren't using Google anymore. They're asking AI. Find out where you stand with a free 60-second AI visibility audit from an AI Systems Architect and Fractional CTO.",
+    "You're wearing every hat in the company. We install the full org chart — AI employees in every seat — so your business runs without you. Built by a founder who's been in the trap for 40 years.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Steven James Consulting — AI Visibility Audit",
+    title: "Steven James Consulting — Build the Org Chart That Runs Without You",
     description:
-      "Has AI made your company invisible? Take the free 60-second audit and see exactly which signals you're missing.",
+      "You're wearing every hat. We install AI employees in every seat so your business runs without you.",
     url: "https://www.stevenjamesconsulting.com",
     siteName: "Steven James Consulting",
     type: "website",
@@ -37,19 +37,19 @@ const organizationSchema = {
   telephone: "+1-210-298-2343",
   founder: { "@type": "Person", name: "Steven Barchetti" },
   description:
-    "AI Systems Architect and Fractional CTO helping owner-led businesses become findable, credible, and converting in the AI search era.",
+    "Systems engineer and fractional CTO who installs AI employee org charts for solo entrepreneurs trapped in their own business.",
 };
 
 const serviceSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
-  name: "20-Point AI Visibility Audit",
-  serviceType: "AI Visibility Audit",
+  name: "AI Employee Org Chart Installation",
+  serviceType: "AI Implementation Consulting",
   provider: { "@type": "Organization", name: "Steven James Consulting" },
   areaServed: "United States",
   description:
-    "A free 60-second audit that scores your business across 20 AI-search signals: schema, listings, reviews, content, citations, authority, speed-to-lead, follow-up, and document systems.",
-  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    "We audit your business seat by seat, then install AI employees trained on your voice and process into every role — so your business runs without you.",
+  offers: { "@type": "Offer", price: "40000", priceCurrency: "USD" },
 };
 
 const faqSchema = {
@@ -58,24 +58,27 @@ const faqSchema = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "What is an AI visibility audit?",
+      name: "What is an AI employee org chart?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "A 20-point check across the signals AI search engines (ChatGPT, Perplexity, Gemini) use to decide which businesses to recommend — schema markup, listings, reviews, content structure, citations, and the operational systems that convert AI-driven traffic.",
+        text: "The twelve roles every business needs to run without the owner — from executive assistant to marketing to bookkeeping — filled by AI employees instead of human hires. Same org chart, same accountability, a fraction of the cost.",
       },
     },
     {
       "@type": "Question",
-      name: "Who is the audit for?",
+      name: "Who is this for?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Owner-led businesses doing between one and five million in revenue who hit the wall where the solo entrepreneur is the system. If your competitors are getting recommended by AI and you're not, this is the gap to close.",
+        text: "Solo entrepreneurs and small teams doing between one and two million in revenue who are stuck wearing every hat in the company. If your business can't function without you showing up every day, this is the fix.",
       },
     },
     {
       "@type": "Question",
-      name: "How long does the audit take?",
-      acceptedAnswer: { "@type": "Answer", text: "60 seconds to complete. You get your score and the missing signals immediately." },
+      name: "How is this different from buying ChatGPT?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "ChatGPT is a chat window. We install an operating system — position contracts per role, monitoring, repair routines, and full integration into your existing tools. The DIY path is real, but it's hat number thirteen.",
+      },
     },
   ],
 };
