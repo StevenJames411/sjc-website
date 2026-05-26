@@ -3,8 +3,7 @@ export default function Hero() {
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
       <div className="mx-auto max-w-4xl px-6 pt-6 pb-16 text-center md:pt-10 md:pb-24">
         <h1 className="text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-          If tragedy happened and you couldn&apos;t work for 30 to 90 days, would your
-          business thrive &mdash; or implode?
+          If you were hospitalized tomorrow, would your business be open in 90 days?
         </h1>
         <p className="mt-5 text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl">
           Most small businesses can&apos;t survive without the owner. We fix that.
