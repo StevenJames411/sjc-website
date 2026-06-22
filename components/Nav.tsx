@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { BOOKING_URL } from "./CtaButton";
 
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
 
 const NAV_LINKS = [
-  { href: "/discover-the-lies", label: "Discover the Lies" },
+  { href: "/", label: "Home" },
   { href: "/about", label: "About" },
+  { href: "/case-study", label: "Case Study" },
+  { href: "/faqs", label: "FAQs" },
 ];
 
 export default function Nav() {
@@ -32,10 +35,10 @@ export default function Nav() {
             </a>
           ))}
           <a
-            href="/assessment"
+            href={BOOKING_URL}
             className="rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--color-sjc-green)]"
           >
-            Take the 30-Second Audit &rarr;
+            Book the Call &rarr;
           </a>
         </nav>
 
@@ -75,11 +78,11 @@ export default function Nav() {
               </a>
             ))}
             <a
-              href="/assessment"
+              href={BOOKING_URL}
               onClick={() => setOpen(false)}
               className="mt-5 rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-3 text-center text-base font-semibold text-white shadow-sm"
             >
-              Take the 30-Second Audit &rarr;
+              Book the Call &rarr;
             </a>
           </div>
         </nav>

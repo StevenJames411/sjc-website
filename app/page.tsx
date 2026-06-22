@@ -1,12 +1,12 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
-import Story from "@/components/Story";
+import Problem from "@/components/Problem";
 import GerberTrifecta from "@/components/GerberTrifecta";
 import TwoTierModel from "@/components/TwoTierModel";
-import About from "@/components/About";
-import OfferSection from "@/components/OfferSection";
 import ExitValuation from "@/components/ExitValuation";
-import IntakeCTA from "@/components/IntakeCTA";
+import CaseStudyTeaser from "@/components/CaseStudyTeaser";
+import OfferSection from "@/components/OfferSection";
+import AuditSection from "@/components/AuditSection";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -14,22 +14,22 @@ export default function Home() {
     <>
       <Nav />
       <main>
-        {/* 1. GUT PUNCH — the hero (do not change) */}
+        {/* 1. HERO — the wedge: you need AI, keep the keys */}
         <Hero />
-        {/* 2. THE PROBLEM EXPLAINED — pain of the entrepreneur trap */}
-        <Story />
-        {/* 3. THE PERFECT STORM — trifecta, then Gerber as context */}
+        {/* 2. SPEED TO LEAD — deliverable one */}
+        <Problem />
+        {/* 3. STEP ONE vs STEP TWO — linear legacy follow-up → dynamic AI employee */}
         <GerberTrifecta />
-        {/* 4. THE TWO-TIER MODEL — superhuman vs utility seats */}
+        {/* 4. CONTROL, NOT DEPENDENCE — keep the keys, rent the plumbing */}
         <TwoTierModel />
-        {/* 5. THE BUILDER — 5 businesses, 40 years, same trenches */}
-        <About />
-        {/* 6. THE OFFER — install + retainer pricing */}
-        <OfferSection />
-        {/* 7. YOUR EXIT — the system is the asset */}
+        {/* 5. WHY ME — 40 years, five businesses, runs his own company on it */}
         <ExitValuation />
-        {/* 8. THE CLOSE — assessment funnel */}
-        <IntakeCTA />
+        {/* 6. THE PROOF — the machine is the receipt (case study) */}
+        <CaseStudyTeaser />
+        {/* 7. THE EXPANSION — start with one seat, grow the org chart; build + monthly */}
+        <OfferSection />
+        {/* 8. YOUR NEXT MOVE — book the call */}
+        <AuditSection />
       </main>
       <Footer />
     </>

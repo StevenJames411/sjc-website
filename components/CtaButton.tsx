@@ -1,4 +1,5 @@
-import Link from "next/link";
+export const BOOKING_URL =
+  "https://api.leadconnectorhq.com/widget/bookings/find-your-gap";
 
 type CtaButtonProps = {
   title?: string;
@@ -8,15 +9,15 @@ type CtaButtonProps = {
 };
 
 export default function CtaButton({
-  title = "See How Many Hats You're Wearing",
-  subtitle = "Take the 30-second audit. Find out how vulnerable your business really is.",
+  title = "Book the Call",
+  subtitle,
   className = "",
-  href = "/assessment",
+  href = BOOKING_URL,
 }: CtaButtonProps) {
   return (
-    <Link href={href} className={`btn-cta ${className}`}>
+    <a href={href} className={`btn-cta ${className}`}>
       <span>{title}</span>
-      <span className="sub">{subtitle}</span>
-    </Link>
+      {subtitle ? <span className="sub">{subtitle}</span> : null}
+    </a>
   );
 }

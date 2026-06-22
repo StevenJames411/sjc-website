@@ -83,10 +83,10 @@ export default function CostComparisonChart() {
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
       <div style={{ backgroundColor: "#1e3a6e" }} className="px-6 py-5 text-center text-white">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-80 md:text-sm">
-          Cost Comparison
+          The Expansion
         </p>
         <p className="mt-3 text-base font-bold leading-snug md:text-lg">
-          Typical human org chart vs. typical AI employee org chart &mdash; two different planets.
+          An entire AI org chart &mdash; for about the price of one assistant.
         </p>
       </div>
 
@@ -131,20 +131,18 @@ export default function CostComparisonChart() {
 
       <div className="border-t border-gray-200 bg-gray-50 px-6 py-7 md:px-10 md:py-8">
         <p className="mx-auto max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-          Twenty-four months ago, this org chart was impossible. To fill it with humans, you&apos;d pay{" "}
+          Once your leads are handled, the same setup extends across the rest of the org chart. Filling it with humans runs{" "}
           <span className="font-bold text-[color:var(--color-sjc-ink)]">$532,000</span>{" "}
-          a year &mdash; nothing a solo entrepreneur could ever afford. So nobody ever built it. AI has changed everything. The same org chart now costs{" "}
+          a year. The AI version runs about{" "}
           <span className="font-bold text-[color:var(--color-sjc-blue)]">$82,000</span>{" "}
-          a year. And{" "}
+          a year &mdash; and{" "}
           <span className="font-bold">$67,000</span>{" "}
-          of that is your own CEO pay &mdash; money you&apos;d already be paying yourself. The true investment price for the rest of the team? Just{" "}
+          of that is your own CEO pay, money you&apos;re already paying yourself. The rest of the team comes in around{" "}
           <span className="font-bold text-[color:var(--color-sjc-blue)]">$15,000</span>{" "}
-          a year. That investment of $15,000 gets you an entire executive team. That&apos;s a{" "}
-          <span className="font-bold text-[color:var(--color-sjc-blue)]">$450,000</span>{" "}
-          payroll savings every year moving forward.
+          a year. Roughly one assistant&apos;s salary, for an entire executive team that answers to you.
         </p>
         <p className="mx-auto mt-4 max-w-2xl text-sm italic leading-relaxed text-gray-600 md:text-base">
-          These salary estimates run roughly 30% below current market rates. The real cost of building this team in 2026 would push the savings even higher.
+          You don&apos;t have to start here. Most owners begin with one seat &mdash; speed to lead &mdash; and add seats on your timeline, on your call. The build is a one-time install; a flat monthly keeps it running. You hold the keys the whole way.
         </p>
       </div>
     </div>

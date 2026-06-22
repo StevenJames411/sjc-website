@@ -11,14 +11,14 @@ const lexend = Lexend({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stevenjamesconsulting.com"),
-  title: "Steven James Consulting — The Org Chart Your Business Should Already Have",
+  title: "Steven James Consulting — Your AI Growth Partner",
   description:
-    "You're wearing every hat in the company. We install the full org chart — AI employees in every seat, cloned from your best talent — so your business runs without you.",
+    "Speed to Lead plus a dynamic AI workforce, installed on top of the business you already built — and you keep control. We're the plumbing, not the boss.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Steven James Consulting — Build the Org Chart That Runs Without You",
+    title: "Steven James Consulting — Your AI Growth Partner",
     description:
-      "You're wearing every hat. We install the org chart your business should already have — every seat filled, cloned from your best talent, running without you.",
+      "We install Speed to Lead and a dynamic AI workforce on top of your systems. You rent the infrastructure and keep control.",
     url: "https://www.stevenjamesconsulting.com",
     siteName: "Steven James Consulting",
     type: "website",
@@ -37,7 +37,7 @@ const organizationSchema = {
   telephone: "+1-210-298-2343",
   founder: { "@type": "Person", name: "Steven Barchetti" },
   description:
-    "Systems engineer and fractional CTO who installs AI employee org charts for solo entrepreneurs trapped in their own business. 40 years of founder experience across 5 industries.",
+    "Systems engineer and fractional CTO who installs Speed to Lead and a dynamic AI workforce on top of founder-led businesses — so the owner keeps control. 40 years of founder experience across 5 industries.",
 };
 
 const serviceSchema = {
@@ -48,7 +48,7 @@ const serviceSchema = {
   provider: { "@type": "Organization", name: "Steven James Consulting" },
   areaServed: "United States",
   description:
-    "Custom AI employee installation — 5-6 AI employees covering your org chart, cloned from the owner's actual talent. Scope-dependent pricing discussed on discovery call. 4-8 week build.",
+    "Speed to Lead plus a dynamic AI workforce installed on top of the founder's existing systems. Scope-dependent pricing discussed on the call. 4-8 week build, and the owner keeps control.",
 };
 
 const faqSchema = {
@@ -60,7 +60,7 @@ const faqSchema = {
       name: "What exactly do you install?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "An AI employee org chart — 5-6 AI employees covering the seats that are either empty or sitting on the owner's plate. 2-3 superhuman seats cloned from your actual talent, plus utility seats for scheduling, follow-up, and admin. Wired into your CRM, calendar, email, and pipeline.",
+        text: "Two things: Speed to Lead, so every lead gets answered in seconds, and a dynamic AI workforce of 5-6 AI employees covering the seats you want covered. Wired into your existing CRM, calendar, email, and pipeline — installed on top of what you already run, and you keep control.",
       },
     },
     {
@@ -76,7 +76,7 @@ const faqSchema = {
       name: "How long does the install take?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "4-8 weeks depending on scope. Every week you're still wearing the hats is a week the business depends on you to function.",
+        text: "4-8 weeks depending on scope. We build on top of your existing systems, so nothing you run today gets ripped out — it gets faster.",
       },
     },
   ],
