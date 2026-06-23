@@ -8,16 +8,17 @@ export default function Hero() {
           Your AI Growth Partner
         </p>
         <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl">
-          You already know you need AI. You just want to keep the keys.
+          You already know you need AI. You just don&apos;t want to give up control of your own shop.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl">
-          I install AI on top of the business you already run, operate the
-          plumbing so you don&apos;t have to, and hand you the controls.
+          I install AI on top of the business you already run &mdash; turnkey
+          &mdash; and run it for you, so you get the growth and stay in command
+          of your own system.
         </p>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-mute)] md:text-lg">
           You become the AI-first company. Your hand stays on every lead and
-          every dollar. I&apos;m just the infrastructure you rent to keep it
-          that way.
+          every dollar &mdash; you never give up the reins, and you never lift a
+          finger to run it.
         </p>
 
         <div className="mt-10 overflow-hidden rounded-2xl shadow-lg">

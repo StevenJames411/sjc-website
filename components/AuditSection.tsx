@@ -9,7 +9,7 @@ export default function AuditSection() {
         </p>
         <h2 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl">
           You already know you need AI. Let&apos;s install it &mdash; with you
-          holding the keys.
+          still running your own shop.
         </h2>
 
         <div className="mx-auto mt-8 max-w-2xl space-y-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
@@ -18,7 +18,7 @@ export default function AuditSection() {
             you exactly where AI plugs in &mdash; starting with speed to lead.
           </p>
           <p className="font-semibold">
-            I install it. I run the plumbing. You stay in control.
+            I install it. We run it for you. You stay in control.
           </p>
         </div>
 

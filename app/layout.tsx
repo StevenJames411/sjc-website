@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.stevenjamesconsulting.com"),
   title: "Steven James Consulting — Your AI Growth Partner",
   description:
-    "Speed to Lead plus a dynamic AI workforce, installed on top of the business you already built — and you keep control. We're the plumbing, not the boss.",
+    "For the solo entrepreneur who runs his own shop: I install AI employees on top of the business you already built — Speed to Lead plus a dynamic AI workforce, turnkey. You get the growth and stay in control of your own system.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Steven James Consulting — Your AI Growth Partner",
     description:
-      "We install Speed to Lead and a dynamic AI workforce on top of your systems. You rent the infrastructure and keep control.",
+      "We install Speed to Lead and a dynamic AI workforce on top of what you already run — turnkey. You get the growth and stay in command of your own system.",
     url: "https://www.stevenjamesconsulting.com",
     siteName: "Steven James Consulting",
     type: "website",
@@ -37,7 +37,7 @@ const organizationSchema = {
   telephone: "+1-210-298-2343",
   founder: { "@type": "Person", name: "Steven Barchetti" },
   description:
-    "Systems engineer and fractional CTO who installs Speed to Lead and a dynamic AI workforce on top of founder-led businesses — so the owner keeps control. 40 years of founder experience across 5 industries.",
+    "A 40-year solo operator across five businesses who installs AI employees — Speed to Lead plus a dynamic AI workforce — on top of the business a solo entrepreneur already runs, turnkey, so he gets the growth and stays in control of his own system. Runs his own company on the same system.",
 };
 
 const serviceSchema = {
@@ -48,7 +48,7 @@ const serviceSchema = {
   provider: { "@type": "Organization", name: "Steven James Consulting" },
   areaServed: "United States",
   description:
-    "Speed to Lead plus a dynamic AI workforce installed on top of the founder's existing systems. Scope-dependent pricing discussed on the call. 4-8 week build, and the owner keeps control.",
+    "Speed to Lead plus a dynamic AI workforce installed turnkey on top of your existing systems. Scope-dependent pricing discussed on the call. 4-8 week build — you get the growth and stay in control of your own system.",
 };
 
 const faqSchema = {
