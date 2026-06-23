@@ -1,8 +1,11 @@
 "use client";
 import CtaButton from "./CtaButton";
 import Editable from "./edit/Editable";
+import { useEditText } from "./edit/editContext";
 
 export default function Hero() {
+  const { getText } = useEditText();
+
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
       <div className="mx-auto max-w-4xl px-6 pt-6 pb-16 text-center md:pt-10 md:pb-24">
@@ -71,8 +74,11 @@ export default function Hero() {
 
         <div className="mt-10 flex justify-center">
           <CtaButton
-            title="Book the Call"
-            subtitle="See exactly what we'd install — and what you'd control."
+            title={getText("home.hero.cta.title", "Book the Call")}
+            subtitle={getText(
+              "home.hero.cta.subtitle",
+              "See exactly what we'd install — and what you'd control."
+            )}
           />
         </div>
       </div>
