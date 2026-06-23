@@ -1,3 +1,6 @@
+"use client";
+import Editable from "./edit/Editable";
+
 const POINTS = [
   {
     title: "Answered in seconds",
@@ -17,43 +20,62 @@ export default function Problem() {
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
-        <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]">
+        <Editable
+          tid="home.problem.eyebrow"
+          as="p"
+          className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
+        >
           Speed to Lead
-        </p>
-        <h2 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
+        </Editable>
+        <Editable
+          tid="home.problem.h2"
+          as="h2"
+          className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
+        >
           Every lead answered the instant it lands.
-        </h2>
+        </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-          <p>
-            You spent the money to make the phone ring. Then a lead comes in
-            while you&apos;re on a job, asleep, or three calls deep &mdash; and
-            by the time you get to it, they&apos;ve already booked with someone
-            faster.
-          </p>
-          <p className="font-semibold">That stops on day one.</p>
+          <Editable tid="home.problem.p1" as="p">
+            You spent the money to make the phone ring. Then a lead comes in while you’re on a job, asleep, or three calls deep — and by the time you get to it, they’ve already booked with someone faster.
+          </Editable>
+          <Editable tid="home.problem.p2" as="p" className="font-semibold">
+            That stops on day one.
+          </Editable>
         </div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">
-          {POINTS.map((p) => (
+          {POINTS.map((p, i) => (
             <div
               key={p.title}
               className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
             >
-              <h3 className="text-base font-bold text-[color:var(--color-sjc-blue)]">
+              <Editable
+                tid={`home.problem.point${i}.title`}
+                as="h3"
+                className="text-base font-bold text-[color:var(--color-sjc-blue)]"
+              >
                 {p.title}
-              </h3>
-              <p className="mt-2 text-base leading-relaxed text-[color:var(--color-sjc-ink)]">
+              </Editable>
+              <Editable
+                tid={`home.problem.point${i}.body`}
+                as="p"
+                className="mt-2 text-base leading-relaxed text-[color:var(--color-sjc-ink)]"
+              >
                 {p.body}
-              </p>
+              </Editable>
             </div>
           ))}
         </div>
 
         <div className="mt-10 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-          <p className="text-xl font-bold md:text-2xl">
+          <Editable
+            tid="home.problem.callout"
+            as="p"
+            className="text-xl font-bold md:text-2xl"
+          >
             The lead you already paid for stops being the one that got away.
-          </p>
+          </Editable>
         </div>
       </div>
     </section>
