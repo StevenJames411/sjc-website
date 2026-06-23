@@ -13,24 +13,26 @@ export default function About() {
           </h2>
           <div className="mt-6 space-y-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
             <p>
-              I&apos;m Steven Barchetti. I&apos;ve been the tech lead in my own businesses for 40 years.
-              Five different companies across five industries &mdash; a restaurant in 1986, a mortgage
-              company, a roofing contractor, a trucking company I ran for 20 years, and now this.
+              I&apos;m Steven Barchetti. I&apos;ve run my own businesses for 40 years &mdash; five of
+              them, across five industries. A restaurant in 1986, a mortgage company, a roofing
+              contractor, a trucking company I ran for 20 years, and now this.
             </p>
             <p>
-              In every single one, I was great at the work &mdash; and stuck running every other job in the
-              company too. I built the websites, set up the CRMs, fixed the email systems, ran the ads. I
-              was the technician AND the IT department. Same trap, different decade.
+              In every one of them I was also the tech guy. I built the websites, set up the CRMs,
+              wired up the follow-up, ran the ads &mdash; whatever the technology of that decade was,
+              I was the one installing it and keeping it running. I&apos;ve been wearing your exact
+              hat for longer than most consultants have been alive.
             </p>
             <p>
-              The tools just kept getting better. But they never got good enough to actually replace
-              the seats &mdash; until now. Over the last 24 months, everything changed. I finally built
-              the org chart I&apos;d been trying to build for four decades. Every seat except CEO is now
-              an AI employee. I run my company on the same system I install for my clients.
+              The tools just kept getting better. Now they finally go to work instead of waiting for
+              you to push the button. I run Steven James Consulting on its own AI employees today
+              &mdash; so when I install the same system for you, I&apos;m handing you what I already
+              run on myself.
             </p>
             <p className="font-semibold">
-              I&apos;m not selling theory. I&apos;m selling what I already run on myself &mdash; built
-              by someone who&apos;s been in your exact chair for longer than most consultants have been alive.
+              I install AI on top of the business you already run, I operate the plumbing so you
+              don&apos;t have to, and you keep your hand on every lead and every dollar. You stay in
+              control.
             </p>
           </div>
           <div className="mt-8">

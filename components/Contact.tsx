@@ -27,10 +27,10 @@ export default function Contact() {
 
         <div className="mt-12 rounded-2xl bg-white p-2 shadow-sm md:p-4">
           <h2 className="px-4 pt-4 text-center text-2xl font-bold text-[color:var(--color-sjc-ink)]">
-            Book a free strategy call
+            Book the Call
           </h2>
           <p className="mt-2 px-4 text-center text-sm text-[color:var(--color-sjc-mute)]">
-            Pick a time that works — the audit is free, the systems we install are what change the business.
+            Pick a time that works. We&apos;ll map where the gap is and how AI installs on top of what you already run &mdash; you keep control.
           </p>
 
           <div id="ghl-calendar" className="mt-6 overflow-hidden rounded-xl bg-white">

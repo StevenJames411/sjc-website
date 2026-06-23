@@ -1,35 +1,46 @@
+import CtaButton from "./CtaButton";
+
 export default function ExitValuation() {
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
       <div className="mx-auto max-w-4xl px-6 py-20 md:py-24">
         <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]">
-          Your Exit
+          Why Me
         </p>
         <h2 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-          When you sell your business, the operating system goes with it.
+          Forty years. Five businesses. I&apos;ve been the tech guy in every
+          one.
         </h2>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <p>
-            Every piece of technology we install is yours. Every vendor is swappable. There is
-            zero lock-in to Steven James Consulting or to any single platform.
+            I&apos;ve run my own businesses since 1986 &mdash; a restaurant, a
+            mortgage company, a roofing contractor, a trucking company I ran for
+            twenty years, and now this. In every single one, I was the owner{" "}
+            <em>and</em> the tech guy who wired up the systems and kept them
+            running. I&apos;ve worn your exact hat for four decades.
           </p>
           <p>
-            When a buyer acquires your business, they get a clean, portable operating system
-            &mdash; documented position contracts, modular architecture, commodity vendors.
-            Not a proprietary black box. Not a system that stops working the day the consultant
-            walks away.
-          </p>
-          <p>
-            The install increases your exit valuation because it removes the biggest risk buyers
-            see in small businesses: owner dependency. The org chart runs without you. The AI
-            employees don&apos;t quit when ownership changes. The position contracts transfer.
-            The system IS the asset.
+            The tools finally caught up to what I always needed. So I built it
+            for myself first.
           </p>
           <p className="text-xl font-bold text-[color:var(--color-sjc-ink)] md:text-2xl">
-            Most small businesses are worth their equipment and their customer list. Yours is
-            worth its operating system.
+            Steven James Consulting runs on this exact system today.
           </p>
+          <p>
+            I&apos;m not selling you a theory I read in a book. I run my own
+            company on the same AI employees I install for you. The first client
+            I built this for is already answering leads in seconds and booking
+            appointments around the clock &mdash; on top of the business they
+            already ran, with their hand still on every dollar.
+          </p>
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <CtaButton
+            title="Book the Call"
+            subtitle="See the system that runs my own company — and what it'd look like on yours."
+          />
         </div>
       </div>
     </section>

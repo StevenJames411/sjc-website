@@ -1,13 +1,39 @@
+"use client";
+import CtaButton from "./CtaButton";
+import Editable from "./edit/Editable";
+
 export default function Hero() {
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
       <div className="mx-auto max-w-4xl px-6 pt-6 pb-16 text-center md:pt-10 md:pb-24">
-        <h1 className="text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-          If you were hospitalized tomorrow, would your business be open in 90 days?
-        </h1>
-        <p className="mt-5 text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl">
-          You&apos;re one accident away from letting your family down.
-        </p>
+        <Editable
+          tid="home.hero.eyebrow"
+          as="p"
+          className="text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-blue)]"
+        >
+          Your AI Growth Partner
+        </Editable>
+        <Editable
+          tid="home.hero.h1"
+          as="h1"
+          className="mt-4 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl"
+        >
+          You already know you need AI. You just don’t want to give up control of your own shop.
+        </Editable>
+        <Editable
+          tid="home.hero.lede"
+          as="p"
+          className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl"
+        >
+          I install AI on top of the business you already run — turnkey — and run it for you, so you get the growth and stay in command of your own system.
+        </Editable>
+        <Editable
+          tid="home.hero.sub"
+          as="p"
+          className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-mute)] md:text-lg"
+        >
+          You become the AI-first company. Your hand stays on every lead and every dollar — you never give up the reins, and you never lift a finger to run it.
+        </Editable>
 
         <div className="mt-10 overflow-hidden rounded-2xl shadow-lg">
           <div className="relative aspect-video w-full bg-gradient-to-br from-[#1e3a6e] to-[#0f1f3d]">
@@ -22,17 +48,32 @@ export default function Hero() {
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </div>
-              <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-white/90 md:text-base">
-                Video Sales Letter
-              </p>
-              <p className="mt-2 max-w-md text-xs text-white/70 md:text-sm">
-                The full story &mdash; the problem, the solution, and what we build for you.
-              </p>
+              <Editable
+                tid="home.hero.watch"
+                as="p"
+                className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-white/90 md:text-base"
+              >
+                Watch: 3 Minutes
+              </Editable>
+              <Editable
+                tid="home.hero.watchSub"
+                as="p"
+                className="mt-2 max-w-md text-xs text-white/70 md:text-sm"
+              >
+                What it looks like to put AI to work on top of the business you already run — without giving up the controls.
+              </Editable>
             </div>
             <div className="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">
               Placeholder
             </div>
           </div>
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <CtaButton
+            title="Book the Call"
+            subtitle="See exactly what we'd install — and what you'd control."
+          />
         </div>
       </div>
     </section>

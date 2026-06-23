@@ -15,22 +15,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: "https://www.stevenjamesconsulting.com/case-study",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: "https://www.stevenjamesconsulting.com/faqs",
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.7,
-    },
-    {
-      url: "https://www.stevenjamesconsulting.com/discover-the-lies",
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: "https://www.stevenjamesconsulting.com/assessment",
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.6,
     },
   ];
 }

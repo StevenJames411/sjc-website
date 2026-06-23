@@ -1,35 +1,23 @@
 import Nav from "@/components/Nav";
-import Hero from "@/components/Hero";
-import Story from "@/components/Story";
-import GerberTrifecta from "@/components/GerberTrifecta";
-import TwoTierModel from "@/components/TwoTierModel";
-import About from "@/components/About";
-import OfferSection from "@/components/OfferSection";
-import ExitValuation from "@/components/ExitValuation";
-import IntakeCTA from "@/components/IntakeCTA";
 import Footer from "@/components/Footer";
+import SitePage from "@/components/edit/SitePage";
+import { readPublished } from "@/lib/siteContent";
 
-export default function Home() {
+// Read the published snapshot fresh on each request so publishing shows up immediately
+// (no redeploy needed). Falls back to committed defaults when nothing is published.
+export const dynamic = "force-dynamic";
+
+// Home renders its sections through SitePage, which stacks them in the saved order and
+// (only for the signed-in editor) turns on inline editing + the Sections reorder panel.
+// Public visitors get the published snapshot, falling back to the committed defaults.
+// Nav (top navigation = the page switcher) and Footer stay as the fixed frame.
+export default async function Home() {
+  const published = await readPublished("home");
   return (
     <>
       <Nav />
       <main>
-        {/* 1. GUT PUNCH — the hero (do not change) */}
-        <Hero />
-        {/* 2. THE PROBLEM EXPLAINED — pain of the entrepreneur trap */}
-        <Story />
-        {/* 3. THE PERFECT STORM — trifecta, then Gerber as context */}
-        <GerberTrifecta />
-        {/* 4. THE TWO-TIER MODEL — superhuman vs utility seats */}
-        <TwoTierModel />
-        {/* 5. THE BUILDER — 5 businesses, 40 years, same trenches */}
-        <About />
-        {/* 6. THE OFFER — install + retainer pricing */}
-        <OfferSection />
-        {/* 7. YOUR EXIT — the system is the asset */}
-        <ExitValuation />
-        {/* 8. THE CLOSE — assessment funnel */}
-        <IntakeCTA />
+        <SitePage pageKey="home" published={published} />
       </main>
       <Footer />
     </>
