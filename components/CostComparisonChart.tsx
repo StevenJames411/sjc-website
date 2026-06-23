@@ -1,4 +1,7 @@
-const SEATS = [
+"use client";
+import Editable from "./edit/Editable";
+
+const SEATS_DEFAULTS = [
   {
     n: 2,
     role: "Executive Assistant",
@@ -82,68 +85,160 @@ export default function CostComparisonChart() {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
       <div style={{ backgroundColor: "#1e3a6e" }} className="px-6 py-5 text-center text-white">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-80 md:text-sm">
+        <Editable
+          tid="home.expansion.table.header.eyebrow"
+          as="p"
+          className="text-xs font-semibold uppercase tracking-[0.2em] opacity-80 md:text-sm"
+        >
           The Expansion
-        </p>
-        <p className="mt-3 text-base font-bold leading-snug md:text-lg">
-          An entire AI org chart &mdash; for about the price of one assistant.
-        </p>
+        </Editable>
+        <Editable
+          tid="home.expansion.table.header.title"
+          as="p"
+          className="mt-3 text-base font-bold leading-snug md:text-lg"
+        >
+          An entire AI org chart — for about the price of one assistant.
+        </Editable>
       </div>
 
       <div className="grid grid-cols-[1.6fr_1fr_1fr] gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3 text-xs font-semibold text-gray-600 md:px-6 md:text-sm">
-        <span>Role</span>
-        <span className="text-right">Human (annual)</span>
-        <span className="text-right">AI employee (annual)</span>
+        <Editable tid="home.expansion.table.col.role" as="span">Role</Editable>
+        <Editable tid="home.expansion.table.col.human" as="span" className="text-right">Human (annual)</Editable>
+        <Editable tid="home.expansion.table.col.ai" as="span" className="text-right">AI employee (annual)</Editable>
       </div>
 
       <ul className="bg-white">
         <li className="grid grid-cols-[1.6fr_1fr_1fr] items-center gap-2 border-b border-gray-100 bg-blue-50 px-4 py-3 text-sm md:px-6 md:py-3.5 md:text-base">
           <div className="flex flex-col">
-            <span className="font-semibold text-[color:var(--color-sjc-blue)]">1. CEO</span>
-            <span className="mt-0.5 text-xs italic text-gray-600 md:text-sm">
+            <Editable
+              tid="home.expansion.table.ceo.role"
+              as="span"
+              className="font-semibold text-[color:var(--color-sjc-blue)]"
+            >
+              1. CEO
+            </Editable>
+            <Editable
+              tid="home.expansion.table.ceo.desc"
+              as="span"
+              className="mt-0.5 text-xs italic text-gray-600 md:text-sm"
+            >
               You. The owner. Sets direction, signs the checks.
-            </span>
+            </Editable>
           </div>
-          <span className="text-right font-semibold text-[color:var(--color-sjc-blue)]">$67,000 (You)</span>
-          <span className="text-right font-semibold text-[color:var(--color-sjc-blue)]">$67,000 (You)</span>
+          <Editable
+            tid="home.expansion.table.ceo.human"
+            as="span"
+            className="text-right font-semibold text-[color:var(--color-sjc-blue)]"
+          >
+            $67,000 (You)
+          </Editable>
+          <Editable
+            tid="home.expansion.table.ceo.ai"
+            as="span"
+            className="text-right font-semibold text-[color:var(--color-sjc-blue)]"
+          >
+            $67,000 (You)
+          </Editable>
         </li>
-        {SEATS.map((s) => (
+        {SEATS_DEFAULTS.map((s, i) => (
           <li
-            key={s.role}
+            key={i}
             className="grid grid-cols-[1.6fr_1fr_1fr] items-center gap-2 border-b border-gray-100 px-4 py-3 text-sm md:px-6 md:py-3.5 md:text-base"
           >
             <div className="flex flex-col">
               <span className="font-semibold text-[color:var(--color-sjc-ink)]">
-                {s.n}. {s.role}
+                {s.n}.{" "}
+                <Editable tid={`home.expansion.table.seat${i}.role`} as="span">
+                  {s.role}
+                </Editable>
               </span>
-              <span className="mt-0.5 text-xs italic text-gray-600 md:text-sm">{s.desc}</span>
+              <Editable
+                tid={`home.expansion.table.seat${i}.desc`}
+                as="span"
+                className="mt-0.5 text-xs italic text-gray-600 md:text-sm"
+              >
+                {s.desc}
+              </Editable>
             </div>
-            <span className="text-right text-[color:var(--color-sjc-ink)]">{s.human}</span>
-            <span className="text-right font-semibold text-[color:var(--color-sjc-blue)]">{s.ai}</span>
+            <Editable
+              tid={`home.expansion.table.seat${i}.human`}
+              as="span"
+              className="text-right text-[color:var(--color-sjc-ink)]"
+            >
+              {s.human}
+            </Editable>
+            <Editable
+              tid={`home.expansion.table.seat${i}.ai`}
+              as="span"
+              className="text-right font-semibold text-[color:var(--color-sjc-blue)]"
+            >
+              {s.ai}
+            </Editable>
           </li>
         ))}
         <li className="grid grid-cols-[1.6fr_1fr_1fr] gap-2 bg-gray-50 px-4 py-4 text-sm font-bold md:px-6 md:py-5 md:text-base">
-          <span className="text-[color:var(--color-sjc-ink)]">Total</span>
-          <span className="text-right text-[color:var(--color-sjc-ink)]">~$532,000 / yr</span>
-          <span className="text-right text-[color:var(--color-sjc-blue)]">~$82,000 / yr</span>
+          <Editable
+            tid="home.expansion.table.total.label"
+            as="span"
+            className="text-[color:var(--color-sjc-ink)]"
+          >
+            Total
+          </Editable>
+          <Editable
+            tid="home.expansion.table.total.human"
+            as="span"
+            className="text-right text-[color:var(--color-sjc-ink)]"
+          >
+            ~$532,000 / yr
+          </Editable>
+          <Editable
+            tid="home.expansion.table.total.ai"
+            as="span"
+            className="text-right text-[color:var(--color-sjc-blue)]"
+          >
+            ~$82,000 / yr
+          </Editable>
         </li>
       </ul>
 
       <div className="border-t border-gray-200 bg-gray-50 px-6 py-7 md:px-10 md:py-8">
+        {/* Footer prose — bold dollar figures are each their own Editable span */}
         <p className="mx-auto max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-          Once your leads are handled, the same setup extends across the rest of the org chart. Filling it with humans runs{" "}
-          <span className="font-bold text-[color:var(--color-sjc-ink)]">$532,000</span>{" "}
-          a year. The AI version runs about{" "}
-          <span className="font-bold text-[color:var(--color-sjc-blue)]">$82,000</span>{" "}
-          a year &mdash; and{" "}
-          <span className="font-bold">$67,000</span>{" "}
-          of that is your own CEO pay, money you&apos;re already paying yourself. The rest of the team comes in around{" "}
-          <span className="font-bold text-[color:var(--color-sjc-blue)]">$15,000</span>{" "}
-          a year. Roughly one assistant&apos;s salary, for an entire executive team that answers to you.
+          <Editable tid="home.expansion.table.footer.p1a" as="span">
+            Once your leads are handled, the same setup extends across the rest of the org chart. Filling it with humans runs
+          </Editable>{" "}
+          <span className="font-bold text-[color:var(--color-sjc-ink)]">
+            <Editable tid="home.expansion.table.footer.p1.human" as="span">$532,000</Editable>
+          </span>{" "}
+          <Editable tid="home.expansion.table.footer.p1b" as="span">
+            a year. The AI version runs about
+          </Editable>{" "}
+          <span className="font-bold text-[color:var(--color-sjc-blue)]">
+            <Editable tid="home.expansion.table.footer.p1.ai" as="span">$82,000</Editable>
+          </span>{" "}
+          <Editable tid="home.expansion.table.footer.p1c" as="span">
+            a year — and
+          </Editable>{" "}
+          <span className="font-bold">
+            <Editable tid="home.expansion.table.footer.p1.ceo" as="span">$67,000</Editable>
+          </span>{" "}
+          <Editable tid="home.expansion.table.footer.p1d" as="span">
+            of that is your own CEO pay, money you&apos;re already paying yourself. The rest of the team comes in around
+          </Editable>{" "}
+          <span className="font-bold text-[color:var(--color-sjc-blue)]">
+            <Editable tid="home.expansion.table.footer.p1.rest" as="span">$15,000</Editable>
+          </span>{" "}
+          <Editable tid="home.expansion.table.footer.p1e" as="span">
+            a year. Roughly one assistant&apos;s salary, for an entire executive team that answers to you.
+          </Editable>
         </p>
-        <p className="mx-auto mt-4 max-w-2xl text-sm italic leading-relaxed text-gray-600 md:text-base">
-          You don&apos;t have to start here. Most owners begin with one seat &mdash; speed to lead &mdash; and add seats on your timeline, on your call. The build is a one-time install; a flat monthly keeps it running. You hold the keys the whole way.
-        </p>
+        <Editable
+          tid="home.expansion.table.footer.p2"
+          as="p"
+          className="mx-auto mt-4 max-w-2xl text-sm italic leading-relaxed text-gray-600 md:text-base"
+        >
+          You don&apos;t have to start here. Most owners begin with one seat — speed to lead — and add seats on your timeline, on your call. The build is a one-time install; a flat monthly keeps it running. You hold the keys the whole way.
+        </Editable>
       </div>
     </div>
   );
