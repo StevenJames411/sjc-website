@@ -14,28 +14,28 @@ export default function Hero() {
           as="p"
           className="text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-blue)]"
         >
-          From One Solo Operator to Another
+          From One Solo Entrepreneur to Another
         </Editable>
         <Editable
           tid="home.hero.h1"
           as="h1"
           className="mt-4 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl"
         >
-          You’ve worn every hat in this business for years — because no one you hired could ever carry it like you.
+          You were bold enough to start your own business — and you’ve carried the whole thing on your back ever since.
         </Editable>
         <Editable
           tid="home.hero.lede"
           as="p"
           className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl"
         >
-          I did the exact same thing for 40 years. Five businesses, every hat, never a soul I could hand one to. Then it finally changed — and that’s the only reason I’m here.
+          You’ve tried to hire help, more than once, in every corner of the business. It never sticks — you end up with a handful of average people and all the real work still on you. And it’s quietly worn you down.
         </Editable>
         <Editable
           tid="home.hero.sub"
           as="p"
           className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-mute)] md:text-lg"
         >
-          Let me show you what changed.
+          The game just changed. As your growth partner, the first thing I install is your first AI employee — a salesperson better than any you could hire, aimed straight at your growth. We start there.
         </Editable>
 
         <div className="mt-10 overflow-hidden rounded-2xl shadow-lg">
