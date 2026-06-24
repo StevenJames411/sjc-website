@@ -34,10 +34,13 @@ export default function GerberTrifecta() {
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.step.p1" as="p">
-            Step One was the follow-up software everyone&apos;s been selling for years — the CRM, the autoresponder, the chatbot. It runs in a straight line: same message, same order, every time. It waits for the lead to act. You bought it, set it up, and it did a little. Then it stalled.
+            Step One was the follow-up software everyone&apos;s been selling for years — the CRM, the autoresponder, the chatbot. It runs the same message in the same order every time, and then it waits for the lead to make the next move. You bought it, set it up, and it did a little. Then it stalled.
           </Editable>
           <Editable tid="home.step.p2" as="p" className="font-semibold">
-            Step Two is that salesperson — a dynamic AI employee that goes to work on its own. This wasn&apos;t possible last year. Now it is — and it&apos;s the next rung up.
+            Step Two is that employee — a real AI employee, built right into the system you already use, that goes out and does the job on its own. This wasn&apos;t possible last year. Now it is, and it&apos;s the next rung up.
+          </Editable>
+          <Editable tid="home.step.p3" as="p">
+            Here&apos;s the part nobody else will tell you: everyone else in this space is selling you a chatbot — a box that sits on your website and waits to be asked a question. A chatbot waits. A real AI employee goes out and works the lead. Building one that actually does the job, right inside the software you already run, is the hard part — and it&apos;s the part I do.
           </Editable>
         </div>
 
@@ -48,14 +51,14 @@ export default function GerberTrifecta() {
               as="p"
               className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-mute)]"
             >
-              Step One — Legacy Follow-Up
+              Step One — The Old Follow-Up
             </Editable>
             <Editable
               tid="home.step.col1.sub"
               as="p"
               className="mt-2 text-sm text-[color:var(--color-sjc-mute)]"
             >
-              Linear. It waits.
+              It sits there and waits.
             </Editable>
             <ul className="mt-5 space-y-3">
               {STEP_ONE_DEFAULTS.map((s, i) => (
@@ -76,14 +79,14 @@ export default function GerberTrifecta() {
               as="p"
               className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-blue)]"
             >
-              Step Two — A Dynamic AI Employee
+              Step Two — A Real AI Employee
             </Editable>
             <Editable
               tid="home.step.col2.sub"
               as="p"
               className="mt-2 text-sm text-[color:var(--color-sjc-mute)]"
             >
-              Dynamic. It goes to work.
+              It goes out and does the job.
             </Editable>
             <ul className="mt-5 space-y-3">
               {STEP_TWO_DEFAULTS.map((s, i) => (
@@ -105,7 +108,7 @@ export default function GerberTrifecta() {
             as="p"
             className="text-xl font-bold md:text-2xl"
           >
-            That gap is exactly why you need an implementation partner — not another piece of software to set up yourself.
+            That gap is exactly why you need someone to come in and build it for you — not another piece of software to set up yourself.
           </Editable>
         </div>
       </div>

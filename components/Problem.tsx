@@ -37,7 +37,7 @@ export default function Problem() {
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.problem.p1" as="p">
-            The salesperson you could never hire goes to work the second a lead lands — while you’re on a job, asleep, or three calls deep, it doesn’t matter. It catches the lead while it’s still warm, every time.
+            The employee you could never find goes to work the second a lead lands — whether you’re with a client, asleep, or three calls deep, it doesn’t matter. It catches the lead while it’s still warm, every time.
           </Editable>
           <Editable tid="home.problem.p2" as="p" className="font-semibold">
             That starts on day one.

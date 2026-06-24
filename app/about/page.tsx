@@ -16,13 +16,14 @@ export default function About() {
                 My story
               </p>
               <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-                Five businesses. Forty years. I&apos;ve been the tech guy in the founder&apos;s
-                chair the whole time.
+                I&apos;m a solo entrepreneur, just like you. Forty years.
+                Five businesses of my own.
               </h1>
               <p className="mt-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
-                You already know you need AI. Everyone&apos;s telling you. What you actually
-                need is the person who installs it on top of the business you already run &mdash;
-                and hands you the keys.
+                And the whole time, I had the same problem you have. I could never find people
+                worth the effort &mdash; people who&apos;d stick around, take the training, and
+                actually do the job right. So I did it all myself. That problem is finally
+                solved, and I install the fix for you.
               </p>
             </div>
             <div className="flex flex-col items-center md:items-end">
@@ -36,7 +37,7 @@ export default function About() {
               />
               <div className="mt-4 w-52 text-center md:w-60">
                 <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">Steven Barchetti</p>
-                <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">Founder &middot; 40-Year Tech Lead</p>
+                <p className="text-sm font-semibold text-[color:var(--color-sjc-ink)] md:text-xs">Founder &middot; 40-Year Solo Entrepreneur</p>
               </div>
             </div>
           </div>
@@ -46,25 +47,27 @@ export default function About() {
         <section className="bg-white">
           <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              I&apos;m not a consultant who read about this in a book.
+              I never could find people worth the effort.
             </h2>
             <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
               <p>
                 I&apos;m Steven Barchetti. I&apos;ve run my own businesses for forty years &mdash;
-                five of them, across five industries. A restaurant in 1986. A mortgage company
-                with my brother. A roofing contractor. A trucking company I ran for twenty years.
+                five of them, in five different trades. A restaurant in 1986. A mortgage company
+                with my brother. A roofing company. A trucking company I ran for twenty years.
                 And now this.
               </p>
               <p>
-                Here&apos;s the part most people miss. In every single one of those businesses, I
-                wasn&apos;t just the owner. I was the tech guy. I built the websites. I set up the
-                phone systems and the CRMs. I wired up the follow-up. I ran the ads. Whatever the
-                technology of that decade was, I was the one installing it and keeping it running.
+                And in every one of them, I hit the same wall: I could never find people who&apos;d
+                stick around, take the training, and be worth the effort. They quit. They cut
+                corners. They went off and did their own thing. So I gave up on it and did
+                everything myself &mdash; the work, the books, the follow-up, the ads, and yes, I
+                was the computer guy too. Whatever needed doing, that was me.
               </p>
               <p>
-                So I&apos;ve been wearing your exact hat &mdash; for longer than most consultants
-                have been alive. I know what it feels like to be great at the work and still buried
-                under every other job in the company. I lived it five times.
+                So I&apos;ve been sitting in your exact chair, doing 90% of it with my own two
+                hands, longer than most of these consultants have been alive. I know what it feels
+                like to be great at the work and still buried under every other job in the company.
+                I lived it five times.
               </p>
             </div>
           </div>
@@ -74,26 +77,35 @@ export default function About() {
         <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
           <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              The tools just kept getting better. Then they finally caught up.
+              Then, for the first time in forty years, that problem got solved.
             </h2>
             <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
               <p>
-                Every decade gave me a slightly better toolbox. Phone, fax, the first websites,
-                email marketing, the CRM. Each one helped. None of them ever did the actual work.
-                They waited for me to push the button. They were tools, and I was still the one
-                holding them.
+                Every decade handed me a slightly better set of tools. Phone, fax, the first
+                websites, email blasts, the customer list software. Each one helped a little. But
+                not one of them ever did the actual work. They sat there and waited for me to push
+                the button. They were tools, and I was still the one holding them.
               </p>
               <p>
-                Over the last couple of years that changed. For the first time in forty years, I
-                can install something that doesn&apos;t just sit there waiting &mdash; it goes to
-                work. It answers the lead. It follows up. It books the appointment. It picks the
-                cold leads back up. It holds a real seat in the business instead of being one more
-                thing I have to run.
+                A couple of years ago that changed for good. For the first time, I could finally
+                hire the employee I&apos;d been looking for my whole career &mdash; an AI employee.
+                It takes the training. It doesn&apos;t quit. It doesn&apos;t go off and freelance.
+                It doesn&apos;t call in sick or take days off. It answers every lead the second it
+                comes in, follows up, books the appointment, and circles back on the cold ones. It
+                does the job the same way every time, and I can see everything it does.
               </p>
               <p>
-                I built it for myself first. Steven James Consulting runs on its own AI employees
-                today &mdash; the same setup I install for clients. I&apos;m not selling you a
-                theory. I&apos;m selling you the thing I already run on my own company.
+                Now here&apos;s the part that matters. Just about everyone else selling AI right now
+                is selling you a chatbot &mdash; a little pop-up that answers a question and then
+                hands you back the work. That&apos;s not an employee. What I do is build a real AI
+                employee right into the same software you already use to run your business, so it
+                works your leads and your calendar like a real member of your staff. That part is
+                hard, and it&apos;s the part nobody else has figured out. I build it myself, by hand.
+              </p>
+              <p>
+                I built it for my own company first. Steven James Consulting runs on its own AI
+                employees today &mdash; the exact same thing I&apos;ll set up for you. I&apos;m not
+                selling you an idea. I&apos;m selling you the thing I already run my own business on.
               </p>
             </div>
           </div>
@@ -103,23 +115,24 @@ export default function About() {
         <section className="bg-white">
           <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              That&apos;s why I&apos;m the partner who installs it and lets you keep control.
+              That&apos;s why I started this: to set it up for you, and put you in charge of it.
             </h2>
             <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
               <p>
-                Most people calling themselves AI consultants right now are reselling somebody
-                else&apos;s tool. I&apos;m a systems guy who&apos;s been doing this work, by hand,
-                in real businesses, since 1986. I just finally have the tools to do it right.
+                Most people calling themselves AI consultants right now are just reselling somebody
+                else&apos;s gadget. I&apos;m a guy who&apos;s been building this stuff with his own
+                hands, in real businesses, since 1986. I just finally have what I need to do it the
+                way it should be done.
               </p>
               <p>
-                I install AI on top of the business you already run. I don&apos;t rip out your
-                systems. I don&apos;t take over your accounts. I operate the plumbing in the
-                background so you don&apos;t have to think about it &mdash; and you keep your hand
-                on every lead and every dollar.
+                I set the AI employee up on top of the business you already run. I don&apos;t rip
+                out what&apos;s working. I don&apos;t take the reins from you. I do the hard part in
+                the background so you never have to think about it &mdash; and you keep your hand on
+                every lead and every dollar.
               </p>
               <p className="font-semibold">
-                You stay in control. You become the AI-first company. I&apos;m just the
-                infrastructure you rent to keep it that way.
+                You stay in charge. You&apos;re the one running it. I just build the thing and keep
+                it running, so the whole machine answers to you.
               </p>
             </div>
           </div>
@@ -129,16 +142,16 @@ export default function About() {
         <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
           <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-20">
             <h2 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              Want to see what this looks like on your business?
+              Want to see what this would look like in your shop?
             </h2>
             <p className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-              We&apos;ll get on a quick call. You tell me how you run today, and I&apos;ll show you
-              exactly where AI employees plug in &mdash; with you holding the keys the whole way.
+              Let&apos;s get on a quick call. You tell me how you run things today, and I&apos;ll
+              show you exactly where an AI employee fits in &mdash; with you in charge the whole way.
             </p>
             <div className="mt-8 flex flex-col items-center gap-4">
               <CtaButton
                 title="Book the Call"
-                subtitle="A quick call to see where AI employees plug into your business."
+                subtitle="A quick call to see where an AI employee fits into your business."
                 href="/#contact"
               />
               <a

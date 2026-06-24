@@ -3,16 +3,16 @@ import Editable from "./edit/Editable";
 
 const BEATS = [
   {
-    title: "You tried to hire it",
-    body: "You ran the ads, did the interviews, made the offers. The ones who could sell didn't last, and the ones who lasted couldn't sell.",
+    title: "You hired them",
+    body: "You ran the ads, did the interviews, made the offers. The ones who could sell didn't stick around, and the ones who stuck around couldn't sell.",
   },
   {
-    title: "You tried to train it",
-    body: "You taught them your pitch, your follow-up, the way you handle a tough lead. It never stuck the way it lived in your own head.",
+    title: "You tried to train them",
+    body: "You sat them down and walked them through your pitch, your follow-up, the way you handle a tough lead. They wouldn't take it, or it never stuck the way it lives in your head.",
   },
   {
-    title: "So you did it yourself",
-    body: "Every lead, every follow-up, every close — back on your plate. Not because you wanted the control. Because nobody ever measured up.",
+    title: "So you did it all yourself",
+    body: "Every lead, every follow-up, every close — back on your plate. Not because you're a control freak. Because nobody you hired was ever worth the headache.",
   },
 ];
 
@@ -25,22 +25,22 @@ export default function Wound() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          The hire you could never make
+          The employee you could never find
         </Editable>
         <Editable
           tid="home.wound.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          You spent your whole career looking for a salesperson as good as you. They didn’t exist.
+          You’ve spent years trying to find one good employee who could sell like you. You never could.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.wound.p1" as="p">
-            You tried to hire it. You tried to train it. Nobody answered every lead the second it came in, followed up forever, and closed the way you would — so you did it yourself, because no one ever measured up.
+            You hired them. You tried to train them. They wouldn’t take the training, they’d quit on you, or they just weren’t worth the headache — so you ended up doing it all yourself. Nobody answered every lead the second it came in, followed up without being told, and closed the way you would.
           </Editable>
           <Editable tid="home.wound.p2" as="p">
-            That’s not you being a control freak. That’s a unicorn that was never on the market.
+            That’s not you being a control freak. The employee you needed never existed.
           </Editable>
         </div>
 
@@ -74,7 +74,7 @@ export default function Wound() {
             as="p"
             className="text-xl font-bold md:text-2xl"
           >
-            Until now.
+            Until now. I build you an AI employee and train it myself — one that takes the training, never goes off the rails, never takes a day off, and never quits on you. The employee you could never find or keep, finally real.
           </Editable>
         </div>
       </div>

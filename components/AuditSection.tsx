@@ -21,7 +21,7 @@ export default function AuditSection() {
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl"
         >
-          You always knew you needed this. The salesperson you could never hire now exists.
+          You always knew you needed this. The employee you could never find or keep now exists.
         </Editable>
 
         <div className="mx-auto mt-8 max-w-2xl space-y-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">

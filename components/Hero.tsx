@@ -28,7 +28,7 @@ export default function Hero() {
           as="p"
           className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl"
         >
-          You’re not looking for more software to set up yourself. You’re looking for a partner who builds it, plugs it into the business you already run, and hands you the one hire you could never make — a salesperson as good as you.
+          You’re not looking for more software to set up yourself. You’re looking for someone to build it, plug it into the business you already run, and hand you the one employee you could never find or keep — one that sells like you do.
         </Editable>
         <Editable
           tid="home.hero.sub"
@@ -63,7 +63,7 @@ export default function Hero() {
                 as="p"
                 className="mt-2 max-w-md text-xs text-white/70 md:text-sm"
               >
-                What it looks like when the salesperson you could never hire gets installed on top of the business you already run.
+                What it looks like when the employee you could never find or keep finally goes to work on top of the business you already run.
               </Editable>
             </div>
             <div className="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">

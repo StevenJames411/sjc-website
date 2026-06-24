@@ -38,6 +38,9 @@ export default function ExitValuation() {
           <Editable tid="home.why.p2" as="p">
             The tools finally caught up to what I always needed. So I built it for myself first.
           </Editable>
+          <Editable tid="home.why.p2b" as="p">
+            Most of the people selling AI right now will hand you a chatbot — a box that sits on your site and waits to be asked a question. Almost nobody knows how to build a real AI employee right into the software you already run, that goes out and works the lead on its own. That&apos;s the hard part. That&apos;s what I do.
+          </Editable>
           <Editable
             tid="home.why.p3"
             as="p"

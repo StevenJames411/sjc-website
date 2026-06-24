@@ -7,12 +7,12 @@ const CONTROL_DEFAULTS = [
     body: "Your accounts, your data, your customer list — all stay in your name. Nothing moves into a black box you can't see into.",
   },
   {
-    title: "We do the work",
-    body: "I install it, operate it, and keep it running — turnkey. On your end it's push-button: you turn it on and it goes to work. You never touch the technical layer.",
+    title: "I do the work",
+    body: "I build it, run it, and keep it working — you don't lift a finger. On your end it's one button: you turn it on and it goes to work. You never have to touch the tech.",
   },
   {
     title: "The relief, not the boss",
-    body: "I don't take over your business — I take the work off your plate. You stay in command of your own system; you just stop running the parts that eat your day.",
+    body: "I don't take over your business — I take the work off your plate. You're still the boss; you just stop running the parts that eat your day.",
   },
 ];
 
@@ -25,19 +25,19 @@ export default function TwoTierModel() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          Control, Not Dependence
+You Stay The Boss
         </Editable>
         <Editable
           tid="home.control.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          You become the AI-first company. You never hand over your business.
+          You get the AI working for you. You never hand over your business.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.control.p1" as="p">
-            You don&apos;t build it, manage it, or babysit it. I install it and run it in the background — you just pay and turn it on. Your hand stays on every lead and every dollar, and you stay in command of your own system.
+            You don&apos;t build it, manage it, or babysit it. I build it and run it in the background — you just pay and turn it on. Your hand stays on every lead and every dollar, and you stay the boss.
           </Editable>
         </div>
 
@@ -71,7 +71,7 @@ export default function TwoTierModel() {
             as="p"
             className="text-xl font-bold leading-snug md:text-2xl"
           >
-            You do nothing but pay and use it. You stay in command of every lead and every dollar.
+            You do nothing but pay and use it. You stay the boss of every lead and every dollar.
           </Editable>
         </div>
       </div>

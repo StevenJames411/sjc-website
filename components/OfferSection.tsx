@@ -18,12 +18,12 @@ export default function OfferSection() {
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          Start with one seat. Grow the whole org chart on your timeline.
+          Start with one. Build out the rest of your team on your timeline.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.expansion.p1" as="p">
-            Most owners start with speed to lead — one AI employee answering every lead the second it lands. Once that&apos;s running and you can see it work, the same setup extends to the rest of the seats: follow-up, intake, scheduling, the admin that eats your week. You add seats when you&apos;re ready, not before.
+            Most owners start with speed to lead — one AI employee answering every lead the second it lands. Once that&apos;s running and you can see it work, the same setup covers the rest of the jobs you&apos;re doing yourself: follow-up, intake, scheduling, the paperwork that eats your week. You add more when you&apos;re ready, not before.
           </Editable>
           {/* p2 has two inline <strong> phrases — split into spans to preserve bold rendering */}
           <p>
