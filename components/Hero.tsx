@@ -14,28 +14,28 @@ export default function Hero() {
           as="p"
           className="text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-blue)]"
         >
-          Your AI Growth Partner
+          From One Solo Operator to Another
         </Editable>
         <Editable
           tid="home.hero.h1"
           as="h1"
           className="mt-4 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl"
         >
-          You already know AI belongs in your business. You just need someone to come in and install it.
+          You’ve worn every hat in this business for years — because no one you hired could ever carry it like you.
         </Editable>
         <Editable
           tid="home.hero.lede"
           as="p"
           className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl"
         >
-          You’re not looking for more software to set up yourself. You’re looking for someone to build it, plug it into the business you already run, and hand you the one employee you could never find or keep — one that sells like you do.
+          I did the exact same thing for 40 years. Five businesses, every hat, never a soul I could hand one to. Then it finally changed — and that’s the only reason I’m here.
         </Editable>
         <Editable
           tid="home.hero.sub"
           as="p"
           className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-mute)] md:text-lg"
         >
-          You do one thing: turn it on. I build it, install it, and run it on top of your business — your hand still on every lead and every dollar.
+          Let me show you what changed.
         </Editable>
 
         <div className="mt-10 overflow-hidden rounded-2xl shadow-lg">

@@ -32,12 +32,12 @@ export default function Problem() {
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          Every lead answered the instant it lands.
+          Here&apos;s the first thing the real employee does.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.problem.p1" as="p">
-            The employee you could never find goes to work the second a lead lands — whether you’re with a client, asleep, or three calls deep, it doesn’t matter. It catches the lead while it’s still warm, every time.
+            The employee you could never find finally goes to work — and the first thing it does is catch every lead the second it lands. With a client, asleep, three calls deep, it doesn&apos;t matter. It doesn&apos;t sit and wait like the software you tried before. It answers while the lead is still warm, every time.
           </Editable>
           <Editable tid="home.problem.p2" as="p" className="font-semibold">
             That starts on day one.

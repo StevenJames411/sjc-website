@@ -22,8 +22,7 @@ export default function About() {
               <p className="mt-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
                 And the whole time, I had the same problem you have. I could never find people
                 worth the effort &mdash; people who&apos;d stick around, take the training, and
-                actually do the job right. So I did it all myself. That problem is finally
-                solved, and I install the fix for you.
+                actually do the job right. So I did it all myself. For forty years.
               </p>
             </div>
             <div className="flex flex-col items-center md:items-end">

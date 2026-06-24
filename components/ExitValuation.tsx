@@ -21,7 +21,7 @@ export default function ExitValuation() {
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          Forty years. Five businesses. I&apos;ve been the tech guy in every one.
+          I&apos;m the right person to build this for you — because I walked your road first.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
@@ -32,14 +32,14 @@ export default function ExitValuation() {
             </Editable>{" "}
             <em>and</em>{" "}
             <Editable tid="home.why.p1b" as="span">
-              the tech guy who wired up the systems and kept them running. I&apos;ve worn your exact hat for four decades.
+              the tech guy who wired up the systems and kept them running. Same five businesses&apos; worth of hats you wear. Same people who let me down when I tried to hand one off. I&apos;ve been exactly where you are for four decades.
             </Editable>
           </p>
           <Editable tid="home.why.p2" as="p">
-            The tools finally caught up to what I always needed. So I built it for myself first.
+            So when the tools finally caught up to what I always needed, I didn&apos;t hand it off to a vendor. I built it for myself first — by hand.
           </Editable>
           <Editable tid="home.why.p2b" as="p">
-            Most of the people selling AI right now will hand you a chatbot — a box that sits on your site and waits to be asked a question. Almost nobody knows how to build a real AI employee right into the software you already run, that goes out and works the lead on its own. That&apos;s the hard part. That&apos;s what I do.
+            That&apos;s the difference. Most of the people selling AI right now will hand you a gadget — a chatbot, another piece of software — and walk away. It treats one symptom and never touches why you&apos;re still doing everything yourself. I build the real thing, by hand, right into the system you already run: an employee that goes out and does the job. I don&apos;t stop at the surface, because I lived the part underneath it.
           </Editable>
           <Editable
             tid="home.why.p3"

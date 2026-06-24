@@ -37,7 +37,7 @@ You Stay The Boss
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.control.p1" as="p">
-            You don&apos;t build it, manage it, or babysit it. I build it and run it in the background — you just pay and turn it on. Your hand stays on every lead and every dollar, and you stay the boss.
+            You do one thing: turn it on. I build it, install it, and run it on top of the business you already run — you don&apos;t build it, manage it, or babysit it. Your hand stays on every lead and every dollar, and you stay the boss.
           </Editable>
         </div>
 

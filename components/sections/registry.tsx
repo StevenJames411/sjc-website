@@ -19,8 +19,8 @@ export const REGISTRY: Record<string, SectionDef[]> = {
   home: [
     { key: "hero", label: "Hero", Component: Hero },
     { key: "wound", label: "The Hire You Could Never Make", Component: Wound },
-    { key: "problem", label: "Speed to Lead", Component: Problem },
     { key: "step", label: "Step One vs Step Two", Component: GerberTrifecta },
+    { key: "problem", label: "Speed to Lead", Component: Problem },
     { key: "control", label: "Control, Not Dependence", Component: TwoTierModel },
     { key: "why", label: "Why Me", Component: ExitValuation },
     { key: "proof", label: "The Proof", Component: CaseStudyTeaser },
