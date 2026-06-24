@@ -8,7 +8,7 @@ const CONTROL_DEFAULTS = [
   },
   {
     title: "We do the work",
-    body: "I install it, operate it, and keep it running in the background — turnkey. You never touch the technical layer, and you never lift a finger to run it.",
+    body: "I install it, operate it, and keep it running — turnkey. On your end it's push-button: you turn it on and it goes to work. You never touch the technical layer.",
   },
   {
     title: "The relief, not the boss",
@@ -37,7 +37,7 @@ export default function TwoTierModel() {
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.control.p1" as="p">
-            &ldquo;I operate it for you&rdquo; doesn&apos;t mean I take over. It means we do the work so you don&apos;t have to — turnkey. You keep your hand on every lead and every dollar, and you stay in command of your own system.
+            You don&apos;t build it, manage it, or babysit it. I install it and run it in the background — you just pay and turn it on. Your hand stays on every lead and every dollar, and you stay in command of your own system.
           </Editable>
         </div>
 
@@ -71,7 +71,7 @@ export default function TwoTierModel() {
             as="p"
             className="text-xl font-bold leading-snug md:text-2xl"
           >
-            You stay in control of your own system. We do the work — you don&apos;t lift a finger.
+            You do nothing but pay and use it. You stay in command of every lead and every dollar.
           </Editable>
         </div>
       </div>

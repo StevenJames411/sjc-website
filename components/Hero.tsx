@@ -21,21 +21,21 @@ export default function Hero() {
           as="h1"
           className="mt-4 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl"
         >
-          You already know you need AI. You just don’t want to give up control of your own shop.
+          You already know AI belongs in your business. You just need someone to come in and install it.
         </Editable>
         <Editable
           tid="home.hero.lede"
           as="p"
           className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl"
         >
-          I install AI on top of the business you already run — turnkey — and run it for you, so you get the growth and stay in command of your own system.
+          You’re not looking for more software to set up yourself. You’re looking for a partner who builds it, plugs it into the business you already run, and hands you the one hire you could never make — a salesperson as good as you.
         </Editable>
         <Editable
           tid="home.hero.sub"
           as="p"
           className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-mute)] md:text-lg"
         >
-          You become the AI-first company. Your hand stays on every lead and every dollar — you never give up the reins, and you never lift a finger to run it.
+          You do one thing: turn it on. I build it, install it, and run it on top of your business — your hand still on every lead and every dollar.
         </Editable>
 
         <div className="mt-10 overflow-hidden rounded-2xl shadow-lg">
@@ -63,7 +63,7 @@ export default function Hero() {
                 as="p"
                 className="mt-2 max-w-md text-xs text-white/70 md:text-sm"
               >
-                What it looks like to put AI to work on top of the business you already run — without giving up the controls.
+                What it looks like when the salesperson you could never hire gets installed on top of the business you already run.
               </Editable>
             </div>
             <div className="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">

@@ -1,68 +1,68 @@
 "use client";
 import Editable from "./edit/Editable";
 
-const POINTS = [
+const BEATS = [
   {
-    title: "Answered in seconds",
-    body: "A lead fills out your form at 11pm. It gets a real reply before it cools off — not a thank-you page and silence.",
+    title: "You tried to hire it",
+    body: "You ran the ads, did the interviews, made the offers. The ones who could sell didn't last, and the ones who lasted couldn't sell.",
   },
   {
-    title: "Nothing slips",
-    body: "It never gets busy, never forgets, never goes home. Every lead gets worked, every time, while you sleep.",
+    title: "You tried to train it",
+    body: "You taught them your pitch, your follow-up, the way you handle a tough lead. It never stuck the way it lived in your own head.",
   },
   {
-    title: "Booked, not just emailed",
-    body: "It doesn't stop at a reply. It qualifies, answers questions, and puts the appointment on your calendar.",
+    title: "So you did it yourself",
+    body: "Every lead, every follow-up, every close — back on your plate. Not because you wanted the control. Because nobody ever measured up.",
   },
 ];
 
-export default function Problem() {
+export default function Wound() {
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
         <Editable
-          tid="home.problem.eyebrow"
+          tid="home.wound.eyebrow"
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          Speed to Lead
+          The hire you could never make
         </Editable>
         <Editable
-          tid="home.problem.h2"
+          tid="home.wound.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          Every lead answered the instant it lands.
+          You spent your whole career looking for a salesperson as good as you. They didn’t exist.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-          <Editable tid="home.problem.p1" as="p">
-            The salesperson you could never hire goes to work the second a lead lands — while you’re on a job, asleep, or three calls deep, it doesn’t matter. It catches the lead while it’s still warm, every time.
+          <Editable tid="home.wound.p1" as="p">
+            You tried to hire it. You tried to train it. Nobody answered every lead the second it came in, followed up forever, and closed the way you would — so you did it yourself, because no one ever measured up.
           </Editable>
-          <Editable tid="home.problem.p2" as="p" className="font-semibold">
-            That starts on day one.
+          <Editable tid="home.wound.p2" as="p">
+            That’s not you being a control freak. That’s a unicorn that was never on the market.
           </Editable>
         </div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">
-          {POINTS.map((p, i) => (
+          {BEATS.map((b, i) => (
             <div
-              key={p.title}
+              key={b.title}
               className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
             >
               <Editable
-                tid={`home.problem.point${i}.title`}
+                tid={`home.wound.beat${i}.title`}
                 as="h3"
                 className="text-base font-bold text-[color:var(--color-sjc-blue)]"
               >
-                {p.title}
+                {b.title}
               </Editable>
               <Editable
-                tid={`home.problem.point${i}.body`}
+                tid={`home.wound.beat${i}.body`}
                 as="p"
                 className="mt-2 text-base leading-relaxed text-[color:var(--color-sjc-ink)]"
               >
-                {p.body}
+                {b.body}
               </Editable>
             </div>
           ))}
@@ -70,11 +70,11 @@ export default function Problem() {
 
         <div className="mt-10 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable
-            tid="home.problem.callout"
+            tid="home.wound.callout"
             as="p"
             className="text-xl font-bold md:text-2xl"
           >
-            The lead you already paid for stops being the one that got away.
+            Until now.
           </Editable>
         </div>
       </div>

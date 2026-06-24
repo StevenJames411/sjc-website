@@ -1,5 +1,6 @@
-export const BOOKING_URL =
-  "https://api.leadconnectorhq.com/widget/bookings/find-your-gap";
+// PLACEHOLDER — replace with Steven's Google Calendar Appointment Scheduling link before prod.
+// Stack rule: no GHL/Twilio/Perspective for SJC's own use.
+export const BOOKING_URL = "#book-placeholder";
 
 type CtaButtonProps = {
   title?: string;

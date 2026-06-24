@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Hero from "@/components/Hero";
+import Wound from "@/components/Wound";
 import Problem from "@/components/Problem";
 import GerberTrifecta from "@/components/GerberTrifecta";
 import TwoTierModel from "@/components/TwoTierModel";
@@ -17,6 +18,7 @@ export type SectionDef = { key: string; label: string; Component: React.Componen
 export const REGISTRY: Record<string, SectionDef[]> = {
   home: [
     { key: "hero", label: "Hero", Component: Hero },
+    { key: "wound", label: "The Hire You Could Never Make", Component: Wound },
     { key: "problem", label: "Speed to Lead", Component: Problem },
     { key: "step", label: "Step One vs Step Two", Component: GerberTrifecta },
     { key: "control", label: "Control, Not Dependence", Component: TwoTierModel },

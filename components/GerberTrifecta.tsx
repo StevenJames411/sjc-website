@@ -37,7 +37,7 @@ export default function GerberTrifecta() {
             Step One was the follow-up software everyone&apos;s been selling for years — the CRM, the autoresponder, the chatbot. It runs in a straight line: same message, same order, every time. It waits for the lead to act. You bought it, set it up, and it did a little. Then it stalled.
           </Editable>
           <Editable tid="home.step.p2" as="p" className="font-semibold">
-            Step Two is a dynamic AI employee that goes to work. This wasn&apos;t possible last year. Now it is — and it&apos;s the next rung up.
+            Step Two is that salesperson — a dynamic AI employee that goes to work on its own. This wasn&apos;t possible last year. Now it is — and it&apos;s the next rung up.
           </Editable>
         </div>
 

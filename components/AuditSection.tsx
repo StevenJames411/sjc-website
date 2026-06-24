@@ -21,15 +21,15 @@ export default function AuditSection() {
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl"
         >
-          You already know you need AI. Let&apos;s install it — with you still running your own shop.
+          You always knew you needed this. The salesperson you could never hire now exists.
         </Editable>
 
         <div className="mx-auto mt-8 max-w-2xl space-y-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
           <Editable tid="home.next.p1" as="p">
-            Get on a quick call. Tell me how you run today, and I&apos;ll show you exactly where AI plugs in — starting with speed to lead.
+            Get on a quick call. Tell me how you run today, and I&apos;ll show you exactly where your first AI employee plugs in — starting with speed to lead.
           </Editable>
           <Editable tid="home.next.p2" as="p" className="font-semibold">
-            I install it. We run it for you. You stay in control.
+            I install it. You turn it on. You stay in command.
           </Editable>
         </div>
 
