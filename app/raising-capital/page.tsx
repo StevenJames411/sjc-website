@@ -17,14 +17,16 @@ export default function RaisingCapitalPage() {
           name="Raising Capital"
           eyebrow="The money"
           tagline="The capital partners behind the re-rate."
-          body="When you own the AI layer, a services roll-up re-rates toward a technology multiple. That's a capital story as much as an operating one. This is the table for the money partners who fund the playbook and share the upside."
+          body="A services roll-up trades at a services multiple. But when you own the AI layer the businesses run on — not a tool you license, the layer you built — that same roll-up starts to re-rate toward a technology multiple. That's the capital story underneath the operating one: buy in fragmented fields, install the AI employees, and the whole platform gets repriced. This is the table for the money partners who fund the playbook and share the upside."
+          universeTitle="Who's at this table"
           universe={[
-            "Venture and growth capital partners.",
-            "Search funds and independent sponsors rolling up a field.",
+            "Venture and growth capital backing the AI layer itself.",
+            "Search funds and independent sponsors rolling up a fragmented field.",
+            "Private-equity sponsors who want a technology re-rate on a services book.",
             "The capital that turns one shop into a platform.",
           ]}
           ctaTitle="Let's talk"
-          ctaSubtitle="The capital side of the table."
+          ctaSubtitle="Principal to principal, on the capital side of the table."
         />
       </main>
       <Footer />

@@ -3,6 +3,7 @@ import React from "react";
 import HeroReel from "@/components/HeroReel";
 import IndustriesStrip from "@/components/IndustriesStrip";
 import Playbook from "@/components/Playbook";
+import TheCeiling from "@/components/TheCeiling";
 import Weapon from "@/components/Weapon";
 import WhereItLeads from "@/components/WhereItLeads";
 import Proof from "@/components/Proof";
@@ -25,6 +26,7 @@ export const REGISTRY: Record<string, SectionDef[]> = {
     { key: "hero", label: "Hero — sizzle reel", Component: HeroReel },
     { key: "findYourField", label: "Find Your Field", Component: IndustriesStrip },
     { key: "playbook", label: "The Playbook You Already Run", Component: Playbook },
+    { key: "ceiling", label: "The Ceiling — the Problem", Component: TheCeiling },
     { key: "weapon", label: "The Weapon — AI employees", Component: Weapon },
     { key: "whereItLeads", label: "Where It Leads — the M&A play", Component: WhereItLeads },
     { key: "proof", label: "Proof — Chloe", Component: Proof },
