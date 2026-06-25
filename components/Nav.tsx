@@ -6,11 +6,14 @@ import { BOOKING_URL } from "./CtaButton";
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
 
+// Primary nav = what the reader wants (their field, the show, who I am). The partner
+// "tables" (Board of Directors / Tech / Raising Capital) recede to the footer + homepage,
+// so the front door stays clean.
 const NAV_LINKS = [
   { href: "/", label: "Home" },
+  { href: "/industries", label: "Industries" },
+  { href: "/podcast", label: "Podcast" },
   { href: "/about", label: "About" },
-  { href: "/case-study", label: "Case Study" },
-  { href: "/faqs", label: "FAQs" },
 ];
 
 export default function Nav() {
