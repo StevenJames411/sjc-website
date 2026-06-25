@@ -18,13 +18,13 @@ export type SectionDef = { key: string; label: string; Component: React.Componen
 export const REGISTRY: Record<string, SectionDef[]> = {
   home: [
     { key: "hero", label: "Hero", Component: Hero },
-    { key: "wound", label: "The Hire You Could Never Make", Component: Wound },
-    { key: "step", label: "Step One vs Step Two", Component: GerberTrifecta },
-    { key: "problem", label: "Speed to Lead", Component: Problem },
-    { key: "control", label: "Control, Not Dependence", Component: TwoTierModel },
-    { key: "why", label: "Why Me", Component: ExitValuation },
-    { key: "proof", label: "The Proof", Component: CaseStudyTeaser },
-    { key: "expansion", label: "The Expansion", Component: OfferSection },
-    { key: "next", label: "Your Next Move", Component: AuditSection },
+    { key: "wound", label: "The Two Flywheels", Component: Wound },
+    { key: "step", label: "Why This Re-Rates", Component: GerberTrifecta },
+    { key: "problem", label: "The Working Model", Component: Problem },
+    { key: "proof", label: "Vertical One — The Proof", Component: CaseStudyTeaser },
+    { key: "expansion", label: "The Platform", Component: OfferSection },
+    { key: "control", label: "The Partnership", Component: TwoTierModel },
+    { key: "why", label: "The Moat", Component: ExitValuation },
+    { key: "next", label: "The Next Move", Component: AuditSection },
   ],
 };

@@ -3,16 +3,16 @@ import Editable from "./edit/Editable";
 
 const BEATS = [
   {
-    title: "You hired them",
-    body: "You ran the ads, did the interviews, made the offers. The ones who could sell didn't stick around, and the ones who stuck around couldn't sell.",
+    title: "Flywheel one — earnings",
+    body: "AI employees run inside every location: answering leads in seconds, following up, booking, handling the work that used to need headcount. Each location does more with less. Margin goes up at the unit level, then again across the whole portfolio.",
   },
   {
-    title: "You tried to train them",
-    body: "You sat them down and walked them through your pitch, your follow-up, the way you handle a tough lead. They wouldn't take it, or it never stuck the way it lives in your head.",
+    title: "Flywheel two — the multiple",
+    body: "A service business that owns its AI layer stops getting priced like a service business. It re-rates toward a tech company. Same earnings, a higher multiple on top of them. That's enterprise value created out of the structure itself.",
   },
   {
-    title: "So you did it all yourself",
-    body: "Every lead, every follow-up, every close — back on your plate. Not because you're a control freak. Because nobody you hired was ever worth the headache.",
+    title: "Why they compound",
+    body: "Better unit economics make the platform more acquisitive — more tuck-ins at better terms. More locations make the tech story bigger and the re-rating more defensible. Each turn of one flywheel feeds the other.",
   },
 ];
 
@@ -25,22 +25,22 @@ export default function Wound() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          The employee you could never find
+          The Thesis
         </Editable>
         <Editable
           tid="home.wound.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          You’ve spent years trying to find one good employee who could sell like you. You never could.
+          A roll-up makes money two ways at once. AI moves both — at the same time.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.wound.p1" as="p">
-            You hired them. You tried to train them. They wouldn’t take the training, they’d quit on you, or they just weren’t worth the headache — so you ended up doing it all yourself. Nobody answered every lead the second it came in, followed up without being told, and closed the way you would.
+            The value of any roll-up is earnings times a multiple. Most operators spend all their energy on the earnings and leave the multiple to chance. AI employees move both numbers — and that's the part almost nobody is pricing in yet.
           </Editable>
           <Editable tid="home.wound.p2" as="p">
-            That’s not you being a control freak. The employee you needed never existed.
+            One flywheel is operational. The other is structural. Together they don't add — they compound.
           </Editable>
         </div>
 
@@ -74,7 +74,7 @@ export default function Wound() {
             as="p"
             className="text-xl font-bold md:text-2xl"
           >
-            Until now. I build you an AI employee and train it myself — one that takes the training, never goes off the rails, never takes a day off, and never quits on you. The employee you could never find or keep, finally real.
+            Most buyers underwrite the first flywheel and ignore the second. The exit is bigger when you own both.
           </Editable>
         </div>
       </div>

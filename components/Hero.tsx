@@ -14,28 +14,28 @@ export default function Hero() {
           as="p"
           className="text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-blue)]"
         >
-          From One Solo Entrepreneur to Another
+          The AI Implementation Company
         </Editable>
         <Editable
           tid="home.hero.h1"
           as="h1"
           className="mt-4 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl"
         >
-          You were bold enough to start your own business — and you’ve carried the whole thing on your back ever since.
+          AI doesn’t just help a business run. It changes what the business is worth.
         </Editable>
         <Editable
           tid="home.hero.lede"
           as="p"
           className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-[color:var(--color-sjc-blue)] md:text-2xl"
         >
-          You’ve tried to hire help, more than once, in every corner of the business. It never sticks — you end up with a handful of average people and all the real work still on you. And it’s quietly worn you down.
+          When I install AI employees into a company, two things happen: every location does more with less — and the company itself re-rates from a service business into a tech company. One lifts the earnings. The other lifts the multiple.
         </Editable>
         <Editable
           tid="home.hero.sub"
           as="p"
           className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-mute)] md:text-lg"
         >
-          The game just changed. As your growth partner, the first thing I install is your first AI employee — a salesperson better than any you could hire, aimed straight at your growth. We start there.
+          I've run five businesses across forty years and I build the AI by hand. My own company runs on it. So does my first install — answering leads in seconds, booking around the clock. That's the working model. This page is where you watch it.
         </Editable>
 
         <div className="mt-10 overflow-hidden rounded-2xl shadow-lg">
@@ -63,7 +63,7 @@ export default function Hero() {
                 as="p"
                 className="mt-2 max-w-md text-xs text-white/70 md:text-sm"
               >
-                What it looks like when the employee you could never find or keep finally goes to work on top of the business you already run.
+                What the working model looks like running on top of a business that's already operating.
               </Editable>
             </div>
             <div className="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">
@@ -77,7 +77,7 @@ export default function Hero() {
             title={getText("home.hero.cta.title", "Book the Call")}
             subtitle={getText(
               "home.hero.cta.subtitle",
-              "See exactly what we'd install — and what you'd control."
+              "See the working model, and how the partnership works."
             )}
           />
         </div>

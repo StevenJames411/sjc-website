@@ -1,64 +1,64 @@
 "use client";
-import Editable from "./edit/Editable";
+import Editable from "../edit/Editable";
 
 const STEP_ONE_DEFAULTS = [
-  "Licensed per seat — you stop paying, it's gone",
-  "Lives on the vendor's roadmap, not yours",
-  "The next buyer doesn't pay a premium for it",
+  "A CRM that drips the same emails on a fixed schedule",
+  "An autoresponder that fires one canned message to everyone",
+  "A chatbot that sits on your site and waits to be asked",
 ];
 
 const STEP_TWO_DEFAULTS = [
-  "Built into the business — it stays when the vendor doesn't",
-  "Improves with every location it runs in",
-  "Underwritten as a tech asset at exit",
+  "Reaches back out to old leads on its own and restarts the conversation",
+  "Follows up like a person would — until it gets an answer or a no",
+  "Qualifies, handles the questions, and books the appointment",
 ];
 
-export default function GerberTrifecta() {
+export default function MedSpaStep() {
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
       <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
         <Editable
-          tid="home.step.eyebrow"
+          tid="medspa.step.eyebrow"
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          Why This Re-Rates
+          Step One vs. Step Two
         </Editable>
         <Editable
-          tid="home.step.h2"
+          tid="medspa.step.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          Software you rent never changed what a company was worth. An AI layer you own does.
+          You&apos;ve been sold a fix before. It never touched the real problem.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-          <Editable tid="home.step.p1" as="p">
-            Portfolio companies have bought software for years — CRMs, schedulers, the rest. None of it changed the multiple. You rent it, you turn it off, and the company is exactly the kind of business it always was. The market prices it accordingly.
+          <Editable tid="medspa.step.p1" as="p">
+            Somebody sold you a CRM. Somebody sold you an autoresponder. Now somebody&apos;s selling you a chatbot. Every one of them promised to take work off your back. You bought it, set it up, and a few months later you were still the one doing the work — because none of it ever did the job. It just sat there.
           </Editable>
-          <Editable tid="home.step.p2" as="p" className="font-semibold">
-            The difference isn&apos;t the tool. It&apos;s ownership. When the company owns the AI employees running its operations — built into the business, not licensed from a vendor — that becomes a defensible asset on the platform. That&apos;s what a re-rating is priced on.
+          <Editable tid="medspa.step.p2" as="p" className="font-semibold">
+            That&apos;s the catch nobody says out loud: those things treat the symptom. They patch one little task and leave the real problem untouched — that there&apos;s still no one but you actually doing the work.
           </Editable>
-          <Editable tid="home.step.p3" as="p">
-            A rented chatbot is a line item. An owned AI workforce, installed across the portfolio and improving over time, is a tech asset the next buyer underwrites. One is a cost. The other moves the multiple. That&apos;s the whole game.
+          <Editable tid="medspa.step.p3" as="p">
+            Take the chatbot everyone&apos;s pushing right now. It sits on your website and waits to be asked a question. It can&apos;t go out and work a lead. It can&apos;t pick up what you set down. It&apos;s one more box you babysit — another piece of software, not a person who handles it. That&apos;s the difference between a gadget and an employee, and it&apos;s the whole reason the fixes keep letting you down.
           </Editable>
         </div>
 
         <div className="mt-10 grid gap-5 md:grid-cols-2">
           <div className="rounded-2xl border border-gray-200 bg-white p-7 shadow-sm">
             <Editable
-              tid="home.step.col1.label"
+              tid="medspa.step.col1.label"
               as="p"
               className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-mute)]"
             >
-              Rented Software — A Cost Line
+              The Surface Fix — Software You Babysit
             </Editable>
             <Editable
-              tid="home.step.col1.sub"
+              tid="medspa.step.col1.sub"
               as="p"
               className="mt-2 text-sm text-[color:var(--color-sjc-mute)]"
             >
-              Priced like overhead. Re-rates nothing.
+              It sits there and waits for you.
             </Editable>
             <ul className="mt-5 space-y-3">
               {STEP_ONE_DEFAULTS.map((s, i) => (
@@ -67,7 +67,7 @@ export default function GerberTrifecta() {
                   className="flex items-start gap-3 text-base text-[color:var(--color-sjc-ink)]"
                 >
                   <span className="mt-2 inline-block h-2 w-2 flex-shrink-0 rounded-full bg-gray-400" />
-                  <Editable tid={`home.step.one${i}`} as="span">{s}</Editable>
+                  <Editable tid={`medspa.step.one${i}`} as="span">{s}</Editable>
                 </li>
               ))}
             </ul>
@@ -75,18 +75,18 @@ export default function GerberTrifecta() {
 
           <div className="rounded-2xl border border-[color:var(--color-sjc-blue)] bg-blue-50/50 p-7">
             <Editable
-              tid="home.step.col2.label"
+              tid="medspa.step.col2.label"
               as="p"
               className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-blue)]"
             >
-              Owned AI Employees — An Asset
+              The Real Thing — An Employee That Works
             </Editable>
             <Editable
-              tid="home.step.col2.sub"
+              tid="medspa.step.col2.sub"
               as="p"
               className="mt-2 text-sm text-[color:var(--color-sjc-mute)]"
             >
-              Built in, owned by the platform, re-rates the whole.
+              It goes out and does the job for you.
             </Editable>
             <ul className="mt-5 space-y-3">
               {STEP_TWO_DEFAULTS.map((s, i) => (
@@ -95,7 +95,7 @@ export default function GerberTrifecta() {
                   className="flex items-start gap-3 text-base text-[color:var(--color-sjc-ink)]"
                 >
                   <span className="mt-2 inline-block h-2 w-2 flex-shrink-0 rounded-full bg-[color:var(--color-sjc-blue)]" />
-                  <Editable tid={`home.step.two${i}`} as="span">{s}</Editable>
+                  <Editable tid={`medspa.step.two${i}`} as="span">{s}</Editable>
                 </li>
               ))}
             </ul>
@@ -104,11 +104,11 @@ export default function GerberTrifecta() {
 
         <div className="mt-10 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable
-            tid="home.step.callout"
+            tid="medspa.step.callout"
             as="p"
             className="text-xl font-bold md:text-2xl"
           >
-            Renting software keeps you a service business. Owning the AI layer is how a service business becomes a tech company.
+            The fixes failed you because they were never the real thing. A real employee — one that actually does the job — is. And for the first time, you can finally have one.
           </Editable>
         </div>
       </div>
