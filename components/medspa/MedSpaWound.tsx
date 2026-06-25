@@ -21,14 +21,14 @@ export default function MedSpaWound() {
     <section className="bg-white">
       <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
         <Editable
-          tid="medspa.wound.eyebrow"
+          tid="med-spa.wound.eyebrow"
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
           The Employee You Could Never Find
         </Editable>
         <Editable
-          tid="medspa.wound.h2"
+          tid="med-spa.wound.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
@@ -36,10 +36,10 @@ export default function MedSpaWound() {
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-          <Editable tid="medspa.wound.p1" as="p">
+          <Editable tid="med-spa.wound.p1" as="p">
             You hired them. You tried to train them. They wouldn&apos;t take the training, they&apos;d quit on you, or they just weren&apos;t worth the headache — so you ended up doing it all yourself. Nobody answered every lead the second it came in, followed up without being told, and closed the way you would.
           </Editable>
-          <Editable tid="medspa.wound.p2" as="p">
+          <Editable tid="med-spa.wound.p2" as="p">
             That&apos;s not you being a control freak. The employee you needed never existed.
           </Editable>
         </div>
@@ -51,14 +51,14 @@ export default function MedSpaWound() {
               className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
             >
               <Editable
-                tid={`medspa.wound.beat${i}.title`}
+                tid={`med-spa.wound.beat${i}.title`}
                 as="h3"
                 className="text-base font-bold text-[color:var(--color-sjc-blue)]"
               >
                 {b.title}
               </Editable>
               <Editable
-                tid={`medspa.wound.beat${i}.body`}
+                tid={`med-spa.wound.beat${i}.body`}
                 as="p"
                 className="mt-2 text-base leading-relaxed text-[color:var(--color-sjc-ink)]"
               >
@@ -70,7 +70,7 @@ export default function MedSpaWound() {
 
         <div className="mt-10 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable
-            tid="medspa.wound.callout"
+            tid="med-spa.wound.callout"
             as="p"
             className="text-xl font-bold md:text-2xl"
           >
