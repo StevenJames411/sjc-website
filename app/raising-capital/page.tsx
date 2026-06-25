@@ -1,6 +1,10 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PillarTemplate from "@/components/PillarTemplate";
+import EditablePage from "@/components/edit/EditablePage";
+import { readPublished } from "@/lib/siteContent";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Raising Capital | Steven James Consulting",
@@ -8,12 +12,15 @@ export const metadata = {
     "The money partners behind the re-rate — the capital side of the playbook.",
 };
 
-export default function RaisingCapitalPage() {
+export default async function RaisingCapitalPage() {
+  const published = await readPublished("raising-capital");
   return (
     <>
       <Nav />
       <main>
+        <EditablePage pageKey="raising-capital" published={published}>
         <PillarTemplate
+          tid="raising-capital"
           name="Raising Capital"
           eyebrow="The money"
           tagline="The capital partners behind the re-rate."
@@ -28,6 +35,7 @@ export default function RaisingCapitalPage() {
           ctaTitle="Let's talk"
           ctaSubtitle="Principal to principal, on the capital side of the table."
         />
+        </EditablePage>
       </main>
       <Footer />
     </>

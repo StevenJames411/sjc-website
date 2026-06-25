@@ -1,6 +1,10 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PillarTemplate from "@/components/PillarTemplate";
+import EditablePage from "@/components/edit/EditablePage";
+import { readPublished } from "@/lib/siteContent";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Tech | Steven James Consulting",
@@ -8,12 +12,15 @@ export const metadata = {
     "The technology partners who plug into the build — the AI layer that powers the playbook.",
 };
 
-export default function TechPage() {
+export default async function TechPage() {
+  const published = await readPublished("tech");
   return (
     <>
       <Nav />
       <main>
+        <EditablePage pageKey="tech" published={published}>
         <PillarTemplate
+          tid="tech"
           name="Tech"
           eyebrow="The build"
           tagline="The technology partners who plug into the build behind the playbook."
@@ -28,6 +35,7 @@ export default function TechPage() {
           ctaTitle="Partner with us"
           ctaSubtitle="Builder to builder, on the tech side of the table."
         />
+        </EditablePage>
       </main>
       <Footer />
     </>

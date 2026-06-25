@@ -13,6 +13,7 @@ export default function EditToolbar({
   saving,
   pageKey,
   panelOpen,
+  showSections = true,
   onEnter,
   onExit,
   onSave,
@@ -23,6 +24,7 @@ export default function EditToolbar({
   saving: boolean;
   pageKey: string;
   panelOpen: boolean;
+  showSections?: boolean;
   onEnter: () => void;
   onExit: () => void;
   onSave: () => Promise<boolean>;
@@ -92,9 +94,11 @@ export default function EditToolbar({
 
   return (
     <div style={bar}>
-      <button style={ghost} onClick={onTogglePanel}>
-        {panelOpen ? "Sections ▾" : "Sections ▸"}
-      </button>
+      {showSections && (
+        <button style={ghost} onClick={onTogglePanel}>
+          {panelOpen ? "Sections ▾" : "Sections ▸"}
+        </button>
+      )}
       <button
         style={{ ...primary, opacity: dirty && !saving ? 1 : 0.55 }}
         disabled={!dirty || saving}

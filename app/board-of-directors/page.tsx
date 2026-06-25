@@ -1,6 +1,10 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PillarTemplate from "@/components/PillarTemplate";
+import EditablePage from "@/components/edit/EditablePage";
+import { readPublished } from "@/lib/siteContent";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Board of Directors | Steven James Consulting",
@@ -8,12 +12,15 @@ export const metadata = {
     "Conversations with company leaders who've done the deal across industries — the top tier of the journey.",
 };
 
-export default function BoardOfDirectorsPage() {
+export default async function BoardOfDirectorsPage() {
+  const published = await readPublished("board-of-directors");
   return (
     <>
       <Nav />
       <main>
+        <EditablePage pageKey="board-of-directors" published={published}>
         <PillarTemplate
+          tid="board-of-directors"
           name="Board of Directors"
           eyebrow="The top tier"
           tagline="Company leaders who've already run the mergers-and-acquisitions playbook — at the highest level, across industries."
@@ -28,6 +35,7 @@ export default function BoardOfDirectorsPage() {
           ctaTitle="Get in touch"
           ctaSubtitle="Leaders who've done the deal — no pitch on the mic."
         />
+        </EditablePage>
       </main>
       <Footer />
     </>

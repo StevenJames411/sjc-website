@@ -1,6 +1,10 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PillarTemplate from "@/components/PillarTemplate";
+import EditablePage from "@/components/edit/EditablePage";
+import { readPublished } from "@/lib/siteContent";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Podcast | Steven James Consulting",
@@ -8,12 +12,15 @@ export const metadata = {
     "Operators at every stage of the journey — solo to exit — across every field. The conversations the hero reel is cut from.",
 };
 
-export default function PodcastPage() {
+export default async function PodcastPage() {
+  const published = await readPublished("podcast");
   return (
     <>
       <Nav />
       <main>
+        <EditablePage pageKey="podcast" published={published}>
         <PillarTemplate
+          tid="podcast"
           name="The Podcast"
           eyebrow="The content engine"
           tagline="Operators at every stage of the journey — still solo, mid-roll-up, already exited — across every field."
@@ -28,6 +35,7 @@ export default function PodcastPage() {
           ctaTitle="Come on the show"
           ctaSubtitle="One operator to another — no pitch on the mic."
         />
+        </EditablePage>
       </main>
       <Footer />
     </>

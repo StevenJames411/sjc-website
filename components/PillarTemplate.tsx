@@ -1,10 +1,14 @@
+"use client";
 import CtaButton from "./CtaButton";
+import Editable from "./edit/Editable";
 
 // ONE shared template for the four "tables" (podcast, board of directors, tech, raising capital).
-// Each pillar page passes its framing; the arc is hero -> intro -> who's at this table -> CTA.
-// Layout skeleton — the content pass fills the real copy and (for podcast/board) the episode grid.
+// Inline-editable: each text node is an <Editable> with a committed default from props; overrides
+// store per page (the page wraps this in <EditablePage pageKey="...">). Arc: hero -> intro ->
+// who's at this table -> CTA.
 export type PillarProps = {
   name: string;
+  tid?: string; // text-id prefix (unique per page)
   eyebrow: string;
   tagline: string;
   body: string;
@@ -16,6 +20,7 @@ export type PillarProps = {
 
 export default function PillarTemplate({
   name,
+  tid = "pillar",
   eyebrow,
   tagline,
   body,
@@ -29,34 +34,58 @@ export default function PillarTemplate({
       {/* Hero */}
       <section style={{ backgroundColor: "#0f1f3d" }} className="w-full text-white">
         <div className="mx-auto max-w-4xl px-6 pt-10 pb-16 text-center md:pt-14 md:pb-20">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-green)]">
+          <Editable
+            tid={`${tid}.eyebrow`}
+            as="p"
+            className="text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-green)]"
+          >
             {eyebrow}
-          </p>
-          <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight md:text-5xl">{name}</h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-white/85 md:text-xl">
+          </Editable>
+          <Editable
+            tid={`${tid}.name`}
+            as="h1"
+            className="mt-4 text-3xl font-bold leading-tight tracking-tight md:text-5xl"
+          >
+            {name}
+          </Editable>
+          <Editable
+            tid={`${tid}.tagline`}
+            as="p"
+            className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-white/85 md:text-xl"
+          >
             {tagline}
-          </p>
+          </Editable>
         </div>
       </section>
 
       {/* Intro */}
       <section className="bg-white">
         <div className="mx-auto max-w-4xl px-6 py-20 md:py-24">
-          <p className="text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">{body}</p>
+          <Editable
+            tid={`${tid}.body`}
+            as="p"
+            className="text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl"
+          >
+            {body}
+          </Editable>
         </div>
       </section>
 
       {/* The universe */}
       <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
         <div className="mx-auto max-w-4xl px-6 py-20 md:py-24">
-          <h2 className="text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
+          <Editable
+            tid={`${tid}.universeTitle`}
+            as="h2"
+            className="text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
+          >
             {universeTitle}
-          </h2>
+          </Editable>
           <ul className="mt-6 space-y-3">
             {universe.map((u, idx) => (
               <li key={idx} className="flex gap-3 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
                 <span className="mt-1 text-[color:var(--color-sjc-blue)]">&#9656;</span>
-                <span>{u}</span>
+                <Editable tid={`${tid}.u.${idx}`} as="span">{u}</Editable>
               </li>
             ))}
           </ul>

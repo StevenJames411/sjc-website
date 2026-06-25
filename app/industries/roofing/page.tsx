@@ -1,6 +1,10 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
+import EditablePage from "@/components/edit/EditablePage";
+import { readPublished } from "@/lib/siteContent";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Roofing | Steven James Consulting",
@@ -8,12 +12,15 @@ export const metadata = {
     "AI employees for roofing companies — the same playbook, maximized. From solo operator to roll-up.",
 };
 
-export default function RoofingPage() {
+export default async function RoofingPage() {
+  const published = await readPublished("industry-roofing");
   return (
     <>
       <Nav />
       <main>
+        <EditablePage pageKey="industry-roofing" published={published}>
         <FieldDeepTemplate
+          tid="roofing"
           name="Roofing"
           eyebrow="Roofing — I ran one of these"
           live={false}
@@ -30,6 +37,7 @@ export default function RoofingPage() {
           fix="An AI employee plugs every one of those holes at the same time. It answers the second a lead lands — storm night, Sunday, 2 a.m., doesn't matter — and it actually reads what the person wrote instead of firing the same canned blast at everybody. It chases the estimate, nudges the 'we'll think about it' on its own schedule, keeps the claim paperwork moving, and quietly works your old customer list for re-roofs and referrals. It books the appointment straight onto the calendar. Same way every time, every job logged, while your hands stay on the work you're actually good at."
           rollup="This is the same playbook I've run five times — you just point it at roofing. First you stop the bleed on the shop you've already got: the leads you were losing turn into booked jobs, and that drops straight to the bottom line. Then you bolt on the next crew, the next town, the next shop — and the AI layer runs the phones the same way across all of them, no extra front desk per location. Own that layer and you stop getting priced like a roofing company and start getting priced like a platform — a technology multiple instead of a trade multiple. That's the difference between selling a truck and a crew, and selling a machine. Same playbook a mergers-and-acquisitions operator runs — maximized, and AI is the newest weapon in it."
         />
+        </EditablePage>
       </main>
       <Footer />
     </>
