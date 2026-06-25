@@ -1,9 +1,10 @@
 "use client";
 import Editable from "./edit/Editable";
 
-// HOME §3 — STORY. The universal playbook every owner-run business runs, said back to the
-// operator at ANY stage (solo -> rolling up -> exited). Names M&A as the maximizer of this
-// one play, not a separate avatar. Never opens with "AI".
+// HOME §3 — STORY. The universal playbook, told through the E-Myth: every owner-run business
+// starts as the Technician (the owner IS the business). The play to grow is Gerber's — build the
+// org chart, fill the seats so the system runs the business. The M&A operator maximizes that one
+// play. Spoken to the operator at any stage. Never opens with "AI".
 export default function Playbook() {
   return (
     <section className="bg-white">
@@ -30,23 +31,27 @@ export default function Playbook() {
             play five times across five different industries.
           </Editable>
           <Editable tid="home.playbook.p2" as="p">
-            It starts with you on your own back. You are the business — you answer the phone, you
-            run the schedule, you know every customer by name, and the whole thing lives in your
+            Michael Gerber named where it starts: you&apos;re the Technician. You got good at the
+            work, you opened your own shop, and now the business is just you — you answer the phone,
+            you run the schedule, you know every customer by name, and the whole thing lives in your
             head and your calendar. You take the risk nobody else would take, and you grind it up
             one job, one lead, one customer at a time.
           </Editable>
           <Editable tid="home.playbook.p3" as="p">
-            Then you run the play to grow: get more leads in the door, answer them faster, follow
-            up harder, book more of them, and don&apos;t let a single one slip. The operator who
-            takes it further bolts on a second location and a third, strips out the duplicate cost,
-            and builds a layer of people so it doesn&apos;t all live on him anymore.
+            The play to grow is the same one Gerber wrote down forty years ago: stop being the
+            business and start building it. Draw the org chart — sales, follow-up, front desk,
+            operations — and fill the seats, so the system runs the business and the people run the
+            system. You work ON it instead of buried IN it. That&apos;s the whole
+            game, whether you&apos;ve got one location or seven.
           </Editable>
           <Editable tid="home.playbook.p4" as="p">
-            And the operator who runs it all the way bundles those locations into a platform and
-            sells it — the same dollars of earnings suddenly worth double or triple, purely because
-            of size, story, and how clean it reads to the next buyer. That last move is exactly what
-            a mergers-and-acquisitions operator does for a living. He didn&apos;t invent a new play.
-            He maximizes this one.
+            The operator who runs it furthest bolts on more locations, strips out the duplicate
+            cost, and builds a real management layer — and the way he&apos;s always filled those
+            org-chart seats is human hires plus linear legacy software. Then he bundles the whole
+            thing into a platform and sells it: the same dollars of earnings suddenly worth double
+            or triple, purely because of size, story, and how clean it reads to the next buyer.
+            That last move is exactly what a mergers-and-acquisitions operator does for a living. He
+            didn&apos;t invent a new play. He maximizes this one.
           </Editable>
           <Editable tid="home.playbook.p5" as="p">
             And whatever stage you&apos;re at, you run the whole thing on the same linear tools

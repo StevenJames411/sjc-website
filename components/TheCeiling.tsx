@@ -1,9 +1,9 @@
 "use client";
 import Editable from "./edit/Editable";
 
-// HOME §4 — PROBLEM. Where the linear playbook hits its lid: the daily leaks, the ceiling on
-// growth, the ceiling on the multiple, and the human bottleneck (the owner who won't let go).
-// Sets up the SOLUTION beats that follow (Weapon -> Where It Leads).
+// HOME §4 — PROBLEM. The lid: the daily leaks, the linear tools that can't fill a seat, the
+// org chart with one name in every box (the human who won't let go = the Technician who can't
+// delegate), and the sting at the exit — nobody buys a business when the owner IS the system.
 export default function TheCeiling() {
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
@@ -33,25 +33,24 @@ export default function TheCeiling() {
             it&apos;s spread thin, enormous once you add it up.
           </Editable>
           <Editable tid="home.ceiling.p2" as="p">
-            The linear tools can&apos;t plug those leaks. They were built to move a lead from A to B
-            in a straight line, and that&apos;s all they were ever built to do. They don&apos;t
-            answer at midnight, they don&apos;t read what the person actually said, and they
-            don&apos;t work the list. The conveyor belt has a ceiling, and you&apos;ve been bumping
-            your head on it for years.
+            The linear tools can&apos;t plug those leaks, because they were never built to fill a
+            seat — only to move a lead from A to B in a straight line. They don&apos;t answer at
+            midnight, they don&apos;t read what the person actually said, and they don&apos;t work
+            the list. So the seats on your org chart go unfilled, and the work that should live in
+            them falls back onto the one person who&apos;s always caught it: you.
           </Editable>
           <Editable tid="home.ceiling.p3" as="p">
-            And if you&apos;re rolling shops up, there&apos;s a second lid on top of the first: run
-            the same tools as every other consolidator and the market prices you like every other
-            consolidator — a services business, in a known band, dragged back to the category
-            average no matter how well you operate.
+            That&apos;s the real lid — the org chart with one name in every box. Maybe it&apos;s
+            you; maybe it&apos;s the operator you&apos;re buying. Every time he handed something off
+            it got fumbled, so he stopped handing things off and does it all himself, and he&apos;s
+            proud of it. Gerber&apos;s line still bites: if the business depends on you, you
+            don&apos;t own a business — you own a job. The owner became the system.
           </Editable>
           <Editable tid="home.ceiling.p4" as="p">
-            The hardest part isn&apos;t a tool at all — it&apos;s the owner who won&apos;t let go.
-            Maybe that&apos;s you; maybe it&apos;s the operator you&apos;re buying. Every time he
-            handed something off it got fumbled, so he stopped handing things off and does it all
-            himself, and he&apos;s proud of it. That pride is what makes the shop worth having — and
-            the exact thing that fights every change you try to make. That&apos;s the lid. Here&apos;s
-            the lever.
+            And here&apos;s where it costs the most — at the finish line. Nobody buys a business
+            when the owner IS the system. The lid isn&apos;t just on how much the shop can
+            grow; it&apos;s on whether you can ever sell it. That&apos;s the ceiling. Here&apos;s the
+            lever.
           </Editable>
         </div>
       </div>

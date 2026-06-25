@@ -3,10 +3,10 @@ import CtaButton from "./CtaButton";
 import Editable from "./edit/Editable";
 import { useEditText } from "./edit/editContext";
 
-// HOME §1 — the router. A sizzle-reel video (placeholder for now) of real operators who've
-// done the deal across fields, framed as the journey: solo entrepreneur → exit. Names the
-// fields out loud so a visitor hears their own world, then the IndustriesStrip below hands
-// them the one click. Hero never opens with "AI".
+// HOME §1 — the router + the spine. The constant across forty years wasn't an industry, it was
+// the ROLE: Steven was the technology architect in every business he ran. The fifth business is
+// that role productized — he installs the technology (an AI workforce) for other operators now.
+// Category flag = the AI Employee Operating System. Sizzle-reel video placeholder; never opens with "AI".
 export default function HeroReel() {
   const { getText } = useEditText();
 
@@ -25,16 +25,18 @@ export default function HeroReel() {
           as="h1"
           className="mt-4 text-3xl font-bold leading-tight tracking-tight md:text-5xl"
         >
-          Five businesses. Forty years. One playbook.
+          Five businesses. Forty years. I was the technology in every one.
         </Editable>
         <Editable
           tid="home.hero.sub"
           as="p"
           className="mx-auto mt-5 max-w-3xl text-lg leading-relaxed text-white/85 md:text-xl"
         >
-          Restaurant, mortgage, roofing, trucking, now AI — five different industries, the same
-          playbook underneath every one. It&apos;s the exact playbook a mergers-and-acquisitions
-          operator maximizes. I lived it from the inside five times, and now I bring AI to it.
+          Restaurant, mortgage, roofing, trucking — four businesses I ran, and in every one I was
+          the architect who built the systems that made it work, because we were too small to
+          afford anyone else. That became my fifth business: I do it for other operators now. I
+          walk in and install the technology itself — a workforce of AI employees — into a business
+          like the ones I built. The trade has a name: the AI Employee Operating System.
         </Editable>
 
         {/* Sizzle-reel placeholder — replace with the 2-minute teaser cut from podcast/board interviews */}
