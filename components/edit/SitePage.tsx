@@ -69,10 +69,12 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
   const exitEdit = useCallback(() => {
     setEditing(false);
     setPanelOpen(false);
-    setTexts(published.texts || {});
-    setOrder(resolveOrder(known, published.order));
     setDirty(false);
-  }, [published, known]);
+    // The signed-in owner keeps seeing their saved DRAFT after Done (not the published
+    // snapshot), so Save -> Done no longer reverts to the old copy. Public visitors never
+    // reach edit mode — they always render the published snapshot from the server.
+    loadDraft();
+  }, [loadDraft]);
 
   const reorder = useCallback((next: string[]) => {
     setOrder(next);
@@ -114,10 +116,14 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
         if (editParam) {
           if (ok) enterEdit();
           else setShowLogin(true);
+        } else if (ok) {
+          // Owner (signed in) sees their working DRAFT on the normal page view, so saved
+          // edits persist across Done and reloads without being published to the public.
+          loadDraft();
         }
       })
       .catch(() => {});
-  }, [enterEdit]);
+  }, [enterEdit, loadDraft]);
 
   const ctx = useMemo(() => ({ editing, getText, setText }), [editing, getText, setText]);
 
