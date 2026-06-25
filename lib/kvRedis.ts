@@ -15,7 +15,14 @@ let _redis: Redis | null = null;
 let _client: KvClient | null = null;
 
 export function getClient(): KvClient | null {
-  const url = process.env.KV_REDIS_URL;
+  // Accept whatever the Upstash/Vercel integration injects as the rediss:// TCP URL —
+  // KV_REDIS_URL (cockpit's name) or the integration defaults (KV_URL / REDIS_URL) — so
+  // connecting the store to this project "just works" without renaming a variable.
+  const url =
+    process.env.KV_REDIS_URL ||
+    process.env.KV_URL ||
+    process.env.REDIS_URL ||
+    process.env.UPSTASH_REDIS_URL;
   if (!url) return null;
   if (!_client) {
     _redis = new Redis(url, { maxRetriesPerRequest: 3, enableReadyCheck: false });
