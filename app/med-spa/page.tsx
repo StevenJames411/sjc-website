@@ -60,7 +60,7 @@ export default async function MedSpaPage() {
               </Editable>
               <div className="mt-10 flex justify-center">
                 <CtaButton
-                  title="Book the Call"
+                  title="Apply to work with me"
                   subtitle="See exactly what we'd install — and what you'd control."
                 />
               </div>
@@ -98,7 +98,7 @@ export default async function MedSpaPage() {
               </div>
               <div className="mt-10 flex justify-center">
                 <CtaButton
-                  title="Book the Call"
+                  title="Apply to work with me"
                   subtitle="A quick call. No pitch deck — just where AI fits on your business."
                 />
               </div>

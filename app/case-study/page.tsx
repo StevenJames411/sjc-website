@@ -150,11 +150,11 @@ export default async function CaseStudy() {
                 Want one of these answering your leads?
               </Editable>
               <Editable tid="case-study.s6.p" as="p" className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-                Book a quick call. I&apos;ll show you exactly where a dynamic AI employee plugs into the business you already run.
+                Apply to work with me. I&apos;ll show you exactly where a dynamic AI employee plugs into the business you already run.
               </Editable>
               <div className="mt-8 flex flex-col items-center gap-4">
                 <CtaButton
-                  title="Book the Call"
+                  title="Apply to work with me"
                   subtitle="See where a dynamic AI employee plugs into your business."
                   href="/#contact"
                 />

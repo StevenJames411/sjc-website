@@ -289,7 +289,7 @@ export const SEED: Data = {
             type: "Heading",
             props: {
               id: "s1-h1",
-              text: "I'm a solo entrepreneur, just like you. Forty years. Five businesses of my own.",
+              text: "I'm a solo entrepreneur, just like you. Forty years. Four businesses of my own — and now this one.",
               level: "h1",
               align: "left",
             },
@@ -319,7 +319,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s2-p1",
-              text: "I'm Steven Barchetti. I've run my own businesses for forty years — five of them, in five different trades. A restaurant in 1986. A mortgage company with my brother. A roofing company. A trucking company I ran for twenty years. And now this.",
+              text: "I'm Steven Barchetti. I've run my own businesses for forty years — four of them, in four different trades. A restaurant in 1986. A mortgage company with my brother. A roofing company. A trucking company I ran for twenty years. And now this one — the AI business.",
               align: "left",
             },
           },
@@ -335,7 +335,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s2-p3",
-              text: "So I've been sitting in your exact chair, doing 90% of it with my own two hands, longer than most of these consultants have been alive. I know what it feels like to be great at the work and still buried under every other job in the company. I lived it five times.",
+              text: "So I've been sitting in your exact chair, doing 90% of it with my own two hands, longer than most of these consultants have been alive. I know what it feels like to be great at the work and still buried under every other job in the company. I lived it four times.",
               align: "left",
             },
           },
@@ -438,7 +438,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s5-p",
-              text: "Let's get on a quick call. You tell me how you run things today, and I'll show you exactly where an AI employee fits in — with you in charge the whole way.",
+              text: "Apply to work with me. You tell me how you run things today, and I'll show you exactly where an AI employee fits in — with you in charge the whole way.",
               align: "center",
             },
           },
@@ -446,7 +446,7 @@ export const SEED: Data = {
             type: "Button",
             props: {
               id: "s5-cta",
-              title: "Book the Call",
+              title: "Apply to work with me",
               subtitle: "A quick call to see where an AI employee fits into your business.",
               href: "/#contact",
             },

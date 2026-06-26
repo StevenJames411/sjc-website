@@ -42,7 +42,7 @@ export default async function About() {
                   My story
                 </Editable>
                 <Editable tid="about.h1" as="h1" className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-                  I&apos;m a solo entrepreneur, just like you. Forty years. Five businesses of my own.
+                  I&apos;m a solo entrepreneur, just like you. Forty years. Four businesses of my own &mdash; and now this one.
                 </Editable>
                 <Editable tid="about.s1.intro" as="p" className="mt-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
                   And the whole time, I had the same problem you have. I could never find people worth the effort &mdash; people who&apos;d stick around, take the training, and actually do the job right. So I did it all myself. For forty years.
@@ -73,13 +73,13 @@ export default async function About() {
               </Editable>
               <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
                 <Editable tid="about.s2.p1" as="p">
-                  I&apos;m Steven Barchetti. I&apos;ve run my own businesses for forty years &mdash; five of them, in five different trades. A restaurant in 1986. A mortgage company with my brother. A roofing company. A trucking company I ran for twenty years. And now this.
+                  I&apos;m Steven Barchetti. I&apos;ve run my own businesses for forty years &mdash; four of them, in four different trades. A restaurant in 1986. A mortgage company with my brother. A roofing company. A trucking company I ran for twenty years. And now this one &mdash; the AI business.
                 </Editable>
                 <Editable tid="about.s2.p2" as="p">
                   And in every one of them, I hit the same wall: I could never find people who&apos;d stick around, take the training, and be worth the effort. They quit. They cut corners. They went off and did their own thing. So I gave up on it and did everything myself &mdash; the work, the books, the follow-up, the ads, and yes, I was the computer guy too. Whatever needed doing, that was me.
                 </Editable>
                 <Editable tid="about.s2.p3" as="p">
-                  So I&apos;ve been sitting in your exact chair, doing 90% of it with my own two hands, longer than most of these consultants have been alive. I know what it feels like to be great at the work and still buried under every other job in the company. I lived it five times.
+                  So I&apos;ve been sitting in your exact chair, doing 90% of it with my own two hands, longer than most of these consultants have been alive. I know what it feels like to be great at the work and still buried under every other job in the company. I lived it four times.
                 </Editable>
               </div>
             </div>
@@ -135,12 +135,12 @@ export default async function About() {
                 Want to see what this would look like in your shop?
               </Editable>
               <Editable tid="about.s5.p" as="p" className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-                Let&apos;s get on a quick call. You tell me how you run things today, and I&apos;ll show you exactly where an AI employee fits in &mdash; with you in charge the whole way.
+                Apply to work with me. You tell me how you run things today, and I&apos;ll show you exactly where an AI employee fits in &mdash; with you in charge the whole way.
               </Editable>
               <div className="mt-8 flex flex-col items-center gap-4">
                 <Removable tid="about.s5.cta">
                   <CtaButton
-                    title="Book the Call"
+                    title="Apply to work with me"
                     subtitle="A quick call to see where an AI employee fits into your business."
                     href="/#contact"
                   />
