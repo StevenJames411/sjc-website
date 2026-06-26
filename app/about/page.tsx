@@ -6,10 +6,28 @@ import EditablePage from "@/components/edit/EditablePage";
 import Editable from "@/components/edit/Editable";
 import Removable from "@/components/edit/Removable";
 import { readPublished } from "@/lib/siteContent";
+import { readPuckPublished } from "@/lib/puckContent";
+import { Render } from "@measured/puck";
+import { config } from "@/components/puck/config";
 
 export const dynamic = "force-dynamic";
 
 export default async function About() {
+  // If a Puck-built version has been published, render that (the visual-builder pilot).
+  // Otherwise fall back to the committed hand-coded page below — no regression.
+  const puck = await readPuckPublished("about");
+  if (puck) {
+    return (
+      <>
+        <Nav />
+        <main>
+          <Render config={config} data={puck} />
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   const published = await readPublished("about");
   return (
     <>
