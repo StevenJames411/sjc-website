@@ -46,17 +46,8 @@ export default function IndustriesStrip() {
               </p>
             </a>
           ))}
-          <a
-            href="/industries"
-            className="group flex flex-col justify-center rounded-xl border border-dashed border-black/20 bg-white p-5 transition hover:border-[color:var(--color-sjc-blue)]"
-          >
-            <span className="text-lg font-semibold text-[color:var(--color-sjc-blue)]">
-              More fields &rarr;
-            </span>
-            <p className="mt-2 text-sm leading-relaxed text-[color:var(--color-sjc-mute)]">
-              The list keeps growing. Don&apos;t see yours yet? It&apos;s next.
-            </p>
-          </a>
+          {/* PARKED (boutique trim): "More fields → /industries" card removed — its target is a
+              parked page, and the strip now shows only the live proof vertical. */}
         </div>
       </div>
     </section>

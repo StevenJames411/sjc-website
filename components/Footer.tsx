@@ -1,6 +1,5 @@
 import { BOOKING_URL } from "./CtaButton";
 import { INDUSTRIES, industryHref } from "@/lib/industries";
-import { PILLARS, pillarHref } from "@/lib/pillars";
 
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
@@ -13,7 +12,7 @@ export default function Footer() {
   return (
     <footer style={{ backgroundColor: "#111827" }} className="text-white">
       <div className="mx-auto max-w-6xl px-6 py-14">
-        <div className="grid gap-10 md:grid-cols-5">
+        <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
               <img src={LOGO_URL} alt="SJC logo" className="h-12 w-12 rounded-full" />
@@ -51,20 +50,6 @@ export default function Footer() {
               {INDUSTRIES.map((i) => (
                 <li key={i.slug}>
                   <a href={industryHref(i)} className="text-white/80 hover:text-white">{i.name}</a>
-                </li>
-              ))}
-              <li>
-                <a href="/industries" className="text-white/80 hover:text-white">All industries</a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-white/90">Partners</p>
-            <ul className="mt-4 space-y-3 text-sm">
-              {PILLARS.map((p) => (
-                <li key={p.slug}>
-                  <a href={pillarHref(p)} className="text-white/80 hover:text-white">{p.name}</a>
                 </li>
               ))}
             </ul>

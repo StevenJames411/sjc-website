@@ -17,24 +17,26 @@ export const INDUSTRIES: Industry[] = [
     blurb: "Live proof — Chloe books consults while the lights are off.",
     href: "/med-spa",
   },
-  {
-    slug: "roofing",
-    name: "Roofing",
-    status: "next",
-    blurb: "Owner-run, lead-driven, bleeding the same leaks.",
-  },
-  {
-    slug: "hvac",
-    name: "HVAC",
-    status: "next",
-    blurb: "Same shape — every call that hits voicemail is money.",
-  },
-  {
-    slug: "garage-doors",
-    name: "Garage Doors",
-    status: "next",
-    blurb: "Fragmented, local, ripe to roll up.",
-  },
+  // PARKED 2026-06-26 (boutique trim): the "next" verticals are off the public site until a
+  // surgical campaign needs one. The pages stay on disk; uncomment to restore.
+  // {
+  //   slug: "roofing",
+  //   name: "Roofing",
+  //   status: "next",
+  //   blurb: "Owner-run, lead-driven, bleeding the same leaks.",
+  // },
+  // {
+  //   slug: "hvac",
+  //   name: "HVAC",
+  //   status: "next",
+  //   blurb: "Same shape — every call that hits voicemail is money.",
+  // },
+  // {
+  //   slug: "garage-doors",
+  //   name: "Garage Doors",
+  //   status: "next",
+  //   blurb: "Fragmented, local, ripe to roll up.",
+  // },
 ];
 
 export const industryHref = (i: Industry) => i.href ?? `/industries/${i.slug}`;

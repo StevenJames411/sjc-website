@@ -6,13 +6,12 @@ import { BOOKING_URL } from "./CtaButton";
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
 
-// Primary nav = what the reader wants (their field, the show, who I am). The partner
-// "tables" (Board of Directors / Tech / Raising Capital) recede to the footer + homepage,
-// so the front door stays clean.
+// Primary nav = the boutique spine. Three surfaces only: Home, the live Proof (med-spa =
+// vertical #1), and who I am. The podcast / partner "tables" / extra verticals are parked
+// (off-nav, drafts) so the front door reads "specialist," not "agency."
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/industries", label: "Industries" },
-  { href: "/podcast", label: "Podcast" },
+  { href: "/med-spa", label: "Proof" },
   { href: "/about", label: "About" },
 ];
 
