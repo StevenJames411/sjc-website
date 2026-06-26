@@ -86,6 +86,28 @@ export default function EditToolbar({
     }
   }, [pubBusy, pubState, pageKey, onSave]);
 
+  // Rich-text formatting acts on the current selection inside the focused <Editable>.
+  // preventDefault on mousedown keeps that selection from clearing when a button is clicked.
+  const preventBlur = (e: React.MouseEvent) => e.preventDefault();
+  const exec = (command: string, val?: string) => {
+    try {
+      document.execCommand(command, false, val);
+    } catch {
+      /* ignore */
+    }
+  };
+  const addLink = () => {
+    const sel = window.getSelection();
+    const range = sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+    const url = window.prompt("Link URL (https://…)");
+    if (!url) return;
+    if (sel && range) {
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    exec("createLink", url);
+  };
+
   if (!editing) {
     return (
       <div style={bar}>
@@ -110,6 +132,42 @@ export default function EditToolbar({
       >
         {saving ? "Saving…" : dirty ? "Save" : "Saved"}
       </button>
+      <div style={sizeGroup}>
+        <button style={fmtBtn} onMouseDown={preventBlur} onClick={() => exec("bold")} aria-label="Bold">
+          <b>B</b>
+        </button>
+        <button style={fmtBtn} onMouseDown={preventBlur} onClick={() => exec("italic")} aria-label="Italic">
+          <i>I</i>
+        </button>
+        <button style={fmtBtn} onMouseDown={preventBlur} onClick={() => exec("underline")} aria-label="Underline">
+          <u>U</u>
+        </button>
+        <button style={fmtBtn} onMouseDown={preventBlur} onClick={addLink} aria-label="Add link">
+          Link
+        </button>
+        <button
+          style={fmtBtn}
+          onMouseDown={preventBlur}
+          onClick={() => {
+            exec("removeFormat");
+            exec("unlink");
+          }}
+          aria-label="Clear formatting"
+        >
+          Clear
+        </button>
+      </div>
+      <div style={sizeGroup}>
+        {COLORS.map((c) => (
+          <button
+            key={c}
+            style={{ ...swatch, background: c }}
+            onMouseDown={preventBlur}
+            onClick={() => exec("foreColor", c)}
+            aria-label={`Text color ${c}`}
+          />
+        ))}
+      </div>
       {onSize && (
         <div style={sizeGroup} title="Click a text box, then resize it">
           <button
@@ -205,3 +263,19 @@ const sizeBtn: React.CSSProperties = {
   color: "#e5e7eb",
   padding: "9px 11px",
 };
+const fmtBtn: React.CSSProperties = {
+  ...base,
+  background: "rgba(255,255,255,0.12)",
+  color: "#e5e7eb",
+  padding: "9px 11px",
+  minWidth: 34,
+};
+const swatch: React.CSSProperties = {
+  width: 22,
+  height: 22,
+  borderRadius: 6,
+  border: "1px solid rgba(255,255,255,0.35)",
+  cursor: "pointer",
+  padding: 0,
+};
+const COLORS = ["#0f1f3d", "#2563eb", "#2ea043", "#dc2626", "#ffffff"];

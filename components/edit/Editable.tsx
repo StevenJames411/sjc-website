@@ -1,15 +1,16 @@
 "use client";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useEditText } from "./editContext";
 
 // Wrap any text node with <Editable tid="home.hero.h1" as="h1" className="...">Default
 // copy</Editable>. The default copy stays in the component (committed to the repo); the
-// editor's change is stored as an override keyed by `tid`. Override wins when present.
+// editor stores an override (rich HTML) keyed by `tid`. Override wins when present.
 //
-// Public / non-editing: renders a plain element with the resolved text (+ any saved size/align).
-// Editing: the same element becomes contentEditable. We deliberately do NOT setState on
-// every keystroke (that would clobber the cursor) — we capture the result on blur. Focusing
-// the element makes it the target for the toolbar's A-/A+ and L/C/R controls.
+// Rich text: the stored value is HTML (bold/italic/underline/color/links applied via the
+// toolbar's execCommand buttons). Public / non-editing renders that HTML (+ any saved
+// size/align). Editing turns the element contentEditable; we seed it with the current value
+// ONCE when edit mode turns on (via a ref) so typing, formatting, and size/align changes
+// never reset the cursor or clobber unsaved edits. We capture innerHTML on blur.
 type Props = {
   tid: string;
   children: string; // the committed default text
@@ -17,10 +18,20 @@ type Props = {
   className?: string;
 };
 
+// Owner-only editor, but strip the obvious dangerous bits from stored HTML anyway.
+function sanitize(html: string): string {
+  return html
+    .replace(/<\s*script[\s\S]*?<\s*\/\s*script\s*>/gi, "")
+    .replace(/<\s*style[\s\S]*?<\s*\/\s*style\s*>/gi, "")
+    .replace(/ on\w+="[^"]*"/gi, "")
+    .replace(/ on\w+='[^']*'/gi, "");
+}
+
 export default function Editable({ tid, children, as, className }: Props) {
   const { editing, getText, setText, getSize, getAlign, setActiveTid } = useEditText();
-  const Tag: React.ElementType = as || "span";
+  const Tag: React.ElementType = (as || "span") as React.ElementType;
   const value = getText(tid, children);
+  const ref = useRef<HTMLElement | null>(null);
 
   const overrideStyle: React.CSSProperties = {};
   const size = getSize(tid);
@@ -29,16 +40,28 @@ export default function Editable({ tid, children, as, className }: Props) {
   if (align) overrideStyle.textAlign = align;
   const hasOverride = size !== undefined || align !== undefined;
 
+  // Seed the contentEditable with the current value when edit mode turns on — and only then,
+  // so re-renders (size/align/other boxes) don't wipe what's being typed.
+  useEffect(() => {
+    if (editing && ref.current) {
+      ref.current.innerHTML = value;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing]);
+
   if (!editing) {
     return (
-      <Tag className={className} style={hasOverride ? overrideStyle : undefined}>
-        {value}
-      </Tag>
+      <Tag
+        className={className}
+        style={hasOverride ? overrideStyle : undefined}
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
     );
   }
 
   return (
     <Tag
+      ref={ref as React.Ref<HTMLElement>}
       className={className}
       contentEditable
       suppressContentEditableWarning
@@ -52,11 +75,7 @@ export default function Editable({ tid, children, as, className }: Props) {
         minWidth: "1ch",
         ...overrideStyle,
       }}
-      onBlur={(e: React.FocusEvent<HTMLElement>) =>
-        setText(tid, e.currentTarget.innerText.replace(/\s+/g, " ").trim())
-      }
-    >
-      {value}
-    </Tag>
+      onBlur={(e: React.FocusEvent<HTMLElement>) => setText(tid, sanitize(e.currentTarget.innerHTML))}
+    />
   );
 }
