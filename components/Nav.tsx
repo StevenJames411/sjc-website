@@ -11,6 +11,7 @@ const LOGO_URL =
 // (off-nav, drafts) so the front door reads "specialist," not "agency."
 const NAV_LINKS = [
   { href: "/", label: "Home" },
+  { href: "/what-changed", label: "What Changed" },
   { href: "/case-study", label: "Proof" },
   { href: "/about", label: "About" },
 ];
