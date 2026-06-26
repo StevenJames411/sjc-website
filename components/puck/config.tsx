@@ -3,11 +3,20 @@
 // what Steven drags onto the canvas matches the live site. No "use client" here: this module
 // is imported by BOTH the client editor (app/about/edit) and the server <Render> on the
 // public /about page, so it must stay framework-neutral (types only from @measured/puck).
-import type { ComponentType } from "react";
-import type { Config, Data } from "@measured/puck";
+import type { Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
 
 type Align = "left" | "center" | "right";
+
+// The props each block carries. Puck uses this to type the field editors AND the render
+// functions (so `content` below is handed back as a render component for the nested slot).
+type Props = {
+  Section: { background: string; content: Slot };
+  Heading: { text: string; level: "h1" | "h2" | "h3"; align: Align };
+  Text: { text: string; align: Align };
+  Button: { title: string; subtitle: string; href: string };
+  PhoneLink: { label: string; tel: string };
+};
 
 const ALIGN_FIELD = {
   type: "radio" as const,
@@ -27,8 +36,8 @@ const BG_FIELD = {
   ],
 };
 
-// The block catalog. `satisfies Config` validates the shape while keeping inference.
-export const config = {
+// The block catalog, typed with the Props map so fields + render params are inferred.
+export const config: Config<Props> = {
   components: {
     Section: {
       label: "Section (band)",
@@ -37,13 +46,7 @@ export const config = {
         content: { type: "slot" as const },
       },
       defaultProps: { background: "#ffffff", content: [] },
-      render: ({
-        background,
-        content: Content,
-      }: {
-        background: string;
-        content: ComponentType;
-      }) => (
+      render: ({ background, content: Content }) => (
         <section style={{ backgroundColor: background }} className="w-full">
           <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
             <Content />
@@ -67,16 +70,8 @@ export const config = {
         },
         align: { ...ALIGN_FIELD, label: "Align" },
       },
-      defaultProps: { text: "New heading", level: "h2", align: "left" },
-      render: ({
-        text,
-        level,
-        align,
-      }: {
-        text: string;
-        level: "h1" | "h2" | "h3";
-        align: Align;
-      }) => {
+      defaultProps: { text: "New heading", level: "h2" as const, align: "left" as const },
+      render: ({ text, level, align }) => {
         const Tag = level;
         const size =
           level === "h1"
@@ -103,9 +98,9 @@ export const config = {
       },
       defaultProps: {
         text: "New paragraph. Click to edit this text.",
-        align: "left",
+        align: "left" as const,
       },
-      render: ({ text, align }: { text: string; align: Align }) => (
+      render: ({ text, align }) => (
         <p
           className="text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg"
           style={{ textAlign: align, whiteSpace: "pre-line", marginTop: "1rem" }}
@@ -127,15 +122,7 @@ export const config = {
         subtitle: "",
         href: "/#contact",
       },
-      render: ({
-        title,
-        subtitle,
-        href,
-      }: {
-        title: string;
-        subtitle: string;
-        href: string;
-      }) => (
+      render: ({ title, subtitle, href }) => (
         <div className="mt-8 flex justify-center">
           <CtaButton title={title} subtitle={subtitle || undefined} href={href} />
         </div>
@@ -152,7 +139,7 @@ export const config = {
         label: "Or call me directly: (210) 298-2343",
         tel: "+12102982343",
       },
-      render: ({ label, tel }: { label: string; tel: string }) => (
+      render: ({ label, tel }) => (
         <div className="mt-4 text-center">
           <a
             href={`tel:${tel}`}
