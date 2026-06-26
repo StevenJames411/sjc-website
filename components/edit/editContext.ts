@@ -9,8 +9,9 @@ export type EditTextCtx = {
   editing: boolean;
   getText: (tid: string, fallback: string) => string;
   setText: (tid: string, value: string) => void;
-  // Per-element font-size override (px) + which element the toolbar's A-/A+ acts on.
+  // Per-element font-size (px) + text-align overrides + which element the toolbar acts on.
   getSize: (tid: string) => number | undefined;
+  getAlign: (tid: string) => "left" | "center" | "right" | undefined;
   setActiveTid: (tid: string | null) => void;
 };
 
@@ -19,6 +20,7 @@ export const EditTextContext = createContext<EditTextCtx>({
   getText: (_tid, fallback) => fallback,
   setText: () => {},
   getSize: () => undefined,
+  getAlign: () => undefined,
   setActiveTid: () => {},
 });
 

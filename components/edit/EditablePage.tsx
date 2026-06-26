@@ -21,6 +21,9 @@ export default function EditablePage({
 }) {
   const [texts, setTexts] = useState<Record<string, string>>(published.texts || {});
   const [sizes, setSizes] = useState<Record<string, number>>(published.sizes || {});
+  const [aligns, setAligns] = useState<Record<string, "left" | "center" | "right">>(
+    published.aligns || {}
+  );
   const [activeTid, setActiveTidState] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [authed, setAuthed] = useState(false);
@@ -57,6 +60,17 @@ export default function EditablePage({
     [activeTid, sizes]
   );
 
+  const getAlign = useCallback((tid: string) => aligns[tid], [aligns]);
+
+  const setAlign = useCallback(
+    (value: "left" | "center" | "right") => {
+      if (!activeTid) return;
+      setAligns((prev) => ({ ...prev, [activeTid]: value }));
+      setDirty(true);
+    },
+    [activeTid]
+  );
+
   const loadDraft = useCallback(async () => {
     try {
       const r = await fetch(`/api/site-content?page=${encodeURIComponent(pageKey)}`);
@@ -64,6 +78,7 @@ export default function EditablePage({
       const st = (j && j.state) || {};
       setTexts(st.texts || {});
       setSizes(st.sizes || {});
+      setAligns(st.aligns || {});
     } catch {
       /* keep current */
     }
@@ -89,7 +104,7 @@ export default function EditablePage({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ page: pageKey, state: { texts, sizes } }),
+        body: JSON.stringify({ page: pageKey, state: { texts, sizes, aligns } }),
       });
       const j = await r.json();
       if (j && j.ok) setDirty(false);
@@ -99,7 +114,7 @@ export default function EditablePage({
     } finally {
       setSaving(false);
     }
-  }, [pageKey, texts, sizes]);
+  }, [pageKey, texts, sizes, aligns]);
 
   useEffect(() => {
     let editParam = false;
@@ -124,8 +139,8 @@ export default function EditablePage({
   }, [enterEdit, loadDraft]);
 
   const ctx = useMemo(
-    () => ({ editing, getText, setText, getSize, setActiveTid }),
-    [editing, getText, setText, getSize, setActiveTid]
+    () => ({ editing, getText, setText, getSize, getAlign, setActiveTid }),
+    [editing, getText, setText, getSize, getAlign, setActiveTid]
   );
 
   return (
@@ -144,6 +159,7 @@ export default function EditablePage({
           onExit={exitEdit}
           onSave={save}
           onSize={adjustSize}
+          onAlign={setAlign}
           onTogglePanel={() => {}}
         />
       )}

@@ -6,10 +6,10 @@ import { useEditText } from "./editContext";
 // copy</Editable>. The default copy stays in the component (committed to the repo); the
 // editor's change is stored as an override keyed by `tid`. Override wins when present.
 //
-// Public / non-editing: renders a plain element with the resolved text (+ any saved size).
+// Public / non-editing: renders a plain element with the resolved text (+ any saved size/align).
 // Editing: the same element becomes contentEditable. We deliberately do NOT setState on
 // every keystroke (that would clobber the cursor) — we capture the result on blur. Focusing
-// the element makes it the target for the toolbar's A-/A+ size controls.
+// the element makes it the target for the toolbar's A-/A+ and L/C/R controls.
 type Props = {
   tid: string;
   children: string; // the committed default text
@@ -18,15 +18,20 @@ type Props = {
 };
 
 export default function Editable({ tid, children, as, className }: Props) {
-  const { editing, getText, setText, getSize, setActiveTid } = useEditText();
+  const { editing, getText, setText, getSize, getAlign, setActiveTid } = useEditText();
   const Tag: React.ElementType = as || "span";
   const value = getText(tid, children);
+
+  const overrideStyle: React.CSSProperties = {};
   const size = getSize(tid);
-  const sizeStyle: React.CSSProperties = size ? { fontSize: `${size}px` } : {};
+  if (size) overrideStyle.fontSize = `${size}px`;
+  const align = getAlign(tid);
+  if (align) overrideStyle.textAlign = align;
+  const hasOverride = size !== undefined || align !== undefined;
 
   if (!editing) {
     return (
-      <Tag className={className} style={size ? sizeStyle : undefined}>
+      <Tag className={className} style={hasOverride ? overrideStyle : undefined}>
         {value}
       </Tag>
     );
@@ -45,7 +50,7 @@ export default function Editable({ tid, children, as, className }: Props) {
         borderRadius: "3px",
         cursor: "text",
         minWidth: "1ch",
-        ...sizeStyle,
+        ...overrideStyle,
       }}
       onBlur={(e: React.FocusEvent<HTMLElement>) =>
         setText(tid, e.currentTarget.innerText.replace(/\s+/g, " ").trim())

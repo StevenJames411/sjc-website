@@ -18,6 +18,7 @@ export default function EditToolbar({
   onExit,
   onSave,
   onSize,
+  onAlign,
   onTogglePanel,
 }: {
   editing: boolean;
@@ -30,6 +31,7 @@ export default function EditToolbar({
   onExit: () => void;
   onSave: () => Promise<boolean>;
   onSize?: (delta: number) => void;
+  onAlign?: (value: "left" | "center" | "right") => void;
   onTogglePanel: () => void;
 }) {
   const [pubState, setPubState] = useState<"draft" | "published" | "unknown">("unknown");
@@ -125,6 +127,34 @@ export default function EditToolbar({
             aria-label="Larger text"
           >
             A+
+          </button>
+        </div>
+      )}
+      {onAlign && (
+        <div style={sizeGroup} title="Align the selected text box (left / center / right)">
+          <button
+            style={sizeBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onAlign("left")}
+            aria-label="Align left"
+          >
+            L
+          </button>
+          <button
+            style={sizeBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onAlign("center")}
+            aria-label="Align center"
+          >
+            C
+          </button>
+          <button
+            style={sizeBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onAlign("right")}
+            aria-label="Align right"
+          >
+            R
           </button>
         </div>
       )}
