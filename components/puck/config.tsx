@@ -5,6 +5,7 @@
 // public /about page, so it must stay framework-neutral (types only from @measured/puck).
 import type { Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
+import RichText from "@/components/puck/RichText";
 
 type Align = "left" | "center" | "right";
 
@@ -93,20 +94,26 @@ export const config: Config<Props> = {
     Text: {
       label: "Text box",
       fields: {
-        text: { type: "textarea" as const, label: "Text" },
+        // A full in-block word processor (bold/italic/underline/color/link on a selection).
+        text: {
+          type: "custom" as const,
+          label: "Text",
+          render: ({ onChange, value }) => (
+            <RichText value={value as string} onChange={onChange} />
+          ),
+        },
         align: { ...ALIGN_FIELD, label: "Align" },
       },
       defaultProps: {
-        text: "New paragraph. Click to edit this text.",
+        text: "New paragraph. Select any word and use the toolbar to format it.",
         align: "left" as const,
       },
       render: ({ text, align }) => (
-        <p
-          className="text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg"
-          style={{ textAlign: align, whiteSpace: "pre-line", marginTop: "1rem" }}
-        >
-          {text}
-        </p>
+        <div
+          className="rt text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg"
+          style={{ textAlign: align, marginTop: "1rem" }}
+          dangerouslySetInnerHTML={{ __html: text }}
+        />
       ),
     },
 
