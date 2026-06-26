@@ -29,6 +29,7 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
   const [aligns, setAligns] = useState<Record<string, "left" | "center" | "right">>(
     published.aligns || {}
   );
+  const [hidden, setHidden] = useState<Record<string, boolean>>(published.hidden || {});
   const [activeTid, setActiveTidState] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [authed, setAuthed] = useState(false);
@@ -82,6 +83,15 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
     [activeTid]
   );
 
+  const getHidden = useCallback((tid: string) => Boolean(hidden[tid]), [hidden]);
+
+  // Flip the selected element between hidden (deleted) and visible. Hides, never destroys.
+  const toggleHidden = useCallback(() => {
+    if (!activeTid) return;
+    setHidden((prev) => ({ ...prev, [activeTid]: !prev[activeTid] }));
+    setDirty(true);
+  }, [activeTid]);
+
   const loadDraft = useCallback(async () => {
     try {
       const r = await fetch(`/api/site-content?page=${encodeURIComponent(pageKey)}`);
@@ -91,6 +101,7 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
       setOrder(resolveOrder(known, st.order));
       setSizes(st.sizes || {});
       setAligns(st.aligns || {});
+      setHidden(st.hidden || {});
     } catch {
       /* keep current */
     }
@@ -124,7 +135,7 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ page: pageKey, state: { order, texts, sizes, aligns } }),
+        body: JSON.stringify({ page: pageKey, state: { order, texts, sizes, aligns, hidden } }),
       });
       const j = await r.json();
       if (j && j.ok) setDirty(false);
@@ -134,7 +145,7 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
     } finally {
       setSaving(false);
     }
-  }, [pageKey, order, texts, sizes, aligns]);
+  }, [pageKey, order, texts, sizes, aligns, hidden]);
 
   // On mount: am I the editor? Honor ?edit=1 (open editor, prompting login if needed).
   useEffect(() => {
@@ -162,8 +173,8 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
   }, [enterEdit, loadDraft]);
 
   const ctx = useMemo(
-    () => ({ editing, getText, setText, getSize, getAlign, setActiveTid }),
-    [editing, getText, setText, getSize, getAlign, setActiveTid]
+    () => ({ editing, getText, setText, getSize, getAlign, setActiveTid, getHidden, toggleHidden }),
+    [editing, getText, setText, getSize, getAlign, setActiveTid, getHidden, toggleHidden]
   );
 
   return (
@@ -181,11 +192,14 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
           saving={saving}
           pageKey={pageKey}
           panelOpen={panelOpen}
+          hasActive={Boolean(activeTid)}
+          activeHidden={activeTid ? Boolean(hidden[activeTid]) : false}
           onEnter={enterEdit}
           onExit={exitEdit}
           onSave={save}
           onSize={adjustSize}
           onAlign={setAlign}
+          onDelete={toggleHidden}
           onTogglePanel={() => setPanelOpen((v) => !v)}
         />
       )}

@@ -14,11 +14,14 @@ export default function EditToolbar({
   pageKey,
   panelOpen,
   showSections = true,
+  hasActive = false,
+  activeHidden = false,
   onEnter,
   onExit,
   onSave,
   onSize,
   onAlign,
+  onDelete,
   onTogglePanel,
 }: {
   editing: boolean;
@@ -27,11 +30,14 @@ export default function EditToolbar({
   pageKey: string;
   panelOpen: boolean;
   showSections?: boolean;
+  hasActive?: boolean;
+  activeHidden?: boolean;
   onEnter: () => void;
   onExit: () => void;
   onSave: () => Promise<boolean>;
   onSize?: (delta: number) => void;
   onAlign?: (value: "left" | "center" | "right") => void;
+  onDelete?: () => void;
   onTogglePanel: () => void;
 }) {
   const [pubState, setPubState] = useState<"draft" | "published" | "unknown">("unknown");
@@ -216,6 +222,26 @@ export default function EditToolbar({
           </button>
         </div>
       )}
+      {onDelete && (
+        <button
+          style={{
+            ...(activeHidden ? restoreBtn : deleteBtn),
+            opacity: hasActive ? 1 : 0.45,
+          }}
+          onMouseDown={preventBlur}
+          disabled={!hasActive}
+          onClick={onDelete}
+          title={
+            hasActive
+              ? activeHidden
+                ? "Restore the selected element"
+                : "Delete the selected element (one-click undo with Restore)"
+              : "Click an element on the page first, then Delete"
+          }
+        >
+          {activeHidden ? "↩ Restore" : "🗑 Delete"}
+        </button>
+      )}
       <button
         style={pubState === "published" ? pubOn : pubOff}
         disabled={pubBusy}
@@ -256,6 +282,8 @@ const primary: React.CSSProperties = { ...base, background: "#2563eb", color: "#
 const ghost: React.CSSProperties = { ...base, background: "rgba(255,255,255,0.12)", color: "#e5e7eb" };
 const pubOn: React.CSSProperties = { ...base, background: "#2ea043", color: "#fff" };
 const pubOff: React.CSSProperties = { ...base, background: "rgba(255,255,255,0.12)", color: "#9ca3af" };
+const deleteBtn: React.CSSProperties = { ...base, background: "#dc2626", color: "#fff" };
+const restoreBtn: React.CSSProperties = { ...base, background: "#b45309", color: "#fff" };
 const sizeGroup: React.CSSProperties = { display: "flex", gap: 4 };
 const sizeBtn: React.CSSProperties = {
   ...base,

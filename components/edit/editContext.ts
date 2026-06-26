@@ -13,6 +13,9 @@ export type EditTextCtx = {
   getSize: (tid: string) => number | undefined;
   getAlign: (tid: string) => "left" | "center" | "right" | undefined;
   setActiveTid: (tid: string | null) => void;
+  // Per-element delete/hide: getHidden reports state; toggleHidden flips the active element.
+  getHidden: (tid: string) => boolean;
+  toggleHidden: () => void;
 };
 
 export const EditTextContext = createContext<EditTextCtx>({
@@ -22,6 +25,8 @@ export const EditTextContext = createContext<EditTextCtx>({
   getSize: () => undefined,
   getAlign: () => undefined,
   setActiveTid: () => {},
+  getHidden: () => false,
+  toggleHidden: () => {},
 });
 
 export const useEditText = () => useContext(EditTextContext);

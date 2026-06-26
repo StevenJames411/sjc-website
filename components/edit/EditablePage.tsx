@@ -24,6 +24,7 @@ export default function EditablePage({
   const [aligns, setAligns] = useState<Record<string, "left" | "center" | "right">>(
     published.aligns || {}
   );
+  const [hidden, setHidden] = useState<Record<string, boolean>>(published.hidden || {});
   const [activeTid, setActiveTidState] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [authed, setAuthed] = useState(false);
@@ -71,6 +72,15 @@ export default function EditablePage({
     [activeTid]
   );
 
+  const getHidden = useCallback((tid: string) => Boolean(hidden[tid]), [hidden]);
+
+  // Flip the selected element between hidden (deleted) and visible. Hides, never destroys.
+  const toggleHidden = useCallback(() => {
+    if (!activeTid) return;
+    setHidden((prev) => ({ ...prev, [activeTid]: !prev[activeTid] }));
+    setDirty(true);
+  }, [activeTid]);
+
   const loadDraft = useCallback(async () => {
     try {
       const r = await fetch(`/api/site-content?page=${encodeURIComponent(pageKey)}`);
@@ -79,6 +89,7 @@ export default function EditablePage({
       setTexts(st.texts || {});
       setSizes(st.sizes || {});
       setAligns(st.aligns || {});
+      setHidden(st.hidden || {});
     } catch {
       /* keep current */
     }
@@ -104,7 +115,7 @@ export default function EditablePage({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ page: pageKey, state: { texts, sizes, aligns } }),
+        body: JSON.stringify({ page: pageKey, state: { texts, sizes, aligns, hidden } }),
       });
       const j = await r.json();
       if (j && j.ok) setDirty(false);
@@ -114,7 +125,7 @@ export default function EditablePage({
     } finally {
       setSaving(false);
     }
-  }, [pageKey, texts, sizes, aligns]);
+  }, [pageKey, texts, sizes, aligns, hidden]);
 
   useEffect(() => {
     let editParam = false;
@@ -139,8 +150,8 @@ export default function EditablePage({
   }, [enterEdit, loadDraft]);
 
   const ctx = useMemo(
-    () => ({ editing, getText, setText, getSize, getAlign, setActiveTid }),
-    [editing, getText, setText, getSize, getAlign, setActiveTid]
+    () => ({ editing, getText, setText, getSize, getAlign, setActiveTid, getHidden, toggleHidden }),
+    [editing, getText, setText, getSize, getAlign, setActiveTid, getHidden, toggleHidden]
   );
 
   return (
@@ -155,11 +166,14 @@ export default function EditablePage({
           pageKey={pageKey}
           panelOpen={false}
           showSections={false}
+          hasActive={Boolean(activeTid)}
+          activeHidden={activeTid ? Boolean(hidden[activeTid]) : false}
           onEnter={enterEdit}
           onExit={exitEdit}
           onSave={save}
           onSize={adjustSize}
           onAlign={setAlign}
+          onDelete={toggleHidden}
           onTogglePanel={() => {}}
         />
       )}

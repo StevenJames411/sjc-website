@@ -12,6 +12,7 @@ export type SiteDoc = {
   texts?: Record<string, string>;
   sizes?: Record<string, number>; // per-tid font-size override in px (editor A-/A+)
   aligns?: Record<string, "left" | "center" | "right">; // per-tid text-align override
+  hidden?: Record<string, boolean>; // per-tid delete/hide flag (editor 🗑 Delete / ↩ Restore)
   _pub?: number;
 };
 

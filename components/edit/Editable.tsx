@@ -28,9 +28,10 @@ function sanitize(html: string): string {
 }
 
 export default function Editable({ tid, children, as, className }: Props) {
-  const { editing, getText, setText, getSize, getAlign, setActiveTid } = useEditText();
+  const { editing, getText, setText, getSize, getAlign, setActiveTid, getHidden } = useEditText();
   const Tag: React.ElementType = (as || "span") as React.ElementType;
   const value = getText(tid, children);
+  const hidden = getHidden(tid);
   const ref = useRef<HTMLElement | null>(null);
 
   const overrideStyle: React.CSSProperties = {};
@@ -50,6 +51,8 @@ export default function Editable({ tid, children, as, className }: Props) {
   }, [editing]);
 
   if (!editing) {
+    // Deleted/hidden elements vanish entirely for the public.
+    if (hidden) return null;
     return (
       <Tag
         className={className}
@@ -68,11 +71,14 @@ export default function Editable({ tid, children, as, className }: Props) {
       data-tid={tid}
       onFocus={() => setActiveTid(tid)}
       style={{
-        outline: "2px dashed rgba(37,99,235,0.5)",
+        outline: hidden ? "2px dashed rgba(220,38,38,0.6)" : "2px dashed rgba(37,99,235,0.5)",
         outlineOffset: "2px",
         borderRadius: "3px",
         cursor: "text",
         minWidth: "1ch",
+        // Hidden-but-editing: faded + struck so it's still selectable to Restore.
+        opacity: hidden ? 0.4 : 1,
+        textDecoration: hidden ? "line-through" : undefined,
         ...overrideStyle,
       }}
       onBlur={(e: React.FocusEvent<HTMLElement>) => setText(tid, sanitize(e.currentTarget.innerHTML))}

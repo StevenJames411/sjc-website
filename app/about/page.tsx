@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import CtaButton from "@/components/CtaButton";
 import EditablePage from "@/components/edit/EditablePage";
 import Editable from "@/components/edit/Editable";
+import Removable from "@/components/edit/Removable";
 import { readPublished } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -119,17 +120,21 @@ export default async function About() {
                 Let&apos;s get on a quick call. You tell me how you run things today, and I&apos;ll show you exactly where an AI employee fits in &mdash; with you in charge the whole way.
               </Editable>
               <div className="mt-8 flex flex-col items-center gap-4">
-                <CtaButton
-                  title="Book the Call"
-                  subtitle="A quick call to see where an AI employee fits into your business."
-                  href="/#contact"
-                />
-                <a
-                  href="tel:+12102982343"
-                  className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
-                >
-                  Or call me directly: (210) 298-2343
-                </a>
+                <Removable tid="about.s5.cta">
+                  <CtaButton
+                    title="Book the Call"
+                    subtitle="A quick call to see where an AI employee fits into your business."
+                    href="/#contact"
+                  />
+                </Removable>
+                <Removable tid="about.s5.phone">
+                  <a
+                    href="tel:+12102982343"
+                    className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
+                  >
+                    Or call me directly: (210) 298-2343
+                  </a>
+                </Removable>
               </div>
             </div>
           </section>
