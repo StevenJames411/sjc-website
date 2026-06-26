@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
 import "./globals.css";
+import EditLink from "@/components/edit/EditLink";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -90,7 +91,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <EditLink />
+      </body>
     </html>
   );
 }
