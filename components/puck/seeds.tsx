@@ -238,13 +238,130 @@ const PODCAST_SEED: Data = {
   ],
 };
 
-// Scratch (test) page — Step 1 proof: the real double-flywheel section as a single block.
-const SCRATCH_SEED: Data = {
+// Home = the journey spine, each live section wrapped as a block in the registry's order.
+const HOME_SEED: Data = {
   root: {},
-  content: [{ type: "DoubleFlywheel", props: { id: "scratch-flywheel" } }],
+  content: [
+    { type: "HeroReel", props: { id: "home-hero" } },
+    { type: "FindYourIndustry", props: { id: "home-industries" } },
+    { type: "Playbook", props: { id: "home-playbook" } },
+    { type: "TheCeiling", props: { id: "home-ceiling" } },
+    { type: "Weapon", props: { id: "home-weapon" } },
+    { type: "DoubleFlywheel", props: { id: "home-flywheel" } },
+    { type: "Proof", props: { id: "home-proof" } },
+    { type: "FourTables", props: { id: "home-fourtables" } },
+    { type: "Moat", props: { id: "home-moat" } },
+    { type: "NextMove", props: { id: "home-next" } },
+  ],
+};
+
+// Med-Spa: text hero · 3 wrapped custom sections · buyer CTA.
+const MEDSPA_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "medspa-hero", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "medspa-hero-eyebrow", text: "Med Spa AI Employees", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "medspa-hero-h1", text: "AI employees for med spas — the leads you already paid for, answered and booked the second they land.", level: "h1", align: "center" } },
+      { type: "Text", props: { id: "medspa-hero-sub1", text: "You've tried to hire help, more than once, in every corner of the business. It never sticks — you end up with a handful of average people and all the real work still on you. And it's quietly worn you down.", align: "center", color: "#2563eb" } },
+      { type: "Text", props: { id: "medspa-hero-sub2", text: "The game just changed. As your growth partner, the first thing I install is your first AI employee — a salesperson better than any you could hire, aimed straight at your growth. We start there.", align: "center", color: "#4b5563" } },
+      { type: "Button", props: { id: "medspa-hero-cta", title: "Book the Call", subtitle: "See exactly what we'd install — and what you'd control.", href: "/#contact" } },
+    ] } },
+    { type: "MedSpaWound", props: { id: "medspa-wound" } },
+    { type: "MedSpaStep", props: { id: "medspa-step" } },
+    { type: "MedSpaPricing", props: { id: "medspa-pricing" } },
+    { type: "Section", props: { id: "medspa-cta", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "medspa-cta-eyebrow", text: "Your Next Move", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "medspa-cta-h2", text: "You always knew you needed this. The employee you could never find or keep now exists.", level: "h2", align: "center" } },
+      { type: "Text", props: { id: "medspa-cta-p1", text: "Get on a quick call. Tell me how you run today, and I'll show you exactly where your first AI employee plugs in — starting with speed to lead.", align: "center" } },
+      { type: "Text", props: { id: "medspa-cta-p2", text: "I install it. You turn it on. You stay in command.", align: "center" } },
+      { type: "Button", props: { id: "medspa-cta-btn", title: "Book the Call", subtitle: "A quick call. No pitch deck — just where AI fits on your business.", href: "/#contact" } },
+    ] } },
+  ],
+};
+
+// Industries hub: text hero · the cards strip · CTA.
+const INDUSTRIES_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "ind-hero", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "ind-eyebrow", text: "Industries", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "ind-h1", text: "The fields — and the playbook inside each one.", level: "h1", align: "center" } },
+      { type: "Text", props: { id: "ind-intro", text: "Every owner-run business runs the same playbook. Find your field and go deep — the list keeps growing.", align: "center" } },
+    ] } },
+    { type: "FindYourIndustry", props: { id: "ind-cards" } },
+    { type: "Section", props: { id: "ind-cta", background: "#ffffff", content: [
+      { type: "Text", props: { id: "ind-cta-p", text: "Don't see your field yet? It's probably next. Let's talk.", align: "center" } },
+      { type: "Button", props: { id: "ind-cta-btn", title: "Book the Call", subtitle: "One operator to another.", href: "/#contact" } },
+    ] } },
+  ],
+};
+
+// Industry deep pages — each is a single FieldDeep block carrying that field's copy.
+const HVAC_SEED: Data = {
+  root: {},
+  content: [{ type: "FieldDeep", props: {
+    id: "hvac",
+    name: "HVAC",
+    eyebrow: "HVAC — same shape, I've seen it five times",
+    intro: "I haven't run an HVAC shop, but I've run five businesses that move exactly like one — and the pattern is the same every time. Your season is a wall: the first 100-degree week hits and every phone in town rings at once, and the unit that goes down in July is an emergency that pays today. You're dispatching techs, chasing parts, and quoting installs while the calls stack up faster than anyone can answer them. You built it one truck at a time, on your own back. What's been capping you was never the wrench work — it's everything happening on the phone while your crew is in the field.",
+    leaksLede: "I've watched this exact leak in every service business I've run. Here's where the money runs out of an HVAC shop, every day:",
+    leaks: [
+      { item: "The no-AC emergency that calls at 9 p.m. in July — and goes to the competitor who answered while yours rang out." },
+      { item: "The $9,000 system-replacement quote that needed a follow-up, and never got one. Big tickets close on the follow-through." },
+      { item: "Every call that hits voicemail during the heat wave — the exact week one missed call is a whole install gone." },
+      { item: "The maintenance-plan customers who lapse because nobody reminded them their tune-up was due." },
+      { item: "The 'let me talk to my spouse' install quote that needed three touches and got none." },
+      { item: "Years of past service customers with aging units, due for a replacement, sitting in your system untouched." },
+    ],
+    fix: "An AI employee closes every one of those leaks at once. It picks up the instant a lead lands — peak-season midnight, weekend, doesn't matter — and reads what the person actually said instead of blasting the same canned text at everybody. It chases the big install quote until it gets a yes or a no, reminds the maintenance-plan customers their tune-up is due, nudges the 'let me check with my spouse' on its own clock, and works your old service list for the units that are ready to be replaced. It books the call straight onto the dispatch calendar — same way every time, every job logged — while your techs stay on the tools.",
+    rollup: "This is the same playbook underneath all five of my businesses — you just point it at HVAC. First you stop the bleed on the shop you've already got: the emergency calls and install quotes you were losing turn into booked revenue, straight to the bottom line. Then you bolt on the next location, the next service area — and the AI layer answers the phones the same way across all of them, no new call center per branch. Own that layer and you stop getting priced like a service company and start getting priced like a platform — a technology multiple, not a trade multiple. That's the path a mergers-and-acquisitions operator runs to build something worth buying. Same playbook, maximized — and AI is the newest weapon in it.",
+  } }],
+};
+
+const ROOFING_SEED: Data = {
+  root: {},
+  content: [{ type: "FieldDeep", props: {
+    id: "roofing",
+    name: "Roofing",
+    eyebrow: "Roofing — I ran one of these",
+    intro: "I ran a roofing company. So I'm not guessing here — I know how this one moves. The phone runs your week: a storm rolls through, the leads pile up all at once, and whoever calls back first gets the job. You're up on a roof or running a crew while the next ten callers go to the next guy in the truck. You built it on your own back, every hat your own, and the thing that's been holding you back was never the work — it's everything that happens off the ladder while your hands are full.",
+    leaksLede: "I've stood in this exact spot. Here's where the money runs out of a roofing shop, every single day:",
+    leaks: [
+      { item: "The storm-chase lead that hits at 8 p.m. — you call back at noon the next day and they already signed with whoever picked up first." },
+      { item: "The estimate you drove out and gave, then never followed up on. Half of those close on the third nudge you never sent." },
+      { item: "The calls that roll to voicemail while you're up top or under a deadline — and a roofing voicemail almost never gets a callback." },
+      { item: "The insurance-claim job that stalls because nobody chased the adjuster's paperwork on time." },
+      { item: "The 'we'll think about it' that needed three touches over two weeks — and got zero, because you were on the next roof." },
+      { item: "Two years of past customers sitting in your phone, due for a re-roof or a referral, that nobody has time to work." },
+    ],
+    fix: "An AI employee plugs every one of those holes at the same time. It answers the second a lead lands — storm night, Sunday, 2 a.m., doesn't matter — and it actually reads what the person wrote instead of firing the same canned blast at everybody. It chases the estimate, nudges the 'we'll think about it' on its own schedule, keeps the claim paperwork moving, and quietly works your old customer list for re-roofs and referrals. It books the appointment straight onto the calendar. Same way every time, every job logged, while your hands stay on the work you're actually good at.",
+    rollup: "This is the same playbook I've run five times — you just point it at roofing. First you stop the bleed on the shop you've already got: the leads you were losing turn into booked jobs, and that drops straight to the bottom line. Then you bolt on the next crew, the next town, the next shop — and the AI layer runs the phones the same way across all of them, no extra front desk per location. Own that layer and you stop getting priced like a roofing company and start getting priced like a platform — a technology multiple instead of a trade multiple. That's the difference between selling a truck and a crew, and selling a machine. Same playbook a mergers-and-acquisitions operator runs — maximized, and AI is the newest weapon in it.",
+  } }],
+};
+
+const GARAGE_SEED: Data = {
+  root: {},
+  content: [{ type: "FieldDeep", props: {
+    id: "garage-doors",
+    name: "Garage Doors",
+    eyebrow: "Garage doors — same shape, I've seen it five times",
+    intro: "I haven't run a garage-door shop, but I've run five businesses shaped exactly like one — and the pattern doesn't change. It's a now business: a broken spring or a door off the track is an emergency, the customer's car is trapped in the garage, and they call the first three companies and book whoever picks up. You're out on installs and service calls while the phone keeps ringing back at the shop. You built it one truck at a time, on your own back. The thing capping you was never the install work — it's every call that comes in while your hands are full of a torsion spring.",
+    leaksLede: "I've watched this same leak in every service business I've run. Here's where the money runs out of a garage-door shop, every day:",
+    leaks: [
+      { item: "The broken-spring emergency that calls while you're on a job — and books the competitor who answered first." },
+      { item: "The new-door quote — a real ticket — that needed a follow-up and never got one. Those close on the second and third touch." },
+      { item: "Every after-hours and weekend call that hits voicemail, when a stuck door is exactly the kind of thing people call about at night." },
+      { item: "The opener and tune-up customers who never hear from you again until something breaks." },
+      { item: "The 'send me a price on a new door' that needed three nudges and got zero." },
+      { item: "Years of past repair customers with aging doors and openers, due for a replacement, sitting untouched in your system." },
+    ],
+    fix: "An AI employee closes every one of those leaks at once. It answers the second a lead lands — nights, weekends, mid-emergency, doesn't matter — and reads what the person actually wrote instead of blasting the same canned reply at everybody. It chases the new-door quote until it gets an answer, follows up on the tune-ups, nudges the 'just send me a price' on its own schedule, and works your old repair list for the doors and openers that are ready to be replaced. It books the call straight onto the calendar — same way every time, every job logged — while you stay on the truck.",
+    rollup: "This is the same playbook running under all five of my businesses — you just point it at garage doors. First you stop the bleed on the shop you've got: the emergency calls and new-door quotes you were losing turn into booked jobs, straight to the bottom line. Then you bolt on the next truck, the next territory, the next shop — and the AI layer runs the phones the same way across all of them, no extra front desk per location. Own that layer and you stop getting priced like a service company and start getting priced like a platform — a technology multiple, not a trade multiple. That's the road a mergers-and-acquisitions operator takes to build something worth buying. Same playbook, maximized — and AI is the newest weapon in it.",
+  } }],
 };
 
 const SEEDS: Record<string, Data> = {
+  home: HOME_SEED,
   about: SEED,
   faqs: FAQS_SEED,
   "case-study": CASE_STUDY_SEED,
@@ -252,7 +369,11 @@ const SEEDS: Record<string, Data> = {
   "board-of-directors": BOARD_SEED,
   "raising-capital": RAISING_CAPITAL_SEED,
   podcast: PODCAST_SEED,
-  scratch: SCRATCH_SEED,
+  "med-spa": MEDSPA_SEED,
+  industries: INDUSTRIES_SEED,
+  "industry-hvac": HVAC_SEED,
+  "industry-roofing": ROOFING_SEED,
+  "industry-garage-doors": GARAGE_SEED,
 };
 
 export function seedFor(slug: string, title: string): Data {

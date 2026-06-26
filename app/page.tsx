@@ -1,6 +1,7 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import SitePage from "@/components/edit/SitePage";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import { readPublished } from "@/lib/siteContent";
 
 // Read the published snapshot fresh on each request so publishing shows up immediately
@@ -17,7 +18,9 @@ export default async function Home() {
     <>
       <Nav />
       <main>
-        <SitePage pageKey="home" published={published} />
+        <PublishedOrFallback page="home">
+          <SitePage pageKey="home" published={published} />
+        </PublishedOrFallback>
       </main>
       <Footer />
     </>

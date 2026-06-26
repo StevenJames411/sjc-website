@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 import EditablePage from "@/components/edit/EditablePage";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import { readPublished } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function RoofingPage() {
     <>
       <Nav />
       <main>
+       <PublishedOrFallback page="industry-roofing">
         <EditablePage pageKey="industry-roofing" published={published}>
         <FieldDeepTemplate
           tid="roofing"
@@ -38,6 +40,7 @@ export default async function RoofingPage() {
           rollup="This is the same playbook I've run five times — you just point it at roofing. First you stop the bleed on the shop you've already got: the leads you were losing turn into booked jobs, and that drops straight to the bottom line. Then you bolt on the next crew, the next town, the next shop — and the AI layer runs the phones the same way across all of them, no extra front desk per location. Own that layer and you stop getting priced like a roofing company and start getting priced like a platform — a technology multiple instead of a trade multiple. That's the difference between selling a truck and a crew, and selling a machine. Same playbook a mergers-and-acquisitions operator runs — maximized, and AI is the newest weapon in it."
         />
         </EditablePage>
+       </PublishedOrFallback>
       </main>
       <Footer />
     </>

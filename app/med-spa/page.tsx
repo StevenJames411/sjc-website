@@ -6,6 +6,7 @@ import MedSpaStep from "@/components/medspa/MedSpaStep";
 import MedSpaPricing from "@/components/medspa/MedSpaPricing";
 import EditablePage from "@/components/edit/EditablePage";
 import Editable from "@/components/edit/Editable";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import { readPublished } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ export default async function MedSpaPage() {
       <Nav />
 
       <main>
+       <PublishedOrFallback page="med-spa">
         <EditablePage pageKey="med-spa" published={published}>
           {/* Hero */}
           <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
@@ -103,6 +105,7 @@ export default async function MedSpaPage() {
             </div>
           </section>
         </EditablePage>
+       </PublishedOrFallback>
       </main>
 
       <Footer />

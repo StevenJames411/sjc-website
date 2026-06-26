@@ -6,7 +6,20 @@
 import type { Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
+import HeroReel from "@/components/HeroReel";
+import IndustriesStrip from "@/components/IndustriesStrip";
+import Playbook from "@/components/Playbook";
+import TheCeiling from "@/components/TheCeiling";
+import Weapon from "@/components/Weapon";
 import WhereItLeads from "@/components/WhereItLeads";
+import Proof from "@/components/Proof";
+import FourTables from "@/components/FourTables";
+import Moat from "@/components/Moat";
+import Next from "@/components/Next";
+import MedSpaWound from "@/components/medspa/MedSpaWound";
+import MedSpaStep from "@/components/medspa/MedSpaStep";
+import MedSpaPricing from "@/components/medspa/MedSpaPricing";
+import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 
 type Align = "left" | "center" | "right";
 
@@ -18,9 +31,32 @@ type Props = {
   Text: { text: string; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   PhoneLink: { label: string; tel: string };
-  // "Wrapped" blocks: an existing custom homepage section, rendered as-is, draggable as one
-  // unit. No fields yet — the proof that a complex section can live inside the builder intact.
+  // "Wrapped" blocks: existing custom homepage sections, each rendered as-is and draggable as
+  // one unit. No fields yet — the section's own text edits come in a later pass.
+  HeroReel: Record<string, never>;
+  FindYourIndustry: Record<string, never>;
+  Playbook: Record<string, never>;
+  TheCeiling: Record<string, never>;
+  Weapon: Record<string, never>;
   DoubleFlywheel: Record<string, never>;
+  Proof: Record<string, never>;
+  FourTables: Record<string, never>;
+  Moat: Record<string, never>;
+  NextMove: Record<string, never>;
+  // Med-Spa page custom sections, wrapped as-is.
+  MedSpaWound: Record<string, never>;
+  MedSpaStep: Record<string, never>;
+  MedSpaPricing: Record<string, never>;
+  // The shared industry deep-page template, with its copy editable through fields.
+  FieldDeep: {
+    name: string;
+    eyebrow: string;
+    intro: string;
+    leaksLede: string;
+    leaks: { item: string }[];
+    fix: string;
+    rollup: string;
+  };
 };
 
 const ALIGN_FIELD = {
@@ -177,12 +213,61 @@ export const config: Config<Props> = {
       ),
     },
 
-    // PROOF block (Step 1): the real "double flywheel" homepage section, rendered exactly as it
-    // is on the live site, as a single draggable/deletable block. No fields — wrap-as-a-unit.
-    DoubleFlywheel: {
-      label: "Double flywheel (home section)",
-      fields: {},
-      render: () => <WhereItLeads />,
+    // Wrapped homepage sections — each renders the real live component as a single
+    // draggable/deletable block. (Their internal text becomes Puck-editable in a later pass.)
+    HeroReel: { label: "Hero — sizzle reel", fields: {}, render: () => <HeroReel /> },
+    FindYourIndustry: { label: "Find Your Industry (cards)", fields: {}, render: () => <IndustriesStrip /> },
+    Playbook: { label: "The Playbook You Already Run", fields: {}, render: () => <Playbook /> },
+    TheCeiling: { label: "The Ceiling — the Problem", fields: {}, render: () => <TheCeiling /> },
+    Weapon: { label: "What Changed — AI fills the seats", fields: {}, render: () => <Weapon /> },
+    DoubleFlywheel: { label: "The Double Flywheel", fields: {}, render: () => <WhereItLeads /> },
+    Proof: { label: "Proof — Chloe", fields: {}, render: () => <Proof /> },
+    FourTables: { label: "The Four Tables", fields: {}, render: () => <FourTables /> },
+    Moat: { label: "The Moat — Why Me", fields: {}, render: () => <Moat /> },
+    NextMove: { label: "The Next Move", fields: {}, render: () => <Next /> },
+
+    // Med-Spa page sections, wrapped as-is.
+    MedSpaWound: { label: "Med-Spa — The Wound", fields: {}, render: () => <MedSpaWound /> },
+    MedSpaStep: { label: "Med-Spa — Step One", fields: {}, render: () => <MedSpaStep /> },
+    MedSpaPricing: { label: "Med-Spa — Pricing", fields: {}, render: () => <MedSpaPricing /> },
+
+    // Industry deep page (HVAC / Roofing / Garage Doors …) — full template, copy editable.
+    FieldDeep: {
+      label: "Industry deep page",
+      fields: {
+        name: { type: "text" as const, label: "Field name" },
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        intro: { type: "textarea" as const, label: "Intro" },
+        leaksLede: { type: "textarea" as const, label: "Leaks lead-in" },
+        leaks: {
+          type: "array" as const,
+          label: "Leaks (bullets)",
+          arrayFields: { item: { type: "textarea" as const, label: "Leak" } },
+          getItemSummary: (i: { item: string }) => i.item || "Leak",
+        },
+        fix: { type: "textarea" as const, label: "The fix" },
+        rollup: { type: "textarea" as const, label: "The roll-up" },
+      },
+      defaultProps: {
+        name: "Field",
+        eyebrow: "",
+        intro: "",
+        leaksLede: "",
+        leaks: [],
+        fix: "",
+        rollup: "",
+      },
+      render: ({ name, eyebrow, intro, leaksLede, leaks, fix, rollup }) => (
+        <FieldDeepTemplate
+          name={name}
+          eyebrow={eyebrow}
+          intro={intro}
+          leaksLede={leaksLede}
+          leaks={(leaks || []).map((l: { item: string }) => l.item)}
+          fix={fix}
+          rollup={rollup}
+        />
+      ),
     },
   },
 } satisfies Config;

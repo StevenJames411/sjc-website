@@ -3,18 +3,22 @@
 // (This is also the seed of the future dynamic/clone model — for now it's our own fixed pages.)
 export type PuckPage = { slug: string; title: string };
 
-// Only pages that have been converted onto the builder appear in the switcher. The complex,
-// interactive pages (home, industries, med-spa) stay on the current editor until they get the
-// richer blocks they need (charts, the hero reel, card grids) — so they're intentionally absent.
+// Every page on the site, in switcher order. Slugs are the Puck data keys (decoupled from the
+// public route — e.g. the /industries/hvac page is keyed "industry-hvac").
 export const PUCK_PAGES: PuckPage[] = [
+  { slug: "home", title: "Home" },
   { slug: "about", title: "About" },
+  { slug: "industries", title: "Industries" },
+  { slug: "med-spa", title: "Med Spa" },
+  { slug: "industry-hvac", title: "Industry — HVAC" },
+  { slug: "industry-roofing", title: "Industry — Roofing" },
+  { slug: "industry-garage-doors", title: "Industry — Garage Doors" },
   { slug: "faqs", title: "FAQs" },
   { slug: "case-study", title: "Case Study" },
   { slug: "tech", title: "Tech" },
   { slug: "board-of-directors", title: "Board of Directors" },
   { slug: "raising-capital", title: "Raising Capital" },
   { slug: "podcast", title: "Podcast" },
-  { slug: "scratch", title: "Scratch (test)" },
 ];
 
 export const findPage = (slug: string) => PUCK_PAGES.find((p) => p.slug === slug);

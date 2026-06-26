@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 import EditablePage from "@/components/edit/EditablePage";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import { readPublished } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function GarageDoorsPage() {
     <>
       <Nav />
       <main>
+       <PublishedOrFallback page="industry-garage-doors">
         <EditablePage pageKey="industry-garage-doors" published={published}>
         <FieldDeepTemplate
           tid="garage-doors"
@@ -37,6 +39,7 @@ export default async function GarageDoorsPage() {
           rollup="This is the same playbook running under all five of my businesses — you just point it at garage doors. First you stop the bleed on the shop you've got: the emergency calls and new-door quotes you were losing turn into booked jobs, straight to the bottom line. Then you bolt on the next truck, the next territory, the next shop — and the AI layer runs the phones the same way across all of them, no extra front desk per location. Own that layer and you stop getting priced like a service company and start getting priced like a platform — a technology multiple, not a trade multiple. That's the road a mergers-and-acquisitions operator takes to build something worth buying. Same playbook, maximized — and AI is the newest weapon in it."
         />
         </EditablePage>
+       </PublishedOrFallback>
       </main>
       <Footer />
     </>
