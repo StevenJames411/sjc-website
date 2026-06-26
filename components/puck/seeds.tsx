@@ -238,6 +238,12 @@ const PODCAST_SEED: Data = {
   ],
 };
 
+// Scratch (test) page — Step 1 proof: the real double-flywheel section as a single block.
+const SCRATCH_SEED: Data = {
+  root: {},
+  content: [{ type: "DoubleFlywheel", props: { id: "scratch-flywheel" } }],
+};
+
 const SEEDS: Record<string, Data> = {
   about: SEED,
   faqs: FAQS_SEED,
@@ -246,6 +252,7 @@ const SEEDS: Record<string, Data> = {
   "board-of-directors": BOARD_SEED,
   "raising-capital": RAISING_CAPITAL_SEED,
   podcast: PODCAST_SEED,
+  scratch: SCRATCH_SEED,
 };
 
 export function seedFor(slug: string, title: string): Data {

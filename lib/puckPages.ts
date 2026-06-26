@@ -14,6 +14,7 @@ export const PUCK_PAGES: PuckPage[] = [
   { slug: "board-of-directors", title: "Board of Directors" },
   { slug: "raising-capital", title: "Raising Capital" },
   { slug: "podcast", title: "Podcast" },
+  { slug: "scratch", title: "Scratch (test)" },
 ];
 
 export const findPage = (slug: string) => PUCK_PAGES.find((p) => p.slug === slug);

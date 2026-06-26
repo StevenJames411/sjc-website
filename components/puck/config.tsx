@@ -6,6 +6,7 @@
 import type { Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
+import WhereItLeads from "@/components/WhereItLeads";
 
 type Align = "left" | "center" | "right";
 
@@ -17,6 +18,9 @@ type Props = {
   Text: { text: string; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   PhoneLink: { label: string; tel: string };
+  // "Wrapped" blocks: an existing custom homepage section, rendered as-is, draggable as one
+  // unit. No fields yet — the proof that a complex section can live inside the builder intact.
+  DoubleFlywheel: Record<string, never>;
 };
 
 const ALIGN_FIELD = {
@@ -171,6 +175,14 @@ export const config: Config<Props> = {
           </a>
         </div>
       ),
+    },
+
+    // PROOF block (Step 1): the real "double flywheel" homepage section, rendered exactly as it
+    // is on the live site, as a single draggable/deletable block. No fields — wrap-as-a-unit.
+    DoubleFlywheel: {
+      label: "Double flywheel (home section)",
+      fields: {},
+      render: () => <WhereItLeads />,
     },
   },
 } satisfies Config;
