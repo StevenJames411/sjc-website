@@ -1,13 +1,11 @@
 "use client";
 import React from "react";
 import HeroReel from "@/components/HeroReel";
-import IndustriesStrip from "@/components/IndustriesStrip";
 import Playbook from "@/components/Playbook";
 import TheCeiling from "@/components/TheCeiling";
 import Weapon from "@/components/Weapon";
-import WhereItLeads from "@/components/WhereItLeads";
 import Proof from "@/components/Proof";
-import FourTables from "@/components/FourTables";
+import Platform from "@/components/Platform";
 import Moat from "@/components/Moat";
 import Next from "@/components/Next";
 
@@ -15,22 +13,21 @@ import Next from "@/components/Next";
 // The `label` is what shows in the "Sections" drag-to-reorder panel. Nav and Footer are
 // deliberately NOT here — they're the fixed frame, not reorderable content.
 //
-// HOME = the journey spine (solo -> exit): hero sizzle-reel routes the reader, the Industries
-// strip hands them their field, then playbook -> weapon -> where-it-leads -> proof -> the four
-// tables -> moat -> CTA. The deep M&A sections (Owners, Ceiling, Flip2/3, Platform, Partnership)
-// are no longer on the homepage — they relocate into the per-field deep pages.
+// HOME = the boutique-baseline spine (who I am + how I help): hero (story) -> playbook (the play)
+// -> ceiling (the problem) -> weapon (AI fills the seats) -> proof (live AI employee) -> platform
+// (above any one industry — the parent positioning) -> moat (why me) -> close. No vertical router,
+// no acquirer-finance layer (the double flywheel + per-field deep pages live off the homepage; the
+// surgical M&A math lives in outbound, not here).
 export type SectionDef = { key: string; label: string; Component: React.ComponentType };
 
 export const REGISTRY: Record<string, SectionDef[]> = {
   home: [
     { key: "hero", label: "Hero — sizzle reel", Component: HeroReel },
-    { key: "findYourField", label: "Find Your Field", Component: IndustriesStrip },
     { key: "playbook", label: "The Playbook You Already Run", Component: Playbook },
     { key: "ceiling", label: "The Ceiling — the Problem", Component: TheCeiling },
     { key: "weapon", label: "What Changed — AI fills the seats", Component: Weapon },
-    { key: "whereItLeads", label: "The Double Flywheel", Component: WhereItLeads },
-    { key: "proof", label: "Proof — Chloe", Component: Proof },
-    { key: "fourTables", label: "The Four Tables", Component: FourTables },
+    { key: "proof", label: "Proof — live AI employee", Component: Proof },
+    { key: "platform", label: "Above Any One Industry", Component: Platform },
     { key: "moat", label: "The Moat — Why Me", Component: Moat },
     { key: "next", label: "The Next Move", Component: Next },
   ],

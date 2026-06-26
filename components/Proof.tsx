@@ -40,8 +40,8 @@ export default function Proof() {
           </Editable>
           <Editable tid="home.proof.p3" as="p">
             One field, proven — an AI employee booking real consults off real leads while the
-            humans slept. It&apos;s the same engine, and it points at the next field. Find yours up
-            top.
+            humans slept. It&apos;s the same engine, and it points at the next field — whatever
+            business runs the same playbook.
           </Editable>
         </div>
       </div>

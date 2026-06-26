@@ -25,7 +25,7 @@ export default function HeroReel() {
           as="h1"
           className="mt-4 text-3xl font-bold leading-tight tracking-tight md:text-5xl"
         >
-          Five businesses. Forty years. I was the technology in every one.
+          Four businesses. Forty years. I was the technology in every one.
         </Editable>
         <Editable
           tid="home.hero.sub"
@@ -54,13 +54,13 @@ export default function HeroReel() {
           as="p"
           className="mx-auto mt-7 max-w-2xl text-base text-white/70"
         >
-          Whether you run a med spa, a roofing company, an HVAC shop, or a garage-door business —
-          find your field below.
+          It works in any owner-run business — the trades, clinics, services — anywhere the same
+          playbook runs.
         </Editable>
 
         <div className="mt-8 flex justify-center">
           <CtaButton
-            title={getText("home.hero.cta.title", "Book the Call")}
+            title={getText("home.hero.cta.title", "Apply to work with me")}
             subtitle={getText("home.hero.cta.subtitle", "One operator to another.")}
           />
         </div>

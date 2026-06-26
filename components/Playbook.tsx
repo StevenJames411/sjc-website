@@ -28,7 +28,7 @@ export default function Playbook() {
           <Editable tid="home.playbook.p1" as="p">
             You know this cold, so I&apos;ll just say it back to you the way you&apos;d say it
             yourself — not to teach you, but so you know I&apos;m not guessing. I&apos;ve run this
-            play five times across five different industries.
+            play four times, in four different businesses of my own.
           </Editable>
           <Editable tid="home.playbook.p2" as="p">
             Michael Gerber named where it starts: you&apos;re the Technician. You got good at the
@@ -43,15 +43,6 @@ export default function Playbook() {
             operations — and fill the seats, so the system runs the business and the people run the
             system. You work ON it instead of buried IN it. That&apos;s the whole
             game, whether you&apos;ve got one location or seven.
-          </Editable>
-          <Editable tid="home.playbook.p4" as="p">
-            The operator who runs it furthest bolts on more locations, strips out the duplicate
-            cost, and builds a real management layer — and the way he&apos;s always filled those
-            org-chart seats is human hires plus linear legacy software. Then he bundles the whole
-            thing into a platform and sells it: the same dollars of earnings suddenly worth double
-            or triple, purely because of size, story, and how clean it reads to the next buyer.
-            That last move is exactly what a mergers-and-acquisitions operator does for a living. He
-            didn&apos;t invent a new play. He maximizes this one.
           </Editable>
           <Editable tid="home.playbook.p5" as="p">
             And whatever stage you&apos;re at, you run the whole thing on the same linear tools

@@ -11,7 +11,7 @@ const LOGO_URL =
 // (off-nav, drafts) so the front door reads "specialist," not "agency."
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/med-spa", label: "Proof" },
+  { href: "/case-study", label: "Proof" },
   { href: "/about", label: "About" },
 ];
 
@@ -40,7 +40,7 @@ export default function Nav() {
             href={BOOKING_URL}
             className="rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--color-sjc-green)]"
           >
-            Book the Call &rarr;
+            Apply to work with me &rarr;
           </a>
         </nav>
 
@@ -84,7 +84,7 @@ export default function Nav() {
               onClick={() => setOpen(false)}
               className="mt-5 rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-3 text-center text-base font-semibold text-white shadow-sm"
             >
-              Book the Call &rarr;
+              Apply to work with me &rarr;
             </a>
           </div>
         </nav>

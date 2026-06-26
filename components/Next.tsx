@@ -28,11 +28,10 @@ export default function Next() {
 
         <div className="mx-auto mt-8 max-w-2xl space-y-6 text-left text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.next.p1" as="p">
-            Wherever you are on the journey — still solo, bolting on locations, or eyeing the exit —
-            you already know the playbook has a lid. Same play as everyone, same linear tools, the
-            same leads slipping through. What might be new is that there&apos;s a lever that lifts
-            it: an AI employee that plugs the leaks at the unit level, and an owned AI layer that
-            re-rates the whole thing when you go to sell.
+            Wherever you are on the journey, you already know the playbook has a lid. Same play as
+            everyone, same linear tools, the same leads slipping through. What&apos;s new is the
+            lever that lifts it: an AI employee that plugs the leaks — answers every lead, follows
+            up, books — so the org-chart seats you could never afford to fill finally fill themselves.
           </Editable>
           <Editable tid="home.next.p2" as="p">
             I&apos;m not going to sell you on a call. Either it moves your numbers or it
@@ -44,7 +43,7 @@ export default function Next() {
 
         <div className="mt-10 flex justify-center">
           <CtaButton
-            title={getText("home.next.cta.title", "Book the Call")}
+            title={getText("home.next.cta.title", "Apply to work with me")}
             subtitle={getText("home.next.cta.subtitle", "One operator to another.")}
           />
         </div>

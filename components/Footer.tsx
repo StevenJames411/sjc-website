@@ -1,5 +1,4 @@
 import { BOOKING_URL } from "./CtaButton";
-import { INDUSTRIES, industryHref } from "@/lib/industries";
 
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
@@ -12,15 +11,15 @@ export default function Footer() {
   return (
     <footer style={{ backgroundColor: "#111827" }} className="text-white">
       <div className="mx-auto max-w-6xl px-6 py-14">
-        <div className="grid gap-10 md:grid-cols-4">
+        <div className="grid gap-10 md:grid-cols-3">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
               <img src={LOGO_URL} alt="SJC logo" className="h-12 w-12 rounded-full" />
               <span className="text-lg font-semibold">Steven James Consulting</span>
             </div>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">
-              Five businesses. Forty years. One playbook &mdash; the one a mergers-and-acquisitions
-              operator maximizes. Now with AI as the weapon.
+              Four businesses. Forty years. The architect who built the systems in every one &mdash;
+              now installing the AI workforce for other operators.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a
@@ -45,17 +44,6 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-white/90">Industries</p>
-            <ul className="mt-4 space-y-3 text-sm">
-              {INDUSTRIES.map((i) => (
-                <li key={i.slug}>
-                  <a href={industryHref(i)} className="text-white/80 hover:text-white">{i.name}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-white/90">More</p>
             <ul className="mt-4 space-y-3 text-sm">
               <li>
@@ -68,7 +56,7 @@ export default function Footer() {
                 <a href="/faqs" className="text-white/80 hover:text-white">FAQs</a>
               </li>
               <li>
-                <a href={BOOKING_URL} className="text-white/80 hover:text-white">Book the Call</a>
+                <a href={BOOKING_URL} className="text-white/80 hover:text-white">Apply to work with me</a>
               </li>
               <li>
                 <a href="mailto:support@stevenjamesconsulting.com" className="text-white/80 hover:text-white">
