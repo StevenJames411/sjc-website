@@ -25,6 +25,8 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
 
   const [texts, setTexts] = useState<Record<string, string>>(published.texts || {});
   const [order, setOrder] = useState<string[]>(resolveOrder(known, published.order));
+  const [sizes, setSizes] = useState<Record<string, number>>(published.sizes || {});
+  const [activeTid, setActiveTidState] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -48,6 +50,24 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
     setDirty(true);
   }, []);
 
+  const getSize = useCallback((tid: string) => sizes[tid], [sizes]);
+
+  const setActiveTid = useCallback((tid: string | null) => setActiveTidState(tid), []);
+
+  // Step the currently-focused element's font size up/down (px), starting from its
+  // computed size if it has no override yet. Saved + published with the rest of the doc.
+  const adjustSize = useCallback(
+    (delta: number) => {
+      if (!activeTid) return;
+      const el = document.querySelector<HTMLElement>(`[data-tid="${activeTid}"]`);
+      const current = sizes[activeTid] ?? (el ? parseFloat(getComputedStyle(el).fontSize) : 16);
+      const next = Math.min(120, Math.max(10, Math.round(current + delta)));
+      setSizes((prev) => ({ ...prev, [activeTid]: next }));
+      setDirty(true);
+    },
+    [activeTid, sizes]
+  );
+
   const loadDraft = useCallback(async () => {
     try {
       const r = await fetch(`/api/site-content?page=${encodeURIComponent(pageKey)}`);
@@ -55,6 +75,7 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
       const st = (j && j.state) || {};
       setTexts(st.texts || {});
       setOrder(resolveOrder(known, st.order));
+      setSizes(st.sizes || {});
     } catch {
       /* keep current */
     }
@@ -88,7 +109,7 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ page: pageKey, state: { order, texts } }),
+        body: JSON.stringify({ page: pageKey, state: { order, texts, sizes } }),
       });
       const j = await r.json();
       if (j && j.ok) setDirty(false);
@@ -98,7 +119,7 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
     } finally {
       setSaving(false);
     }
-  }, [pageKey, order, texts]);
+  }, [pageKey, order, texts, sizes]);
 
   // On mount: am I the editor? Honor ?edit=1 (open editor, prompting login if needed).
   useEffect(() => {
@@ -125,7 +146,10 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
       .catch(() => {});
   }, [enterEdit, loadDraft]);
 
-  const ctx = useMemo(() => ({ editing, getText, setText }), [editing, getText, setText]);
+  const ctx = useMemo(
+    () => ({ editing, getText, setText, getSize, setActiveTid }),
+    [editing, getText, setText, getSize, setActiveTid]
+  );
 
   return (
     <EditTextContext.Provider value={ctx}>
@@ -145,6 +169,7 @@ export default function SitePage({ pageKey, published }: { pageKey: string; publ
           onEnter={enterEdit}
           onExit={exitEdit}
           onSave={save}
+          onSize={adjustSize}
           onTogglePanel={() => setPanelOpen((v) => !v)}
         />
       )}

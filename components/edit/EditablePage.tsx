@@ -20,6 +20,8 @@ export default function EditablePage({
   children: React.ReactNode;
 }) {
   const [texts, setTexts] = useState<Record<string, string>>(published.texts || {});
+  const [sizes, setSizes] = useState<Record<string, number>>(published.sizes || {});
+  const [activeTid, setActiveTidState] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -39,12 +41,29 @@ export default function EditablePage({
     setDirty(true);
   }, []);
 
+  const getSize = useCallback((tid: string) => sizes[tid], [sizes]);
+
+  const setActiveTid = useCallback((tid: string | null) => setActiveTidState(tid), []);
+
+  const adjustSize = useCallback(
+    (delta: number) => {
+      if (!activeTid) return;
+      const el = document.querySelector<HTMLElement>(`[data-tid="${activeTid}"]`);
+      const current = sizes[activeTid] ?? (el ? parseFloat(getComputedStyle(el).fontSize) : 16);
+      const next = Math.min(120, Math.max(10, Math.round(current + delta)));
+      setSizes((prev) => ({ ...prev, [activeTid]: next }));
+      setDirty(true);
+    },
+    [activeTid, sizes]
+  );
+
   const loadDraft = useCallback(async () => {
     try {
       const r = await fetch(`/api/site-content?page=${encodeURIComponent(pageKey)}`);
       const j = await r.json();
       const st = (j && j.state) || {};
       setTexts(st.texts || {});
+      setSizes(st.sizes || {});
     } catch {
       /* keep current */
     }
@@ -70,7 +89,7 @@ export default function EditablePage({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ page: pageKey, state: { texts } }),
+        body: JSON.stringify({ page: pageKey, state: { texts, sizes } }),
       });
       const j = await r.json();
       if (j && j.ok) setDirty(false);
@@ -80,7 +99,7 @@ export default function EditablePage({
     } finally {
       setSaving(false);
     }
-  }, [pageKey, texts]);
+  }, [pageKey, texts, sizes]);
 
   useEffect(() => {
     let editParam = false;
@@ -104,7 +123,10 @@ export default function EditablePage({
       .catch(() => {});
   }, [enterEdit, loadDraft]);
 
-  const ctx = useMemo(() => ({ editing, getText, setText }), [editing, getText, setText]);
+  const ctx = useMemo(
+    () => ({ editing, getText, setText, getSize, setActiveTid }),
+    [editing, getText, setText, getSize, setActiveTid]
+  );
 
   return (
     <EditTextContext.Provider value={ctx}>
@@ -121,6 +143,7 @@ export default function EditablePage({
           onEnter={enterEdit}
           onExit={exitEdit}
           onSave={save}
+          onSize={adjustSize}
           onTogglePanel={() => {}}
         />
       )}

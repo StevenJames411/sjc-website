@@ -17,6 +17,7 @@ export default function EditToolbar({
   onEnter,
   onExit,
   onSave,
+  onSize,
   onTogglePanel,
 }: {
   editing: boolean;
@@ -28,6 +29,7 @@ export default function EditToolbar({
   onEnter: () => void;
   onExit: () => void;
   onSave: () => Promise<boolean>;
+  onSize?: (delta: number) => void;
   onTogglePanel: () => void;
 }) {
   const [pubState, setPubState] = useState<"draft" | "published" | "unknown">("unknown");
@@ -106,6 +108,26 @@ export default function EditToolbar({
       >
         {saving ? "Saving…" : dirty ? "Save" : "Saved"}
       </button>
+      {onSize && (
+        <div style={sizeGroup} title="Click a text box, then resize it">
+          <button
+            style={sizeBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onSize(-2)}
+            aria-label="Smaller text"
+          >
+            A&minus;
+          </button>
+          <button
+            style={sizeBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onSize(2)}
+            aria-label="Larger text"
+          >
+            A+
+          </button>
+        </div>
+      )}
       <button
         style={pubState === "published" ? pubOn : pubOff}
         disabled={pubBusy}
@@ -146,3 +168,10 @@ const primary: React.CSSProperties = { ...base, background: "#2563eb", color: "#
 const ghost: React.CSSProperties = { ...base, background: "rgba(255,255,255,0.12)", color: "#e5e7eb" };
 const pubOn: React.CSSProperties = { ...base, background: "#2ea043", color: "#fff" };
 const pubOff: React.CSSProperties = { ...base, background: "rgba(255,255,255,0.12)", color: "#9ca3af" };
+const sizeGroup: React.CSSProperties = { display: "flex", gap: 4 };
+const sizeBtn: React.CSSProperties = {
+  ...base,
+  background: "rgba(255,255,255,0.12)",
+  color: "#e5e7eb",
+  padding: "9px 11px",
+};

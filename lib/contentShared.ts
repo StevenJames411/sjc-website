@@ -10,6 +10,7 @@
 export type SiteDoc = {
   order?: string[];
   texts?: Record<string, string>;
+  sizes?: Record<string, number>; // per-tid font-size override in px (editor A-/A+)
   _pub?: number;
 };
 
