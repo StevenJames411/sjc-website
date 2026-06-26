@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import CtaButton from "@/components/CtaButton";
 import EditablePage from "@/components/edit/EditablePage";
 import Editable from "@/components/edit/Editable";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import { readPublished } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,7 @@ export default async function FAQs() {
     <>
       <Nav />
       <main>
+       <PublishedOrFallback page="faqs">
         <EditablePage pageKey="faqs" published={published}>
           <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
             <div className="mx-auto max-w-4xl px-6 py-16 md:py-24">
@@ -93,6 +95,7 @@ export default async function FAQs() {
             </div>
           </section>
         </EditablePage>
+       </PublishedOrFallback>
       </main>
       <Footer />
     </>
