@@ -1,167 +1,46 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { EditTextContext } from "./editContext";
-import EditToolbar from "./EditToolbar";
-import SectionsPanel from "./SectionsPanel";
-import LoginModal from "./LoginModal";
 import { resolveOrder, type SiteDoc } from "@/lib/contentShared";
 import { REGISTRY } from "@/components/sections/registry";
 
-// The client orchestrator for one page. Renders the page's sections in the saved order,
-// supplies the edit context (text overrides + setters), and — only for the signed-in
-// editor — the floating toolbar + Sections panel. Server passes the PUBLISHED snapshot
-// as `published`; entering edit mode swaps in the working DRAFT.
+// Pure renderer for the homepage's registry sections. The OLD inline editor + Sections reorder
+// panel have been retired — editing/reordering now happens in the Puck builder at /edit/home.
+// This renders the sections in the published order with the published text overrides applied.
 export default function SitePage({ pageKey, published }: { pageKey: string; published: SiteDoc }) {
   const sections = useMemo(() => REGISTRY[pageKey] || [], [pageKey]);
-  const known = useMemo(() => sections.map((s) => s.key), [sections]);
-  const labels = useMemo(
-    () => Object.fromEntries(sections.map((s) => [s.key, s.label])),
-    [sections]
-  );
   const byKey = useMemo(
     () => Object.fromEntries(sections.map((s) => [s.key, s.Component])),
     [sections]
   );
-
-  const [texts, setTexts] = useState<Record<string, string>>(published.texts || {});
-  const [order, setOrder] = useState<string[]>(resolveOrder(known, published.order));
-  const [editing, setEditing] = useState(false);
-  const [authed, setAuthed] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const getText = useCallback(
-    (tid: string, fallback: string) => {
-      const v = texts[tid];
-      return v === undefined || v === null ? fallback : v;
-    },
-    [texts]
+  const order = useMemo(
+    () => resolveOrder(sections.map((s) => s.key), published.order),
+    [sections, published.order]
   );
 
-  const setText = useCallback((tid: string, value: string) => {
-    setTexts((prev) => {
-      if (prev[tid] === value) return prev;
-      return { ...prev, [tid]: value };
-    });
-    setDirty(true);
-  }, []);
-
-  const loadDraft = useCallback(async () => {
-    try {
-      const r = await fetch(`/api/site-content?page=${encodeURIComponent(pageKey)}`);
-      const j = await r.json();
-      const st = (j && j.state) || {};
-      setTexts(st.texts || {});
-      setOrder(resolveOrder(known, st.order));
-    } catch {
-      /* keep current */
-    }
-  }, [pageKey, known]);
-
-  const enterEdit = useCallback(async () => {
-    await loadDraft();
-    setEditing(true);
-    setDirty(false);
-  }, [loadDraft]);
-
-  const exitEdit = useCallback(() => {
-    setEditing(false);
-    setPanelOpen(false);
-    setTexts(published.texts || {});
-    setOrder(resolveOrder(known, published.order));
-    setDirty(false);
-  }, [published, known]);
-
-  const reorder = useCallback((next: string[]) => {
-    setOrder(next);
-    setDirty(true);
-  }, []);
-
-  const save = useCallback(async () => {
-    setSaving(true);
-    try {
-      const r = await fetch("/api/site-content", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ page: pageKey, state: { order, texts } }),
-      });
-      const j = await r.json();
-      if (j && j.ok) setDirty(false);
-      return Boolean(j && j.ok);
-    } catch {
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  }, [pageKey, order, texts]);
-
-  // On mount: am I the editor? Honor ?edit=1 (open editor, prompting login if needed).
-  useEffect(() => {
-    let editParam = false;
-    try {
-      editParam = new URLSearchParams(window.location.search).get("edit") === "1";
-    } catch {
-      /* ignore */
-    }
-    fetch("/api/auth-status")
-      .then((r) => r.json())
-      .then((j) => {
-        const ok = Boolean(j && j.authed);
-        setAuthed(ok);
-        if (editParam) {
-          if (ok) enterEdit();
-          else setShowLogin(true);
-        }
-      })
-      .catch(() => {});
-  }, [enterEdit]);
-
-  const ctx = useMemo(() => ({ editing, getText, setText }), [editing, getText, setText]);
+  const ctx = useMemo(
+    () => ({
+      editing: false,
+      getText: (tid: string, fallback: string) => {
+        const v = published.texts?.[tid];
+        return v === undefined || v === null ? fallback : v;
+      },
+      setText: () => {},
+      getSize: (tid: string) => published.sizes?.[tid],
+      getAlign: (tid: string) => published.aligns?.[tid],
+      setActiveTid: () => {},
+      getHidden: (tid: string) => Boolean(published.hidden?.[tid]),
+      toggleHidden: () => {},
+    }),
+    [published]
+  );
 
   return (
     <EditTextContext.Provider value={ctx}>
       {order.map((k) => {
         const C = byKey[k];
-        if (!C) return null;
-        return <C key={k} />;
+        return C ? <C key={k} /> : null;
       })}
-
-      {authed && (
-        <EditToolbar
-          editing={editing}
-          dirty={dirty}
-          saving={saving}
-          pageKey={pageKey}
-          panelOpen={panelOpen}
-          onEnter={enterEdit}
-          onExit={exitEdit}
-          onSave={save}
-          onTogglePanel={() => setPanelOpen((v) => !v)}
-        />
-      )}
-
-      {editing && panelOpen && (
-        <SectionsPanel
-          order={order}
-          labels={labels}
-          onReorder={reorder}
-          onClose={() => setPanelOpen(false)}
-        />
-      )}
-
-      {showLogin && (
-        <LoginModal
-          onClose={() => setShowLogin(false)}
-          onSuccess={() => {
-            setAuthed(true);
-            setShowLogin(false);
-            enterEdit();
-          }}
-        />
-      )}
     </EditTextContext.Provider>
   );
 }

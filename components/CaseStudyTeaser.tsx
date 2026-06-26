@@ -5,7 +5,7 @@ import Editable from "./edit/Editable";
 const STATS_DEFAULTS = [
   { value: "Instant", label: "Every lead answered the second it lands" },
   { value: "4", label: "Consults booked in the first 90 minutes" },
-  { value: "Sunday night", label: "When a human would've been asleep" },
+  { value: "Sunday night", label: "When the location was closed and staff were off" },
 ];
 
 export default function CaseStudyTeaser() {
@@ -17,25 +17,25 @@ export default function CaseStudyTeaser() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          The proof
+          Vertical One — The Proof
         </Editable>
         <Editable
           tid="home.proof.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          The machine is the receipt.
+          The first vertical is live. The model is proven. The rest fork off the same engine.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.proof.p1" as="p">
-            A med spa was getting plenty of leads and losing most of them. They&apos;d fill out the form, land in the CRM, and sit there until somebody got around to calling — by which point the lead was cold, or already booked somewhere else.
+            I started where the model could prove itself fastest: med spas. One was getting plenty of leads and losing most of them — forms landing in a CRM, sitting cold until someone got around to calling, by which point the lead was gone. A clean, measurable problem to put the working model against.
           </Editable>
           <Editable tid="home.proof.p2" as="p">
-            We trained an AI employee named Chloe on the owner&apos;s own sales conversations — how he answers questions, how he handles the price objection, how he talks to people. Then we put her to work on top of the business he already had.
+            We trained an AI employee — Chloe — on the operator&apos;s own sales conversations: how he answers questions, how he handles price, how he talks to people. Then we put her to work on top of the business he already ran.
           </Editable>
           <Editable tid="home.proof.p3" as="p">
-            She doesn&apos;t wait. She answers every lead the instant it comes in, holds a real conversation, handles objections in the owner&apos;s own words, and books the consult herself. Her first night live, she booked four — on a Sunday, while a human would&apos;ve been asleep.
+            She answers every lead the instant it lands, holds a real conversation, handles objections in his own words, and books the consult herself. Her first night live she booked four — on a Sunday, while staff were off the clock. That&apos;s the working model, running in a real P&amp;L.
           </Editable>
         </div>
 
@@ -69,7 +69,7 @@ export default function CaseStudyTeaser() {
             as="p"
             className="text-lg font-semibold text-[color:var(--color-sjc-ink)]"
           >
-            That&apos;s one AI employee, running on top of the business he already had — with the owner holding the keys the whole time.
+            That&apos;s one AI employee, in one location, in one vertical. Med spa is the beachhead — the warm, fast proof. The same engine forks into health, roofing, HVAC, and the next platform after that.
           </Editable>
           <div className="mt-6">
             <Link

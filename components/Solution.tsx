@@ -38,7 +38,7 @@ export default function Solution() {
           <p>
             In 2026, every seat in Michael&apos;s org chart can be filled by an AI employee. The
             legendary work he prescribed &mdash; the franchise prototype, the systems-built business,
-            the org chart that runs without you &mdash; is finally available to the solo operator who
+            the org chart that runs without you &mdash; is finally available to the solo entrepreneur who
             could never afford to build it the old way.
           </p>
         </div>

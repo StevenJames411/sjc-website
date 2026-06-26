@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
 import "./globals.css";
+import EditLink from "@/components/edit/EditLink";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -37,7 +38,7 @@ const organizationSchema = {
   telephone: "+1-210-298-2343",
   founder: { "@type": "Person", name: "Steven Barchetti" },
   description:
-    "A 40-year solo operator across five businesses who installs AI employees — Speed to Lead plus a dynamic AI workforce — on top of the business a solo entrepreneur already runs, turnkey, so he gets the growth and stays in control of his own system. Runs his own company on the same system.",
+    "A 40-year solo entrepreneur across five businesses who installs AI employees — Speed to Lead plus a dynamic AI workforce — on top of the business a solo entrepreneur already runs, turnkey, so he gets the growth and stays in control of his own system. Runs his own company on the same system.",
 };
 
 const serviceSchema = {
@@ -90,7 +91,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <EditLink />
+      </body>
     </html>
   );
 }

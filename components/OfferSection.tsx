@@ -1,6 +1,5 @@
 "use client";
 import Editable from "./edit/Editable";
-import CostComparisonChart from "./CostComparisonChart";
 
 export default function OfferSection() {
   return (
@@ -11,31 +10,27 @@ export default function OfferSection() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          The Expansion
+          The Platform
         </Editable>
         <Editable
           tid="home.expansion.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          Start with one seat. Grow the whole org chart on your timeline.
+          Start with one location. The same engine scales to the whole portfolio — and the verticals beyond it.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.expansion.p1" as="p">
-            Most owners start with speed to lead — one AI employee answering every lead the second it lands. Once that&apos;s running and you can see it work, the same setup extends to the rest of the seats: follow-up, intake, scheduling, the admin that eats your week. You add seats when you&apos;re ready, not before.
+            We start where it pays back fastest — one AI employee answering leads across your locations. Once it&apos;s running and the numbers are visible, the same engine expands: follow-up, intake, scheduling, the operating work that drives unit economics, location by location. Then it forks into the next vertical. This is a platform above any single industry — med spa is just where it&apos;s proven first.
           </Editable>
           {/* p2 has two inline <strong> phrases — split into spans to preserve bold rendering */}
           <p>
-            <strong><Editable tid="home.expansion.p2.bold1" as="span">The build</Editable></strong>
-            {" "}<Editable tid="home.expansion.p2.mid" as="span">is a one-time install.</Editable>{" "}
-            <strong><Editable tid="home.expansion.p2.bold2" as="span">A flat monthly</Editable></strong>
-            {" "}<Editable tid="home.expansion.p2.end" as="span">keeps it running, monitored, and improving — the same way you already pay for the software you run on. Standard, and simple. You see the full number before anything gets built.</Editable>
+            <strong><Editable tid="home.expansion.p2.bold1" as="span">The install</Editable></strong>
+            {" "}<Editable tid="home.expansion.p2.mid" as="span">scales across the portfolio.</Editable>{" "}
+            <strong><Editable tid="home.expansion.p2.bold2" as="span">The equity</Editable></strong>
+            {" "}<Editable tid="home.expansion.p2.end" as="span">aligns the partnership to the exit. You see the full structure — the economics per location and the thesis for the whole platform — before anything is built. No surprises, principal to principal.</Editable>
           </p>
-        </div>
-
-        <div className="mt-12">
-          <CostComparisonChart />
         </div>
       </div>
     </section>

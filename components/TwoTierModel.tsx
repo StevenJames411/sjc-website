@@ -3,16 +3,16 @@ import Editable from "./edit/Editable";
 
 const CONTROL_DEFAULTS = [
   {
-    title: "It stays your shop",
-    body: "Your accounts, your data, your customer list — all stay in your name. Nothing moves into a black box you can't see into.",
+    title: "You own the instance",
+    body: "The AI workforce running inside your company is yours — your data, your accounts, your asset on the balance sheet. That's what re-rates the platform. It has to be owned by the company, not rented from me, or the second flywheel never turns.",
   },
   {
-    title: "We do the work",
-    body: "I install it, operate it, and keep it running in the background — turnkey. You never touch the technical layer, and you never lift a finger to run it.",
+    title: "I keep the engine",
+    body: "You own the instance running your business. I keep the engine that builds and improves it — the part that lets me install the next vertical, and the one after that. You get a defensible owned asset; I keep the thing that makes me worth partnering with again.",
   },
   {
-    title: "The relief, not the boss",
-    body: "I don't take over your business — I take the work off your plate. You stay in command of your own system; you just stop running the parts that eat your day.",
+    title: "Aligned on the exit",
+    body: "I'm not buying control of your platform and I'm not a line item on your P&L. I'm a partner whose payday is your payday — a bigger multiple on bigger earnings when you sell.",
   },
 ];
 
@@ -25,19 +25,19 @@ export default function TwoTierModel() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          Control, Not Dependence
+          The Partnership
         </Editable>
         <Editable
           tid="home.control.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          You become the AI-first company. You never hand over your business.
+          I don&apos;t come in as a vendor. I come in as a partner, on equity — because I only win when the exit is bigger.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.control.p1" as="p">
-            &ldquo;I operate it for you&rdquo; doesn&apos;t mean I take over. It means we do the work so you don&apos;t have to — turnkey. You keep your hand on every lead and every dollar, and you stay in command of your own system.
+            A vendor sends an invoice and leaves. That&apos;s not this. I install the AI employees across the portfolio, run the layer, and keep improving it — and I take part of my upside in equity, so my outcome is tied to yours. I make money when the company is worth more, not before. That&apos;s the only arrangement that makes sense for the value being created.
           </Editable>
         </div>
 
@@ -71,7 +71,7 @@ export default function TwoTierModel() {
             as="p"
             className="text-xl font-bold leading-snug md:text-2xl"
           >
-            You stay in control of your own system. We do the work — you don&apos;t lift a finger.
+            You own the asset. I&apos;m on equity. We both get paid when the company is worth more.
           </Editable>
         </div>
       </div>

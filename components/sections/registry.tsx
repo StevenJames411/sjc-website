@@ -1,28 +1,37 @@
 "use client";
 import React from "react";
-import Hero from "@/components/Hero";
-import Problem from "@/components/Problem";
-import GerberTrifecta from "@/components/GerberTrifecta";
-import TwoTierModel from "@/components/TwoTierModel";
-import ExitValuation from "@/components/ExitValuation";
-import CaseStudyTeaser from "@/components/CaseStudyTeaser";
-import OfferSection from "@/components/OfferSection";
-import AuditSection from "@/components/AuditSection";
+import HeroReel from "@/components/HeroReel";
+import IndustriesStrip from "@/components/IndustriesStrip";
+import Playbook from "@/components/Playbook";
+import TheCeiling from "@/components/TheCeiling";
+import Weapon from "@/components/Weapon";
+import WhereItLeads from "@/components/WhereItLeads";
+import Proof from "@/components/Proof";
+import FourTables from "@/components/FourTables";
+import Moat from "@/components/Moat";
+import Next from "@/components/Next";
 
 // Registry of reorderable sections per page. SitePage renders these in the saved order.
 // The `label` is what shows in the "Sections" drag-to-reorder panel. Nav and Footer are
 // deliberately NOT here — they're the fixed frame, not reorderable content.
+//
+// HOME = the journey spine (solo -> exit): hero sizzle-reel routes the reader, the Industries
+// strip hands them their field, then playbook -> weapon -> where-it-leads -> proof -> the four
+// tables -> moat -> CTA. The deep M&A sections (Owners, Ceiling, Flip2/3, Platform, Partnership)
+// are no longer on the homepage — they relocate into the per-field deep pages.
 export type SectionDef = { key: string; label: string; Component: React.ComponentType };
 
 export const REGISTRY: Record<string, SectionDef[]> = {
   home: [
-    { key: "hero", label: "Hero", Component: Hero },
-    { key: "problem", label: "Speed to Lead", Component: Problem },
-    { key: "step", label: "Step One vs Step Two", Component: GerberTrifecta },
-    { key: "control", label: "Control, Not Dependence", Component: TwoTierModel },
-    { key: "why", label: "Why Me", Component: ExitValuation },
-    { key: "proof", label: "The Proof", Component: CaseStudyTeaser },
-    { key: "expansion", label: "The Expansion", Component: OfferSection },
-    { key: "next", label: "Your Next Move", Component: AuditSection },
+    { key: "hero", label: "Hero — sizzle reel", Component: HeroReel },
+    { key: "findYourField", label: "Find Your Field", Component: IndustriesStrip },
+    { key: "playbook", label: "The Playbook You Already Run", Component: Playbook },
+    { key: "ceiling", label: "The Ceiling — the Problem", Component: TheCeiling },
+    { key: "weapon", label: "What Changed — AI fills the seats", Component: Weapon },
+    { key: "whereItLeads", label: "The Double Flywheel", Component: WhereItLeads },
+    { key: "proof", label: "Proof — Chloe", Component: Proof },
+    { key: "fourTables", label: "The Four Tables", Component: FourTables },
+    { key: "moat", label: "The Moat — Why Me", Component: Moat },
+    { key: "next", label: "The Next Move", Component: Next },
   ],
 };

@@ -38,3 +38,20 @@ body {
 }
 .btn-cta:hover { background: var(--color-sjc-green); }
 .btn-cta .sub { font-size: 0.85rem; font-weight: 600; opacity: 0.9; margin-top: 2px; }
+
+/* Rendered rich text from the Puck Text block (Tailwind preflight zeroes p margins, so
+   restore paragraph spacing + link styling). `.rt-input` styles the in-editor surface. */
+.rt p { margin: 0 0 1rem; }
+.rt p:last-child { margin-bottom: 0; }
+.rt a { color: var(--color-sjc-blue); text-decoration: underline; }
+.rt strong { font-weight: 700; }
+.rt-input {
+  min-height: 90px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+}
+.rt-input:focus { border-color: var(--color-sjc-blue); }

@@ -14,22 +14,22 @@ export default function AuditSection() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          Your Next Move
+          The Next Move
         </Editable>
         <Editable
           tid="home.next.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-5xl"
         >
-          You already know you need AI. Let&apos;s install it — with you still running your own shop.
+          The working model is live. The thesis is on the table. The next step is a conversation between principals.
         </Editable>
 
         <div className="mx-auto mt-8 max-w-2xl space-y-5 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
           <Editable tid="home.next.p1" as="p">
-            Get on a quick call. Tell me how you run today, and I&apos;ll show you exactly where AI plugs in — starting with speed to lead.
+            Get on a call. Tell me about the platform you&apos;re building, and I&apos;ll show you the working model and exactly how the partnership would be structured against it — earnings and multiple, both flywheels.
           </Editable>
           <Editable tid="home.next.p2" as="p" className="font-semibold">
-            I install it. We run it for you. You stay in control.
+            I install the layer. You own the asset. We&apos;re aligned on the exit.
           </Editable>
         </div>
 
@@ -38,7 +38,7 @@ export default function AuditSection() {
             title={getText("home.next.cta.title", "Book the Call")}
             subtitle={getText(
               "home.next.cta.subtitle",
-              "A quick call. No pitch deck — just where AI fits on your business."
+              "See the working model, and how the partnership works."
             )}
           />
         </div>

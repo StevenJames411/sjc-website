@@ -2,15 +2,15 @@
 import Editable from "./edit/Editable";
 
 const STEP_ONE_DEFAULTS = [
-  "A CRM that drips emails on a fixed schedule",
-  "An autoresponder that fires the same message to everyone",
-  "A chatbot that sits there and waits to be asked",
+  "Licensed per seat — you stop paying, it's gone",
+  "Lives on the vendor's roadmap, not yours",
+  "The next buyer doesn't pay a premium for it",
 ];
 
 const STEP_TWO_DEFAULTS = [
-  "Reaches back out to old leads on its own and restarts the conversation",
-  "Follows up like a person would — until it gets an answer or a no",
-  "Qualifies, handles questions, and books the appointment",
+  "Built into the business — it stays when the vendor doesn't",
+  "Improves with every location it runs in",
+  "Underwritten as a tech asset at exit",
 ];
 
 export default function GerberTrifecta() {
@@ -22,22 +22,25 @@ export default function GerberTrifecta() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          Step One vs. Step Two
+          Why This Re-Rates
         </Editable>
         <Editable
           tid="home.step.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          You already tried Step One. It half-worked.
+          Software you rent never changed what a company was worth. An AI layer you own does.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.step.p1" as="p">
-            Step One was the follow-up software everyone&apos;s been selling for years — the CRM, the autoresponder, the chatbot. It runs in a straight line: same message, same order, every time. It waits for the lead to act. You bought it, set it up, and it did a little. Then it stalled.
+            Portfolio companies have bought software for years — CRMs, schedulers, the rest. None of it changed the multiple. You rent it, you turn it off, and the company is exactly the kind of business it always was. The market prices it accordingly.
           </Editable>
           <Editable tid="home.step.p2" as="p" className="font-semibold">
-            Step Two is a dynamic AI employee that goes to work. This wasn&apos;t possible last year. Now it is — and it&apos;s the next rung up.
+            The difference isn&apos;t the tool. It&apos;s ownership. When the company owns the AI employees running its operations — built into the business, not licensed from a vendor — that becomes a defensible asset on the platform. That&apos;s what a re-rating is priced on.
+          </Editable>
+          <Editable tid="home.step.p3" as="p">
+            A rented chatbot is a line item. An owned AI workforce, installed across the portfolio and improving over time, is a tech asset the next buyer underwrites. One is a cost. The other moves the multiple. That&apos;s the whole game.
           </Editable>
         </div>
 
@@ -48,14 +51,14 @@ export default function GerberTrifecta() {
               as="p"
               className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-mute)]"
             >
-              Step One — Legacy Follow-Up
+              Rented Software — A Cost Line
             </Editable>
             <Editable
               tid="home.step.col1.sub"
               as="p"
               className="mt-2 text-sm text-[color:var(--color-sjc-mute)]"
             >
-              Linear. It waits.
+              Priced like overhead. Re-rates nothing.
             </Editable>
             <ul className="mt-5 space-y-3">
               {STEP_ONE_DEFAULTS.map((s, i) => (
@@ -76,14 +79,14 @@ export default function GerberTrifecta() {
               as="p"
               className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-blue)]"
             >
-              Step Two — A Dynamic AI Employee
+              Owned AI Employees — An Asset
             </Editable>
             <Editable
               tid="home.step.col2.sub"
               as="p"
               className="mt-2 text-sm text-[color:var(--color-sjc-mute)]"
             >
-              Dynamic. It goes to work.
+              Built in, owned by the platform, re-rates the whole.
             </Editable>
             <ul className="mt-5 space-y-3">
               {STEP_TWO_DEFAULTS.map((s, i) => (
@@ -105,7 +108,7 @@ export default function GerberTrifecta() {
             as="p"
             className="text-xl font-bold md:text-2xl"
           >
-            That gap is exactly why you need an implementation partner — not another piece of software to set up yourself.
+            Renting software keeps you a service business. Owning the AI layer is how a service business becomes a tech company.
           </Editable>
         </div>
       </div>

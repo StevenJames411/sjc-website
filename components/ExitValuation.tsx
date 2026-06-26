@@ -14,39 +14,41 @@ export default function ExitValuation() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          Why Me
+          The Moat
         </Editable>
         <Editable
           tid="home.why.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          Forty years. Five businesses. I&apos;ve been the tech guy in every one.
+          The whole edge is the overlap. A 40-year operator who also builds the AI by hand. Almost nobody is both.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-          {/* p1 has inline <em> — split into spans around it to preserve italic rendering */}
+          {/* p1 has inline connector — split into spans to preserve flow */}
           <p>
             <Editable tid="home.why.p1a" as="span">
-              I&apos;ve run my own businesses since 1986 — a restaurant, a mortgage company, a roofing contractor, a trucking company I ran for twenty years, and now this. In every single one, I was the owner
+              I&apos;ve run my own businesses since 1986 — a restaurant, a mortgage company, a roofing contractor, a trucking company for twenty years, and now this. In every one I was the operator
             </Editable>{" "}
-            <em>and</em>{" "}
             <Editable tid="home.why.p1b" as="span">
-              the tech guy who wired up the systems and kept them running. I&apos;ve worn your exact hat for four decades.
+              the one who wired up the systems and kept them running. Forty years of carrying real P&amp;Ls, building the operating layer myself, and knowing where the value actually hides in a business.
             </Editable>
           </p>
           <Editable tid="home.why.p2" as="p">
-            The tools finally caught up to what I always needed. So I built it for myself first.
+            When the AI tools finally arrived, I didn&apos;t hire it out. I&apos;m AI-native and I build the employees by hand. So I sit on both sides of a line most people only stand on one side of.
+          </Editable>
+          <Editable tid="home.why.p2b" as="p">
+            That&apos;s the overlap that can&apos;t be faked. A 22-year-old AI founder can&apos;t manufacture forty years of running companies and reading where enterprise value comes from. A 40-year operator can&apos;t suddenly become AI-native and build the thing by hand. I&apos;m the rare seat where both are true — which is exactly the partner a roll-up wants on the AI side of the table.
           </Editable>
           <Editable
             tid="home.why.p3"
             as="p"
             className="text-xl font-bold text-[color:var(--color-sjc-ink)] md:text-2xl"
           >
-            Steven James Consulting runs on this exact system today.
+            My own company runs on this exact system today.
           </Editable>
           <Editable tid="home.why.p4" as="p">
-            I&apos;m not selling you a theory I read in a book. I run my own company on the same AI employees I install for you. The first client I built this for is already answering leads in seconds and booking appointments around the clock — on top of the business they already ran, with their hand still on every dollar.
+            This isn&apos;t a thesis I read. I run Steven James Consulting on the same AI employees I install, and my first install is already answering leads in seconds and booking around the clock in a live business. I&apos;ve proven it on my own books before bringing it to yours.
           </Editable>
         </div>
 
@@ -55,7 +57,7 @@ export default function ExitValuation() {
             title={getText("home.why.cta.title", "Book the Call")}
             subtitle={getText(
               "home.why.cta.subtitle",
-              "See the system that runs my own company — and what it'd look like on yours."
+              "See the working model — and how the partnership is structured."
             )}
           />
         </div>

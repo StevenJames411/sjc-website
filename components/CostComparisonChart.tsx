@@ -97,7 +97,7 @@ export default function CostComparisonChart() {
           as="p"
           className="mt-3 text-base font-bold leading-snug md:text-lg"
         >
-          An entire AI org chart — for about the price of one assistant.
+A whole AI team — for about the price of one assistant.
         </Editable>
       </div>
 
@@ -205,7 +205,7 @@ export default function CostComparisonChart() {
         {/* Footer prose — bold dollar figures are each their own Editable span */}
         <p className="mx-auto max-w-2xl text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
           <Editable tid="home.expansion.table.footer.p1a" as="span">
-            Once your leads are handled, the same setup extends across the rest of the org chart. Filling it with humans runs
+            Once your leads are handled, the same setup covers the rest of the team. Filling those jobs with people runs
           </Editable>{" "}
           <span className="font-bold text-[color:var(--color-sjc-ink)]">
             <Editable tid="home.expansion.table.footer.p1.human" as="span">$532,000</Editable>
@@ -229,7 +229,7 @@ export default function CostComparisonChart() {
             <Editable tid="home.expansion.table.footer.p1.rest" as="span">$15,000</Editable>
           </span>{" "}
           <Editable tid="home.expansion.table.footer.p1e" as="span">
-            a year. Roughly one assistant&apos;s salary, for an entire executive team that answers to you.
+            a year. Roughly one assistant&apos;s salary, for a whole team that answers to you.
           </Editable>
         </p>
         <Editable

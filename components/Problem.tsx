@@ -4,15 +4,15 @@ import Editable from "./edit/Editable";
 const POINTS = [
   {
     title: "Answered in seconds",
-    body: "A lead fills out your form at 11pm. It gets a real reply before it cools off — not a thank-you page and silence.",
+    body: "A lead comes in at 11pm and gets a real reply before it cools — not a thank-you page and silence. Every captured lead gets worked, which is margin the location was already paying for and losing.",
   },
   {
-    title: "Nothing slips",
-    body: "No lead waits in a queue for you to get to it. Every one gets worked, every time, while you sleep.",
+    title: "Around the clock",
+    body: "It never gets busy, never forgets, never goes home. Multiply that by every location in a portfolio and you're recovering revenue that used to leak after hours, site by site.",
   },
   {
-    title: "Booked, not just emailed",
-    body: "It doesn't stop at a reply. It qualifies, answers questions, and puts the appointment on your calendar.",
+    title: "Books, doesn't just reply",
+    body: "It qualifies, answers questions, and puts the appointment on the calendar. That's the difference between a chatbot and an employee — and it's why this shows up in the numbers, not just the demo.",
   },
 ];
 
@@ -25,22 +25,22 @@ export default function Problem() {
           as="p"
           className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
         >
-          Speed to Lead
+          The Working Model
         </Editable>
         <Editable
           tid="home.problem.h2"
           as="h2"
           className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
         >
-          Every lead answered the instant it lands.
+          This isn&apos;t a slide. It&apos;s running right now, in a real business.
         </Editable>
 
         <div className="mt-8 space-y-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
           <Editable tid="home.problem.p1" as="p">
-            You spent the money to make the phone ring. Then a lead comes in while you’re on a job, asleep, or three calls deep — and by the time you get to it, they’ve already booked with someone faster.
+            Before we talk about what this does across a portfolio, look at what it already does in one location. The first AI employee I installed answers every lead the second it lands — at 11pm, on a Sunday, while staff are off the clock. It holds a real conversation, qualifies, and books the appointment itself. No one is babysitting it.
           </Editable>
           <Editable tid="home.problem.p2" as="p" className="font-semibold">
-            That stops on day one.
+            That&apos;s live today — not a pilot, not a demo.
           </Editable>
         </div>
 
@@ -74,7 +74,7 @@ export default function Problem() {
             as="p"
             className="text-xl font-bold md:text-2xl"
           >
-            The lead you already paid for stops being the one that got away.
+            One location, running this today, is the proof of concept for the whole roll-up.
           </Editable>
         </div>
       </div>

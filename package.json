@@ -9,7 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@measured/puck": "^0.20.2",
     "@react-pdf/renderer": "^4.5.1",
+    "@tiptap/extension-color": "^3.27.1",
+    "@tiptap/extension-link": "^3.27.1",
+    "@tiptap/extension-text-style": "^3.27.1",
+    "@tiptap/extension-underline": "^3.27.1",
+    "@tiptap/pm": "^3.27.1",
+    "@tiptap/react": "^3.27.1",
+    "@tiptap/starter-kit": "^3.27.1",
     "@vercel/blob": "^2.4.0",
     "ioredis": "^5.11.1",
     "next": "16.2.4",
