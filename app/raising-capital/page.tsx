@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PillarTemplate from "@/components/PillarTemplate";
 import EditablePage from "@/components/edit/EditablePage";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import { readPublished } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function RaisingCapitalPage() {
     <>
       <Nav />
       <main>
+       <PublishedOrFallback page="raising-capital">
         <EditablePage pageKey="raising-capital" published={published}>
         <PillarTemplate
           tid="raising-capital"
@@ -36,6 +38,7 @@ export default async function RaisingCapitalPage() {
           ctaSubtitle="Principal to principal, on the capital side of the table."
         />
         </EditablePage>
+       </PublishedOrFallback>
       </main>
       <Footer />
     </>

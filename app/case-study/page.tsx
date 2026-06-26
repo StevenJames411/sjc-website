@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import CtaButton from "@/components/CtaButton";
 import EditablePage from "@/components/edit/EditablePage";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import Editable from "@/components/edit/Editable";
 import { readPublished } from "@/lib/siteContent";
 
@@ -34,6 +35,7 @@ export default async function CaseStudy() {
     <>
       <Nav />
       <main>
+       <PublishedOrFallback page="case-study">
         <EditablePage pageKey="case-study" published={published}>
           {/* Section 1 — Hero */}
           <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
@@ -166,6 +168,7 @@ export default async function CaseStudy() {
             </div>
           </section>
         </EditablePage>
+       </PublishedOrFallback>
       </main>
       <Footer />
     </>

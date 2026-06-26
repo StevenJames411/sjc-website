@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PillarTemplate from "@/components/PillarTemplate";
 import EditablePage from "@/components/edit/EditablePage";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import { readPublished } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function PodcastPage() {
     <>
       <Nav />
       <main>
+       <PublishedOrFallback page="podcast">
         <EditablePage pageKey="podcast" published={published}>
         <PillarTemplate
           tid="podcast"
@@ -36,6 +38,7 @@ export default async function PodcastPage() {
           ctaSubtitle="One operator to another — no pitch on the mic."
         />
         </EditablePage>
+       </PublishedOrFallback>
       </main>
       <Footer />
     </>

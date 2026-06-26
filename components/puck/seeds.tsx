@@ -88,8 +88,166 @@ const FAQS_SEED: Data = {
   ],
 };
 
+// Case Study (hero · before · what we installed · what she did · the point · CTA).
+const CASE_STUDY_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "casestudy-s1", background: "#f3f4f6", content: [
+      { type: "Heading", props: { id: "casestudy-s1-eyebrow", text: "The proof", level: "h3", align: "left" } },
+      { type: "Heading", props: { id: "casestudy-h1", text: "The machine is the receipt.", level: "h1", align: "left" } },
+      { type: "Text", props: { id: "casestudy-s1-lead", text: "You don't have to take my word for what a dynamic AI employee does. Here's one already doing it — in a real business, with real leads, on a Sunday night.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "casestudy-s2", background: "#ffffff", content: [
+      { type: "Heading", props: { id: "casestudy-s2-h2", text: "The setup: good leads, slow follow-up.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "casestudy-s2-p1", text: "A med spa was running paid ads and getting plenty of leads. The problem was the same one almost every owner has. Leads filled out the form, landed in the CRM, and sat there. By the time someone got around to calling, the lead had gone cold — or already booked somewhere else.", align: "left" } },
+      { type: "Text", props: { id: "casestudy-s2-p2", text: "They'd already tried the usual fix: an automated email-and-text follow-up that fired off a few canned messages and stopped. That's step one — a script that waits. It helps a little, then runs out of road. It can't hold a real conversation, can't answer a question, and can't get anyone onto the calendar. It just waits.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "casestudy-s3", background: "#f3f4f6", content: [
+      { type: "Heading", props: { id: "casestudy-s3-h2", text: "What we installed: a dynamic AI employee.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "casestudy-s3-p1", text: "We took the owner's own sales conversations — how he answers questions, how he handles the price objection, how he talks to people — and trained an AI employee on all of it. We named her Chloe.", align: "left" } },
+      { type: "Text", props: { id: "casestudy-s3-p2", text: "This is step two. Not a script that waits for someone to reply. An employee that goes to work: she answers the lead, holds a real back-and-forth, handles objections in the owner's own words, and books the appointment herself. She sounds like the owner trained her — because he did, through his own recordings.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "casestudy-s4", background: "#ffffff", content: [
+      { type: "Heading", props: { id: "casestudy-s4-h2", text: "What she actually did.", level: "h2", align: "left" } },
+      { type: "Heading", props: { id: "casestudy-did0-title", text: "Answered every lead the instant it landed", level: "h3", align: "left" } },
+      { type: "Text", props: { id: "casestudy-did0-body", text: "A lead fills out the form at 9:47 on a Sunday night. Before, it sat in the CRM until Monday morning — cold, or gone to a competitor. Now it gets a real reply in seconds, every time, day or night.", align: "left" } },
+      { type: "Heading", props: { id: "casestudy-did1-title", text: "Booked the consult on its own", level: "h3", align: "left" } },
+      { type: "Text", props: { id: "casestudy-did1-body", text: "It doesn't just say hello and wait. It asks the right questions, handles the price objection the way the owner handles it, answers what it can, and walks the lead onto the calendar. Four of them in the first hour and a half.", align: "left" } },
+      { type: "Heading", props: { id: "casestudy-did2-title", text: "Went back and woke up the cold leads", level: "h3", align: "left" } },
+      { type: "Text", props: { id: "casestudy-did2-body", text: "Every business is sitting on a list of leads that went quiet. Instead of letting them rot, the AI employee reaches back out, restarts the conversation, and pulls the ones who are ready back into the pipeline.", align: "left" } },
+      { type: "Heading", props: { id: "casestudy-receipt0-value", text: "Instant", level: "h3", align: "center" } },
+      { type: "Text", props: { id: "casestudy-receipt0-label", text: "Every lead answered the second it comes in", align: "center" } },
+      { type: "Heading", props: { id: "casestudy-receipt1-value", text: "4", level: "h3", align: "center" } },
+      { type: "Text", props: { id: "casestudy-receipt1-label", text: "Consults booked in the first 90 minutes live", align: "center" } },
+      { type: "Heading", props: { id: "casestudy-receipt2-value", text: "Sunday night", level: "h3", align: "center" } },
+      { type: "Text", props: { id: "casestudy-receipt2-label", text: "When a human would've been asleep", align: "center" } },
+    ] } },
+    { type: "Section", props: { id: "casestudy-s5", background: "#f3f4f6", content: [
+      { type: "Heading", props: { id: "casestudy-s5-h2", text: "And the owner kept the keys the whole time.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "casestudy-s5-p1", text: "Chloe runs on top of the business the owner already had. His CRM. His calendar. His leads. His pricing. Nothing got ripped out and nothing got taken away. I operate the plumbing in the background so he doesn't have to — and he can watch every conversation and every booking as it happens.", align: "left" } },
+      { type: "Text", props: { id: "casestudy-s5-p2", text: "That's the whole idea. You become the AI-first company, the machine does the work, and your hand stays on every lead and every dollar.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "casestudy-s6", background: "#ffffff", content: [
+      { type: "Heading", props: { id: "casestudy-s6-h2", text: "Want one of these answering your leads?", level: "h2", align: "center" } },
+      { type: "Text", props: { id: "casestudy-s6-p", text: "Book a quick call. I'll show you exactly where a dynamic AI employee plugs into the business you already run.", align: "center" } },
+      { type: "Button", props: { id: "casestudy-s6-btn", title: "Book the Call", subtitle: "See where a dynamic AI employee plugs into your business.", href: "/#contact" } },
+      { type: "PhoneLink", props: { id: "casestudy-s6-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
+    ] } },
+  ],
+};
+
+// The four "table" pages share the PillarTemplate shape: dark navy hero (white text) ·
+// intro · "Who's at this table" · CTA.
+const TECH_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "tech-hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "tech-eyebrow", text: "The build", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "tech-h1", text: "Tech", level: "h1", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-tagline", text: "The technology partners who plug into the build behind the playbook.", align: "center", color: "#ffffff" } },
+    ] } },
+    { type: "Section", props: { id: "tech-intro", background: "#ffffff", content: [
+      { type: "Text", props: { id: "tech-body", text: "The AI employees are built, not bought off a shelf — installed on top of the business an operator already runs, then handed back so he stays in command. I'm a non-coder who's been the tech lead in all five of my businesses, so I build it the way an operator needs it to run, not the way a vendor wants to sell it. This is the table for the technology partners pushing the same frontier from the other side. The first one already runs live: Chloe, an AI employee answering and booking inside a working med spa.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "tech-universe", background: "#f3f4f6", content: [
+      { type: "Heading", props: { id: "tech-universe-h2", text: "Who's at this table", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "tech-u-0", text: "AI builders and model partners on the frontier of what an AI employee can do.", align: "left" } },
+      { type: "Text", props: { id: "tech-u-1", text: "Tooling and infrastructure partners — the rails the employees run on.", align: "left" } },
+      { type: "Text", props: { id: "tech-u-2", text: "Integration partners across the operator's existing stack.", align: "left" } },
+      { type: "Text", props: { id: "tech-u-3", text: "The people who keep the engine a step ahead of the field.", align: "left" } },
+      { type: "Text", props: { id: "tech-universe-footnote", text: "Episodes / details — coming", align: "left", color: "#4b5563" } },
+    ] } },
+    { type: "Section", props: { id: "tech-cta", background: "#ffffff", content: [
+      { type: "Button", props: { id: "tech-cta-btn", title: "Partner with us", subtitle: "Builder to builder, on the tech side of the table.", href: "/#contact" } },
+    ] } },
+  ],
+};
+
+const BOARD_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "board-hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "board-eyebrow", text: "The top tier", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "board-h1", text: "Board of Directors", level: "h1", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "board-tagline", text: "Company leaders who've already run the mergers-and-acquisitions playbook — at the highest level, across industries.", align: "center", color: "#ffffff" } },
+    ] } },
+    { type: "Section", props: { id: "board-intro", background: "#ffffff", content: [
+      { type: "Text", props: { id: "board-body", text: "This is the top tier of the table: the leaders who've been all the way through it — built, rolled up, and exited — more than once. These are the deepest conversations on the M&A playbook, the exact playbook I lived from the inside five times, with the people who've run it at scale. Same doctrine as the show: I never pitch on the mic. It's how the most seasoned operators and I get to know each other — principal to principal, on the record.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "board-universe", background: "#f3f4f6", content: [
+      { type: "Heading", props: { id: "board-universe-h2", text: "Who's at this table", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "board-u-0", text: "Founders who took a single shop to a platform exit.", align: "left" } },
+      { type: "Text", props: { id: "board-u-1", text: "Roll-up operators who consolidated a fragmented field into one company.", align: "left" } },
+      { type: "Text", props: { id: "board-u-2", text: "Leaders who've sat on both sides of the acquisition table.", align: "left" } },
+      { type: "Text", props: { id: "board-u-3", text: "The people who de-risk the next deal because they've already closed the last one.", align: "left" } },
+      { type: "Text", props: { id: "board-universe-note", text: "Episodes / details — coming", align: "left", color: "#4b5563" } },
+    ] } },
+    { type: "Section", props: { id: "board-cta", background: "#ffffff", content: [
+      { type: "Button", props: { id: "board-cta-btn", title: "Get in touch", subtitle: "Leaders who've done the deal — no pitch on the mic.", href: "/#contact" } },
+    ] } },
+  ],
+};
+
+const RAISING_CAPITAL_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "capital-hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "capital-eyebrow", text: "The money", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "capital-h1", text: "Raising Capital", level: "h1", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "capital-tagline", text: "The capital partners behind the re-rate.", align: "center", color: "#ffffff" } },
+    ] } },
+    { type: "Section", props: { id: "capital-intro", background: "#ffffff", content: [
+      { type: "Text", props: { id: "capital-body", text: "A services roll-up trades at a services multiple. But when you own the AI layer the businesses run on — not a tool you license, the layer you built — that same roll-up starts to re-rate toward a technology multiple. That's the capital story underneath the operating one: buy in fragmented fields, install the AI employees, and the whole platform gets repriced. This is the table for the money partners who fund the playbook and share the upside.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "capital-universe", background: "#f3f4f6", content: [
+      { type: "Heading", props: { id: "capital-universe-title", text: "Who's at this table", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "capital-u-0", text: "Venture and growth capital backing the AI layer itself.", align: "left" } },
+      { type: "Text", props: { id: "capital-u-1", text: "Search funds and independent sponsors rolling up a fragmented field.", align: "left" } },
+      { type: "Text", props: { id: "capital-u-2", text: "Private-equity sponsors who want a technology re-rate on a services book.", align: "left" } },
+      { type: "Text", props: { id: "capital-u-3", text: "The capital that turns one shop into a platform.", align: "left" } },
+      { type: "Text", props: { id: "capital-universe-footnote", text: "Episodes / details — coming", align: "left", color: "#4b5563" } },
+    ] } },
+    { type: "Section", props: { id: "capital-cta", background: "#ffffff", content: [
+      { type: "Button", props: { id: "capital-cta-btn", title: "Let's talk", subtitle: "Principal to principal, on the capital side of the table.", href: "/#contact" } },
+    ] } },
+  ],
+};
+
+const PODCAST_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "podcast-hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "podcast-eyebrow", text: "The content engine", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "podcast-h1", text: "The Podcast", level: "h1", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "podcast-tagline", text: "Operators at every stage of the journey — still solo, mid-roll-up, already exited — across every field.", align: "center", color: "#ffffff" } },
+    ] } },
+    { type: "Section", props: { id: "podcast-intro", background: "#ffffff", content: [
+      { type: "Text", props: { id: "podcast-body", text: "Five businesses, forty years, one playbook. This is where I hear it in other people's words. I sit down with operators from every industry, at every stage of the run, and the money and tech partners who build the room around them — and I never pitch on the mic. The show is the conversation, not a sales channel; the clips in the hero reel are cut from these rooms, and the table never runs dry.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "podcast-universe", background: "#f3f4f6", content: [
+      { type: "Heading", props: { id: "podcast-universe-title", text: "Who's at this table", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "podcast-universe-0", text: "Operators still running solo — in the thick of it, doing 90% of it themselves.", align: "left" } },
+      { type: "Text", props: { id: "podcast-universe-1", text: "Operators mid-roll-up — buying, integrating, scaling a fragmented field.", align: "left" } },
+      { type: "Text", props: { id: "podcast-universe-2", text: "Operators who've already exited — and what they'd run back the same, or differently.", align: "left" } },
+      { type: "Text", props: { id: "podcast-universe-3", text: "The money partners and tech partners who make the whole thing go.", align: "left" } },
+      { type: "Text", props: { id: "podcast-universe-coming", text: "Episodes / details — coming", align: "left", color: "#4b5563" } },
+    ] } },
+    { type: "Section", props: { id: "podcast-cta", background: "#ffffff", content: [
+      { type: "Button", props: { id: "podcast-cta-btn", title: "Come on the show", subtitle: "One operator to another — no pitch on the mic.", href: "/#contact" } },
+    ] } },
+  ],
+};
+
+const SEEDS: Record<string, Data> = {
+  about: SEED,
+  faqs: FAQS_SEED,
+  "case-study": CASE_STUDY_SEED,
+  tech: TECH_SEED,
+  "board-of-directors": BOARD_SEED,
+  "raising-capital": RAISING_CAPITAL_SEED,
+  podcast: PODCAST_SEED,
+};
+
 export function seedFor(slug: string, title: string): Data {
-  if (slug === "about") return SEED;
-  if (slug === "faqs") return FAQS_SEED;
-  return starter(slug, title);
+  return SEEDS[slug] || starter(slug, title);
 }

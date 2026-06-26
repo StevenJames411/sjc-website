@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PillarTemplate from "@/components/PillarTemplate";
 import EditablePage from "@/components/edit/EditablePage";
+import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
 import { readPublished } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function BoardOfDirectorsPage() {
     <>
       <Nav />
       <main>
+       <PublishedOrFallback page="board-of-directors">
         <EditablePage pageKey="board-of-directors" published={published}>
         <PillarTemplate
           tid="board-of-directors"
@@ -36,6 +38,7 @@ export default async function BoardOfDirectorsPage() {
           ctaSubtitle="Leaders who've done the deal — no pitch on the mic."
         />
         </EditablePage>
+       </PublishedOrFallback>
       </main>
       <Footer />
     </>

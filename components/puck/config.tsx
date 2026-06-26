@@ -13,8 +13,8 @@ type Align = "left" | "center" | "right";
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
   Section: { background: string; content: Slot };
-  Heading: { text: string; level: "h1" | "h2" | "h3"; align: Align };
-  Text: { text: string; align: Align };
+  Heading: { text: string; level: "h1" | "h2" | "h3"; align: Align; color: string };
+  Text: { text: string; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   PhoneLink: { label: string; tel: string };
 };
@@ -34,6 +34,18 @@ const BG_FIELD = {
     { label: "White", value: "#ffffff" },
     { label: "Light gray", value: "#f3f4f6" },
     { label: "SJC navy", value: "#1e3a6e" },
+    { label: "Dark navy", value: "#0f1f3d" },
+  ],
+};
+
+// Per-block text color. Default ink; "White" is for blocks sitting on a dark Section band.
+const COLOR_FIELD = {
+  type: "select" as const,
+  options: [
+    { label: "Ink (default)", value: "#111827" },
+    { label: "White", value: "#ffffff" },
+    { label: "Blue", value: "#2563eb" },
+    { label: "Muted gray", value: "#4b5563" },
   ],
 };
 
@@ -70,9 +82,10 @@ export const config: Config<Props> = {
           ],
         },
         align: { ...ALIGN_FIELD, label: "Align" },
+        color: { ...COLOR_FIELD, label: "Color" },
       },
-      defaultProps: { text: "New heading", level: "h2" as const, align: "left" as const },
-      render: ({ text, level, align }) => {
+      defaultProps: { text: "New heading", level: "h2" as const, align: "left" as const, color: "#111827" },
+      render: ({ text, level, align, color }) => {
         const Tag = level;
         const size =
           level === "h1"
@@ -82,8 +95,8 @@ export const config: Config<Props> = {
             : "text-xl md:text-2xl";
         return (
           <Tag
-            className={`font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] ${size}`}
-            style={{ textAlign: align, marginBottom: "0.75rem" }}
+            className={`font-bold leading-tight tracking-tight ${size}`}
+            style={{ textAlign: align, color: color || "#111827", marginBottom: "0.75rem" }}
           >
             {text}
           </Tag>
@@ -103,15 +116,17 @@ export const config: Config<Props> = {
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
+        color: { ...COLOR_FIELD, label: "Color" },
       },
       defaultProps: {
         text: "New paragraph. Select any word and use the toolbar to format it.",
         align: "left" as const,
+        color: "#111827",
       },
-      render: ({ text, align }) => (
+      render: ({ text, align, color }) => (
         <div
-          className="rt text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg"
-          style={{ textAlign: align, marginTop: "1rem" }}
+          className="rt text-base leading-relaxed md:text-lg"
+          style={{ textAlign: align, color: color || "#111827", marginTop: "1rem" }}
           dangerouslySetInnerHTML={{ __html: text }}
         />
       ),
