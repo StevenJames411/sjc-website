@@ -39,6 +39,7 @@ type Props = {
   Section: { background: string; paddingTop: number; paddingBottom: number; content: Slot };
   Spacer: { height: number };
   Divider: { color: string };
+  Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
@@ -204,6 +205,54 @@ export const config: Config<Props> = {
       render: ({ color }) => (
         <hr style={{ border: "none", borderTop: `1px solid ${color || "#e5e7eb"}`, margin: "1.5rem 0" }} />
       ),
+    },
+
+    Columns: {
+      label: "Columns (1 / 2 / 3)",
+      fields: {
+        columns: {
+          type: "select" as const,
+          label: "Number of columns",
+          options: [
+            { label: "1 column", value: 1 },
+            { label: "2 columns", value: 2 },
+            { label: "3 columns", value: 3 },
+          ],
+        },
+        gap: {
+          type: "custom" as const,
+          label: "Gap between columns (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+          ),
+        },
+        col1: { type: "slot" as const },
+        col2: { type: "slot" as const },
+        col3: { type: "slot" as const },
+      },
+      defaultProps: { columns: 2, gap: 24, col1: [], col2: [], col3: [] },
+      render: ({ columns, gap, col1: Col1, col2: Col2, col3: Col3 }) => {
+        const n = Number(columns) || 1;
+        const cls =
+          n >= 3 ? "grid-cols-1 md:grid-cols-3" : n === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1";
+        return (
+          <div className={`grid ${cls}`} style={{ gap: `${typeof gap === "number" ? gap : 24}px` }}>
+            <div>
+              <Col1 />
+            </div>
+            {n >= 2 && (
+              <div>
+                <Col2 />
+              </div>
+            )}
+            {n >= 3 && (
+              <div>
+                <Col3 />
+              </div>
+            )}
+          </div>
+        );
+      },
     },
 
     Heading: {
