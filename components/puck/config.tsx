@@ -31,9 +31,16 @@ type Props = {
   Text: { text: string; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   PhoneLink: { label: string; tel: string };
-  // "Wrapped" blocks: existing custom homepage sections, each rendered as-is and draggable as
-  // one unit. No fields yet — the section's own text edits come in a later pass.
-  HeroReel: Record<string, never>;
+  // Hero — now a props-driven block (text editable via fields). The rest below are still
+  // "wrapped" as-is; they get the same treatment section by section.
+  HeroReel: {
+    eyebrow: string;
+    h1: string;
+    sub: string;
+    fieldsLine: string;
+    ctaTitle: string;
+    ctaSubtitle: string;
+  };
   FindYourIndustry: Record<string, never>;
   Playbook: Record<string, never>;
   TheCeiling: Record<string, never>;
@@ -215,7 +222,35 @@ export const config: Config<Props> = {
 
     // Wrapped homepage sections — each renders the real live component as a single
     // draggable/deletable block. (Their internal text becomes Puck-editable in a later pass.)
-    HeroReel: { label: "Hero — sizzle reel", fields: {}, render: () => <HeroReel /> },
+    HeroReel: {
+      label: "Hero — sizzle reel",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h1: { type: "text" as const, label: "Headline" },
+        sub: { type: "textarea" as const, label: "Sub-paragraph" },
+        fieldsLine: { type: "textarea" as const, label: "Breadth line" },
+        ctaTitle: { type: "text" as const, label: "Button text" },
+        ctaSubtitle: { type: "text" as const, label: "Button subtitle" },
+      },
+      defaultProps: {
+        eyebrow: "From solo entrepreneur to exit",
+        h1: "Four businesses. Forty years. I was the technology in every one.",
+        sub: "Restaurant, mortgage, roofing, trucking — four businesses I ran, and in every one I was the architect who built the systems that made it work, because we were too small to afford anyone else. That became my fifth business: I do it for other operators now. I walk in and install the technology itself — a workforce of AI employees — into a business like the ones I built. The trade has a name: the AI Employee Operating System.",
+        fieldsLine: "It works in any owner-run business — the trades, clinics, services — anywhere the same playbook runs.",
+        ctaTitle: "Apply to work with me",
+        ctaSubtitle: "One operator to another.",
+      },
+      render: ({ eyebrow, h1, sub, fieldsLine, ctaTitle, ctaSubtitle }) => (
+        <HeroReel
+          eyebrow={eyebrow}
+          h1={h1}
+          sub={sub}
+          fieldsLine={fieldsLine}
+          ctaTitle={ctaTitle}
+          ctaSubtitle={ctaSubtitle}
+        />
+      ),
+    },
     FindYourIndustry: { label: "Find Your Industry (cards)", fields: {}, render: () => <IndustriesStrip /> },
     Playbook: { label: "The Playbook You Already Run", fields: {}, render: () => <Playbook /> },
     TheCeiling: { label: "The Ceiling — the Problem", fields: {}, render: () => <TheCeiling /> },
