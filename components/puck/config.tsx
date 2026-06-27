@@ -36,7 +36,9 @@ type Align = "left" | "center" | "right";
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
-  Section: { background: string; content: Slot };
+  Section: { background: string; paddingTop: number; paddingBottom: number; content: Slot };
+  Spacer: { height: number };
+  Divider: { color: string };
   Heading: { text: string; fontSize: number; align: Align; color: string };
   Text: { text: string; fontSize: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
@@ -144,15 +146,63 @@ export const config: Config<Props> = {
       label: "Section (band)",
       fields: {
         background: { ...BG_FIELD, label: "Background" },
+        paddingTop: {
+          type: "custom" as const,
+          label: "Padding top (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+          ),
+        },
+        paddingBottom: {
+          type: "custom" as const,
+          label: "Padding bottom (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+          ),
+        },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "#ffffff", content: [] },
-      render: ({ background, content: Content }) => (
+      defaultProps: { background: "#ffffff", paddingTop: 64, paddingBottom: 64, content: [] },
+      render: ({ background, paddingTop, paddingBottom, content: Content }) => (
         <section style={{ backgroundColor: background }} className="w-full">
-          <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
+          <div
+            className="mx-auto max-w-3xl px-6"
+            style={{
+              paddingTop: `${typeof paddingTop === "number" ? paddingTop : 64}px`,
+              paddingBottom: `${typeof paddingBottom === "number" ? paddingBottom : 64}px`,
+            }}
+          >
             <Content />
           </div>
         </section>
+      ),
+    },
+
+    Spacer: {
+      label: "Spacer (vertical gap)",
+      fields: {
+        height: {
+          type: "custom" as const,
+          label: "Height (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
+          ),
+        },
+      },
+      defaultProps: { height: 32 },
+      render: ({ height }) => (
+        <div style={{ height: `${typeof height === "number" ? height : 32}px` }} aria-hidden />
+      ),
+    },
+
+    Divider: {
+      label: "Divider (line)",
+      fields: {
+        color: { ...COLOR_FIELD, label: "Line color" },
+      },
+      defaultProps: { color: "#e5e7eb" },
+      render: ({ color }) => (
+        <hr style={{ border: "none", borderTop: `1px solid ${color || "#e5e7eb"}`, margin: "1.5rem 0" }} />
       ),
     },
 
