@@ -10,7 +10,7 @@ type CtaButtonProps = {
 };
 
 export default function CtaButton({
-  title = "Book the Call",
+  title = "Apply to work with me",
   subtitle,
   className = "",
   href = BOOKING_URL,

@@ -1,9 +1,9 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import CtaButton from "@/components/CtaButton";
-import MedSpaWound from "@/components/medspa/MedSpaWound";
-import MedSpaStep from "@/components/medspa/MedSpaStep";
-import MedSpaPricing from "@/components/medspa/MedSpaPricing";
+import MedSpaWound, { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
+import MedSpaStep, { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
+import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
 import EditablePage from "@/components/edit/EditablePage";
 import Editable from "@/components/edit/Editable";
 import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
@@ -60,16 +60,16 @@ export default async function MedSpaPage() {
               </Editable>
               <div className="mt-10 flex justify-center">
                 <CtaButton
-                  title="Book the Call"
+                  title="Apply to work with me"
                   subtitle="See exactly what we'd install — and what you'd control."
                 />
               </div>
             </div>
           </section>
 
-          <MedSpaWound />
-          <MedSpaStep />
-          <MedSpaPricing />
+          <MedSpaWound {...MEDSPA_WOUND_DEFAULTS} />
+          <MedSpaStep {...MEDSPA_STEP_DEFAULTS} />
+          <MedSpaPricing {...MEDSPA_PRICING_DEFAULTS} />
 
           {/* Buyer CTA */}
           <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
@@ -98,7 +98,7 @@ export default async function MedSpaPage() {
               </div>
               <div className="mt-10 flex justify-center">
                 <CtaButton
-                  title="Book the Call"
+                  title="Apply to work with me"
                   subtitle="A quick call. No pitch deck — just where AI fits on your business."
                 />
               </div>

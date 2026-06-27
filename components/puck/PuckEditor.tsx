@@ -12,6 +12,9 @@ import { PUCK_PAGES } from "@/lib/puckPages";
 // quietly written to the cloud, with a Saving…/Saved indicator). Puck's own header keeps the
 // Publish button (draft stays private until Publish pushes it live). The whole site is
 // password-gated by middleware, so only the owner reaches this.
+//
+// To reset a page to its seed: navigate to /edit/<page>?reset=1 — the URL param triggers the
+// reset on load and is then stripped, so no fumble-able button sits on the toolbar.
 type SaveState = "idle" | "saving" | "saved";
 
 export default function PuckEditor({ page, title }: { page: string; title: string }) {
@@ -19,23 +22,6 @@ export default function PuckEditor({ page, title }: { page: string; title: strin
   const [data, setData] = useState<Data | null>(null);
   const [save, setSave] = useState<SaveState>("idle");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Load this page's saved draft, or fall back to its seed (current content for /about,
-  // a starter for the rest).
-  useEffect(() => {
-    let alive = true;
-    setData(null);
-    fetch(`/api/puck?page=${encodeURIComponent(page)}`)
-      .then((r) => r.json())
-      .then((j) => {
-        if (!alive) return;
-        setData(j && j.data && Array.isArray(j.data.content) ? j.data : seedFor(page, title));
-      })
-      .catch(() => alive && setData(seedFor(page, title)));
-    return () => {
-      alive = false;
-    };
-  }, [page, title]);
 
   const writeDraft = (d: Data) => {
     setSave("saving");
@@ -48,6 +34,40 @@ export default function PuckEditor({ page, title }: { page: string; title: strin
       .then(() => setSave("saved"))
       .catch(() => setSave("idle"));
   };
+
+  // Load this page's saved draft, or fall back to its seed. If ?reset=1 is in the URL,
+  // load the seed directly (and strip the param) — deliberate recovery, not a fumble-able button.
+  useEffect(() => {
+    let alive = true;
+    setData(null);
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reset") === "1") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("reset");
+      window.history.replaceState({}, "", url.toString());
+      const s = seedFor(page, title);
+      setData(s);
+      fetch("/api/puck", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ page, data: s }),
+      });
+      return () => { alive = false; };
+    }
+
+    fetch(`/api/puck?page=${encodeURIComponent(page)}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (!alive) return;
+        setData(j && j.data && Array.isArray(j.data.content) ? j.data : seedFor(page, title));
+      })
+      .catch(() => alive && setData(seedFor(page, title)));
+    return () => {
+      alive = false;
+    };
+  }, [page, title]);
 
   // Debounced auto-save on every edit.
   const onChange = (d: Data) => {
@@ -79,7 +99,7 @@ export default function PuckEditor({ page, title }: { page: string; title: strin
           {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : ""}
         </span>
         <span style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
-          Edits auto-save as a draft · use Publish to go live
+          Edits auto-save as a draft · use Publish to go live · reset via /edit/{page}?reset=1
         </span>
       </div>
       <div style={{ flex: 1, minHeight: 0, position: "relative" }}>

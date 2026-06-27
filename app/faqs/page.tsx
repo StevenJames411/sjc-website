@@ -45,7 +45,7 @@ export default async function FAQs() {
                 FAQs
               </Editable>
               <Editable tid="faqs.h1" as="h1" className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-                Questions before you book.
+                Questions before you apply.
               </Editable>
               <Editable tid="faqs.lead" as="p" className="mt-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
                 The short version: you become the AI-first company, the machine does the work, and you keep your hand on every lead and every dollar.
@@ -77,11 +77,11 @@ export default async function FAQs() {
                 Still have a question?
               </Editable>
               <Editable tid="faqs.cta.p" as="p" className="mt-4 text-base text-[color:var(--color-sjc-ink)] md:text-lg">
-                Book a quick call and ask me directly. You&apos;ll leave knowing exactly where AI employees plug into your business &mdash; with you holding the keys.
+                Apply and ask me directly. You&apos;ll leave knowing exactly where AI employees plug into your business &mdash; with you holding the keys.
               </Editable>
               <div className="mt-8 flex flex-col items-center gap-4">
                 <CtaButton
-                  title="Book the Call"
+                  title="Apply to work with me"
                   subtitle="A quick call to see where AI employees plug into your business."
                   href="/#contact"
                 />

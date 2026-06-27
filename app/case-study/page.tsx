@@ -60,7 +60,7 @@ export default async function CaseStudy() {
               </Editable>
               <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
                 <Editable tid="case-study.s2.p1" as="p">
-                  A med spa was running paid ads and getting plenty of leads. The problem was the same one almost every owner has. Leads filled out the form, landed in the CRM, and sat there. By the time someone got around to calling, the lead had gone cold &mdash; or already booked somewhere else.
+                  One of my clients was running paid ads and getting plenty of leads. The problem was the same one almost every owner has. Leads filled out the form, landed in the CRM, and sat there. By the time someone got around to calling, the lead had gone cold &mdash; or already booked somewhere else.
                 </Editable>
                 <Editable tid="case-study.s2.p2" as="p">
                   They&apos;d already tried the usual fix: an automated email-and-text follow-up that fired off a few canned messages and stopped. That&apos;s step one &mdash; a script that waits. It helps a little, then runs out of road. It can&apos;t hold a real conversation, can&apos;t answer a question, and can&apos;t get anyone onto the calendar. It just waits.
@@ -150,11 +150,11 @@ export default async function CaseStudy() {
                 Want one of these answering your leads?
               </Editable>
               <Editable tid="case-study.s6.p" as="p" className="mt-4 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
-                Book a quick call. I&apos;ll show you exactly where a dynamic AI employee plugs into the business you already run.
+                Apply to work with me. I&apos;ll show you exactly where a dynamic AI employee plugs into the business you already run.
               </Editable>
               <div className="mt-8 flex flex-col items-center gap-4">
                 <CtaButton
-                  title="Book the Call"
+                  title="Apply to work with me"
                   subtitle="See where a dynamic AI employee plugs into your business."
                   href="/#contact"
                 />

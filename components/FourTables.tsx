@@ -6,6 +6,9 @@ import { PILLARS, pillarHref } from "@/lib/pillars";
 // the top-tier leaders (board), the build (tech), the money (raising capital). Reads the central
 // PILLARS list. The hero is the taste; these are the meal.
 export default function FourTables() {
+  // PARKED with the PILLARS (boutique trim): no tables → render nothing, so the homepage
+  // doesn't show an empty heading shell. Restores automatically when PILLARS is repopulated.
+  if (!PILLARS.length) return null;
   return (
     <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">
       <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
