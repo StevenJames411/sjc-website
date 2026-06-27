@@ -9,9 +9,9 @@ export type PlatformProps = {
 export const PLATFORM_DEFAULTS: PlatformProps = {
   eyebrow: "The Platform",
   h2: "The Platform — Above Any One Industry",
-  p1: "Don't let the med spa narrow your thinking, because the business I'm describing isn't a med spa business. It's an AI-implementation company that sits above any single industry.",
-  p2: "The engine — the AI employee that answers, follows up, qualifies, books, and reactivates; the way it's trained on a specific operator's own playbook; the way it installs on top of the linear software a shop already runs — none of that is specific to clinics. It forks into verticals. Med spas first, because that's where I proved it. Roofing next, because I ran a roofing company and I know exactly where that money leaks. HVAC, because it's the same shape — owner-run, lead-driven, fragmented, bleeding the same leaks. Dental, vet, home services, any field where a fragmented industry of owner-operators is still running the same aging conveyor belt. Same engine, retrained on the new field's playbook, installed in the businesses that run it.",
-  p3: "That's what this actually is: not a clinic tool, but the company that installs an owned AI workforce on top of whatever business you run — whichever industry, whichever software you already use. Med spa is just where the paint is dry. The platform goes everywhere the playbook goes.",
+  p1: "Don't let any one example narrow your thinking. What I'm describing isn't a one-industry business at all — it's an AI-implementation company that sits above every single industry.",
+  p2: "The engine — the AI employee that answers, follows up, qualifies, books, and reactivates; the way it's trained on one owner's own playbook; the way it installs on top of the linear software a shop already runs — none of that is tied to any single field. It forks. I proved it in the first field, then the next — roofing, because I ran a roofing company and I know exactly where that money leaks; home services, trades, practices, any field with the same shape: built and run by one person, lead-driven, fragmented, bleeding the same leaks. Same engine, retrained on the new field's playbook, installed in the businesses that run it.",
+  p3: "That's what this actually is: not a tool for one industry, but the company that installs an owned AI workforce on top of whatever business you run — whichever industry, whichever software you already use. The platform goes everywhere the playbook goes.",
 };
 
 export default function Platform(props: Partial<PlatformProps> = {}) {

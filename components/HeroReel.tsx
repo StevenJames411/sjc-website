@@ -10,12 +10,12 @@ export type HeroReelProps = {
 };
 
 export const HERO_REEL_DEFAULTS: HeroReelProps = {
-  eyebrow: "From solo entrepreneur to exit",
-  h1: "Four businesses. Forty years. I was the technology in every one.",
-  sub: "Restaurant, mortgage, roofing, trucking — four businesses I ran, and in every one I was the architect who built the systems that made it work, because we were too small to afford anyone else. That became my fifth business: I do it for other operators now. I walk in and install the technology itself — a workforce of AI employees — into a business like the ones I built. The trade has a name: the AI Employee Operating System.",
-  fieldsLine: "It works in any owner-run business — the trades, clinics, services — anywhere the same playbook runs.",
+  eyebrow: "You were bold enough to start.",
+  h1: "You built the whole thing yourself — and the one thing standing between you and real growth was always the people.",
+  sub: "Every hat in the business, you've worn it. You wanted to grow, but growing meant hiring — and the people you needed never stuck, never cared, never did it the way you do it. So you went back to carrying the whole thing alone. For the first time, that's actually changed: there's a worker you train once, that does the job exactly your way every time, never quits, and leaves you more in control than you are today — not less. Here's the two-minute version:",
+  fieldsLine: "Any business built and run by the person who started it — whatever the industry, whatever software you already use.",
   ctaTitle: "Apply to work with me",
-  ctaSubtitle: "One operator to another.",
+  ctaSubtitle: "One solo entrepreneur to another.",
 };
 
 export default function HeroReel(props: Partial<HeroReelProps> = {}) {

@@ -13,9 +13,9 @@ export const NEXT_DEFAULTS: NextProps = {
   eyebrow: "The next move",
   h2: "The next move",
   p1: "Wherever you are on the journey, you already know the playbook has a lid. Same play as everyone, same linear tools, the same leads slipping through. What's new is the lever that lifts it: an AI employee that plugs the leaks — answers every lead, follows up, books — so the org-chart seats you could never afford to fill finally fill themselves.",
-  p2: "I'm not going to sell you on a call. Either it moves your numbers or it doesn't, and you'll know inside the first ten minutes. So let's talk one operator to another: tell me how you run today, and I'll show you exactly where it plugs in — starting with the leads you're already paying for.",
+  p2: "I'm not going to sell you on a call. Either it moves your numbers or it doesn't, and you'll know inside the first ten minutes. So let's talk one solo entrepreneur to another: tell me how you run today, and I'll show you exactly where it plugs in — starting with the leads you're already paying for.",
   ctaTitle: "Apply to work with me",
-  ctaSubtitle: "One operator to another.",
+  ctaSubtitle: "One solo entrepreneur to another.",
 };
 
 export default function Next(props: Partial<NextProps> = {}) {
