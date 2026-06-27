@@ -16,6 +16,7 @@ import Proof from "@/components/Proof";
 import FourTables from "@/components/FourTables";
 import Moat from "@/components/Moat";
 import Next from "@/components/Next";
+import Platform from "@/components/Platform";
 import MedSpaWound from "@/components/medspa/MedSpaWound";
 import MedSpaStep from "@/components/medspa/MedSpaStep";
 import MedSpaPricing from "@/components/medspa/MedSpaPricing";
@@ -50,6 +51,7 @@ type Props = {
   FourTables: Record<string, never>;
   Moat: Record<string, never>;
   NextMove: Record<string, never>;
+  Platform: Record<string, never>;
   // Med-Spa page custom sections, wrapped as-is.
   MedSpaWound: Record<string, never>;
   MedSpaStep: Record<string, never>;
@@ -260,6 +262,7 @@ export const config: Config<Props> = {
     FourTables: { label: "The Four Tables", fields: {}, render: () => <FourTables /> },
     Moat: { label: "The Moat — Why Me", fields: {}, render: () => <Moat /> },
     NextMove: { label: "The Next Move", fields: {}, render: () => <Next /> },
+    Platform: { label: "Above Any One Industry", fields: {}, render: () => <Platform /> },
 
     // Med-Spa page sections, wrapped as-is.
     MedSpaWound: { label: "Med-Spa — The Wound", fields: {}, render: () => <MedSpaWound /> },

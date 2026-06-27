@@ -238,18 +238,25 @@ const PODCAST_SEED: Data = {
   ],
 };
 
-// Home = the journey spine, each live section wrapped as a block in the registry's order.
+// Home = the current journey spine (8 live sections, in the registry's order). The hero carries
+// its text as props (editable in the builder); the rest are wrapped blocks until converted.
 const HOME_SEED: Data = {
   root: {},
   content: [
-    { type: "HeroReel", props: { id: "home-hero" } },
-    { type: "FindYourIndustry", props: { id: "home-industries" } },
+    { type: "HeroReel", props: {
+      id: "home-hero",
+      eyebrow: "From solo entrepreneur to exit",
+      h1: "Four businesses. Forty years. I was the technology in every one.",
+      sub: "Restaurant, mortgage, roofing, trucking — four businesses I ran, and in every one I was the architect who built the systems that made it work, because we were too small to afford anyone else. That became my fifth business: I do it for other operators now. I walk in and install the technology itself — a workforce of AI employees — into a business like the ones I built. The trade has a name: the AI Employee Operating System.",
+      fieldsLine: "It works in any owner-run business — the trades, clinics, services — anywhere the same playbook runs.",
+      ctaTitle: "Apply to work with me",
+      ctaSubtitle: "One operator to another.",
+    } },
     { type: "Playbook", props: { id: "home-playbook" } },
     { type: "TheCeiling", props: { id: "home-ceiling" } },
     { type: "Weapon", props: { id: "home-weapon" } },
-    { type: "DoubleFlywheel", props: { id: "home-flywheel" } },
     { type: "Proof", props: { id: "home-proof" } },
-    { type: "FourTables", props: { id: "home-fourtables" } },
+    { type: "Platform", props: { id: "home-platform" } },
     { type: "Moat", props: { id: "home-moat" } },
     { type: "NextMove", props: { id: "home-next" } },
   ],

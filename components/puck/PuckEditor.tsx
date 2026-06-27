@@ -18,6 +18,7 @@ export default function PuckEditor({ page, title }: { page: string; title: strin
   const router = useRouter();
   const [data, setData] = useState<Data | null>(null);
   const [save, setSave] = useState<SaveState>("idle");
+  const [resetN, setResetN] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load this page's saved draft, or fall back to its seed (current content for /about,
@@ -78,13 +79,26 @@ export default function PuckEditor({ page, title }: { page: string; title: strin
         <span style={{ fontSize: 12, color: save === "saved" ? "#16a34a" : "#6b7280" }}>
           {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : ""}
         </span>
+        <button
+          type="button"
+          onClick={() => {
+            if (!window.confirm("Reset this page to its default content? This replaces the current draft layout for this page.")) return;
+            const s = seedFor(page, title);
+            setData(s);
+            writeDraft(s);
+            setResetN((n) => n + 1);
+          }}
+          style={resetBtn}
+        >
+          ↺ Reset to default
+        </button>
         <span style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
           Edits auto-save as a draft · use Publish to go live
         </span>
       </div>
       <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
         <Puck
-          key={page}
+          key={`${page}:${resetN}`}
           config={config}
           data={data}
           iframe={{ enabled: false }}
@@ -114,6 +128,16 @@ const bar: React.CSSProperties = {
   borderBottom: "1px solid #e5e7eb",
   background: "#fff",
   fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+};
+const resetBtn: React.CSSProperties = {
+  border: "1px solid #d1d5db",
+  borderRadius: 6,
+  padding: "5px 9px",
+  fontSize: 12,
+  fontWeight: 600,
+  background: "#fff",
+  color: "#374151",
+  cursor: "pointer",
 };
 const select: React.CSSProperties = {
   border: "1px solid #d1d5db",
