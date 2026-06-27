@@ -7,16 +7,24 @@ import type { Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
 import HeroReel from "@/components/HeroReel";
+import { HERO_REEL_DEFAULTS } from "@/components/HeroReel";
 import IndustriesStrip from "@/components/IndustriesStrip";
 import Playbook from "@/components/Playbook";
+import { PLAYBOOK_DEFAULTS } from "@/components/Playbook";
 import TheCeiling from "@/components/TheCeiling";
+import { CEILING_DEFAULTS } from "@/components/TheCeiling";
 import Weapon from "@/components/Weapon";
+import { WEAPON_DEFAULTS } from "@/components/Weapon";
 import WhereItLeads from "@/components/WhereItLeads";
 import Proof from "@/components/Proof";
+import { PROOF_DEFAULTS } from "@/components/Proof";
 import FourTables from "@/components/FourTables";
 import Moat from "@/components/Moat";
+import { MOAT_DEFAULTS } from "@/components/Moat";
 import Next from "@/components/Next";
+import { NEXT_DEFAULTS } from "@/components/Next";
 import Platform from "@/components/Platform";
+import { PLATFORM_DEFAULTS } from "@/components/Platform";
 import MedSpaWound from "@/components/medspa/MedSpaWound";
 import MedSpaStep from "@/components/medspa/MedSpaStep";
 import MedSpaPricing from "@/components/medspa/MedSpaPricing";
@@ -43,15 +51,15 @@ type Props = {
     ctaSubtitle: string;
   };
   FindYourIndustry: Record<string, never>;
-  Playbook: Record<string, never>;
-  TheCeiling: Record<string, never>;
-  Weapon: Record<string, never>;
+  Playbook: { eyebrow: string; h2: string; p1: string; p2: string; p3: string; p4: string; p5: string };
+  TheCeiling: { eyebrow: string; h2: string; p1: string; p2: string; p3: string; p4: string };
+  Weapon: { eyebrow: string; h2: string; p1: string; p2: string; teaser: string };
   DoubleFlywheel: Record<string, never>;
-  Proof: Record<string, never>;
+  Proof: { eyebrow: string; h2: string; p1: string; p2: string; p3: string };
   FourTables: Record<string, never>;
-  Moat: Record<string, never>;
-  NextMove: Record<string, never>;
-  Platform: Record<string, never>;
+  Moat: { eyebrow: string; h2: string; p1: string; p2: string; p3: string };
+  NextMove: { eyebrow: string; h2: string; p1: string; p2: string; ctaTitle: string; ctaSubtitle: string };
+  Platform: { eyebrow: string; h2: string; p1: string; p2: string; p3: string };
   // Med-Spa page custom sections, wrapped as-is.
   MedSpaWound: Record<string, never>;
   MedSpaStep: Record<string, never>;
@@ -234,14 +242,7 @@ export const config: Config<Props> = {
         ctaTitle: { type: "text" as const, label: "Button text" },
         ctaSubtitle: { type: "text" as const, label: "Button subtitle" },
       },
-      defaultProps: {
-        eyebrow: "From solo entrepreneur to exit",
-        h1: "Four businesses. Forty years. I was the technology in every one.",
-        sub: "Restaurant, mortgage, roofing, trucking — four businesses I ran, and in every one I was the architect who built the systems that made it work, because we were too small to afford anyone else. That became my fifth business: I do it for other operators now. I walk in and install the technology itself — a workforce of AI employees — into a business like the ones I built. The trade has a name: the AI Employee Operating System.",
-        fieldsLine: "It works in any owner-run business — the trades, clinics, services — anywhere the same playbook runs.",
-        ctaTitle: "Apply to work with me",
-        ctaSubtitle: "One operator to another.",
-      },
+      defaultProps: HERO_REEL_DEFAULTS,
       render: ({ eyebrow, h1, sub, fieldsLine, ctaTitle, ctaSubtitle }) => (
         <HeroReel
           eyebrow={eyebrow}
@@ -254,15 +255,110 @@ export const config: Config<Props> = {
       ),
     },
     FindYourIndustry: { label: "Find Your Industry (cards)", fields: {}, render: () => <IndustriesStrip /> },
-    Playbook: { label: "The Playbook You Already Run", fields: {}, render: () => <Playbook /> },
-    TheCeiling: { label: "The Ceiling — the Problem", fields: {}, render: () => <TheCeiling /> },
-    Weapon: { label: "What Changed — AI fills the seats", fields: {}, render: () => <Weapon /> },
+    Playbook: {
+      label: "The Playbook You Already Run",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        p3: { type: "textarea" as const, label: "Paragraph 3" },
+        p4: { type: "textarea" as const, label: "Paragraph 4" },
+        p5: { type: "textarea" as const, label: "Paragraph 5" },
+      },
+      defaultProps: PLAYBOOK_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, p3, p4, p5 }) => (
+        <Playbook eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} p3={p3} p4={p4} p5={p5} />
+      ),
+    },
+    TheCeiling: {
+      label: "The Ceiling — the Problem",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        p3: { type: "textarea" as const, label: "Paragraph 3" },
+        p4: { type: "textarea" as const, label: "Paragraph 4" },
+      },
+      defaultProps: CEILING_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, p3, p4 }) => (
+        <TheCeiling eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} p3={p3} p4={p4} />
+      ),
+    },
+    Weapon: {
+      label: "What Changed — AI fills the seats",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        teaser: { type: "textarea" as const, label: "Teaser line" },
+      },
+      defaultProps: WEAPON_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, teaser }) => (
+        <Weapon eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} teaser={teaser} />
+      ),
+    },
     DoubleFlywheel: { label: "The Double Flywheel", fields: {}, render: () => <WhereItLeads /> },
-    Proof: { label: "Proof — Chloe", fields: {}, render: () => <Proof /> },
+    Proof: {
+      label: "Proof — Chloe",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        p3: { type: "textarea" as const, label: "Paragraph 3" },
+      },
+      defaultProps: PROOF_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, p3 }) => (
+        <Proof eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} p3={p3} />
+      ),
+    },
     FourTables: { label: "The Four Tables", fields: {}, render: () => <FourTables /> },
-    Moat: { label: "The Moat — Why Me", fields: {}, render: () => <Moat /> },
-    NextMove: { label: "The Next Move", fields: {}, render: () => <Next /> },
-    Platform: { label: "Above Any One Industry", fields: {}, render: () => <Platform /> },
+    Moat: {
+      label: "The Moat — Why Me",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        p3: { type: "textarea" as const, label: "Paragraph 3" },
+      },
+      defaultProps: MOAT_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, p3 }) => (
+        <Moat eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} p3={p3} />
+      ),
+    },
+    NextMove: {
+      label: "The Next Move",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        ctaTitle: { type: "text" as const, label: "Button text" },
+        ctaSubtitle: { type: "text" as const, label: "Button subtitle" },
+      },
+      defaultProps: NEXT_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, ctaTitle, ctaSubtitle }) => (
+        <Next eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} ctaTitle={ctaTitle} ctaSubtitle={ctaSubtitle} />
+      ),
+    },
+    Platform: {
+      label: "Above Any One Industry",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        p3: { type: "textarea" as const, label: "Paragraph 3" },
+      },
+      defaultProps: PLATFORM_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, p3 }) => (
+        <Platform eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} p3={p3} />
+      ),
+    },
 
     // Med-Spa page sections, wrapped as-is.
     MedSpaWound: { label: "Med-Spa — The Wound", fields: {}, render: () => <MedSpaWound /> },

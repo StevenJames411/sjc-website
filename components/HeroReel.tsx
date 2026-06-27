@@ -9,11 +9,7 @@ export type HeroReelProps = {
   ctaSubtitle: string;
 };
 
-// HOME §1 — the hero, now a PROPS-DRIVEN Puck block: its text is edited via fields in the builder
-// (see components/puck/config.tsx). The committed copy lives in DEFAULTS, so the public render —
-// and the bare <HeroReel/> used by the registry/seed fallback — is byte-identical until someone
-// edits it in the builder. Sizzle-reel video is a placeholder; hero never opens with "AI".
-const DEFAULTS: HeroReelProps = {
+export const HERO_REEL_DEFAULTS: HeroReelProps = {
   eyebrow: "From solo entrepreneur to exit",
   h1: "Four businesses. Forty years. I was the technology in every one.",
   sub: "Restaurant, mortgage, roofing, trucking — four businesses I ran, and in every one I was the architect who built the systems that made it work, because we were too small to afford anyone else. That became my fifth business: I do it for other operators now. I walk in and install the technology itself — a workforce of AI employees — into a business like the ones I built. The trade has a name: the AI Employee Operating System.",
@@ -23,7 +19,7 @@ const DEFAULTS: HeroReelProps = {
 };
 
 export default function HeroReel(props: Partial<HeroReelProps> = {}) {
-  const { eyebrow, h1, sub, fieldsLine, ctaTitle, ctaSubtitle } = { ...DEFAULTS, ...props };
+  const { eyebrow, h1, sub, fieldsLine, ctaTitle, ctaSubtitle } = { ...HERO_REEL_DEFAULTS, ...props };
 
   return (
     <section style={{ backgroundColor: "#0f1f3d" }} className="w-full text-white">
