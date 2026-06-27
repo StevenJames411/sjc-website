@@ -249,7 +249,7 @@ const HOME_SEED: Data = {
   content: [
     { type: "Section", props: { id: "home-hero", background: "#0f1f3d", content: [
       { type: "Text", props: { id: "home-hero-eyebrow", text: "Sales · Marketing · Growth · Control", size: "base", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "home-hero-h1", text: "For the first time in 40 years, you can have all of it.", level: "h1", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "home-hero-h1", text: "For the first time in 40 years, you can have all of it.", fontSize: 48, align: "center", color: "#ffffff" } },
       { type: "Text", props: { id: "home-hero-sub", text: "I install the marketing that fills your pipeline and the sales force that closes every lead — so your business finally grows without you carrying it. And nothing leaves your hands: every lead, every dollar, every decision stays yours.", size: "lg", align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "home-hero-video", src: "", caption: "2-minute teaser — coming" } },
       { type: "Button", props: { id: "home-hero-cta", title: "Apply to work with me", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },

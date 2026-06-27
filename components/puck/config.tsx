@@ -6,6 +6,7 @@
 import type { Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
+import SizeStepper from "@/components/puck/SizeStepper";
 import HeroReel from "@/components/HeroReel";
 import { HERO_REEL_DEFAULTS } from "@/components/HeroReel";
 import IndustriesStrip from "@/components/IndustriesStrip";
@@ -31,14 +32,13 @@ import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedS
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 
 type Align = "left" | "center" | "right";
-type TextSize = "sm" | "base" | "lg" | "xl" | "2xl";
 
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
   Section: { background: string; content: Slot };
-  Heading: { text: string; level: "h1" | "h2" | "h3"; align: Align; color: string };
-  Text: { text: string; size: TextSize; align: Align; color: string };
+  Heading: { text: string; fontSize: number; align: Align; color: string };
+  Text: { text: string; fontSize: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   Video: { src: string; caption: string };
   PhoneLink: { label: string; tel: string };
@@ -115,24 +115,6 @@ const ALIGN_FIELD = {
   ],
 };
 
-// Font-size control for Text blocks — friendly label → responsive Tailwind classes.
-const SIZE_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "Small", value: "sm" },
-    { label: "Normal", value: "base" },
-    { label: "Large", value: "lg" },
-    { label: "X-Large", value: "xl" },
-    { label: "Huge", value: "2xl" },
-  ],
-};
-const SIZE_CLASS: Record<string, string> = {
-  sm: "text-sm",
-  base: "text-base md:text-lg",
-  lg: "text-lg md:text-xl",
-  xl: "text-xl md:text-2xl",
-  "2xl": "text-2xl md:text-3xl",
-};
 
 const BG_FIELD = {
   type: "select" as const,
@@ -178,34 +160,26 @@ export const config: Config<Props> = {
       label: "Heading",
       fields: {
         text: { type: "text" as const, label: "Text" },
-        level: {
-          type: "select" as const,
-          label: "Size",
-          options: [
-            { label: "Big (H1)", value: "h1" },
-            { label: "Section (H2)", value: "h2" },
-            { label: "Small (H3)", value: "h3" },
-          ],
+        fontSize: {
+          type: "custom" as const,
+          label: "Font size (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={32} />
+          ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: { ...COLOR_FIELD, label: "Color" },
       },
-      defaultProps: { text: "New heading", level: "h2" as const, align: "left" as const, color: "#111827" },
-      render: ({ text, level, align, color }) => {
-        const Tag = level;
-        const size =
-          level === "h1"
-            ? "text-3xl md:text-4xl"
-            : level === "h2"
-            ? "text-2xl md:text-3xl"
-            : "text-xl md:text-2xl";
+      defaultProps: { text: "New heading", fontSize: 0, align: "left" as const, color: "#111827" },
+      render: ({ text, fontSize, align, color }) => {
+        const px = fontSize && fontSize > 0 ? fontSize : 32;
         return (
-          <Tag
-            className={`font-bold leading-tight tracking-tight ${size}`}
-            style={{ textAlign: align, color: color || "#111827", marginBottom: "0.75rem" }}
+          <h2
+            className="font-bold leading-tight tracking-tight"
+            style={{ fontSize: `${px}px`, textAlign: align, color: color || "#111827", marginBottom: "0.75rem" }}
           >
             {text}
-          </Tag>
+          </h2>
         );
       },
     },
@@ -221,20 +195,31 @@ export const config: Config<Props> = {
             <RichText value={value as string} onChange={onChange} />
           ),
         },
-        size: { ...SIZE_FIELD, label: "Font size" },
+        fontSize: {
+          type: "custom" as const,
+          label: "Font size (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={18} />
+          ),
+        },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: { ...COLOR_FIELD, label: "Color" },
       },
       defaultProps: {
         text: "New paragraph. Select any word and use the toolbar to format it.",
-        size: "base" as const,
+        fontSize: 0,
         align: "left" as const,
         color: "#111827",
       },
-      render: ({ text, size, align, color }) => (
+      render: ({ text, fontSize, align, color }) => (
         <div
-          className={`rt leading-relaxed ${SIZE_CLASS[size] || SIZE_CLASS.base}`}
-          style={{ textAlign: align, color: color || "#111827", marginTop: "1rem" }}
+          className="rt leading-relaxed"
+          style={{
+            textAlign: align,
+            color: color || "#111827",
+            marginTop: "1rem",
+            fontSize: `${fontSize && fontSize > 0 ? fontSize : 18}px`,
+          }}
           dangerouslySetInnerHTML={{ __html: text }}
         />
       ),
