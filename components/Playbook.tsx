@@ -38,7 +38,7 @@ export default function Playbook() {
             one job, one lead, one customer at a time.
           </Editable>
           <Editable tid="home.playbook.p3" as="p">
-            The play to grow is the same one Gerber wrote down forty years ago: stop being the
+            The play to grow is the same one Gerber wrote down back in 1986: stop being the
             business and start building it. Draw the org chart — sales, follow-up, front desk,
             operations — and fill the seats, so the system runs the business and the people run the
             system. You work ON it instead of buried IN it. That&apos;s the whole

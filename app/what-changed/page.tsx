@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "What Changed | Steven James Consulting",
   description:
-    "For forty years the one employee you needed didn't exist. A couple of years ago, that changed. The breakthrough the whole business stands on.",
+    "Since 1986 the org chart could only be filled with people. Twenty-four months ago that changed — the breakthrough the whole business stands on.",
 };
 
 export default async function WhatChanged() {
@@ -32,7 +32,7 @@ export default async function WhatChanged() {
                 The hire you could never make finally exists.
               </Editable>
               <Editable tid="what-changed.s1.lead" as="p" className="mt-6 text-lg leading-relaxed text-[color:var(--color-sjc-ink)] md:text-xl">
-                For forty years I needed one thing I could never get my hands on: an employee who would actually show up, learn the job, and do it right every time. It didn&apos;t exist &mdash; not for a business my size. A couple of years ago that changed, and it changes everything about the business you&apos;re running right now.
+                I know that hire never existed, because I spent my whole career needing it. I started my first business in 1986 &mdash; the same year Michael Gerber published The E-Myth and told every owner the same thing: build the org chart, fill the seats, stop being the business. For the four decades after that, his playbook was the law &mdash; and so was its one catch: every seat could only ever be filled by a human being. For a shop my size, that meant the seat stayed empty and the work fell back on me. Then, twenty-four months ago, that broke. For the first time since 1986, a seat can be filled by something other than a person &mdash; and it changes everything about the business you&apos;re running right now.
               </Editable>
             </div>
           </section>
@@ -41,16 +41,25 @@ export default async function WhatChanged() {
           <section className="bg-white">
             <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
               <Editable tid="what-changed.s2.h2" as="h2" className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-                For forty years, the org chart was a fantasy.
+                The org chart was always a fantasy.
               </Editable>
               <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
                 <Editable tid="what-changed.s2.p1" as="p">
-                  Every business that grows past the owner needs the same thing: an org chart with the seats filled &mdash; someone on the phones, someone on follow-up, someone on sales, someone running operations. Michael Gerber wrote that down forty years ago, and he was right. The part nobody says out loud is that for a business your size, those seats were never really fillable. You couldn&apos;t find the people. The ones you found didn&apos;t stick. And even the average ones cost more than the work was worth.
+                  Every business that grows past the owner needs the same thing: an org chart with the seats filled &mdash; someone on the phones, someone on follow-up, someone on sales, someone running operations. Michael Gerber wrote that down, and he was right. The part nobody says out loud is that for a business your size, those seats were never really fillable. You couldn&apos;t find the people. The ones you found didn&apos;t stick. And even the average ones cost more than the work was worth.
                 </Editable>
                 <Editable tid="what-changed.s2.p2" as="p">
                   So every empty seat fell back on the one person who&apos;d always catch it &mdash; you. That&apos;s not a you problem; that&apos;s every owner-run business since the beginning. You became the system because there was never another option. The org chart on the wall and the org chart in real life were two different things, and the gap between them was always your own two hands.
                 </Editable>
               </div>
+            </div>
+          </section>
+
+          {/* Signature two-eras line — the hinge between the old era and the new */}
+          <section style={{ backgroundColor: "#0f1f3d" }} className="w-full text-white">
+            <div className="mx-auto max-w-4xl px-6 py-16 text-center md:py-20">
+              <Editable tid="what-changed.hinge" as="p" className="text-2xl font-bold leading-snug tracking-tight md:text-4xl">
+                Forty years of human-only labor. Twenty-four months of something else.
+              </Editable>
             </div>
           </section>
 
@@ -65,7 +74,7 @@ export default async function WhatChanged() {
                   Every tool before this one had the same flaw: it waited. The phone waited for you to dial. The CRM waited for you to type. The email blast waited for you to push the button. They were tools, and you were still the one holding them. Helpful &mdash; but not one of them ever filled a seat. They just gave you a faster way to do the work yourself.
                 </Editable>
                 <Editable tid="what-changed.s3.p2" as="p">
-                  A couple of years ago the technology crossed a line it had never crossed before. For the first time, a tool doesn&apos;t wait &mdash; it works. Not a chatbot that answers one question and hands you back the job. A real AI employee: trained on the way YOU do it, it answers every lead the second it lands, holds a real conversation, handles the objection in your own words, books the appointment, and goes back to wake up the leads that went cold. It does the job the same way every time, it never quits, and you can see everything it does.
+                  Then the technology crossed a line it had never crossed before. For the first time, a tool doesn&apos;t wait &mdash; it works. Not a chatbot that answers one question and hands you back the job. A real AI employee: trained on the way YOU do it, it answers every lead the second it lands, holds a real conversation, handles the objection in your own words, books the appointment, and goes back to wake up the leads that went cold. It does the job the same way every time, it never quits, and you can see everything it does.
                 </Editable>
                 <Editable tid="what-changed.s3.p3" as="p" className="font-semibold">
                   That&apos;s the whole breakthrough. The seat that was never fillable is finally fillable &mdash; by something other than you. It was impossible your entire career. Now it&apos;s real. That&apos;s what changed.
@@ -82,7 +91,7 @@ export default async function WhatChanged() {
               </Editable>
               <div className="mt-6 space-y-5 text-base leading-relaxed text-[color:var(--color-sjc-ink)] md:text-lg">
                 <Editable tid="what-changed.s4.p1" as="p">
-                  When the seats fill themselves, the lid comes off. The leads stop leaking. The follow-up actually happens. The work that used to live in your head and your calendar moves into a system you control &mdash; and for the first time, delegating tightens your grip instead of loosening it, because every conversation is logged and nothing lives in some new person&apos;s head where you can&apos;t see it.
+                  When the seats fill themselves, the lid comes off. The leads stop leaking. The follow-up actually happens. The work that used to live in your head and your calendar moves into a system you control &mdash; and delegating finally tightens your grip instead of loosening it, because every conversation is logged and nothing lives in some new person&apos;s head where you can&apos;t see it.
                 </Editable>
                 <Editable tid="what-changed.s4.p2" as="p" className="font-semibold">
                   You stop owning a job. You start owning a business.

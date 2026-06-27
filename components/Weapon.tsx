@@ -38,12 +38,12 @@ export default function Weapon() {
             the opposite. It obeys exactly, every time, fully logged. Every lead tracked, every
             conversation on the record, nothing living in some new person&apos;s head where you
             can&apos;t see it. For the first time, delegating increases your grip instead of
-            surrendering it. That&apos;s the lever &mdash; the biggest shift to hit a business like yours in forty years.
+            surrendering it. That&apos;s the lever &mdash; the biggest shift to hit a business like yours since the org chart was invented.
           </Editable>
         </div>
         <div className="mt-10">
           <Editable tid="home.weapon.teaser" as="p" className="text-lg leading-relaxed text-[color:var(--color-sjc-ink)]">
-            For forty years, the one employee you needed most didn&apos;t exist. A couple of years ago, that changed.
+            For forty years, the one employee you needed most didn&apos;t exist. Twenty-four months ago, that changed.
           </Editable>
           <a href="/what-changed" className="mt-3 inline-flex items-center gap-1 text-base font-semibold text-[color:var(--color-sjc-blue)] hover:underline">
             See what changed &rarr;
