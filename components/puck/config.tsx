@@ -31,14 +31,16 @@ import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedS
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 
 type Align = "left" | "center" | "right";
+type TextSize = "sm" | "base" | "lg" | "xl" | "2xl";
 
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
   Section: { background: string; content: Slot };
   Heading: { text: string; level: "h1" | "h2" | "h3"; align: Align; color: string };
-  Text: { text: string; align: Align; color: string };
+  Text: { text: string; size: TextSize; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
+  Video: { src: string; caption: string };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -111,6 +113,25 @@ const ALIGN_FIELD = {
     { label: "Center", value: "center" },
     { label: "Right", value: "right" },
   ],
+};
+
+// Font-size control for Text blocks — friendly label → responsive Tailwind classes.
+const SIZE_FIELD = {
+  type: "select" as const,
+  options: [
+    { label: "Small", value: "sm" },
+    { label: "Normal", value: "base" },
+    { label: "Large", value: "lg" },
+    { label: "X-Large", value: "xl" },
+    { label: "Huge", value: "2xl" },
+  ],
+};
+const SIZE_CLASS: Record<string, string> = {
+  sm: "text-sm",
+  base: "text-base md:text-lg",
+  lg: "text-lg md:text-xl",
+  xl: "text-xl md:text-2xl",
+  "2xl": "text-2xl md:text-3xl",
 };
 
 const BG_FIELD = {
@@ -200,17 +221,19 @@ export const config: Config<Props> = {
             <RichText value={value as string} onChange={onChange} />
           ),
         },
+        size: { ...SIZE_FIELD, label: "Font size" },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: { ...COLOR_FIELD, label: "Color" },
       },
       defaultProps: {
         text: "New paragraph. Select any word and use the toolbar to format it.",
+        size: "base" as const,
         align: "left" as const,
         color: "#111827",
       },
-      render: ({ text, align, color }) => (
+      render: ({ text, size, align, color }) => (
         <div
-          className="rt text-base leading-relaxed md:text-lg"
+          className={`rt leading-relaxed ${SIZE_CLASS[size] || SIZE_CLASS.base}`}
           style={{ textAlign: align, color: color || "#111827", marginTop: "1rem" }}
           dangerouslySetInnerHTML={{ __html: text }}
         />
@@ -254,6 +277,29 @@ export const config: Config<Props> = {
           >
             {label}
           </a>
+        </div>
+      ),
+    },
+
+    Video: {
+      label: "Video / sizzle reel",
+      fields: {
+        src: { type: "text" as const, label: "Embed URL (YouTube/Vimeo) — blank = placeholder" },
+        caption: { type: "text" as const, label: "Placeholder caption" },
+      },
+      defaultProps: { src: "", caption: "2-minute teaser — coming" },
+      render: ({ src, caption }) => (
+        <div className="mx-auto mt-9 aspect-video max-w-3xl overflow-hidden rounded-2xl border border-white/15 bg-black/40">
+          {src ? (
+            <iframe src={src} className="h-full w-full" allowFullScreen title="Video" />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-white/70">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/40 text-2xl">
+                &#9654;
+              </span>
+              <span className="text-sm uppercase tracking-[0.18em]">{caption}</span>
+            </div>
+          )}
         </div>
       ),
     },
