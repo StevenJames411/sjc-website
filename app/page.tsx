@@ -1,22 +1,24 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import SitePage from "@/components/edit/SitePage";
-import { readPublished } from "@/lib/siteContent";
+import { Render } from "@measured/puck";
+import { config } from "@/components/puck/config";
+import { readPuckPublished } from "@/lib/puckContent";
+import { seedFor } from "@/components/puck/seeds";
 
 export const dynamic = "force-dynamic";
 
-// HOME IS A CODE-TRUTH PAGE. It renders straight from the section registry + the committed
-// section defaults (HeroReel, Playbook, TheCeiling, …) — deliberately NOT through the Puck
-// published snapshot. A stale builder publish (`sjc-puck-home-pub`) was shadowing every code
-// edit on the live page; removing the PublishedOrFallback wrapper makes the code the single
-// source of truth for home. Edit home copy in the section components, not the builder.
+// Home renders through the Puck builder exactly like every other page: the published snapshot if
+// one exists, otherwise the committed seed (native editable blocks). Edit at /edit/home and hit
+// Publish to go live. NOTE: if an old wrapped-section snapshot is still published, reset it once
+// with /edit/home?reset=1 then Publish to load the new native layout.
 export default async function Home() {
-  const published = await readPublished("home");
+  const puck = await readPuckPublished("home");
+  const data = puck || seedFor("home", "Home");
   return (
     <>
       <Nav />
       <main>
-        <SitePage pageKey="home" published={published} />
+        <Render config={config} data={data} />
       </main>
       <Footer />
     </>

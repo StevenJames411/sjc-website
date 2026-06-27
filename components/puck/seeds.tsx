@@ -1,13 +1,5 @@
 import type { Data } from "@measured/puck";
 import { SEED } from "@/components/puck/config";
-import { HERO_REEL_DEFAULTS } from "@/components/HeroReel";
-import { PLAYBOOK_DEFAULTS } from "@/components/Playbook";
-import { CEILING_DEFAULTS } from "@/components/TheCeiling";
-import { WEAPON_DEFAULTS } from "@/components/Weapon";
-import { PROOF_DEFAULTS } from "@/components/Proof";
-import { PLATFORM_DEFAULTS } from "@/components/Platform";
-import { MOAT_DEFAULTS } from "@/components/Moat";
-import { NEXT_DEFAULTS } from "@/components/Next";
 import { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
 import { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
 import { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
@@ -249,19 +241,72 @@ const PODCAST_SEED: Data = {
   ],
 };
 
-// Home = the current journey spine (8 live sections, in the registry's order). All blocks carry
-// their text as props via DEFAULTS imports so the builder and public render are always in sync.
+// Home = the journey spine, now expressed as NATIVE editable blocks (Section / Heading / Text /
+// Video / Button) so every element on the homepage carries the full toolset — font size, color,
+// align, add / delete / reorder — exactly like every other page.
 const HOME_SEED: Data = {
   root: {},
   content: [
-    { type: "HeroReel", props: { id: "home-hero", ...HERO_REEL_DEFAULTS } },
-    { type: "Playbook", props: { id: "home-playbook", ...PLAYBOOK_DEFAULTS } },
-    { type: "TheCeiling", props: { id: "home-ceiling", ...CEILING_DEFAULTS } },
-    { type: "Weapon", props: { id: "home-weapon", ...WEAPON_DEFAULTS } },
-    { type: "Proof", props: { id: "home-proof", ...PROOF_DEFAULTS } },
-    { type: "Platform", props: { id: "home-platform", ...PLATFORM_DEFAULTS } },
-    { type: "Moat", props: { id: "home-moat", ...MOAT_DEFAULTS } },
-    { type: "NextMove", props: { id: "home-next", ...NEXT_DEFAULTS } },
+    { type: "Section", props: { id: "home-hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "home-hero-eyebrow", text: "Sales · Marketing · Growth · Control", size: "base", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "home-hero-h1", text: "For the first time in 40 years, you can have all of it.", level: "h1", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "home-hero-sub", text: "I install the marketing that fills your pipeline and the sales force that closes every lead — so your business finally grows without you carrying it. And nothing leaves your hands: every lead, every dollar, every decision stays yours.", size: "lg", align: "center", color: "#ffffff" } },
+      { type: "Video", props: { id: "home-hero-video", src: "", caption: "2-minute teaser — coming" } },
+      { type: "Button", props: { id: "home-hero-cta", title: "Apply to work with me", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
+    ] } },
+    { type: "Section", props: { id: "home-playbook", background: "#ffffff", content: [
+      { type: "Text", props: { id: "home-playbook-eyebrow", text: "The playbook you already run", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "home-playbook-h2", text: "Every business like yours runs the same play.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "home-playbook-p1", text: "You know this cold, so I'll just say it back to you the way you'd say it yourself — not to teach you, but so you know I'm not guessing. I've run this play four times, in four different businesses of my own.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-playbook-p2", text: "Michael Gerber named where it starts: you're the Technician. You got good at the work, you opened your own shop, and now the business is just you — you answer the phone, you run the schedule, you know every customer by name, and the whole thing lives in your head and your calendar. You take the risk nobody else would take, and you grind it up one job, one lead, one customer at a time.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-playbook-p3", text: "The play to grow is the same one Gerber wrote down back in 1986: stop being the business and start building it. Draw the org chart — sales, follow-up, front desk, operations — and fill the seats, so the system runs the business and the people run the system. You work ON it instead of buried IN it. That's the whole game, whether you've got one location or seven.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-playbook-p4", text: "And whatever stage you're at, you run the whole thing on the same linear tools everyone else uses — a CRM, the GoHighLevel-class sequences, software that does what software has always done: if this, then that. A lead comes in, fire a text. It's a conveyor belt. It's been the state of the art for fifteen years, and nobody wins on it anymore — you run it so you don't lose on it.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-playbook-p5", text: "That's the playbook, top to bottom. I'm not here to tell you it's wrong. I'm here because I know it well enough to show you where the lid is — and the new lever that lifts it.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "home-ceiling", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "home-ceiling-eyebrow", text: "The ceiling", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "home-ceiling-h2", text: "The playbook has a lid — and you can feel it.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "home-ceiling-p1", text: "Start with where the money leaks, because it's leaking right now. The lead that comes in at 9 p.m. on a Saturday and sits until Monday — booked with the guy down the street by then. The calls that hit voicemail when the front desk is slammed. The follow-up that fires the same canned text to everybody. The old customers nobody has time to call back. A few hundred dollars here, a no-show there — invisible because it's spread thin, enormous once you add it up.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-ceiling-p2", text: "The linear tools can't plug those leaks, because they were never built to fill a seat — only to move a lead from A to B in a straight line. They don't answer at midnight, they don't read what the person actually said, and they don't work the list. So the seats on your org chart go unfilled, and the work that should live in them falls back onto the one person who's always caught it: you.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-ceiling-p3", text: "That's the real lid — the org chart with one name in every box: yours. Every time you handed something off it got fumbled, so you stopped handing things off and do it all yourself — and a part of you is proud of it. Gerber's line still bites: if the business depends on you, you don't own a business — you own a job. You became the system.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-ceiling-p4", text: "And here's what it costs you: the growth you actually want. You can't add a location, you can't take on more volume, you can't take a week off — because the moment you try, the whole thing wobbles and falls right back onto you. The lid isn't on how hard you work. It's on how big you can ever get. That's the ceiling. Here's the lever.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "home-weapon", background: "#ffffff", content: [
+      { type: "Text", props: { id: "home-weapon-eyebrow", text: "What changed", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "home-weapon-h2", text: "Now the seats fill themselves.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "home-weapon-p1", text: "There's a new kind of worker that didn't exist in any usable form even a year ago. Not the linear software you already run. Not a chatbot. An AI employee — a worker with a job, trained on the way YOU do it, that answers every lead the instant it lands, follows up reading what the person actually said, books the appointment, and works the dormant list nobody has time to touch. It never quits, never has a bad day, never lets a lead sit. The seat's job stays exactly the same; who sits in it is finally something other than you.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-weapon-p2", text: "And it's the first hire the control-freak in you will actually trust — because a human employee was always a loss of control (forgets, freelances, quits), and this is the opposite. It obeys exactly, every time, fully logged. Every lead tracked, every conversation on the record, nothing living in some new person's head where you can't see it. For the first time, delegating increases your grip instead of surrendering it. That's the lever — the biggest shift to hit a business like yours since the org chart was invented.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-weapon-teaser", text: "For forty years, the one employee you needed most didn't exist. Twenty-four months ago, that changed.", size: "lg", align: "left" } },
+      { type: "Button", props: { id: "home-weapon-link", title: "See what changed", subtitle: "", href: "/what-changed" } },
+    ] } },
+    { type: "Section", props: { id: "home-proof", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "home-proof-eyebrow", text: "Proof, not theory", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "home-proof-h2", text: "A working AI employee, live today.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "home-proof-p1", text: "None of this is a whiteboard theory, and I'm not going to ask you to take a forty-year business owner's word for it without a receipt. There's a working prototype running right now, in one field, and it's the first of many.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-proof-p2", text: "The AI employee has a name — Chloe. She's trained on one owner's own sales conversations: the way he actually talks to a lead, the questions he asks, the way he handles “let me think about it.” She answers every lead the instant it lands and books the consult herself, start to finish, no human in the loop. Her first night live was a Sunday, staff off — she booked four consults while the lights were out and nobody was at the desk. Four appointments that, the week before, would have sat in a voicemail box until Monday.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-proof-p3", text: "One field, proven — an AI employee booking real consults off real leads while the humans slept. It's the same engine, and it points at the next field — whatever business runs the same playbook.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "home-platform", background: "#ffffff", content: [
+      { type: "Text", props: { id: "home-platform-eyebrow", text: "The Platform", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "home-platform-h2", text: "Above any one industry.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "home-platform-p1", text: "Don't let any one example narrow your thinking. What I'm describing isn't a one-industry business at all — it's an AI-implementation company that sits above every single industry.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-platform-p2", text: "The engine — the AI employee that answers, follows up, qualifies, books, and reactivates; the way it's trained on one owner's own playbook; the way it installs on top of the linear software a shop already runs — none of that is tied to any single field. It forks. I proved it in the first field, then the next — roofing, because I ran a roofing company and I know exactly where that money leaks; home services, trades, practices, any field with the same shape: built and run by one person, lead-driven, fragmented, bleeding the same leaks. Same engine, retrained on the new field's playbook, installed in the businesses that run it.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-platform-p3", text: "That's what this actually is: not a tool for one industry, but the company that installs an owned AI workforce on top of whatever business you run — whichever industry, whichever software you already use. The platform goes everywhere the playbook goes.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "home-moat", background: "#ffffff", content: [
+      { type: "Text", props: { id: "home-moat-eyebrow", text: "Why me", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "home-moat-h2", text: "You'd never hand your shop to a kid with a laptop. You don't have to.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "home-moat-p1", text: "Here's the un-fakeable part, and it's the reason this works with me and is very hard to copy.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-moat-p2", text: "This only works if one person is two things at once: someone who has actually run a business like yours, the way you run it, and someone who is genuinely AI-native and builds the technology himself. Those two almost never live in the same person. The twenty-two-year-old AI founder can build the system, but he's never made a payroll, never run a real shop through a slow season — he doesn't understand the business you built or the grind behind it, and you sniff that out in the first sentence. The forty-year business owner understands all of that in his bones, but he can't suddenly become AI-native and build the thing by hand — so he ends up reselling somebody else's software and changes nothing.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-moat-p3", text: "I'm both. I opened my first shop in 1986 — a restaurant — then mortgage, then roofing, then twenty years in trucking. Four businesses of my own, and the tech lead in every one, because we were too small to afford anyone else. And now I build the AI myself. Not a deck I bought, not a vendor I white-label. I sit on top of my own AI workforce and I build it by hand. So when I sit across from you, I'm not the tech guy you tolerate — I'm a man who ran shops just like yours for four decades and happens to be the one who can install the machine. You believe me because I've stood where you're standing. That overlap — real business owner and hands-on builder — is the moat.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "home-next", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "home-next-eyebrow", text: "The next move", size: "sm", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "home-next-h2", text: "The next move.", level: "h2", align: "center" } },
+      { type: "Text", props: { id: "home-next-p1", text: "Wherever you are on the journey, you already know the playbook has a lid. Same play as everyone, same linear tools, the same leads slipping through. What's new is the lever that lifts it: an AI employee that plugs the leaks — answers every lead, follows up, books — so the org-chart seats you could never afford to fill finally fill themselves.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "home-next-p2", text: "I'm not going to sell you on a call. Either it moves your numbers or it doesn't, and you'll know inside the first ten minutes. So let's talk one solo entrepreneur to another: tell me how you run today, and I'll show you exactly where it plugs in — starting with the leads you're already paying for.", size: "base", align: "left" } },
+      { type: "Button", props: { id: "home-next-cta", title: "Apply to work with me", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
+    ] } },
   ],
 };
 
