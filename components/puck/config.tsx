@@ -39,8 +39,8 @@ type Props = {
   Section: { background: string; paddingTop: number; paddingBottom: number; content: Slot };
   Spacer: { height: number };
   Divider: { color: string };
-  Heading: { text: string; fontSize: number; align: Align; color: string };
-  Text: { text: string; fontSize: number; align: Align; color: string };
+  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
+  Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   Video: { src: string; caption: string };
   PhoneLink: { label: string; tel: string };
@@ -217,16 +217,36 @@ export const config: Config<Props> = {
             <SizeStepper value={value as number} onChange={onChange} fallback={32} />
           ),
         },
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
+          ),
+        },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: { ...COLOR_FIELD, label: "Color" },
       },
-      defaultProps: { text: "New heading", fontSize: 0, align: "left" as const, color: "#111827" },
-      render: ({ text, fontSize, align, color }) => {
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827" },
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
         return (
           <h2
             className="font-bold leading-tight tracking-tight"
-            style={{ fontSize: `${px}px`, textAlign: align, color: color || "#111827", marginBottom: "0.75rem" }}
+            style={{
+              fontSize: `${px}px`,
+              textAlign: align,
+              color: color || "#111827",
+              marginTop: `${typeof spaceAbove === "number" ? spaceAbove : 0}px`,
+              marginBottom: `${typeof spaceBelow === "number" ? spaceBelow : 12}px`,
+            }}
           >
             {text}
           </h2>
@@ -252,22 +272,39 @@ export const config: Config<Props> = {
             <SizeStepper value={value as number} onChange={onChange} fallback={18} />
           ),
         },
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+          ),
+        },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: { ...COLOR_FIELD, label: "Color" },
       },
       defaultProps: {
         text: "New paragraph. Select any word and use the toolbar to format it.",
         fontSize: 0,
+        spaceAbove: 16,
+        spaceBelow: 0,
         align: "left" as const,
         color: "#111827",
       },
-      render: ({ text, fontSize, align, color }) => (
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color }) => (
         <div
           className="rt leading-relaxed"
           style={{
             textAlign: align,
             color: color || "#111827",
-            marginTop: "1rem",
+            marginTop: `${typeof spaceAbove === "number" ? spaceAbove : 16}px`,
+            marginBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px`,
             fontSize: `${fontSize && fontSize > 0 ? fontSize : 18}px`,
           }}
           dangerouslySetInnerHTML={{ __html: text }}
