@@ -15,6 +15,7 @@ export const PUCK_PAGES: PuckPage[] = [
   { slug: "industry-garage-doors", title: "Industry — Garage Doors" },
   { slug: "faqs", title: "FAQs" },
   { slug: "case-study", title: "Case Study" },
+  { slug: "what-changed", title: "What Changed" },
   { slug: "tech", title: "Tech" },
   { slug: "board-of-directors", title: "Board of Directors" },
   { slug: "raising-capital", title: "Raising Capital" },

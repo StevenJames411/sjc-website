@@ -8,6 +8,9 @@ import { PROOF_DEFAULTS } from "@/components/Proof";
 import { PLATFORM_DEFAULTS } from "@/components/Platform";
 import { MOAT_DEFAULTS } from "@/components/Moat";
 import { NEXT_DEFAULTS } from "@/components/Next";
+import { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
+import { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
+import { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
 
 // What the builder opens to when a page has no saved Puck draft yet. /about ships with its
 // full current content (SEED); every other page opens to a simple starter the user can build
@@ -49,7 +52,7 @@ const FAQS_SEED: Data = {
         background: "#f3f4f6",
         content: [
           { type: "Text", props: { id: "faqs-eyebrow", text: "FAQS", align: "left" } },
-          { type: "Heading", props: { id: "faqs-h1", text: "Questions before you book.", level: "h1", align: "left" } },
+          { type: "Heading", props: { id: "faqs-h1", text: "Questions before you apply.", level: "h1", align: "left" } },
           {
             type: "Text",
             props: {
@@ -87,8 +90,8 @@ const FAQS_SEED: Data = {
         background: "#f3f4f6",
         content: [
           { type: "Heading", props: { id: "faqs-cta-h", text: "Still have a question?", level: "h2", align: "center" } },
-          { type: "Text", props: { id: "faqs-cta-p", text: "Book a quick call and ask me directly. You'll leave knowing exactly where AI employees plug into your business — with you holding the keys.", align: "center" } },
-          { type: "Button", props: { id: "faqs-cta-btn", title: "Book the Call", subtitle: "A quick call to see where AI employees plug into your business.", href: "/#contact" } },
+          { type: "Text", props: { id: "faqs-cta-p", text: "Apply and ask me directly. You'll leave knowing exactly where AI employees plug into your business — with you holding the keys.", align: "center" } },
+          { type: "Button", props: { id: "faqs-cta-btn", title: "Apply to work with me", subtitle: "A quick call to see where AI employees plug into your business.", href: "/#contact" } },
           { type: "PhoneLink", props: { id: "faqs-cta-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
         ],
       },
@@ -137,8 +140,8 @@ const CASE_STUDY_SEED: Data = {
     ] } },
     { type: "Section", props: { id: "casestudy-s6", background: "#ffffff", content: [
       { type: "Heading", props: { id: "casestudy-s6-h2", text: "Want one of these answering your leads?", level: "h2", align: "center" } },
-      { type: "Text", props: { id: "casestudy-s6-p", text: "Book a quick call. I'll show you exactly where a dynamic AI employee plugs into the business you already run.", align: "center" } },
-      { type: "Button", props: { id: "casestudy-s6-btn", title: "Book the Call", subtitle: "See where a dynamic AI employee plugs into your business.", href: "/#contact" } },
+      { type: "Text", props: { id: "casestudy-s6-p", text: "Apply to work with me. I'll show you exactly where a dynamic AI employee plugs into the business you already run.", align: "center" } },
+      { type: "Button", props: { id: "casestudy-s6-btn", title: "Apply to work with me", subtitle: "See where a dynamic AI employee plugs into your business.", href: "/#contact" } },
       { type: "PhoneLink", props: { id: "casestudy-s6-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
     ] } },
   ],
@@ -271,17 +274,17 @@ const MEDSPA_SEED: Data = {
       { type: "Heading", props: { id: "medspa-hero-h1", text: "AI employees for med spas — the leads you already paid for, answered and booked the second they land.", level: "h1", align: "center" } },
       { type: "Text", props: { id: "medspa-hero-sub1", text: "You've tried to hire help, more than once, in every corner of the business. It never sticks — you end up with a handful of average people and all the real work still on you. And it's quietly worn you down.", align: "center", color: "#2563eb" } },
       { type: "Text", props: { id: "medspa-hero-sub2", text: "The game just changed. As your growth partner, the first thing I install is your first AI employee — a salesperson better than any you could hire, aimed straight at your growth. We start there.", align: "center", color: "#4b5563" } },
-      { type: "Button", props: { id: "medspa-hero-cta", title: "Book the Call", subtitle: "See exactly what we'd install — and what you'd control.", href: "/#contact" } },
+      { type: "Button", props: { id: "medspa-hero-cta", title: "Apply to work with me", subtitle: "See exactly what we'd install — and what you'd control.", href: "/#contact" } },
     ] } },
-    { type: "MedSpaWound", props: { id: "medspa-wound" } },
-    { type: "MedSpaStep", props: { id: "medspa-step" } },
-    { type: "MedSpaPricing", props: { id: "medspa-pricing" } },
+    { type: "MedSpaWound", props: { id: "medspa-wound", ...MEDSPA_WOUND_DEFAULTS } },
+    { type: "MedSpaStep", props: { id: "medspa-step", ...MEDSPA_STEP_DEFAULTS } },
+    { type: "MedSpaPricing", props: { id: "medspa-pricing", ...MEDSPA_PRICING_DEFAULTS } },
     { type: "Section", props: { id: "medspa-cta", background: "#f3f4f6", content: [
       { type: "Text", props: { id: "medspa-cta-eyebrow", text: "Your Next Move", align: "center", color: "#2563eb" } },
       { type: "Heading", props: { id: "medspa-cta-h2", text: "You always knew you needed this. The employee you could never find or keep now exists.", level: "h2", align: "center" } },
       { type: "Text", props: { id: "medspa-cta-p1", text: "Get on a quick call. Tell me how you run today, and I'll show you exactly where your first AI employee plugs in — starting with speed to lead.", align: "center" } },
       { type: "Text", props: { id: "medspa-cta-p2", text: "I install it. You turn it on. You stay in command.", align: "center" } },
-      { type: "Button", props: { id: "medspa-cta-btn", title: "Book the Call", subtitle: "A quick call. No pitch deck — just where AI fits on your business.", href: "/#contact" } },
+      { type: "Button", props: { id: "medspa-cta-btn", title: "Apply to work with me", subtitle: "A quick call. No pitch deck — just where AI fits on your business.", href: "/#contact" } },
     ] } },
   ],
 };
@@ -367,6 +370,50 @@ const GARAGE_SEED: Data = {
   } }],
 };
 
+// What Changed — 6 content sections + the dark hinge band reproduced with native blocks.
+const WHATCHANGED_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "wc-s1", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "wc-s1-eyebrow", text: "What changed", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "wc-h1", text: "The hire you could never make finally exists.", level: "h1", align: "left" } },
+      { type: "Text", props: { id: "wc-s1-lead", text: "I know that hire never existed, because I spent my whole career needing it. I started my first business in 1986 — the same year Michael Gerber published The E-Myth and told every owner the same thing: build the org chart, fill the seats, stop being the business. For the four decades after that, his playbook was the law — and so was its one catch: every seat could only ever be filled by a human being. For a shop my size, that meant the seat stayed empty and the work fell back on me. Then, twenty-four months ago, that broke. For the first time since 1986, a seat can be filled by something other than a person — and it changes everything about the business you're running right now.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "wc-s2", background: "#ffffff", content: [
+      { type: "Heading", props: { id: "wc-s2-h2", text: "The org chart was always a fantasy.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "wc-s2-p1", text: "Every business that grows past the owner needs the same thing: an org chart with the seats filled — someone on the phones, someone on follow-up, someone on sales, someone running operations. Michael Gerber wrote that down, and he was right. The part nobody says out loud is that for a business your size, those seats were never really fillable. You couldn't find the people. The ones you found didn't stick. And even the average ones cost more than the work was worth.", align: "left" } },
+      { type: "Text", props: { id: "wc-s2-p2", text: "So every empty seat fell back on the one person who'd always catch it — you. That's not a you problem; that's every owner-run business since the beginning. You became the system because there was never another option. The org chart on the wall and the org chart in real life were two different things, and the gap between them was always your own two hands.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "wc-hinge", background: "#0f1f3d", content: [
+      { type: "Heading", props: { id: "wc-hinge-text", text: "Forty years of human-only labor. Twenty-four months of something else.", level: "h2", align: "center", color: "#ffffff" } },
+    ] } },
+    { type: "Section", props: { id: "wc-s3", background: "#f3f4f6", content: [
+      { type: "Heading", props: { id: "wc-s3-h2", text: "Then, for the first time, a tool did the work instead of waiting for you.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "wc-s3-p1", text: "Every tool before this one had the same flaw: it waited. The phone waited for you to dial. The CRM waited for you to type. The email blast waited for you to push the button. They were tools, and you were still the one holding them. Helpful — but not one of them ever filled a seat. They just gave you a faster way to do the work yourself.", align: "left" } },
+      { type: "Text", props: { id: "wc-s3-p2", text: "Then the technology crossed a line it had never crossed before. For the first time, a tool doesn't wait — it works. Not a chatbot that answers one question and hands you back the job. A real AI employee: trained on the way YOU do it, it answers every lead the second it lands, holds a real conversation, handles the objection in your own words, books the appointment, and goes back to wake up the leads that went cold. It does the job the same way every time, it never quits, and you can see everything it does.", align: "left" } },
+      { type: "Text", props: { id: "wc-s3-p3", text: "<strong>That's the whole breakthrough. The seat that was never fillable is finally fillable — by something other than you. It was impossible your entire career. Now it's real. That's what changed.</strong>", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "wc-s4", background: "#ffffff", content: [
+      { type: "Heading", props: { id: "wc-s4-h2", text: "What it means for the business you run.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "wc-s4-p1", text: "When the seats fill themselves, the lid comes off. The leads stop leaking. The follow-up actually happens. The work that used to live in your head and your calendar moves into a system you control — and delegating finally tightens your grip instead of loosening it, because every conversation is logged and nothing lives in some new person's head where you can't see it.", align: "left" } },
+      { type: "Text", props: { id: "wc-s4-p2", text: "<strong>You stop owning a job. You start owning a business.</strong>", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "wc-s5", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "wc-s5-eyebrow", text: "What it looks like", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "wc-s5-h2", text: "An org chart you can finally afford.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "wc-s5-p1", text: "Picture the seats you'd fill with people — front desk, follow-up, sales, the admin that eats your week — and what that costs in salary, training, and turnover, year after year, assuming you could even keep them. Now picture the same org chart filled by AI employees: built once, running every day, for a fraction of a single human wage.", align: "left" } },
+      { type: "Text", props: { id: "wc-s5-p2", text: "That's the trade: a one-time build to install and train it on your business, and a flat monthly to keep it running — the same way you already pay for the software you run on. We walk the exact numbers for your setup on the call.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "wc-s6", background: "#ffffff", content: [
+      { type: "Heading", props: { id: "wc-s6-h2", text: "The shift already happened. The only question is who installs it first.", level: "h2", align: "center" } },
+      { type: "Text", props: { id: "wc-s6-p1", text: "Everyone in your market is about to be running on this. The only question is whether you're early or late — and the owners who put it in now own the head start, because their leads get answered the instant they land while everyone else's still sit in a voicemail box until Monday.", align: "center" } },
+      { type: "Text", props: { id: "wc-s6-p2", text: "<strong>I install it. You stay in command.</strong>", align: "center" } },
+      { type: "Button", props: { id: "wc-s6-btn", title: "Apply to work with me", subtitle: "I'll show you exactly where it plugs into the business you already run.", href: "/#contact" } },
+      { type: "PhoneLink", props: { id: "wc-s6-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
+    ] } },
+  ],
+};
+
 const SEEDS: Record<string, Data> = {
   home: HOME_SEED,
   about: SEED,
@@ -377,6 +424,7 @@ const SEEDS: Record<string, Data> = {
   "raising-capital": RAISING_CAPITAL_SEED,
   podcast: PODCAST_SEED,
   "med-spa": MEDSPA_SEED,
+  "what-changed": WHATCHANGED_SEED,
   industries: INDUSTRIES_SEED,
   "industry-hvac": HVAC_SEED,
   "industry-roofing": ROOFING_SEED,

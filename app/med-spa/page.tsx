@@ -1,9 +1,9 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import CtaButton from "@/components/CtaButton";
-import MedSpaWound from "@/components/medspa/MedSpaWound";
-import MedSpaStep from "@/components/medspa/MedSpaStep";
-import MedSpaPricing from "@/components/medspa/MedSpaPricing";
+import MedSpaWound, { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
+import MedSpaStep, { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
+import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
 import EditablePage from "@/components/edit/EditablePage";
 import Editable from "@/components/edit/Editable";
 import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
@@ -67,9 +67,9 @@ export default async function MedSpaPage() {
             </div>
           </section>
 
-          <MedSpaWound />
-          <MedSpaStep />
-          <MedSpaPricing />
+          <MedSpaWound {...MEDSPA_WOUND_DEFAULTS} />
+          <MedSpaStep {...MEDSPA_STEP_DEFAULTS} />
+          <MedSpaPricing {...MEDSPA_PRICING_DEFAULTS} />
 
           {/* Buyer CTA */}
           <section style={{ backgroundColor: "#f3f4f6" }} className="w-full">

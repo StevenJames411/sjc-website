@@ -12,31 +12,16 @@ import { PUCK_PAGES } from "@/lib/puckPages";
 // quietly written to the cloud, with a Saving…/Saved indicator). Puck's own header keeps the
 // Publish button (draft stays private until Publish pushes it live). The whole site is
 // password-gated by middleware, so only the owner reaches this.
+//
+// To reset a page to its seed: navigate to /edit/<page>?reset=1 — the URL param triggers the
+// reset on load and is then stripped, so no fumble-able button sits on the toolbar.
 type SaveState = "idle" | "saving" | "saved";
 
 export default function PuckEditor({ page, title }: { page: string; title: string }) {
   const router = useRouter();
   const [data, setData] = useState<Data | null>(null);
   const [save, setSave] = useState<SaveState>("idle");
-  const [resetN, setResetN] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Load this page's saved draft, or fall back to its seed (current content for /about,
-  // a starter for the rest).
-  useEffect(() => {
-    let alive = true;
-    setData(null);
-    fetch(`/api/puck?page=${encodeURIComponent(page)}`)
-      .then((r) => r.json())
-      .then((j) => {
-        if (!alive) return;
-        setData(j && j.data && Array.isArray(j.data.content) ? j.data : seedFor(page, title));
-      })
-      .catch(() => alive && setData(seedFor(page, title)));
-    return () => {
-      alive = false;
-    };
-  }, [page, title]);
 
   const writeDraft = (d: Data) => {
     setSave("saving");
@@ -49,6 +34,40 @@ export default function PuckEditor({ page, title }: { page: string; title: strin
       .then(() => setSave("saved"))
       .catch(() => setSave("idle"));
   };
+
+  // Load this page's saved draft, or fall back to its seed. If ?reset=1 is in the URL,
+  // load the seed directly (and strip the param) — deliberate recovery, not a fumble-able button.
+  useEffect(() => {
+    let alive = true;
+    setData(null);
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reset") === "1") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("reset");
+      window.history.replaceState({}, "", url.toString());
+      const s = seedFor(page, title);
+      setData(s);
+      fetch("/api/puck", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ page, data: s }),
+      });
+      return () => { alive = false; };
+    }
+
+    fetch(`/api/puck?page=${encodeURIComponent(page)}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (!alive) return;
+        setData(j && j.data && Array.isArray(j.data.content) ? j.data : seedFor(page, title));
+      })
+      .catch(() => alive && setData(seedFor(page, title)));
+    return () => {
+      alive = false;
+    };
+  }, [page, title]);
 
   // Debounced auto-save on every edit.
   const onChange = (d: Data) => {
@@ -79,26 +98,13 @@ export default function PuckEditor({ page, title }: { page: string; title: strin
         <span style={{ fontSize: 12, color: save === "saved" ? "#16a34a" : "#6b7280" }}>
           {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : ""}
         </span>
-        <button
-          type="button"
-          onClick={() => {
-            if (!window.confirm("Reset this page to its default content? This replaces the current draft layout for this page.")) return;
-            const s = seedFor(page, title);
-            setData(s);
-            writeDraft(s);
-            setResetN((n) => n + 1);
-          }}
-          style={resetBtn}
-        >
-          ↺ Reset to default
-        </button>
         <span style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
-          Edits auto-save as a draft · use Publish to go live
+          Edits auto-save as a draft · use Publish to go live · reset via /edit/{page}?reset=1
         </span>
       </div>
       <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
         <Puck
-          key={`${page}:${resetN}`}
+          key={page}
           config={config}
           data={data}
           iframe={{ enabled: false }}
@@ -128,16 +134,6 @@ const bar: React.CSSProperties = {
   borderBottom: "1px solid #e5e7eb",
   background: "#fff",
   fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
-};
-const resetBtn: React.CSSProperties = {
-  border: "1px solid #d1d5db",
-  borderRadius: 6,
-  padding: "5px 9px",
-  fontSize: 12,
-  fontWeight: 600,
-  background: "#fff",
-  color: "#374151",
-  cursor: "pointer",
 };
 const select: React.CSSProperties = {
   border: "1px solid #d1d5db",

@@ -25,9 +25,9 @@ import Next from "@/components/Next";
 import { NEXT_DEFAULTS } from "@/components/Next";
 import Platform from "@/components/Platform";
 import { PLATFORM_DEFAULTS } from "@/components/Platform";
-import MedSpaWound from "@/components/medspa/MedSpaWound";
-import MedSpaStep from "@/components/medspa/MedSpaStep";
-import MedSpaPricing from "@/components/medspa/MedSpaPricing";
+import MedSpaWound, { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
+import MedSpaStep, { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
+import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 
 type Align = "left" | "center" | "right";
@@ -60,10 +60,38 @@ type Props = {
   Moat: { eyebrow: string; h2: string; p1: string; p2: string; p3: string };
   NextMove: { eyebrow: string; h2: string; p1: string; p2: string; ctaTitle: string; ctaSubtitle: string };
   Platform: { eyebrow: string; h2: string; p1: string; p2: string; p3: string };
-  // Med-Spa page custom sections, wrapped as-is.
-  MedSpaWound: Record<string, never>;
-  MedSpaStep: Record<string, never>;
-  MedSpaPricing: Record<string, never>;
+  // Med-Spa page custom sections — props-driven, all text editable via fields.
+  MedSpaWound: {
+    eyebrow: string;
+    h2: string;
+    p1: string;
+    p2: string;
+    beats: { title: string; body: string }[];
+    callout: string;
+  };
+  MedSpaStep: {
+    eyebrow: string;
+    h2: string;
+    p1: string;
+    p2: string;
+    p3: string;
+    col1label: string;
+    col1sub: string;
+    col2label: string;
+    col2sub: string;
+    step1: { item: string }[];
+    step2: { item: string }[];
+    callout: string;
+  };
+  MedSpaPricing: {
+    eyebrow: string;
+    h2: string;
+    p1: string;
+    p2bold1: string;
+    p2mid: string;
+    p2bold2: string;
+    p2end: string;
+  };
   // The shared industry deep-page template, with its copy editable through fields.
   FieldDeep: {
     name: string;
@@ -360,10 +388,82 @@ export const config: Config<Props> = {
       ),
     },
 
-    // Med-Spa page sections, wrapped as-is.
-    MedSpaWound: { label: "Med-Spa — The Wound", fields: {}, render: () => <MedSpaWound /> },
-    MedSpaStep: { label: "Med-Spa — Step One", fields: {}, render: () => <MedSpaStep /> },
-    MedSpaPricing: { label: "Med-Spa — Pricing", fields: {}, render: () => <MedSpaPricing /> },
+    // Med-Spa page sections — full field schemas, copy editable in the builder.
+    MedSpaWound: {
+      label: "Med-Spa — The Wound",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        beats: {
+          type: "array" as const,
+          label: "Beats (cards)",
+          arrayFields: {
+            title: { type: "text" as const, label: "Title" },
+            body: { type: "textarea" as const, label: "Body" },
+          },
+          getItemSummary: (i: { title: string; body: string }) => i.title || "Beat",
+        },
+        callout: { type: "textarea" as const, label: "Callout" },
+      },
+      defaultProps: MEDSPA_WOUND_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, beats, callout }) => (
+        <MedSpaWound eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} beats={beats} callout={callout} />
+      ),
+    },
+    MedSpaStep: {
+      label: "Med-Spa — Step One",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2: { type: "textarea" as const, label: "Paragraph 2" },
+        p3: { type: "textarea" as const, label: "Paragraph 3" },
+        col1label: { type: "text" as const, label: "Column 1 label" },
+        col1sub: { type: "text" as const, label: "Column 1 sub" },
+        col2label: { type: "text" as const, label: "Column 2 label" },
+        col2sub: { type: "text" as const, label: "Column 2 sub" },
+        step1: {
+          type: "array" as const,
+          label: "Step 1 bullets",
+          arrayFields: { item: { type: "textarea" as const, label: "Item" } },
+          getItemSummary: (i: { item: string }) => i.item || "Item",
+        },
+        step2: {
+          type: "array" as const,
+          label: "Step 2 bullets",
+          arrayFields: { item: { type: "textarea" as const, label: "Item" } },
+          getItemSummary: (i: { item: string }) => i.item || "Item",
+        },
+        callout: { type: "textarea" as const, label: "Callout" },
+      },
+      defaultProps: MEDSPA_STEP_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2, p3, col1label, col1sub, col2label, col2sub, step1, step2, callout }) => (
+        <MedSpaStep
+          eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} p3={p3}
+          col1label={col1label} col1sub={col1sub}
+          col2label={col2label} col2sub={col2sub}
+          step1={step1} step2={step2} callout={callout}
+        />
+      ),
+    },
+    MedSpaPricing: {
+      label: "Med-Spa — Pricing",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        h2: { type: "text" as const, label: "Headline" },
+        p1: { type: "textarea" as const, label: "Paragraph 1" },
+        p2bold1: { type: "text" as const, label: "Bold opener" },
+        p2mid: { type: "text" as const, label: "Mid text" },
+        p2bold2: { type: "text" as const, label: "Bold mid" },
+        p2end: { type: "textarea" as const, label: "Closing text" },
+      },
+      defaultProps: MEDSPA_PRICING_DEFAULTS,
+      render: ({ eyebrow, h2, p1, p2bold1, p2mid, p2bold2, p2end }) => (
+        <MedSpaPricing eyebrow={eyebrow} h2={h2} p1={p1} p2bold1={p2bold1} p2mid={p2mid} p2bold2={p2bold2} p2end={p2end} />
+      ),
+    },
 
     // Industry deep page (HVAC / Roofing / Garage Doors …) — full template, copy editable.
     FieldDeep: {
@@ -423,7 +523,7 @@ export const SEED: Data = {
             type: "Heading",
             props: {
               id: "s1-h1",
-              text: "I'm a solo entrepreneur, just like you. Forty years. Four businesses of my own — and now this one.",
+              text: "I'm a solo entrepreneur, just like you. Four businesses of my own since 1986 — and now this one.",
               level: "h1",
               align: "left",
             },
@@ -432,7 +532,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s1-intro",
-              text: "And the whole time, I had the same problem you have. I could never find people worth the effort — people who'd stick around, take the training, and actually do the job right. So I did it all myself. For forty years.",
+              text: "And the whole time, I had the same problem you have. I could never find people worth the effort — people who'd stick around, take the training, and actually do the job right. So I did it all myself. The whole way.",
               align: "left",
             },
           },
@@ -453,7 +553,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s2-p1",
-              text: "I'm Steven Barchetti. I've run my own businesses for forty years — four of them, in four different trades. A restaurant in 1986. A mortgage company with my brother. A roofing company. A trucking company I ran for twenty years. And now this one — the AI business.",
+              text: "I'm Steven Barchetti. I've run my own businesses for four decades — four of them, in four different trades. A restaurant in 1986. A mortgage company with my brother. A roofing company. A trucking company I ran for twenty years. And now this one — the AI business.",
               align: "left",
             },
           },
@@ -484,7 +584,7 @@ export const SEED: Data = {
         content: [
           {
             type: "Heading",
-            props: { id: "s3-h2", text: "Then, for the first time in forty years, that problem got solved.", level: "h2", align: "left" },
+            props: { id: "s3-h2", text: "Then, for the first time, that problem got solved.", level: "h2", align: "left" },
           },
           {
             type: "Text",
@@ -498,7 +598,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s3-p2",
-              text: "A couple of years ago that changed for good. For the first time, I could finally hire the employee I'd been looking for my whole career — an AI employee. It takes the training. It doesn't quit. It doesn't go off and freelance. It doesn't call in sick or take days off. It answers every lead the second it comes in, follows up, books the appointment, and circles back on the cold ones. It does the job the same way every time, and I can see everything it does.",
+              text: "Twenty-four months ago that changed for good. I could finally hire the employee I'd been looking for my whole career — an AI employee. It takes the training. It doesn't quit. It doesn't go off and freelance. It doesn't call in sick or take days off. It answers every lead the second it comes in, follows up, books the appointment, and circles back on the cold ones. It does the job the same way every time, and I can see everything it does.",
               align: "left",
             },
           },
