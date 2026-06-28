@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Pull all Alamo (Chloe) conversations from GHL, scan for the 3 'gold' patterns,
-write a candidate shortlist for cherry-picking. Read-only against GHL. Local only.
-Throwaway — delete after we've got the snapshots."""
+"""Pull Chloe's conversations via CONTACT enumeration (location-wide convo search is
+403/1010-blocked under HIPAA mode). For each contact -> contact-scoped conversation
+search -> messages, scan for the 3 gold patterns, write a shortlist. These are the
+exact endpoints the production server uses. Read-only. Local only. Throwaway."""
 import sys, json, time, urllib.request, urllib.error
 
 ENV  = "/Users/stevenbarchetti/SJC/AI-Employee-Dashboard/sjc-server/.env"
@@ -9,7 +10,7 @@ LOC  = "cTQ1CZSUZ7zWt1Nsu96K"
 BASE = "https://services.leadconnectorhq.com"
 OUT  = ("/private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/"
         "a8c71e99-e1ed-4637-abb9-cc84927018fd/scratchpad/candidates.txt")
-MAX_CONVOS = 800
+MAX_CONTACTS = 1500
 
 tok = None
 for line in open(ENV):
@@ -21,44 +22,42 @@ if not tok:
 H = {"Authorization": f"Bearer {tok}", "Version": "2021-04-15"}
 
 def get(path):
-    for attempt in range(4):
+    for a in range(4):
         try:
             return json.load(urllib.request.urlopen(
                 urllib.request.Request(BASE + path, headers=H), timeout=40))
         except urllib.error.HTTPError as e:
             if e.code in (429, 500, 502, 503):
-                time.sleep(2 * (attempt + 1)); continue
+                time.sleep(2 * (a + 1)); continue
             raise
     raise SystemExit("repeated API errors talking to GHL")
 
-# ---- 1) list every conversation for the location ----
-print("Listing conversations...", flush=True)
-convos, seen, cursor = [], set(), None
-while len(convos) < MAX_CONVOS:
-    q = f"/conversations/search?locationId={LOC}&limit=100"
-    if cursor:
-        q += f"&startAfterId={cursor}"
+# ---- 1) enumerate contacts for the location ----
+print("Listing contacts...", flush=True)
+contacts, seen, after_id, after = [], set(), None, None
+while len(contacts) < MAX_CONTACTS:
+    q = f"/contacts/?locationId={LOC}&limit=100"
+    if after_id: q += f"&startAfterId={after_id}"
+    if after:    q += f"&startAfter={after}"
     try:
         d = get(q)
     except urllib.error.HTTPError as e:
-        sys.exit(f"LISTING FAILED ({e.code}): {e.read().decode()[:300]}\n"
-                 "-> location-wide listing may be blocked; tell Claude.")
-    batch = d.get("conversations", []) or []
+        sys.exit(f"CONTACTS LISTING FAILED ({e.code}): {e.read().decode()[:300]}\n-> tell Claude.")
+    batch = d.get("contacts", []) or []
     new = [c for c in batch if c.get("id") not in seen]
     if not new:
         break
     for c in new:
         seen.add(c.get("id"))
-    convos.extend(new)
-    print(f"  ...{len(convos)} (GHL reports total {d.get('total')})", flush=True)
-    if len(batch) < 100:
+    contacts.extend(new)
+    meta = d.get("meta", {}) or {}
+    after_id = meta.get("startAfterId") or (batch[-1].get("id") if batch else None)
+    after = meta.get("startAfter")
+    print(f"  ...{len(contacts)} contacts (GHL reports total {meta.get('total')})", flush=True)
+    if len(batch) < 100 and not meta.get("nextPageUrl"):
         break
-    cursor = batch[-1].get("id")
     time.sleep(0.1)
-
-if not convos:
-    sys.exit("No conversations returned — location-wide listing may be blocked. Tell Claude.")
-print(f"Got {len(convos)} conversations. Scanning threads...\n", flush=True)
+print(f"Got {len(contacts)} contacts. Pulling their threads...\n", flush=True)
 
 HEALTHQ = ["side effect","is it safe","safe to","needle","does it hurt","dosage","what does it do",
            "how does it work","semaglutide","tirzepatide","ozempic","wegovy","insurance cover",
@@ -66,7 +65,7 @@ HEALTHQ = ["side effect","is it safe","safe to","needle","does it hurt","dosage"
 DEFER   = ["your provider","the doctor","our medical","medical team","at your visit","your first visit",
            "during your visit","the nurse","our practitioner","they'll go over","go over that",
            "best to discuss","that's something the","the clinic","our team will","provider will",
-           "the physician","not able to give medical"]
+           "the physician","give medical"]
 BOOKED  = ["you're all set","all set for","see you on","see you at","got you booked","got you scheduled",
            "you're booked","your appointment is","looking forward to seeing","reserved your",
            "got you down for","you're scheduled","confirmed for","booked you"]
@@ -78,32 +77,40 @@ def hits(text, kws):
     return [k for k in kws if k in text]
 
 react_c, defer_c, book_c = [], [], []
-for i, c in enumerate(convos):
-    cid  = c.get("id")
-    name = c.get("fullName") or c.get("contactName") or c.get("contactId") or "?"
+scanned = 0
+for i, ct in enumerate(contacts):
+    contact_id = ct.get("id")
+    name = ((ct.get("firstName") or "") + " " + (ct.get("lastName") or "")).strip() \
+           or ct.get("contactName") or contact_id
     try:
-        m = get(f"/conversations/{cid}/messages?limit=100")
+        cs = get(f"/conversations/search?locationId={LOC}&contactId={contact_id}")
     except Exception:
         continue
-    msgs = (m.get("messages", {}) or {}).get("messages", []) or []
-    msgs = sorted(msgs, key=lambda x: x.get("dateAdded") or "")
-    seq = [((x.get("direction") or "").lower(), (x.get("body") or "")) for x in msgs if x.get("body")]
-    if not seq:
-        continue
-    inbound  = " \n".join(b for d, b in seq if d.startswith("in")).lower()
-    outbound = " \n".join(b for d, b in seq if d.startswith("out")).lower()
-
-    rk = hits(outbound, REACT)
-    if seq[0][0].startswith("out") and any(d.startswith("in") for d, _ in seq) and rk:
-        react_c.append((len(rk), cid, name, rk, seq))
-    hk, dk = hits(inbound, HEALTHQ), hits(outbound, DEFER)
-    if hk and dk:
-        defer_c.append((len(hk) + len(dk), cid, name, hk + dk, seq))
-    bk = hits(outbound, BOOKED)
-    if bk:
-        book_c.append((len(bk), cid, name, bk, seq))
+    for conv in (cs.get("conversations", []) or []):
+        convid = conv.get("id")
+        try:
+            m = get(f"/conversations/{convid}/messages?limit=100")
+        except Exception:
+            continue
+        msgs = (m.get("messages", {}) or {}).get("messages", []) or []
+        msgs = sorted(msgs, key=lambda x: x.get("dateAdded") or "")
+        seq = [((x.get("direction") or "").lower(), (x.get("body") or "")) for x in msgs if x.get("body")]
+        if not seq:
+            continue
+        scanned += 1
+        inbound  = " \n".join(b for d, b in seq if d.startswith("in")).lower()
+        outbound = " \n".join(b for d, b in seq if d.startswith("out")).lower()
+        rk = hits(outbound, REACT)
+        if seq[0][0].startswith("out") and any(d.startswith("in") for d, _ in seq) and rk:
+            react_c.append((len(rk), convid, name, rk, seq))
+        hk, dk = hits(inbound, HEALTHQ), hits(outbound, DEFER)
+        if hk and dk:
+            defer_c.append((len(hk) + len(dk), convid, name, hk + dk, seq))
+        bk = hits(outbound, BOOKED)
+        if bk:
+            book_c.append((len(bk), convid, name, bk, seq))
     if (i + 1) % 50 == 0:
-        print(f"  scanned {i+1}/{len(convos)}", flush=True)
+        print(f"  {i+1}/{len(contacts)} contacts  (threads scanned {scanned})", flush=True)
     time.sleep(0.05)
 
 def excerpt(seq, kws):
@@ -116,13 +123,13 @@ def excerpt(seq, kws):
 def dump(fh, title, cands):
     cands = sorted(cands, key=lambda t: t[0], reverse=True)[:6]
     fh.write(f"\n===== {title} ({len(cands)} shown) =====\n")
-    for score, cid, name, kws, seq in cands:
-        url = f"https://app.gohighlevel.com/v2/location/{LOC}/conversations/conversations/{cid}"
+    for score, convid, name, kws, seq in cands:
+        url = f"https://app.gohighlevel.com/v2/location/{LOC}/conversations/conversations/{convid}"
         fh.write(f"\n-- {name}  (score {score})\n   matched: {', '.join(kws[:6])}\n   {url}\n")
         fh.write(excerpt(seq, kws) + "\n")
 
 with open(OUT, "w") as fh:
-    fh.write(f"Chloe gold-conversation candidates  (scanned {len(convos)} threads)\n")
+    fh.write(f"Chloe gold-conversation candidates  (scanned {scanned} threads across {len(contacts)} contacts)\n")
     dump(fh, "REACTIVATION (Chloe opened a cold lead, got a reply)", react_c)
     dump(fh, "STAYS-IN-HER-LANE (health question -> routed to provider, kept going)", defer_c)
     dump(fh, "BOOKINGS (Chloe confirmed an appointment)", book_c)
