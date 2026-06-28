@@ -459,8 +459,97 @@ const WHATCHANGED_SEED: Data = {
   ],
 };
 
+// For Agencies — the standalone white-label partner funnel. A DIFFERENT buyer than the homepage
+// (the GHL agency, not the end owner): same product, agency-facing language. Native editable
+// blocks, so the whole page lives in the Puck builder at /edit/for-agencies like every other page.
+const FOR_AGENCIES_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "fa-hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "fa-hero-eyebrow", text: "For Facebook Marketing Agencies", size: "base", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "fa-hero-h1", text: "AI is coming for every marketing agency. Be the one who installs it — not the one it replaces.", fontSize: 44, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "fa-hero-sub", text: "You run a Facebook marketing agency, and you already know where this is headed: AI is about to commoditize lead-gen, and the agencies that just run ads get replaced. The ones who wield it become something else entirely — a tech-enabled company that installs AI employees inside their clients' businesses. That's the pivot you've been wanting, and almost nobody can hand it to you. I'm the AI implementation partner who does — and you'd be among the first to plant a flag in a category that didn't exist 24 months ago.", size: "lg", align: "center", color: "#ffffff" } },
+      { type: "Video", props: { id: "fa-hero-video", src: "", caption: "Watch the 3-minute walkthrough" } },
+      { type: "Button", props: { id: "fa-hero-cta", title: "Book a Partner Call", subtitle: "One operator to another.", href: "/#partner" } },
+    ] } },
+    { type: "Section", props: { id: "fa-arc", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-arc-eyebrow", text: "Remember when this was fun?", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-arc-h2", text: "You were the hotshots once. You get to be again.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-arc-p1", text: "Be honest — there was a window when running Facebook ads made you the smartest guy in the room. You printed leads, clients lined up, and you were on the front edge of something nobody else understood. Then everybody piled in. The platform got expensive, the targeting got gutted, the results got harder, and \"Facebook marketing agency\" went from cutting-edge to a commodity that gets beaten up on price and dropped without a second thought. You got your ass kicked — the whole industry did.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-arc-p2", text: "AI is the next window, and it's the same kind of edge Facebook ads were before everyone caught on. Get on it now and you're the one out front again — the agency that brought the future to its clients before the guy down the street even understood it. You don't get many of these windows. This is one, and it's open right now.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-turn", background: "#ffffff", content: [
+      { type: "Text", props: { id: "fa-turn-eyebrow", text: "The pivot", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-turn-h2", text: "Stop being just a Facebook marketing agency. Become a tech-enabled company.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-turn-p1", text: "Running ads is getting commoditized — every agency does it, the price floor keeps dropping, and AI is about to automate most of it. Selling leads alone is a race to the bottom. The way out is to become a tech-enabled company — and that's not something you build, it's a partner you plug in. I'm your AI implementation partner: I do the enabling, you do the selling. The chain is dead simple — I enable you, you enable your client.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-turn-p2", text: "What you put on top of your client's business is a workforce of native AI employees — capability no agency could deliver until right now. And it does two things at once: it makes you sticky (your client can't unplug an AI workforce running his sales floor) and it makes you relevant (you stop being the ads vendor nervous about AI and become the partner who brought him the future first). Nobody has ever told you your agency could be that. I'm telling you it's exactly what you can become — and you keep running the ads you're already good at while this works underneath.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-proof", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-proof-eyebrow", text: "Proof first — not a pitch", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-proof-h2", text: "Meet Chloe. She's already on the clock.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-proof-p1", text: "You're not betting your name on a promise — here's the receipt. Chloe is an AI employee running live in a real business right now, trained on that owner's own sales conversations. In her first 30 days she booked around 30 appointments — about one a day — and four of them landed on a single dead Sunday: staff off, lights out, while she worked the leads alone.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-proof-p2", text: "That's the part that matters. Not a demo video, not a roadmap — a live employee filling a real calendar, with a dashboard the owner watches the number climb on in real time. That's what you'd be installing the day you become a tech-enabled company, behind your brand. Everything below is just how she does it.", size: "base", align: "left" } },
+      { type: "Button", props: { id: "fa-proof-link", title: "See her live on the call", subtitle: "The dashboard, the real numbers.", href: "/#partner" } },
+    ] } },
+    { type: "Section", props: { id: "fa-magnitude", background: "#ffffff", content: [
+      { type: "Text", props: { id: "fa-mag-eyebrow", text: "What you're actually installing", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-mag-h2", text: "One hire that does the work of three — and never has a bad day.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-mag-p1", text: "Chloe does the job of about three people — the front desk, the follow-up, the closer — for a fraction of one human wage. She never takes a day off, never forgets to follow up, never has a bad mood on lead number 400, and never goes to lunch when the hot lead comes in. She works 24/7, in your client's voice, behind your brand.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-mag-p2", text: "And here's the number that makes an owner sit up: run all three of her plays and you can pull roughly 5X the revenue out of the same ad budget — no new spend, you just stop the leaks across the pipeline he already owns. This is a native AI employee that didn't exist 24 months ago, doing things that have never been done before — and installing it is exactly what turns you from his ads vendor into his tech-enabled partner.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-levers", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-levers-eyebrow", text: "How it goes in", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-levers-h2", text: "Three levers. Each one a hero moment. All on money he already has.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-levers-p1", text: "You don't drop all of this at once. You pull three levers, in order. Each one makes you the hero on money the client already had sitting there, each one earns you the right to pull the next — and every one of them moves you further from ad vendor and closer to the tech-enabled partner he can't run without. Watch the order. The order is the whole game.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-lever1", background: "#ffffff", content: [
+      { type: "Text", props: { id: "fa-l1-eyebrow", text: "Lever one — the foot in the door", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-l1-h2", text: "Found money off the dead list — on a scoreboard he can watch.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-l1-p1", text: "You start here every time, because it's the easiest yes you'll ever get and the fastest proof he'll ever see. Every client is sitting on a graveyard — a database of leads they paid for months ago and never spoke to again. He already spent the money to get those people. They cost nothing to wake up.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-l1-p2", text: "Point Chloe at that dead list and she goes to work — not blasting a coupon, selling: reading replies, handling the brush-off, reviving the ones with a pulse, booking them. And you put the number on a scoreboard he watches climb in real time. Run the math with him out loud: she books 5 off the dead list this week, each worth about $1,500 in lifetime value — that's $7,500 that didn't exist Monday morning, pulled from a list he'd written off, for less than a fraction of one hire. A founder who's heard a hundred pitches doesn't believe your words — he believes a number climbing on his own screen. That's why you lead here.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-lever2", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-l2-eyebrow", text: "Lever two — the one he asks for himself", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-l2-h2", text: "Now point her at the new leads he's already paying for.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-l2-p1", text: "Here's how you know lever one worked: you won't have to pitch lever two. He'll watch her close the dead list and the question falls out of his mouth — why are we only doing this on the dead leads? Why isn't she on my new leads the second they land? That's the whole sale, and he made it for you.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-l2-p2", text: "Now, speed-to-lead — answering the instant a lead comes in — is table stakes; everybody claims it. So that's not your hook. Your hook is what answers: not a form auto-reply, but the psychological sales engine your client has never had on his front line — closing the new lead with the same skill she just showed on the dead one. The lead that used to sit three hours and book with a competitor now gets a real closer in nine seconds, every time, day and night. Speed gets her in the door. The closing is what he's paying for.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-lever3", background: "#ffffff", content: [
+      { type: "Text", props: { id: "fa-l3-eyebrow", text: "Lever three — the easiest money there is", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-l3-h2", text: "Sell more to the people who already bought.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-l3-p1", text: "By now she's pulled money out of his past — the dead list — and plugged his present — the new leads. The last leak is the easiest money in any business and almost nobody works it: the customers who already said yes. The hardest sale is the first one, and he already won it with everyone in his book. Those people trust him. They've paid him. And most agencies leave them completely alone after the first transaction.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-l3-p2", text: "Turn Chloe loose on them — the upgrade, the next service, the re-up — sold the way a sharp human reads it: right offer, right person, right moment. No ad spend, no new acquisition, just more revenue out of relationships he already paid to build. Three levers, one AI employee — and you've gone from running his ads to running his revenue.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-throughline", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-tl-eyebrow", text: "Why it never feels risky to him", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-tl-h2", text: "Past, present, and customers — every dollar already his.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-tl-p1", text: "Step back. Lever one worked his past — the dead leads he gave up on. Lever two worked his present — the new leads he's already paying you to generate. Lever three worked his customers — the people who already bought. Not one dollar of new ad spend in any of it. You didn't ask him to spend more to make more — you stopped the money that was already his from leaking out of the pipeline he already owns.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-tl-p2", text: "That's the easiest thing you'll ever sell a client — and the hardest thing he'll ever cancel. Cut you now and the leaks come right back, and he felt what they were costing. That's load-bearing. That's un-fireable. That's the substance the ads alone never gave you — and it's why he stops seeing you as the ad guy and starts seeing you as the tech partner who runs his business.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-moat", background: "#ffffff", content: [
+      { type: "Text", props: { id: "fa-moat-eyebrow", text: "What I take off your plate", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-moat-h2", text: "You loved GoHighLevel's modularity. You hated executing it. I take the execution away.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-moat-p1", text: "This is what an AI implementation partner is for — taking the execution off your plate. You chose GHL because it's modular — bolt the pieces together, your name on all of it. And you know the other half of that promise: making anything real actually work in there takes a developer, and you've paid that tax in hours and broken automations. That half is the half I take. What I've built is a modular, clonable AI-employee system — install it once, clone it to the next client, and the next. Seasoned, turnkey, done-for-you. I hand it to you finished, behind your brand, and I run the engine. It's additive — keep your current developer, keep your stack, nothing breaks.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-moat-p2", text: "Then I take the other tax — the one your developer can't help with: the selling. I don't just hand you the employee, I hand you the playbook to sell her to your client — the exact sequence, which lever first, how to put the number on the board so he sees it instead of hearing it. You're not figuring out how to sell this; I've already figured it out and I hand it to you with the product. You keep the client, the billing, the margin, the relationship — and you become the operational backbone of his business. Pure upside. Pure stick.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-pricing", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-pr-eyebrow", text: "What it's worth vs. what it costs", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-pr-h2", text: "Price her against what she replaces — and what she creates.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-pr-p1", text: "When you set your client's price — and the retail is yours to set, I just hand you the guardrails — you anchor against two things, never against software. Software is a race to zero; Chloe is an employee. One: what she replaces — three real humans, call it $120,000 to $150,000 a year before training and turnover. Two: what she creates — the reactivation money, the saved leads, the re-sold customers, the lifetime value stacking on that scoreboard.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-pr-p2", text: "Price her at a fraction of either number and she's a no-brainer twice over — cheaper than the payroll she replaces, smaller than the revenue she creates. The owner does that math in four seconds and says yes. Your margin lives in the gap. That's yours.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-cta", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "fa-cta-eyebrow", text: "The first movers win this", size: "sm", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "fa-cta-h2", text: "A brand-new category just opened. Be first to plant your flag.", level: "h2", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "fa-cta-p1", text: "This is the rare moment when a whole new thing becomes possible, and the agencies that grab it first own the category. You stop being a Facebook marketing agency nervous about AI and become the tech-enabled company that installs it — sticky with every client, relevant in a world about to sort agencies into the ones who wield AI and the ones it replaces. White-label, done-for-you, the pricing and the playbook in the box; I build and run the engine, your name on all of it. One call, owner to owner, and I'll show you exactly how the first AI employee goes into one of your accounts.", size: "lg", align: "center", color: "#ffffff" } },
+      { type: "Button", props: { id: "fa-cta-btn", title: "Book a Partner Call", subtitle: "Be first. One operator to another.", href: "/#partner" } },
+    ] } },
+  ],
+};
+
 const SEEDS: Record<string, Data> = {
   home: HOME_SEED,
+  "for-agencies": FOR_AGENCIES_SEED,
   about: SEED,
   faqs: FAQS_SEED,
   "case-study": CASE_STUDY_SEED,
