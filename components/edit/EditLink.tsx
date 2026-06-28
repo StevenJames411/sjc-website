@@ -18,6 +18,7 @@ const PATH_TO_SLUG: Record<string, string> = {
   "/board-of-directors": "board-of-directors",
   "/raising-capital": "raising-capital",
   "/podcast": "podcast",
+  "/for-agencies": "for-agencies",
 };
 
 export default function EditLink() {
