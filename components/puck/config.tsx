@@ -30,6 +30,7 @@ import MedSpaWound, { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWo
 import MedSpaStep, { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
 import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
+import ImageUpload from "@/components/puck/ImageUpload";
 
 type Align = "left" | "center" | "right";
 
@@ -438,7 +439,13 @@ export const config: Config<Props> = {
     Image: {
       label: "Image / screenshot",
       fields: {
-        src: { type: "text" as const, label: "Image URL" },
+        src: {
+          type: "custom" as const,
+          label: "Image",
+          render: ({ onChange, value }) => (
+            <ImageUpload value={value as string} onChange={onChange} />
+          ),
+        },
         alt: { type: "text" as const, label: "Alt text (describe the image)" },
         caption: { type: "text" as const, label: "Caption (optional)" },
         maxWidth: {
