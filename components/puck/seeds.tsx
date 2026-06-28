@@ -466,17 +466,17 @@ const FOR_AGENCIES_SEED: Data = {
   root: {},
   content: [
     { type: "Section", props: { id: "fa-hero", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "fa-hero-eyebrow", text: "For GoHighLevel Agency Owners", size: "base", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "fa-hero-h1", text: "You won them on growth. Growth won't keep them.", fontSize: 46, align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "fa-hero-sub", text: "Owner to owner: you won the account on the one thing you're great at — growth. You turned on the ads and made the phone ring. But the thing that wins a client doesn't keep him. Every slow month he's doing math on whether you're worth it, and a cheaper guy is one email away. You don't get fired because the work is bad — you get fired because nothing you do is load-bearing in his business. I'm going to make you load-bearing.", size: "lg", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "fa-hero-eyebrow", text: "For Facebook Marketing Agencies", size: "base", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "fa-hero-h1", text: "AI is coming for every marketing agency. Be the one who installs it — not the one it replaces.", fontSize: 44, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "fa-hero-sub", text: "You run a Facebook marketing agency, and you already know where this is headed: AI is about to commoditize lead-gen, and the agencies that just run ads get replaced. The ones who wield it become something else entirely — a tech-enabled company that installs AI employees inside their clients' businesses. That's the pivot you've been wanting, and almost nobody can hand it to you. I can. You'd be among the first to plant a flag in a brand-new category.", size: "lg", align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "fa-hero-video", src: "", caption: "Watch the 3-minute walkthrough" } },
       { type: "Button", props: { id: "fa-hero-cta", title: "Book a Partner Call", subtitle: "One operator to another.", href: "/#partner" } },
     ] } },
     { type: "Section", props: { id: "fa-turn", background: "#ffffff", content: [
-      { type: "Text", props: { id: "fa-turn-eyebrow", text: "The part that makes you un-fireable", size: "sm", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "fa-turn-h2", text: "Keep doing what you're great at. Bolt the substance on underneath.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "fa-turn-p1", text: "I'm not here to touch your ads. They work — keep running them, keep winning on growth. What I hand you is the layer under the ads: the part that turns a lead source into a business your client can't unplug.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "fa-turn-p2", text: "Because while the ads run, the pipeline you fill is leaking out the bottom. Dead leads nobody touches. New leads that sit for hours and book with somebody else. Customers who bought once and never got sold again. He already paid for all of it — the money is already in the building. It's just walking back out the door because nothing's fast enough or sharp enough to catch it. Stopping those leaks is the substance — and the agency down the street isn't delivering it, because he's also just running ads.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-turn-eyebrow", text: "The pivot", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-turn-h2", text: "Stop being just a Facebook marketing agency. Become a tech-enabled company.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-turn-p1", text: "Running ads is getting commoditized — every agency does it, the price floor keeps dropping, and AI is about to automate most of it. Selling leads alone is a race to the bottom you don't want to be in. The way out isn't a better ad account. It's becoming the company that installs native AI employees on top of your clients' businesses — the thing every owner is about to need and almost no agency can actually deliver.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-turn-p2", text: "That does two things at once. It makes you sticky — your client can't unplug an AI workforce running his sales floor. And it makes you relevant — you stop being the ads vendor who's nervous about AI and become the tech-enabled partner who brought it to him first. Nobody has ever told you your agency could be that. I'm telling you it's exactly what you can become, starting now — and you keep running the ads you're already good at while this works underneath.", size: "base", align: "left" } },
     ] } },
     { type: "Section", props: { id: "fa-proof", background: "#f3f4f6", content: [
       { type: "Text", props: { id: "fa-proof-eyebrow", text: "Proof first — not a pitch", size: "sm", align: "left", color: "#2563eb" } },
@@ -533,10 +533,10 @@ const FOR_AGENCIES_SEED: Data = {
       { type: "Text", props: { id: "fa-pr-p2", text: "Price her at a fraction of either number and she's a no-brainer twice over — cheaper than the payroll she replaces, smaller than the revenue she creates. The owner does that math in four seconds and says yes. Your margin lives in the gap. That's yours.", size: "base", align: "left" } },
     ] } },
     { type: "Section", props: { id: "fa-cta", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "fa-cta-eyebrow", text: "One next step", size: "sm", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "fa-cta-h2", text: "Stop landing accounts you're scared to lose. Start owning them.", level: "h2", align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "fa-cta-p1", text: "You're great at the hard part — winning the client. I hand you the part that keeps him: the substance under the growth, the engine that stops the leaks, the system that makes you the one thing in his business he can't unplug. White-label, done-for-you, additive to what you already run, the pricing and the playbook in the box, your name on all of it. One call, owner to owner, and I'll show you exactly how the first lever goes into one of your accounts.", size: "lg", align: "center", color: "#ffffff" } },
-      { type: "Button", props: { id: "fa-cta-btn", title: "Book a Partner Call", subtitle: "One operator to another.", href: "/#partner" } },
+      { type: "Text", props: { id: "fa-cta-eyebrow", text: "The first movers win this", size: "sm", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "fa-cta-h2", text: "A brand-new category just opened. Be first to plant your flag.", level: "h2", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "fa-cta-p1", text: "This is the rare moment when a whole new thing becomes possible, and the agencies that grab it first own the category. You stop being a Facebook marketing agency nervous about AI and become the tech-enabled company that installs it — sticky with every client, relevant in a world about to sort agencies into the ones who wield AI and the ones it replaces. White-label, done-for-you, the pricing and the playbook in the box; I build and run the engine, your name on all of it. One call, owner to owner, and I'll show you exactly how the first AI employee goes into one of your accounts.", size: "lg", align: "center", color: "#ffffff" } },
+      { type: "Button", props: { id: "fa-cta-btn", title: "Book a Partner Call", subtitle: "Be first. One operator to another.", href: "/#partner" } },
     ] } },
   ],
 };
