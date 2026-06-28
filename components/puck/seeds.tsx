@@ -252,105 +252,105 @@ const HOME_SEED: Data = {
   content: [
     // ── 1. hero ──────────────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "hero", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "hero-eyebrow", text: "Speed to Lead · Follow-Up · Reactivation · Control", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "hero-h1", text: "[COPY] The headline goes here — does not open with AI.", fontSize: 48, align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "hero-sub", text: "[COPY] Sub-paragraph goes here.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-eyebrow", text: "Front desk · Follow-up · Sales · Reactivation — one new hire", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "hero-h1", text: "Put someone on staff who never clocks out, never quits, and never lets a lead sit.", fontSize: 48, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub", text: "Two years ago, she didn't exist. Today we build her, train her on the way you sell, and seat her on your org chart right between the people you already pay. She answers every lead the second it lands, follows up for as long as it takes, and books the appointment herself. We're the first company built to install a real employee on top of the business you already run — a brand-new market that wasn't here 24 months ago, and the one we named and lead: the AI Employee Operating System. AIOS, for short.", align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
-      { type: "Button", props: { id: "hero-cta", title: "Book the Discovery Call", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
+      { type: "Button", props: { id: "hero-cta", title: "Book your discovery call", subtitle: "One solo entrepreneur to another — no pitch, no jargon.", href: "/#contact" } },
     ] } },
 
     // ── 2. meet-chloe ────────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "meet-chloe", background: "#ffffff", content: [
-      { type: "Text", props: { id: "meet-chloe-eyebrow", text: "Meet Chloe", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "meet-chloe-h2", text: "[COPY] Meet Chloe — your first AI employee.", align: "left" } },
-      { type: "Text", props: { id: "meet-chloe-body", text: "[COPY] Chloe introduction goes here. Use 'AI employee' — never 'AI agent.'", align: "left" } },
+      { type: "Text", props: { id: "meet-chloe-eyebrow", text: "", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "meet-chloe-h2", text: "Meet Chloe.", align: "left" } },
+      { type: "Text", props: { id: "meet-chloe-body", text: "This is Chloe. She answers your leads, follows up for days, and books the appointment — start to finish, in your voice. We don't hand you a login and a help doc and wish you luck. We build Chloe for your business, train her on the way you actually sell, and put her to work. She shows up her first day already knowing your offer, your prices, the objections you hear all day, and exactly how you like a customer handled. She's the employee you've been trying to hire for years — except she starts trained, she never has a bad day, and she never walks out the door with everything she learned in her head.", align: "left" } },
       { type: "Image", props: { id: "meet-chloe-portrait", ...IMAGE_DEFAULTS, alt: "Chloe — your AI employee", maxWidth: 360 } },
     ] } },
 
     // ── 3. on-staff ──────────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "on-staff", background: "#f3f4f6", content: [
       { type: "Text", props: { id: "on-staff-eyebrow", text: "My Staff", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "on-staff-h2", text: "[COPY] What your AI staff roster looks like.", align: "left" } },
-      { type: "Text", props: { id: "on-staff-body", text: "[COPY] Staff roster context goes here.", align: "left" } },
+      { type: "Heading", props: { id: "on-staff-h2", text: "She's on staff — right there in the lineup.", align: "left" } },
+      { type: "Text", props: { id: "on-staff-body", text: "Pull up your team and there she is, in the roster between the people you already pay. Not a feature buried in a settings menu. A teammate — a name, a seat, a job, same as everybody else on the payroll. And you manage her the way you manage anyone: you set the rules, she does the work. The difference is every move she makes is on the record, where you can see it. For the first time, handing something off doesn't mean losing your grip on it — it means tightening it.", align: "left" } },
       { type: "Image", props: { id: "on-staff-screenshot", ...IMAGE_DEFAULTS, alt: "My Staff roster screenshot" } },
     ] } },
 
     // ── 4. at-work ───────────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "at-work", background: "#ffffff", content: [
       { type: "Text", props: { id: "at-work-eyebrow", text: "At Work", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "at-work-h2", text: "[COPY] Chloe at work — real conversations.", align: "left" } },
+      { type: "Heading", props: { id: "at-work-h2", text: "See her work.", align: "left" } },
       { type: "Text", props: { id: "at-work-body", text: "[COPY] Context for the conversation screenshots goes here.", align: "left" } },
-      { type: "Image", props: { id: "at-work-conv-1", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 1", maxWidth: 480 } },
+      { type: "Image", props: { id: "at-work-conv-1", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 1", maxWidth: 480, caption: "A lead from four months back — written off, buried in the system, never coming up again. Chloe reached out on her own and reopened it. Twenty minutes later he's re-engaged and on the calendar. You already paid for that lead. She's the only one on the team who went back for it." } },
       { type: "Spacer", props: { id: "at-work-gap-1", height: 16 } },
-      { type: "Image", props: { id: "at-work-conv-2", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 2", maxWidth: 480 } },
+      { type: "Image", props: { id: "at-work-conv-2", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 2", maxWidth: 480, caption: "The customer asked what the medication actually does to her body. That's the doctor's chair, and Chloe keeps it there — she doesn't make the medical call. She moves it to where it belongs ('your provider dials that in on your first visit'), and keeps right on going to the booking. Stays in her lane, still closes." } },
       { type: "Spacer", props: { id: "at-work-gap-2", height: 16 } },
-      { type: "Image", props: { id: "at-work-conv-3", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 3", maxWidth: 480 } },
+      { type: "Image", props: { id: "at-work-conv-3", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 3", maxWidth: 480, caption: "No human touched this one. Chloe handled the questions, cleared the last bit of hesitation, and let the customer talk herself into it — then the calendar came out and the slot got booked. Start to finish, while the office was dark." } },
     ] } },
 
     // ── 5. replaces-team ─────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "replaces-team", background: "#f3f4f6", content: [
       { type: "Text", props: { id: "replaces-team-eyebrow", text: "One hire, four jobs", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "replaces-team-h2", text: "[COPY] She does the job of 3–4 people.", align: "left" } },
-      { type: "Text", props: { id: "replaces-team-body", text: "[COPY] Description of the roles Chloe replaces: Front desk \xb7 Follow-up \xb7 Closer \xb7 Reactivation.", align: "left" } },
+      { type: "Heading", props: { id: "replaces-team-h2", text: "One hire. Four jobs.", align: "left" } },
+      { type: "Text", props: { id: "replaces-team-body", text: "To cover what Chloe covers, you'd be hiring three or four people: a front desk to answer the moment a lead comes in, a follow-up person to chase the ones who go quiet, a closer to handle the objections and book the appointment, and somebody whose whole job is calling back the old customers nobody has time for. You've never been able to staff all four. Most owners can't staff one and keep them. Chloe holds all four seats at once, every hour of every day — and they never call in sick, never quit on you mid-season, and never need a raise to do it.", align: "left" } },
     ] } },
 
     // ── 6. chloe-core: 5 deep sub-sections ──────────────────────────────────────────────────
     { type: "Section", props: { id: "chloe-core-stl", background: "#ffffff", content: [
-      { type: "Text", props: { id: "chloe-core-stl-eyebrow", text: "Speed to Lead", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-stl-h2", text: "[COPY] Every lead answered the instant it lands.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-stl-body", text: "[COPY] Speed-to-Lead copy goes here.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-stl-eyebrow", text: "What she does, in plain English.", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-stl-h2", text: "She answers the second the lead lands.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-stl-body", text: "The lead that comes in at 9 p.m. on a Saturday gets the same answer as the one that comes in on a Tuesday morning. Within seconds. In your voice. With your pricing, your offer, your way of talking to a customer. The lead who wanted a discount last month and never replied — she reaches back out on her own, reads the thread, and adjusts what she says. You don't have a person who does this. You have Chloe.", align: "left" } },
     ] } },
     { type: "Section", props: { id: "chloe-core-dfu", background: "#f3f4f6", content: [
       { type: "Text", props: { id: "chloe-core-dfu-eyebrow", text: "Dynamic Follow-Up", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-dfu-h2", text: "[COPY] Follow-up that reads what the person actually said.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-dfu-body", text: "[COPY] Dynamic Follow-Up copy goes here.", align: "left" } },
+      { type: "Heading", props: { id: "chloe-core-dfu-h2", text: "She follows up like a person, not a calendar reminder.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-dfu-body", text: "Most follow-up is the same three messages on repeat, sent to everybody, on a timer nobody set with any intention. Chloe reads what the person actually said — the 'I need to think about it,' the 'my husband has to sign off,' the 'what's the price?' — and she responds to that. The message changes because the conversation changed. She doesn't stop because she ran out of templates. She stops when the person says yes or when they clearly won't — and she knows the difference.", align: "left" } },
     ] } },
     { type: "Section", props: { id: "chloe-core-dbr", background: "#ffffff", content: [
       { type: "Text", props: { id: "chloe-core-dbr-eyebrow", text: "Database Reactivation", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-dbr-h2", text: "[COPY] The dead leads she wakes back up.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-dbr-body", text: "[COPY] Database Reactivation copy goes here.", align: "left" } },
+      { type: "Heading", props: { id: "chloe-core-dbr-h2", text: "She goes back for the money you already wrote off.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-dbr-body", text: "Every business is sitting on a pile of old leads — people who asked, got quoted, went quiet, and got forgotten. Nobody called them back because there was always something louder. Chloe calls them back. All of them. On her own, without being told. She doesn't need to be reminded because she lives in your database and she already knows who didn't close. She finds out what happened, picks up the conversation where it stopped, and books the appointment. That's revenue you already paid to acquire, coming in with no new ad spend.", align: "left" } },
     ] } },
     { type: "Section", props: { id: "chloe-core-sil", background: "#f3f4f6", content: [
       { type: "Text", props: { id: "chloe-core-sil-eyebrow", text: "Stays in Her Lane", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-sil-h2", text: "[COPY] She knows exactly where her job ends.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-sil-body", text: "[COPY] Stays-in-Her-Lane copy goes here.", align: "left" } },
+      { type: "Heading", props: { id: "chloe-core-sil-h2", text: "She knows what's hers to answer — and what isn't.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-sil-body", text: "This is the whole line between an employee and a chatbot. A chatbot answers everything until it breaks trust on something it shouldn't have touched. Chloe knows the difference between a sales question and a medical question, a scheduling request and a pricing policy you haven't figured out yet, a complaint she can handle and one that needs you on the phone. When it's not hers, she says so and hands it off cleanly. You define the lines. She holds them.", align: "left" } },
     ] } },
     { type: "Section", props: { id: "chloe-core-bkc", background: "#ffffff", content: [
       { type: "Text", props: { id: "chloe-core-bkc-eyebrow", text: "Booking & Calendar", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-bkc-h2", text: "[COPY] She books it onto the calendar herself.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-bkc-body", text: "[COPY] Booking & Calendar copy goes here.", align: "left" } },
+      { type: "Heading", props: { id: "chloe-core-bkc-h2", text: "She closes it — and puts it on the calendar herself.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-bkc-body", text: "Chloe doesn't gather a lead and drop it on your desk. She works the lead, handles the objections, gets the yes — and then she books the appointment directly onto your calendar. You don't see the work. You see a new name on the schedule. The handoff point is 'confirmed' — not 'interested.' That's the difference between Chloe and every other tool you've tried.", align: "left" } },
     ] } },
 
     // ── 7. addons: 3 deep sub-sections ──────────────────────────────────────────────────────
     { type: "Section", props: { id: "addons-icr", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "addons-icr-eyebrow", text: "Add-on: Inbound Call Routing", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "addons-icr-h2", text: "[COPY] Inbound calls routed and handled.", align: "left" } },
-      { type: "Text", props: { id: "addons-icr-body", text: "[COPY] Inbound Call Routing copy goes here.", align: "left" } },
+      { type: "Text", props: { id: "addons-icr-eyebrow", text: "When you're ready, you can give her more to do.", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "addons-icr-h2", text: "She picks up the phone, too.", align: "left" } },
+      { type: "Text", props: { id: "addons-icr-body", text: "When a call comes in and the desk is slammed, or after hours, or on a Sunday — Chloe answers. She handles the basics: hours, pricing, scheduling, what you offer and what you don't. She takes a message when she needs to. If the call needs a human, she flags it. You stop bleeding the leads that went to voicemail and just stayed there.", align: "left" } },
     ] } },
     { type: "Section", props: { id: "addons-oce", background: "#ffffff", content: [
       { type: "Text", props: { id: "addons-oce-eyebrow", text: "Add-on: Outbound Calling AI Employee", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "addons-oce-h2", text: "[COPY] An AI employee that dials out.", align: "left" } },
-      { type: "Text", props: { id: "addons-oce-body", text: "[COPY] Outbound Calling AI Employee copy goes here.", align: "left" } },
+      { type: "Heading", props: { id: "addons-oce-h2", text: "She'll make the calls nobody ever gets around to.", align: "left" } },
+      { type: "Text", props: { id: "addons-oce-body", text: "This is the step up from follow-up texts. When a lead has gone quiet and a phone call is the right next move — one your team never gets around to because there's always something in front of it — Chloe makes the call. She introduces herself, picks up where the conversation left off, and moves it. Outbound calling at the volume and consistency nobody could staff.", align: "left" } },
     ] } },
     { type: "Section", props: { id: "addons-cs", background: "#f3f4f6", content: [
       { type: "Text", props: { id: "addons-cs-eyebrow", text: "Add-on: Cross-Sell", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "addons-cs-h2", text: "[COPY] Sell more to the people who already bought.", align: "left" } },
-      { type: "Text", props: { id: "addons-cs-body", text: "[COPY] Cross-Sell copy goes here.", align: "left" } },
+      { type: "Heading", props: { id: "addons-cs-h2", text: "She sells the second thing to the people who already bought the first.", align: "left" } },
+      { type: "Text", props: { id: "addons-cs-body", text: "Your easiest sale is the customer you already have. They know you, they already said yes once, and the next thing they'd buy is usually right there waiting. Chloe surfaces it. She reaches out, she mentions it, she handles the back-and-forth, and she books it. You don't do anything. You look at the schedule and the names are already there.", align: "left" } },
     ] } },
 
     // ── 8. tech-enabled ──────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "tech-enabled", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "tech-enabled-eyebrow", text: "The Tech-Enabled Company", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "tech-enabled-h2", text: "[COPY] The tech-enabled company heading goes here.", align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "tech-enabled-body", text: "[COPY] The Tech-Enabled Company copy goes here.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-eyebrow", text: "The part most owners don't see coming", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "tech-enabled-h2", text: "And the day you sell, it's worth more.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-body", text: "A business that only runs because you're standing in it is worth what someone thinks they can run it for. A business with a working AI layer — a system that answers the leads, books the appointments, and runs the follow-up on its own — is worth something different. You built it. You own it. It's yours to hand off. And buyers price that differently than they price you.", align: "center", color: "#ffffff" } },
     ] } },
 
     // ── 9. cta ───────────────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "cta", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "cta-eyebrow", text: "Your Next Move", align: "center", color: "#2563eb" } },
-      { type: "Heading", props: { id: "cta-h2", text: "[COPY] Ready to put your first AI employee to work?", align: "center" } },
-      { type: "Text", props: { id: "cta-body", text: "[COPY] CTA paragraph goes here.", align: "center" } },
-      { type: "Button", props: { id: "cta-btn", title: "Book the Discovery Call", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
+      { type: "Text", props: { id: "cta-eyebrow", text: "The next move", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "cta-h2", text: "Let's talk — one solo entrepreneur to another.", align: "center" } },
+      { type: "Text", props: { id: "cta-body", text: "I'm not going to sell you on a call. I'm going to listen to how you run today, show you exactly where your first AI employee plugs in, and tell you what it would look like on day one. No pitch deck. No system demos. Just the conversation — and if it makes sense, we talk about what's next.", align: "center" } },
+      { type: "Button", props: { id: "cta-btn", title: "Book your discovery call", subtitle: "Fifteen minutes. Bring your numbers.", href: "/#contact" } },
       { type: "PhoneLink", props: { id: "cta-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
     ] } },
   ],
