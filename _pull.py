@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Find Chloe's gold conversations. Chloe is ~1 month old, so we page the location's
-~10k contacts (cheap, names+dates only), keep ONLY the last ~40 days / assigned-to-Chloe
-/ facebook-tagged ones, then pull each kept contact's thread (contact-scoped endpoints —
-the ones the production server uses) and scan for the 3 patterns. Read-only. Local.
-Throwaway — delete after we've got the snapshots."""
+"""Find Chloe's gold conversations. FIX: GHL uses a different API Version header per
+endpoint family (contacts=2021-07-28, conversations=2021-04-15) — see the production
+ghl_client.py. The earlier 1010 was a contacts call stamped with the conversations
+version. Now: list contacts (2021-07-28), filter to Chloe's last ~40 days / assigned /
+facebook-tagged, then per-contact conversation + messages (2021-04-15, the proven path),
+and scan for the 3 gold patterns. Read-only. Local. Throwaway."""
 import sys, json, time, datetime, urllib.request, urllib.error
 
-ENV  = "/Users/stevenbarchetti/SJC/AI-Employee-Dashboard/sjc-server/.env"
-LOC  = "cTQ1CZSUZ7zWt1Nsu96K"
-BASE = "https://services.leadconnectorhq.com"
-OUT  = ("/private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/"
-        "a8c71e99-e1ed-4637-abb9-cc84927018fd/scratchpad/candidates.txt")
-CHLOE_UID = "wxuQo4dfeqFnyKY03Qcx"   # "Chloe Booking Agent" user id (from My Staff) — a backstop
+ENV   = "/Users/stevenbarchetti/SJC/AI-Employee-Dashboard/sjc-server/.env"
+LOC   = "cTQ1CZSUZ7zWt1Nsu96K"
+BASE  = "https://services.leadconnectorhq.com"
+OUT   = ("/private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/"
+         "a8c71e99-e1ed-4637-abb9-cc84927018fd/scratchpad/candidates.txt")
+V_CONTACTS = "2021-07-28"
+V_CONVOS   = "2021-04-15"
+CHLOE_UID  = "wxuQo4dfeqFnyKY03Qcx"
 DAYS = 40
 MAX_PAGES = 250
 MAX_PULL = 1600
@@ -23,9 +26,9 @@ for line in open(ENV):
         tok = s.split("=", 1)[1].strip().strip('"').strip("'"); break
 if not tok:
     sys.exit("GHL_PIT_ALAMO_SLIM not found in .env")
-H = {"Authorization": f"Bearer {tok}", "Version": "2021-04-15"}
 
-def get(path):
+def get(path, version):
+    H = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json", "Version": version}
     for a in range(4):
         try:
             return json.load(urllib.request.urlopen(
@@ -56,11 +59,10 @@ def is_chloe(ct):
         return True
     if ct.get("assignedTo") == CHLOE_UID:
         return True
-    tags = [str(t).lower() for t in (ct.get("tags") or [])]
-    return "facebook" in tags
+    return "facebook" in [str(t).lower() for t in (ct.get("tags") or [])]
 
-# ---- page all contacts, keep only Chloe's ----
-print("Speed-reading the contact list, keeping Chloe's last ~40 days...", flush=True)
+# ---- 1) list contacts (CORRECT version header) and keep only Chloe's ----
+print("Speed-reading the contact list (contacts API v2021-07-28)...", flush=True)
 picked, seen, after_id, after, pages = [], set(), None, None, 0
 while pages < MAX_PAGES and len(picked) < MAX_PULL:
     pages += 1
@@ -68,7 +70,7 @@ while pages < MAX_PAGES and len(picked) < MAX_PULL:
     if after_id: q += f"&startAfterId={after_id}"
     if after:    q += f"&startAfter={after}"
     try:
-        d = get(q)
+        d = get(q, V_CONTACTS)
     except urllib.error.HTTPError as e:
         sys.exit(f"CONTACTS LISTING FAILED ({e.code}): {e.read().decode()[:300]}\n-> tell Claude.")
     batch = d.get("contacts", []) or []
@@ -87,8 +89,8 @@ while pages < MAX_PAGES and len(picked) < MAX_PULL:
     time.sleep(0.08)
 
 if not picked:
-    sys.exit("Kept 0 Chloe-era contacts — the date/assignee/tag filters didn't match. Tell Claude.")
-print(f"\n{len(picked)} Chloe-era contacts to pull. Pulling threads...\n", flush=True)
+    sys.exit("Kept 0 Chloe-era contacts after a clean listing — filters may need a tweak. Tell Claude.")
+print(f"\n{len(picked)} Chloe-era contacts. Pulling threads (conversations API v2021-04-15)...\n", flush=True)
 
 HEALTHQ = ["side effect","is it safe","safe to","needle","does it hurt","dosage","what does it do",
            "how does it work","semaglutide","tirzepatide","ozempic","wegovy","insurance cover",
@@ -114,16 +116,18 @@ for i, ct in enumerate(picked):
     name = ((ct.get("firstName") or "") + " " + (ct.get("lastName") or "")).strip() \
            or ct.get("contactName") or contact_id
     try:
-        cs = get(f"/conversations/search?locationId={LOC}&contactId={contact_id}")
+        cs = get(f"/conversations/search?contactId={contact_id}", V_CONVOS)
     except Exception:
         continue
     for conv in (cs.get("conversations", []) or []):
         convid = conv.get("id")
         try:
-            m = get(f"/conversations/{convid}/messages?limit=100")
+            m = get(f"/conversations/{convid}/messages?limit=100", V_CONVOS)
         except Exception:
             continue
         msgs = (m.get("messages", {}) or {}).get("messages", []) or []
+        if not msgs and isinstance(m.get("messages"), list):
+            msgs = m["messages"]
         msgs = sorted(msgs, key=lambda x: x.get("dateAdded") or "")
         seq = [((x.get("direction") or "").lower(), (x.get("body") or "")) for x in msgs if x.get("body")]
         if not seq:
