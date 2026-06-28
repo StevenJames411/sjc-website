@@ -459,8 +459,61 @@ const WHATCHANGED_SEED: Data = {
   ],
 };
 
+// For Agencies — the standalone white-label partner funnel. A DIFFERENT buyer than the homepage
+// (the GHL agency, not the end owner): same product, agency-facing language. Native editable
+// blocks, so the whole page lives in the Puck builder at /edit/for-agencies like every other page.
+const FOR_AGENCIES_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Section", props: { id: "fa-hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "fa-hero-eyebrow", text: "For GoHighLevel Agencies", size: "base", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "fa-hero-h1", text: "Your clients are about to ask you for AI. Hand it to them — without becoming a software company.", fontSize: 44, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "fa-hero-sub", text: "You built the client relationships and bootstrapped them on GoHighLevel. I'm the AI implementation layer that bolts on top — white-label, behind your brand. You keep the client, the billing, and the margin. I do the heavy lifting.", size: "lg", align: "center", color: "#ffffff" } },
+      { type: "Video", props: { id: "fa-hero-video", src: "", caption: "3-minute partner walkthrough — coming" } },
+      { type: "Button", props: { id: "fa-hero-cta", title: "Become a partner", subtitle: "One operator to another.", href: "/#partner" } },
+    ] } },
+    { type: "Section", props: { id: "fa-appstore", background: "#ffffff", content: [
+      { type: "Text", props: { id: "fa-appstore-eyebrow", text: "The opening", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-appstore-h2", text: "Think of it as an App Store inside GoHighLevel.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-appstore-p1", text: "GoHighLevel gave you the linear layer — the CRM, the pipelines, the if-this-then-that sequences. It does what software has always done. But your clients have heard about AI now, and they're starting to expect it from you. You've got two choices: stand up a dev team and turn your lead-gen shop into a software company, or plug in a partner who already built it.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-appstore-p2", text: "That's me. The native AI layer that bolts onto the GHL stack you already run — plug-and-play, your brand on the front of it. You don't build anything, you don't run anything, you don't learn anything new. You add a capability your clients are already asking for and keep doing what you do best.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-wedge", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-wedge-eyebrow", text: "Start with found money", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-wedge-h2", text: "Every client has a database they already paid for and aren't working.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-wedge-p1", text: "Ten thousand old leads sitting cold in the CRM — people your client already spent ad dollars to acquire, then wrote off. Nobody chases them, because nobody has the time and the linear tools were never built to work a dead list. That pile of names is found money, and right now it's just sitting there.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-wedge-p2", text: "I put a dynamic AI employee on that old list — no new ad spend — and it books appointments from people they already paid to acquire. Your client watches their calendar fill from a list they'd given up on, and you're the one who made it happen. It's a new revenue line that doesn't touch your ad retainer, and it's the lowest-risk way to prove the whole thing. Land there, and the front-end — speed-to-lead on their live leads — opens up next.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-keep", background: "#ffffff", content: [
+      { type: "Text", props: { id: "fa-keep-eyebrow", text: "Your brand, your reins", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-keep-h2", text: "White-label. You keep everything that matters.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-keep-p1", text: "I'm the plumbing, and I stay invisible. Your client never sees me — they see you got smarter. You keep the relationship, you keep the billing, and you set the markup, so the margin is yours. I handle the build, the run, and the compliance behind your brand.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-keep-p2", text: "You're not reselling somebody else's software and hoping it sticks. You're adding an AI department to your agency without hiring one — and you stay in command of the client the whole way through.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-why", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-why-eyebrow", text: "Why now", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-why-h2", text: "The platforms are racing to native AI. The edge is the closer they'll never ship.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-why-p1", text: "GHL, HubSpot, Salesforce — they're all bolting AI on. But a platform ships one generic, horizontal feature for everybody. It will never ship the dynamic, trained-to-convert closer tuned to a specific client's offers and objections. That bespoke layer — owned, portable, and actually booking appointments — is the durable edge, and it's what you'd be putting in front of your clients.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-why-p2", text: "Here's the line that sells it: it converts, and you never touch it. That's the whole pitch to your client, and it's true whether the tech is hard or easy. You're not selling them a feature — you're selling them booked revenue and their time back.", size: "base", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "fa-proof", background: "#ffffff", content: [
+      { type: "Text", props: { id: "fa-proof-eyebrow", text: "Proof, not theory", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-proof-h2", text: "A working AI employee, live today.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-proof-p1", text: "This isn't a whiteboard pitch. There's a working AI employee — her name is Chloe — running right now, trained on one owner's own sales conversations. Her first night live was a Sunday with the staff off, and she booked four consults while the lights were out. That's what your clients would be getting, behind your brand.", size: "base", align: "left" } },
+      { type: "Button", props: { id: "fa-proof-link", title: "See the live demo", subtitle: "What your clients would get.", href: "/case-study" } },
+    ] } },
+    { type: "Section", props: { id: "fa-cta", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-cta-eyebrow", text: "Become a partner", size: "sm", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-cta-h2", text: "Let's put your client base to work.", level: "h2", align: "center" } },
+      { type: "Text", props: { id: "fa-cta-p1", text: "I take a handful of agency partners at a time, because every one gets done right. Book a partner call, bring your client list, and I'll show you exactly where it plugs in first — starting with the dead databases your clients already paid for.", size: "base", align: "center" } },
+      { type: "Button", props: { id: "fa-cta-btn", title: "Book a partner call", subtitle: "One operator to another.", href: "/#partner" } },
+    ] } },
+  ],
+};
+
 const SEEDS: Record<string, Data> = {
   home: HOME_SEED,
+  "for-agencies": FOR_AGENCIES_SEED,
   about: SEED,
   faqs: FAQS_SEED,
   "case-study": CASE_STUDY_SEED,
