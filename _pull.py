@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""Pull Chloe's conversations via CONTACT enumeration (location-wide convo search is
-403/1010-blocked under HIPAA mode). For each contact -> contact-scoped conversation
-search -> messages, scan for the 3 gold patterns, write a shortlist. These are the
-exact endpoints the production server uses. Read-only. Local only. Throwaway."""
-import sys, json, time, urllib.request, urllib.error
+"""Find Chloe's gold conversations. Chloe is ~1 month old, so we page the location's
+~10k contacts (cheap, names+dates only), keep ONLY the last ~40 days / assigned-to-Chloe
+/ facebook-tagged ones, then pull each kept contact's thread (contact-scoped endpoints —
+the ones the production server uses) and scan for the 3 patterns. Read-only. Local.
+Throwaway — delete after we've got the snapshots."""
+import sys, json, time, datetime, urllib.request, urllib.error
 
 ENV  = "/Users/stevenbarchetti/SJC/AI-Employee-Dashboard/sjc-server/.env"
 LOC  = "cTQ1CZSUZ7zWt1Nsu96K"
 BASE = "https://services.leadconnectorhq.com"
 OUT  = ("/private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/"
         "a8c71e99-e1ed-4637-abb9-cc84927018fd/scratchpad/candidates.txt")
-MAX_CONTACTS = 1500
+CHLOE_UID = "wxuQo4dfeqFnyKY03Qcx"   # "Chloe Booking Agent" user id (from My Staff) — a backstop
+DAYS = 40
+MAX_PAGES = 250
+MAX_PULL = 1600
 
 tok = None
 for line in open(ENV):
@@ -32,10 +36,34 @@ def get(path):
             raise
     raise SystemExit("repeated API errors talking to GHL")
 
-# ---- 1) enumerate contacts for the location ----
-print("Listing contacts...", flush=True)
-contacts, seen, after_id, after = [], set(), None, None
-while len(contacts) < MAX_CONTACTS:
+cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=DAYS)
+
+def recent(ct):
+    da = ct.get("dateAdded") or ct.get("dateUpdated")
+    if not da:
+        return False
+    try:
+        if isinstance(da, (int, float)) or (isinstance(da, str) and da.isdigit()):
+            dt = datetime.datetime.fromtimestamp(int(da) / 1000, datetime.timezone.utc)
+        else:
+            dt = datetime.datetime.fromisoformat(str(da).replace("Z", "+00:00"))
+        return dt >= cutoff
+    except Exception:
+        return False
+
+def is_chloe(ct):
+    if recent(ct):
+        return True
+    if ct.get("assignedTo") == CHLOE_UID:
+        return True
+    tags = [str(t).lower() for t in (ct.get("tags") or [])]
+    return "facebook" in tags
+
+# ---- page all contacts, keep only Chloe's ----
+print("Speed-reading the contact list, keeping Chloe's last ~40 days...", flush=True)
+picked, seen, after_id, after, pages = [], set(), None, None, 0
+while pages < MAX_PAGES and len(picked) < MAX_PULL:
+    pages += 1
     q = f"/contacts/?locationId={LOC}&limit=100"
     if after_id: q += f"&startAfterId={after_id}"
     if after:    q += f"&startAfter={after}"
@@ -49,15 +77,18 @@ while len(contacts) < MAX_CONTACTS:
         break
     for c in new:
         seen.add(c.get("id"))
-    contacts.extend(new)
+    picked.extend([c for c in new if is_chloe(c)])
     meta = d.get("meta", {}) or {}
     after_id = meta.get("startAfterId") or (batch[-1].get("id") if batch else None)
     after = meta.get("startAfter")
-    print(f"  ...{len(contacts)} contacts (GHL reports total {meta.get('total')})", flush=True)
+    print(f"  page {pages}: read {len(seen)} contacts, kept {len(picked)} (total {meta.get('total')})", flush=True)
     if len(batch) < 100 and not meta.get("nextPageUrl"):
         break
-    time.sleep(0.1)
-print(f"Got {len(contacts)} contacts. Pulling their threads...\n", flush=True)
+    time.sleep(0.08)
+
+if not picked:
+    sys.exit("Kept 0 Chloe-era contacts — the date/assignee/tag filters didn't match. Tell Claude.")
+print(f"\n{len(picked)} Chloe-era contacts to pull. Pulling threads...\n", flush=True)
 
 HEALTHQ = ["side effect","is it safe","safe to","needle","does it hurt","dosage","what does it do",
            "how does it work","semaglutide","tirzepatide","ozempic","wegovy","insurance cover",
@@ -78,7 +109,7 @@ def hits(text, kws):
 
 react_c, defer_c, book_c = [], [], []
 scanned = 0
-for i, ct in enumerate(contacts):
+for i, ct in enumerate(picked):
     contact_id = ct.get("id")
     name = ((ct.get("firstName") or "") + " " + (ct.get("lastName") or "")).strip() \
            or ct.get("contactName") or contact_id
@@ -110,7 +141,7 @@ for i, ct in enumerate(contacts):
         if bk:
             book_c.append((len(bk), convid, name, bk, seq))
     if (i + 1) % 50 == 0:
-        print(f"  {i+1}/{len(contacts)} contacts  (threads scanned {scanned})", flush=True)
+        print(f"  {i+1}/{len(picked)} contacts  (threads scanned {scanned})", flush=True)
     time.sleep(0.05)
 
 def excerpt(seq, kws):
@@ -129,7 +160,7 @@ def dump(fh, title, cands):
         fh.write(excerpt(seq, kws) + "\n")
 
 with open(OUT, "w") as fh:
-    fh.write(f"Chloe gold-conversation candidates  (scanned {scanned} threads across {len(contacts)} contacts)\n")
+    fh.write(f"Chloe gold-conversation candidates  (scanned {scanned} threads / {len(picked)} contacts)\n")
     dump(fh, "REACTIVATION (Chloe opened a cold lead, got a reply)", react_c)
     dump(fh, "STAYS-IN-HER-LANE (health question -> routed to provider, kept going)", defer_c)
     dump(fh, "BOOKINGS (Chloe confirmed an appointment)", book_c)
