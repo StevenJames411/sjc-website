@@ -472,6 +472,12 @@ const FOR_AGENCIES_SEED: Data = {
       { type: "Video", props: { id: "fa-hero-video", src: "", caption: "Watch the 3-minute walkthrough" } },
       { type: "Button", props: { id: "fa-hero-cta", title: "Book a Partner Call", subtitle: "One operator to another.", href: "/#partner" } },
     ] } },
+    { type: "Section", props: { id: "fa-arc", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "fa-arc-eyebrow", text: "Remember when this was fun?", size: "sm", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "fa-arc-h2", text: "You were the hotshots once. You get to be again.", level: "h2", align: "left" } },
+      { type: "Text", props: { id: "fa-arc-p1", text: "Be honest — there was a window when running Facebook ads made you the smartest guy in the room. You printed leads, clients lined up, and you were on the front edge of something nobody else understood. Then everybody piled in. The platform got expensive, the targeting got gutted, the results got harder, and \"Facebook marketing agency\" went from cutting-edge to a commodity that gets beaten up on price and dropped without a second thought. You got your ass kicked — the whole industry did.", size: "base", align: "left" } },
+      { type: "Text", props: { id: "fa-arc-p2", text: "AI is the next window, and it's the same kind of edge Facebook ads were before everyone caught on. Get on it now and you're the one out front again — the agency that brought the future to its clients before the guy down the street even understood it. You don't get many of these windows. This is one, and it's open right now.", size: "base", align: "left" } },
+    ] } },
     { type: "Section", props: { id: "fa-turn", background: "#ffffff", content: [
       { type: "Text", props: { id: "fa-turn-eyebrow", text: "The pivot", size: "sm", align: "left", color: "#2563eb" } },
       { type: "Heading", props: { id: "fa-turn-h2", text: "Stop being just a Facebook marketing agency. Become a tech-enabled company.", level: "h2", align: "left" } },
