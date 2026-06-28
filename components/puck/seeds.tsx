@@ -241,21 +241,120 @@ const PODCAST_SEED: Data = {
   ],
 };
 
-// Home = the journey spine, now expressed as NATIVE editable blocks (Section / Heading / Text /
-// Video / Button) so every element on the homepage carries the full toolset — font size, color,
-// align, add / delete / reorder — exactly like every other page.
+// Home = the Chloe-led homepage. 9-section flow: hero → meet Chloe → staff screenshot →
+// Chloe at work → replaces the team → 5 core capabilities → 3 add-ons → tech-enabled → CTA.
+// PLACEHOLDER TEXT throughout — final copy drops in via the builder. IDs are stable so copy
+// can be targeted by ID without touching structure.
+// Render state: if an Upstash published snapshot exists it takes over readPuckPublished("home").
+// To load this seed: /edit/home?reset=1 → then Publish.
 const HOME_SEED: Data = {
   root: {},
   content: [
-    { type: "Section", props: { id: "home-hero", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "home-hero-eyebrow", text: "Sales · Marketing · Growth · Control", size: "base", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "home-hero-h1", text: "For the first time in 40 years, you can have all of it.", fontSize: 48, align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "home-hero-sub", text: "I install the marketing that fills your pipeline and the sales force that closes every lead — so your business finally grows without you carrying it. And nothing leaves your hands: every lead, every dollar, every decision stays yours.", size: "lg", align: "center", color: "#ffffff" } },
-      { type: "Video", props: { id: "home-hero-video", src: "", caption: "2-minute teaser — coming" } },
-      { type: "Button", props: { id: "home-hero-cta", title: "Apply to work with me", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
+    // ── 1. hero ──────────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "hero-eyebrow", text: "Speed to Lead · Follow-Up · Reactivation · Control", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "hero-h1", text: "[COPY] The headline goes here — does not open with AI.", fontSize: 48, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub", text: "[COPY] Sub-paragraph goes here.", align: "center", color: "#ffffff" } },
+      { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
+      { type: "Button", props: { id: "hero-cta", title: "Book the Discovery Call", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
     ] } },
-    { type: "Section", props: { id: "home-playbook", background: "#ffffff", content: [
-      { type: "Text", props: { id: "home-playbook-eyebrow", text: "The playbook you already run", size: "sm", align: "left", color: "#2563eb" } },
+
+    // ── 2. meet-chloe ────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "meet-chloe", background: "#ffffff", content: [
+      { type: "Text", props: { id: "meet-chloe-eyebrow", text: "Meet Chloe", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "meet-chloe-h2", text: "[COPY] Meet Chloe — your first AI employee.", align: "left" } },
+      { type: "Text", props: { id: "meet-chloe-body", text: "[COPY] Chloe introduction goes here. Use 'AI employee' — never 'AI agent.'", align: "left" } },
+      { type: "Image", props: { id: "meet-chloe-portrait", ...IMAGE_DEFAULTS, alt: "Chloe — your AI employee", maxWidth: 360 } },
+    ] } },
+
+    // ── 3. on-staff ──────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "on-staff", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "on-staff-eyebrow", text: "My Staff", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "on-staff-h2", text: "[COPY] What your AI staff roster looks like.", align: "left" } },
+      { type: "Text", props: { id: "on-staff-body", text: "[COPY] Staff roster context goes here.", align: "left" } },
+      { type: "Image", props: { id: "on-staff-screenshot", ...IMAGE_DEFAULTS, alt: "My Staff roster screenshot" } },
+    ] } },
+
+    // ── 4. at-work ───────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "at-work", background: "#ffffff", content: [
+      { type: "Text", props: { id: "at-work-eyebrow", text: "At Work", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "at-work-h2", text: "[COPY] Chloe at work — real conversations.", align: "left" } },
+      { type: "Text", props: { id: "at-work-body", text: "[COPY] Context for the conversation screenshots goes here.", align: "left" } },
+      { type: "Image", props: { id: "at-work-conv-1", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 1", maxWidth: 480 } },
+      { type: "Spacer", props: { id: "at-work-gap-1", height: 16 } },
+      { type: "Image", props: { id: "at-work-conv-2", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 2", maxWidth: 480 } },
+      { type: "Spacer", props: { id: "at-work-gap-2", height: 16 } },
+      { type: "Image", props: { id: "at-work-conv-3", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 3", maxWidth: 480 } },
+    ] } },
+
+    // ── 5. replaces-team ─────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "replaces-team", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "replaces-team-eyebrow", text: "One hire, four jobs", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "replaces-team-h2", text: "[COPY] She does the job of 3–4 people.", align: "left" } },
+      { type: "Text", props: { id: "replaces-team-body", text: "[COPY] Description of the roles Chloe replaces: Front desk \xb7 Follow-up \xb7 Closer \xb7 Reactivation.", align: "left" } },
+    ] } },
+
+    // ── 6. chloe-core: 5 deep sub-sections ──────────────────────────────────────────────────
+    { type: "Section", props: { id: "chloe-core-stl", background: "#ffffff", content: [
+      { type: "Text", props: { id: "chloe-core-stl-eyebrow", text: "Speed to Lead", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-stl-h2", text: "[COPY] Every lead answered the instant it lands.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-stl-body", text: "[COPY] Speed-to-Lead copy goes here.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "chloe-core-dfu", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "chloe-core-dfu-eyebrow", text: "Dynamic Follow-Up", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-dfu-h2", text: "[COPY] Follow-up that reads what the person actually said.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-dfu-body", text: "[COPY] Dynamic Follow-Up copy goes here.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "chloe-core-dbr", background: "#ffffff", content: [
+      { type: "Text", props: { id: "chloe-core-dbr-eyebrow", text: "Database Reactivation", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-dbr-h2", text: "[COPY] The dead leads she wakes back up.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-dbr-body", text: "[COPY] Database Reactivation copy goes here.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "chloe-core-sil", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "chloe-core-sil-eyebrow", text: "Stays in Her Lane", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-sil-h2", text: "[COPY] She knows exactly where her job ends.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-sil-body", text: "[COPY] Stays-in-Her-Lane copy goes here.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "chloe-core-bkc", background: "#ffffff", content: [
+      { type: "Text", props: { id: "chloe-core-bkc-eyebrow", text: "Booking & Calendar", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-bkc-h2", text: "[COPY] She books it onto the calendar herself.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-bkc-body", text: "[COPY] Booking & Calendar copy goes here.", align: "left" } },
+    ] } },
+
+    // ── 7. addons: 3 deep sub-sections ──────────────────────────────────────────────────────
+    { type: "Section", props: { id: "addons-icr", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "addons-icr-eyebrow", text: "Add-on: Inbound Call Routing", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "addons-icr-h2", text: "[COPY] Inbound calls routed and handled.", align: "left" } },
+      { type: "Text", props: { id: "addons-icr-body", text: "[COPY] Inbound Call Routing copy goes here.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "addons-oce", background: "#ffffff", content: [
+      { type: "Text", props: { id: "addons-oce-eyebrow", text: "Add-on: Outbound Calling AI Employee", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "addons-oce-h2", text: "[COPY] An AI employee that dials out.", align: "left" } },
+      { type: "Text", props: { id: "addons-oce-body", text: "[COPY] Outbound Calling AI Employee copy goes here.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "addons-cs", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "addons-cs-eyebrow", text: "Add-on: Cross-Sell", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "addons-cs-h2", text: "[COPY] Sell more to the people who already bought.", align: "left" } },
+      { type: "Text", props: { id: "addons-cs-body", text: "[COPY] Cross-Sell copy goes here.", align: "left" } },
+    ] } },
+
+    // ── 8. tech-enabled ──────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "tech-enabled", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "tech-enabled-eyebrow", text: "The Tech-Enabled Company", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "tech-enabled-h2", text: "[COPY] The tech-enabled company heading goes here.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-body", text: "[COPY] The Tech-Enabled Company copy goes here.", align: "center", color: "#ffffff" } },
+    ] } },
+
+    // ── 9. cta ───────────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "cta", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "cta-eyebrow", text: "Your Next Move", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "cta-h2", text: "[COPY] Ready to put your first AI employee to work?", align: "center" } },
+      { type: "Text", props: { id: "cta-body", text: "[COPY] CTA paragraph goes here.", align: "center" } },
+      { type: "Button", props: { id: "cta-btn", title: "Book the Discovery Call", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
+      { type: "PhoneLink", props: { id: "cta-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
+    ] } },
+  ],
+// placeholder — replaced above
       { type: "Heading", props: { id: "home-playbook-h2", text: "Every business like yours runs the same play.", level: "h2", align: "left" } },
       { type: "Text", props: { id: "home-playbook-p1", text: "You know this cold, so I'll just say it back to you the way you'd say it yourself — not to teach you, but so you know I'm not guessing. I've run this play four times, in four different businesses of my own.", size: "base", align: "left" } },
       { type: "Text", props: { id: "home-playbook-p2", text: "Michael Gerber named where it starts: you're the Technician. You got good at the work, you opened your own shop, and now the business is just you — you answer the phone, you run the schedule, you know every customer by name, and the whole thing lives in your head and your calendar. You take the risk nobody else would take, and you grind it up one job, one lead, one customer at a time.", size: "base", align: "left" } },
