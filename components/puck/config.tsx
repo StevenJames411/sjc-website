@@ -44,6 +44,7 @@ type Props = {
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   Video: { src: string; caption: string };
+  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -138,6 +139,15 @@ const COLOR_FIELD = {
     { label: "Blue", value: "#2563eb" },
     { label: "Muted gray", value: "#4b5563" },
   ],
+};
+
+export const IMAGE_DEFAULTS = {
+  src: "",
+  alt: "",
+  caption: "",
+  maxWidth: 0,
+  rounded: "16px",
+  align: "center" as Align,
 };
 
 // The block catalog, typed with the Props map so fields + render params are inferred.
@@ -423,6 +433,82 @@ export const config: Config<Props> = {
           )}
         </div>
       ),
+    },
+
+    Image: {
+      label: "Image / screenshot",
+      fields: {
+        src: { type: "text" as const, label: "Image URL" },
+        alt: { type: "text" as const, label: "Alt text (describe the image)" },
+        caption: { type: "text" as const, label: "Caption (optional)" },
+        maxWidth: {
+          type: "custom" as const,
+          label: "Max width px (0 = full width)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
+          ),
+        },
+        rounded: {
+          type: "select" as const,
+          label: "Rounded corners",
+          options: [
+            { label: "None", value: "0" },
+            { label: "Small (8px)", value: "8px" },
+            { label: "Large (16px)", value: "16px" },
+            { label: "Full circle", value: "9999px" },
+          ],
+        },
+        align: { ...ALIGN_FIELD, label: "Align" },
+      },
+      defaultProps: IMAGE_DEFAULTS,
+      render: ({ src, alt, caption, maxWidth, rounded, align }) => {
+        const alignItems = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
+        const maxW = maxWidth && maxWidth > 0 ? `${maxWidth}px` : undefined;
+        const radius = rounded || "16px";
+        return (
+          <figure style={{ display: "flex", flexDirection: "column", alignItems, marginTop: "1.5rem" }}>
+            {src ? (
+              <img
+                src={src}
+                alt={alt || ""}
+                style={{
+                  width: "100%",
+                  maxWidth: maxW,
+                  borderRadius: radius,
+                  display: "block",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+                  objectFit: "contain" as const,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: maxW,
+                  borderRadius: radius,
+                  aspectRatio: "4/3",
+                  minHeight: "120px",
+                  background: "#f3f4f6",
+                  border: "2px dashed #d1d5db",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#9ca3af",
+                  fontSize: "14px",
+                }}
+              >
+                {alt || "Image placeholder"}
+              </div>
+            )}
+            {caption && (
+              <figcaption style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: "#6b7280", textAlign: "center" }}>
+                {caption}
+              </figcaption>
+            )}
+          </figure>
+        );
+      },
     },
 
     // Wrapped homepage sections — each renders the real live component as a single

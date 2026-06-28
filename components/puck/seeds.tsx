@@ -1,5 +1,5 @@
 import type { Data } from "@measured/puck";
-import { SEED } from "@/components/puck/config";
+import { SEED, IMAGE_DEFAULTS } from "@/components/puck/config";
 import { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
 import { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
 import { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
