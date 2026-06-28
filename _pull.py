@@ -1,23 +1,16 @@
 #!/usr/bin/env python3
-"""Find Chloe's gold conversations. FIX: GHL uses a different API Version header per
-endpoint family (contacts=2021-07-28, conversations=2021-04-15) — see the production
-ghl_client.py. The earlier 1010 was a contacts call stamped with the conversations
-version. Now: list contacts (2021-07-28), filter to Chloe's last ~40 days / assigned /
-facebook-tagged, then per-contact conversation + messages (2021-04-15, the proven path),
-and scan for the 3 gold patterns. Read-only. Local. Throwaway."""
-import sys, json, time, datetime, urllib.request, urllib.error
+"""HYBRID pull: read Chloe's 586 contacts from the GHL CSV export (the list HIPAA won't
+hand over via API), then pull each one's conversation BY ID (which the API DOES allow),
+scan for the 3 gold patterns, write a shortlist. Read-only against GHL. Local. Throwaway."""
+import sys, csv, json, time, urllib.request, urllib.error
 
-ENV   = "/Users/stevenbarchetti/SJC/AI-Employee-Dashboard/sjc-server/.env"
-LOC   = "cTQ1CZSUZ7zWt1Nsu96K"
-BASE  = "https://services.leadconnectorhq.com"
-OUT   = ("/private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/"
-         "a8c71e99-e1ed-4637-abb9-cc84927018fd/scratchpad/candidates.txt")
-V_CONTACTS = "2021-07-28"
-V_CONVOS   = "2021-04-15"
-CHLOE_UID  = "wxuQo4dfeqFnyKY03Qcx"
-DAYS = 40
-MAX_PAGES = 250
-MAX_PULL = 1600
+ENV  = "/Users/stevenbarchetti/SJC/AI-Employee-Dashboard/sjc-server/.env"
+CSVF = "/Users/stevenbarchetti/Downloads/Export_Contacts_undefined_Jun_2026_4_40_PM.csv"
+BASE = "https://services.leadconnectorhq.com"
+OUT  = ("/private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/"
+        "a8c71e99-e1ed-4637-abb9-cc84927018fd/scratchpad/candidates.txt")
+LOC  = "cTQ1CZSUZ7zWt1Nsu96K"
+V_CONVOS = "2021-04-15"
 
 tok = None
 for line in open(ENV):
@@ -26,9 +19,9 @@ for line in open(ENV):
         tok = s.split("=", 1)[1].strip().strip('"').strip("'"); break
 if not tok:
     sys.exit("GHL_PIT_ALAMO_SLIM not found in .env")
+H = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json", "Version": V_CONVOS}
 
-def get(path, version):
-    H = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json", "Version": version}
+def get(path):
     for a in range(4):
         try:
             return json.load(urllib.request.urlopen(
@@ -39,58 +32,14 @@ def get(path, version):
             raise
     raise SystemExit("repeated API errors talking to GHL")
 
-cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=DAYS)
-
-def recent(ct):
-    da = ct.get("dateAdded") or ct.get("dateUpdated")
-    if not da:
-        return False
-    try:
-        if isinstance(da, (int, float)) or (isinstance(da, str) and da.isdigit()):
-            dt = datetime.datetime.fromtimestamp(int(da) / 1000, datetime.timezone.utc)
-        else:
-            dt = datetime.datetime.fromisoformat(str(da).replace("Z", "+00:00"))
-        return dt >= cutoff
-    except Exception:
-        return False
-
-def is_chloe(ct):
-    if recent(ct):
-        return True
-    if ct.get("assignedTo") == CHLOE_UID:
-        return True
-    return "facebook" in [str(t).lower() for t in (ct.get("tags") or [])]
-
-# ---- 1) list contacts (CORRECT version header) and keep only Chloe's ----
-print("Speed-reading the contact list (contacts API v2021-07-28)...", flush=True)
-picked, seen, after_id, after, pages = [], set(), None, None, 0
-while pages < MAX_PAGES and len(picked) < MAX_PULL:
-    pages += 1
-    q = f"/contacts/?locationId={LOC}&limit=100"
-    if after_id: q += f"&startAfterId={after_id}"
-    if after:    q += f"&startAfter={after}"
-    try:
-        d = get(q, V_CONTACTS)
-    except urllib.error.HTTPError as e:
-        sys.exit(f"CONTACTS LISTING FAILED ({e.code}): {e.read().decode()[:300]}\n-> tell Claude.")
-    batch = d.get("contacts", []) or []
-    new = [c for c in batch if c.get("id") not in seen]
-    if not new:
-        break
-    for c in new:
-        seen.add(c.get("id"))
-    picked.extend([c for c in new if is_chloe(c)])
-    meta = d.get("meta", {}) or {}
-    after_id = meta.get("startAfterId") or (batch[-1].get("id") if batch else None)
-    after = meta.get("startAfter")
-    print(f"  page {pages}: read {len(seen)} contacts, kept {len(picked)} (total {meta.get('total')})", flush=True)
-    if len(batch) < 100 and not meta.get("nextPageUrl"):
-        break
-    time.sleep(0.08)
-
-if not picked:
-    sys.exit("Kept 0 Chloe-era contacts after a clean listing — filters may need a tweak. Tell Claude.")
-print(f"\n{len(picked)} Chloe-era contacts. Pulling threads (conversations API v2021-04-15)...\n", flush=True)
+contacts = []
+with open(CSVF, newline="") as f:
+    for row in csv.DictReader(f):
+        cid = (row.get("Contact Id") or "").strip()
+        if cid:
+            name = ((row.get("First Name") or "") + " " + (row.get("Last Name") or "")).strip() or cid
+            contacts.append((cid, name))
+print(f"{len(contacts)} contacts from the CSV. Pulling each thread by ID...", flush=True)
 
 HEALTHQ = ["side effect","is it safe","safe to","needle","does it hurt","dosage","what does it do",
            "how does it work","semaglutide","tirzepatide","ozempic","wegovy","insurance cover",
@@ -111,23 +60,18 @@ def hits(text, kws):
 
 react_c, defer_c, book_c = [], [], []
 scanned = 0
-for i, ct in enumerate(picked):
-    contact_id = ct.get("id")
-    name = ((ct.get("firstName") or "") + " " + (ct.get("lastName") or "")).strip() \
-           or ct.get("contactName") or contact_id
+for i, (cid, name) in enumerate(contacts):
     try:
-        cs = get(f"/conversations/search?contactId={contact_id}", V_CONVOS)
+        cs = get(f"/conversations/search?contactId={cid}")
     except Exception:
         continue
     for conv in (cs.get("conversations", []) or []):
         convid = conv.get("id")
         try:
-            m = get(f"/conversations/{convid}/messages?limit=100", V_CONVOS)
+            m = get(f"/conversations/{convid}/messages?limit=100")
         except Exception:
             continue
         msgs = (m.get("messages", {}) or {}).get("messages", []) or []
-        if not msgs and isinstance(m.get("messages"), list):
-            msgs = m["messages"]
         msgs = sorted(msgs, key=lambda x: x.get("dateAdded") or "")
         seq = [((x.get("direction") or "").lower(), (x.get("body") or "")) for x in msgs if x.get("body")]
         if not seq:
@@ -145,18 +89,18 @@ for i, ct in enumerate(picked):
         if bk:
             book_c.append((len(bk), convid, name, bk, seq))
     if (i + 1) % 50 == 0:
-        print(f"  {i+1}/{len(picked)} contacts  (threads scanned {scanned})", flush=True)
+        print(f"  {i+1}/{len(contacts)}  (threads scanned {scanned})", flush=True)
     time.sleep(0.05)
 
 def excerpt(seq, kws):
     lines = [f"    [{d[:3]}] {b[:160]}" + ("  <<<" if any(k in b.lower() for k in kws) else "")
              for d, b in seq]
-    if len(lines) <= 12:
+    if len(lines) <= 14:
         return "\n".join(lines)
-    return "\n".join(lines[:6] + ["    ..."] + lines[-6:])
+    return "\n".join(lines[:7] + ["    ..."] + lines[-7:])
 
 def dump(fh, title, cands):
-    cands = sorted(cands, key=lambda t: t[0], reverse=True)[:6]
+    cands = sorted(cands, key=lambda t: t[0], reverse=True)[:8]
     fh.write(f"\n===== {title} ({len(cands)} shown) =====\n")
     for score, convid, name, kws, seq in cands:
         url = f"https://app.gohighlevel.com/v2/location/{LOC}/conversations/conversations/{convid}"
@@ -164,7 +108,7 @@ def dump(fh, title, cands):
         fh.write(excerpt(seq, kws) + "\n")
 
 with open(OUT, "w") as fh:
-    fh.write(f"Chloe gold-conversation candidates  (scanned {scanned} threads / {len(picked)} contacts)\n")
+    fh.write(f"Chloe gold-conversation candidates  (scanned {scanned} threads / {len(contacts)} contacts)\n")
     dump(fh, "REACTIVATION (Chloe opened a cold lead, got a reply)", react_c)
     dump(fh, "STAYS-IN-HER-LANE (health question -> routed to provider, kept going)", defer_c)
     dump(fh, "BOOKINGS (Chloe confirmed an appointment)", book_c)
