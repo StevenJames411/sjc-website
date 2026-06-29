@@ -27,9 +27,11 @@ export default function RichText({
   });
 
   // If Puck hands us a different value (e.g. switching to another Text block), reseed —
-  // but never mid-type (guard on getHTML) so the cursor never jumps.
+  // but ONLY when the user isn't actively typing in this editor. Reseeding while focused
+  // (which happens on every auto-save re-render) resets the cursor to the end — that's the
+  // "I can't edit the box live, I have to paste the whole paragraph" bug.
   useEffect(() => {
-    if (editor && value !== undefined && value !== editor.getHTML()) {
+    if (editor && !editor.isFocused && value !== undefined && value !== editor.getHTML()) {
       editor.commands.setContent(value || "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

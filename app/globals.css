@@ -60,3 +60,7 @@ body {
    editing a full paragraph in a cramped one-liner is the pain. Drag the bottom-right corner. */
 textarea { resize: vertical !important; min-height: 76px; }
 .rt-input { resize: vertical; overflow: auto; }
+
+/* Edit fields use the SAME font as the live site (Lexend) so what you type matches what ships
+   — capital "I" reads as I, not a lowercase l. */
+.rt-input, textarea, input { font-family: var(--font-sans) !important; }
