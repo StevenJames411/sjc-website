@@ -255,12 +255,12 @@ const HOME_SEED: Data = {
   content: [
     // ── 1. hero — WHO WE ARE: the native AI implementation partner ────────────────────────────
     { type: "Section", props: { id: "hero", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "hero-eyebrow", text: "You already know you need AI. Here's the part nobody actually offers.", align: "center", color: "#93c5fd" } },
-      { type: "Heading", props: { id: "hero-h1", text: "Add a full sales team that answers every lead in seconds and books your calendar — without hiring, training, or lifting a finger.", fontSize: 48, align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "hero-sub1", text: "We install AI employees right on top of the software you already run — they catch every lead the instant it lands, revive the dead ones you wrote off, and fill your calendar day and night. You don't lift a finger, you don't learn a thing, and you never give up an inch of control — we do the work, you stay the boss.", align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "hero-sub2", text: "It's like a rockstar coworker who does all the chasing, all the follow-up, and all the booking — and hands you nothing but layups.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-eyebrow", text: "You already know you need AI. Here's the part nobody actually does for you.", align: "center", color: "#93c5fd" } },
+      { type: "Heading", props: { id: "hero-h1", text: "We put AI employees on the three jobs that make or break your business — finding customers, closing them, and keeping them — installed right on top of the software you already run.", fontSize: 48, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub1", text: "We build them, train them on how you actually run, and operate them for you — so your whole business finally works like one machine. You don't hire, you don't learn a thing, and you never give up an inch of control.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub2", text: "We start where it pays off fastest — an AI rep that answers every lead in seconds, revives the dead ones you wrote off, and books your calendar around the clock.", align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
-      { type: "Button", props: { id: "hero-cta", title: "See It Run on Your Business", subtitle: "A working session on how you run today — not a pitch. We'll show you exactly where your first AI employee plugs in.", href: "/#contact" } },
+      { type: "Button", props: { id: "hero-cta", title: "See It Run on Your Business", subtitle: "Your leads, your follow-up, and the work piling up behind you — all handled, done for you. The only question left is how fast you can get it running.", href: "/#contact" } },
     ] } },
 
     // ── 1b. story — what changed (Steven IS the persona) ──────────────────────────────────────
