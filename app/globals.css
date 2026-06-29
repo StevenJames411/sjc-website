@@ -55,3 +55,8 @@ body {
   background: #fff;
 }
 .rt-input:focus { border-color: var(--color-sjc-blue); }
+
+/* Builder ergonomics: let every field textarea (and the rich-text box) be DRAGGED taller —
+   editing a full paragraph in a cramped one-liner is the pain. Drag the bottom-right corner. */
+textarea { resize: vertical !important; min-height: 76px; }
+.rt-input { resize: vertical; overflow: auto; }

@@ -363,7 +363,7 @@ export const config: Config<Props> = {
     Heading: {
       label: "Heading",
       fields: {
-        text: { type: "text" as const, label: "Text" },
+        text: { type: "textarea" as const, label: "Text" },
         fontSize: {
           type: "custom" as const,
           label: "Font size (− / +)",
@@ -470,7 +470,7 @@ export const config: Config<Props> = {
       label: "Call-to-action button",
       fields: {
         title: { type: "text" as const, label: "Button text" },
-        subtitle: { type: "text" as const, label: "Small line under (optional)" },
+        subtitle: { type: "textarea" as const, label: "Small line under (optional)" },
         href: { type: "text" as const, label: "Link" },
       },
       defaultProps: {
@@ -511,7 +511,7 @@ export const config: Config<Props> = {
       label: "Video / sizzle reel",
       fields: {
         src: { type: "text" as const, label: "Embed URL (YouTube/Vimeo) — blank = placeholder" },
-        caption: { type: "text" as const, label: "Placeholder caption" },
+        caption: { type: "textarea" as const, label: "Placeholder caption" },
       },
       defaultProps: { src: "", caption: "2-minute teaser — coming" },
       render: ({ src, caption }) => (
@@ -541,7 +541,7 @@ export const config: Config<Props> = {
           ),
         },
         alt: { type: "text" as const, label: "Alt text (describe the image)" },
-        caption: { type: "text" as const, label: "Caption (optional)" },
+        caption: { type: "textarea" as const, label: "Caption (optional)" },
         maxWidth: {
           type: "custom" as const,
           label: "Max width px (0 = full width)",
@@ -634,7 +634,7 @@ export const config: Config<Props> = {
         },
         chloeLabel: { type: "text" as const, label: "Chloe's name label" },
         leadLabel: { type: "text" as const, label: "Lead's name label" },
-        caption: { type: "text" as const, label: "Caption (below the thread)" },
+        caption: { type: "textarea" as const, label: "Caption (below the thread)" },
       },
       defaultProps: CONVERSATION_DEFAULTS,
       render: ({ caption, chloeLabel, leadLabel, messages }) => (
@@ -702,12 +702,12 @@ export const config: Config<Props> = {
     HeroReel: {
       label: "Hero — sizzle reel",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h1: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h1: { type: "textarea" as const, label: "Headline" },
         sub: { type: "textarea" as const, label: "Sub-paragraph" },
         fieldsLine: { type: "textarea" as const, label: "Breadth line" },
         ctaTitle: { type: "text" as const, label: "Button text" },
-        ctaSubtitle: { type: "text" as const, label: "Button subtitle" },
+        ctaSubtitle: { type: "textarea" as const, label: "Button subtitle" },
       },
       defaultProps: HERO_REEL_DEFAULTS,
       render: ({ eyebrow, h1, sub, fieldsLine, ctaTitle, ctaSubtitle }) => (
@@ -725,8 +725,8 @@ export const config: Config<Props> = {
     Playbook: {
       label: "The Playbook You Already Run",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         p3: { type: "textarea" as const, label: "Paragraph 3" },
@@ -741,8 +741,8 @@ export const config: Config<Props> = {
     TheCeiling: {
       label: "The Ceiling — the Problem",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         p3: { type: "textarea" as const, label: "Paragraph 3" },
@@ -756,8 +756,8 @@ export const config: Config<Props> = {
     Weapon: {
       label: "What Changed — AI fills the seats",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         teaser: { type: "textarea" as const, label: "Teaser line" },
@@ -771,8 +771,8 @@ export const config: Config<Props> = {
     Proof: {
       label: "Proof — Chloe",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         p3: { type: "textarea" as const, label: "Paragraph 3" },
@@ -786,8 +786,8 @@ export const config: Config<Props> = {
     Moat: {
       label: "The Moat — Why Me",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         p3: { type: "textarea" as const, label: "Paragraph 3" },
@@ -800,12 +800,12 @@ export const config: Config<Props> = {
     NextMove: {
       label: "The Next Move",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         ctaTitle: { type: "text" as const, label: "Button text" },
-        ctaSubtitle: { type: "text" as const, label: "Button subtitle" },
+        ctaSubtitle: { type: "textarea" as const, label: "Button subtitle" },
       },
       defaultProps: NEXT_DEFAULTS,
       render: ({ eyebrow, h2, p1, p2, ctaTitle, ctaSubtitle }) => (
@@ -815,8 +815,8 @@ export const config: Config<Props> = {
     Platform: {
       label: "Above Any One Industry",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         p3: { type: "textarea" as const, label: "Paragraph 3" },
@@ -831,8 +831,8 @@ export const config: Config<Props> = {
     MedSpaWound: {
       label: "Med-Spa — The Wound",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         beats: {
@@ -854,15 +854,15 @@ export const config: Config<Props> = {
     MedSpaStep: {
       label: "Med-Spa — Step One",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
         p2: { type: "textarea" as const, label: "Paragraph 2" },
         p3: { type: "textarea" as const, label: "Paragraph 3" },
         col1label: { type: "text" as const, label: "Column 1 label" },
-        col1sub: { type: "text" as const, label: "Column 1 sub" },
+        col1sub: { type: "textarea" as const, label: "Column 1 sub" },
         col2label: { type: "text" as const, label: "Column 2 label" },
-        col2sub: { type: "text" as const, label: "Column 2 sub" },
+        col2sub: { type: "textarea" as const, label: "Column 2 sub" },
         step1: {
           type: "array" as const,
           label: "Step 1 bullets",
@@ -890,12 +890,12 @@ export const config: Config<Props> = {
     MedSpaPricing: {
       label: "Med-Spa — Pricing",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
-        h2: { type: "text" as const, label: "Headline" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
+        h2: { type: "textarea" as const, label: "Headline" },
         p1: { type: "textarea" as const, label: "Paragraph 1" },
-        p2bold1: { type: "text" as const, label: "Bold opener" },
-        p2mid: { type: "text" as const, label: "Mid text" },
-        p2bold2: { type: "text" as const, label: "Bold mid" },
+        p2bold1: { type: "textarea" as const, label: "Bold opener" },
+        p2mid: { type: "textarea" as const, label: "Mid text" },
+        p2bold2: { type: "textarea" as const, label: "Bold mid" },
         p2end: { type: "textarea" as const, label: "Closing text" },
       },
       defaultProps: MEDSPA_PRICING_DEFAULTS,
@@ -909,7 +909,7 @@ export const config: Config<Props> = {
       label: "Industry deep page",
       fields: {
         name: { type: "text" as const, label: "Field name" },
-        eyebrow: { type: "text" as const, label: "Eyebrow" },
+        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
         intro: { type: "textarea" as const, label: "Intro" },
         leaksLede: { type: "textarea" as const, label: "Leaks lead-in" },
         leaks: {
