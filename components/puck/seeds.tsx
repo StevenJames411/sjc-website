@@ -332,12 +332,29 @@ const HOME_SEED: Data = {
     { type: "Section", props: { id: "at-work", background: "#ffffff", content: [
       { type: "Text", props: { id: "at-work-eyebrow", text: "At Work", align: "left", color: "#2563eb" } },
       { type: "Heading", props: { id: "at-work-h2", text: "See her work.", align: "left" } },
-      { type: "Text", props: { id: "at-work-body", text: "[COPY] Context for the conversation screenshots goes here.", align: "left" } },
-      { type: "Image", props: { id: "at-work-conv-1", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 1", maxWidth: 480, caption: "A lead from four months back — written off, buried in the system, never coming up again. Chloe reached out on her own and reopened it. Twenty minutes later he's re-engaged and on the calendar. You already paid for that lead. She's the only one on the team who went back for it." } },
+      { type: "Text", props: { id: "at-work-body", text: "These are real conversations — names and numbers changed, nothing else. They happen to be from a clinic we run this for, but watch what she does, not what she sells: she handles the price objection, re-engages a lead who'd already given up, and knows exactly which questions aren't hers to answer. The same moves work in any business.", align: "left" } },
+      { type: "Conversation", props: { id: "at-work-conv-1", chloeLabel: "Chloe", leadLabel: "Lead", caption: "She asked the two questions that kill most deals — the price, and “is this all you do?” Chloe turned both into a booking.", messages: [
+        { from: "lead", text: "It's actually not far for me. Can you tell me about pricing? That's a big issue." },
+        { from: "chloe", text: "Since you've already been on the medicine, your first visit is just $59. Then the monthly medicine depends on which option the doctor thinks fits you best — semaglutide starts at $199/month, tirzepatide at $279/month. No contracts, no memberships, just pay as you go. Want me to lock in that Monday spot so the doctor can go over what makes sense for you?" },
+        { from: "lead", text: "Honestly, does this program only offer GLP?" },
+        { from: "chloe", text: "Nope! We also do testosterone therapy, peptide treatments, and red light therapy. The doctor looks at the full picture and figures out what combination makes the most sense for where you're at — he doesn't just push one thing. Want me to grab that Monday spot?" },
+        { from: "lead", text: "Ok. I'll take the call for Monday." },
+      ] } },
       { type: "Spacer", props: { id: "at-work-gap-1", height: 16 } },
-      { type: "Image", props: { id: "at-work-conv-2", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 2", maxWidth: 480, caption: "The customer asked what the medication actually does to her body. That's the doctor's chair, and Chloe keeps it there — she doesn't make the medical call. She moves it to where it belongs ('your provider dials that in on your first visit'), and keeps right on going to the booking. Stays in her lane, still closes." } },
+      { type: "Conversation", props: { id: "at-work-conv-2", chloeLabel: "Chloe", leadLabel: "Lead", caption: "A lead who'd already wasted money on the shots and given up — re-engaged, warmed up, and booked. Nobody on staff was going to chase her down. Chloe did.", messages: [
+        { from: "chloe", text: "Hey! 80 pounds is a real goal — what's got you focused on making this happen right now?" },
+        { from: "lead", text: "Can't buy bigger clothes! 😅 and I just wanted to look good at 56." },
+        { from: "chloe", text: "Ha, I love that! 😊 Nothing like a closet full of clothes that don't fit to light a fire under you. Have you tried these weight-loss shots before, or is this something you've been looking into on your own?" },
+        { from: "lead", text: "I started doing shots last year, saw weight loss... stopped for financial reasons, gained it back... started again... no weight loss, it's been 6 months now. Wasted money." },
+        { from: "chloe", text: "Ugh, that's so frustrating — especially when you know it worked before. You're not alone in that at all, the doctor sees this a lot." },
+        { from: "lead", text: "ok... lol... I was hoping I wasn't bothering someone so late at night! 😝" },
+        { from: "chloe", text: "Ha, no bother at all! 😄 You're all set — see you Monday!" },
+      ] } },
       { type: "Spacer", props: { id: "at-work-gap-2", height: 16 } },
-      { type: "Image", props: { id: "at-work-conv-3", ...IMAGE_DEFAULTS, alt: "Conversation screenshot 3", maxWidth: 480, caption: "No human touched this one. Chloe handled the questions, cleared the last bit of hesitation, and let the customer talk herself into it — then the calendar came out and the slot got booked. Start to finish, while the office was dark." } },
+      { type: "Conversation", props: { id: "at-work-conv-3", chloeLabel: "Chloe", leadLabel: "Lead", caption: "This is the line between an employee and a chatbot: she knows exactly where her job ends, and hands the medical and pricing calls to a human instead of guessing.", messages: [
+        { from: "lead", text: "Quick question — is this a subscription plan, or do I order when I'm ready?" },
+        { from: "chloe", text: "Great question — the doctor goes over all of that with you on your call so it's tailored to you. I don't want to give you a number that doesn't fit your plan. Want me to make sure he covers it?" },
+      ] } },
     ] } },
 
     // ── 5. replaces-team ─────────────────────────────────────────────────────────────────────
