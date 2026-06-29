@@ -7,6 +7,7 @@ import type { Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
 import SizeStepper from "@/components/puck/SizeStepper";
+import ColorField from "@/components/puck/ColorField";
 import HeroReel from "@/components/HeroReel";
 import { HERO_REEL_DEFAULTS } from "@/components/HeroReel";
 import IndustriesStrip from "@/components/IndustriesStrip";
@@ -47,7 +48,7 @@ type Props = {
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   Video: { src: string; caption: string };
-  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align };
+  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
   SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string };
@@ -205,6 +206,8 @@ export const IMAGE_DEFAULTS = {
   maxWidth: 0,
   rounded: "16px",
   align: "center" as Align,
+  spaceAbove: 24,
+  spaceBelow: 0,
 };
 
 export const CONVERSATION_DEFAULTS = {
@@ -456,14 +459,14 @@ export const config: Config<Props> = {
           type: "custom" as const,
           label: "Padding top (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+            <SizeStepper label="Padding top" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
           ),
         },
         paddingBottom: {
           type: "custom" as const,
           label: "Padding bottom (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+            <SizeStepper label="Padding bottom" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
           ),
         },
         content: { type: "slot" as const },
@@ -491,7 +494,7 @@ export const config: Config<Props> = {
           type: "custom" as const,
           label: "Height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
+            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
           ),
         },
       },
@@ -528,7 +531,7 @@ export const config: Config<Props> = {
           type: "custom" as const,
           label: "Gap between columns (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper label="Gap between columns" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
         col1: { type: "slot" as const },
@@ -568,25 +571,31 @@ export const config: Config<Props> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={32} />
+            <SizeStepper label="Font size" value={value as number} onChange={onChange} fallback={32} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
+            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
-        color: { ...COLOR_FIELD, label: "Color" },
+        color: {
+          type: "custom" as const,
+          label: "Color",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
       defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827" },
       render: ({ text, fontSize, spaceAbove, spaceBelow, align, color }) => {
@@ -623,25 +632,25 @@ export const config: Config<Props> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={18} />
+            <SizeStepper label="Font size" value={value as number} onChange={onChange} fallback={18} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
-        color: { ...COLOR_FIELD, label: "Color" },
+        color: { ...COLOR_FIELD, label: "Default color (whole block)" },
       },
       defaultProps: {
         text: "New paragraph. Select any word and use the toolbar to format it.",
@@ -746,7 +755,21 @@ export const config: Config<Props> = {
           type: "custom" as const,
           label: "Max width px (0 = full width)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
+            <SizeStepper label="Max width (0 = full)" value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
+          ),
+        },
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         rounded: {
@@ -762,12 +785,12 @@ export const config: Config<Props> = {
         align: { ...ALIGN_FIELD, label: "Align" },
       },
       defaultProps: IMAGE_DEFAULTS,
-      render: ({ src, alt, caption, maxWidth, rounded, align }) => {
+      render: ({ src, alt, caption, maxWidth, rounded, align, spaceAbove, spaceBelow }) => {
         const alignItems = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
         const maxW = maxWidth && maxWidth > 0 ? `${maxWidth}px` : undefined;
         const radius = rounded || "16px";
         return (
-          <figure style={{ display: "flex", flexDirection: "column", alignItems, marginTop: "1.5rem" }}>
+          <figure style={{ display: "flex", flexDirection: "column", alignItems, marginTop: `${typeof spaceAbove === "number" ? spaceAbove : 24}px`, marginBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px` }}>
             {src ? (
               <img
                 src={src}
