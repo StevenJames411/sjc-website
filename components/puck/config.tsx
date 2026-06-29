@@ -570,7 +570,7 @@ export const config: Config<Props> = {
               border: "1px solid #e5e7eb",
             }}
           >
-            {(messages || []).map((m, i) => {
+            {(messages || []).map((m: { from: string; text: string }, i: number) => {
               const isChloe = (m.from || "chloe") === "chloe";
               return (
                 <div
