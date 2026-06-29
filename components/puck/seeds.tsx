@@ -317,7 +317,7 @@ const HOME_SEED: Data = {
       { type: "Text", props: { id: "meet-chloe-eyebrow", text: "", align: "left", color: "#2563eb" } },
       { type: "Heading", props: { id: "meet-chloe-h2", text: "Meet Chloe.", align: "left" } },
       { type: "Text", props: { id: "meet-chloe-body", text: "This is Chloe. She answers your leads, follows up for days, and books the appointment — start to finish, in your voice. We don't hand you a login and a help doc and wish you luck. We build Chloe for your business, train her on the way you actually sell, and put her to work. She shows up her first day already knowing your offer, your prices, the objections you hear all day, and exactly how you like a customer handled. She's the employee you've been trying to hire for years — except she starts trained, she never has a bad day, and she never walks out the door with everything she learned in her head.", align: "left" } },
-      { type: "Image", props: { id: "meet-chloe-portrait", ...IMAGE_DEFAULTS, alt: "Chloe — your AI employee", maxWidth: 360 } },
+      { type: "Image", props: { id: "meet-chloe-portrait", ...IMAGE_DEFAULTS, src: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/7af0a5ce-12014A0CD94E4B0EA5A3D061753578BA.png", alt: "Chloe — your AI employee", maxWidth: 420 } },
     ] } },
 
     // ── 3. on-staff ──────────────────────────────────────────────────────────────────────────
