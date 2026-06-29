@@ -323,6 +323,7 @@ const HOME_SEED: Data = {
       { type: "Heading", props: { id: "your-team-h2", text: "This is Chloe — and here's what your team looks like with her on it.", align: "left" } },
       { type: "Text", props: { id: "your-team-body", text: "Pull up your staff list and there she is, right in the lineup next to the people you already pay — a name, a seat, a job, same as everyone else. But look closer at the roster below and you'll notice something. One name shows up in six different seats. That's not a typo. That's the whole point. Chloe doesn't fill one chair — she fills six, the six jobs you could never afford to staff all at once. Take a good look, then we'll walk through each seat and show you exactly how one hire covers all of it.", align: "left" } },
       { type: "Image", props: { id: "your-team-portrait", ...IMAGE_DEFAULTS, src: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/7af0a5ce-12014A0CD94E4B0EA5A3D061753578BA.png", alt: "Chloe — your AI employee", maxWidth: 360 } },
+      { type: "Spacer", props: { id: "your-team-gap", height: 32 } },
       { type: "StaffRoster", props: { id: "your-team-roster", businessName: "Acme Healthcare", rows: [
         { name: "Dr. Alan Pierce", email: "dr.pierce@acmehealthcare.com", role: "Physician / Owner", isAI: false },
         { name: "Renee Salas", email: "renee@acmehealthcare.com", role: "Office Manager", isAI: false },
