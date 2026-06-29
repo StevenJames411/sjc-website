@@ -46,6 +46,7 @@ type Props = {
   Button: { title: string; subtitle: string; href: string };
   Video: { src: string; caption: string };
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align };
+  Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -149,6 +150,17 @@ export const IMAGE_DEFAULTS = {
   maxWidth: 0,
   rounded: "16px",
   align: "center" as Align,
+};
+
+export const CONVERSATION_DEFAULTS = {
+  caption: "",
+  chloeLabel: "Chloe",
+  leadLabel: "Lead",
+  messages: [
+    { from: "chloe", text: "Hey! 80 pounds is a real goal — what's got you focused on making this happen right now?" },
+    { from: "lead", text: "Can't buy bigger clothes! and I just wanted to look good at 56" },
+    { from: "chloe", text: "Ha, I love that! Nothing like a closet full of clothes that don't fit to light a fire under you. Have you tried the weight-loss shots before, or is this new for you?" },
+  ],
 };
 
 // The block catalog, typed with the Props map so fields + render params are inferred.
@@ -516,6 +528,91 @@ export const config: Config<Props> = {
           </figure>
         );
       },
+    },
+
+    Conversation: {
+      label: "Conversation (chat bubbles)",
+      fields: {
+        messages: {
+          type: "array" as const,
+          label: "Messages",
+          arrayFields: {
+            from: {
+              type: "radio" as const,
+              label: "From",
+              options: [
+                { label: "Chloe", value: "chloe" },
+                { label: "Lead", value: "lead" },
+              ],
+            },
+            text: { type: "textarea" as const, label: "Message" },
+          },
+          getItemSummary: (i: { from: string; text: string }) =>
+            (i.text ? i.text.slice(0, 38) : i.from || "message"),
+        },
+        chloeLabel: { type: "text" as const, label: "Chloe's name label" },
+        leadLabel: { type: "text" as const, label: "Lead's name label" },
+        caption: { type: "text" as const, label: "Caption (below the thread)" },
+      },
+      defaultProps: CONVERSATION_DEFAULTS,
+      render: ({ caption, chloeLabel, leadLabel, messages }) => (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: "1.5rem" }}>
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "440px",
+              background: "#f5f5f7",
+              borderRadius: "22px",
+              padding: "18px 14px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              border: "1px solid #e5e7eb",
+            }}
+          >
+            {(messages || []).map((m, i) => {
+              const isChloe = (m.from || "chloe") === "chloe";
+              return (
+                <div
+                  key={i}
+                  style={{ display: "flex", flexDirection: "column", alignItems: isChloe ? "flex-end" : "flex-start" }}
+                >
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "#9ca3af",
+                      margin: isChloe ? "0 8px 2px 0" : "0 0 2px 8px",
+                    }}
+                  >
+                    {isChloe ? chloeLabel || "Chloe" : leadLabel || "Lead"}
+                  </span>
+                  <div
+                    style={{
+                      maxWidth: "84%",
+                      padding: "10px 15px",
+                      borderRadius: "20px",
+                      fontSize: "15px",
+                      lineHeight: 1.4,
+                      whiteSpace: "pre-wrap" as const,
+                      background: isChloe ? "#2563eb" : "#e5e7eb",
+                      color: isChloe ? "#ffffff" : "#111827",
+                      borderBottomRightRadius: isChloe ? "5px" : "20px",
+                      borderBottomLeftRadius: isChloe ? "20px" : "5px",
+                    }}
+                  >
+                    {m.text}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {caption && (
+            <p style={{ marginTop: "0.7rem", fontSize: "0.875rem", color: "#6b7280", textAlign: "center", maxWidth: "440px" }}>
+              {caption}
+            </p>
+          )}
+        </div>
+      ),
     },
 
     // Wrapped homepage sections — each renders the real live component as a single
