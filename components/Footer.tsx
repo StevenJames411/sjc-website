@@ -1,5 +1,3 @@
-import { BOOKING_URL } from "./CtaButton";
-
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
 
@@ -18,8 +16,8 @@ export default function Footer() {
               <span className="text-lg font-semibold">Steven James Consulting</span>
             </div>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">
-              Four businesses. Forty years. The architect who built the systems in every one &mdash;
-              now installing the AI workforce for other operators.
+              Five businesses since 1986. Owner and tech lead in every one &mdash; now installing
+              AI employees for the solo entrepreneur, done for you, on the software you already run.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a
@@ -47,16 +45,13 @@ export default function Footer() {
             <p className="text-sm font-semibold uppercase tracking-wide text-white/90">More</p>
             <ul className="mt-4 space-y-3 text-sm">
               <li>
-                <a href="/about" className="text-white/80 hover:text-white">About</a>
+                <a href="/about" className="text-white/80 hover:text-white">About Steven James — who I am &amp; why listen</a>
               </li>
               <li>
-                <a href="/case-study" className="text-white/80 hover:text-white">Case Study</a>
+                <a href="/case-study" className="text-white/80 hover:text-white">Meet Chloe</a>
               </li>
               <li>
                 <a href="/faqs" className="text-white/80 hover:text-white">FAQs</a>
-              </li>
-              <li>
-                <a href={BOOKING_URL} className="text-white/80 hover:text-white">Apply to work with me</a>
               </li>
               <li>
                 <a href="mailto:support@stevenjamesconsulting.com" className="text-white/80 hover:text-white">
