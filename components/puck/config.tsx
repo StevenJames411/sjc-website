@@ -224,8 +224,13 @@ export const STAFFROSTER_DEFAULTS = {
   rows: [
     { name: "Dr. Alan Pierce", email: "dr.pierce@acmehealthcare.com", role: "Physician / Owner", isAI: false },
     { name: "Renee Salas", email: "renee@acmehealthcare.com", role: "Office Manager", isAI: false },
-    { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Booking & Follow-Up", isAI: true },
-    { name: "Marcus Webb", email: "marcus@acmehealthcare.com", role: "Front Desk", isAI: false },
+    { name: "Nina Alvarez", email: "nina@acmehealthcare.com", role: "Nurse", isAI: false },
+    { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Speed-to-Lead — Finding", isAI: true },
+    { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Booking Agent — Closing", isAI: true },
+    { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Customer Success — Retaining", isAI: true },
+    { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Database Reactivation", isAI: true },
+    { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Front Desk & Phones", isAI: true },
+    { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Cross-Sell", isAI: true },
   ] as { name: string; email: string; role: string; isAI: boolean }[],
 };
 
