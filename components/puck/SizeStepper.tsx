@@ -10,30 +10,37 @@ export default function SizeStepper({
   fallback = 18,
   step = 2,
   min = 6,
+  label,
 }: {
   value?: number;
   onChange: (v: number) => void;
   fallback?: number;
   step?: number;
   min?: number;
+  label?: string;
 }) {
   const current = typeof value === "number" && value > 0 ? value : fallback;
   const set = (n: number) => onChange(Math.max(min, Math.round(n)));
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <button type="button" aria-label="Smaller" onClick={() => set(current - step)} style={BTN}>
-        −
-      </button>
-      <input
-        type="number"
-        value={current}
-        onChange={(e) => set(Number(e.target.value) || fallback)}
-        style={INPUT}
-      />
-      <span style={{ fontSize: 12, color: "#6b7280" }}>px</span>
-      <button type="button" aria-label="Bigger" onClick={() => set(current + step)} style={BTN}>
-        +
-      </button>
+    <div>
+      {label ? (
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{label}</div>
+      ) : null}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <button type="button" aria-label="Smaller" onClick={() => set(current - step)} style={BTN}>
+          −
+        </button>
+        <input
+          type="number"
+          value={current}
+          onChange={(e) => set(Number(e.target.value) || fallback)}
+          style={INPUT}
+        />
+        <span style={{ fontSize: 12, color: "#6b7280" }}>px</span>
+        <button type="button" aria-label="Bigger" onClick={() => set(current + step)} style={BTN}>
+          +
+        </button>
+      </div>
     </div>
   );
 }
