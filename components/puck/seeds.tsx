@@ -269,7 +269,7 @@ const HOME_SEED: Data = {
       { type: "Text", props: { id: "hero-eyebrow2", text: "We give you the easy button!", align: "center", color: "#22c55e" } },
       { type: "Heading", props: { id: "hero-h1", text: "We install AI employees where they make the most impact — finding customers, closing them, and retaining them — installed right on top of the software you already use.", fontSize: 48, align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
-      { type: "Button", props: { id: "hero-cta", title: "See It Run on Your Business", subtitle: "Your leads, your follow-up, and the work piling up behind you — all handled, done for you. The only question left is how fast you can get it running.", href: "/#contact" } },
+      { type: "Button", props: { id: "hero-cta", title: "See It Run on Your Business", subtitle: "Your leads, your follow-up, and the work piling up behind you — all handled, done for you. The only question left is how fast you can get it running.", href: "/#your-team" } },
     ] } },
 
     // ── 1b. story — what changed (Steven IS the persona) ──────────────────────────────────────
@@ -294,47 +294,53 @@ const HOME_SEED: Data = {
       { type: "Text", props: { id: "wave-stats-foot", text: "Sources: McKinsey, State of AI; U.S. small-business AI-adoption surveys, 2025.", fontSize: 13, align: "center", color: "#6b7280" } },
     ] } },
 
-    // ── 1b. story — the eternal want ───────────────────────────────────────────────────────────
-    { type: "Section", props: { id: "story", background: "#ffffff", content: [
-      { type: "Text", props: { id: "story-eyebrow", text: "What you've always wanted", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "story-h2", text: "Every owner wants the same two things — together.", align: "left" } },
-      { type: "Text", props: { id: "story-p1", text: "I've run five businesses since 1986 — a restaurant, a mortgage shop, a roofing company, a trucking outfit, and now this one. Owner and tech lead in every one. So I'm not studying you from the outside. I've been you. And I've wanted the exact thing you want: more leads coming in the top, and a real closer working every single one of them. Growth and a sales force — together.", align: "left" } },
-      { type: "Text", props: { id: "story-p2", text: "That's not a new dream. Every operator has had it since the day they opened the doors. The leads filling up, and someone who answers fast, never lets one go cold, and books the appointment while you run the business. What's new — and it's brand new — is that you can finally have it.", align: "left" } },
+    // ── leaks — open on THEIR money (the WIIFM hook) ─────────────────────────────────────────
+    { type: "Section", props: { id: "leaks", background: "#ffffff", content: [
+      { type: "Text", props: { id: "leaks-eyebrow", text: "Start with what it's costing you today", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "leaks-h2", text: "Right now, money is leaking out of your business in three places — and you already know where.", align: "left" } },
+      { type: "Text", props: { id: "leaks-body", text: "You don't need a chart to find them. The lead that came in last night, while you were closing up or asleep — nobody answered it fast enough, so it went somewhere that did. The folks who asked for a price months ago, went quiet, and are still sitting in your system — nobody ever circled back, so that money just sits there cold. And the customers you already won, the easiest sale you'll ever make, slip out the back because nobody had time to stay in touch. None of this is a you problem. It's a hands problem — there were never enough hours, or enough people, to catch all of it. That's exactly the hole we plug.", align: "left" } },
     ] } },
 
-    // ── 1c. problem — the sales team you could never build ────────────────────────────────────
-    { type: "Section", props: { id: "problem", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "problem-eyebrow", text: "Why you could never get there", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "problem-h2", text: "You needed it. Every road to it was blocked.", align: "left" } },
-      { type: "Text", props: { id: "problem-p1", text: "The only way to get growth and a sales force used to be to build an organization around it — hire the people, train them, manage them, then hire more to manage those. But every person you added was another paycheck, another problem, another way the whole thing slipped out of your hands. You didn't get into business to run a payroll and referee a team all day. So it stalled before it ever got going. That's the first wall.", align: "left" } },
-      { type: "Text", props: { id: "problem-p2", text: "And the one hire that would've changed everything — the closer who answers in seconds, never lets a lead go cold, works the dead list, and handles the objection instead of folding the moment they hear it — you could never land. The great ones you couldn't afford. The good ones you couldn't keep; they got poached the minute they got good. And the true unicorns came with ego, drama, and babysitting. So you did what you always do: you wore the hat yourself. And while you were buried in the work, the leads slipped, the follow-up died, and the long list of people who once raised their hand quietly rotted in your system. That's the second wall.", align: "left" } },
-      { type: "Text", props: { id: "problem-p3", text: "That's the perfect storm every owner has lived. You needed growth and a sales force, and every road to it ran straight through people you couldn't hire, couldn't keep, or couldn't afford to manage. It was never a discipline problem, and it was never a you problem. The tool that could do it any other way simply did not exist yet. Until it did.", align: "left" } },
+    // ── the-shift — what changed in 24 months (couldn't afford / couldn't be consistent) ─────
+    { type: "Section", props: { id: "the-shift", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "the-shift-eyebrow", text: "What's different now", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "the-shift-h2", text: "For 40 years, fixing this meant hiring people. Two walls always stopped you.", align: "left" } },
+      { type: "Text", props: { id: "the-shift-p1", text: "To catch every lead, work every old quote, and stay on every customer, you needed bodies — a front desk, a follow-up person, a closer, someone to call the old list. And right there, two walls went up that never came down. First, the money: good people are expensive, and stacking up enough of them to cover all of it was never going to pencil out for a business your size. Second, even when you found someone, you couldn't make them consistent. People have bad days. They forget. They get busy. They quit right when they finally got good. You can have cheap, or you can have good, or you can have someone who shows up the exact same way every single time — but you could never get all three in one person. Nobody can.", align: "left" } },
+      { type: "Text", props: { id: "the-shift-p2", text: "About two years ago, that math broke — in your favor. The technology crossed a line it had never crossed before. For the first time, you can put one trained worker on all of that work who costs a fraction of the people, never has a bad day, and does it the exact same way at 2 a.m. on a Sunday as 10 a.m. on a Monday. Cheap, good, and consistent — the three things that never fit in one hire — finally fit in one. That's the whole reason this company exists. The window just opened, and the owners moving now are the ones pulling ahead.", align: "left" } },
     ] } },
 
-    // ── 1d. solution — SJC = growth partner + sales partner; hands into Chloe ──────────────────
-    { type: "Section", props: { id: "solution", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "solution-eyebrow", text: "What just changed", align: "left", color: "#93c5fd" } },
-      { type: "Heading", props: { id: "solution-h2", text: "About two years ago, that changed — for good.", align: "left", color: "#ffffff" } },
-      { type: "Text", props: { id: "solution-p1", text: "The AI employee crossed a line it had never crossed before. It got good enough to actually be that closer — and good enough to do the work of the whole org chart you never wanted to build. Not a chatbot. Not a help-desk script that breaks the second a real question shows up. An employee that answers the instant a lead lands, follows up like a person, works the dead list, handles the objection, and books the appointment — in your voice, on your calendar, around the clock. That's the tipping point. The thing you always wanted but could never reach is, for the first time, in reach — and the window just opened.", align: "left", color: "#ffffff" } },
-      { type: "Text", props: { id: "solution-p2", text: "That's where SJC comes in — as your growth partner and your sales partner. We install it for you, right on top of the business you already run: your CRM, your calendar, your phone, the leads you already paid for. Nothing gets ripped out, nothing gets handed to a black box. You set the rules, you watch every conversation and every booking as it happens, and you stay the boss.", align: "left", color: "#ffffff" } },
-      { type: "Text", props: { id: "solution-p3", text: "And here's the part that separates us from everyone else selling AI: you don't have to learn a thing. We don't hand you a login, a manual, and a good-luck. We build it, we train it on the way you actually sell, and we run it. It shows up like a rockstar coworker who sat down next to your team already trained — handing them layups from day one. Implementation and ease of use. You get the wins; you never touch the machine.", align: "left", color: "#ffffff" } },
-      { type: "Heading", props: { id: "solution-bridge", text: "And the sales force we bring is Chloe.", fontSize: 30, align: "left", color: "#ffffff" } },
+    // ── the-bolt-on — not a new system; your software is the good guy; you learn nothing ──────
+    { type: "Section", props: { id: "the-bolt-on", background: "#ffffff", content: [
+      { type: "Text", props: { id: "bolt-on-eyebrow", text: "How it fits — nothing gets ripped out", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "bolt-on-h2", text: "It bolts on top of the software you already run. You don't learn a thing.", align: "left" } },
+      { type: "Text", props: { id: "bolt-on-p1", text: "Here's the part that trips people up, so let's clear it now. This is not a new system you have to switch to. You're not throwing out your software, retraining your team, or learning anything new. The software you use today — the place that holds your contacts, your calendar, your customer history — is good at what it does: it remembers everything. What it can't do is act. It sits there and waits for a person to log in and do the work. That's not a knock on it; that's just what software has always been. What we add is the worker your software has been waiting for — one that lives right on top of it, reads what's already there, and actually does the follow-up, the answering, the booking. We give your good system a set of hands.", align: "left" } },
+      { type: "Text", props: { id: "bolt-on-p2", text: "And you don't lift a finger to make it happen. We build it, we train it on how you actually do business — your prices, your offers, the questions you hear all day, the way you like a customer treated — and we run it. You stay the boss. You set the rules, you watch every conversation and every booking happen, and you can change anything any time. That's the difference between us and everyone else selling AI: they hand you a login and a manual and wish you luck. We hand you the finished worker, already on the job.", align: "left" } },
     ] } },
 
-    // ── 2. meet-chloe ────────────────────────────────────────────────────────────────────────
-    { type: "Section", props: { id: "meet-chloe", background: "#ffffff", content: [
-      { type: "Text", props: { id: "meet-chloe-eyebrow", text: "", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "meet-chloe-h2", text: "Meet Chloe.", align: "left" } },
-      { type: "Text", props: { id: "meet-chloe-body", text: "This is Chloe. She answers your leads, follows up for days, and books the appointment — start to finish, in your voice. We don't hand you a login and a help doc and wish you luck. We build Chloe for your business, train her on the way you actually sell, and put her to work. She shows up her first day already knowing your offer, your prices, the objections you hear all day, and exactly how you like a customer handled. She's the employee you've been trying to hire for years — except she starts trained, she never has a bad day, and she never walks out the door with everything she learned in her head.", align: "left" } },
-      { type: "Image", props: { id: "meet-chloe-portrait", ...IMAGE_DEFAULTS, src: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/7af0a5ce-12014A0CD94E4B0EA5A3D061753578BA.png", alt: "Chloe — your AI employee", maxWidth: 420 } },
+    // ── your-team — THE CENTERPIECE: Chloe in the lineup + the org chart ─────────────────────
+    { type: "Section", props: { id: "your-team", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "your-team-eyebrow", text: "Meet your new hire", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "your-team-h2", text: "This is Chloe — and here's what your team looks like with her on it.", align: "left" } },
+      { type: "Text", props: { id: "your-team-body", text: "Pull up your staff list and there she is, right in the lineup next to the people you already pay — a name, a seat, a job, same as everyone else. But look closer at the roster below and you'll notice something. One name shows up in six different seats. That's not a typo. That's the whole point. Chloe doesn't fill one chair — she fills six, the six jobs you could never afford to staff all at once. Take a good look, then we'll walk through each seat and show you exactly how one hire covers all of it.", align: "left" } },
+      { type: "Image", props: { id: "your-team-portrait", ...IMAGE_DEFAULTS, src: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/7af0a5ce-12014A0CD94E4B0EA5A3D061753578BA.png", alt: "Chloe — your AI employee", maxWidth: 360 } },
+      { type: "StaffRoster", props: { id: "your-team-roster", businessName: "Acme Healthcare", rows: [
+        { name: "Dr. Alan Pierce", email: "dr.pierce@acmehealthcare.com", role: "Physician / Owner", isAI: false },
+        { name: "Renee Salas", email: "renee@acmehealthcare.com", role: "Office Manager", isAI: false },
+        { name: "Nina Alvarez", email: "nina@acmehealthcare.com", role: "Nurse", isAI: false },
+        { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Finding — Speed-to-Lead", isAI: true },
+        { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Closing — Booking Agent", isAI: true },
+        { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Retaining — Customer Success", isAI: true },
+        { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Database Reactivation", isAI: true },
+        { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Front Desk & Phones — 24/7", isAI: true },
+        { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Cross-Sell", isAI: true },
+      ] } },
     ] } },
 
-    // ── 3. on-staff ──────────────────────────────────────────────────────────────────────────
-    { type: "Section", props: { id: "on-staff", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "on-staff-eyebrow", text: "My Staff", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "on-staff-h2", text: "She's on staff — right there in the lineup.", align: "left" } },
-      { type: "Text", props: { id: "on-staff-body", text: "Pull up your team and there she is, in the roster between the people you already pay. Not a feature buried in a settings menu. A teammate — a name, a seat, a job, same as everybody else on the payroll. And you manage her the way you manage anyone: you set the rules, she does the work. The difference is every move she makes is on the record, where you can see it. For the first time, handing something off doesn't mean losing your grip on it — it means tightening it.", align: "left" } },
-      { type: "Image", props: { id: "on-staff-screenshot", ...IMAGE_DEFAULTS, alt: "My Staff roster screenshot" } },
+    // ── why-six — believability: she's software, not a person ────────────────────────────────
+    { type: "Section", props: { id: "why-six", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "why-six-eyebrow", text: "How one hire holds six jobs", align: "left", color: "#93c5fd" } },
+      { type: "Heading", props: { id: "why-six-h2", text: "How can one worker do six jobs? Because she isn't a person.", align: "left", color: "#ffffff" } },
+      { type: "Text", props: { id: "why-six-body", text: "This is the question everybody asks, so let's answer it straight. A person can only do one job at a time, and only while they're awake. That's the whole reason you could never staff all six seats — you'd need six paychecks, six schedules, six people having six good days in a row. Chloe isn't a person. She's software, built for this work. She's never tired, she's never full, she's never off the clock. The lead that comes in at 9 on a Saturday gets answered while she's also circling back on an old quote and checking in on a customer from last month. None of it waits in a pile. And she's not winging it — we train her on your business before she ever says a word, so she shows up her first hour already knowing your offers, your prices, the objections you hear all day, and exactly how you handle a customer. Think of her less like one employee and more like a whole shift that never clocks out.", align: "left", color: "#ffffff" } },
     ] } },
 
     // ── 4. at-work ───────────────────────────────────────────────────────────────────────────
@@ -366,72 +372,59 @@ const HOME_SEED: Data = {
       ] } },
     ] } },
 
-    // ── 5. replaces-team ─────────────────────────────────────────────────────────────────────
-    { type: "Section", props: { id: "replaces-team", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "replaces-team-eyebrow", text: "One hire, four jobs", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "replaces-team-h2", text: "One hire. Four jobs.", align: "left" } },
-      { type: "Text", props: { id: "replaces-team-body", text: "To cover what Chloe covers, you'd be hiring three or four people: a front desk to answer the moment a lead comes in, a follow-up person to chase the ones who go quiet, a closer to handle the objections and book the appointment, and somebody whose whole job is calling back the old customers nobody has time for. You've never been able to staff all four. Most owners can't staff one and keep them. Chloe holds all four seats at once, every hour of every day — and they never call in sick, never quit on you mid-season, and never need a raise to do it.", align: "left" } },
+    // ── the six seats, walked one at a time (found money first) ──────────────────────────────
+    { type: "Section", props: { id: "seat-reactivation", background: "#ffffff", content: [
+      { type: "Text", props: { id: "seat-react-eyebrow", text: "The six seats, one at a time", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "seat-react-h2", text: "Seat 1 — She goes back for the money you already gave up on.", align: "left" } },
+      { type: "Text", props: { id: "seat-react-body", text: "Every business is sitting on a pile of old leads — people who called, asked for a price, went quiet, and got forgotten because there was always something louder that day. That's money you already paid to get, sitting there cold. Chloe goes back for all of it, on her own, without being told. She lives in your system, so she already knows who never booked. She reaches back out, picks the conversation up where it stopped, and books the ones who are ready. No new ad spend. No new leads. Just the ones you already had, finally worked. For most owners this is the very first thing she does — and it usually pays for her before anything else even starts.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "seat-speed", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "seat-speed-eyebrow", text: "Seat 2 — Finding", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "seat-speed-h2", text: "She answers the second a new lead comes in — day or night.", align: "left" } },
+      { type: "Text", props: { id: "seat-speed-body", text: "A fresh lead is only hot for a few minutes. Wait an hour and they've already called the next name on the list. The problem was never that you didn't care — it's that you can't be by the phone at 9 p.m. on a Saturday, and neither can your front desk. Chloe can. The moment a lead lands — from your website, your ads, a missed call, anywhere — she answers in seconds, in your voice, with your prices and your offer. She doesn't just say 'thanks, we'll be in touch.' She starts the real conversation and works it toward a booking. The leads you're already paying for finally get caught the instant they show up.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "seat-closing", background: "#ffffff", content: [
+      { type: "Text", props: { id: "seat-closing-eyebrow", text: "Seat 3 — Closing", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "seat-closing-h2", text: "She handles the objections and books it onto your calendar herself.", align: "left" } },
+      { type: "Text", props: { id: "seat-closing-body", text: "Answering fast is only half of it. Most leads don't say yes right away — they ask the price, they say they need to think, they want to check with someone first. That's where deals usually die, because handling that takes a real closer, and a real closer is the hardest person on earth to hire and keep. Chloe handles it. She answers the price question, works through the hesitation, and keeps the conversation going instead of folding the second she hears 'maybe.' And she knows exactly where her job ends — the questions that need you, a real medical or legal call, anything that isn't hers — she hands off cleanly instead of guessing. When she gets the yes, she doesn't drop it on your desk. She books it straight onto your calendar. You don't see the work. You see a new name on the schedule.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "seat-retaining", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "seat-retain-eyebrow", text: "Seat 4 — Retaining", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "seat-retain-h2", text: "She keeps the customers you already won from drifting away.", align: "left" } },
+      { type: "Text", props: { id: "seat-retain-body", text: "The most expensive customer to get is a new one. The cheapest money in your business is the customer who already bought from you once — but only if you stay in touch, and staying in touch is the first thing that falls off the plate when you're busy. Chloe doesn't get busy. She checks in, reminds them when it's time to come back, and catches the ones who are about to drift before they're gone for good. The customers you worked so hard to win stop quietly slipping out the back door.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "seat-phones", background: "#ffffff", content: [
+      { type: "Text", props: { id: "seat-phones-eyebrow", text: "Seat 5 — Call Routing, 24/7", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "seat-phones-h2", text: "She picks up the phone, too — every hour of every day.", align: "left" } },
+      { type: "Text", props: { id: "seat-phones-body", text: "When a call comes in and the desk is slammed, or it's after hours, or it's a Sunday — that call used to go to voicemail and just sit there. Most people don't leave a message; they call the next place. Chloe answers. She handles the basics — your hours, your pricing, what you offer, scheduling — and when a call really needs a human, she flags it for you instead of letting it vanish. You stop bleeding the leads that only ever called once.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "seat-crosssell", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "seat-cross-eyebrow", text: "Seat 6 — Cross-Sell", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "seat-cross-h2", text: "She sells the next thing to the people who already love you.", align: "left" } },
+      { type: "Text", props: { id: "seat-cross-body", text: "Your easiest sale is the customer who already said yes once. They know you, they trust you, and the next thing they'd buy from you is usually sitting right there — but nobody ever brings it up, because everybody's busy keeping the lights on. Chloe brings it up. She reaches out, mentions the thing that fits, handles the back-and-forth, and books it. You look at the schedule and the names are already there. This is found money stacked on top of found money.", align: "left" } },
     ] } },
 
-    // ── 6. chloe-core: 5 deep sub-sections ──────────────────────────────────────────────────
-    { type: "Section", props: { id: "chloe-core-stl", background: "#ffffff", content: [
-      { type: "Text", props: { id: "chloe-core-stl-eyebrow", text: "What she does, in plain English.", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-stl-h2", text: "She answers the second the lead lands.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-stl-body", text: "The lead that comes in at 9 p.m. on a Saturday gets the same answer as the one that comes in on a Tuesday morning. Within seconds. In your voice. With your pricing, your offer, your way of talking to a customer. The lead who wanted a discount last month and never replied — she reaches back out on her own, reads the thread, and adjusts what she says. You don't have a person who does this. You have Chloe.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "chloe-core-dfu", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "chloe-core-dfu-eyebrow", text: "Dynamic Follow-Up", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-dfu-h2", text: "She follows up like a person, not a calendar reminder.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-dfu-body", text: "Most follow-up is the same three messages on repeat, sent to everybody, on a timer nobody set with any intention. Chloe reads what the person actually said — the 'I need to think about it,' the 'my husband has to sign off,' the 'what's the price?' — and she responds to that. The message changes because the conversation changed. She doesn't stop because she ran out of templates. She stops when the person says yes or when they clearly won't — and she knows the difference.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "chloe-core-dbr", background: "#ffffff", content: [
-      { type: "Text", props: { id: "chloe-core-dbr-eyebrow", text: "Database Reactivation", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-dbr-h2", text: "She goes back for the money you already wrote off.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-dbr-body", text: "Every business is sitting on a pile of old leads — people who asked, got quoted, went quiet, and got forgotten. Nobody called them back because there was always something louder. Chloe calls them back. All of them. On her own, without being told. She doesn't need to be reminded because she lives in your database and she already knows who didn't close. She finds out what happened, picks up the conversation where it stopped, and books the appointment. That's revenue you already paid to acquire, coming in with no new ad spend.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "chloe-core-sil", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "chloe-core-sil-eyebrow", text: "Stays in Her Lane", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-sil-h2", text: "She knows what's hers to answer — and what isn't.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-sil-body", text: "This is the whole line between an employee and a chatbot. A chatbot answers everything until it breaks trust on something it shouldn't have touched. Chloe knows the difference between a sales question and a medical question, a scheduling request and a pricing policy you haven't figured out yet, a complaint she can handle and one that needs you on the phone. When it's not hers, she says so and hands it off cleanly. You define the lines. She holds them.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "chloe-core-bkc", background: "#ffffff", content: [
-      { type: "Text", props: { id: "chloe-core-bkc-eyebrow", text: "Booking & Calendar", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "chloe-core-bkc-h2", text: "She closes it — and puts it on the calendar herself.", align: "left" } },
-      { type: "Text", props: { id: "chloe-core-bkc-body", text: "Chloe doesn't gather a lead and drop it on your desk. She works the lead, handles the objections, gets the yes — and then she books the appointment directly onto your calendar. You don't see the work. You see a new name on the schedule. The handoff point is 'confirmed' — not 'interested.' That's the difference between Chloe and every other tool you've tried.", align: "left" } },
-    ] } },
-
-    // ── 7. addons: 3 deep sub-sections ──────────────────────────────────────────────────────
-    { type: "Section", props: { id: "addons-icr", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "addons-icr-eyebrow", text: "When you're ready, you can give her more to do.", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "addons-icr-h2", text: "She picks up the phone, too.", align: "left" } },
-      { type: "Text", props: { id: "addons-icr-body", text: "When a call comes in and the desk is slammed, or after hours, or on a Sunday — Chloe answers. She handles the basics: hours, pricing, scheduling, what you offer and what you don't. She takes a message when she needs to. If the call needs a human, she flags it. You stop bleeding the leads that went to voicemail and just stayed there.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "addons-oce", background: "#ffffff", content: [
-      { type: "Text", props: { id: "addons-oce-eyebrow", text: "Add-on: Outbound Calling AI Employee", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "addons-oce-h2", text: "She'll make the calls nobody ever gets around to.", align: "left" } },
-      { type: "Text", props: { id: "addons-oce-body", text: "This is the step up from follow-up texts. When a lead has gone quiet and a phone call is the right next move — one your team never gets around to because there's always something in front of it — Chloe makes the call. She introduces herself, picks up where the conversation left off, and moves it. Outbound calling at the volume and consistency nobody could staff.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "addons-cs", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "addons-cs-eyebrow", text: "Add-on: Cross-Sell", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "addons-cs-h2", text: "She sells the second thing to the people who already bought the first.", align: "left" } },
-      { type: "Text", props: { id: "addons-cs-body", text: "Your easiest sale is the customer you already have. They know you, they already said yes once, and the next thing they'd buy is usually right there waiting. Chloe surfaces it. She reaches out, she mentions it, she handles the back-and-forth, and she books it. You don't do anything. You look at the schedule and the names are already there.", align: "left" } },
+    // ── payroll — the realization (no price; that's the call) ────────────────────────────────
+    { type: "Section", props: { id: "payroll", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "payroll-eyebrow", text: "Now add it up", align: "center", color: "#93c5fd" } },
+      { type: "Heading", props: { id: "payroll-h2", text: "Six seats. One hire.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "payroll-body", text: "Step back and look at what you just read. To cover those six seats with people, you'd be hiring a front desk, a follow-up person, a closer, someone to work the old list, someone to answer the phones around the clock, and someone to bring in the repeat business. Six jobs. Even if you could find them all, even if they all showed up every day, that's a payroll most owners your size will never carry — well over a couple hundred thousand dollars a year, plus the managing, the turnover, and the headaches. Chloe holds all six seats, around the clock, and never calls in sick, never quits on you, and never asks for a raise. What that costs is a conversation we have on the call — but you already know it isn't six salaries. That's the part that makes owners sit up.", align: "center", color: "#ffffff" } },
     ] } },
 
     // ── 8. tech-enabled ──────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "tech-enabled", background: "#0f1f3d", content: [
       { type: "Text", props: { id: "tech-enabled-eyebrow", text: "The part most owners don't see coming", align: "center", color: "#93c5fd" } },
       { type: "Heading", props: { id: "tech-enabled-h2", text: "And the day you sell, it's worth more — even if you only ever sell once.", align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "tech-enabled-body", text: "A business that only runs because you're standing in it is a hard thing to sell. Whoever buys it is really just buying your job — and they'll pay you like it. A business that runs on a system that keeps working after you walk away is worth a great deal more, because now they're buying something that runs without you in the room. Buyers have a name for that kind of business: a tech-enabled company. And they pay a premium for it.", align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "tech-enabled-body2", text: "That's exactly what we build into yours — a sales-and-follow-up engine that books customers whether you're there or not. Even if you've got one location and you only ever sell it once, that lift in what your business is worth — by itself — pays back everything we'll ever do for you, many times over. You get the growth now, and a bigger check at the finish line. The growth is just the part you can see from here.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-body", text: "Here's one more piece most owners don't see coming. A business that only runs because you're standing in it is hard to sell — whoever buys it is really just buying your job. A business that runs on a system that keeps working after you walk away is worth a great deal more, because they're buying something that runs without you in the room. Buyers pay a premium for that, and it's exactly what we build into yours: a sales-and-follow-up engine that books customers whether you're there or not. You get the growth now, and a bigger check the day you sell — even if you only ever sell once.", align: "center", color: "#ffffff" } },
     ] } },
 
-    // ── 9. cta ───────────────────────────────────────────────────────────────────────────────
-    { type: "Section", props: { id: "cta", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "cta-eyebrow", text: "The next move", align: "center", color: "#2563eb" } },
-      { type: "Heading", props: { id: "cta-h2", text: "Let's talk — one solo entrepreneur to another.", align: "center" } },
-      { type: "Text", props: { id: "cta-body", text: "I'm not going to sell you on a call. I'm going to listen to how you run today, show you exactly where your first AI employee plugs in, and tell you what it would look like on day one. No pitch deck. No system demos. Just the conversation — and if it makes sense, we talk about what's next.", align: "center" } },
-      { type: "Button", props: { id: "cta-btn", title: "Book your discovery call", subtitle: "Fifteen minutes. Bring your numbers.", href: "/#contact" } },
-      { type: "PhoneLink", props: { id: "cta-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
+    // ── apply — the ONE button, selective, said nice (pricing happens on the call) ───────────
+    { type: "Section", props: { id: "apply", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "apply-eyebrow", text: "If you want in", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "apply-h2", text: "We're not for everybody — and that's on purpose.", align: "center" } },
+      { type: "Text", props: { id: "apply-body", text: "We don't bolt this onto every business that asks. We take on a limited number of owners at a time, because we build and run each one by hand — and we'd rather do a few right than a lot halfway. So the next step isn't a sales pitch. It's an application. Tell us about your business. If it's a fit, we'll get on a call, show you exactly where your first hire plugs in and what it would look like on day one, and talk about what it costs. If it's not, we'll tell you that straight too. No pressure, no pitch deck — just a real conversation between people who run businesses.", align: "center" } },
+      { type: "Button", props: { id: "apply-btn", title: "Apply to work with me", subtitle: "Tell us about your business. If it's a fit, we'll talk.", href: "/apply" } },
+      { type: "PhoneLink", props: { id: "apply-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
     ] } },
   ],
 };
