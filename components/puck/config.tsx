@@ -32,6 +32,7 @@ import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedS
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 import ImageUpload from "@/components/puck/ImageUpload";
 import NavView from "@/components/NavView";
+import FooterView from "@/components/FooterView";
 
 type Align = "left" | "center" | "right";
 
@@ -49,6 +50,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -176,6 +178,24 @@ export const NAV_DEFAULTS = {
   links: [] as { label: string; target: string; fontSize: number; color: string }[],
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
+};
+
+// Single source of truth for the footer — used by the seed (so /edit/footer opens to it) AND
+// Footer.tsx's fallback (so the live footer never renders blank if nothing's published).
+export const FOOTER_DEFAULTS = {
+  blurb:
+    "Five businesses since 1986. Owner and tech lead in every one — now installing AI employees for the solo entrepreneur, done for you, on the software you already run.",
+  links: [
+    { label: "About Steven James — who I am & why listen", target: "/about" },
+    { label: "Meet Chloe", target: "/case-study" },
+    { label: "FAQs", target: "/faqs" },
+  ] as { label: string; target: string }[],
+  phone: "+12102982343",
+  phoneDisplay: "(210) 298-2343",
+  email: "support@stevenjamesconsulting.com",
+  privacyUrl: "https://www.privacypolicies.com/live/1cbbc5dd-5b42-4b68-abdd-a279a5e3b4f7",
+  tosUrl: "https://www.privacypolicies.com/live/34bb5cc7-32b9-4449-ae32-7cfe78f34e45",
+  copyright: "ARV Venture Group LLC Parent Company · Steven James Consulting",
 };
 
 export const IMAGE_DEFAULTS = {
@@ -337,6 +357,42 @@ export const config: Config<Props> = {
           </div>
         );
       },
+    },
+
+    SiteFooter: {
+      label: "Site footer",
+      fields: {
+        blurb: { type: "textarea" as const, label: "Bio blurb (who you are, brief)" },
+        links: {
+          type: "array" as const,
+          label: "Footer links (add / delete)",
+          arrayFields: {
+            label: { type: "text" as const, label: "Label" },
+            target: { type: "text" as const, label: "Links to (page or /#section)" },
+          },
+          getItemSummary: (i: { label?: string }) => i?.label || "link",
+          defaultItemProps: { label: "New link", target: "/" },
+        },
+        phone: { type: "text" as const, label: "Phone — raw for Call/Text (e.g. +12102982343)" },
+        phoneDisplay: { type: "text" as const, label: "Phone — display (e.g. (210) 298-2343)" },
+        email: { type: "text" as const, label: "Email" },
+        privacyUrl: { type: "text" as const, label: "Privacy Policy URL" },
+        tosUrl: { type: "text" as const, label: "Terms of Service URL" },
+        copyright: { type: "text" as const, label: "Copyright line" },
+      },
+      defaultProps: FOOTER_DEFAULTS,
+      render: ({ blurb, links, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright }) => (
+        <FooterView
+          blurb={blurb}
+          links={links}
+          phone={phone}
+          phoneDisplay={phoneDisplay}
+          email={email}
+          privacyUrl={privacyUrl}
+          tosUrl={tosUrl}
+          copyright={copyright}
+        />
+      ),
     },
 
     SiteHeader: {
