@@ -31,6 +31,7 @@ import MedSpaStep, { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep
 import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
 import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 import ImageUpload from "@/components/puck/ImageUpload";
+import NavView from "@/components/NavView";
 
 type Align = "left" | "center" | "right";
 
@@ -100,6 +101,16 @@ type Props = {
     p2bold2: string;
     p2end: string;
   };
+  // The site navigation — fully editable in the builder (edit at /edit/nav, renders site-wide).
+  SiteHeader: {
+    brandName: string;
+    tagline: string;
+    taglineColor: string;
+    taglineSize: number;
+    links: { label: string; target: string; fontSize: number; color: string }[];
+    ctaLabel: string;
+    ctaHref: string;
+  };
   // The shared industry deep-page template, with its copy editable through fields.
   FieldDeep: {
     name: string;
@@ -143,6 +154,29 @@ const COLOR_FIELD = {
   ],
 };
 
+// Nav text colors (sit on the dark navy header band).
+const NAV_COLOR_FIELD = {
+  type: "select" as const,
+  options: [
+    { label: "White", value: "#ffffff" },
+    { label: "Green", value: "#22c55e" },
+    { label: "Light blue", value: "#93c5fd" },
+    { label: "Muted", value: "#cbd5e1" },
+  ],
+};
+
+// Single source of truth for the nav's starting content — used by BOTH the seed (so /edit/nav
+// opens to it) AND Nav.tsx's fallback (so the live nav never renders blank if nothing's published).
+export const NAV_DEFAULTS = {
+  brandName: "Steven James Consulting",
+  tagline: "Your Native AI Implementation Partner",
+  taglineColor: "#22c55e",
+  taglineSize: 18,
+  links: [] as { label: string; target: string; fontSize: number; color: string }[],
+  ctaLabel: "See How It Works",
+  ctaHref: "/#at-work",
+};
+
 export const IMAGE_DEFAULTS = {
   src: "",
   alt: "",
@@ -166,6 +200,54 @@ export const CONVERSATION_DEFAULTS = {
 // The block catalog, typed with the Props map so fields + render params are inferred.
 export const config: Config<Props> = {
   components: {
+    SiteHeader: {
+      label: "Site header / nav",
+      fields: {
+        brandName: { type: "text" as const, label: "Business name (links home)" },
+        tagline: { type: "text" as const, label: "Center tagline (who you are)" },
+        taglineColor: { ...NAV_COLOR_FIELD, label: "Tagline color" },
+        taglineSize: {
+          type: "custom" as const,
+          label: "Tagline size (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={18} step={1} min={10} />
+          ),
+        },
+        links: {
+          type: "array" as const,
+          label: "Nav links (add / delete pages or #sections)",
+          arrayFields: {
+            label: { type: "text" as const, label: "Label" },
+            target: { type: "text" as const, label: "Links to (a page like /about, or a homepage section like /#at-work)" },
+            fontSize: {
+              type: "custom" as const,
+              label: "Size (− / +)",
+              render: ({ onChange, value }) => (
+                <SizeStepper value={value as number} onChange={onChange} fallback={14} step={1} min={10} />
+              ),
+            },
+            color: { ...NAV_COLOR_FIELD, label: "Color" },
+          },
+          getItemSummary: (i: { label?: string }) => i?.label || "link",
+          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "#ffffff" },
+        },
+        ctaLabel: { type: "text" as const, label: "Button label (leave blank to hide)" },
+        ctaHref: { type: "text" as const, label: "Button links to" },
+      },
+      defaultProps: NAV_DEFAULTS,
+      render: ({ brandName, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref }) => (
+        <NavView
+          brandName={brandName}
+          tagline={tagline}
+          taglineColor={taglineColor}
+          taglineSize={taglineSize}
+          links={links}
+          ctaLabel={ctaLabel}
+          ctaHref={ctaHref}
+        />
+      ),
+    },
+
     Section: {
       label: "Section (band)",
       fields: {
