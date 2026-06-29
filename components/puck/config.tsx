@@ -607,8 +607,10 @@ export const config: Config<Props> = {
               fontSize: `${px}px`,
               textAlign: align,
               color: color || "#111827",
-              marginTop: `${typeof spaceAbove === "number" ? spaceAbove : 0}px`,
-              marginBottom: `${typeof spaceBelow === "number" ? spaceBelow : 12}px`,
+              marginTop: 0,
+              marginBottom: 0,
+              paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 0}px`,
+              paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 12}px`,
             }}
           >
             {text}
@@ -666,8 +668,10 @@ export const config: Config<Props> = {
           style={{
             textAlign: align,
             color: color || "#111827",
-            marginTop: `${typeof spaceAbove === "number" ? spaceAbove : 16}px`,
-            marginBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px`,
+            marginTop: 0,
+            marginBottom: 0,
+            paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 16}px`,
+            paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px`,
             fontSize: `${fontSize && fontSize > 0 ? fontSize : 18}px`,
           }}
           dangerouslySetInnerHTML={{ __html: text }}
@@ -790,7 +794,7 @@ export const config: Config<Props> = {
         const maxW = maxWidth && maxWidth > 0 ? `${maxWidth}px` : undefined;
         const radius = rounded || "16px";
         return (
-          <figure style={{ display: "flex", flexDirection: "column", alignItems, marginTop: `${typeof spaceAbove === "number" ? spaceAbove : 24}px`, marginBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px` }}>
+          <figure style={{ display: "flex", flexDirection: "column", alignItems, marginTop: 0, marginBottom: 0, paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 24}px`, paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px` }}>
             {src ? (
               <img
                 src={src}
