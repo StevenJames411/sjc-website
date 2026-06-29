@@ -187,8 +187,8 @@ export const config: Config<Props> = {
         content: { type: "slot" as const },
       },
       defaultProps: { background: "#ffffff", paddingTop: 64, paddingBottom: 64, content: [] },
-      render: ({ background, paddingTop, paddingBottom, content: Content }) => (
-        <section style={{ backgroundColor: background }} className="w-full">
+      render: ({ id, background, paddingTop, paddingBottom, content: Content }) => (
+        <section id={typeof id === "string" ? id : undefined} style={{ backgroundColor: background }} className="w-full scroll-mt-20">
           <div
             className="mx-auto max-w-3xl px-6"
             style={{
