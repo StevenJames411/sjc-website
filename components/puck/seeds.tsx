@@ -1,5 +1,5 @@
 import type { Data } from "@measured/puck";
-import { SEED } from "@/components/puck/config";
+import { SEED, IMAGE_DEFAULTS } from "@/components/puck/config";
 import { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
 import { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
 import { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
@@ -241,71 +241,187 @@ const PODCAST_SEED: Data = {
   ],
 };
 
-// Home = the journey spine, now expressed as NATIVE editable blocks (Section / Heading / Text /
-// Video / Button) so every element on the homepage carries the full toolset — font size, color,
-// align, add / delete / reorder — exactly like every other page.
+// Home = SJC front-half (Story→Problem→Solution) → Chloe back-half. Flow:
+// hero (who we are = native AI implementation partner) → story → problem → solution
+// → meet Chloe → staff screenshot → Chloe at work → replaces the team → 5 core →
+// 3 add-ons → tech-enabled → CTA. The Solution's last line hands into "Meet Chloe."
+// Branding lock (2026-06-29): "native AI implementation" threaded top-to-bottom — hero
+// frames WHO WE ARE first so "AI" reads as the differentiation, not a threat.
+// IDs are stable so copy can be targeted by ID without touching structure.
+// Render state: if an Upstash published snapshot exists it takes over readPuckPublished("home").
+// To load this seed: /edit/home?reset=1 → then Publish.
 const HOME_SEED: Data = {
   root: {},
   content: [
-    { type: "Section", props: { id: "home-hero", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "home-hero-eyebrow", text: "Sales · Marketing · Growth · Control", size: "base", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "home-hero-h1", text: "For the first time in 40 years, you can have all of it.", fontSize: 48, align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "home-hero-sub", text: "I install the marketing that fills your pipeline and the sales force that closes every lead — so your business finally grows without you carrying it. And nothing leaves your hands: every lead, every dollar, every decision stays yours.", size: "lg", align: "center", color: "#ffffff" } },
-      { type: "Video", props: { id: "home-hero-video", src: "", caption: "2-minute teaser — coming" } },
-      { type: "Button", props: { id: "home-hero-cta", title: "Apply to work with me", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
+    // ── 1. hero — WHO WE ARE: the native AI implementation partner ────────────────────────────
+    { type: "Section", props: { id: "hero", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "hero-eyebrow", text: "You already know you need AI.", align: "center", color: "#22c55e" } },
+      { type: "Text", props: { id: "hero-eyebrow2", text: "We give you the easy button!", align: "center", color: "#22c55e" } },
+      { type: "Heading", props: { id: "hero-h1", text: "We install AI employees where they make the most impact — finding customers, closing them, and retaining them — installed right on top of the software you already use.", fontSize: 48, align: "center", color: "#ffffff" } },
+      { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
+      { type: "Button", props: { id: "hero-cta", title: "See It Run on Your Business", subtitle: "Your leads, your follow-up, and the work piling up behind you — all handled, done for you. The only question left is how fast you can get it running.", href: "/#contact" } },
     ] } },
-    { type: "Section", props: { id: "home-playbook", background: "#ffffff", content: [
-      { type: "Text", props: { id: "home-playbook-eyebrow", text: "The playbook you already run", size: "sm", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "home-playbook-h2", text: "Every business like yours runs the same play.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "home-playbook-p1", text: "You know this cold, so I'll just say it back to you the way you'd say it yourself — not to teach you, but so you know I'm not guessing. I've run this play four times, in four different businesses of my own.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-playbook-p2", text: "Michael Gerber named where it starts: you're the Technician. You got good at the work, you opened your own shop, and now the business is just you — you answer the phone, you run the schedule, you know every customer by name, and the whole thing lives in your head and your calendar. You take the risk nobody else would take, and you grind it up one job, one lead, one customer at a time.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-playbook-p3", text: "The play to grow is the same one Gerber wrote down back in 1986: stop being the business and start building it. Draw the org chart — sales, follow-up, front desk, operations — and fill the seats, so the system runs the business and the people run the system. You work ON it instead of buried IN it. That's the whole game, whether you've got one location or seven.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-playbook-p4", text: "And whatever stage you're at, you run the whole thing on the same linear tools everyone else uses — a CRM, the GoHighLevel-class sequences, software that does what software has always done: if this, then that. A lead comes in, fire a text. It's a conveyor belt. It's been the state of the art for fifteen years, and nobody wins on it anymore — you run it so you don't lose on it.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-playbook-p5", text: "That's the playbook, top to bottom. I'm not here to tell you it's wrong. I'm here because I know it well enough to show you where the lid is — and the new lever that lifts it.", size: "base", align: "left" } },
+
+    // ── 1b. story — what changed (Steven IS the persona) ──────────────────────────────────────
+    // ── 1a. stat band — the news-wave in numbers (reinforces the hero; AEO fuel; stacks on mobile)
+    { type: "Section", props: { id: "wave-stats", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "wave-stats-eyebrow", text: "The headlines aren't hype — here are the numbers", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "wave-stats-h2", text: "The businesses moving now are pulling away from the ones that wait.", fontSize: 32, align: "center" } },
+      { type: "Columns", props: { id: "wave-stats-cols", columns: 3, gap: 24,
+        col1: [
+          { type: "Heading", props: { id: "stat1-num", text: "55%", fontSize: 54, align: "center", color: "#2563eb", spaceBelow: 4 } },
+          { type: "Text", props: { id: "stat1-lbl", text: "of small businesses now use AI — up from 39% just a year ago. The wave isn't coming. It's already here.", align: "center" } },
+        ],
+        col2: [
+          { type: "Heading", props: { id: "stat2-num", text: "2.5×", fontSize: 54, align: "center", color: "#2563eb", spaceBelow: 4 } },
+          { type: "Text", props: { id: "stat2-lbl", text: "the revenue growth of AI-run businesses versus the ones still doing it all by hand.", align: "center" } },
+        ],
+        col3: [
+          { type: "Heading", props: { id: "stat3-num", text: "73%", fontSize: 54, align: "center", color: "#2563eb", spaceBelow: 4 } },
+          { type: "Text", props: { id: "stat3-lbl", text: "of owners already using AI say it made them more competitive — and that gap widens every month.", align: "center" } },
+        ],
+      } },
+      { type: "Text", props: { id: "wave-stats-foot", text: "Sources: McKinsey, State of AI; U.S. small-business AI-adoption surveys, 2025.", fontSize: 13, align: "center", color: "#6b7280" } },
     ] } },
-    { type: "Section", props: { id: "home-ceiling", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "home-ceiling-eyebrow", text: "The ceiling", size: "sm", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "home-ceiling-h2", text: "The playbook has a lid — and you can feel it.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "home-ceiling-p1", text: "Start with where the money leaks, because it's leaking right now. The lead that comes in at 9 p.m. on a Saturday and sits until Monday — booked with the guy down the street by then. The calls that hit voicemail when the front desk is slammed. The follow-up that fires the same canned text to everybody. The old customers nobody has time to call back. A few hundred dollars here, a no-show there — invisible because it's spread thin, enormous once you add it up.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-ceiling-p2", text: "The linear tools can't plug those leaks, because they were never built to fill a seat — only to move a lead from A to B in a straight line. They don't answer at midnight, they don't read what the person actually said, and they don't work the list. So the seats on your org chart go unfilled, and the work that should live in them falls back onto the one person who's always caught it: you.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-ceiling-p3", text: "That's the real lid — the org chart with one name in every box: yours. Every time you handed something off it got fumbled, so you stopped handing things off and do it all yourself — and a part of you is proud of it. Gerber's line still bites: if the business depends on you, you don't own a business — you own a job. You became the system.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-ceiling-p4", text: "And here's what it costs you: the growth you actually want. You can't add a location, you can't take on more volume, you can't take a week off — because the moment you try, the whole thing wobbles and falls right back onto you. The lid isn't on how hard you work. It's on how big you can ever get. That's the ceiling. Here's the lever.", size: "base", align: "left" } },
+
+    // ── 1b. story — the eternal want ───────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "story", background: "#ffffff", content: [
+      { type: "Text", props: { id: "story-eyebrow", text: "What you've always wanted", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "story-h2", text: "Every owner wants the same two things — together.", align: "left" } },
+      { type: "Text", props: { id: "story-p1", text: "I've run five businesses since 1986 — a restaurant, a mortgage shop, a roofing company, a trucking outfit, and now this one. Owner and tech lead in every one. So I'm not studying you from the outside. I've been you. And I've wanted the exact thing you want: more leads coming in the top, and a real closer working every single one of them. Growth and a sales force — together.", align: "left" } },
+      { type: "Text", props: { id: "story-p2", text: "That's not a new dream. Every operator has had it since the day they opened the doors. The leads filling up, and someone who answers fast, never lets one go cold, and books the appointment while you run the business. What's new — and it's brand new — is that you can finally have it.", align: "left" } },
     ] } },
-    { type: "Section", props: { id: "home-weapon", background: "#ffffff", content: [
-      { type: "Text", props: { id: "home-weapon-eyebrow", text: "What changed", size: "sm", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "home-weapon-h2", text: "Now the seats fill themselves.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "home-weapon-p1", text: "There's a new kind of worker that didn't exist in any usable form even a year ago. Not the linear software you already run. Not a chatbot. An AI employee — a worker with a job, trained on the way YOU do it, that answers every lead the instant it lands, follows up reading what the person actually said, books the appointment, and works the dormant list nobody has time to touch. It never quits, never has a bad day, never lets a lead sit. The seat's job stays exactly the same; who sits in it is finally something other than you.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-weapon-p2", text: "And it's the first hire the control-freak in you will actually trust — because a human employee was always a loss of control (forgets, freelances, quits), and this is the opposite. It obeys exactly, every time, fully logged. Every lead tracked, every conversation on the record, nothing living in some new person's head where you can't see it. For the first time, delegating increases your grip instead of surrendering it. That's the lever — the biggest shift to hit a business like yours since the org chart was invented.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-weapon-teaser", text: "For forty years, the one employee you needed most didn't exist. Twenty-four months ago, that changed.", size: "lg", align: "left" } },
-      { type: "Button", props: { id: "home-weapon-link", title: "See what changed", subtitle: "", href: "/what-changed" } },
+
+    // ── 1c. problem — the sales team you could never build ────────────────────────────────────
+    { type: "Section", props: { id: "problem", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "problem-eyebrow", text: "Why you could never get there", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "problem-h2", text: "You needed it. Every road to it was blocked.", align: "left" } },
+      { type: "Text", props: { id: "problem-p1", text: "The only way to get growth and a sales force used to be to build an organization around it — hire the people, train them, manage them, then hire more to manage those. But every person you added was another paycheck, another problem, another way the whole thing slipped out of your hands. You didn't get into business to run a payroll and referee a team all day. So it stalled before it ever got going. That's the first wall.", align: "left" } },
+      { type: "Text", props: { id: "problem-p2", text: "And the one hire that would've changed everything — the closer who answers in seconds, never lets a lead go cold, works the dead list, and handles the objection instead of folding the moment they hear it — you could never land. The great ones you couldn't afford. The good ones you couldn't keep; they got poached the minute they got good. And the true unicorns came with ego, drama, and babysitting. So you did what you always do: you wore the hat yourself. And while you were buried in the work, the leads slipped, the follow-up died, and the long list of people who once raised their hand quietly rotted in your system. That's the second wall.", align: "left" } },
+      { type: "Text", props: { id: "problem-p3", text: "That's the perfect storm every owner has lived. You needed growth and a sales force, and every road to it ran straight through people you couldn't hire, couldn't keep, or couldn't afford to manage. It was never a discipline problem, and it was never a you problem. The tool that could do it any other way simply did not exist yet. Until it did.", align: "left" } },
     ] } },
-    { type: "Section", props: { id: "home-proof", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "home-proof-eyebrow", text: "Proof, not theory", size: "sm", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "home-proof-h2", text: "A working AI employee, live today.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "home-proof-p1", text: "None of this is a whiteboard theory, and I'm not going to ask you to take a forty-year business owner's word for it without a receipt. There's a working prototype running right now, in one field, and it's the first of many.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-proof-p2", text: "The AI employee has a name — Chloe. She's trained on one owner's own sales conversations: the way he actually talks to a lead, the questions he asks, the way he handles “let me think about it.” She answers every lead the instant it lands and books the consult herself, start to finish, no human in the loop. Her first night live was a Sunday, staff off — she booked four consults while the lights were out and nobody was at the desk. Four appointments that, the week before, would have sat in a voicemail box until Monday.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-proof-p3", text: "One field, proven — an AI employee booking real consults off real leads while the humans slept. It's the same engine, and it points at the next field — whatever business runs the same playbook.", size: "base", align: "left" } },
+
+    // ── 1d. solution — SJC = growth partner + sales partner; hands into Chloe ──────────────────
+    { type: "Section", props: { id: "solution", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "solution-eyebrow", text: "What just changed", align: "left", color: "#93c5fd" } },
+      { type: "Heading", props: { id: "solution-h2", text: "About two years ago, that changed — for good.", align: "left", color: "#ffffff" } },
+      { type: "Text", props: { id: "solution-p1", text: "The AI employee crossed a line it had never crossed before. It got good enough to actually be that closer — and good enough to do the work of the whole org chart you never wanted to build. Not a chatbot. Not a help-desk script that breaks the second a real question shows up. An employee that answers the instant a lead lands, follows up like a person, works the dead list, handles the objection, and books the appointment — in your voice, on your calendar, around the clock. That's the tipping point. The thing you always wanted but could never reach is, for the first time, in reach — and the window just opened.", align: "left", color: "#ffffff" } },
+      { type: "Text", props: { id: "solution-p2", text: "That's where SJC comes in — as your growth partner and your sales partner. We install it for you, right on top of the business you already run: your CRM, your calendar, your phone, the leads you already paid for. Nothing gets ripped out, nothing gets handed to a black box. You set the rules, you watch every conversation and every booking as it happens, and you stay the boss.", align: "left", color: "#ffffff" } },
+      { type: "Text", props: { id: "solution-p3", text: "And here's the part that separates us from everyone else selling AI: you don't have to learn a thing. We don't hand you a login, a manual, and a good-luck. We build it, we train it on the way you actually sell, and we run it. It shows up like a rockstar coworker who sat down next to your team already trained — handing them layups from day one. Implementation and ease of use. You get the wins; you never touch the machine.", align: "left", color: "#ffffff" } },
+      { type: "Heading", props: { id: "solution-bridge", text: "And the sales force we bring is Chloe.", fontSize: 30, align: "left", color: "#ffffff" } },
     ] } },
-    { type: "Section", props: { id: "home-platform", background: "#ffffff", content: [
-      { type: "Text", props: { id: "home-platform-eyebrow", text: "The Platform", size: "sm", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "home-platform-h2", text: "Above any one industry.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "home-platform-p1", text: "Don't let any one example narrow your thinking. What I'm describing isn't a one-industry business at all — it's an AI-implementation company that sits above every single industry.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-platform-p2", text: "The engine — the AI employee that answers, follows up, qualifies, books, and reactivates; the way it's trained on one owner's own playbook; the way it installs on top of the linear software a shop already runs — none of that is tied to any single field. It forks. I proved it in the first field, then the next — roofing, because I ran a roofing company and I know exactly where that money leaks; home services, trades, practices, any field with the same shape: built and run by one person, lead-driven, fragmented, bleeding the same leaks. Same engine, retrained on the new field's playbook, installed in the businesses that run it.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-platform-p3", text: "That's what this actually is: not a tool for one industry, but the company that installs an owned AI workforce on top of whatever business you run — whichever industry, whichever software you already use. The platform goes everywhere the playbook goes.", size: "base", align: "left" } },
+
+    // ── 2. meet-chloe ────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "meet-chloe", background: "#ffffff", content: [
+      { type: "Text", props: { id: "meet-chloe-eyebrow", text: "", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "meet-chloe-h2", text: "Meet Chloe.", align: "left" } },
+      { type: "Text", props: { id: "meet-chloe-body", text: "This is Chloe. She answers your leads, follows up for days, and books the appointment — start to finish, in your voice. We don't hand you a login and a help doc and wish you luck. We build Chloe for your business, train her on the way you actually sell, and put her to work. She shows up her first day already knowing your offer, your prices, the objections you hear all day, and exactly how you like a customer handled. She's the employee you've been trying to hire for years — except she starts trained, she never has a bad day, and she never walks out the door with everything she learned in her head.", align: "left" } },
+      { type: "Image", props: { id: "meet-chloe-portrait", ...IMAGE_DEFAULTS, src: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/7af0a5ce-12014A0CD94E4B0EA5A3D061753578BA.png", alt: "Chloe — your AI employee", maxWidth: 420 } },
     ] } },
-    { type: "Section", props: { id: "home-moat", background: "#ffffff", content: [
-      { type: "Text", props: { id: "home-moat-eyebrow", text: "Why me", size: "sm", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "home-moat-h2", text: "You'd never hand your shop to a kid with a laptop. You don't have to.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "home-moat-p1", text: "Here's the un-fakeable part, and it's the reason this works with me and is very hard to copy.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-moat-p2", text: "This only works if one person is two things at once: someone who has actually run a business like yours, the way you run it, and someone who is genuinely AI-native and builds the technology himself. Those two almost never live in the same person. The twenty-two-year-old AI founder can build the system, but he's never made a payroll, never run a real shop through a slow season — he doesn't understand the business you built or the grind behind it, and you sniff that out in the first sentence. The forty-year business owner understands all of that in his bones, but he can't suddenly become AI-native and build the thing by hand — so he ends up reselling somebody else's software and changes nothing.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-moat-p3", text: "I'm both. I opened my first shop in 1986 — a restaurant — then mortgage, then roofing, then twenty years in trucking. Four businesses of my own, and the tech lead in every one, because we were too small to afford anyone else. And now I build the AI myself. Not a deck I bought, not a vendor I white-label. I sit on top of my own AI workforce and I build it by hand. So when I sit across from you, I'm not the tech guy you tolerate — I'm a man who ran shops just like yours for four decades and happens to be the one who can install the machine. You believe me because I've stood where you're standing. That overlap — real business owner and hands-on builder — is the moat.", size: "base", align: "left" } },
+
+    // ── 3. on-staff ──────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "on-staff", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "on-staff-eyebrow", text: "My Staff", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "on-staff-h2", text: "She's on staff — right there in the lineup.", align: "left" } },
+      { type: "Text", props: { id: "on-staff-body", text: "Pull up your team and there she is, in the roster between the people you already pay. Not a feature buried in a settings menu. A teammate — a name, a seat, a job, same as everybody else on the payroll. And you manage her the way you manage anyone: you set the rules, she does the work. The difference is every move she makes is on the record, where you can see it. For the first time, handing something off doesn't mean losing your grip on it — it means tightening it.", align: "left" } },
+      { type: "Image", props: { id: "on-staff-screenshot", ...IMAGE_DEFAULTS, alt: "My Staff roster screenshot" } },
     ] } },
-    { type: "Section", props: { id: "home-next", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "home-next-eyebrow", text: "The next move", size: "sm", align: "center", color: "#2563eb" } },
-      { type: "Heading", props: { id: "home-next-h2", text: "The next move.", level: "h2", align: "center" } },
-      { type: "Text", props: { id: "home-next-p1", text: "Wherever you are on the journey, you already know the playbook has a lid. Same play as everyone, same linear tools, the same leads slipping through. What's new is the lever that lifts it: an AI employee that plugs the leaks — answers every lead, follows up, books — so the org-chart seats you could never afford to fill finally fill themselves.", size: "base", align: "left" } },
-      { type: "Text", props: { id: "home-next-p2", text: "I'm not going to sell you on a call. Either it moves your numbers or it doesn't, and you'll know inside the first ten minutes. So let's talk one solo entrepreneur to another: tell me how you run today, and I'll show you exactly where it plugs in — starting with the leads you're already paying for.", size: "base", align: "left" } },
-      { type: "Button", props: { id: "home-next-cta", title: "Apply to work with me", subtitle: "One solo entrepreneur to another.", href: "/#contact" } },
+
+    // ── 4. at-work ───────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "at-work", background: "#ffffff", content: [
+      { type: "Text", props: { id: "at-work-eyebrow", text: "At Work", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "at-work-h2", text: "See her work.", align: "left" } },
+      { type: "Text", props: { id: "at-work-body", text: "These are real conversations — names and numbers changed, nothing else. They happen to be from a clinic we run this for, but watch what she does, not what she sells: she handles the price objection, re-engages a lead who'd already given up, and knows exactly which questions aren't hers to answer. The same moves work in any business.", align: "left" } },
+      { type: "Conversation", props: { id: "at-work-conv-1", chloeLabel: "Chloe", leadLabel: "Lead", caption: "She asked the two questions that kill most deals — the price, and “is this all you do?” Chloe turned both into a booking.", messages: [
+        { from: "lead", text: "It's actually not far for me. Can you tell me about pricing? That's a big issue." },
+        { from: "chloe", text: "Since you've already been on the medicine, your first visit is just $59. Then the monthly medicine depends on which option the doctor thinks fits you best — semaglutide starts at $199/month, tirzepatide at $279/month. No contracts, no memberships, just pay as you go. Want me to lock in that Monday spot so the doctor can go over what makes sense for you?" },
+        { from: "lead", text: "Honestly, does this program only offer GLP?" },
+        { from: "chloe", text: "Nope! We also do testosterone therapy, peptide treatments, and red light therapy. The doctor looks at the full picture and figures out what combination makes the most sense for where you're at — he doesn't just push one thing. Want me to grab that Monday spot?" },
+        { from: "lead", text: "Ok. I'll take the call for Monday." },
+      ] } },
+      { type: "Spacer", props: { id: "at-work-gap-1", height: 16 } },
+      { type: "Conversation", props: { id: "at-work-conv-2", chloeLabel: "Chloe", leadLabel: "Lead", caption: "A lead who'd already wasted money on the shots and given up — re-engaged, warmed up, and booked. Nobody on staff was going to chase her down. Chloe did.", messages: [
+        { from: "chloe", text: "Hey! 80 pounds is a real goal — what's got you focused on making this happen right now?" },
+        { from: "lead", text: "Can't buy bigger clothes! 😅 and I just wanted to look good at 56." },
+        { from: "chloe", text: "Ha, I love that! 😊 Nothing like a closet full of clothes that don't fit to light a fire under you. Have you tried these weight-loss shots before, or is this something you've been looking into on your own?" },
+        { from: "lead", text: "I started doing shots last year, saw weight loss... stopped for financial reasons, gained it back... started again... no weight loss, it's been 6 months now. Wasted money." },
+        { from: "chloe", text: "Ugh, that's so frustrating — especially when you know it worked before. You're not alone in that at all, the doctor sees this a lot." },
+        { from: "lead", text: "ok... lol... I was hoping I wasn't bothering someone so late at night! 😝" },
+        { from: "chloe", text: "Ha, no bother at all! 😄 You're all set — see you Monday!" },
+      ] } },
+      { type: "Spacer", props: { id: "at-work-gap-2", height: 16 } },
+      { type: "Conversation", props: { id: "at-work-conv-3", chloeLabel: "Chloe", leadLabel: "Lead", caption: "This is the line between an employee and a chatbot: she knows exactly where her job ends, and hands the medical and pricing calls to a human instead of guessing.", messages: [
+        { from: "lead", text: "Quick question — is this a subscription plan, or do I order when I'm ready?" },
+        { from: "chloe", text: "Great question — the doctor goes over all of that with you on your call so it's tailored to you. I don't want to give you a number that doesn't fit your plan. Want me to make sure he covers it?" },
+      ] } },
+    ] } },
+
+    // ── 5. replaces-team ─────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "replaces-team", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "replaces-team-eyebrow", text: "One hire, four jobs", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "replaces-team-h2", text: "One hire. Four jobs.", align: "left" } },
+      { type: "Text", props: { id: "replaces-team-body", text: "To cover what Chloe covers, you'd be hiring three or four people: a front desk to answer the moment a lead comes in, a follow-up person to chase the ones who go quiet, a closer to handle the objections and book the appointment, and somebody whose whole job is calling back the old customers nobody has time for. You've never been able to staff all four. Most owners can't staff one and keep them. Chloe holds all four seats at once, every hour of every day — and they never call in sick, never quit on you mid-season, and never need a raise to do it.", align: "left" } },
+    ] } },
+
+    // ── 6. chloe-core: 5 deep sub-sections ──────────────────────────────────────────────────
+    { type: "Section", props: { id: "chloe-core-stl", background: "#ffffff", content: [
+      { type: "Text", props: { id: "chloe-core-stl-eyebrow", text: "What she does, in plain English.", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-stl-h2", text: "She answers the second the lead lands.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-stl-body", text: "The lead that comes in at 9 p.m. on a Saturday gets the same answer as the one that comes in on a Tuesday morning. Within seconds. In your voice. With your pricing, your offer, your way of talking to a customer. The lead who wanted a discount last month and never replied — she reaches back out on her own, reads the thread, and adjusts what she says. You don't have a person who does this. You have Chloe.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "chloe-core-dfu", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "chloe-core-dfu-eyebrow", text: "Dynamic Follow-Up", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-dfu-h2", text: "She follows up like a person, not a calendar reminder.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-dfu-body", text: "Most follow-up is the same three messages on repeat, sent to everybody, on a timer nobody set with any intention. Chloe reads what the person actually said — the 'I need to think about it,' the 'my husband has to sign off,' the 'what's the price?' — and she responds to that. The message changes because the conversation changed. She doesn't stop because she ran out of templates. She stops when the person says yes or when they clearly won't — and she knows the difference.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "chloe-core-dbr", background: "#ffffff", content: [
+      { type: "Text", props: { id: "chloe-core-dbr-eyebrow", text: "Database Reactivation", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-dbr-h2", text: "She goes back for the money you already wrote off.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-dbr-body", text: "Every business is sitting on a pile of old leads — people who asked, got quoted, went quiet, and got forgotten. Nobody called them back because there was always something louder. Chloe calls them back. All of them. On her own, without being told. She doesn't need to be reminded because she lives in your database and she already knows who didn't close. She finds out what happened, picks up the conversation where it stopped, and books the appointment. That's revenue you already paid to acquire, coming in with no new ad spend.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "chloe-core-sil", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "chloe-core-sil-eyebrow", text: "Stays in Her Lane", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-sil-h2", text: "She knows what's hers to answer — and what isn't.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-sil-body", text: "This is the whole line between an employee and a chatbot. A chatbot answers everything until it breaks trust on something it shouldn't have touched. Chloe knows the difference between a sales question and a medical question, a scheduling request and a pricing policy you haven't figured out yet, a complaint she can handle and one that needs you on the phone. When it's not hers, she says so and hands it off cleanly. You define the lines. She holds them.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "chloe-core-bkc", background: "#ffffff", content: [
+      { type: "Text", props: { id: "chloe-core-bkc-eyebrow", text: "Booking & Calendar", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "chloe-core-bkc-h2", text: "She closes it — and puts it on the calendar herself.", align: "left" } },
+      { type: "Text", props: { id: "chloe-core-bkc-body", text: "Chloe doesn't gather a lead and drop it on your desk. She works the lead, handles the objections, gets the yes — and then she books the appointment directly onto your calendar. You don't see the work. You see a new name on the schedule. The handoff point is 'confirmed' — not 'interested.' That's the difference between Chloe and every other tool you've tried.", align: "left" } },
+    ] } },
+
+    // ── 7. addons: 3 deep sub-sections ──────────────────────────────────────────────────────
+    { type: "Section", props: { id: "addons-icr", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "addons-icr-eyebrow", text: "When you're ready, you can give her more to do.", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "addons-icr-h2", text: "She picks up the phone, too.", align: "left" } },
+      { type: "Text", props: { id: "addons-icr-body", text: "When a call comes in and the desk is slammed, or after hours, or on a Sunday — Chloe answers. She handles the basics: hours, pricing, scheduling, what you offer and what you don't. She takes a message when she needs to. If the call needs a human, she flags it. You stop bleeding the leads that went to voicemail and just stayed there.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "addons-oce", background: "#ffffff", content: [
+      { type: "Text", props: { id: "addons-oce-eyebrow", text: "Add-on: Outbound Calling AI Employee", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "addons-oce-h2", text: "She'll make the calls nobody ever gets around to.", align: "left" } },
+      { type: "Text", props: { id: "addons-oce-body", text: "This is the step up from follow-up texts. When a lead has gone quiet and a phone call is the right next move — one your team never gets around to because there's always something in front of it — Chloe makes the call. She introduces herself, picks up where the conversation left off, and moves it. Outbound calling at the volume and consistency nobody could staff.", align: "left" } },
+    ] } },
+    { type: "Section", props: { id: "addons-cs", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "addons-cs-eyebrow", text: "Add-on: Cross-Sell", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "addons-cs-h2", text: "She sells the second thing to the people who already bought the first.", align: "left" } },
+      { type: "Text", props: { id: "addons-cs-body", text: "Your easiest sale is the customer you already have. They know you, they already said yes once, and the next thing they'd buy is usually right there waiting. Chloe surfaces it. She reaches out, she mentions it, she handles the back-and-forth, and she books it. You don't do anything. You look at the schedule and the names are already there.", align: "left" } },
+    ] } },
+
+    // ── 8. tech-enabled ──────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "tech-enabled", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "tech-enabled-eyebrow", text: "The part most owners don't see coming", align: "center", color: "#93c5fd" } },
+      { type: "Heading", props: { id: "tech-enabled-h2", text: "And the day you sell, it's worth more — even if you only ever sell once.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-body", text: "A business that only runs because you're standing in it is a hard thing to sell. Whoever buys it is really just buying your job — and they'll pay you like it. A business that runs on a system that keeps working after you walk away is worth a great deal more, because now they're buying something that runs without you in the room. Buyers have a name for that kind of business: a tech-enabled company. And they pay a premium for it.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-body2", text: "That's exactly what we build into yours — a sales-and-follow-up engine that books customers whether you're there or not. Even if you've got one location and you only ever sell it once, that lift in what your business is worth — by itself — pays back everything we'll ever do for you, many times over. You get the growth now, and a bigger check at the finish line. The growth is just the part you can see from here.", align: "center", color: "#ffffff" } },
+    ] } },
+
+    // ── 9. cta ───────────────────────────────────────────────────────────────────────────────
+    { type: "Section", props: { id: "cta", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "cta-eyebrow", text: "The next move", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "cta-h2", text: "Let's talk — one solo entrepreneur to another.", align: "center" } },
+      { type: "Text", props: { id: "cta-body", text: "I'm not going to sell you on a call. I'm going to listen to how you run today, show you exactly where your first AI employee plugs in, and tell you what it would look like on day one. No pitch deck. No system demos. Just the conversation — and if it makes sense, we talk about what's next.", align: "center" } },
+      { type: "Button", props: { id: "cta-btn", title: "Book your discovery call", subtitle: "Fifteen minutes. Bring your numbers.", href: "/#contact" } },
+      { type: "PhoneLink", props: { id: "cta-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
     ] } },
   ],
 };
