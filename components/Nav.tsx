@@ -6,13 +6,14 @@ import { BOOKING_URL } from "./CtaButton";
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
 
-// Primary nav = the boutique spine. Three surfaces only: Home, the live Proof (med-spa =
-// vertical #1), and who I am. The podcast / partner "tables" / extra verticals are parked
-// (off-nav, drafts) so the front door reads "specialist," not "agency."
+// Primary nav = WIIFM labels, legible in under a second (no riddles). Home · How It Works ·
+// Meet Chloe (the named, living proof + her numbers, on /case-study) · About. CTA is the
+// low-friction door, not an application gate. Podcast / partner tables / extra verticals
+// stay parked off-nav so the front door reads "specialist," not "agency."
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/what-changed", label: "What Changed" },
-  { href: "/case-study", label: "Proof" },
+  { href: "/what-changed", label: "How It Works" },
+  { href: "/case-study", label: "Meet Chloe" },
   { href: "/about", label: "About" },
 ];
 
@@ -41,7 +42,7 @@ export default function Nav() {
             href={BOOKING_URL}
             className="rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--color-sjc-green)]"
           >
-            Apply to work with me &rarr;
+            See It Run on Your Business &rarr;
           </a>
         </nav>
 
@@ -85,7 +86,7 @@ export default function Nav() {
               onClick={() => setOpen(false)}
               className="mt-5 rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-3 text-center text-base font-semibold text-white shadow-sm"
             >
-              Apply to work with me &rarr;
+              See It Run on Your Business &rarr;
             </a>
           </div>
         </nav>

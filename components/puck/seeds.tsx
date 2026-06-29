@@ -255,12 +255,12 @@ const HOME_SEED: Data = {
   content: [
     // ── 1. hero — WHO WE ARE: the native AI implementation partner ────────────────────────────
     { type: "Section", props: { id: "hero", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "hero-eyebrow", text: "Every headline is saying the same thing", align: "center", color: "#93c5fd" } },
-      { type: "Heading", props: { id: "hero-h1", text: "Put AI in your business now — or watch your competition leave you behind.", fontSize: 48, align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "hero-sub1", text: "You've heard it everywhere, and they're right. But here's what nobody tells you: you're not an AI company, and you don't have to become one. We're the partner that installs it for you — built onto the business you already run, working in the background, with the controls handed to you.", align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "hero-sub2", text: "You get the growth, and a sales force that finally closes. You don't lift a finger, you don't learn a thing, and you never give up an inch of command. We're SJC — the AI implementation partner. We do the work. You stay the boss.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-eyebrow", text: "You already know you need AI. Here's the part nobody actually offers.", align: "center", color: "#93c5fd" } },
+      { type: "Heading", props: { id: "hero-h1", text: "Add a full sales team that answers every lead in seconds and books your calendar — without hiring, training, or lifting a finger.", fontSize: 48, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub1", text: "We install AI employees right on top of the software you already run — they catch every lead the instant it lands, revive the dead ones you wrote off, and fill your calendar day and night. You don't lift a finger, you don't learn a thing, and you never give up an inch of control — we do the work, you stay the boss.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub2", text: "It's like a rockstar coworker who does all the chasing, all the follow-up, and all the booking — and hands you nothing but layups.", align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
-      { type: "Button", props: { id: "hero-cta", title: "Book your intake call", subtitle: "A working conversation about how you run today — not a pitch. We'll show you exactly where your first AI employee plugs in.", href: "/#contact" } },
+      { type: "Button", props: { id: "hero-cta", title: "See It Run on Your Business", subtitle: "A working session on how you run today — not a pitch. We'll show you exactly where your first AI employee plugs in.", href: "/#contact" } },
     ] } },
 
     // ── 1b. story — what changed (Steven IS the persona) ──────────────────────────────────────
