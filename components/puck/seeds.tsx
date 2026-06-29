@@ -1,9 +1,14 @@
 import type { Data } from "@measured/puck";
-import { SEED, IMAGE_DEFAULTS, NAV_DEFAULTS } from "@/components/puck/config";
+import { SEED, IMAGE_DEFAULTS, NAV_DEFAULTS, FOOTER_DEFAULTS } from "@/components/puck/config";
 
 const NAV_SEED: Data = {
   root: {},
   content: [{ type: "SiteHeader", props: { id: "site-header", ...NAV_DEFAULTS } }],
+};
+
+const FOOTER_SEED: Data = {
+  root: {},
+  content: [{ type: "SiteFooter", props: { id: "site-footer", ...FOOTER_DEFAULTS } }],
 };
 import { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
 import { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
@@ -671,6 +676,7 @@ const FOR_AGENCIES_SEED: Data = {
 const SEEDS: Record<string, Data> = {
   home: HOME_SEED,
   nav: NAV_SEED,
+  footer: FOOTER_SEED,
   "for-agencies": FOR_AGENCIES_SEED,
   about: SEED,
   faqs: FAQS_SEED,
