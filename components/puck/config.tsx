@@ -48,6 +48,7 @@ type Props = {
   Video: { src: string; caption: string };
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
+  StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -198,8 +199,146 @@ export const CONVERSATION_DEFAULTS = {
 };
 
 // The block catalog, typed with the Props map so fields + render params are inferred.
+export const STAFFROSTER_DEFAULTS = {
+  businessName: "Acme Healthcare",
+  rows: [
+    { name: "Dr. Alan Pierce", email: "dr.pierce@acmehealthcare.com", role: "Physician / Owner", isAI: false },
+    { name: "Renee Salas", email: "renee@acmehealthcare.com", role: "Office Manager", isAI: false },
+    { name: "Chloe", email: "chloe@acmehealthcare.com", role: "Booking & Follow-Up", isAI: true },
+    { name: "Marcus Webb", email: "marcus@acmehealthcare.com", role: "Front Desk", isAI: false },
+  ] as { name: string; email: string; role: string; isAI: boolean }[],
+};
+
 export const config: Config<Props> = {
   components: {
+    StaffRoster: {
+      label: "Staff roster (Chloe in the lineup)",
+      fields: {
+        businessName: { type: "text" as const, label: "Business name (fictitious example)" },
+        rows: {
+          type: "array" as const,
+          label: "Staff — mark Chloe as the AI row",
+          arrayFields: {
+            name: { type: "text" as const, label: "Name" },
+            email: { type: "text" as const, label: "Email" },
+            role: { type: "text" as const, label: "Role" },
+            isAI: {
+              type: "radio" as const,
+              label: "AI employee?",
+              options: [
+                { label: "No", value: false },
+                { label: "Yes (Chloe)", value: true },
+              ],
+            },
+          },
+          getItemSummary: (i: { name?: string }) => i?.name || "teammate",
+          defaultItemProps: { name: "New teammate", email: "name@acmehealthcare.com", role: "Role", isAI: false },
+        },
+      },
+      defaultProps: STAFFROSTER_DEFAULTS,
+      render: ({ businessName, rows }) => {
+        const list = Array.isArray(rows) ? rows : [];
+        const initials = (n: string) =>
+          (n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+        const palette = ["#2563eb", "#dc2626", "#9333ea", "#0891b2", "#ca8a04"];
+        return (
+          <div
+            style={{
+              maxWidth: 720,
+              margin: "0 auto",
+              border: "1px solid #e5e7eb",
+              borderRadius: 14,
+              overflow: "hidden",
+              boxShadow: "0 10px 30px rgba(0,0,0,.08)",
+              background: "#fff",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "14px 18px",
+                borderBottom: "1px solid #eef0f3",
+                background: "#f8fafc",
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>{businessName || "My Staff"}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>My Staff</span>
+            </div>
+            <div>
+              {list.map((r, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "14px 18px",
+                    borderTop: i ? "1px solid #f1f3f5" : "none",
+                    background: r.isAI ? "#f0fdf4" : "#fff",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      flex: "0 0 auto",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      background: r.isAI ? "#22c55e" : palette[i % palette.length],
+                    }}
+                  >
+                    {initials(r.name)}
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 700, color: "#111827", fontSize: 15 }}>{r.name}</span>
+                      {r.isAI && (
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: "#15803d",
+                            background: "#dcfce7",
+                            border: "1px solid #bbf7d0",
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                          }}
+                        >
+                          AI EMPLOYEE
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        color: "#6b7280",
+                        fontSize: 13,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {r.email}
+                    </div>
+                  </div>
+                  <div style={{ flex: "0 0 auto", textAlign: "right", color: "#374151", fontSize: 13, fontWeight: 600 }}>
+                    {r.role}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      },
+    },
+
     SiteHeader: {
       label: "Site header / nav",
       fields: {
