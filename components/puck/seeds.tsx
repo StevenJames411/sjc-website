@@ -264,6 +264,28 @@ const HOME_SEED: Data = {
     ] } },
 
     // ── 1b. story — what changed (Steven IS the persona) ──────────────────────────────────────
+    // ── 1a. stat band — the news-wave in numbers (reinforces the hero; AEO fuel; stacks on mobile)
+    { type: "Section", props: { id: "wave-stats", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "wave-stats-eyebrow", text: "The headlines aren't hype — here are the numbers", align: "center", color: "#2563eb" } },
+      { type: "Heading", props: { id: "wave-stats-h2", text: "The businesses moving now are pulling away from the ones that wait.", fontSize: 32, align: "center" } },
+      { type: "Columns", props: { id: "wave-stats-cols", columns: 3, gap: 24,
+        col1: [
+          { type: "Heading", props: { id: "stat1-num", text: "55%", fontSize: 54, align: "center", color: "#2563eb", spaceBelow: 4 } },
+          { type: "Text", props: { id: "stat1-lbl", text: "of small businesses now use AI — up from 39% just a year ago. The wave isn't coming. It's already here.", align: "center" } },
+        ],
+        col2: [
+          { type: "Heading", props: { id: "stat2-num", text: "2.5×", fontSize: 54, align: "center", color: "#2563eb", spaceBelow: 4 } },
+          { type: "Text", props: { id: "stat2-lbl", text: "the revenue growth of AI-run businesses versus the ones still doing it all by hand.", align: "center" } },
+        ],
+        col3: [
+          { type: "Heading", props: { id: "stat3-num", text: "73%", fontSize: 54, align: "center", color: "#2563eb", spaceBelow: 4 } },
+          { type: "Text", props: { id: "stat3-lbl", text: "of owners already using AI say it made them more competitive — and that gap widens every month.", align: "center" } },
+        ],
+      } },
+      { type: "Text", props: { id: "wave-stats-foot", text: "Sources: McKinsey, State of AI; U.S. small-business AI-adoption surveys, 2025.", fontSize: 13, align: "center", color: "#6b7280" } },
+    ] } },
+
+    // ── 1b. story — the eternal want ───────────────────────────────────────────────────────────
     { type: "Section", props: { id: "story", background: "#ffffff", content: [
       { type: "Text", props: { id: "story-eyebrow", text: "What you've always wanted", align: "left", color: "#2563eb" } },
       { type: "Heading", props: { id: "story-h2", text: "Every owner wants the same two things — together.", align: "left" } },
@@ -371,9 +393,10 @@ const HOME_SEED: Data = {
 
     // ── 8. tech-enabled ──────────────────────────────────────────────────────────────────────
     { type: "Section", props: { id: "tech-enabled", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "tech-enabled-eyebrow", text: "The part most owners don't see coming", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "tech-enabled-h2", text: "And the day you sell, it's worth more.", align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "tech-enabled-body", text: "A business that only runs because you're standing in it is worth what someone thinks they can run it for. A business with a working AI layer — a system that answers the leads, books the appointments, and runs the follow-up on its own — is worth something different. You built it. You own it. It's yours to hand off. And buyers price that differently than they price you.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-eyebrow", text: "The part most owners don't see coming", align: "center", color: "#93c5fd" } },
+      { type: "Heading", props: { id: "tech-enabled-h2", text: "And the day you sell, it's worth more — even if you only ever sell once.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-body", text: "A business that only runs because you're standing in it is a hard thing to sell. Whoever buys it is really just buying your job — and they'll pay you like it. A business that runs on a system that keeps working after you walk away is worth a great deal more, because now they're buying something that runs without you in the room. Buyers have a name for that kind of business: a tech-enabled company. And they pay a premium for it.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "tech-enabled-body2", text: "That's exactly what we build into yours — a sales-and-follow-up engine that books customers whether you're there or not. Even if you've got one location and you only ever sell it once, that lift in what your business is worth — by itself — pays back everything we'll ever do for you, many times over. You get the growth now, and a bigger check at the finish line. The growth is just the part you can see from here.", align: "center", color: "#ffffff" } },
     ] } },
 
     // ── 9. cta ───────────────────────────────────────────────────────────────────────────────
