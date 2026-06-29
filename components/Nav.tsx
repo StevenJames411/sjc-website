@@ -25,7 +25,7 @@ export default function Nav() {
 
         {/* Who we are — centered in the empty nav real estate (desktop only). */}
         <span
-          className="absolute left-1/2 hidden -translate-x-1/2 whitespace-nowrap text-sm font-semibold tracking-tight lg:block"
+          className="absolute left-1/2 hidden -translate-x-1/2 whitespace-nowrap text-lg font-semibold tracking-tight lg:block"
           style={{ color: GREEN }}
         >
           {TAGLINE}
@@ -63,7 +63,7 @@ export default function Nav() {
       {open && (
         <div className="border-t border-white/10 lg:hidden" style={{ backgroundColor: "#1e3a6e" }}>
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 pb-6 pt-3">
-            <span className="text-center text-base font-semibold tracking-tight" style={{ color: GREEN }}>
+            <span className="text-center text-lg font-semibold tracking-tight" style={{ color: GREEN }}>
               {TAGLINE}
             </span>
             <a
