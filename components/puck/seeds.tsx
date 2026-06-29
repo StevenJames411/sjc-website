@@ -241,22 +241,52 @@ const PODCAST_SEED: Data = {
   ],
 };
 
-// Home = the Chloe-led homepage. 9-section flow: hero → meet Chloe → staff screenshot →
-// Chloe at work → replaces the team → 5 core capabilities → 3 add-ons → tech-enabled → CTA.
-// PLACEHOLDER TEXT throughout — final copy drops in via the builder. IDs are stable so copy
-// can be targeted by ID without touching structure.
+// Home = SJC front-half (Story→Problem→Solution) → Chloe back-half. Flow:
+// hero (who we are = native AI implementation partner) → story → problem → solution
+// → meet Chloe → staff screenshot → Chloe at work → replaces the team → 5 core →
+// 3 add-ons → tech-enabled → CTA. The Solution's last line hands into "Meet Chloe."
+// Branding lock (2026-06-29): "native AI implementation" threaded top-to-bottom — hero
+// frames WHO WE ARE first so "AI" reads as the differentiation, not a threat.
+// IDs are stable so copy can be targeted by ID without touching structure.
 // Render state: if an Upstash published snapshot exists it takes over readPuckPublished("home").
 // To load this seed: /edit/home?reset=1 → then Publish.
 const HOME_SEED: Data = {
   root: {},
   content: [
-    // ── 1. hero ──────────────────────────────────────────────────────────────────────────────
+    // ── 1. hero — WHO WE ARE: the native AI implementation partner ────────────────────────────
     { type: "Section", props: { id: "hero", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "hero-eyebrow", text: "Front desk · Follow-up · Sales · Reactivation — one new hire", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "hero-h1", text: "Put someone on staff who never clocks out, never quits, and never lets a lead sit.", fontSize: 48, align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "hero-sub", text: "Two years ago, she didn't exist. Today we build her, train her on the way you sell, and seat her on your org chart right between the people you already pay. She answers every lead the second it lands, follows up for as long as it takes, and books the appointment herself. We're the first company built to install a real employee on top of the business you already run — a brand-new market that wasn't here 24 months ago, and the one we named and lead: the AI Employee Operating System. AIOS, for short.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-eyebrow", text: "Native AI implementation — done for you, run by you", align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "hero-h1", text: "The growth you've been chasing, and a sales force that finally closes it. Built for you. Controlled by you.", fontSize: 48, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub1", text: "We're SJC. We install native AI employees on the business you already run — your leads, your CRM, your phone, your calendar — and we hand you the keys. You get the growth and the sales force you've always wanted, without building anything, hiring anyone, or giving up an inch of control.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub2", text: "Most outfits lead with “AI” and leave you to figure it out. We do the opposite. We come in, build it for you, and stay the plumbing in the background — so the only thing that changes is that your leads finally get worked and your calendar finally fills.", align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
-      { type: "Button", props: { id: "hero-cta", title: "Book your discovery call", subtitle: "One solo entrepreneur to another — no pitch, no jargon.", href: "/#contact" } },
+      { type: "Button", props: { id: "hero-cta", title: "Book your intake call", subtitle: "A working conversation about how you run today — not a pitch. We'll show you exactly where your first AI employee plugs in.", href: "/#contact" } },
+    ] } },
+
+    // ── 1b. story — what changed (Steven IS the persona) ──────────────────────────────────────
+    { type: "Section", props: { id: "story", background: "#ffffff", content: [
+      { type: "Text", props: { id: "story-eyebrow", text: "What changed", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "story-h2", text: "For the first time in 40 years, you can have both.", align: "left" } },
+      { type: "Text", props: { id: "story-p1", text: "I've run five businesses since 1986 — a restaurant, a mortgage shop, a roofing company, a trucking outfit, and now this one. I was the owner and the tech lead in every one of them. So I'm not researching you from the outside. I've been you.", align: "left" } },
+      { type: "Text", props: { id: "story-p2", text: "And one thing was always true — right up until about two years ago: you could chase growth, or you could keep control, but you couldn't have both. More leads meant more people to hire, more people to manage, more ways for the whole thing to slip out of your hands. That changed. For the first time, you can pour leads in the top and have a sales force that actually works them — one you don't have to find, train, or babysit. That's new. That's what this whole thing is about.", align: "left" } },
+    ] } },
+
+    // ── 1c. problem — the sales team you could never build ────────────────────────────────────
+    { type: "Section", props: { id: "problem", background: "#f3f4f6", content: [
+      { type: "Text", props: { id: "problem-eyebrow", text: "The part nobody says out loud", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "problem-h2", text: "You've needed two things forever. You could never get both at once.", align: "left" } },
+      { type: "Text", props: { id: "problem-p1", text: "More leads coming in. And someone who actually closes them. Every operator I've ever met wanted a couple of real closers on the floor — the kind who answer fast, never let a lead go cold, work the dead list, and handle the objection instead of folding the second they hear it. That sales team was always just out of reach.", align: "left" } },
+      { type: "Text", props: { id: "problem-p2", text: "You couldn't afford the great ones. The ones you could afford, you couldn't keep — they got poached the minute they got good. And the unicorns were a pain to manage: ego, drama, babysitting. So you did what you always do. You wore the hat yourself. And while you were buried doing the work, the leads slipped, the follow-up died, and the long list of people who once raised their hand quietly rotted in your system.", align: "left" } },
+      { type: "Text", props: { id: "problem-p3", text: "I'm not making this up to sell you something. It's the life you've already lived — the hires that didn't take, the good one who walked, the “I'll get to those old leads next week” that never came. You know exactly what I'm talking about.", align: "left" } },
+    ] } },
+
+    // ── 1d. solution — SJC = growth partner + sales partner; hands into Chloe ──────────────────
+    { type: "Section", props: { id: "solution", background: "#0f1f3d", content: [
+      { type: "Text", props: { id: "solution-eyebrow", text: "Where we come in", align: "left", color: "#ffffff" } },
+      { type: "Heading", props: { id: "solution-h2", text: "We come in as your growth partner and your sales partner.", align: "left", color: "#ffffff" } },
+      { type: "Text", props: { id: "solution-p1", text: "Here's what SJC does. We handle both sides — the growth and the closing — and we build it for you. Native AI employees, installed right on top of the business you already run. Your CRM. Your calendar. Your phone number. The leads you already paid for. Nothing gets ripped out, and nothing gets handed off to a black box.", align: "left", color: "#ffffff" } },
+      { type: "Text", props: { id: "solution-p2", text: "That's what “native AI implementation” means in plain English: we do the building, you keep the keys. You set the rules, you watch every conversation and every booking as it happens, and you stay the boss. It's delegation without the betrayal — finally an employee that takes the training, never goes off the rails, never has a bad day, and never walks out the door with everything it learned in its head.", align: "left", color: "#ffffff" } },
+      { type: "Heading", props: { id: "solution-bridge", text: "And the sales force we bring is Chloe.", fontSize: 30, align: "left", color: "#ffffff" } },
     ] } },
 
     // ── 2. meet-chloe ────────────────────────────────────────────────────────────────────────
