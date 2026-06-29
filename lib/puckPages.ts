@@ -7,6 +7,7 @@ export type PuckPage = { slug: string; title: string };
 // public route — e.g. the /industries/hvac page is keyed "industry-hvac").
 export const PUCK_PAGES: PuckPage[] = [
   { slug: "home", title: "Home" },
+  { slug: "nav", title: "Navigation (site-wide)" },
   { slug: "about", title: "About" },
   { slug: "industries", title: "Industries" },
   { slug: "med-spa", title: "Med Spa" },
