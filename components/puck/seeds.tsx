@@ -255,10 +255,10 @@ const HOME_SEED: Data = {
   content: [
     // ── 1. hero — WHO WE ARE: the native AI implementation partner ────────────────────────────
     { type: "Section", props: { id: "hero", background: "#0f1f3d", content: [
-      { type: "Text", props: { id: "hero-eyebrow", text: "Native AI implementation — done for you, run by you", align: "center", color: "#ffffff" } },
-      { type: "Heading", props: { id: "hero-h1", text: "The growth you've been chasing, and a sales force that finally closes it. Built for you. Controlled by you.", fontSize: 48, align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "hero-sub1", text: "We're SJC. We install native AI employees on the business you already run — your leads, your CRM, your phone, your calendar — and we hand you the keys. You get the growth and the sales force you've always wanted, without building anything, hiring anyone, or giving up an inch of control.", align: "center", color: "#ffffff" } },
-      { type: "Text", props: { id: "hero-sub2", text: "Most outfits lead with “AI” and leave you to figure it out. We do the opposite. We come in, build it for you, and stay the plumbing in the background — so the only thing that changes is that your leads finally get worked and your calendar finally fills.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-eyebrow", text: "Every headline is saying the same thing", align: "center", color: "#93c5fd" } },
+      { type: "Heading", props: { id: "hero-h1", text: "Put AI in your business now — or watch your competition leave you behind.", fontSize: 48, align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub1", text: "You've heard it everywhere, and they're right. But here's what nobody tells you: you're not an AI company, and you don't have to become one. We're the partner that installs it for you — built onto the business you already run, working in the background, with the controls handed to you.", align: "center", color: "#ffffff" } },
+      { type: "Text", props: { id: "hero-sub2", text: "You get the growth, and a sales force that finally closes. You don't lift a finger, you don't learn a thing, and you never give up an inch of command. We're SJC — the AI implementation partner. We do the work. You stay the boss.", align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
       { type: "Button", props: { id: "hero-cta", title: "Book your intake call", subtitle: "A working conversation about how you run today — not a pitch. We'll show you exactly where your first AI employee plugs in.", href: "/#contact" } },
     ] } },
