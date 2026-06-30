@@ -571,7 +571,7 @@ export const config: Config<Props> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Font size" value={value as number} onChange={onChange} fallback={32} />
+            <SizeStepper label="Font size" allowZero={false} value={value as number} onChange={onChange} fallback={32} />
           ),
         },
         spaceAbove: {
@@ -634,7 +634,7 @@ export const config: Config<Props> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Font size" value={value as number} onChange={onChange} fallback={18} />
+            <SizeStepper label="Font size" allowZero={false} value={value as number} onChange={onChange} fallback={18} />
           ),
         },
         spaceAbove: {

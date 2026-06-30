@@ -11,6 +11,7 @@ export default function SizeStepper({
   step = 2,
   min = 6,
   label,
+  allowZero = true,
 }: {
   value?: number;
   onChange: (v: number) => void;
@@ -18,9 +19,12 @@ export default function SizeStepper({
   step?: number;
   min?: number;
   label?: string;
+  // When true, 0 is a real value the user can land on (spacing/padding). When false,
+  // 0 means "not set → use the default" (font size, where a 0px size makes no sense).
+  allowZero?: boolean;
 }) {
-  const current = typeof value === "number" && value > 0 ? value : fallback;
-  const set = (n: number) => onChange(Math.max(min, Math.round(n)));
+  const current = typeof value === "number" && (allowZero || value > 0) ? value : fallback;
+  const set = (n: number) => onChange(Math.max(min, Math.round(Number.isFinite(n) ? n : fallback)));
   return (
     <div>
       {label ? (
@@ -33,7 +37,12 @@ export default function SizeStepper({
         <input
           type="number"
           value={current}
-          onChange={(e) => set(Number(e.target.value) || fallback)}
+          onChange={(e) => {
+            const raw = e.target.value;
+            if (raw === "") return set(allowZero ? min : fallback);
+            const n = Number(raw);
+            set(Number.isNaN(n) ? fallback : n);
+          }}
           style={INPUT}
         />
         <span style={{ fontSize: 12, color: "#6b7280" }}>px</span>
