@@ -667,8 +667,62 @@ const FOR_AGENCIES_SEED: Data = {
   ],
 };
 
+// Discovery-call intake. Intro (eyebrow/headline/sub as Text+Heading blocks) + 4 FormSteps of
+// FormQuestions. The live /apply wizard reads this and renders itself. Everything editable at /edit/apply.
+const APPLY_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Text", props: { id: "apply-eyebrow", text: "Apply to work with me", align: "center", color: "#2563eb" } },
+    { type: "Heading", props: { id: "apply-h1", text: "We're not for everybody — and that's on purpose.", level: "h1", align: "center" } },
+    { type: "Text", props: { id: "apply-sub", text: "A few quick questions so we can see if we can actually help you. Takes under two minutes — then pick a time and we'll talk. No pitch, just a real conversation.", align: "center" } },
+
+    { type: "FormStep", props: { id: "step-you", title: "First, who are you?", content: [
+      { type: "FormQuestion", props: { id: "q-first", label: "First name", questionType: "text", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "q-last", label: "Last name", questionType: "text", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "q-email", label: "Email", questionType: "email", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "q-phone", label: "Cell phone", questionType: "phone", options: [], required: true } },
+    ] } },
+
+    { type: "FormStep", props: { id: "step-biz", title: "Tell us about your business.", content: [
+      { type: "FormQuestion", props: { id: "q-industry", label: "What industry are you in / what do you do?", questionType: "text", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "q-growth", label: "Where's your head at with growth right now?", questionType: "choice", required: true, options: [
+        { text: "I need more customers — now" },
+        { text: "Growing, but it's chaos" },
+        { text: "Maxed out — can't take on more work" },
+        { text: "Just exploring" },
+      ] } },
+    ] } },
+
+    { type: "FormStep", props: { id: "step-revenue", title: "Where are you — and where do you want to be?", content: [
+      { type: "FormQuestion", props: { id: "q-rev-now", label: "Roughly what's the business doing in revenue now?", questionType: "choice", required: true, options: [
+        { text: "Under $10k / mo" },
+        { text: "$10k – $25k / mo" },
+        { text: "$25k – $50k / mo" },
+        { text: "$50k – $100k / mo" },
+        { text: "$100k+ / mo" },
+      ] } },
+      { type: "FormQuestion", props: { id: "q-rev-goal", label: "Where do you want it in the next 12 months?", questionType: "choice", required: true, options: [
+        { text: "Under $10k / mo" },
+        { text: "$10k – $25k / mo" },
+        { text: "$25k – $50k / mo" },
+        { text: "$50k – $100k / mo" },
+        { text: "$100k+ / mo" },
+      ] } },
+    ] } },
+
+    { type: "FormStep", props: { id: "step-emergency", title: "One last question — the important one.", content: [
+      { type: "FormQuestion", props: { id: "q-emergency", label: "If a health emergency kept you out of work for 4–6 weeks, would your business thrive — or be in serious jeopardy?", questionType: "choice", required: true, options: [
+        { text: "It'd thrive without me" },
+        { text: "It'd hold steady for a while" },
+        { text: "It'd be in serious jeopardy" },
+      ] } },
+    ] } },
+  ],
+};
+
 const SEEDS: Record<string, Data> = {
   home: HOME_SEED,
+  apply: APPLY_SEED,
   nav: NAV_SEED,
   footer: FOOTER_SEED,
   "for-agencies": FOR_AGENCIES_SEED,

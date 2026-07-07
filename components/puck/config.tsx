@@ -125,6 +125,11 @@ type Props = {
     fix: string;
     rollup: string;
   };
+  // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
+  // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
+  // renders are the in-editor preview only.
+  FormStep: { title: string; content: Slot };
+  FormQuestion: { label: string; questionType: string; options: { text: string }[]; required: boolean };
 };
 
 const ALIGN_FIELD = {
@@ -239,6 +244,77 @@ export const STAFFROSTER_DEFAULTS = {
 
 export const config: Config<Props> = {
   components: {
+    FormStep: {
+      label: "Form step (one screen)",
+      fields: {
+        title: { type: "text" as const, label: "Step heading" },
+        content: { type: "slot" as const },
+      },
+      defaultProps: { title: "New step", content: [] },
+      render: ({ title, content: Content }) => (
+        <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 16, margin: "12px 0", background: "#fff" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#2563eb", marginBottom: 6 }}>
+            Form step
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 10 }}>{title || "Step"}</div>
+          <Content />
+        </div>
+      ),
+    },
+
+    FormQuestion: {
+      label: "Question",
+      fields: {
+        label: { type: "text" as const, label: "Question / label" },
+        questionType: {
+          type: "select" as const,
+          label: "Answer type",
+          options: [
+            { label: "Short text", value: "text" },
+            { label: "Email", value: "email" },
+            { label: "Phone", value: "phone" },
+            { label: "Single choice (pick one)", value: "choice" },
+          ],
+        },
+        options: {
+          type: "array" as const,
+          label: "Answer options (single choice only)",
+          arrayFields: { text: { type: "text" as const, label: "Option" } },
+          getItemSummary: (i: { text?: string }) => i?.text || "option",
+          defaultItemProps: { text: "New option" },
+        },
+        required: {
+          type: "radio" as const,
+          label: "Required?",
+          options: [
+            { label: "No", value: false },
+            { label: "Yes", value: true },
+          ],
+        },
+      },
+      defaultProps: { label: "New question", questionType: "text", options: [], required: true },
+      render: ({ label, questionType, options, required }) => {
+        const opts = Array.isArray(options) ? options : [];
+        const typeLabel =
+          questionType === "email" ? "Email" :
+          questionType === "phone" ? "Phone" :
+          questionType === "choice" ? "Single choice" : "Short text";
+        return (
+          <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 12px", margin: "8px 0", background: "#f8fafc" }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
+              {label || "Question"}{required ? " *" : ""}
+            </div>
+            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{typeLabel}</div>
+            {questionType === "choice" && opts.length > 0 ? (
+              <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 12, color: "#4b5563" }}>
+                {opts.map((o, i) => <li key={i}>{o?.text || "—"}</li>)}
+              </ul>
+            ) : null}
+          </div>
+        );
+      },
+    },
+
     StaffRoster: {
       label: "Staff roster (Chloe in the lineup)",
       fields: {
