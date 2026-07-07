@@ -723,24 +723,31 @@ export const config: Config<Props> = {
     Video: {
       label: "Video / sizzle reel",
       fields: {
-        src: { type: "text" as const, label: "Embed URL (YouTube/Vimeo) — blank = placeholder" },
+        src: { type: "text" as const, label: "Video URL — MP4 (Blob) or YouTube/Vimeo embed; blank = placeholder" },
         caption: { type: "textarea" as const, label: "Placeholder caption" },
       },
       defaultProps: { src: "", caption: "2-minute teaser — coming" },
-      render: ({ src, caption }) => (
-        <div className="mx-auto mt-9 aspect-video max-w-3xl overflow-hidden rounded-2xl border border-white/15 bg-black/40">
-          {src ? (
-            <iframe src={src} className="h-full w-full" allowFullScreen title="Video" />
-          ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-white/70">
-              <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/40 text-2xl">
-                &#9654;
-              </span>
-              <span className="text-sm uppercase tracking-[0.18em]">{caption}</span>
-            </div>
-          )}
-        </div>
-      ),
+      render: ({ src, caption }) => {
+        const isFile = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src) || src.includes("blob.vercel-storage");
+        return (
+          <div className="mx-auto mt-9 aspect-video max-w-3xl overflow-hidden rounded-2xl border border-white/15 bg-black/40">
+            {src ? (
+              isFile ? (
+                <video src={src} controls playsInline preload="metadata" className="h-full w-full" />
+              ) : (
+                <iframe src={src} className="h-full w-full" allowFullScreen title="Video" />
+              )
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-white/70">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/40 text-2xl">
+                  &#9654;
+                </span>
+                <span className="text-sm uppercase tracking-[0.18em]">{caption}</span>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
 
     Image: {
