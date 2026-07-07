@@ -15,10 +15,21 @@ export type Question = {
 };
 export type Step = { title: string; questions: Question[] };
 export type Intro = { eyebrow: string; title: string; sub: string };
+export type Booking = { eyebrow: string; heading: string; sub: string };
 
 const BOOKING_URL = process.env.NEXT_PUBLIC_BOOKING_URL || "";
 
-export default function ApplyForm({ steps, intro }: { steps: Step[]; intro: Intro }) {
+export default function ApplyForm({
+  steps,
+  intro,
+  disclaimer,
+  booking,
+}: {
+  steps: Step[];
+  intro: Intro;
+  disclaimer: string;
+  booking: Booking;
+}) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
@@ -91,16 +102,21 @@ export default function ApplyForm({ steps, intro }: { steps: Step[]; intro: Intr
     return (
       <div className="mx-auto max-w-2xl px-6 py-16 md:py-20">
         <div className="rounded-2xl border border-[color:var(--color-sjc-line)] bg-white p-8 text-center shadow-sm">
-          <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-green)]">
-            Got it{firstName ? `, ${firstName}` : ""}
-          </p>
-          <h1 className="mt-3 text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-            Last step — grab a time for your call.
-          </h1>
-          <p className="mt-4 text-base text-[color:var(--color-sjc-mute)]">
-            Pick a slot that works and we&apos;ll talk through exactly where AI employees plug into
-            your business. No pitch — a real conversation about whether we can help.
-          </p>
+          {booking.eyebrow ? (
+            <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-green)]">
+              {booking.eyebrow}{firstName ? `, ${firstName}` : ""}
+            </p>
+          ) : null}
+          {booking.heading ? (
+            <h1 className="mt-3 text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
+              {booking.heading}
+            </h1>
+          ) : null}
+          {booking.sub ? (
+            <p className="mt-4 text-base text-[color:var(--color-sjc-mute)]">
+              {booking.sub}
+            </p>
+          ) : null}
         </div>
         {BOOKING_URL ? (
           <div className="mt-8 overflow-hidden rounded-2xl border border-[color:var(--color-sjc-line)] bg-white shadow-sm">
@@ -135,15 +151,21 @@ export default function ApplyForm({ steps, intro }: { steps: Step[]; intro: Intr
       {/* intro */}
       <section className="w-full">
         <div className="mx-auto max-w-2xl px-6 pt-14 text-center md:pt-20">
-          <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]">
-            {intro.eyebrow}
-          </p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-            {intro.title}
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-[color:var(--color-sjc-mute)]">
-            {intro.sub}
-          </p>
+          {intro.eyebrow ? (
+            <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]">
+              {intro.eyebrow}
+            </p>
+          ) : null}
+          {intro.title ? (
+            <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
+              {intro.title}
+            </h1>
+          ) : null}
+          {intro.sub ? (
+            <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-[color:var(--color-sjc-mute)]">
+              {intro.sub}
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -214,9 +236,11 @@ export default function ApplyForm({ steps, intro }: { steps: Step[]; intro: Intr
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-[color:var(--color-sjc-mute)]">
-          We only use this to see if we&apos;re a fit — no spam, ever.
-        </p>
+        {disclaimer ? (
+          <p className="mt-6 text-center text-xs text-[color:var(--color-sjc-mute)]">
+            {disclaimer}
+          </p>
+        ) : null}
       </div>
     </>
   );

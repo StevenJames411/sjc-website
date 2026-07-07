@@ -717,6 +717,13 @@ const APPLY_SEED: Data = {
         { text: "It'd be in serious jeopardy" },
       ] } },
     ] } },
+
+    // Editable copy blocks — the wizard renders these by id. Edit or DELETE any of them at
+    // /edit/apply, same as everything else; clearing the text hides that piece on the live page.
+    { type: "Text", props: { id: "apply-disclaimer", text: "We only use this to see if we're a fit — no spam, ever.", align: "center", color: "#4b5563" } },
+    { type: "Text", props: { id: "apply-booking-eyebrow", text: "Got it", align: "center", color: "#22c55e" } },
+    { type: "Heading", props: { id: "apply-booking-h", text: "Last step — grab a time for your call.", level: "h2", align: "center" } },
+    { type: "Text", props: { id: "apply-booking-sub", text: "Pick a slot that works and we'll talk through exactly where AI employees plug into your business. No pitch — a real conversation about whether we can help.", align: "center" } },
   ],
 };
 
