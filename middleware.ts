@@ -49,6 +49,10 @@ export function middleware(req: NextRequest) {
   // shareable-link pattern is ready the day the site wants one.
   if (pathname.startsWith("/share/")) return NextResponse.next();
 
+  // PUBLIC: the discovery-call intake form + its submit endpoint must be reachable by real
+  // prospects while the rest of the site stays private pre-launch. Only these two paths open.
+  if (pathname === "/apply" || pathname.startsWith("/api/apply")) return NextResponse.next();
+
   const expected = expectedToken();
   if (!expected) {
     // Fail closed: no password configured means the site stays locked.
