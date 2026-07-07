@@ -77,7 +77,7 @@ export default function ApplyForm({
     const payload = {
       submittedAt: new Date().toISOString(),
       answers: safeSteps.flatMap((st) =>
-        st.questions.map((q) => ({ label: q.label, value: (answers[q.key] || "").trim() }))
+        st.questions.map((q) => ({ key: q.key, label: q.label, value: (answers[q.key] || "").trim() }))
       ),
     };
     try {

@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-type Answer = { label: string; value: string };
+type Answer = { key: string; label: string; value: string };
 
 export async function POST(req: Request) {
   let body: { submittedAt?: string; answers?: unknown };
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
   const raw = Array.isArray(body.answers) ? body.answers : [];
   const answers: Answer[] = raw
     .map((a) => ({
+      key: String((a as Answer)?.key ?? "").trim(),
       label: String((a as Answer)?.label ?? "").trim(),
       value: String((a as Answer)?.value ?? "").trim(),
     }))
