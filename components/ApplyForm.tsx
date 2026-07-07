@@ -9,7 +9,7 @@ import { useState } from "react";
 export type Question = {
   key: string;
   label: string;
-  type: "text" | "email" | "phone" | "choice";
+  type: "text" | "email" | "phone" | "choice" | "multi";
   options: string[];
   required: boolean;
 };
@@ -196,8 +196,13 @@ export default function ApplyForm({
                 <label className="mb-2 block text-sm font-semibold text-[color:var(--color-sjc-ink)]">
                   {q.label}
                 </label>
-                {q.type === "choice" ? (
-                  <Cards options={q.options} value={answers[q.key] || ""} onPick={(v) => set(q.key, v)} />
+                {q.type === "choice" || q.type === "multi" ? (
+                  <Cards
+                    options={q.options}
+                    value={answers[q.key] || ""}
+                    onPick={(v) => set(q.key, v)}
+                    multi={q.type === "multi"}
+                  />
                 ) : (
                   <input
                     type={q.type === "email" ? "email" : q.type === "phone" ? "tel" : "text"}
@@ -253,20 +258,31 @@ function Cards({
   options,
   value,
   onPick,
+  multi,
 }: {
   options: string[];
   value: string;
   onPick: (v: string) => void;
+  multi?: boolean;
 }) {
+  // single-choice: value is one option. multi: value is a ", "-joined list of options.
+  const selected = multi ? value.split(", ").filter(Boolean) : [value];
+  const pick = (opt: string) => {
+    if (!multi) return onPick(opt);
+    const set = new Set(selected);
+    if (set.has(opt)) set.delete(opt);
+    else set.add(opt);
+    onPick(options.filter((o) => set.has(o)).join(", ")); // re-join in option order = stable
+  };
   return (
     <div className="space-y-2.5">
       {options.map((opt) => {
-        const active = value === opt;
+        const active = selected.includes(opt);
         return (
           <button
             key={opt}
             type="button"
-            onClick={() => onPick(opt)}
+            onClick={() => pick(opt)}
             className={`flex w-full items-center rounded-lg border px-4 py-3 text-left text-base transition-colors ${
               active
                 ? "border-[color:var(--color-sjc-blue)] bg-blue-50 font-semibold text-[color:var(--color-sjc-ink)]"
@@ -274,11 +290,19 @@ function Cards({
             }`}
           >
             <span
-              className={`mr-3 flex h-5 w-5 flex-none items-center justify-center rounded-full border ${
+              className={`mr-3 flex h-5 w-5 flex-none items-center justify-center border ${
+                multi ? "rounded" : "rounded-full"
+              } ${
                 active ? "border-[color:var(--color-sjc-blue)] bg-[color:var(--color-sjc-blue)]" : "border-gray-300"
               }`}
             >
-              {active ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
+              {active ? (
+                multi ? (
+                  <span className="text-[11px] font-bold leading-none text-white">✓</span>
+                ) : (
+                  <span className="h-2 w-2 rounded-full bg-white" />
+                )
+              ) : null}
             </span>
             {opt}
           </button>

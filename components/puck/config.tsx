@@ -274,11 +274,12 @@ export const config: Config<Props> = {
             { label: "Email", value: "email" },
             { label: "Phone", value: "phone" },
             { label: "Single choice (pick one)", value: "choice" },
+            { label: "Multiple choice (check all that apply)", value: "multi" },
           ],
         },
         options: {
           type: "array" as const,
-          label: "Answer options (single choice only)",
+          label: "Answer options (single or multiple choice)",
           arrayFields: { text: { type: "text" as const, label: "Option" } },
           getItemSummary: (i: { text?: string }) => i?.text || "option",
           defaultItemProps: { text: "New option" },
@@ -298,14 +299,15 @@ export const config: Config<Props> = {
         const typeLabel =
           questionType === "email" ? "Email" :
           questionType === "phone" ? "Phone" :
-          questionType === "choice" ? "Single choice" : "Short text";
+          questionType === "choice" ? "Single choice" :
+          questionType === "multi" ? "Multiple choice" : "Short text";
         return (
           <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 12px", margin: "8px 0", background: "#f8fafc" }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
               {label || "Question"}{required ? " *" : ""}
             </div>
             <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{typeLabel}</div>
-            {questionType === "choice" && opts.length > 0 ? (
+            {(questionType === "choice" || questionType === "multi") && opts.length > 0 ? (
               <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 12, color: "#4b5563" }}>
                 {opts.map((o, i) => <li key={i}>{o?.text || "—"}</li>)}
               </ul>

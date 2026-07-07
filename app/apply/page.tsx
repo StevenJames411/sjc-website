@@ -38,7 +38,7 @@ function extract(data: any): { intro: Intro; disclaimer: string; booking: Bookin
           .map((q, i) => ({
             key: String(q.props?.id || `q${si}-${i}`),
             label: String(q.props?.label || ""),
-            type: (["text", "email", "phone", "choice"].includes(q.props?.questionType)
+            type: (["text", "email", "phone", "choice", "multi"].includes(q.props?.questionType)
               ? q.props.questionType
               : "text") as Step["questions"][number]["type"],
             options: (Array.isArray(q.props?.options) ? q.props.options : [])
