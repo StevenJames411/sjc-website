@@ -19,6 +19,12 @@ export type Booking = { eyebrow: string; heading: string; sub: string };
 
 const BOOKING_URL = process.env.NEXT_PUBLIC_BOOKING_URL || "";
 
+// Intro / booking / disclaimer copy comes from the rich-text editor as HTML (bold, links, etc.,
+// wrapped in <p>). Strip the block <p> wrappers so the INLINE formatting renders inside our own
+// styled elements — otherwise the raw tags leak onto the page as plain text.
+const rt = (s: string) =>
+  (s || "").replace(/<\/p>\s*<p[^>]*>/gi, " ").replace(/<\/?p[^>]*>/gi, "").trim();
+
 export default function ApplyForm({
   steps,
   intro,
@@ -104,18 +110,21 @@ export default function ApplyForm({
         <div className="rounded-2xl border border-[color:var(--color-sjc-line)] bg-white p-8 text-center shadow-sm">
           {booking.eyebrow ? (
             <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-green)]">
-              {booking.eyebrow}{firstName ? `, ${firstName}` : ""}
+              <span dangerouslySetInnerHTML={{ __html: rt(booking.eyebrow) }} />
+              {firstName ? `, ${firstName}` : ""}
             </p>
           ) : null}
           {booking.heading ? (
-            <h1 className="mt-3 text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
-              {booking.heading}
-            </h1>
+            <h1
+              className="mt-3 text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl"
+              dangerouslySetInnerHTML={{ __html: rt(booking.heading) }}
+            />
           ) : null}
           {booking.sub ? (
-            <p className="mt-4 text-base text-[color:var(--color-sjc-mute)]">
-              {booking.sub}
-            </p>
+            <p
+              className="mt-4 text-base text-[color:var(--color-sjc-mute)]"
+              dangerouslySetInnerHTML={{ __html: rt(booking.sub) }}
+            />
           ) : null}
         </div>
         {BOOKING_URL ? (
@@ -152,19 +161,22 @@ export default function ApplyForm({
       <section className="w-full">
         <div className="mx-auto max-w-2xl px-6 pt-14 text-center md:pt-20">
           {intro.eyebrow ? (
-            <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]">
-              {intro.eyebrow}
-            </p>
+            <p
+              className="text-sm font-bold uppercase tracking-wide text-[color:var(--color-sjc-blue)]"
+              dangerouslySetInnerHTML={{ __html: rt(intro.eyebrow) }}
+            />
           ) : null}
           {intro.title ? (
-            <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
-              {intro.title}
-            </h1>
+            <h1
+              className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl"
+              dangerouslySetInnerHTML={{ __html: rt(intro.title) }}
+            />
           ) : null}
           {intro.sub ? (
-            <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-[color:var(--color-sjc-mute)]">
-              {intro.sub}
-            </p>
+            <p
+              className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-[color:var(--color-sjc-mute)]"
+              dangerouslySetInnerHTML={{ __html: rt(intro.sub) }}
+            />
           ) : null}
         </div>
       </section>
@@ -242,9 +254,10 @@ export default function ApplyForm({
         </div>
 
         {disclaimer ? (
-          <p className="mt-6 text-center text-xs text-[color:var(--color-sjc-mute)]">
-            {disclaimer}
-          </p>
+          <p
+            className="mt-6 text-center text-xs text-[color:var(--color-sjc-mute)]"
+            dangerouslySetInnerHTML={{ __html: rt(disclaimer) }}
+          />
         ) : null}
       </div>
     </>
