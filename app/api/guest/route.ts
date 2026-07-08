@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 
 // Podcast-GUEST intake handler — mirrors /api/apply. Forwards the dynamic {key,label,value} answers
-// to a Google Apps Script webhook. Uses GUEST_WEBHOOK_URL if set (a dedicated guest sheet); otherwise
-// falls back to APPLY_WEBHOOK_URL so it works immediately, with a "Form Type = Podcast Guest" answer
-// prepended so guests are cleanly distinguishable from client leads in the shared sheet. The keyed
-// Apps Script turns that into its own column automatically — no script change needed.
+// to a Google Apps Script webhook. Uses GUEST_WEBHOOK_URL (the dedicated "Podcast Guests" sheet); if
+// unset, falls back to APPLY_WEBHOOK_URL so submissions never hard-fail.
 
 export const dynamic = "force-dynamic";
 
@@ -31,13 +29,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "no answers" }, { status: 400 });
   }
 
-  // Tag every guest submission so it's distinguishable even in the shared fallback sheet.
-  const tagged: Answer[] = [{ key: "__formtype__", label: "Form Type", value: "Podcast Guest" }, ...answers];
-
+  // Guests land in their own "Podcast Guests" tab now, so no per-row form-type tag is needed.
   const payload = {
     submittedAt: typeof body.submittedAt === "string" ? body.submittedAt : new Date().toISOString(),
-    formType: "Podcast Guest",
-    answers: tagged,
+    answers,
   };
 
   const webhook = process.env.GUEST_WEBHOOK_URL || process.env.APPLY_WEBHOOK_URL;
