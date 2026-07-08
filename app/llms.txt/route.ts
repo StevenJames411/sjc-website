@@ -7,9 +7,9 @@ export const dynamic = "force-static";
 
 const BODY = `# Steven James Consulting
 
-> Steven James Consulting installs AI employees on top of the business a service-business owner already runs — turnkey — so they get the growth and stay in control of their own system. Founded and run by Steven Barchetti, a 40-year solo entrepreneur across five businesses who runs his own company on the exact same system he installs.
+> Steven James Consulting installs a native AI operating system — a workforce of AI employees — on top of the software a service business already uses, so it can find, close, and keep more customers without hiring a bigger team. Founded and run by Steven Barchetti, a 40-year solo entrepreneur across five businesses who runs his own company on the exact same system he installs.
 
-Steven James Consulting is an AI-implementation partner for service businesses. Rather than selling software, we install a working AI workforce — Speed to Lead, so every lead is answered in seconds, plus AI employees covering the seats the owner wants covered — wired into the CRM, calendar, email, and pipeline the business already uses. The owner keeps control of their own system: no SaaS lock-in, no agency-forever trap. Build time is typically 4–8 weeks depending on scope.
+Steven James Consulting is an AI-implementation partner for service businesses. Rather than selling software, we build and install a native AI operating system that runs on top of the software the business already uses — a workforce of AI employees (one "hire," named Chloe in our build, covering up to six seats): instant speed-to-lead on every new lead, database reactivation of old leads, closing and booking appointments, customer retention, 24/7 call handling, and cross-sell. We train it on the business's offers, pricing, and objections and run it; the owner stays in control and can watch every conversation and booking. Nothing to switch, no new software to learn, no SaaS lock-in, no agency-forever trap. It also makes the business more valuable to sell — a company that runs on a system instead of on the owner. Build time is typically 4–8 weeks depending on scope.
 
 ## Key pages
 - [Home](https://www.stevenjamesconsulting.com/): What we install and who it's for.
