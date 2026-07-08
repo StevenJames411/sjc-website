@@ -68,10 +68,12 @@ function extract(data: any): {
     sub: textById("guest-booking-sub", "Pick a slot that works and we'll get you on the calendar."),
   };
 
-  // The guest calendar link is an editable block. Treat it as a booking URL only when it's a real
-  // https link — so the instructive placeholder text is ignored until Steven pastes the real one.
-  const raw = textById("guest-booking-url", "").trim();
-  const bookingUrl = /^https?:\/\//i.test(raw) ? raw : "";
+  // The guest calendar link is an editable block. Pull the first real https URL out of it — strip
+  // any rich-text HTML the editor may wrap around it, so the instructive placeholder is ignored
+  // until a real link is pasted, and the calendar works however the field is stored.
+  const raw = textById("guest-booking-url", "").replace(/<[^>]*>/g, " ");
+  const m = raw.match(/https?:\/\/\S+/i);
+  const bookingUrl = m ? m[0] : "";
 
   return { intro, disclaimer, booking, steps, bookingUrl };
 }
