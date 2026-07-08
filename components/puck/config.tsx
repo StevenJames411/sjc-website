@@ -42,7 +42,7 @@ type Align = "left" | "center" | "right";
 type Props = {
   Section: { background: string; paddingTop: number; paddingBottom: number; content: Slot };
   Spacer: { height: number };
-  Divider: { color: string };
+  Divider: { color: string; thickness: number; spacing: number };
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
@@ -598,10 +598,26 @@ export const config: Config<Props> = {
       label: "Divider (line)",
       fields: {
         color: { ...COLOR_FIELD, label: "Line color" },
+        thickness: {
+          type: "custom" as const,
+          label: "Thickness (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Thickness" value={value as number} onChange={onChange} fallback={1} step={1} min={1} />
+          ),
+        },
+        spacing: {
+          type: "custom" as const,
+          label: "Space above/below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Spacing" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+          ),
+        },
       },
-      defaultProps: { color: "#e5e7eb" },
-      render: ({ color }) => (
-        <hr style={{ border: "none", borderTop: `1px solid ${color || "#e5e7eb"}`, margin: "1.5rem 0" }} />
+      defaultProps: { color: "#e5e7eb", thickness: 1, spacing: 24 },
+      render: ({ color, thickness, spacing }) => (
+        <div style={{ padding: `${typeof spacing === "number" ? spacing : 24}px 0` }}>
+          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${color || "#e5e7eb"}`, margin: 0 }} />
+        </div>
       ),
     },
 
