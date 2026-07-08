@@ -30,12 +30,20 @@ export default function ApplyForm({
   intro,
   disclaimer,
   booking,
+  bookingUrl,
+  submitPath,
 }: {
   steps: Step[];
   intro: Intro;
   disclaimer: string;
   booking: Booking;
+  // Optional overrides so this same wizard powers other intake forms (e.g. /guest) with a
+  // different calendar + submit endpoint. Unset = the original client-intake behavior.
+  bookingUrl?: string;
+  submitPath?: string;
 }) {
+  const bookingSrc = bookingUrl || BOOKING_URL;
+  const postPath = submitPath || "/api/apply";
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
@@ -87,7 +95,7 @@ export default function ApplyForm({
       ),
     };
     try {
-      const res = await fetch("/api/apply", {
+      const res = await fetch(postPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -127,9 +135,9 @@ export default function ApplyForm({
             />
           ) : null}
         </div>
-        {BOOKING_URL ? (
+        {bookingSrc ? (
           <div className="mt-8 overflow-hidden rounded-2xl border border-[color:var(--color-sjc-line)] bg-white shadow-sm">
-            <iframe src={BOOKING_URL} title="Book your discovery call" className="h-[720px] w-full" />
+            <iframe src={bookingSrc} title="Book your time" className="h-[720px] w-full" />
           </div>
         ) : (
           <div className="mt-8 rounded-2xl border border-dashed border-[color:var(--color-sjc-line)] bg-white p-8 text-center">

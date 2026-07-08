@@ -727,9 +727,50 @@ const APPLY_SEED: Data = {
   ],
 };
 
+// Podcast-guest intake — same wizard machinery as APPLY_SEED, guest questions + copy. Rendered by
+// app/guest/page.tsx (guest-prefixed ids) via the shared ApplyForm. Steven edits all of this at
+// /edit/guest, including the booking-calendar link (guest-booking-url block below).
+const GUEST_SEED: Data = {
+  root: {},
+  content: [
+    { type: "Text", props: { id: "guest-eyebrow", text: "Come on the show", align: "center", color: "#2563eb" } },
+    { type: "Heading", props: { id: "guest-h1", text: "Let's get you in front of the mic.", level: "h1", align: "center" } },
+    { type: "Text", props: { id: "guest-sub", text: "A few quick questions so we can make it a great conversation — takes under two minutes, then pick a time to record. One operator to another. No pitch on the mic.", align: "center" } },
+
+    { type: "FormStep", props: { id: "guest-step-you", title: "First, who are you?", content: [
+      { type: "FormQuestion", props: { id: "q-first", label: "First name", questionType: "text", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "q-last", label: "Last name", questionType: "text", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "q-email", label: "Email", questionType: "email", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "q-phone", label: "Cell phone", questionType: "phone", options: [], required: false } },
+    ] } },
+
+    { type: "FormStep", props: { id: "guest-step-work", title: "What do you do?", content: [
+      { type: "FormQuestion", props: { id: "qg-what", label: "Company / what you're known for", questionType: "text", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "qg-website", label: "Website (if you have one)", questionType: "text", options: [], required: false } },
+      { type: "FormQuestion", props: { id: "qg-show", label: "Do you host your own podcast / show? If so, which one?", questionType: "text", options: [], required: false } },
+      { type: "FormQuestion", props: { id: "qg-social", label: "Best link to see your work (LinkedIn, IG, YouTube…)", questionType: "text", options: [], required: false } },
+    ] } },
+
+    { type: "FormStep", props: { id: "guest-step-episode", title: "What would you bring to the episode?", content: [
+      { type: "FormQuestion", props: { id: "qg-topic", label: "The story or topic you'd want to get into", questionType: "text", options: [], required: true } },
+      { type: "FormQuestion", props: { id: "qg-fit", label: "Anything else that makes you a great fit for this show?", questionType: "text", options: [], required: false } },
+    ] } },
+
+    // Editable copy blocks (edit or DELETE any at /edit/guest, same as everywhere).
+    { type: "Text", props: { id: "guest-disclaimer", text: "We only use this to prep a great conversation — no spam, ever.", align: "center", color: "#4b5563" } },
+    { type: "Text", props: { id: "guest-booking-eyebrow", text: "Got it", align: "center", color: "#22c55e" } },
+    { type: "Heading", props: { id: "guest-booking-h", text: "Last step — grab a time to record.", level: "h2", align: "center" } },
+    { type: "Text", props: { id: "guest-booking-sub", text: "Pick a slot that works and we'll get you on the calendar. Remote, relaxed, and we do all the lifting on our end.", align: "center" } },
+    // The booking calendar. Paste your GUEST appointment-schedule link here (must start with https://).
+    // Until it's a real URL, guests see a friendly 'we'll reach out' note. This block never shows on the live page.
+    { type: "Text", props: { id: "guest-booking-url", text: "Paste your guest booking calendar link here (starts with https://). This text does not appear on the live form.", align: "center", color: "#4b5563" } },
+  ],
+};
+
 const SEEDS: Record<string, Data> = {
   home: HOME_SEED,
   apply: APPLY_SEED,
+  guest: GUEST_SEED,
   nav: NAV_SEED,
   footer: FOOTER_SEED,
   "for-agencies": FOR_AGENCIES_SEED,

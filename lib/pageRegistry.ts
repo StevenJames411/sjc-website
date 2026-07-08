@@ -25,7 +25,7 @@ const SYSTEM = new Set(["home", "nav", "footer"]);
 // hardcoded Next.js route wins precedence and would silently shadow the new page's content.
 const ROUTE_FOLDERS = [
   "about", "apply", "assessment", "asset-trap", "board-of-directors", "case-study",
-  "discover-the-lies", "edit", "faqs", "financial-trap", "for-agencies", "hustle-trap",
+  "discover-the-lies", "edit", "faqs", "financial-trap", "for-agencies", "guest", "hustle-trap",
   "industries", "master-trap", "med-spa", "podcast", "raising-capital", "rock-star-trap",
   "tech", "time-trap", "what-changed", "api", "share",
 ];

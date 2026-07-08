@@ -53,6 +53,9 @@ export function middleware(req: NextRequest) {
   // prospects while the rest of the site stays private pre-launch. Only these two paths open.
   if (pathname === "/apply" || pathname.startsWith("/api/apply")) return NextResponse.next();
 
+  // PUBLIC: the podcast-guest intake form + its submit endpoint (mirrors /apply).
+  if (pathname === "/guest" || pathname.startsWith("/api/guest")) return NextResponse.next();
+
   const expected = expectedToken();
   if (!expected) {
     // Fail closed: no password configured means the site stays locked.
