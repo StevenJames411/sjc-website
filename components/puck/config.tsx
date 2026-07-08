@@ -48,7 +48,7 @@ type Props = {
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   Video: { src: string; caption: string };
-  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number };
+  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
   SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string };
@@ -215,6 +215,8 @@ export const IMAGE_DEFAULTS = {
   align: "center" as Align,
   spaceAbove: 24,
   spaceBelow: 0,
+  linkUrl: "",
+  openInNewTab: "yes",
 };
 
 export const CONVERSATION_DEFAULTS = {
@@ -882,28 +884,54 @@ export const config: Config<Props> = {
           ],
         },
         align: { ...ALIGN_FIELD, label: "Align" },
+        linkUrl: { type: "text" as const, label: "Link URL (make the image clickable)" },
+        openInNewTab: {
+          type: "radio" as const,
+          label: "Open link in…",
+          options: [
+            { label: "New tab", value: "yes" },
+            { label: "Same tab", value: "no" },
+          ],
+        },
       },
       defaultProps: IMAGE_DEFAULTS,
-      render: ({ src, alt, caption, maxWidth, rounded, align, spaceAbove, spaceBelow }) => {
+      render: ({ src, alt, caption, maxWidth, rounded, align, spaceAbove, spaceBelow, linkUrl, openInNewTab }) => {
         const alignItems = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
         const maxW = maxWidth && maxWidth > 0 ? `${maxWidth}px` : undefined;
         const radius = rounded || "16px";
+        const img = src ? (
+          <img
+            src={src}
+            alt={alt || ""}
+            style={{
+              width: "100%",
+              maxWidth: maxW,
+              borderRadius: radius,
+              display: "block",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+              objectFit: "contain" as const,
+            }}
+          />
+        ) : null;
+        // When a Link URL is set, the image becomes a clickable link (new tab by default).
+        // Empty Link URL => bare image, exactly as before (zero change to existing pages).
+        const linked = img && linkUrl ? (
+          <a
+            href={linkUrl}
+            target={openInNewTab === "no" ? undefined : "_blank"}
+            rel="noopener noreferrer"
+            style={{ display: "block", width: "100%", maxWidth: maxW, cursor: "pointer" }}
+          >
+            {img}
+          </a>
+        ) : (
+          img
+        );
         return (
           <figure style={{ display: "flex", flexDirection: "column", alignItems, marginTop: 0, marginBottom: 0, paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 24}px`, paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px` }}>
             {src ? (
-              <img
-                src={src}
-                alt={alt || ""}
-                style={{
-                  width: "100%",
-                  maxWidth: maxW,
-                  borderRadius: radius,
-                  display: "block",
-                  border: "1px solid #e5e7eb",
-                  boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
-                  objectFit: "contain" as const,
-                }}
-              />
+              linked
             ) : (
               <div
                 style={{
