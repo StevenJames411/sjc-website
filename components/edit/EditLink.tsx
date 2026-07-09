@@ -34,28 +34,67 @@ export default function EditLink() {
       .catch(() => {});
   }, []);
 
-  if (!authed || !slug) return null;
+  async function signOut() {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch {
+      /* ignore — reload re-checks auth either way */
+    }
+    window.location.reload();
+  }
+
+  // Owner is signed in. Always offer Sign out; show Edit only on pages that map to a builder slug.
+  if (!authed) return null;
+
+  const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 
   return (
-    <a
-      href={`/edit/${slug}`}
+    <div
       style={{
         position: "fixed",
         left: 18,
         bottom: 18,
         zIndex: 950,
-        background: "#2563eb",
-        color: "#fff",
-        borderRadius: 10,
-        padding: "10px 16px",
-        fontSize: 14,
-        fontWeight: 700,
-        boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
-        fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
-        textDecoration: "none",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
       }}
     >
-      ✎ Edit this page
-    </a>
+      {slug && (
+        <a
+          href={`/edit/${slug}`}
+          style={{
+            background: "#2563eb",
+            color: "#fff",
+            borderRadius: 10,
+            padding: "10px 16px",
+            fontSize: 14,
+            fontWeight: 700,
+            boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
+            fontFamily: font,
+            textDecoration: "none",
+          }}
+        >
+          ✎ Edit this page
+        </a>
+      )}
+      <button
+        onClick={signOut}
+        style={{
+          background: "#1f2937",
+          color: "#e5e7eb",
+          border: "1px solid #374151",
+          borderRadius: 10,
+          padding: "10px 14px",
+          fontSize: 13,
+          fontWeight: 600,
+          cursor: "pointer",
+          boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
+          fontFamily: font,
+        }}
+      >
+        Sign out
+      </button>
+    </div>
   );
 }
