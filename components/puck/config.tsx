@@ -47,7 +47,7 @@ type Props = {
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
-  Video: { src: string; caption: string };
+  Video: { src: string; caption: string; poster: string };
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
@@ -830,16 +830,20 @@ export const config: Config<Props> = {
       label: "Video / sizzle reel",
       fields: {
         src: { type: "text" as const, label: "Video URL — MP4 (Blob) or YouTube/Vimeo embed; blank = placeholder" },
+        poster: { type: "text" as const, label: "Poster image URL (optional) — thumbnail shown before play; blank = auto first frame" },
         caption: { type: "textarea" as const, label: "Placeholder caption" },
       },
-      defaultProps: { src: "", caption: "2-minute teaser — coming" },
-      render: ({ src, caption }) => {
+      defaultProps: { src: "", poster: "", caption: "2-minute teaser — coming" },
+      render: ({ src, caption, poster }) => {
         const isFile = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src) || src.includes("blob.vercel-storage");
+        // No poster set: append a #t=0.1 media fragment so Safari renders the first frame
+        // instead of a black box (Chrome does this on its own; Safari needs the nudge).
+        const videoSrc = poster || src.includes("#") ? src : `${src}#t=0.1`;
         return (
           <div className="mx-auto mt-9 aspect-video max-w-3xl overflow-hidden rounded-2xl border border-white/15 bg-black/40">
             {src ? (
               isFile ? (
-                <video src={src} controls playsInline preload="metadata" className="h-full w-full" />
+                <video src={videoSrc} poster={poster || undefined} controls playsInline preload="metadata" className="h-full w-full" />
               ) : (
                 <iframe src={src} className="h-full w-full" allowFullScreen title="Video" />
               )
