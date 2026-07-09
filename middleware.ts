@@ -1,15 +1,31 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// PRIVATE SITE (pre-launch) — the whole website is gated behind ONE app password,
-// mirroring the private cockpit (sjc-cockpit/middleware.js). Only the signed-in owner
-// can view OR edit; nobody else sees it. This replaces Vercel's paid "Require Log In"
-// gate (which is turned OFF at the Vercel project level). When the site goes public,
-// relax the matcher or add a public path allow (the /share/ branch is reserved for that).
+// PUBLIC SITE (launched 2026-07-09) — the website is live to the general public. Only the
+// owner-edit + admin surfaces stay gated behind the app password (mirroring the private
+// cockpit). Public page views render server-side from Upstash and need no auth. To take the
+// whole site private again (e.g. a rebuild), set PROTECTED below to always-true.
+//
+// GATED (owner-only, require the sjc_site_auth cookie): /edit/*, /api/puck, /api/pages,
+//   /api/site-content (draft read + publish), /api/upload.
+// OPEN: every public page + /api/login, /api/auth-status (self-reports authed:false),
+//   /api/apply, /api/guest, /api/send-roadmap (public form posts).
 //
 // Required env: SITE_EDIT_PASSWORD  (set in Vercel, never committed; set to the SAME
 //               value as the cockpit's COCKPIT_PASSWORD so one password unlocks both)
 // Optional env: SITE_EDIT_USER (defaults to "steven")
+
+// The owner-only surfaces. Everything NOT matched here is public.
+function isProtected(pathname: string): boolean {
+  return (
+    pathname === "/edit" ||
+    pathname.startsWith("/edit/") ||
+    pathname.startsWith("/api/puck") ||
+    pathname.startsWith("/api/pages") ||
+    pathname.startsWith("/api/site-content") ||
+    pathname.startsWith("/api/upload")
+  );
+}
 
 const COOKIE_NAME = "sjc_site_auth";
 
@@ -42,12 +58,8 @@ f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // The login API handles itself (must stay open so the login form can post).
-  if (pathname.startsWith("/api/login")) return NextResponse.next();
-
-  // Reserved: public client-share pages (none yet) — mirrors the cockpit so the
-  // shareable-link pattern is ready the day the site wants one.
-  if (pathname.startsWith("/share/")) return NextResponse.next();
+  // PUBLIC: the site is live. Everything except the owner-edit/admin surfaces is open.
+  if (!isProtected(pathname)) return NextResponse.next();
 
   const expected = expectedToken();
   if (!expected) {
