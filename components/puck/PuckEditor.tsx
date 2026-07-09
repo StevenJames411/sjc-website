@@ -5,7 +5,10 @@ import { Puck, type Data } from "@measured/puck";
 import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
 import { seedFor } from "@/components/puck/seeds";
-import { PUCK_PAGES } from "@/lib/puckPages";
+
+// The page list is passed in from the server route (it's Redis-backed now, so the client can't
+// read it directly). Shape mirrors lib/pageRegistry's PageEntry.
+type PageItem = { slug: string; title: string; custom?: boolean };
 
 // The unified visual builder for ANY page. A thin bar on top adds the two things Puck doesn't
 // give us: a page-switcher dropdown (jump between all our pages) and auto-save (every change
@@ -17,11 +20,68 @@ import { PUCK_PAGES } from "@/lib/puckPages";
 // reset on load and is then stripped, so no fumble-able button sits on the toolbar.
 type SaveState = "idle" | "saving" | "saved";
 
-export default function PuckEditor({ page, title }: { page: string; title: string }) {
+export default function PuckEditor({
+  page,
+  title,
+  pages,
+}: {
+  page: string;
+  title: string;
+  pages: PageItem[];
+}) {
   const router = useRouter();
   const [data, setData] = useState<Data | null>(null);
   const [save, setSave] = useState<SaveState>("idle");
+  const [busy, setBusy] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Create a brand-new page: name it, the server slugifies + saves it to the registry, then we
+  // jump straight into editing the blank page. It won't be public until you hit Publish.
+  const onNewPage = async () => {
+    const name = window.prompt("Name your new page (e.g. Pricing):");
+    if (!name || !name.trim()) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ title: name.trim() }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't create the page.");
+      router.push(`/edit/${j.slug}`);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Delete the current page: pulls it from the builder and takes its page down. Home / nav /
+  // footer are site-wide and can't be deleted.
+  const canDelete = !["home", "nav", "footer"].includes(page);
+  const onDeletePage = async () => {
+    if (!canDelete) return;
+    if (!window.confirm(`Delete "${title}"? This removes it from the builder and takes its page down. This can't be undone.`))
+      return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pages", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ slug: page }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't delete the page.");
+      router.push("/edit/home");
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const writeDraft = (d: Data) => {
     setSave("saving");
@@ -89,12 +149,20 @@ export default function PuckEditor({ page, title }: { page: string; title: strin
           onChange={(e) => router.push(`/edit/${e.target.value}`)}
           style={select}
         >
-          {PUCK_PAGES.map((p) => (
+          {pages.map((p) => (
             <option key={p.slug} value={p.slug}>
               {p.title}
             </option>
           ))}
         </select>
+        <button type="button" onClick={onNewPage} disabled={busy} style={btn}>
+          + New Page
+        </button>
+        {canDelete ? (
+          <button type="button" onClick={onDeletePage} disabled={busy} style={btnDanger}>
+            Delete Page
+          </button>
+        ) : null}
         <span style={{ fontSize: 12, color: save === "saved" ? "#16a34a" : "#6b7280" }}>
           {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : ""}
         </span>
@@ -143,4 +211,19 @@ const select: React.CSSProperties = {
   fontWeight: 600,
   background: "#fff",
   cursor: "pointer",
+};
+const btn: React.CSSProperties = {
+  border: "1px solid #d1d5db",
+  borderRadius: 6,
+  padding: "5px 10px",
+  fontSize: 13,
+  fontWeight: 600,
+  background: "#fff",
+  color: "#111827",
+  cursor: "pointer",
+};
+const btnDanger: React.CSSProperties = {
+  ...btn,
+  border: "1px solid #fecaca",
+  color: "#b91c1c",
 };

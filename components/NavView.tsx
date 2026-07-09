@@ -8,6 +8,7 @@ const LOGO_URL =
 export type NavLink = { label: string; target: string; fontSize?: number; color?: string };
 export type NavViewProps = {
   brandName?: string;
+  brandSize?: number;
   tagline?: string;
   taglineColor?: string;
   taglineSize?: number;
@@ -22,6 +23,7 @@ export type NavViewProps = {
 // tagline centered, links+button right, no overlap); narrow screens collapse to a hamburger.
 export default function NavView({
   brandName = "Steven James Consulting",
+  brandSize = 16,
   tagline = "Your Native AI Implementation Partner",
   taglineColor = "#22c55e",
   taglineSize = 18,
@@ -35,7 +37,7 @@ export default function NavView({
   const Brand = (
     <a href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
       <img src={LOGO_URL} alt="logo" className="h-9 w-9 rounded-full" />
-      <span className="text-base font-semibold tracking-tight">{brandName}</span>
+      <span className="font-semibold tracking-tight" style={{ fontSize: `${brandSize || 16}px` }}>{brandName}</span>
     </a>
   );
 

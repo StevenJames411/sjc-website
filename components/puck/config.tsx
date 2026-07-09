@@ -42,13 +42,13 @@ type Align = "left" | "center" | "right";
 type Props = {
   Section: { background: string; paddingTop: number; paddingBottom: number; content: Slot };
   Spacer: { height: number };
-  Divider: { color: string };
+  Divider: { color: string; thickness: number; spacing: number };
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   Video: { src: string; caption: string };
-  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number };
+  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
   SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string };
@@ -108,6 +108,7 @@ type Props = {
   // The site navigation — fully editable in the builder (edit at /edit/nav, renders site-wide).
   SiteHeader: {
     brandName: string;
+    brandSize: number;
     tagline: string;
     taglineColor: string;
     taglineSize: number;
@@ -125,6 +126,11 @@ type Props = {
     fix: string;
     rollup: string;
   };
+  // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
+  // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
+  // renders are the in-editor preview only.
+  FormStep: { title: string; content: Slot };
+  FormQuestion: { label: string; questionType: string; options: { text: string }[]; required: boolean };
 };
 
 const ALIGN_FIELD = {
@@ -173,6 +179,7 @@ const NAV_COLOR_FIELD = {
 // opens to it) AND Nav.tsx's fallback (so the live nav never renders blank if nothing's published).
 export const NAV_DEFAULTS = {
   brandName: "Steven James Consulting",
+  brandSize: 16,
   tagline: "Your Native AI Implementation Partner",
   taglineColor: "#22c55e",
   taglineSize: 18,
@@ -208,6 +215,8 @@ export const IMAGE_DEFAULTS = {
   align: "center" as Align,
   spaceAbove: 24,
   spaceBelow: 0,
+  linkUrl: "",
+  openInNewTab: "yes",
 };
 
 export const CONVERSATION_DEFAULTS = {
@@ -239,6 +248,79 @@ export const STAFFROSTER_DEFAULTS = {
 
 export const config: Config<Props> = {
   components: {
+    FormStep: {
+      label: "Form step (one screen)",
+      fields: {
+        title: { type: "text" as const, label: "Step heading" },
+        content: { type: "slot" as const },
+      },
+      defaultProps: { title: "New step", content: [] },
+      render: ({ title, content: Content }) => (
+        <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 16, margin: "12px 0", background: "#fff" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#2563eb", marginBottom: 6 }}>
+            Form step
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 10 }}>{title || "Step"}</div>
+          <Content />
+        </div>
+      ),
+    },
+
+    FormQuestion: {
+      label: "Question",
+      fields: {
+        label: { type: "text" as const, label: "Question / label" },
+        questionType: {
+          type: "select" as const,
+          label: "Answer type",
+          options: [
+            { label: "Short text", value: "text" },
+            { label: "Email", value: "email" },
+            { label: "Phone", value: "phone" },
+            { label: "Single choice (pick one)", value: "choice" },
+            { label: "Multiple choice (check all that apply)", value: "multi" },
+          ],
+        },
+        options: {
+          type: "array" as const,
+          label: "Answer options (single or multiple choice)",
+          arrayFields: { text: { type: "text" as const, label: "Option" } },
+          getItemSummary: (i: { text?: string }) => i?.text || "option",
+          defaultItemProps: { text: "New option" },
+        },
+        required: {
+          type: "radio" as const,
+          label: "Required?",
+          options: [
+            { label: "No", value: false },
+            { label: "Yes", value: true },
+          ],
+        },
+      },
+      defaultProps: { label: "New question", questionType: "text", options: [], required: true },
+      render: ({ label, questionType, options, required }) => {
+        const opts = Array.isArray(options) ? options : [];
+        const typeLabel =
+          questionType === "email" ? "Email" :
+          questionType === "phone" ? "Phone" :
+          questionType === "choice" ? "Single choice" :
+          questionType === "multi" ? "Multiple choice" : "Short text";
+        return (
+          <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 12px", margin: "8px 0", background: "#f8fafc" }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
+              {label || "Question"}{required ? " *" : ""}
+            </div>
+            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{typeLabel}</div>
+            {(questionType === "choice" || questionType === "multi") && opts.length > 0 ? (
+              <ul style={{ margin: "6px 0 0", paddingLeft: 16, fontSize: 12, color: "#4b5563" }}>
+                {opts.map((o, i) => <li key={i}>{o?.text || "—"}</li>)}
+              </ul>
+            ) : null}
+          </div>
+        );
+      },
+    },
+
     StaffRoster: {
       label: "Staff roster (Chloe in the lineup)",
       fields: {
@@ -407,6 +489,13 @@ export const config: Config<Props> = {
       label: "Site header / nav",
       fields: {
         brandName: { type: "text" as const, label: "Business name (links home)" },
+        brandSize: {
+          type: "custom" as const,
+          label: "Business name size (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={1} min={12} />
+          ),
+        },
         tagline: { type: "text" as const, label: "Center tagline (who you are)" },
         taglineColor: { ...NAV_COLOR_FIELD, label: "Tagline color" },
         taglineSize: {
@@ -438,9 +527,10 @@ export const config: Config<Props> = {
         ctaHref: { type: "text" as const, label: "Button links to" },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref }) => (
+      render: ({ brandName, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref }) => (
         <NavView
           brandName={brandName}
+          brandSize={brandSize}
           tagline={tagline}
           taglineColor={taglineColor}
           taglineSize={taglineSize}
@@ -508,10 +598,26 @@ export const config: Config<Props> = {
       label: "Divider (line)",
       fields: {
         color: { ...COLOR_FIELD, label: "Line color" },
+        thickness: {
+          type: "custom" as const,
+          label: "Thickness (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Thickness" value={value as number} onChange={onChange} fallback={1} step={1} min={1} />
+          ),
+        },
+        spacing: {
+          type: "custom" as const,
+          label: "Space above/below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Spacing" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+          ),
+        },
       },
-      defaultProps: { color: "#e5e7eb" },
-      render: ({ color }) => (
-        <hr style={{ border: "none", borderTop: `1px solid ${color || "#e5e7eb"}`, margin: "1.5rem 0" }} />
+      defaultProps: { color: "#e5e7eb", thickness: 1, spacing: 24 },
+      render: ({ color, thickness, spacing }) => (
+        <div style={{ padding: `${typeof spacing === "number" ? spacing : 24}px 0` }}>
+          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${color || "#e5e7eb"}`, margin: 0 }} />
+        </div>
       ),
     },
 
@@ -723,24 +829,31 @@ export const config: Config<Props> = {
     Video: {
       label: "Video / sizzle reel",
       fields: {
-        src: { type: "text" as const, label: "Embed URL (YouTube/Vimeo) — blank = placeholder" },
+        src: { type: "text" as const, label: "Video URL — MP4 (Blob) or YouTube/Vimeo embed; blank = placeholder" },
         caption: { type: "textarea" as const, label: "Placeholder caption" },
       },
       defaultProps: { src: "", caption: "2-minute teaser — coming" },
-      render: ({ src, caption }) => (
-        <div className="mx-auto mt-9 aspect-video max-w-3xl overflow-hidden rounded-2xl border border-white/15 bg-black/40">
-          {src ? (
-            <iframe src={src} className="h-full w-full" allowFullScreen title="Video" />
-          ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-white/70">
-              <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/40 text-2xl">
-                &#9654;
-              </span>
-              <span className="text-sm uppercase tracking-[0.18em]">{caption}</span>
-            </div>
-          )}
-        </div>
-      ),
+      render: ({ src, caption }) => {
+        const isFile = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src) || src.includes("blob.vercel-storage");
+        return (
+          <div className="mx-auto mt-9 aspect-video max-w-3xl overflow-hidden rounded-2xl border border-white/15 bg-black/40">
+            {src ? (
+              isFile ? (
+                <video src={src} controls playsInline preload="metadata" className="h-full w-full" />
+              ) : (
+                <iframe src={src} className="h-full w-full" allowFullScreen title="Video" />
+              )
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-white/70">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/40 text-2xl">
+                  &#9654;
+                </span>
+                <span className="text-sm uppercase tracking-[0.18em]">{caption}</span>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
 
     Image: {
@@ -787,28 +900,54 @@ export const config: Config<Props> = {
           ],
         },
         align: { ...ALIGN_FIELD, label: "Align" },
+        linkUrl: { type: "text" as const, label: "Link URL (make the image clickable)" },
+        openInNewTab: {
+          type: "radio" as const,
+          label: "Open link in…",
+          options: [
+            { label: "New tab", value: "yes" },
+            { label: "Same tab", value: "no" },
+          ],
+        },
       },
       defaultProps: IMAGE_DEFAULTS,
-      render: ({ src, alt, caption, maxWidth, rounded, align, spaceAbove, spaceBelow }) => {
+      render: ({ src, alt, caption, maxWidth, rounded, align, spaceAbove, spaceBelow, linkUrl, openInNewTab }) => {
         const alignItems = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
         const maxW = maxWidth && maxWidth > 0 ? `${maxWidth}px` : undefined;
         const radius = rounded || "16px";
+        const img = src ? (
+          <img
+            src={src}
+            alt={alt || ""}
+            style={{
+              width: "100%",
+              maxWidth: maxW,
+              borderRadius: radius,
+              display: "block",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+              objectFit: "contain" as const,
+            }}
+          />
+        ) : null;
+        // When a Link URL is set, the image becomes a clickable link (new tab by default).
+        // Empty Link URL => bare image, exactly as before (zero change to existing pages).
+        const linked = img && linkUrl ? (
+          <a
+            href={linkUrl}
+            target={openInNewTab === "no" ? undefined : "_blank"}
+            rel="noopener noreferrer"
+            style={{ display: "block", width: "100%", maxWidth: maxW, cursor: "pointer" }}
+          >
+            {img}
+          </a>
+        ) : (
+          img
+        );
         return (
           <figure style={{ display: "flex", flexDirection: "column", alignItems, marginTop: 0, marginBottom: 0, paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 24}px`, paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px` }}>
             {src ? (
-              <img
-                src={src}
-                alt={alt || ""}
-                style={{
-                  width: "100%",
-                  maxWidth: maxW,
-                  borderRadius: radius,
-                  display: "block",
-                  border: "1px solid #e5e7eb",
-                  boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
-                  objectFit: "contain" as const,
-                }}
-              />
+              linked
             ) : (
               <div
                 style={{
