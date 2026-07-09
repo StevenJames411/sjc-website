@@ -830,7 +830,13 @@ export const config: Config<Props> = {
       label: "Video / sizzle reel",
       fields: {
         src: { type: "text" as const, label: "Video URL — MP4 (Blob) or YouTube/Vimeo embed; blank = placeholder" },
-        poster: { type: "text" as const, label: "Poster image URL (optional) — thumbnail shown before play; blank = auto first frame" },
+        poster: {
+          type: "custom" as const,
+          label: "Poster image (optional) — thumbnail before play; blank = auto first frame",
+          render: ({ onChange, value }) => (
+            <ImageUpload value={value as string} onChange={onChange} />
+          ),
+        },
         caption: { type: "textarea" as const, label: "Placeholder caption" },
       },
       defaultProps: { src: "", poster: "", caption: "2-minute teaser — coming" },
