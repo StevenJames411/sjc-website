@@ -70,10 +70,6 @@ export default function WebsitesPage() {
                     p: "The stars you already earned, right where somebody deciding whether to call you can see them.",
                   },
                   {
-                    h: "Built for a phone first",
-                    p: "Almost everybody checking you out is standing in their kitchen holding a phone. That's what it's built for.",
-                  },
-                  {
                     h: "A contact form that texts you",
                     p: "Every message lands on your phone with their name and number attached. Hit reply and you're talking to them. Your phone is the whole system.",
                   },
@@ -99,6 +95,60 @@ export default function WebsitesPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </section>
+
+          {/* ── Getting found: mobile · SEO · AEO (in layman's terms) ───────── */}
+          <section className="w-full" style={{ backgroundColor: "#1e3a6e" }}>
+            <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
+              <p className="text-center text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--color-sjc-green)]">
+                Getting Found
+              </p>
+              <h2 className="mt-4 text-center text-3xl font-bold leading-tight tracking-tight text-white md:text-4xl">
+                A website nobody finds is a business card in a drawer.
+              </h2>
+              <p className="mx-auto mt-5 max-w-2xl text-center text-lg leading-relaxed text-white/80">
+                There are three ways a customer looks you up today. Most websites are built for
+                one of them. Yours is built for all three.
+              </p>
+
+              <div className="mt-14 grid gap-6 md:grid-cols-3">
+                {[
+                  {
+                    tag: "On their phone",
+                    h: "Because that's what's in their hand",
+                    p: "Almost everybody checking you out is standing in a driveway or a kitchen holding a phone. Your site is built for that screen first — big type, big buttons, your number one thumb away. It looks right on a computer too.",
+                  },
+                  {
+                    tag: "On Google",
+                    h: "So you show up when they search",
+                    p: "Built the way Google wants it, so Google understands who you are, what you do, and the towns you work in. When somebody nearby searches for your trade, you're in the running instead of invisible. This is the part people call SEO.",
+                  },
+                  {
+                    tag: "When they ask AI",
+                    h: "The one nobody else is doing yet",
+                    p: "People don't only search anymore — they ask. They type “who's the best guy near me for this” into ChatGPT and take the answer they get back. Your site is written so the AI can read it, understand your business, and hand your name over. Almost no small-business website is built this way yet. Yours is.",
+                  },
+                ].map((card) => (
+                  <div key={card.tag} className="rounded-2xl bg-white p-7 shadow-sm">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-[color:var(--color-sjc-blue)]">
+                      {card.tag}
+                    </p>
+                    <h3 className="mt-3 text-lg font-bold leading-snug text-[color:var(--color-sjc-ink)] md:text-xl">
+                      {card.h}
+                    </h3>
+                    <p className="mt-3 text-base leading-relaxed text-[color:var(--color-sjc-mute)]">
+                      {card.p}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <p className="mx-auto mt-12 max-w-3xl text-center text-lg leading-relaxed text-white/90">
+                That third one didn&apos;t exist a couple of years ago. It does now, it&apos;s
+                where your customers are headed, and almost nobody building websites at this
+                price has caught up to it yet.
+              </p>
             </div>
           </section>
 
