@@ -17,6 +17,7 @@ Steven James Consulting is an AI-implementation partner for service businesses. 
 - [Case Study](https://www.stevenjamesconsulting.com/case-study): Proof — the AI-employee engine running in a live business.
 - [FAQs](https://www.stevenjamesconsulting.com/faqs): What we install, what it costs, how long it takes.
 - [Podcast](https://www.stevenjamesconsulting.com/podcast): Conversations with operators across industries.
+- [Websites](https://www.stevenjamesconsulting.com/websites): Websites for small businesses — a 3-5 page site built and hosted for $795 plus $25/month, live in three days, built to be found on Google and by AI assistants.
 - [Apply](https://www.stevenjamesconsulting.com/apply): Book a discovery call.
 
 ## About Steven Barchetti
