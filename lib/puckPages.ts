@@ -12,6 +12,11 @@ export const PUCK_PAGES: PuckPage[] = [
   { slug: "about", title: "About" },
   { slug: "industries", title: "Industries" },
   { slug: "med-spa", title: "Med Spa" },
+  { slug: "websites", title: "Websites ($795 offer)" },
+  // /websites carries its OWN header + footer, not the site-wide ones — the global nav's DIY
+  // link points at the free community that teaches exactly what that page sells.
+  { slug: "websites-nav", title: "Websites — Header" },
+  { slug: "websites-footer", title: "Websites — Footer" },
   { slug: "industry-hvac", title: "Industry — HVAC" },
   { slug: "industry-roofing", title: "Industry — Roofing" },
   { slug: "industry-garage-doors", title: "Industry — Garage Doors" },

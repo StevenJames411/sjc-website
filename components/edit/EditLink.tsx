@@ -9,6 +9,7 @@ const PATH_TO_SLUG: Record<string, string> = {
   "/about": "about",
   "/industries": "industries",
   "/med-spa": "med-spa",
+  "/websites": "websites",
   "/industries/hvac": "industry-hvac",
   "/industries/roofing": "industry-roofing",
   "/industries/garage-doors": "industry-garage-doors",
