@@ -27,7 +27,7 @@ const ROUTE_FOLDERS = [
   "about", "apply", "assessment", "asset-trap", "board-of-directors", "case-study",
   "discover-the-lies", "edit", "faqs", "financial-trap", "for-agencies", "guest", "hustle-trap",
   "industries", "master-trap", "med-spa", "podcast", "raising-capital", "rock-star-trap",
-  "tech", "time-trap", "what-changed", "api", "share",
+  "tech", "time-trap", "websites", "what-changed", "api", "share",
 ];
 
 type RegistryBlob = { custom?: PuckPage[]; hidden?: string[] };

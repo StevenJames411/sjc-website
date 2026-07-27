@@ -34,13 +34,36 @@ import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 import ImageUpload from "@/components/puck/ImageUpload";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
+import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
+import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
+import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
+import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 
 type Align = "left" | "center" | "right";
 
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
-  Section: { background: string; paddingTop: number; paddingBottom: number; content: Slot };
+  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; content: Slot };
+  // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
+  Card: { badge: string; eyebrow: string; heading: string; body: string };
+  CheckList: { dotColor: string; rows: { heading: string; body: string }[] };
+  PriceBox: {
+    topAmount: string;
+    topNote: string;
+    bottomAmount: string;
+    bottomSuffix: string;
+    bottomNote: string;
+    footnote: string;
+  };
+  LeadForm: {
+    source: string;
+    fields: { label: string; inputType: string }[];
+    buttonLabel: string;
+    note: string;
+    successHeading: string;
+    successBody: string;
+  };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
@@ -134,6 +157,13 @@ type Props = {
   FormQuestion: { label: string; questionType: string; options: { text: string }[]; required: boolean };
 };
 
+// The generic blocks declare optional props in their own components (so they're usable outside
+// the builder); Puck wants them all present. These aliases keep the defaults honestly typed.
+type CardBlock = Props["Card"];
+type CheckListBlock = Props["CheckList"];
+type PriceBoxBlock = Props["PriceBox"];
+type LeadFormBlock = Props["LeadForm"];
+
 const ALIGN_FIELD = {
   type: "radio" as const,
   options: [
@@ -173,6 +203,18 @@ const OPENS_IN_FIELD = {
   options: [
     { label: "Same tab", value: false },
     { label: "New tab", value: true },
+  ],
+};
+
+// How wide the content inside a Section band runs. Narrow reads best for paragraphs; wide is
+// for card rows that need the room. Default matches the original fixed max-w-3xl.
+const WIDTH_FIELD = {
+  type: "select" as const,
+  options: [
+    { label: "Narrow (reading width)", value: "48rem" },
+    { label: "Medium", value: "56rem" },
+    { label: "Wide (card rows)", value: "64rem" },
+    { label: "Full", value: "80rem" },
   ],
 };
 
@@ -261,6 +303,110 @@ export const STAFFROSTER_DEFAULTS = {
 
 export const config: Config<Props> = {
   components: {
+    Card: {
+      label: "Card (white box)",
+      fields: {
+        badge: { type: "text" as const, label: "Number badge (optional — e.g. 1)" },
+        eyebrow: { type: "text" as const, label: "Small label above (optional)" },
+        heading: { type: "textarea" as const, label: "Heading" },
+        body: { type: "textarea" as const, label: "Body" },
+      },
+      defaultProps: CARD_DEFAULTS as CardBlock,
+      render: ({ badge, eyebrow, heading, body }) => (
+        <Card badge={badge} eyebrow={eyebrow} heading={heading} body={body} />
+      ),
+    },
+
+    CheckList: {
+      label: "Checklist (dot + line)",
+      fields: {
+        dotColor: {
+          type: "select" as const,
+          label: "Dot color",
+          options: [
+            { label: "Green", value: "#22c55e" },
+            { label: "Blue", value: "#2563eb" },
+            { label: "Ink", value: "#111827" },
+          ],
+        },
+        rows: {
+          type: "array" as const,
+          label: "Items",
+          arrayFields: {
+            heading: { type: "text" as const, label: "Bold line" },
+            body: { type: "textarea" as const, label: "Supporting line" },
+          },
+          getItemSummary: (i: { heading?: string }) => i?.heading || "item",
+          defaultItemProps: { heading: "New item", body: "What it means for them." },
+        },
+      },
+      defaultProps: CHECKLIST_DEFAULTS as CheckListBlock,
+      render: ({ dotColor, rows }) => <CheckList dotColor={dotColor} rows={rows} />,
+    },
+
+    PriceBox: {
+      label: "Price box",
+      fields: {
+        topAmount: { type: "text" as const, label: "Top price (e.g. $795)" },
+        topNote: { type: "text" as const, label: "Line under the top price" },
+        bottomAmount: { type: "text" as const, label: "Second price (leave blank for one price)" },
+        bottomSuffix: { type: "text" as const, label: "Suffix (e.g. /month)" },
+        bottomNote: { type: "text" as const, label: "Line under the second price" },
+        footnote: { type: "textarea" as const, label: "Small print underneath" },
+      },
+      defaultProps: PRICEBOX_DEFAULTS as PriceBoxBlock,
+      render: ({ topAmount, topNote, bottomAmount, bottomSuffix, bottomNote, footnote }) => (
+        <PriceBox
+          topAmount={topAmount}
+          topNote={topNote}
+          bottomAmount={bottomAmount}
+          bottomSuffix={bottomSuffix}
+          bottomNote={bottomNote}
+          footnote={footnote}
+        />
+      ),
+    },
+
+    LeadForm: {
+      label: "Lead form (name / phone / etc.)",
+      fields: {
+        source: { type: "text" as const, label: "Source tag (shows in the intake sheet)" },
+        fields: {
+          type: "array" as const,
+          label: "Questions",
+          arrayFields: {
+            label: { type: "text" as const, label: "Question" },
+            inputType: {
+              type: "select" as const,
+              label: "Answer type",
+              options: [
+                { label: "Short text", value: "text" },
+                { label: "Phone", value: "tel" },
+                { label: "Email", value: "email" },
+              ],
+            },
+          },
+          getItemSummary: (i: { label?: string }) => i?.label || "question",
+          defaultItemProps: { label: "New question", inputType: "text" },
+        },
+        buttonLabel: { type: "text" as const, label: "Button text" },
+        note: { type: "textarea" as const, label: "Small line under the button" },
+        successHeading: { type: "text" as const, label: "Thank-you heading" },
+        successBody: { type: "textarea" as const, label: "Thank-you body" },
+      },
+      defaultProps: LEADFORM_DEFAULTS as LeadFormBlock,
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody }) => (
+        <LeadForm
+          source={source}
+          fields={fields}
+          buttonLabel={buttonLabel}
+          note={note}
+          successHeading={successHeading}
+          successBody={successBody}
+        />
+      ),
+    },
+
     FormStep: {
       label: "Form step (one screen)",
       fields: {
@@ -561,6 +707,7 @@ export const config: Config<Props> = {
       label: "Section (band)",
       fields: {
         background: { ...BG_FIELD, label: "Background" },
+        maxWidth: { ...WIDTH_FIELD, label: "Content width" },
         paddingTop: {
           type: "custom" as const,
           label: "Padding top (− / +)",
@@ -577,12 +724,14 @@ export const config: Config<Props> = {
         },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "#ffffff", paddingTop: 64, paddingBottom: 64, content: [] },
-      render: ({ id, background, paddingTop, paddingBottom, content: Content }) => (
+      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, content: [] },
+      render: ({ id, background, maxWidth, paddingTop, paddingBottom, content: Content }) => (
         <section id={typeof id === "string" ? id : undefined} style={{ backgroundColor: background }} className="w-full scroll-mt-20">
           <div
-            className="mx-auto max-w-3xl px-6"
+            className="mx-auto px-6"
             style={{
+              // Existing pages have no maxWidth saved — fall back to the old max-w-3xl so nothing shifts.
+              maxWidth: maxWidth || "48rem",
               paddingTop: `${typeof paddingTop === "number" ? paddingTop : 64}px`,
               paddingBottom: `${typeof paddingBottom === "number" ? paddingBottom : 64}px`,
             }}

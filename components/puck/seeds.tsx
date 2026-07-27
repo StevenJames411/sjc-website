@@ -767,7 +767,241 @@ const GUEST_SEED: Data = {
   ],
 };
 
+// ── /websites — the $795 + $25/mo website offer ─────────────────────────────────────────────
+// The whole page as builder blocks, so Steven owns every word without touching code. Built from
+// the GENERIC kit (Section / Heading / Text / Columns / Card / CheckList / PriceBox / LeadForm)
+// rather than one-off page components — the same blocks compose the next page.
+//
+// Its header and footer are their OWN builder pages (websites-nav / websites-footer) instead of
+// the site-wide ones, because this page must not carry the global menu: the DIY link goes to the
+// free Skool community that teaches exactly what this page sells.
+const WEBSITES_NAV_SEED: Data = {
+  root: {},
+  content: [
+    {
+      type: "SiteHeader",
+      props: {
+        id: "websites-header",
+        ...NAV_DEFAULTS,
+        tagline: "",
+        // The phone number is the ONLY link — no About, no Podcast, no DIY. No escape hatches.
+        links: [
+          { label: "(210) 298-2343", target: "tel:+12102982343", fontSize: 15, color: "#ffffff", newTab: false },
+        ],
+        ctaLabel: "Get Started",
+        ctaHref: "#get-started",
+        ctaNewTab: false,
+      },
+    },
+  ],
+};
+
+const WEBSITES_FOOTER_SEED: Data = {
+  root: {},
+  content: [
+    {
+      type: "SiteFooter",
+      props: {
+        id: "websites-footer",
+        ...FOOTER_DEFAULTS,
+        blurb: "",
+        links: [], // same reason as the header
+        copyright: "Steven James Consulting",
+      },
+    },
+  ],
+};
+
+const WEBSITES_SEED: Data = {
+  root: {},
+  content: [
+    // Hero
+    {
+      type: "Section",
+      props: {
+        id: "websites-hero",
+        background: "#f3f4f6",
+        maxWidth: "48rem",
+        paddingTop: 56,
+        paddingBottom: 64,
+        content: [
+          { type: "Text", props: { id: "w-eyebrow", text: "WEBSITES FOR SMALL BUSINESSES", align: "center", color: "#2563eb", fontSize: 14, spaceAbove: 0, spaceBelow: 8 } },
+          { type: "Heading", props: { id: "w-h1", text: "A real website for your business — live in three days.", fontSize: 48, align: "center", spaceBelow: 16 } },
+          { type: "Text", props: { id: "w-sub1", text: "Your work, your reviews, your phone number. Somebody fills out the form and it hits your phone before they've closed the browser.", align: "center", color: "#2563eb", fontSize: 22, spaceAbove: 4, spaceBelow: 8 } },
+          { type: "Text", props: { id: "w-sub2", text: "You do good work. People just can't find you. I build the site, I put it online, and I keep it running — you never touch any of it.", align: "center", color: "#4b5563", fontSize: 18, spaceAbove: 0, spaceBelow: 0 } },
+          { type: "Button", props: { id: "w-hero-cta", title: "Get My Website Started", subtitle: "$795 to build it. $25/month to keep it running.", href: "#get-started" } },
+        ],
+      },
+    },
+
+    // What you get
+    {
+      type: "Section",
+      props: {
+        id: "websites-get",
+        background: "#ffffff",
+        maxWidth: "48rem",
+        paddingTop: 80,
+        paddingBottom: 80,
+        content: [
+          { type: "Heading", props: { id: "w-get-h2", text: "What you get", fontSize: 36, align: "center", spaceBelow: 40 } },
+          {
+            type: "CheckList",
+            props: {
+              id: "w-get-list",
+              dotColor: "#22c55e",
+              rows: [
+                { heading: "A real website", body: "Three to five pages built around the work you actually do — not a template with your name dropped in the corner." },
+                { heading: "Your reviews on it", body: "The stars you already earned, right where somebody deciding whether to call you can see them." },
+                { heading: "A contact form that texts you", body: "Every message lands on your phone with their name and number attached. Hit reply and you're talking to them. Your phone is the whole system." },
+                { heading: "You never touch it", body: "I build it, I host it, and I make the changes when your business changes. You go back to work." },
+              ],
+            },
+          },
+        ],
+      },
+    },
+
+    // Getting found — mobile / SEO / AEO
+    {
+      type: "Section",
+      props: {
+        id: "websites-found",
+        background: "#1e3a6e",
+        maxWidth: "64rem",
+        paddingTop: 80,
+        paddingBottom: 80,
+        content: [
+          { type: "Text", props: { id: "w-found-eyebrow", text: "GETTING FOUND", align: "center", color: "#ffffff", fontSize: 14, spaceAbove: 0, spaceBelow: 8 } },
+          { type: "Heading", props: { id: "w-found-h2", text: "A website nobody finds is a business card in a drawer.", fontSize: 36, align: "center", color: "#ffffff", spaceBelow: 16 } },
+          { type: "Text", props: { id: "w-found-lede", text: "There are three ways a customer looks you up today. Most websites are built for one of them. Yours is built for all three.", align: "center", color: "#ffffff", fontSize: 18, spaceAbove: 0, spaceBelow: 40 } },
+          {
+            type: "Columns",
+            props: {
+              id: "w-found-cols",
+              columns: 3,
+              gap: 24,
+              col1: [{ type: "Card", props: { id: "w-card-phone", badge: "", eyebrow: "ON THEIR PHONE", heading: "Because that's what's in their hand", body: "Almost everybody checking you out is standing in a driveway or a kitchen holding a phone. Your site is built for that screen first — big type, big buttons, your number one thumb away. It looks right on a computer too." } }],
+              col2: [{ type: "Card", props: { id: "w-card-google", badge: "", eyebrow: "ON GOOGLE", heading: "So you show up when they search", body: "Built the way Google wants it, so Google understands who you are, what you do, and the towns you work in. When somebody nearby searches for your trade, you're in the running instead of invisible. This is the part people call SEO." } }],
+              col3: [{ type: "Card", props: { id: "w-card-ai", badge: "", eyebrow: "WHEN THEY ASK AI", heading: "The one nobody else is doing yet", body: "People don't only search anymore — they ask. They type “who's the best guy near me for this” into ChatGPT and take the answer they get back. Your site is written so the AI can read it, understand your business, and hand your name over. Almost no small-business website is built this way yet. Yours is." } }],
+            },
+          },
+          { type: "Text", props: { id: "w-found-close", text: "That third one didn't exist a couple of years ago. It does now, it's where your customers are headed, and almost nobody building websites at this price has caught up to it yet.", align: "center", color: "#ffffff", fontSize: 18, spaceAbove: 40, spaceBelow: 0 } },
+        ],
+      },
+    },
+
+    // How it works
+    {
+      type: "Section",
+      props: {
+        id: "websites-how",
+        background: "#f3f4f6",
+        maxWidth: "64rem",
+        paddingTop: 80,
+        paddingBottom: 80,
+        content: [
+          { type: "Heading", props: { id: "w-how-h2", text: "How it works", fontSize: 36, align: "center", spaceBelow: 12 } },
+          { type: "Text", props: { id: "w-how-lede", text: "Three days, start to finish. Ten minutes of that is yours.", align: "center", color: "#4b5563", fontSize: 18, spaceAbove: 0, spaceBelow: 40 } },
+          {
+            type: "Columns",
+            props: {
+              id: "w-how-cols",
+              columns: 3,
+              gap: 24,
+              col1: [{ type: "Card", props: { id: "w-step-1", badge: "1", eyebrow: "", heading: "You tell me about your business", body: "Ten minutes on the phone. What you do, where you work, and your best photos. That's your whole job." } }],
+              col2: [{ type: "Card", props: { id: "w-step-2", badge: "2", eyebrow: "", heading: "I build it", body: "Three days. You look it over before anybody else sees it and tell me what to change." } }],
+              col3: [{ type: "Card", props: { id: "w-step-3", badge: "3", eyebrow: "", heading: "It goes live", body: "Your name, your domain, your phone number. From then on the leads come to you." } }],
+            },
+          },
+        ],
+      },
+    },
+
+    // Who this is for
+    {
+      type: "Section",
+      props: {
+        id: "websites-who",
+        background: "#ffffff",
+        maxWidth: "48rem",
+        paddingTop: 80,
+        paddingBottom: 80,
+        content: [
+          { type: "Heading", props: { id: "w-who-h2", text: "Who this is for", fontSize: 36, align: "left", spaceBelow: 24 } },
+          { type: "Text", props: { id: "w-who-p1", text: "You're good at what you do and nobody can find you online. Maybe you've got no website at all. Maybe you've got one from years back that you can't log into and that looks broken on a phone.", align: "left", fontSize: 18, spaceAbove: 0, spaceBelow: 16 } },
+          { type: "Text", props: { id: "w-who-p2", text: "<b>Either way, people are checking you out before they call — and right now there's nothing there to check.</b>", align: "left", fontSize: 18, spaceAbove: 0, spaceBelow: 16 } },
+          { type: "Text", props: { id: "w-who-p3", text: "This isn't for you if you already have a site that works, or if what you want is a full marketing machine with automation and a CRM behind it. That's a different conversation and I'm happy to have it. This is a real website, done right, at a fair price.", align: "left", color: "#4b5563", fontSize: 18, spaceAbove: 0, spaceBelow: 0 } },
+        ],
+      },
+    },
+
+    // Price
+    {
+      type: "Section",
+      props: {
+        id: "websites-price",
+        background: "#f3f4f6",
+        maxWidth: "48rem",
+        paddingTop: 80,
+        paddingBottom: 80,
+        content: [
+          { type: "Heading", props: { id: "w-price-h2", text: "What it costs", fontSize: 36, align: "center", spaceBelow: 32 } },
+          {
+            type: "PriceBox",
+            props: {
+              id: "w-price-box",
+              topAmount: "$795",
+              topNote: "one time, to build it",
+              bottomAmount: "$25",
+              bottomSuffix: "/month",
+              bottomNote: "to host it, run the form, and keep it current",
+              footnote: "That's the whole price. No contract, no setup fees stacked on top, no packages to pick from. Cancel any time and the site is still yours.",
+            },
+          },
+        ],
+      },
+    },
+
+    // CTA — the anchor every button on the page points at
+    {
+      type: "Section",
+      props: {
+        id: "get-started",
+        background: "#ffffff",
+        maxWidth: "56rem",
+        paddingTop: 80,
+        paddingBottom: 80,
+        content: [
+          { type: "Heading", props: { id: "w-cta-h2", text: "Let's get you online.", fontSize: 36, align: "center", spaceBelow: 16 } },
+          { type: "Text", props: { id: "w-cta-lede", text: "Four boxes and I'll call you today. Ten minutes on the phone and your site is in front of you in three days.", align: "center", color: "#4b5563", fontSize: 18, spaceAbove: 0, spaceBelow: 32 } },
+          {
+            type: "LeadForm",
+            props: {
+              id: "w-cta-form",
+              source: "/websites — $795 website offer",
+              fields: [
+                { label: "Your name", inputType: "text" },
+                { label: "Business name", inputType: "text" },
+                { label: "Best phone number", inputType: "tel" },
+                { label: "What kind of work do you do?", inputType: "text" },
+              ],
+              buttonLabel: "Send Me My Website",
+              note: "No obligation, and nothing gets built until you say so. Rather just talk? Call (210) 298-2343.",
+              successHeading: "Got it. I'll call you today.",
+              successBody: "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 298-2343.",
+            },
+          },
+        ],
+      },
+    },
+  ],
+};
+
 const SEEDS: Record<string, Data> = {
+  websites: WEBSITES_SEED,
+  "websites-nav": WEBSITES_NAV_SEED,
+  "websites-footer": WEBSITES_FOOTER_SEED,
   home: HOME_SEED,
   apply: APPLY_SEED,
   guest: GUEST_SEED,
