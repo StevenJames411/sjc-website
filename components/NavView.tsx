@@ -8,6 +8,7 @@ const LOGO_URL =
 export type NavLink = { label: string; target: string; fontSize?: number; color?: string; newTab?: boolean };
 export type NavViewProps = {
   brandName?: string;
+  brandHref?: string;
   brandSize?: number;
   tagline?: string;
   taglineColor?: string;
@@ -29,6 +30,9 @@ const tabAttrs = (newTab?: boolean) =>
 // tagline centered, links+button right, no overlap); narrow screens collapse to a hamburger.
 export default function NavView({
   brandName = "Steven James Consulting",
+  // Where the logo + name link to. "/" for the site-wide nav; a standalone sales page points it
+  // at ITSELF so clicking the logo doesn't dump the buyer onto a different offer.
+  brandHref = "/",
   brandSize = 16,
   tagline = "Your Native AI Implementation Partner",
   taglineColor = "#22c55e",
@@ -42,7 +46,7 @@ export default function NavView({
   const linkEls = (links || []).filter((l) => l && l.label);
 
   const Brand = (
-    <a href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
+    <a href={brandHref || "/"} className="flex items-center gap-3" onClick={() => setOpen(false)}>
       <img src={LOGO_URL} alt="logo" className="h-9 w-9 rounded-full" />
       <span className="font-semibold tracking-tight" style={{ fontSize: `${brandSize || 16}px` }}>{brandName}</span>
     </a>

@@ -15,6 +15,8 @@ import FooterView from "@/components/FooterView";
 
 const WEBSITES_NAV_FALLBACK = {
   ...NAV_DEFAULTS,
+  // Clicking the logo keeps him on THIS offer — not over on the AI-implementation site.
+  brandHref: "/websites",
   tagline: "",
   // The ONLY link on this page's header — the phone number. No About, no Podcast, no DIY.
   links: [
