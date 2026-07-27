@@ -250,7 +250,6 @@ export const FOOTER_DEFAULTS = {
     "Five businesses since 1986. Owner and tech lead in every one — now installing AI employees for the solo entrepreneur, done for you, on the software you already run.",
   links: [
     { label: "About Steven James — who I am & why listen", target: "/about" },
-    { label: "Meet Chloe", target: "/case-study" },
     { label: "FAQs", target: "/faqs" },
   ] as { label: string; target: string }[],
   phone: "+12102982343",

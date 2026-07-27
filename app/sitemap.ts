@@ -8,7 +8,6 @@ const BASE = "https://www.stevenjamesconsulting.com";
 const PAGES: { path: string; priority: number }[] = [
   { path: "/", priority: 1 },
   { path: "/about", priority: 0.8 },
-  { path: "/case-study", priority: 0.8 },
   { path: "/podcast", priority: 0.7 },
   { path: "/faqs", priority: 0.7 },
   { path: "/websites", priority: 0.7 },
