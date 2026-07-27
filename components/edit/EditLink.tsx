@@ -7,19 +7,12 @@ import { useEffect, useState } from "react";
 const PATH_TO_SLUG: Record<string, string> = {
   "/": "home",
   "/about": "about",
-  "/industries": "industries",
-  "/med-spa": "med-spa",
-  "/websites": "websites",
-  "/industries/hvac": "industry-hvac",
-  "/industries/roofing": "industry-roofing",
-  "/industries/garage-doors": "industry-garage-doors",
+  "/podcast": "podcast",
   "/faqs": "faqs",
   "/case-study": "case-study",
-  "/tech": "tech",
-  "/board-of-directors": "board-of-directors",
-  "/raising-capital": "raising-capital",
-  "/podcast": "podcast",
-  "/for-agencies": "for-agencies",
+  "/apply": "apply",
+  "/guest": "guest",
+  "/websites": "websites",
 };
 
 export default function EditLink() {

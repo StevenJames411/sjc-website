@@ -1,35 +1,27 @@
 // The site's editable pages, in the order they appear in the builder's page-switcher
 // dropdown. Single source of truth: the switcher and the /edit/[page] route both read this.
-// (This is also the seed of the future dynamic/clone model — for now it's our own fixed pages.)
 export type PuckPage = { slug: string; title: string };
 
-// Every page on the site, in switcher order. Slugs are the Puck data keys (decoupled from the
-// public route — e.g. the /industries/hvac page is keyed "industry-hvac").
+// EVERY page on the site — the list is deliberately short. If a page isn't reachable by a
+// visitor, it doesn't belong here and it doesn't belong in app/ either. (2026-07-27: ten
+// orphaned pages from abandoned directions were deleted outright — med-spa, the industry
+// pages, the trap/funnel pages, board-of-directors, raising-capital, tech, for-agencies,
+// what-changed. Nothing linked to them and none had ever been advertised.)
 export const PUCK_PAGES: PuckPage[] = [
   { slug: "home", title: "Home" },
   { slug: "nav", title: "Navigation (site-wide)" },
   { slug: "footer", title: "Footer (site-wide)" },
   { slug: "about", title: "About" },
-  { slug: "industries", title: "Industries" },
-  { slug: "med-spa", title: "Med Spa" },
+  { slug: "podcast", title: "Podcast" },
+  { slug: "faqs", title: "FAQs" },
+  { slug: "case-study", title: "Case Study" },
+  { slug: "apply", title: "Apply (intake form)" },
+  { slug: "guest", title: "Podcast Guest Intake" },
   { slug: "websites", title: "Websites ($795 offer)" },
   // /websites carries its OWN header + footer, not the site-wide ones — the global nav's DIY
   // link points at the free community that teaches exactly what that page sells.
   { slug: "websites-nav", title: "Websites — Header" },
   { slug: "websites-footer", title: "Websites — Footer" },
-  { slug: "industry-hvac", title: "Industry — HVAC" },
-  { slug: "industry-roofing", title: "Industry — Roofing" },
-  { slug: "industry-garage-doors", title: "Industry — Garage Doors" },
-  { slug: "faqs", title: "FAQs" },
-  { slug: "apply", title: "Apply (intake form)" },
-  { slug: "guest", title: "Podcast Guest Intake" },
-  { slug: "case-study", title: "Case Study" },
-  { slug: "what-changed", title: "What Changed" },
-  { slug: "tech", title: "Tech" },
-  { slug: "board-of-directors", title: "Board of Directors" },
-  { slug: "raising-capital", title: "Raising Capital" },
-  { slug: "podcast", title: "Podcast" },
-  { slug: "for-agencies", title: "For Agencies" },
 ];
 
 export const findPage = (slug: string) => PUCK_PAGES.find((p) => p.slug === slug);
