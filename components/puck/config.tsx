@@ -112,9 +112,10 @@ type Props = {
     tagline: string;
     taglineColor: string;
     taglineSize: number;
-    links: { label: string; target: string; fontSize: number; color: string }[];
+    links: { label: string; target: string; fontSize: number; color: string; newTab: boolean }[];
     ctaLabel: string;
     ctaHref: string;
+    ctaNewTab: boolean;
   };
   // The shared industry deep-page template, with its copy editable through fields.
   FieldDeep: {
@@ -164,6 +165,17 @@ const COLOR_FIELD = {
   ],
 };
 
+// Where a link opens. Same tab for anything on this site; new tab for anywhere off it, so a
+// visitor sent to an outside page (Skool, YouTube) still has the site sitting behind them.
+const OPENS_IN_FIELD = {
+  type: "radio" as const,
+  label: "Opens in",
+  options: [
+    { label: "Same tab", value: false },
+    { label: "New tab", value: true },
+  ],
+};
+
 // Nav text colors (sit on the dark navy header band).
 const NAV_COLOR_FIELD = {
   type: "select" as const,
@@ -183,9 +195,10 @@ export const NAV_DEFAULTS = {
   tagline: "Your Native AI Implementation Partner",
   taglineColor: "#22c55e",
   taglineSize: 18,
-  links: [] as { label: string; target: string; fontSize: number; color: string }[],
+  links: [] as { label: string; target: string; fontSize: number; color: string; newTab: boolean }[],
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
+  ctaNewTab: false,
 };
 
 // Single source of truth for the footer — used by the seed (so /edit/footer opens to it) AND
@@ -519,15 +532,17 @@ export const config: Config<Props> = {
               ),
             },
             color: { ...NAV_COLOR_FIELD, label: "Color" },
+            newTab: { ...OPENS_IN_FIELD },
           },
           getItemSummary: (i: { label?: string }) => i?.label || "link",
-          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "#ffffff" },
+          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "#ffffff", newTab: false },
         },
         ctaLabel: { type: "text" as const, label: "Button label (leave blank to hide)" },
         ctaHref: { type: "text" as const, label: "Button links to" },
+        ctaNewTab: { ...OPENS_IN_FIELD },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref }) => (
+      render: ({ brandName, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab }) => (
         <NavView
           brandName={brandName}
           brandSize={brandSize}
@@ -537,6 +552,7 @@ export const config: Config<Props> = {
           links={links}
           ctaLabel={ctaLabel}
           ctaHref={ctaHref}
+          ctaNewTab={ctaNewTab}
         />
       ),
     },
