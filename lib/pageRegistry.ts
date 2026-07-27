@@ -27,7 +27,10 @@ const ROUTE_FOLDERS = [
   "about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites",
 ];
 
-type RegistryBlob = { custom?: PuckPage[]; hidden?: string[] };
+// `titles` = renames. A built-in page's name lives in code, so a rename is stored here as an
+// override keyed by slug. The SLUG never changes — only the label in the switcher — so no URL,
+// no saved content, and no published page is affected by renaming.
+type RegistryBlob = { custom?: PuckPage[]; hidden?: string[]; titles?: Record<string, string> };
 
 const store = () => createKvStore(getClient(), REGISTRY_KEY);
 const readBlob = async (): Promise<RegistryBlob> => (await store().read<RegistryBlob>()) || {};
@@ -43,11 +46,29 @@ const slugify = (title: string) =>
 export async function readPages(): Promise<PageEntry[]> {
   const blob = await readBlob();
   const hidden = new Set(blob.hidden || []);
+  const titles = blob.titles || {};
+  const named = (p: PuckPage) => ({ ...p, title: titles[p.slug] || p.title });
   const builtins: PageEntry[] = PUCK_PAGES
     .filter((p) => !hidden.has(p.slug))
-    .map((p) => ({ ...p, custom: false }));
-  const custom: PageEntry[] = (blob.custom || []).map((p) => ({ ...p, custom: true }));
+    .map((p) => ({ ...named(p), custom: false }));
+  const custom: PageEntry[] = (blob.custom || []).map((p) => ({ ...named(p), custom: true }));
   return [...builtins, ...custom];
+}
+
+// Rename any page — built-in or created. Only the display name changes; the slug, the URL and
+// the page's saved content are untouched.
+export async function renamePage(
+  slug: string,
+  title: string
+): Promise<{ ok: boolean; error?: string }> {
+  const s = String(slug || "").trim();
+  const t = String(title || "").trim();
+  if (!t) return { ok: false, error: "A page name is required." };
+  if (!(await findPageMeta(s))) return { ok: false, error: "No such page." };
+
+  const blob = await readBlob();
+  const ok = await store().write({ ...blob, titles: { ...(blob.titles || {}), [s]: t } });
+  return ok ? { ok } : { ok: false, error: "Couldn't save — storage is unavailable." };
 }
 
 export async function findPageMeta(slug: string): Promise<PageEntry | undefined> {
