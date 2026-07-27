@@ -1,10 +1,6 @@
 import PublishedOrFallback from "@/components/puck/PublishedOrFallback";
-import {
-  WebsitesHeader,
-  WebsitesFooter,
-  WEBSITES_PHONE,
-  WEBSITES_PHONE_HREF,
-} from "@/components/websites/WebsitesChrome";
+import { WebsitesHeader, WebsitesFooter } from "@/components/websites/WebsitesChrome";
+import WebsitesForm from "@/components/websites/WebsitesForm";
 
 export const dynamic = "force-dynamic";
 
@@ -255,20 +251,18 @@ export default function WebsitesPage() {
             </div>
           </section>
 
-          {/* ── CTA — PLACEHOLDER. Action still undecided (form vs. call). ──── */}
+          {/* ── CTA ────────────────────────────────────────────────────────── */}
           <section id="get-started" className="w-full bg-white">
-            <div className="mx-auto max-w-2xl px-6 py-20 text-center md:py-24">
-              <h2 className="text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
+            <div className="mx-auto max-w-3xl px-6 py-20 md:py-24">
+              <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[color:var(--color-sjc-ink)] md:text-4xl">
                 Let&apos;s get you online.
               </h2>
-              <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-[color:var(--color-sjc-mute)]">
-                Ten minutes on the phone and I can have your site in front of you in three days.
+              <p className="mx-auto mt-5 max-w-xl text-center text-lg leading-relaxed text-[color:var(--color-sjc-mute)]">
+                Four boxes and I&apos;ll call you today. Ten minutes on the phone and your site
+                is in front of you in three days.
               </p>
-              <div className="mt-10 flex justify-center">
-                <a href={WEBSITES_PHONE_HREF} className="btn-cta">
-                  <span>Call {WEBSITES_PHONE}</span>
-                  <span className="sub">Talk to Steven directly.</span>
-                </a>
+              <div className="mt-10">
+                <WebsitesForm />
               </div>
             </div>
           </section>
