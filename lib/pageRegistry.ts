@@ -24,7 +24,7 @@ const SYSTEM = new Set(["home", "nav", "footer"]);
 // Every top-level app/ route folder. A new page's slug can't collide with one of these — a
 // hardcoded Next.js route wins precedence and would silently shadow the new page's content.
 const ROUTE_FOLDERS = [
-  "about", "api", "apply", "case-study", "edit", "faqs", "guest", "podcast", "share", "websites",
+  "about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites",
 ];
 
 type RegistryBlob = { custom?: PuckPage[]; hidden?: string[] };

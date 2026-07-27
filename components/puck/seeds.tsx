@@ -101,56 +101,6 @@ const FAQS_SEED: Data = {
   ],
 };
 
-// Case Study (hero · before · what we installed · what she did · the point · CTA).
-const CASE_STUDY_SEED: Data = {
-  root: {},
-  content: [
-    { type: "Section", props: { id: "casestudy-s1", background: "#f3f4f6", content: [
-      { type: "Text", props: { id: "casestudy-s1-eyebrow", text: "<b>THE PROOF</b>", align: "left", color: "#2563eb", fontSize: 14, spaceAbove: 0, spaceBelow: 4 } },
-      { type: "Heading", props: { id: "casestudy-h1", text: "The machine is the receipt.", fontSize: 40, align: "left", spaceBelow: 8 } },
-      { type: "Text", props: { id: "casestudy-s1-lead", text: "You don't have to take my word for what a dynamic AI employee does. Here's one already doing it — in a real business, with real leads, on a Sunday night.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "casestudy-s2", background: "#ffffff", content: [
-      { type: "Heading", props: { id: "casestudy-s2-h2", text: "The setup: good leads, slow follow-up.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "casestudy-s2-p1", text: "One of my clients was running paid ads and getting plenty of leads. The problem was the same one almost every owner has. Leads filled out the form, landed in the CRM, and sat there. By the time someone got around to calling, the lead had gone cold — or already booked somewhere else.", align: "left" } },
-      { type: "Text", props: { id: "casestudy-s2-p2", text: "They'd already tried the usual fix: an automated email-and-text follow-up that fired off a few canned messages and stopped. That's step one — a script that waits. It helps a little, then runs out of road. It can't hold a real conversation, can't answer a question, and can't get anyone onto the calendar. It just waits.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "casestudy-s3", background: "#f3f4f6", content: [
-      { type: "Heading", props: { id: "casestudy-s3-h2", text: "What we installed: a dynamic AI employee.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "casestudy-s3-p1", text: "We took the owner's own sales conversations — how he answers questions, how he handles the price objection, how he talks to people — and trained an AI employee on all of it. We named her Chloe.", align: "left" } },
-      { type: "Text", props: { id: "casestudy-s3-p2", text: "This is step two. Not a script that waits for someone to reply. An employee that goes to work: she answers the lead, holds a real back-and-forth, handles objections in the owner's own words, and books the appointment herself. She sounds like the owner trained her — because he did, through his own recordings.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "casestudy-s4", background: "#ffffff", content: [
-      { type: "Heading", props: { id: "casestudy-s4-h2", text: "What she actually did.", level: "h2", align: "left" } },
-      { type: "Heading", props: { id: "casestudy-did0-title", text: "Answered every lead the instant it landed", level: "h3", align: "left" } },
-      { type: "Text", props: { id: "casestudy-did0-body", text: "A lead fills out the form at 9:47 on a Sunday night. Before, it sat in the CRM until Monday morning — cold, or gone to a competitor. Now it gets a real reply in seconds, every time, day or night.", align: "left" } },
-      { type: "Heading", props: { id: "casestudy-did1-title", text: "Booked the consult on its own", level: "h3", align: "left" } },
-      { type: "Text", props: { id: "casestudy-did1-body", text: "It doesn't just say hello and wait. It asks the right questions, handles the price objection the way the owner handles it, answers what it can, and walks the lead onto the calendar. Four of them in the first hour and a half.", align: "left" } },
-      { type: "Heading", props: { id: "casestudy-did2-title", text: "Went back and woke up the cold leads", level: "h3", align: "left" } },
-      { type: "Text", props: { id: "casestudy-did2-body", text: "Every business is sitting on a list of leads that went quiet. Instead of letting them rot, the AI employee reaches back out, restarts the conversation, and pulls the ones who are ready back into the pipeline.", align: "left" } },
-      { type: "Heading", props: { id: "casestudy-receipt0-value", text: "Instant", level: "h3", align: "center" } },
-      { type: "Text", props: { id: "casestudy-receipt0-label", text: "Every lead answered the second it comes in", align: "center" } },
-      { type: "Heading", props: { id: "casestudy-receipt1-value", text: "4", level: "h3", align: "center" } },
-      { type: "Text", props: { id: "casestudy-receipt1-label", text: "Consults booked in the first 90 minutes live", align: "center" } },
-      { type: "Heading", props: { id: "casestudy-receipt2-value", text: "Sunday night", level: "h3", align: "center" } },
-      { type: "Text", props: { id: "casestudy-receipt2-label", text: "When a human would've been asleep", align: "center" } },
-    ] } },
-    { type: "Section", props: { id: "casestudy-s5", background: "#f3f4f6", content: [
-      { type: "Heading", props: { id: "casestudy-s5-h2", text: "And the owner kept the keys the whole time.", level: "h2", align: "left" } },
-      { type: "Text", props: { id: "casestudy-s5-p1", text: "Chloe runs on top of the business the owner already had. His CRM. His calendar. His leads. His pricing. Nothing got ripped out and nothing got taken away. I operate the plumbing in the background so he doesn't have to — and he can watch every conversation and every booking as it happens.", align: "left" } },
-      { type: "Text", props: { id: "casestudy-s5-p2", text: "That's the whole idea. You become the AI-first company, the machine does the work, and your hand stays on every lead and every dollar.", align: "left" } },
-    ] } },
-    { type: "Section", props: { id: "casestudy-s6", background: "#ffffff", content: [
-      { type: "Heading", props: { id: "casestudy-s6-h2", text: "Want one of these answering your leads?", level: "h2", align: "center" } },
-      { type: "Text", props: { id: "casestudy-s6-p", text: "Apply to work with me. I'll show you exactly where a dynamic AI employee plugs into the business you already run.", align: "center" } },
-      { type: "Button", props: { id: "casestudy-s6-btn", title: "Apply to work with me", subtitle: "See where a dynamic AI employee plugs into your business.", href: "/#contact" } },
-      { type: "PhoneLink", props: { id: "casestudy-s6-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
-    ] } },
-  ],
-};
-
-// The four "table" pages share the PillarTemplate shape: dark navy hero (white text) ·
-// intro · "Who's at this table" · CTA.
 const TECH_SEED: Data = {
   root: {},
   content: [
@@ -1010,7 +960,6 @@ const SEEDS: Record<string, Data> = {
   "for-agencies": FOR_AGENCIES_SEED,
   about: SEED,
   faqs: FAQS_SEED,
-  "case-study": CASE_STUDY_SEED,
   tech: TECH_SEED,
   "board-of-directors": BOARD_SEED,
   "raising-capital": RAISING_CAPITAL_SEED,

@@ -14,7 +14,6 @@ export const PUCK_PAGES: PuckPage[] = [
   { slug: "about", title: "About" },
   { slug: "podcast", title: "Podcast" },
   { slug: "faqs", title: "FAQs" },
-  { slug: "case-study", title: "Case Study" },
   { slug: "apply", title: "Apply (intake form)" },
   { slug: "guest", title: "Podcast Guest Intake" },
   { slug: "websites", title: "Websites ($795 offer)" },
