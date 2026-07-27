@@ -5,7 +5,7 @@ import { useState } from "react";
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
 
-export type NavLink = { label: string; target: string; fontSize?: number; color?: string };
+export type NavLink = { label: string; target: string; fontSize?: number; color?: string; newTab?: boolean };
 export type NavViewProps = {
   brandName?: string;
   brandSize?: number;
@@ -15,7 +15,13 @@ export type NavViewProps = {
   links?: NavLink[];
   ctaLabel?: string;
   ctaHref?: string;
+  ctaNewTab?: boolean;
 };
+
+// "Open in a new tab" is set per link in the builder. rel="noopener noreferrer" rides along
+// because a new-tab link without it hands the opened page a handle back to ours.
+const tabAttrs = (newTab?: boolean) =>
+  newTab ? { target: "_blank" as const, rel: "noopener noreferrer" } : {};
 
 // The actual site nav, rendered from props. Used BOTH on the live site (via Nav.tsx, which
 // reads the published "nav" block) AND in the builder preview (via the SiteHeader Puck block),
@@ -30,6 +36,7 @@ export default function NavView({
   links = [],
   ctaLabel = "See How It Works",
   ctaHref = "/#at-work",
+  ctaNewTab = false,
 }: NavViewProps) {
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
@@ -61,6 +68,7 @@ export default function NavView({
             <a
               key={i}
               href={l.target || "#"}
+              {...tabAttrs(l.newTab)}
               className="font-medium opacity-90 transition hover:opacity-100"
               style={{ fontSize: `${l.fontSize || 14}px`, color: l.color || "#ffffff" }}
             >
@@ -70,6 +78,7 @@ export default function NavView({
           {ctaLabel ? (
             <a
               href={ctaHref || "#"}
+              {...tabAttrs(ctaNewTab)}
               className="rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--color-sjc-green)]"
             >
               {ctaLabel} &rarr;
@@ -109,6 +118,7 @@ export default function NavView({
               <a
                 key={i}
                 href={l.target || "#"}
+                {...tabAttrs(l.newTab)}
                 onClick={() => setOpen(false)}
                 className="font-medium text-white"
                 style={{ fontSize: `${l.fontSize || 16}px`, color: l.color || "#ffffff" }}
@@ -119,6 +129,7 @@ export default function NavView({
             {ctaLabel ? (
               <a
                 href={ctaHref || "#"}
+                {...tabAttrs(ctaNewTab)}
                 onClick={() => setOpen(false)}
                 className="w-full rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-3 text-center text-base font-semibold text-white shadow-sm"
               >
