@@ -27,10 +27,6 @@ import Next from "@/components/Next";
 import { NEXT_DEFAULTS } from "@/components/Next";
 import Platform from "@/components/Platform";
 import { PLATFORM_DEFAULTS } from "@/components/Platform";
-import MedSpaWound, { MEDSPA_WOUND_DEFAULTS } from "@/components/medspa/MedSpaWound";
-import MedSpaStep, { MEDSPA_STEP_DEFAULTS } from "@/components/medspa/MedSpaStep";
-import MedSpaPricing, { MEDSPA_PRICING_DEFAULTS } from "@/components/medspa/MedSpaPricing";
-import FieldDeepTemplate from "@/components/FieldDeepTemplate";
 import ImageUpload from "@/components/puck/ImageUpload";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
@@ -96,38 +92,6 @@ type Props = {
   Moat: { eyebrow: string; h2: string; p1: string; p2: string; p3: string };
   NextMove: { eyebrow: string; h2: string; p1: string; p2: string; ctaTitle: string; ctaSubtitle: string };
   Platform: { eyebrow: string; h2: string; p1: string; p2: string; p3: string };
-  // Med-Spa page custom sections — props-driven, all text editable via fields.
-  MedSpaWound: {
-    eyebrow: string;
-    h2: string;
-    p1: string;
-    p2: string;
-    beats: { title: string; body: string }[];
-    callout: string;
-  };
-  MedSpaStep: {
-    eyebrow: string;
-    h2: string;
-    p1: string;
-    p2: string;
-    p3: string;
-    col1label: string;
-    col1sub: string;
-    col2label: string;
-    col2sub: string;
-    step1: { item: string }[];
-    step2: { item: string }[];
-    callout: string;
-  };
-  MedSpaPricing: {
-    eyebrow: string;
-    h2: string;
-    p1: string;
-    p2bold1: string;
-    p2mid: string;
-    p2bold2: string;
-    p2end: string;
-  };
   // The site navigation — fully editable in the builder (edit at /edit/nav, renders site-wide).
   SiteHeader: {
     brandName: string;
@@ -140,16 +104,6 @@ type Props = {
     ctaLabel: string;
     ctaHref: string;
     ctaNewTab: boolean;
-  };
-  // The shared industry deep-page template, with its copy editable through fields.
-  FieldDeep: {
-    name: string;
-    eyebrow: string;
-    intro: string;
-    leaksLede: string;
-    leaks: { item: string }[];
-    fix: string;
-    rollup: string;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
   // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
@@ -303,6 +257,34 @@ export const STAFFROSTER_DEFAULTS = {
 };
 
 export const config: Config<Props> = {
+  // The parts bin, grouped so the everyday kit is on top and the one-off legacy sections
+  // (built for specific pages before the generic blocks existed) stay collapsed out of the way.
+  // A block NOT listed in any category falls into "other" automatically.
+  categories: {
+    building: {
+      title: "Building blocks",
+      defaultExpanded: true,
+      components: ["Section", "Columns", "Heading", "Text", "Button", "Card", "CheckList",
+                   "PriceBox", "Image", "Video", "Spacer", "Divider", "PhoneLink"] as (keyof Props)[],
+    },
+    forms: {
+      title: "Forms",
+      defaultExpanded: false,
+      components: ["LeadForm", "FormStep", "FormQuestion"] as (keyof Props)[],
+    },
+    sitewide: {
+      title: "Header & footer",
+      defaultExpanded: false,
+      components: ["SiteHeader", "SiteFooter"] as (keyof Props)[],
+    },
+    legacy: {
+      title: "Home page sections (one-offs)",
+      defaultExpanded: false,
+      components: ["HeroReel", "Playbook", "TheCeiling", "Weapon", "DoubleFlywheel", "Proof",
+                   "FourTables", "Moat", "NextMove", "Platform", "FindYourIndustry",
+                   "Conversation", "StaffRoster"] as (keyof Props)[],
+    },
+  },
   components: {
     Card: {
       label: "Card (white box)",
@@ -1375,120 +1357,7 @@ export const config: Config<Props> = {
     },
 
     // Med-Spa page sections — full field schemas, copy editable in the builder.
-    MedSpaWound: {
-      label: "Med-Spa — The Wound",
-      fields: {
-        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
-        h2: { type: "textarea" as const, label: "Headline" },
-        p1: { type: "textarea" as const, label: "Paragraph 1" },
-        p2: { type: "textarea" as const, label: "Paragraph 2" },
-        beats: {
-          type: "array" as const,
-          label: "Beats (cards)",
-          arrayFields: {
-            title: { type: "text" as const, label: "Title" },
-            body: { type: "textarea" as const, label: "Body" },
-          },
-          getItemSummary: (i: { title: string; body: string }) => i.title || "Beat",
-        },
-        callout: { type: "textarea" as const, label: "Callout" },
-      },
-      defaultProps: MEDSPA_WOUND_DEFAULTS,
-      render: ({ eyebrow, h2, p1, p2, beats, callout }) => (
-        <MedSpaWound eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} beats={beats} callout={callout} />
-      ),
-    },
-    MedSpaStep: {
-      label: "Med-Spa — Step One",
-      fields: {
-        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
-        h2: { type: "textarea" as const, label: "Headline" },
-        p1: { type: "textarea" as const, label: "Paragraph 1" },
-        p2: { type: "textarea" as const, label: "Paragraph 2" },
-        p3: { type: "textarea" as const, label: "Paragraph 3" },
-        col1label: { type: "text" as const, label: "Column 1 label" },
-        col1sub: { type: "textarea" as const, label: "Column 1 sub" },
-        col2label: { type: "text" as const, label: "Column 2 label" },
-        col2sub: { type: "textarea" as const, label: "Column 2 sub" },
-        step1: {
-          type: "array" as const,
-          label: "Step 1 bullets",
-          arrayFields: { item: { type: "textarea" as const, label: "Item" } },
-          getItemSummary: (i: { item: string }) => i.item || "Item",
-        },
-        step2: {
-          type: "array" as const,
-          label: "Step 2 bullets",
-          arrayFields: { item: { type: "textarea" as const, label: "Item" } },
-          getItemSummary: (i: { item: string }) => i.item || "Item",
-        },
-        callout: { type: "textarea" as const, label: "Callout" },
-      },
-      defaultProps: MEDSPA_STEP_DEFAULTS,
-      render: ({ eyebrow, h2, p1, p2, p3, col1label, col1sub, col2label, col2sub, step1, step2, callout }) => (
-        <MedSpaStep
-          eyebrow={eyebrow} h2={h2} p1={p1} p2={p2} p3={p3}
-          col1label={col1label} col1sub={col1sub}
-          col2label={col2label} col2sub={col2sub}
-          step1={step1} step2={step2} callout={callout}
-        />
-      ),
-    },
-    MedSpaPricing: {
-      label: "Med-Spa — Pricing",
-      fields: {
-        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
-        h2: { type: "textarea" as const, label: "Headline" },
-        p1: { type: "textarea" as const, label: "Paragraph 1" },
-        p2bold1: { type: "textarea" as const, label: "Bold opener" },
-        p2mid: { type: "textarea" as const, label: "Mid text" },
-        p2bold2: { type: "textarea" as const, label: "Bold mid" },
-        p2end: { type: "textarea" as const, label: "Closing text" },
-      },
-      defaultProps: MEDSPA_PRICING_DEFAULTS,
-      render: ({ eyebrow, h2, p1, p2bold1, p2mid, p2bold2, p2end }) => (
-        <MedSpaPricing eyebrow={eyebrow} h2={h2} p1={p1} p2bold1={p2bold1} p2mid={p2mid} p2bold2={p2bold2} p2end={p2end} />
-      ),
-    },
-
     // Industry deep page (HVAC / Roofing / Garage Doors …) — full template, copy editable.
-    FieldDeep: {
-      label: "Industry deep page",
-      fields: {
-        name: { type: "text" as const, label: "Field name" },
-        eyebrow: { type: "textarea" as const, label: "Eyebrow" },
-        intro: { type: "textarea" as const, label: "Intro" },
-        leaksLede: { type: "textarea" as const, label: "Leaks lead-in" },
-        leaks: {
-          type: "array" as const,
-          label: "Leaks (bullets)",
-          arrayFields: { item: { type: "textarea" as const, label: "Leak" } },
-          getItemSummary: (i: { item: string }) => i.item || "Leak",
-        },
-        fix: { type: "textarea" as const, label: "The fix" },
-        rollup: { type: "textarea" as const, label: "The roll-up" },
-      },
-      defaultProps: {
-        name: "Field",
-        eyebrow: "",
-        intro: "",
-        leaksLede: "",
-        leaks: [],
-        fix: "",
-        rollup: "",
-      },
-      render: ({ name, eyebrow, intro, leaksLede, leaks, fix, rollup }) => (
-        <FieldDeepTemplate
-          name={name}
-          eyebrow={eyebrow}
-          intro={intro}
-          leaksLede={leaksLede}
-          leaks={(leaks || []).map((l: { item: string }) => l.item)}
-          fix={fix}
-          rollup={rollup}
-        />
-      ),
-    },
   },
 } satisfies Config;
 

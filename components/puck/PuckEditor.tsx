@@ -58,6 +58,31 @@ export default function PuckEditor({
     }
   };
 
+  // Rename the current page. LABEL ONLY — the slug, the URL, and everything saved on the page
+  // stay exactly as they are, so renaming can never break a link or lose content.
+  const onRenamePage = async () => {
+    const name = window.prompt("Rename this page (this changes the name in the list only — the web address and the page itself don't change):", title);
+    if (name === null) return;
+    if (!name.trim()) return window.alert("A page name is required.");
+    if (name.trim() === title) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pages", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ slug: page, title: name.trim() }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't rename the page.");
+      router.refresh();
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Delete the current page: pulls it from the builder and takes its page down. Home / nav /
   // footer are site-wide and can't be deleted.
   const canDelete = !["home", "nav", "footer"].includes(page);
@@ -170,6 +195,9 @@ export default function PuckEditor({
         </select>
         <button type="button" onClick={onNewPage} disabled={busy} style={btn}>
           + New Page
+        </button>
+        <button type="button" onClick={onRenamePage} disabled={busy} style={btn}>
+          Rename
         </button>
         {canDelete ? (
           <button type="button" onClick={onDeletePage} disabled={busy} style={btnDanger}>
