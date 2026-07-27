@@ -131,6 +131,7 @@ type Props = {
   // The site navigation — fully editable in the builder (edit at /edit/nav, renders site-wide).
   SiteHeader: {
     brandName: string;
+    brandHref: string;
     brandSize: number;
     tagline: string;
     taglineColor: string;
@@ -233,6 +234,7 @@ const NAV_COLOR_FIELD = {
 // opens to it) AND Nav.tsx's fallback (so the live nav never renders blank if nothing's published).
 export const NAV_DEFAULTS = {
   brandName: "Steven James Consulting",
+  brandHref: "/",
   brandSize: 16,
   tagline: "Your Native AI Implementation Partner",
   taglineColor: "#22c55e",
@@ -646,7 +648,11 @@ export const config: Config<Props> = {
     SiteHeader: {
       label: "Site header / nav",
       fields: {
-        brandName: { type: "text" as const, label: "Business name (links home)" },
+        brandName: { type: "text" as const, label: "Business name" },
+        brandHref: {
+          type: "text" as const,
+          label: "Logo + name links to (\"/\" for home; on a sales page, that page's own URL)",
+        },
         brandSize: {
           type: "custom" as const,
           label: "Business name size (− / +)",
@@ -687,9 +693,10 @@ export const config: Config<Props> = {
         ctaNewTab: { ...OPENS_IN_FIELD },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab }) => (
         <NavView
           brandName={brandName}
+          brandHref={brandHref}
           brandSize={brandSize}
           tagline={tagline}
           taglineColor={taglineColor}

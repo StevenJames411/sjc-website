@@ -733,6 +733,8 @@ const WEBSITES_NAV_SEED: Data = {
       props: {
         id: "websites-header",
         ...NAV_DEFAULTS,
+        // Clicking the logo keeps him on THIS offer — not over on the AI-implementation site.
+        brandHref: "/websites",
         tagline: "",
         // The phone number is the ONLY link — no About, no Podcast, no DIY. No escape hatches.
         links: [
