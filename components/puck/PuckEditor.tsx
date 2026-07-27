@@ -117,13 +117,26 @@ export default function PuckEditor({
       return () => { alive = false; };
     }
 
-    fetch(`/api/puck?page=${encodeURIComponent(page)}`)
-      .then((r) => r.json())
-      .then((j) => {
-        if (!alive) return;
-        setData(j && j.data && Array.isArray(j.data.content) ? j.data : seedFor(page, title));
-      })
-      .catch(() => alive && setData(seedFor(page, title)));
+    // Load order: saved DRAFT -> the PUBLISHED version -> the seed.
+    // The published check is the safety net. Without it, opening a page that's live but has no
+    // draft would hand you the seed — a stale copy written at a different time — and hitting
+    // Publish would overwrite the real live page with it. Falling back to what's actually live
+    // means the editor always opens to what a visitor sees.
+    const load = async () => {
+      const read = async (url: string) => {
+        try {
+          const j = await fetch(url).then((r) => r.json());
+          return j && j.data && Array.isArray(j.data.content) && j.data.content.length ? j.data : null;
+        } catch {
+          return null;
+        }
+      };
+      const key = encodeURIComponent(page);
+      const draft = await read(`/api/puck?page=${key}`);
+      const next = draft || (await read(`/api/puck?page=${key}&pub=1`)) || seedFor(page, title);
+      if (alive) setData(next);
+    };
+    load();
     return () => {
       alive = false;
     };
