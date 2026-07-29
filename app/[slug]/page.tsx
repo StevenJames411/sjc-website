@@ -13,6 +13,22 @@ import { findPageMeta } from "@/lib/pageRegistry";
 // drop it from PUCK_PAGES and this route stops serving it even if its old data is still in Redis.
 export const dynamic = "force-dynamic";
 
+// Pages that must NEVER be indexed even once published. `lab` is the design-port scratch pad: it
+// carries a REAL business's name, phone and address, and it lives on the SJC domain. robots.txt
+// deliberately says allow-everything to every AI crawler, so nothing else would stop it — a
+// leaked URL (a shared link, a referrer header, a browser reporting it) is all it takes.
+//
+// Belongs here rather than in robots.txt because it must hold whatever the page is called and
+// whoever publishes it. Same reasoning as the `demo: true` flag on the static client template.
+const NEVER_INDEX = new Set(["lab"]);
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  return NEVER_INDEX.has(slug)
+    ? { robots: { index: false, follow: false, nocache: true } }
+    : {};
+}
+
 export default async function DynamicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const meta = await findPageMeta(slug);
