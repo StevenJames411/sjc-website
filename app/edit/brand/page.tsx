@@ -21,6 +21,9 @@ export default function BrandEditor() {
   const [brand, setBrand] = useState<Brand | null>(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ good?: boolean; text: string } | null>(null);
+  // Two-step reset instead of a browser confirm(). A native dialog blocks the page for
+  // anything driving it, and looks like a browser error rather than part of the tool.
+  const [armed, setArmed] = useState(false);
 
   useEffect(() => {
     fetch("/api/brand")
@@ -44,7 +47,7 @@ export default function BrandEditor() {
   }
 
   async function act(action: "publish" | "reset") {
-    if (action === "reset" && !confirm("Put the site back to its original font and colours?")) return;
+    setArmed(false);
     setSaving(true); setMsg(null);
     const r = await fetch("/api/brand", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -123,10 +126,23 @@ export default function BrandEditor() {
           className="rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2 text-sm font-bold text-white">
           Publish to the live site
         </button>
-        <button onClick={() => act("reset")} disabled={saving}
-          className="ml-auto text-sm text-[color:var(--color-sjc-mute)] underline">
-          Reset to original
-        </button>
+        {armed ? (
+          <span className="ml-auto flex items-center gap-3 text-sm">
+            <span className="text-[color:var(--color-sjc-ink)]">Put the site back to its original font and colours?</span>
+            <button onClick={() => act("reset")} disabled={saving}
+              className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 font-semibold text-red-700">
+              Yes, reset
+            </button>
+            <button onClick={() => setArmed(false)} className="underline text-[color:var(--color-sjc-mute)]">
+              Cancel
+            </button>
+          </span>
+        ) : (
+          <button onClick={() => setArmed(true)} disabled={saving}
+            className="ml-auto text-sm text-[color:var(--color-sjc-mute)] underline">
+            Reset to original
+          </button>
+        )}
       </div>
       <p className="mt-3 text-xs text-[color:var(--color-sjc-mute)]">
         Reset is the way back — whatever you try here, one click returns the site to how it shipped.
