@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
-import { Lexend } from "next/font/google";
+import {
+  Lexend, Inter, Poppins, Montserrat, Merriweather, Playfair_Display, Source_Sans_3,
+} from "next/font/google";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
+import BrandStyle from "@/components/BrandStyle";
+import { readBrand } from "@/lib/brand";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -9,6 +13,19 @@ const lexend = Lexend({
   variable: "--font-lexend",
   display: "swap",
 });
+
+// The curated brand fonts. next/font is build-time, so the set is fixed on purpose —
+// arbitrary runtime font loading isn't worth the layout shift. All are registered; the
+// published brand decides which one --font-sans actually points at (components/BrandStyle).
+const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], variable: "--font-inter", display: "swap" });
+const poppins = Poppins({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-poppins", display: "swap" });
+const montserrat = Montserrat({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], variable: "--font-montserrat", display: "swap" });
+const merriweather = Merriweather({ subsets: ["latin"], weight: ["300", "400", "700"], variable: "--font-merriweather", display: "swap" });
+const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-playfair", display: "swap" });
+const sourceSans = Source_Sans_3({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], variable: "--font-source-sans", display: "swap" });
+
+const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans]
+  .map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stevenjamesconsulting.com"),
@@ -83,13 +100,16 @@ const faqSchema = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Published brand only — a draft must never leak onto the live site.
+  const brand = await readBrand(true);
   return (
-    <html lang="en" className={lexend.variable}>
+    <html lang="en" className={FONT_VARS}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+        <BrandStyle brand={brand} />
       </head>
       <body>
         {children}
