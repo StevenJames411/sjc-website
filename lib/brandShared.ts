@@ -26,6 +26,8 @@ export type Brand = {
   line: string;        // hairlines + borders
   bandSoft: string;    // light section band
   bandDark: string;    // dark section band
+  bandDarker: string;  // the DEEPER dark band — a design routinely has two dark tones, and
+                       // collapsing them into one visibly flattens the page
   cta: string;         // button fill
   ctaHover: string;
 };
@@ -44,6 +46,7 @@ export const BRAND_DEFAULTS: Brand = {
   line: "#e5e7eb",
   bandSoft: "#f3f4f6",
   bandDark: "#1e3a6e",
+  bandDarker: "#0f1f3d",
   cta: "#22c55e",
   ctaHover: "#16a34a",
 };

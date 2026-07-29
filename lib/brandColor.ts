@@ -19,7 +19,7 @@
 
 export type BrandRole =
   | "accent" | "secondary" | "highlight" | "ink" | "mute"
-  | "line" | "bandSoft" | "bandDark" | "cta" | "white";
+  | "line" | "bandSoft" | "bandDark" | "bandDarker" | "cta" | "white";
 
 // Role → the CSS variable it paints from. These variables already exist in globals.css and are
 // overridden per-site by BrandStyle, which is why re-pointing them re-skins everything.
@@ -32,6 +32,7 @@ const ROLE_VAR: Record<BrandRole, string> = {
   line: "--color-sjc-line",
   bandSoft: "--color-sjc-bg-soft",
   bandDark: "--color-sjc-navy",
+  bandDarker: "--color-sjc-navy-deep",
   cta: "--color-sjc-green",
   white: "--color-sjc-white",
 };
@@ -48,6 +49,7 @@ export const ROLE_LABELS: Record<BrandRole, string> = {
   line: "Hairline",
   bandSoft: "Soft band",
   bandDark: "Dark band",
+  bandDarker: "Darker band",
   cta: "Button",
   white: "White",
 };
@@ -83,7 +85,7 @@ export const HEX_TO_ROLE: Record<string, BrandRole> = {
   "#e5e7eb": "line",
   "#f3f4f6": "bandSoft",
   "#1e3a6e": "bandDark",
-  "#0f1f3d": "bandDark",
+  "#0f1f3d": "bandDarker",
   "#22c55e": "cta",
   "#ffffff": "white",
 };

@@ -27,6 +27,7 @@ const ROLE_PREVIEW: Record<BrandRole, string> = {
   line: "#e5e7eb",
   bandSoft: "#f3f4f6",
   bandDark: "#1e3a6e",
+  bandDarker: "#0f1f3d",
   cta: "#22c55e",
   white: "#ffffff",
 };
