@@ -16,6 +16,7 @@ import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
 import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
+import Icon, { ICON_OPTIONS } from "@/components/blocks/Icon";
 
 type Align = "left" | "center" | "right";
 
@@ -50,9 +51,9 @@ type Props = {
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
-  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string };
-  Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
-  Button: { title: string; subtitle: string; href: string };
+  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string };
+  Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
+  Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
   Video: { src: string; caption: string; poster: string };
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
@@ -77,6 +78,8 @@ type Props = {
     foreground: string;
     showLogo: boolean;
     ctaColor: string;
+    brandIcon: string;
+    brandIconColor: string;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
   // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
@@ -177,6 +180,8 @@ export const NAV_DEFAULTS = {
   foreground: "",
   showLogo: true,
   ctaColor: "",
+  brandIcon: "",
+  brandIconColor: "",
 };
 
 // Single source of truth for the footer — used by the seed (so /edit/footer opens to it) AND
@@ -716,9 +721,17 @@ export const config: Config<Props> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        brandIcon: { type: "select" as const, label: "Mark beside the name (client sites)", options: ICON_OPTIONS },
+        brandIconColor: {
+          type: "custom" as const,
+          label: "Mark colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor }) => (
         <NavView
           brandName={brandName}
           brandHref={brandHref}
@@ -734,6 +747,8 @@ export const config: Config<Props> = {
           foreground={foreground}
           showLogo={showLogo}
           ctaColor={ctaColor}
+          brandIcon={brandIcon}
+          brandIconColor={brandIconColor}
         />
       ),
     },
@@ -931,6 +946,17 @@ export const config: Config<Props> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // TWO-TONE — type the words you want in the accent colour and they get picked out of the
+        // headline. A flat single-colour headline is the biggest thing separating a template
+        // from a designed page, and it costs one text field.
+        highlight: { type: "text" as const, label: "Words to colour differently (blank = none)" },
+        highlightColor: {
+          type: "custom" as const,
+          label: "Highlight colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         // The hand-drawn swipe under a headline. Blank = off, which is what every existing
         // heading on the site has saved, so nothing already built changes.
         underline: {
@@ -941,14 +967,14 @@ export const config: Config<Props> = {
           ),
         },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "" },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline }) => {
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "", highlight: "", highlightColor: "" },
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
-        // The swipe is an inline SVG stretched under the LAST line of the heading — a rule
-        // would look like a border; this reads like a marker stroke.
-        const swipe = underline ? (
-          <span className="relative inline-block">
-            <span className="relative z-10">{text}</span>
+
+        // The marker swipe. A straight rule reads like a border; this reads like someone drew it.
+        const swipeUnder = (inner: React.ReactNode, key?: string) => (
+          <span key={key} className="relative inline-block">
+            <span className="relative z-10">{inner}</span>
             <svg
               aria-hidden
               viewBox="0 0 100 10"
@@ -959,7 +985,33 @@ export const config: Config<Props> = {
               <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" strokeLinecap="round" />
             </svg>
           </span>
-        ) : null;
+        );
+
+        // Split the headline around the highlighted words. Case-insensitive, so "premier pet wash"
+        // finds "Premier Pet Wash"; if the words aren't in the text we render it unchanged rather
+        // than silently dropping anything.
+        //
+        // When BOTH a highlight and an underline are set, the swipe goes under the highlighted
+        // words only — not the whole headline. That's the move the design actually makes: one
+        // phrase picked out in colour with a stroke under it, the rest left alone.
+        const hl = (highlight || "").trim();
+        const at = hl && highlightColor ? String(text || "").toLowerCase().indexOf(hl.toLowerCase()) : -1;
+
+        let body: React.ReactNode;
+        if (at >= 0) {
+          const marked = (
+            <span key="hl" style={{ color: highlightColor }}>
+              {text.slice(at, at + hl.length)}
+            </span>
+          );
+          body = [
+            text.slice(0, at),
+            underline ? swipeUnder(marked, "hl-wrap") : marked,
+            text.slice(at + hl.length),
+          ];
+        } else {
+          body = underline ? swipeUnder(text) : text;
+        }
         return (
           <h2
             className="font-bold leading-tight tracking-tight"
@@ -973,7 +1025,7 @@ export const config: Config<Props> = {
               paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 12}px`,
             }}
           >
-            {swipe ?? text}
+            {body}
           </h2>
         );
       },
@@ -1013,6 +1065,31 @@ export const config: Config<Props> = {
         },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: { ...COLOR_FIELD, label: "Default color (whole block)" },
+        // PILL MODE — turns a line of text into the little bordered badge a good design uses for
+        // a star rating or an address. Blank = an ordinary paragraph, which is what every
+        // existing Text block on the site has saved.
+        pill: {
+          type: "custom" as const,
+          label: "Pill background (blank = plain text)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        pillBorder: {
+          type: "custom" as const,
+          label: "Pill border colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        icon: { type: "select" as const, label: "Icon before the text", options: ICON_OPTIONS },
+        iconColor: {
+          type: "custom" as const,
+          label: "Icon colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
       defaultProps: {
         text: "New paragraph. Select any word and use the toolbar to format it.",
@@ -1021,41 +1098,144 @@ export const config: Config<Props> = {
         spaceBelow: 0,
         align: "left" as const,
         color: "#111827",
+        pill: "",
+        pillBorder: "",
+        icon: "",
+        iconColor: "",
       },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color }) => (
-        <div
-          className="rt leading-relaxed"
-          style={{
-            textAlign: align,
-            color: color || "#111827",
-            marginTop: 0,
-            marginBottom: 0,
-            paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 16}px`,
-            paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px`,
-            fontSize: `${fontSize && fontSize > 0 ? fontSize : 18}px`,
-          }}
-          dangerouslySetInnerHTML={{ __html: text }}
-        />
-      ),
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, pill, pillBorder, icon, iconColor }) => {
+        const pad = {
+          paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 16}px`,
+          paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px`,
+        };
+        const size = `${fontSize && fontSize > 0 ? fontSize : 18}px`;
+        const body = (
+          <span className="rt" style={{ fontSize: size }} dangerouslySetInnerHTML={{ __html: text }} />
+        );
+
+        // Plain paragraph — byte-identical to before when no pill and no icon are set.
+        if (!pill && !pillBorder && !icon) {
+          return (
+            <div
+              className="rt leading-relaxed"
+              style={{ textAlign: align, color: color || "#111827", marginTop: 0, marginBottom: 0, ...pad, fontSize: size }}
+              dangerouslySetInnerHTML={{ __html: text }}
+            />
+          );
+        }
+
+        const justify = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
+        return (
+          <div className="flex" style={{ justifyContent: justify, ...pad }}>
+            <span
+              className={`inline-flex items-center gap-2 leading-snug${pill || pillBorder ? " rounded-full px-4 py-2" : ""}`}
+              style={{
+                color: color || "#111827",
+                background: pill || undefined,
+                border: pillBorder ? `1px solid ${pillBorder}` : undefined,
+                boxShadow: pill || pillBorder ? "0 1px 2px rgba(0,0,0,0.05)" : undefined,
+              }}
+            >
+              <Icon name={icon} size={Math.round((fontSize && fontSize > 0 ? fontSize : 18) * 0.95)} style={{ color: iconColor || undefined }} />
+              {body}
+            </span>
+          </div>
+        );
+      },
     },
 
+    // Every field here defaults to blank/empty, and blank means "render exactly as before" —
+    // the old .btn-cta, centred, no icon. Existing pages have none of these saved, so nothing
+    // already built moves. Set them and you get the pill/outline/icon treatments a real design
+    // uses (a filled Book button next to an outlined Call button with a phone icon).
     Button: {
       label: "Call-to-action button",
       fields: {
         title: { type: "text" as const, label: "Button text" },
         subtitle: { type: "textarea" as const, label: "Small line under (optional)" },
         href: { type: "text" as const, label: "Link" },
+        icon: { type: "select" as const, label: "Icon", options: ICON_OPTIONS },
+        variant: {
+          type: "radio" as const,
+          label: "Style",
+          options: [
+            { label: "Site default", value: "" },
+            { label: "Filled", value: "filled" },
+            { label: "Outlined", value: "outline" },
+          ],
+        },
+        shape: {
+          type: "radio" as const,
+          label: "Shape",
+          options: [
+            { label: "Rounded", value: "" },
+            { label: "Pill", value: "pill" },
+          ],
+        },
+        color: {
+          type: "custom" as const,
+          label: "Button colour (blank = site default)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        align: { ...ALIGN_FIELD, label: "Align" },
+        fullWidth: {
+          type: "radio" as const,
+          label: "Width",
+          options: [
+            { label: "Fit text", value: false },
+            { label: "Full width", value: true },
+          ],
+        },
       },
       defaultProps: {
         title: "Book the Call",
         subtitle: "",
         href: "/#contact",
+        icon: "",
+        variant: "",
+        shape: "",
+        color: "",
+        align: "center" as Align,
+        fullWidth: false,
       },
-      render: ({ title, subtitle, href }) => (
-        <div className="mt-8 flex justify-center">
-          <CtaButton title={title} subtitle={subtitle || undefined} href={href} />
-        </div>
-      ),
+      render: ({ title, subtitle, href, icon, variant, shape, color, align, fullWidth }) => {
+        // No styling chosen => the original button, untouched.
+        if (!variant && !shape && !color && !icon) {
+          return (
+            <div className="mt-8 flex justify-center">
+              <CtaButton title={title} subtitle={subtitle || undefined} href={href} />
+            </div>
+          );
+        }
+        const accent = color || "#2563eb";
+        const outlined = variant === "outline";
+        const justify = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
+        return (
+          <div className="mt-6 flex" style={{ justifyContent: justify }}>
+            <a
+              href={href || "#"}
+              className={`inline-flex items-center justify-center gap-2 px-8 py-4 font-bold transition-all hover:-translate-y-0.5${
+                shape === "pill" ? " rounded-full" : " rounded-xl"
+              }${fullWidth ? " w-full" : ""}`}
+              style={
+                outlined
+                  ? { border: `2px solid ${accent}`, color: accent, background: "#ffffff" }
+                  : { background: accent, color: "#ffffff", boxShadow: `0 8px 20px -6px ${accent}80` }
+              }
+            >
+              <span className="flex flex-col items-center leading-tight">
+                <span className="flex items-center gap-2">
+                  {title}
+                  <Icon name={icon} size={18} />
+                </span>
+                {subtitle ? <span className="text-xs font-medium opacity-80">{subtitle}</span> : null}
+              </span>
+            </a>
+          </div>
+        );
+      },
     },
 
     PhoneLink: {

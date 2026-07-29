@@ -656,6 +656,8 @@ const LAB_SEED: Data = {
         foreground: "#334155",
         showLogo: false,
         ctaColor: "#0ea5e9",
+        brandIcon: "bone",
+        brandIconColor: "#0ea5e9",
       },
     },
     {
@@ -679,8 +681,9 @@ const LAB_SEED: Data = {
                   type: "Text",
                   props: {
                     id: "lab-hero-rating",
-                    text: "★★★★★  4.7 Rating  |  210+ Google Reviews",
-                    align: "left", color: "#4b5563", fontSize: 15, spaceAbove: 0, spaceBelow: 20,
+                    text: "<span style=\"color:#f59e0b\">★★★★★</span> <strong>4.7 Rating</strong> <span style=\"opacity:.45\">|</span> <span style=\"color:#0ea5e9;font-weight:600\">210+ Google Reviews</span>",
+                    align: "left", color: "#334155", fontSize: 15, spaceAbove: 0, spaceBelow: 24,
+                    pill: "#ffffff", pillBorder: "#e5e7eb", icon: "", iconColor: "",
                   },
                 },
                 {
@@ -691,6 +694,7 @@ const LAB_SEED: Data = {
                     fontSize: 60, align: "left", color: "#334155",
                     spaceAbove: 0, spaceBelow: 20,
                     underline: "#f59e0b",
+                    highlight: "Premier Pet Wash", highlightColor: "#0ea5e9",
                   },
                 },
                 {
@@ -711,15 +715,21 @@ const LAB_SEED: Data = {
                   },
                 },
                 {
-                  type: "PhoneLink",
-                  props: { id: "lab-hero-phone", label: "Or call (210) 474-6252", tel: "+12104746252" },
+                  type: "Button",
+                  props: {
+                    id: "lab-hero-phone",
+                    title: "(210) 474-6252", subtitle: "", href: "tel:+12104746252",
+                    icon: "phone", variant: "outline", shape: "pill",
+                    color: "#10b981", align: "left", fullWidth: false,
+                  },
                 },
                 {
                   type: "Text",
                   props: {
                     id: "lab-hero-addr",
                     text: "819 New Laredo Hwy, San Antonio, TX 78211",
-                    align: "left", color: "#4b5563", fontSize: 15, spaceAbove: 28, spaceBelow: 0,
+                    align: "left", color: "#334155", fontSize: 15, spaceAbove: 28, spaceBelow: 0,
+                    pill: "#ffffff", pillBorder: "#e5e7eb", icon: "map-pin", iconColor: "#f59e0b",
                   },
                 },
               ],

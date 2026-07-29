@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "@/components/blocks/Icon";
 
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
@@ -29,6 +30,11 @@ export type NavViewProps = {
   foreground?: string;
   // Hide the logo on a client site that isn't SJC.
   showLogo?: boolean;
+  // A client's mark in place of the SJC logo image — a paw for a groomer, a wrench for a
+  // contractor. Sits in a soft tinted square, which is what makes a plain wordmark read as
+  // a brand rather than as text.
+  brandIcon?: string;
+  brandIconColor?: string;
 };
 
 // "Open in a new tab" is set per link in the builder. rel="noopener noreferrer" rides along
@@ -57,6 +63,8 @@ export default function NavView({
   foreground,
   showLogo,
   ctaColor,
+  brandIcon,
+  brandIconColor,
 }: NavViewProps) {
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
@@ -68,7 +76,16 @@ export default function NavView({
 
   const Brand = (
     <a href={brandHref || "/"} className="flex items-center gap-3" onClick={() => setOpen(false)}>
-      {logoOn ? <img src={LOGO_URL} alt="logo" className="h-9 w-9 rounded-full" /> : null}
+      {brandIcon ? (
+        <span
+          className="flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{ background: `${brandIconColor || fg}1a`, color: brandIconColor || fg }}
+        >
+          <Icon name={brandIcon} size={22} />
+        </span>
+      ) : logoOn ? (
+        <img src={LOGO_URL} alt="logo" className="h-9 w-9 rounded-full" />
+      ) : null}
       <span className="font-semibold tracking-tight" style={{ fontSize: `${brandSize || 16}px` }}>{brandName}</span>
     </a>
   );
