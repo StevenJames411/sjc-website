@@ -21,11 +21,16 @@ export const PUCK_PAGES: PuckPage[] = [
   // link points at the free community that teaches exactly what that page sells.
   { slug: "websites-nav", title: "Websites — Header" },
   { slug: "websites-footer", title: "Websites — Footer" },
-  // SCRATCH PAD — not a real page. Where a design gets ported and pulled apart before it goes
-  // anywhere near a client. Editable at /edit/lab, but NOT published — and app/[slug] serves
-  // only PUBLISHED content, so /lab is a 404 to the public. Hitting Publish here would put it
-  // on the live site; don't, unless that's deliberate.
-  { slug: "lab", title: "Lab (scratch — never published)" },
+  // CLIENT DEMO. The slug IS the URL a prospect gets texted, so it's the business's name —
+  // stevenjamesconsulting.com/lucky-dog-wash-house, not /lab or /demo-3.
+  //
+  // Demo pages need no entry here once Duplicate exists; they're created in the builder and
+  // live in the dynamic registry. This one is in code because it started life as the scratch
+  // pad the SiteDrop port was built on, and its data was carried over rather than rebuilt.
+  //
+  // It gets noindex and no SJC header/footer automatically — see app/[slug]/page.tsx. The rule
+  // is "the page carries its own SiteHeader", so nothing here needs remembering.
+  { slug: "lucky-dog-wash-house", title: "Lucky Dog Wash House (demo)" },
 ];
 
 export const findPage = (slug: string) => PUCK_PAGES.find((p) => p.slug === slug);

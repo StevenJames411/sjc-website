@@ -614,7 +614,7 @@ const WEBSITES_SEED: Data = {
   ],
 };
 
-// ── /lab — the design-port scratch pad ───────────────────────────────────────────────────────
+// ── /lucky-dog-wash-house — the first client demo, ported from SiteDrop ───────────────────────────────────────────────────────
 //
 // A SiteDrop-generated hero (Lucky Dog Wash House, San Antonio) rebuilt entirely from OUR blocks:
 // Section → Columns → Heading / Text / Button / HeroImage. Nothing here is bespoke markup.
@@ -957,7 +957,7 @@ const LAB_SEED: Data = {
 };
 
 const SEEDS: Record<string, Data> = {
-  lab: LAB_SEED,
+  "lucky-dog-wash-house": LAB_SEED,
   websites: WEBSITES_SEED,
   "websites-nav": WEBSITES_NAV_SEED,
   "websites-footer": WEBSITES_FOOTER_SEED,
