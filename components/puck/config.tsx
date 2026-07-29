@@ -25,7 +25,7 @@ type Align = "left" | "center" | "right";
 type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean };
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -47,6 +47,8 @@ type Props = {
     note: string;
     successHeading: string;
     successBody: string;
+    buttonColor: string;
+    inColumn: boolean;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
@@ -312,13 +314,30 @@ export const config: Config<Props> = {
             { label: "Centered", value: true },
           ],
         },
+        layout: {
+          type: "radio" as const,
+          label: "Layout",
+          options: [
+            { label: "Stacked (icon above)", value: "" },
+            { label: "Row (icon beside — contact details)", value: "row" },
+          ],
+        },
+        bare: {
+          type: "radio" as const,
+          label: "Card box",
+          options: [
+            { label: "White box", value: false },
+            { label: "No box (sits on the band)", value: true },
+          ],
+        },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered }) => (
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare }) => (
         <Card
           badge={badge} eyebrow={eyebrow} heading={heading} body={body}
           icon={icon} iconColor={iconColor} badgeColor={badgeColor}
           badgePosition={badgePosition} centered={centered}
+          layout={layout} bare={bare}
         />
       ),
     },
@@ -399,9 +418,24 @@ export const config: Config<Props> = {
         note: { type: "textarea" as const, label: "Small line under the button" },
         successHeading: { type: "text" as const, label: "Thank-you heading" },
         successBody: { type: "textarea" as const, label: "Thank-you body" },
+        buttonColor: {
+          type: "custom" as const,
+          label: "Submit button colour (blank = site blue)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        inColumn: {
+          type: "radio" as const,
+          label: "Width",
+          options: [
+            { label: "Centred island", value: false },
+            { label: "Fill the column", value: true },
+          ],
+        },
       },
       defaultProps: LEADFORM_DEFAULTS as LeadFormBlock,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn }) => (
         <LeadForm
           source={source}
           fields={fields}
@@ -409,6 +443,8 @@ export const config: Config<Props> = {
           note={note}
           successHeading={successHeading}
           successBody={successBody}
+          buttonColor={buttonColor}
+          inColumn={inColumn}
         />
       ),
     },

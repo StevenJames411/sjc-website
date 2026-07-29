@@ -23,6 +23,11 @@ export type CardProps = {
   // designs use for numbered steps. "" leaves it inline at the top-left, as before.
   badgePosition?: string;
   centered?: boolean;
+  // "row" puts the icon on the LEFT with the text beside it — the contact-detail treatment
+  // (a tinted circle, a bold label, the value under it). "" is the original stacked card.
+  layout?: string;
+  // Drop the white box + shadow, for rows that sit directly on a coloured band.
+  bare?: boolean;
 };
 
 export const CARD_DEFAULTS: CardProps = {
@@ -35,6 +40,8 @@ export const CARD_DEFAULTS: CardProps = {
   badgeColor: "",
   badgePosition: "",
   centered: false,
+  layout: "",
+  bare: false,
 };
 
 export default function Card({
@@ -47,9 +54,36 @@ export default function Card({
   badgeColor,
   badgePosition,
   centered,
+  layout,
+  bare,
 }: CardProps) {
   const onEdge = badgePosition === "edge" && !!badge;
   const align = centered ? "text-center items-center" : "";
+  const shell = bare ? "h-full" : "h-full rounded-2xl bg-white p-7 shadow-sm";
+
+  // Icon left, text right — a contact detail rather than a feature card.
+  if (layout === "row") {
+    return (
+      <div className={`${shell} flex items-start gap-4`}>
+        {icon ? (
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+            style={{ background: `${iconColor || "#2563eb"}1f`, color: iconColor || "#2563eb" }}
+          >
+            <Icon name={icon} size={20} />
+          </span>
+        ) : null}
+        <div>
+          {heading ? (
+            <p className="font-bold text-[color:var(--color-sjc-ink)]">{heading}</p>
+          ) : null}
+          {body ? (
+            <p className="mt-0.5 text-[color:var(--color-sjc-mute)]">{body}</p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   const badgeEl = badge ? (
     <span
@@ -64,7 +98,7 @@ export default function Card({
     <div
       // Extra top padding + visible overflow only when a badge is floating on the edge, so a
       // normal card keeps its exact original box.
-      className={`relative h-full rounded-2xl bg-white p-7 shadow-sm ${onEdge ? "mt-6 pt-10" : ""}`}
+      className={`relative ${shell} ${onEdge ? "mt-6 pt-10" : ""}`}
     >
       {onEdge ? (
         <div className="absolute -top-5 left-1/2 -translate-x-1/2">{badgeEl}</div>
