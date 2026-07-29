@@ -10,7 +10,7 @@
 // readPages() = the built-ins (minus hidden) + the custom pages. Degrades to the built-ins when
 // Redis is unprovisioned (never crashes the editor).
 import { createKvStore } from "./kvStateStore";
-import { getClient } from "./kvRedis";
+import { getClient } from "./store";
 import { PUCK_PAGES, type PuckPage } from "./puckPages";
 import { puckKey } from "./puckContent";
 

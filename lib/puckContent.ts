@@ -6,7 +6,7 @@
 // to its committed hand-coded layout (zero regression).
 import type { Data } from "@measured/puck";
 import { createKvStore } from "./kvStateStore";
-import { getClient } from "./kvRedis";
+import { getClient } from "./store";
 
 const safe = (s: string) => String(s || "").replace(/[^a-z0-9-]/gi, "") || "home";
 export const puckKey = (page: string, pub = false) =>

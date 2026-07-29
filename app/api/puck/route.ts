@@ -4,7 +4,7 @@
 //   POST /api/puck?page=about&action=publish|unpublish     (snapshot draft -> live, or clear)
 // All routes are gated by middleware (only the signed-in owner can reach the private site).
 import { createKvStore } from "@/lib/kvStateStore";
-import { getClient } from "@/lib/kvRedis";
+import { getClient } from "@/lib/store";
 import { puckKey } from "@/lib/puckContent";
 
 export const dynamic = "force-dynamic";
