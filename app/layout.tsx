@@ -33,13 +33,24 @@ export const metadata: Metadata = {
   description:
     "We install a native AI operating system on top of the software you already run — AI employees that answer every lead in seconds, work your old leads, close and book appointments, cover the phones 24/7, and keep customers coming back. Nothing to switch, nothing new to learn. You get the growth and stay in control of your own system.",
   alternates: { canonical: "/" },
+  // ⚠️ This block is INHERITED by every route that doesn't declare its own — that is how a
+  // texted /websites link used to preview as "Your AI Growth Partner." Any page selling to a
+  // different audience needs its own openGraph block (see app/websites/page.tsx).
+  // The card image comes from app/opengraph-image.tsx; leave `images` unset so it isn't
+  // overridden, and so each segment's own opengraph-image.tsx can take over.
   openGraph: {
-    title: "Steven James Consulting — Your AI Growth Partner",
+    title: "Steven James Consulting — AI employees for your business",
     description:
-      "A native AI operating system installed on top of what you already run — AI employees that find, close, and keep customers, turnkey. You get the growth and stay in command of your own system.",
+      "AI employees that answer every lead in seconds, work your old leads, book the appointments, and cover the phones 24/7 — installed on top of the software you already run. Nothing to switch, nothing new to learn.",
     url: "https://www.stevenjamesconsulting.com",
     siteName: "Steven James Consulting",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Steven James Consulting — AI employees for your business",
+    description:
+      "AI employees that answer every lead in seconds, book the appointments, and cover the phones 24/7 — on top of the software you already run.",
   },
   robots: { index: true, follow: true },
 };
