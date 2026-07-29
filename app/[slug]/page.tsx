@@ -36,9 +36,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const meta = await findPageMeta(slug);
   const data = meta ? await readPuckPublished(slug) : null;
-  return hasBlock(data, "SiteHeader")
-    ? { robots: { index: false, follow: false, nocache: true } }
-    : {};
+
+  // The builder's "title" field was decorative — it showed in the editor and nowhere else, so
+  // every page built here inherited SJC's site-wide title from app/layout.tsx. On a client demo
+  // that's the browser tab AND the link preview when the URL gets texted to the owner: she taps
+  // a link to her own website and sees somebody else's consulting firm.
+  const title = (data as { root?: { props?: { title?: string } } } | null)?.root?.props?.title;
+  const isDemo = hasBlock(data, "SiteHeader");
+
+  return {
+    // `absolute` so the site-wide title template doesn't append "| Steven James Consulting"
+    // onto a client's page.
+    ...(title && title.trim() ? { title: { absolute: title.trim() } } : {}),
+    ...(isDemo ? { robots: { index: false, follow: false, nocache: true } } : {}),
+  };
 }
 
 // Wrapping a demo in SJC's navy chrome would put TWO headers on the page and brand someone
