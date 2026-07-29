@@ -8,8 +8,11 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "A real website for your business — live in three days | Steven James Consulting",
+  // ⚠️ NO PRICE HERE. Price comes up on the discovery call, not before it — and this description
+  // is exactly what Google shows in results and what a texted link previews as, so a number here
+  // reaches the prospect ahead of the conversation. Keep it about the outcome.
   description:
-    "$795 to build it, $25/month to keep it running. Your work, your reviews, your phone number — and a contact form that texts you the second someone fills it out. You never touch any of it.",
+    "Built and live in three days. Your work, your reviews, your phone number — and a contact form that texts you the second someone fills it out. You never touch any of it.",
   alternates: { canonical: "/websites" },
 };
 

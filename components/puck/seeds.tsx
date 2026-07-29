@@ -464,7 +464,9 @@ const WEBSITES_SEED: Data = {
           { type: "Heading", props: { id: "w-h1", text: "A real website for your business — live in three days.", fontSize: 48, align: "center", spaceBelow: 16 } },
           { type: "Text", props: { id: "w-sub1", text: "Your work, your reviews, your phone number. Somebody fills out the form and it hits your phone before they've closed the browser.", align: "center", color: "#2563eb", fontSize: 22, spaceAbove: 4, spaceBelow: 8 } },
           { type: "Text", props: { id: "w-sub2", text: "You do good work. People just can't find you. I build the site, I put it online, and I keep it running — you never touch any of it.", align: "center", color: "#4b5563", fontSize: 18, spaceAbove: 0, spaceBelow: 0 } },
-          { type: "Button", props: { id: "w-hero-cta", title: "Get My Website Started", subtitle: "$795 to build it. $25/month to keep it running.", href: "#get-started" } },
+          // ⚠️ NO PRICE. Price comes up on the discovery call. This seed renders whenever nothing
+          // is published, so a number left here would put the price back on the live page.
+          { type: "Button", props: { id: "w-hero-cta", title: "Get My Website Started", subtitle: "Built and live in three days.", href: "#get-started" } },
         ],
       },
     },
@@ -571,32 +573,11 @@ const WEBSITES_SEED: Data = {
       },
     },
 
-    // Price
-    {
-      type: "Section",
-      props: {
-        id: "websites-price",
-        background: "#f3f4f6",
-        maxWidth: "48rem",
-        paddingTop: 80,
-        paddingBottom: 80,
-        content: [
-          { type: "Heading", props: { id: "w-price-h2", text: "What it costs", fontSize: 36, align: "center", spaceBelow: 32 } },
-          {
-            type: "PriceBox",
-            props: {
-              id: "w-price-box",
-              topAmount: "$795",
-              topNote: "one time, to build it",
-              bottomAmount: "$25",
-              bottomSuffix: "/month",
-              bottomNote: "to host it, run the form, and keep it current",
-              footnote: "That's the whole price. No contract, no setup fees stacked on top, no packages to pick from. Cancel any time and the site is still yours.",
-            },
-          },
-        ],
-      },
-    },
+    // ⚠️ NO PRICE SECTION — deliberate, matches the live page. Price comes up on the discovery
+    // call, so the page sells the outcome and the number happens in conversation. There used to be
+    // a "What it costs" band with a $795/$25 PriceBox here; Steven pulled it. This seed renders
+    // whenever nothing is published, so putting it back here puts the price back on the live site.
+    // The PriceBox block still exists and is still usable — it just isn't on this page.
 
     // CTA — the anchor every button on the page points at
     {
