@@ -25,7 +25,7 @@ type Align = "left" | "center" | "right";
 type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean };
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -278,13 +278,48 @@ export const config: Config<Props> = {
       label: "Card (white box)",
       fields: {
         badge: { type: "text" as const, label: "Number badge (optional — e.g. 1)" },
+        badgeColor: {
+          type: "custom" as const,
+          label: "Badge colour (blank = site blue)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        badgePosition: {
+          type: "radio" as const,
+          label: "Badge position",
+          options: [
+            { label: "Inside, top-left", value: "" },
+            { label: "Floating on the top edge", value: "edge" },
+          ],
+        },
+        icon: { type: "select" as const, label: "Icon", options: ICON_OPTIONS },
+        iconColor: {
+          type: "custom" as const,
+          label: "Icon colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         eyebrow: { type: "text" as const, label: "Small label above (optional)" },
         heading: { type: "textarea" as const, label: "Heading" },
         body: { type: "textarea" as const, label: "Body" },
+        centered: {
+          type: "radio" as const,
+          label: "Text",
+          options: [
+            { label: "Left", value: false },
+            { label: "Centered", value: true },
+          ],
+        },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body }) => (
-        <Card badge={badge} eyebrow={eyebrow} heading={heading} body={body} />
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered }) => (
+        <Card
+          badge={badge} eyebrow={eyebrow} heading={heading} body={body}
+          icon={icon} iconColor={iconColor} badgeColor={badgeColor}
+          badgePosition={badgePosition} centered={centered}
+        />
       ),
     },
 
