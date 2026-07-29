@@ -76,6 +76,7 @@ type Props = {
     background: string;
     foreground: string;
     showLogo: boolean;
+    ctaColor: string;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
   // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
@@ -175,6 +176,7 @@ export const NAV_DEFAULTS = {
   background: "",
   foreground: "",
   showLogo: true,
+  ctaColor: "",
 };
 
 // Single source of truth for the footer — used by the seed (so /edit/footer opens to it) AND
@@ -707,9 +709,16 @@ export const config: Config<Props> = {
             { label: "Hide (client site)", value: false },
           ],
         },
+        ctaColor: {
+          type: "custom" as const,
+          label: "Button colour (blank = SJC blue)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor }) => (
         <NavView
           brandName={brandName}
           brandHref={brandHref}
@@ -724,6 +733,7 @@ export const config: Config<Props> = {
           background={background}
           foreground={foreground}
           showLogo={showLogo}
+          ctaColor={ctaColor}
         />
       ),
     },

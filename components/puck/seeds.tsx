@@ -655,6 +655,7 @@ const LAB_SEED: Data = {
         background: "#ffffff",
         foreground: "#334155",
         showLogo: false,
+        ctaColor: "#0ea5e9",
       },
     },
     {

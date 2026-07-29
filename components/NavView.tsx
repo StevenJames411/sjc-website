@@ -21,6 +21,9 @@ export type NavViewProps = {
   // on this template shipped wearing SJC's colours. Defaults to the old value, so nothing that
   // already exists moves.
   background?: string;
+  // The Book/Call button's colour. Was welded to SJC blue via a CSS var, which put our brand on
+  // every client's most-clicked element. Blank = the old SJC blue.
+  ctaColor?: string;
   // Brand text + link colour. White reads on navy; a light header needs dark text or the nav
   // vanishes into the background.
   foreground?: string;
@@ -53,6 +56,7 @@ export default function NavView({
   background,
   foreground,
   showLogo,
+  ctaColor,
 }: NavViewProps) {
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
@@ -81,7 +85,7 @@ export default function NavView({
   return (
     <header className="sticky top-0 z-20 w-full" style={{ backgroundColor: bg }}>
       {/* Desktop: brand left · tagline centered · links + button right */}
-      <div className="mx-auto hidden max-w-6xl grid-cols-3 items-center px-6 py-3 lg:grid" style={{ color: fg }}>
+      <div className="mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid" style={{ color: fg }}>
         <div className="justify-self-start">{Brand}</div>
         <div className="justify-self-center text-center">{Tagline}</div>
         <div className="flex items-center gap-5 justify-self-end">
@@ -90,7 +94,7 @@ export default function NavView({
               key={i}
               href={l.target || "#"}
               {...tabAttrs(l.newTab)}
-              className="font-medium opacity-90 transition hover:opacity-100"
+              className="whitespace-nowrap font-medium opacity-90 transition hover:opacity-100"
               style={{ fontSize: `${l.fontSize || 14}px`, color: l.color || fg }}
             >
               {l.label}
@@ -100,7 +104,8 @@ export default function NavView({
             <a
               href={ctaHref || "#"}
               {...tabAttrs(ctaNewTab)}
-              className="rounded-lg bg-[color:var(--color-sjc-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--color-sjc-green)]"
+              className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition${ctaColor ? " hover:opacity-90" : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"}`}
+              style={ctaColor ? { backgroundColor: ctaColor } : undefined}
             >
               {ctaLabel} &rarr;
             </a>
