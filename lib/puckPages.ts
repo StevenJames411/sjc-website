@@ -21,6 +21,11 @@ export const PUCK_PAGES: PuckPage[] = [
   // link points at the free community that teaches exactly what that page sells.
   { slug: "websites-nav", title: "Websites — Header" },
   { slug: "websites-footer", title: "Websites — Footer" },
+  // SCRATCH PAD — not a real page. Where a design gets ported and pulled apart before it goes
+  // anywhere near a client. Editable at /edit/lab, but NOT published — and app/[slug] serves
+  // only PUBLISHED content, so /lab is a 404 to the public. Hitting Publish here would put it
+  // on the live site; don't, unless that's deliberate.
+  { slug: "lab", title: "Lab (scratch — never published)" },
 ];
 
 export const findPage = (slug: string) => PUCK_PAGES.find((p) => p.slug === slug);

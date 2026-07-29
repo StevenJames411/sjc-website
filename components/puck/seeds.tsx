@@ -614,7 +614,118 @@ const WEBSITES_SEED: Data = {
   ],
 };
 
+// ── /lab — the design-port scratch pad ───────────────────────────────────────────────────────
+//
+// A SiteDrop-generated hero (Lucky Dog Wash House, San Antonio) rebuilt entirely from OUR blocks:
+// Section → Columns → Heading / Text / Button / HeroImage. Nothing here is bespoke markup.
+//
+// THE POINT: their builder makes a beautiful page you can only change by arguing with a chatbot
+// that meters you per attempt. The same design assembled from these blocks has a −/+ control on
+// every padding, size, and colour. That is the whole reason to pull a design over instead of
+// renting the tool that made it.
+//
+// ⚠️ The photo still points at THEIR Supabase. Fine for a scratch page; download it before this
+// look goes anywhere near a client, or their server going away takes the client's site with it.
+const LAB_SEED: Data = {
+  root: { props: { title: "Lab" } },
+  content: [
+    {
+      type: "Section",
+      props: {
+        id: "lab-hero",
+        background: "#f8fafc",
+        maxWidth: "80rem",
+        paddingTop: 72,
+        paddingBottom: 96,
+        decor: "#0ea5e9",
+        content: [
+          {
+            type: "Columns",
+            props: {
+              id: "lab-hero-cols",
+              columns: 2,
+              gap: 48,
+              col1: [
+                {
+                  type: "Text",
+                  props: {
+                    id: "lab-hero-rating",
+                    text: "★★★★★  4.7 Rating  |  210+ Google Reviews",
+                    align: "left", color: "#4b5563", fontSize: 15, spaceAbove: 0, spaceBelow: 20,
+                  },
+                },
+                {
+                  type: "Heading",
+                  props: {
+                    id: "lab-hero-h1",
+                    text: "San Antonio's Premier Pet Wash & Grooming",
+                    fontSize: 60, align: "left", color: "#334155",
+                    spaceAbove: 0, spaceBelow: 20,
+                    underline: "#f59e0b",
+                  },
+                },
+                {
+                  type: "Text",
+                  props: {
+                    id: "lab-hero-sub",
+                    text: "Experience stress-free, professional grooming and easy self-serve wash stations. Clean facilities, friendly staff, and happy tails guaranteed at Lucky Dog Wash House.",
+                    align: "left", color: "#4b5563", fontSize: 19, spaceAbove: 0, spaceBelow: 28,
+                  },
+                },
+                {
+                  type: "Button",
+                  props: {
+                    id: "lab-hero-cta",
+                    title: "Book an Appointment",
+                    subtitle: "",
+                    href: "#contact",
+                  },
+                },
+                {
+                  type: "PhoneLink",
+                  props: { id: "lab-hero-phone", label: "Or call (210) 474-6252", tel: "+12104746252" },
+                },
+                {
+                  type: "Text",
+                  props: {
+                    id: "lab-hero-addr",
+                    text: "819 New Laredo Hwy, San Antonio, TX 78211",
+                    align: "left", color: "#4b5563", fontSize: 15, spaceAbove: 28, spaceBelow: 0,
+                  },
+                },
+              ],
+              col2: [
+                {
+                  type: "HeroImage",
+                  props: {
+                    id: "lab-hero-photo",
+                    src: "https://zgnpmogdjnnhpwewavnr.supabase.co/storage/v1/object/public/project-images/bcda9a64-6721-499a-bdaa-5d6a9977abe9/98f8cb82-9922-416a-b87a-8b39fc36d057.png",
+                    alt: "Happy wet Golden Retriever getting a warm bubble bath with suds at a professional dog grooming salon",
+                    height: 560,
+                    tilt: 2,
+                    glow: "#0ea5e9",
+                    frame: "#ffffff",
+                    radius: 40,
+                    badgeTitle: "Premium Spa Add-ons",
+                    badgeBody: "Oatmeal baths, nail trims & more",
+                    pillText: "Open Today",
+                    pillColor: "#10b981",
+                    spaceAbove: 0,
+                    spaceBelow: 0,
+                  },
+                },
+              ],
+              col3: [],
+            },
+          },
+        ],
+      },
+    },
+  ],
+};
+
 const SEEDS: Record<string, Data> = {
+  lab: LAB_SEED,
   websites: WEBSITES_SEED,
   "websites-nav": WEBSITES_NAV_SEED,
   "websites-footer": WEBSITES_FOOTER_SEED,

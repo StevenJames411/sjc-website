@@ -15,15 +15,21 @@ import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
 import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
+import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
 
 type Align = "left" | "center" | "right";
 
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
-  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; content: Slot };
+  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
   Card: { badge: string; eyebrow: string; heading: string; body: string };
+  HeroImage: {
+    src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
+    radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
+    spaceAbove: number; spaceBelow: number;
+  };
   CheckList: { dotColor: string; rows: { heading: string; body: string }[] };
   PriceBox: {
     topAmount: string;
@@ -44,7 +50,7 @@ type Props = {
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
-  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
+  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
   Button: { title: string; subtitle: string; href: string };
   Video: { src: string; caption: string; poster: string };
@@ -96,6 +102,7 @@ const BG_FIELD = {
   type: "select" as const,
   options: [
     { label: "White", value: "#ffffff" },
+    { label: "Off-white", value: "#f8fafc" },
     { label: "Light gray", value: "#f3f4f6" },
     { label: "SJC navy", value: "#1e3a6e" },
     { label: "Dark navy", value: "#0f1f3d" },
@@ -228,7 +235,8 @@ export const config: Config<Props> = {
       title: "Building blocks",
       defaultExpanded: true,
       components: ["Section", "Columns", "Heading", "Text", "Button", "Card", "CheckList",
-                   "PriceBox", "Conversation", "Image", "Video", "Spacer", "Divider", "PhoneLink"] as (keyof Props)[],
+                   "PriceBox", "Conversation", "Image", "HeroImage", "Video", "Spacer", "Divider",
+                   "PhoneLink"] as (keyof Props)[],
     },
     forms: {
       title: "Forms",
@@ -671,13 +679,42 @@ export const config: Config<Props> = {
             <SizeStepper label="Padding bottom" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
           ),
         },
+        // Soft colour washes bleeding in from the corners. Blank = off, which is what every
+        // existing Section has saved, so nothing already built changes.
+        decor: {
+          type: "custom" as const,
+          label: "Corner glow (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, content: [] },
-      render: ({ id, background, maxWidth, paddingTop, paddingBottom, content: Content }) => (
-        <section id={typeof id === "string" ? id : undefined} style={{ backgroundColor: background }} className="w-full scroll-mt-20">
+      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", content: [] },
+      render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, content: Content }) => (
+        <section
+          id={typeof id === "string" ? id : undefined}
+          style={{ backgroundColor: background }}
+          className={`w-full scroll-mt-20${decor ? " relative overflow-hidden" : ""}`}
+        >
+          {/* Two large blurred circles, opposite corners, pointer-events-none so they can never
+              swallow a click on anything sitting above them. */}
+          {decor ? (
+            <>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-32 -top-32 h-[36rem] w-[36rem] rounded-full blur-3xl"
+                style={{ background: decor, opacity: 0.12 }}
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-40 -left-40 h-[28rem] w-[28rem] rounded-full blur-3xl"
+                style={{ background: decor, opacity: 0.08 }}
+              />
+            </>
+          ) : null}
           <div
-            className="mx-auto px-6"
+            className={`mx-auto px-6${decor ? " relative z-10" : ""}`}
             style={{
               // Existing pages have no maxWidth saved — fall back to the old max-w-3xl so nothing shifts.
               maxWidth: maxWidth || "48rem",
@@ -816,10 +853,35 @@ export const config: Config<Props> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // The hand-drawn swipe under a headline. Blank = off, which is what every existing
+        // heading on the site has saved, so nothing already built changes.
+        underline: {
+          type: "custom" as const,
+          label: "Hand-drawn underline (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827" },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color }) => {
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "" },
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
+        // The swipe is an inline SVG stretched under the LAST line of the heading — a rule
+        // would look like a border; this reads like a marker stroke.
+        const swipe = underline ? (
+          <span className="relative inline-block">
+            <span className="relative z-10">{text}</span>
+            <svg
+              aria-hidden
+              viewBox="0 0 100 10"
+              preserveAspectRatio="none"
+              className="absolute left-0 w-full"
+              style={{ bottom: `-${Math.round(px * 0.08)}px`, height: `${Math.round(px * 0.22)}px`, color: underline, zIndex: 0 }}
+            >
+              <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" strokeLinecap="round" />
+            </svg>
+          </span>
+        ) : null;
         return (
           <h2
             className="font-bold leading-tight tracking-tight"
@@ -833,7 +895,7 @@ export const config: Config<Props> = {
               paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 12}px`,
             }}
           >
-            {text}
+            {swipe ?? text}
           </h2>
         );
       },
@@ -978,6 +1040,98 @@ export const config: Config<Props> = {
           </div>
         );
       },
+    },
+
+    // The hero photo treatment — tilt, glow, white frame, and up to two cards floating on the
+    // photo's corners. Separate from Image because the badges sit ON the photo and therefore have
+    // to live in the same box; assembling that from loose blocks would need absolute-position
+    // controls in the builder. Every effect is optional, so this also renders a plain photo.
+    HeroImage: {
+      label: "Hero photo (tilt + floating cards)",
+      fields: {
+        src: {
+          type: "custom" as const,
+          label: "Photo",
+          render: ({ onChange, value }) => (
+            <ImageUpload value={value as string} onChange={onChange} />
+          ),
+        },
+        alt: { type: "text" as const, label: "Alt text (describe the photo)" },
+        height: {
+          type: "custom" as const,
+          label: "Photo height (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={560} step={20} min={160} allowZero={false} />
+          ),
+        },
+        tilt: {
+          type: "select" as const,
+          label: "Tilt",
+          options: [
+            { label: "Straight", value: 0 },
+            { label: "Slight right (2°)", value: 2 },
+            { label: "Right (3°)", value: 3 },
+            { label: "Slight left (−2°)", value: -2 },
+            { label: "Left (−3°)", value: -3 },
+          ],
+        },
+        radius: {
+          type: "custom" as const,
+          label: "Corner rounding (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Corner rounding" value={value as number} onChange={onChange} fallback={40} step={4} min={0} />
+          ),
+        },
+        frame: {
+          type: "select" as const,
+          label: "White frame",
+          options: [
+            { label: "White frame", value: "#ffffff" },
+            { label: "No frame", value: "" },
+          ],
+        },
+        glow: {
+          type: "custom" as const,
+          label: "Glow behind photo (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        badgeTitle: { type: "text" as const, label: "Floating card — bold line (blank = hide)" },
+        badgeBody: { type: "text" as const, label: "Floating card — small line" },
+        pillText: { type: "text" as const, label: "Corner pill — e.g. Open Today (blank = hide)" },
+        pillColor: {
+          type: "custom" as const,
+          label: "Corner pill color",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+          ),
+        },
+      },
+      defaultProps: HERO_IMAGE_DEFAULTS,
+      // Destructured rather than spread: Puck also injects `puck`, `editMode` and `id` into every
+      // render, and HeroImage only accepts its own props.
+      render: ({ src, alt, height, tilt, glow, frame, radius, badgeTitle, badgeBody, pillText, pillColor, spaceAbove, spaceBelow }) => (
+        <HeroImage
+          src={src} alt={alt} height={height} tilt={tilt} glow={glow} frame={frame} radius={radius}
+          badgeTitle={badgeTitle} badgeBody={badgeBody} pillText={pillText} pillColor={pillColor}
+          spaceAbove={spaceAbove} spaceBelow={spaceBelow}
+        />
+      ),
     },
 
     Image: {
