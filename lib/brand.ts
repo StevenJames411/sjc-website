@@ -1,6 +1,6 @@
 // Server-side brand storage. Types and constants live in ./brandShared (browser-safe).
 import { createKvStore } from "./kvStateStore";
-import { getClient } from "./kvRedis";
+import { getClient } from "./store";
 import { BRAND_DEFAULTS, type Brand } from "./brandShared";
 
 export * from "./brandShared";
