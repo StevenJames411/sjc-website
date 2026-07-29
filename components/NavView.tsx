@@ -17,6 +17,15 @@ export type NavViewProps = {
   ctaLabel?: string;
   ctaHref?: string;
   ctaNewTab?: boolean;
+  // The header band's colour. SJC navy was hardcoded here — which meant every client site built
+  // on this template shipped wearing SJC's colours. Defaults to the old value, so nothing that
+  // already exists moves.
+  background?: string;
+  // Brand text + link colour. White reads on navy; a light header needs dark text or the nav
+  // vanishes into the background.
+  foreground?: string;
+  // Hide the logo on a client site that isn't SJC.
+  showLogo?: boolean;
 };
 
 // "Open in a new tab" is set per link in the builder. rel="noopener noreferrer" rides along
@@ -41,13 +50,21 @@ export default function NavView({
   ctaLabel = "See How It Works",
   ctaHref = "/#at-work",
   ctaNewTab = false,
+  background,
+  foreground,
+  showLogo,
 }: NavViewProps) {
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
 
+  // Existing nav documents have none of these saved → undefined → the old hardcoded values.
+  const bg = background || "#1e3a6e";
+  const fg = foreground || "#ffffff";
+  const logoOn = showLogo !== false;
+
   const Brand = (
     <a href={brandHref || "/"} className="flex items-center gap-3" onClick={() => setOpen(false)}>
-      <img src={LOGO_URL} alt="logo" className="h-9 w-9 rounded-full" />
+      {logoOn ? <img src={LOGO_URL} alt="logo" className="h-9 w-9 rounded-full" /> : null}
       <span className="font-semibold tracking-tight" style={{ fontSize: `${brandSize || 16}px` }}>{brandName}</span>
     </a>
   );
@@ -62,9 +79,9 @@ export default function NavView({
   ) : null;
 
   return (
-    <header className="sticky top-0 z-20 w-full" style={{ backgroundColor: "#1e3a6e" }}>
+    <header className="sticky top-0 z-20 w-full" style={{ backgroundColor: bg }}>
       {/* Desktop: brand left · tagline centered · links + button right */}
-      <div className="mx-auto hidden max-w-6xl grid-cols-3 items-center px-6 py-3 text-white lg:grid">
+      <div className="mx-auto hidden max-w-6xl grid-cols-3 items-center px-6 py-3 lg:grid" style={{ color: fg }}>
         <div className="justify-self-start">{Brand}</div>
         <div className="justify-self-center text-center">{Tagline}</div>
         <div className="flex items-center gap-5 justify-self-end">
@@ -74,7 +91,7 @@ export default function NavView({
               href={l.target || "#"}
               {...tabAttrs(l.newTab)}
               className="font-medium opacity-90 transition hover:opacity-100"
-              style={{ fontSize: `${l.fontSize || 14}px`, color: l.color || "#ffffff" }}
+              style={{ fontSize: `${l.fontSize || 14}px`, color: l.color || fg }}
             >
               {l.label}
             </a>
@@ -92,14 +109,14 @@ export default function NavView({
       </div>
 
       {/* Mobile: brand + hamburger */}
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 text-white lg:hidden">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 lg:hidden" style={{ color: fg }}>
         {Brand}
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((prev) => !prev)}
-          className="flex h-10 w-10 items-center justify-center rounded-md text-white hover:bg-white/10"
+          className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-black/5" style={{ color: fg }}
         >
           {open ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6">
@@ -115,7 +132,7 @@ export default function NavView({
 
       {/* Mobile dropdown — tagline + links + button, all readable */}
       {open && (
-        <div className="border-t border-white/10 lg:hidden" style={{ backgroundColor: "#1e3a6e" }}>
+        <div className="border-t border-black/10 lg:hidden" style={{ backgroundColor: bg }}>
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 pb-6 pt-3">
             {Tagline}
             {linkEls.map((l, i) => (
@@ -125,7 +142,7 @@ export default function NavView({
                 {...tabAttrs(l.newTab)}
                 onClick={() => setOpen(false)}
                 className="font-medium text-white"
-                style={{ fontSize: `${l.fontSize || 16}px`, color: l.color || "#ffffff" }}
+                style={{ fontSize: `${l.fontSize || 16}px`, color: l.color || fg }}
               >
                 {l.label}
               </a>

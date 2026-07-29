@@ -57,7 +57,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -73,6 +73,9 @@ type Props = {
     ctaLabel: string;
     ctaHref: string;
     ctaNewTab: boolean;
+    background: string;
+    foreground: string;
+    showLogo: boolean;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
   // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
@@ -167,6 +170,11 @@ export const NAV_DEFAULTS = {
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
   ctaNewTab: false,
+  // Blank/true = today's SJC look. A client build overrides these; nothing already saved has
+  // them, so every existing nav renders exactly as before.
+  background: "",
+  foreground: "",
+  showLogo: true,
 };
 
 // Single source of truth for the footer — used by the seed (so /edit/footer opens to it) AND
@@ -184,6 +192,10 @@ export const FOOTER_DEFAULTS = {
   privacyUrl: "https://www.privacypolicies.com/live/1cbbc5dd-5b42-4b68-abdd-a279a5e3b4f7",
   tosUrl: "https://www.privacypolicies.com/live/34bb5cc7-32b9-4449-ae32-7cfe78f34e45",
   copyright: "ARV Venture Group LLC Parent Company · Steven James Consulting",
+  background: "",
+  foreground: "",
+  brandName: "",
+  showLogo: true,
 };
 
 export const IMAGE_DEFAULTS = {
@@ -580,9 +592,33 @@ export const config: Config<Props> = {
         privacyUrl: { type: "text" as const, label: "Privacy Policy URL" },
         tosUrl: { type: "text" as const, label: "Terms of Service URL" },
         copyright: { type: "text" as const, label: "Copyright line" },
+        // Same story as the header — blank keeps SJC's look, set them for a client build.
+        background: {
+          type: "custom" as const,
+          label: "Footer band colour (blank = SJC near-black)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        foreground: {
+          type: "custom" as const,
+          label: "Footer text colour (blank = white)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        brandName: { type: "text" as const, label: "Business name (blank = Steven James Consulting)" },
+        showLogo: {
+          type: "radio" as const,
+          label: "SJC logo",
+          options: [
+            { label: "Show", value: true },
+            { label: "Hide (client site)", value: false },
+          ],
+        },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright }) => (
+      render: ({ blurb, links, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -592,6 +628,10 @@ export const config: Config<Props> = {
           privacyUrl={privacyUrl}
           tosUrl={tosUrl}
           copyright={copyright}
+          background={background}
+          foreground={foreground}
+          brandName={brandName}
+          showLogo={showLogo}
         />
       ),
     },
@@ -642,9 +682,34 @@ export const config: Config<Props> = {
         ctaLabel: { type: "text" as const, label: "Button label (leave blank to hide)" },
         ctaHref: { type: "text" as const, label: "Button links to" },
         ctaNewTab: { ...OPENS_IN_FIELD },
+        // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
+        // Blank = SJC's own look. Set these on a client build so their header isn't wearing
+        // our navy. Existing nav documents have none of them saved, so they render unchanged.
+        background: {
+          type: "custom" as const,
+          label: "Header band colour (blank = SJC navy)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        foreground: {
+          type: "custom" as const,
+          label: "Header text colour (blank = white)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        showLogo: {
+          type: "radio" as const,
+          label: "SJC logo",
+          options: [
+            { label: "Show", value: true },
+            { label: "Hide (client site)", value: false },
+          ],
+        },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo }) => (
         <NavView
           brandName={brandName}
           brandHref={brandHref}
@@ -656,6 +721,9 @@ export const config: Config<Props> = {
           ctaLabel={ctaLabel}
           ctaHref={ctaHref}
           ctaNewTab={ctaNewTab}
+          background={background}
+          foreground={foreground}
+          showLogo={showLogo}
         />
       ),
     },

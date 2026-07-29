@@ -11,6 +11,15 @@ export type FooterViewProps = {
   privacyUrl?: string;
   tosUrl?: string;
   copyright?: string;
+  // Footer band colour + text colour. #111827 was hardcoded, which put SJC's near-black on every
+  // client site built from this template. Both default to the old values, so nothing already
+  // published moves.
+  background?: string;
+  foreground?: string;
+  // The business name shown beside the logo, and whether the SJC logo appears at all. Both were
+  // hardcoded to SJC — the single most obvious giveaway on a client build.
+  brandName?: string;
+  showLogo?: boolean;
 };
 
 // The live site footer, rendered from props. Used BOTH on the live site (via Footer.tsx, which
@@ -25,19 +34,27 @@ export default function FooterView({
   privacyUrl = "",
   tosUrl = "",
   copyright = "Steven James Consulting",
+  background,
+  foreground,
+  brandName,
+  showLogo,
 }: FooterViewProps) {
+  const bg = background || "#111827";
+  const fg = foreground || "#ffffff";
+  const name = brandName || "Steven James Consulting";
+  const logoOn = showLogo !== false;
   const year = new Date().getFullYear();
   const linkEls = (links || []).filter((l) => l && l.label);
   const btn =
     "inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)]";
   return (
-    <footer style={{ backgroundColor: "#111827" }} className="text-white">
+    <footer style={{ backgroundColor: bg, color: fg }}>
       <div className="mx-auto max-w-6xl px-6 py-14">
         <div className="grid gap-10 md:grid-cols-3">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
-              <img src={LOGO_URL} alt="SJC logo" className="h-12 w-12 rounded-full" />
-              <span className="text-lg font-semibold">Steven James Consulting</span>
+              {logoOn ? <img src={LOGO_URL} alt="logo" className="h-12 w-12 rounded-full" /> : null}
+              <span className="text-lg font-semibold">{name}</span>
             </div>
             {blurb ? <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">{blurb}</p> : null}
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">

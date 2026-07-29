@@ -421,7 +421,7 @@ const WEBSITES_NAV_SEED: Data = {
         tagline: "",
         // The phone number is the ONLY link — no About, no Podcast, no DIY. No escape hatches.
         links: [
-          { label: "(210) 298-2343", target: "tel:+12102982343", fontSize: 15, color: "#ffffff", newTab: false },
+          { label: "(210) 298-2343", target: "tel:+12102982343", fontSize: 15, color: "#334155", newTab: false },
         ],
         ctaLabel: "Get Started",
         ctaHref: "#get-started",
@@ -643,14 +643,18 @@ const LAB_SEED: Data = {
         taglineColor: "#ffffff",
         taglineSize: 14,
         links: [
-          { label: "Services", target: "#lab-services", fontSize: 15, color: "#ffffff", newTab: false },
-          { label: "About Us", target: "#lab-about", fontSize: 15, color: "#ffffff", newTab: false },
-          { label: "How It Works", target: "#lab-process", fontSize: 15, color: "#ffffff", newTab: false },
-          { label: "Reviews", target: "#lab-testimonials", fontSize: 15, color: "#ffffff", newTab: false },
+          { label: "Services", target: "#lab-services", fontSize: 15, color: "#334155", newTab: false },
+          { label: "About Us", target: "#lab-about", fontSize: 15, color: "#334155", newTab: false },
+          { label: "How It Works", target: "#lab-process", fontSize: 15, color: "#334155", newTab: false },
+          { label: "Reviews", target: "#lab-testimonials", fontSize: 15, color: "#334155", newTab: false },
         ],
         ctaLabel: "Book Appointment",
         ctaHref: "#lab-contact",
         ctaNewTab: false,
+        // Lucky Dog's own colours, not SJC's. This is the whole point of un-welding them.
+        background: "#ffffff",
+        foreground: "#334155",
+        showLogo: false,
       },
     },
     {
@@ -943,6 +947,10 @@ const LAB_SEED: Data = {
         privacyUrl: "",
         tosUrl: "",
         copyright: "Lucky Dog Wash House · San Antonio, TX",
+        background: "#334155",
+        foreground: "#ffffff",
+        brandName: "Lucky Dog Wash House",
+        showLogo: false,
       },
     },
   ],
