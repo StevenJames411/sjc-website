@@ -15,7 +15,8 @@ type Palette = {
   ink?: string; mute?: string; bandSoft?: string; bandDark?: string;
   ranked: { hex: string; count: number }[];
 };
-type Result = { ok: boolean; error?: string; slug?: string; dryRun?: boolean; palette?: Palette; report?: string[]; blocks?: number };
+type Result = { ok: boolean; error?: string; slug?: string; dryRun?: boolean; palette?: Palette; report?: string[]; blocks?: number;
+  images?: { adopted?: number; failures?: { url: string; why: string }[]; error?: string } };
 
 const ROLE_ROWS: { key: keyof Palette; label: string; why: string }[] = [
   { key: "accent",    label: "Accent",    why: "the brand colour — buttons, links, highlights" },
@@ -108,10 +109,21 @@ export default function ImportPage() {
       {res?.ok ? (
         <div style={{ marginTop: 28 }}>
           {res.slug ? (
-            <p style={{ color: "#047857", fontWeight: 700 }}>
-              Imported as /{res.slug} — opening the builder…{" "}
-              <span style={{ fontWeight: 400, color: "#6b7280" }}>(saved as a draft, not published)</span>
-            </p>
+            <>
+              <p style={{ color: "#047857", fontWeight: 700 }}>
+                Imported as /{res.slug} — opening the builder…{" "}
+                <span style={{ fontWeight: 400, color: "#6b7280" }}>(saved as a draft, not published)</span>
+              </p>
+              {res.images ? (
+                <p style={{ fontSize: 13, color: res.images.failures?.length || res.images.error ? "#b45309" : "#047857" }}>
+                  {res.images.error
+                    ? `Images could NOT be copied (${res.images.error}) — they still point at the original host. Use "Adopt images" in the builder.`
+                    : res.images.failures?.length
+                      ? `${res.images.adopted ?? 0} images copied to our storage, ${res.images.failures.length} failed — those still point at the original host.`
+                      : `${res.images.adopted ?? 0} images copied onto our own storage — nothing on this page depends on the tool that made it.`}
+                </p>
+              ) : null}
+            </>
           ) : (
             <p style={{ color: "#111827", fontWeight: 700 }}>
               Nothing created — this is just the read. {res.blocks} top-level blocks found.

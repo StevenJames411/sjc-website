@@ -85,6 +85,47 @@ export default function PuckEditor({
     }
   };
 
+  // Pull this page's images off whoever generated them and onto our own storage. An imported
+  // design's photos still point at the tool that made them — a live dependency on a third party
+  // inside a site a client pays for. Their project goes away, every photo on the client's site
+  // breaks, and we hear about it from the client.
+  const onAdoptImages = async () => {
+    setBusy(true);
+    try {
+      const look = await fetch("/api/adopt-images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ slug: page, dryRun: true }),
+      }).then((r) => r.json());
+
+      const foreign = (look.urls || []).length;
+      if (!foreign) return window.alert("Every image on this page is already on our own storage.");
+      if (!window.confirm(`${foreign} image${foreign === 1 ? "" : "s"} are still hosted by whoever generated this design.\n\nCopy them onto our storage and repoint the page?`)) return;
+
+      const r = await fetch("/api/adopt-images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ slug: page }),
+      }).then((x) => x.json());
+
+      if (r.failures?.length) {
+        window.alert(`Copied ${r.adopted}, but ${r.failures.length} failed:\n` +
+          r.failures.map((f: { url: string; why: string }) => `• ${f.why}`).join("\n") +
+          `\n\nThe ones that failed still point at the old host.`);
+      } else {
+        window.alert(`Done — ${r.adopted} image${r.adopted === 1 ? "" : "s"} copied to our storage.` +
+          (r.remainingForeign ? `\n\n⚠️ ${r.remainingForeign} still foreign.` : "\n\nNothing on this page depends on anyone else now."));
+      }
+      router.refresh();
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Rename the current page. LABEL ONLY — the slug, the URL, and everything saved on the page
   // stay exactly as they are, so renaming can never break a link or lose content.
   const onRenamePage = async () => {
@@ -232,6 +273,15 @@ export default function PuckEditor({
           title="Copy this page's design to a new business name and URL"
         >
           Duplicate for a client
+        </button>
+        <button
+          type="button"
+          onClick={onAdoptImages}
+          disabled={busy}
+          style={btn}
+          title="Copy this page's images onto our own storage so nothing depends on whoever generated the design"
+        >
+          Adopt images
         </button>
         <button type="button" onClick={onRenamePage} disabled={busy} style={btn}>
           Rename

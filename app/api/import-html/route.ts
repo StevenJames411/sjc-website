@@ -59,11 +59,30 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "Page created but its content couldn't be saved." }, { status: 500 });
   }
 
+  // ADOPT THE IMAGES IMMEDIATELY. An imported page's photos point at the tool that generated
+  // them — a live dependency on a third party inside a site a client will pay for. Doing this
+  // on import rather than leaving it as a step to remember is the difference between "we always
+  // do it" and "we did it that time". If it fails, the page is still fine and the editor's
+  // "Adopt images" button retries it; we just say so.
+  let images: { adopted?: number; failures?: unknown[]; error?: string } = {};
+  try {
+    const origin = new URL(req.url).origin;
+    const r = await fetch(`${origin}/api/adopt-images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie: req.headers.get("cookie") || "" },
+      body: JSON.stringify({ slug: created.slug }),
+    });
+    images = await r.json();
+  } catch (e) {
+    images = { error: (e as Error).message };
+  }
+
   return Response.json({
     ok: true,
     slug: created.slug,
     palette: result.palette,
     report: result.report,
     blocks: blockCount,
+    images,
   });
 }
