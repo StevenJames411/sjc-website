@@ -106,6 +106,52 @@ export async function createPage(
   return ok ? { ok, slug } : { ok: false, error: "Couldn't save — storage is unavailable." };
 }
 
+// Copy an existing page — content and all — to a brand-new name and URL.
+//
+// WHY THIS EXISTS: a demo is only worth building if the SECOND one is cheap. "New Page" hands
+// back a blank canvas, which means rebuilding a whole design per prospect. This takes a finished
+// demo, gives it the next business's name, and hands back a working copy to edit — the same
+// clone-per-client move as the static template folder.
+//
+// Copies the DRAFT and the PUBLISHED snapshot separately. The published one is stripped of its
+// `_pub` marker on purpose: a copy starts UNPUBLISHED, so a half-edited demo carrying the wrong
+// business's phone number can never be live at a URL before it's been looked at.
+export async function duplicatePage(
+  fromSlug: string,
+  title: string
+): Promise<{ ok: boolean; slug?: string; error?: string }> {
+  const src = String(fromSlug || "").trim();
+  if (!src) return { ok: false, error: "No page to copy from." };
+  if (!(await findPageMeta(src))) return { ok: false, error: "That page doesn't exist." };
+
+  const created = await createPage(title);
+  if (!created.ok || !created.slug) return created;
+  const dest = created.slug;
+
+  const { createKvStore } = await import("./kvStateStore");
+  const { getClient } = await import("./store");
+  const { puckKey } = await import("./puckContent");
+  const client = getClient();
+
+  let copied = 0;
+  for (const pub of [false, true]) {
+    const from = createKvStore(client, puckKey(src, pub));
+    const data = await from.read<Record<string, unknown>>();
+    if (!data) continue;
+    // strip the published marker — the copy is a draft until its new owner hits Publish
+    const { _pub, ...rest } = data as { _pub?: number };
+    const ok = await createKvStore(client, puckKey(dest, pub)).write(rest);
+    if (ok) copied++;
+  }
+
+  if (!copied) {
+    // Nothing came across — don't leave a phantom page in the switcher pointing at nothing.
+    await deletePage(dest);
+    return { ok: false, error: "Couldn't copy the page's content — nothing was created." };
+  }
+  return { ok: true, slug: dest };
+}
+
 export async function deletePage(slug: string): Promise<{ ok: boolean; error?: string }> {
   const s = String(slug || "").trim();
   if (SYSTEM.has(s)) return { ok: false, error: "That page is part of the site and can't be deleted." };

@@ -58,6 +58,33 @@ export default function PuckEditor({
     }
   };
 
+  // Copy THIS page — design and all — to a new business's name and URL. The whole point of
+  // building a demo once: the second one should be a rename, not a rebuild. The copy lands
+  // UNPUBLISHED, so a half-edited page carrying the previous business's phone number can never
+  // be live at a URL before it's been looked at.
+  const onDuplicatePage = async () => {
+    const name = window.prompt(
+      `Copy "${title}" for which business?\n\nThe name becomes the web address — "Lucky Dog Wash House" gives you /lucky-dog-wash-house.`
+    );
+    if (!name || !name.trim()) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ title: name.trim(), from: page }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't copy the page.");
+      router.push(`/edit/${j.slug}`);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Rename the current page. LABEL ONLY — the slug, the URL, and everything saved on the page
   // stay exactly as they are, so renaming can never break a link or lose content.
   const onRenamePage = async () => {
@@ -195,6 +222,16 @@ export default function PuckEditor({
         </select>
         <button type="button" onClick={onNewPage} disabled={busy} style={btn}>
           + New Page
+        </button>
+        {/* The demo workflow's whole shortcut — build one, copy it per prospect. */}
+        <button
+          type="button"
+          onClick={onDuplicatePage}
+          disabled={busy}
+          style={btn}
+          title="Copy this page's design to a new business name and URL"
+        >
+          Duplicate for a client
         </button>
         <button type="button" onClick={onRenamePage} disabled={busy} style={btn}>
           Rename
