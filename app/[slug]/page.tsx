@@ -13,35 +13,37 @@ import { findPageMeta } from "@/lib/pageRegistry";
 // drop it from PUCK_PAGES and this route stops serving it even if its old data is still in Redis.
 export const dynamic = "force-dynamic";
 
-// Pages that must NEVER be indexed even once published. `lab` is the design-port scratch pad: it
-// carries a REAL business's name, phone and address, and it lives on the SJC domain. robots.txt
-// deliberately says allow-everything to every AI crawler, so nothing else would stop it — a
-// leaked URL (a shared link, a referrer header, a browser reporting it) is all it takes.
+// ── WHAT COUNTS AS A CLIENT DEMO ──────────────────────────────────────────────────────────────
+// A page carrying its OWN SiteHeader is, by definition, not an SJC page — it's a demo built for
+// somebody else. That single fact drives two things:
 //
-// Belongs here rather than in robots.txt because it must hold whatever the page is called and
-// whoever publishes it. Same reasoning as the `demo: true` flag on the static client template.
-const NEVER_INDEX = new Set(["lab"]);
-
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  return NEVER_INDEX.has(slug)
-    ? { robots: { index: false, follow: false, nocache: true } }
-    : {};
-}
-
-// Does the page carry its own header / footer? A demo built for a client (or any standalone
-// page) drops a SiteHeader block at the top and a SiteFooter at the bottom — and when it does,
-// wrapping it in SJC's navy chrome puts TWO headers on the page and brands someone else's demo
-// as ours. So the page declares what it needs and this route gets out of the way.
+//   1. no SJC nav/footer wrapped around it (see below), and
+//   2. noindex — because it carries a REAL business's name, phone and address on the SJC domain,
+//      and robots.txt deliberately says allow-everything to every AI crawler. A leaked URL is all
+//      it takes: a shared link, a referrer header, a browser reporting it.
 //
-// Deliberately a rule, not a list of slugs: a list is one more thing to remember to update, and
-// forgetting shows up in front of a prospect. Checked one level deep, which is where a header or
-// footer belongs — nested inside a Section it isn't page chrome anyway.
+// This started as a hardcoded list holding just "lab". That was a trap — demo #2 would have been
+// published with nothing protecting it. A rule can't be forgotten; a list can.
+//
+// (The site's own hardcoded routes — /about, /websites, /apply … — never reach this file, so
+// nothing real can be caught by it.)
 function hasBlock(data: unknown, type: string): boolean {
   const content = (data as { content?: { type?: string }[] } | null)?.content;
   return Array.isArray(content) && content.some((b) => b?.type === type);
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const meta = await findPageMeta(slug);
+  const data = meta ? await readPuckPublished(slug) : null;
+  return hasBlock(data, "SiteHeader")
+    ? { robots: { index: false, follow: false, nocache: true } }
+    : {};
+}
+
+// Wrapping a demo in SJC's navy chrome would put TWO headers on the page and brand someone
+// else's site as ours — so a page that brought its own gets left alone. Checked one level deep,
+// which is where page chrome belongs; nested inside a Section it isn't chrome anyway.
 export default async function DynamicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const meta = await findPageMeta(slug);
