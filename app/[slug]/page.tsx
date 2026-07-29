@@ -29,18 +29,35 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     : {};
 }
 
+// Does the page carry its own header / footer? A demo built for a client (or any standalone
+// page) drops a SiteHeader block at the top and a SiteFooter at the bottom — and when it does,
+// wrapping it in SJC's navy chrome puts TWO headers on the page and brands someone else's demo
+// as ours. So the page declares what it needs and this route gets out of the way.
+//
+// Deliberately a rule, not a list of slugs: a list is one more thing to remember to update, and
+// forgetting shows up in front of a prospect. Checked one level deep, which is where a header or
+// footer belongs — nested inside a Section it isn't page chrome anyway.
+function hasBlock(data: unknown, type: string): boolean {
+  const content = (data as { content?: { type?: string }[] } | null)?.content;
+  return Array.isArray(content) && content.some((b) => b?.type === type);
+}
+
 export default async function DynamicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const meta = await findPageMeta(slug);
   const data = meta ? await readPuckPublished(slug) : null;
   if (!data) notFound();
+
+  const ownHeader = hasBlock(data, "SiteHeader");
+  const ownFooter = hasBlock(data, "SiteFooter");
+
   return (
     <>
-      <Nav />
+      {ownHeader ? null : <Nav />}
       <main>
         <Render config={config} data={data} />
       </main>
-      <Footer />
+      {ownFooter ? null : <Footer />}
     </>
   );
 }
