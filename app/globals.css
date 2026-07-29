@@ -10,6 +10,9 @@
   --color-sjc-mute: #4b5563;
   --color-sjc-line: #e5e7eb;
   --color-sjc-bg-soft: #f3f4f6;
+  --color-sjc-secondary: #22c55e;
+  --color-sjc-highlight: #f59e0b;
+  --color-sjc-white: #ffffff;
 
   --font-sans: var(--font-lexend), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

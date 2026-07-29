@@ -17,6 +17,7 @@ import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
 import Icon, { ICON_OPTIONS } from "@/components/blocks/Icon";
+import { resolveColor, resolveColorOr } from "@/lib/brandColor";
 
 type Align = "left" | "center" | "right";
 
@@ -858,7 +859,7 @@ export const config: Config<Props> = {
       render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, content: Content }) => (
         <section
           id={typeof id === "string" ? id : undefined}
-          style={{ backgroundColor: background }}
+          style={{ backgroundColor: resolveColor(background) }}
           className={`w-full scroll-mt-20${decor ? " relative overflow-hidden" : ""}`}
         >
           {/* Two large blurred circles, opposite corners, pointer-events-none so they can never
@@ -868,12 +869,12 @@ export const config: Config<Props> = {
               <div
                 aria-hidden
                 className="pointer-events-none absolute -right-32 -top-32 h-[36rem] w-[36rem] rounded-full blur-3xl"
-                style={{ background: decor, opacity: 0.12 }}
+                style={{ background: resolveColor(decor), opacity: 0.12 }}
               />
               <div
                 aria-hidden
                 className="pointer-events-none absolute -bottom-40 -left-40 h-[28rem] w-[28rem] rounded-full blur-3xl"
-                style={{ background: decor, opacity: 0.08 }}
+                style={{ background: resolveColor(decor), opacity: 0.08 }}
               />
             </>
           ) : null}
@@ -931,7 +932,7 @@ export const config: Config<Props> = {
       defaultProps: { color: "#e5e7eb", thickness: 1, spacing: 24 },
       render: ({ color, thickness, spacing }) => (
         <div style={{ padding: `${typeof spacing === "number" ? spacing : 24}px 0` }}>
-          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${color || "#e5e7eb"}`, margin: 0 }} />
+          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${resolveColorOr(color, "#e5e7eb")}`, margin: 0 }} />
         </div>
       ),
     },
@@ -1051,7 +1052,7 @@ export const config: Config<Props> = {
               viewBox="0 0 100 10"
               preserveAspectRatio="none"
               className="absolute left-0 w-full"
-              style={{ bottom: `-${Math.round(px * 0.08)}px`, height: `${Math.round(px * 0.22)}px`, color: underline, zIndex: 0 }}
+              style={{ bottom: `-${Math.round(px * 0.08)}px`, height: `${Math.round(px * 0.22)}px`, color: resolveColor(underline), zIndex: 0 }}
             >
               <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" strokeLinecap="round" />
             </svg>
@@ -1071,7 +1072,7 @@ export const config: Config<Props> = {
         let body: React.ReactNode;
         if (at >= 0) {
           const marked = (
-            <span key="hl" style={{ color: highlightColor }}>
+            <span key="hl" style={{ color: resolveColor(highlightColor) }}>
               {text.slice(at, at + hl.length)}
             </span>
           );
@@ -1089,7 +1090,7 @@ export const config: Config<Props> = {
             style={{
               fontSize: `${px}px`,
               textAlign: align,
-              color: color || "#111827",
+              color: resolveColorOr(color, "#111827"),
               marginTop: 0,
               marginBottom: 0,
               paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 0}px`,
@@ -1189,7 +1190,7 @@ export const config: Config<Props> = {
           return (
             <div
               className="rt leading-relaxed"
-              style={{ textAlign: align, color: color || "#111827", marginTop: 0, marginBottom: 0, ...pad, fontSize: size }}
+              style={{ textAlign: align, color: resolveColorOr(color, "#111827"), marginTop: 0, marginBottom: 0, ...pad, fontSize: size }}
               dangerouslySetInnerHTML={{ __html: text }}
             />
           );
@@ -1201,13 +1202,13 @@ export const config: Config<Props> = {
             <span
               className={`inline-flex items-center gap-2 leading-snug${pill || pillBorder ? " rounded-full px-4 py-2" : ""}`}
               style={{
-                color: color || "#111827",
+                color: resolveColorOr(color, "#111827"),
                 background: pill || undefined,
-                border: pillBorder ? `1px solid ${pillBorder}` : undefined,
+                border: pillBorder ? `1px solid ${resolveColor(pillBorder)}` : undefined,
                 boxShadow: pill || pillBorder ? "0 1px 2px rgba(0,0,0,0.05)" : undefined,
               }}
             >
-              <Icon name={icon} size={Math.round((fontSize && fontSize > 0 ? fontSize : 18) * 0.95)} style={{ color: iconColor || undefined }} />
+              <Icon name={icon} size={Math.round((fontSize && fontSize > 0 ? fontSize : 18) * 0.95)} style={{ color: resolveColor(iconColor) }} />
               {body}
             </span>
           </div>
@@ -1280,7 +1281,7 @@ export const config: Config<Props> = {
             </div>
           );
         }
-        const accent = color || "#2563eb";
+        const accent = resolveColorOr(color, "#2563eb");
         const outlined = variant === "outline";
         const justify = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
         return (
@@ -1293,7 +1294,7 @@ export const config: Config<Props> = {
               style={
                 outlined
                   ? { border: `2px solid ${accent}`, color: accent, background: "#ffffff" }
-                  : { background: accent, color: "#ffffff", boxShadow: `0 8px 20px -6px ${accent}80` }
+                  : { background: accent, color: "#ffffff", boxShadow: accent.startsWith("var(") ? "0 8px 20px -6px rgba(0,0,0,0.25)" : `0 8px 20px -6px ${accent}80` }
               }
             >
               <span className="flex flex-col items-center leading-tight">

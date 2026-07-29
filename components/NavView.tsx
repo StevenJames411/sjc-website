@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Icon from "@/components/blocks/Icon";
+import { resolveColor, resolveColorOr, tint } from "@/lib/brandColor";
 
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
@@ -79,7 +80,7 @@ export default function NavView({
       {brandIcon ? (
         <span
           className="flex h-10 w-10 items-center justify-center rounded-xl"
-          style={{ background: `${brandIconColor || fg}1a`, color: brandIconColor || fg }}
+          style={{ background: tint(brandIconColor, 10, fg), color: resolveColorOr(brandIconColor, fg) }}
         >
           <Icon name={brandIcon} size={22} />
         </span>
@@ -93,16 +94,16 @@ export default function NavView({
   const Tagline = tagline ? (
     <span
       className="whitespace-nowrap font-semibold tracking-tight"
-      style={{ color: taglineColor || "#22c55e", fontSize: `${taglineSize || 18}px` }}
+      style={{ color: resolveColorOr(taglineColor, "#22c55e"), fontSize: `${taglineSize || 18}px` }}
     >
       {tagline}
     </span>
   ) : null;
 
   return (
-    <header className="sticky top-0 z-20 w-full" style={{ backgroundColor: bg }}>
+    <header className="sticky top-0 z-20 w-full" style={{ backgroundColor: resolveColor(bg) }}>
       {/* Desktop: brand left · tagline centered · links + button right */}
-      <div className="mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid" style={{ color: fg }}>
+      <div className="mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid" style={{ color: resolveColor(fg) }}>
         <div className="justify-self-start">{Brand}</div>
         <div className="justify-self-center text-center">{Tagline}</div>
         <div className="flex items-center gap-5 justify-self-end">
@@ -112,7 +113,7 @@ export default function NavView({
               href={l.target || "#"}
               {...tabAttrs(l.newTab)}
               className="whitespace-nowrap font-medium opacity-90 transition hover:opacity-100"
-              style={{ fontSize: `${l.fontSize || 14}px`, color: l.color || fg }}
+              style={{ fontSize: `${l.fontSize || 14}px`, color: resolveColorOr(l.color, fg) }}
             >
               {l.label}
             </a>
@@ -122,7 +123,7 @@ export default function NavView({
               href={ctaHref || "#"}
               {...tabAttrs(ctaNewTab)}
               className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition${ctaColor ? " hover:opacity-90" : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"}`}
-              style={ctaColor ? { backgroundColor: ctaColor } : undefined}
+              style={ctaColor ? { backgroundColor: resolveColor(ctaColor) } : undefined}
             >
               {ctaLabel} &rarr;
             </a>
@@ -131,14 +132,14 @@ export default function NavView({
       </div>
 
       {/* Mobile: brand + hamburger */}
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 lg:hidden" style={{ color: fg }}>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 lg:hidden" style={{ color: resolveColor(fg) }}>
         {Brand}
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((prev) => !prev)}
-          className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-black/5" style={{ color: fg }}
+          className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-black/5" style={{ color: resolveColor(fg) }}
         >
           {open ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6">
@@ -154,7 +155,7 @@ export default function NavView({
 
       {/* Mobile dropdown — tagline + links + button, all readable */}
       {open && (
-        <div className="border-t border-black/10 lg:hidden" style={{ backgroundColor: bg }}>
+        <div className="border-t border-black/10 lg:hidden" style={{ backgroundColor: resolveColor(bg) }}>
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 pb-6 pt-3">
             {Tagline}
             {linkEls.map((l, i) => (
@@ -164,7 +165,7 @@ export default function NavView({
                 {...tabAttrs(l.newTab)}
                 onClick={() => setOpen(false)}
                 className="font-medium text-white"
-                style={{ fontSize: `${l.fontSize || 16}px`, color: l.color || fg }}
+                style={{ fontSize: `${l.fontSize || 16}px`, color: resolveColorOr(l.color, fg) }}
               >
                 {l.label}
               </a>

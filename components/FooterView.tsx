@@ -1,3 +1,4 @@
+import { resolveColor } from "@/lib/brandColor";
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
 
@@ -48,7 +49,7 @@ export default function FooterView({
   const btn =
     "inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)]";
   return (
-    <footer style={{ backgroundColor: bg, color: fg }}>
+    <footer style={{ backgroundColor: resolveColor(bg), color: resolveColor(fg) }}>
       <div className="mx-auto max-w-6xl px-6 py-14">
         <div className="grid gap-10 md:grid-cols-3">
           <div className="md:col-span-2">

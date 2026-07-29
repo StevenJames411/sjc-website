@@ -6,6 +6,7 @@
 // EVERY optional prop below defaults to blank/false, and blank renders exactly the card this
 // component rendered before they existed. Nothing already built moves.
 import Icon from "./Icon";
+import { resolveColor, resolveColorOr, tint } from "@/lib/brandColor";
 
 export type CardProps = {
   badge?: string;
@@ -68,7 +69,7 @@ export default function Card({
         {icon ? (
           <span
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
-            style={{ background: `${iconColor || "#2563eb"}1f`, color: iconColor || "#2563eb" }}
+            style={{ background: tint(iconColor, 12), color: resolveColorOr(iconColor, "#2563eb") }}
           >
             <Icon name={icon} size={20} />
           </span>
@@ -88,7 +89,7 @@ export default function Card({
   const badgeEl = badge ? (
     <span
       className="flex h-11 w-11 items-center justify-center rounded-full text-lg font-bold text-white shadow-md"
-      style={{ backgroundColor: badgeColor || "var(--color-sjc-blue)" }}
+      style={{ backgroundColor: resolveColorOr(badgeColor, "var(--color-sjc-blue)") }}
     >
       {badge}
     </span>
@@ -110,7 +111,7 @@ export default function Card({
         {icon ? (
           <span
             className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${onEdge || centered ? "" : ""}`}
-            style={{ background: `${iconColor || "#2563eb"}14`, color: iconColor || "#2563eb" }}
+            style={{ background: tint(iconColor, 8), color: resolveColorOr(iconColor, "#2563eb") }}
           >
             <Icon name={icon} size={26} />
           </span>

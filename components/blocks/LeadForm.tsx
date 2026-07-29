@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { resolveColor } from "@/lib/brandColor";
 
 // A short lead-capture form, fully driven by props so it can be dropped on ANY page from the
 // builder and re-labelled without touching code. Add/remove/reorder the questions, change the
@@ -159,7 +160,7 @@ export default function LeadForm(props: LeadFormProps) {
         className={`mt-8 w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
           buttonColor ? " hover:opacity-90" : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
         }`}
-        style={buttonColor ? { backgroundColor: buttonColor } : undefined}
+        style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
       >
         {state === "sending" ? "Sending…" : buttonLabel}
       </button>

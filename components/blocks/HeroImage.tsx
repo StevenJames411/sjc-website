@@ -1,4 +1,5 @@
 import React from "react";
+import { resolveColor, resolveColorOr } from "@/lib/brandColor";
 
 // The hero photo treatment that makes a $795 site read like a $3,000 one: a rounded photo in a
 // thick white frame, tilted a few degrees, with a soft colour glow behind it and small "floating"
@@ -81,7 +82,7 @@ export default function HeroImage(props: Partial<HeroImageProps>) {
           aria-hidden
           className="absolute inset-0 blur-xl"
           style={{
-            background: p.glow,
+            background: resolveColor(p.glow),
             borderRadius: `${radius + 8}px`,
             transform: `rotate(${-tilt - 3}deg) scale(1.02)`,
             opacity: 0.18,
@@ -94,7 +95,7 @@ export default function HeroImage(props: Partial<HeroImageProps>) {
         style={{
           borderRadius: `${radius}px`,
           transform: tilt ? `rotate(${tilt}deg)` : undefined,
-          border: p.frame ? `6px solid ${p.frame}` : undefined,
+          border: p.frame ? `6px solid ${resolveColor(p.frame)}` : undefined,
           boxShadow: "0 25px 50px -12px rgba(0,0,0,0.18)",
         }}
       >
@@ -128,7 +129,7 @@ export default function HeroImage(props: Partial<HeroImageProps>) {
           <div
             className="absolute right-5 top-5 rounded-full px-4 py-2 text-sm font-bold text-white shadow-lg"
             style={{
-              background: p.pillColor || "#10b981",
+              background: resolveColorOr(p.pillColor, "#10b981"),
               transform: tilt ? `rotate(${-tilt}deg)` : undefined,
             }}
           >
