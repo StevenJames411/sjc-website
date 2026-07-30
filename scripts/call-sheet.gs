@@ -111,12 +111,19 @@ function sell_(sheet, row, headers) {
     var val = values[c];
     if (val === '' || val == null) continue;
 
+    // ⚠️ SCRAPED SHEETS ARE FULL OF THE WORD "null". The groomer pull wrote it literally into
+    // every Hours cell. Passed through, that becomes her opening hours on her record — and
+    // because the onboarding form skips whatever we already have an answer for, she would never
+    // be asked to correct it. A customer would see it before she did.
+    var clean = String(val).trim();
+    if (/^(null|undefined|n\/a|na|none|-|—)$/i.test(clean)) continue;
+
     var matched = '';
     for (var field in known) {
       if (known[field].indexOf(head.toLowerCase()) >= 0) { matched = field; break; }
     }
-    if (matched && !payload[matched]) payload[matched] = String(val);
-    else payload.extra[head] = String(val);
+    if (matched && !payload[matched]) payload[matched] = clean;
+    else payload.extra[head] = clean;
   }
 
   if (!payload.businessName) {
