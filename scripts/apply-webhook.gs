@@ -94,9 +94,31 @@ function reply(text) {
 }
 
 /**
- * THE FIX. Pick the tab from the lead's Source instead of always taking the first sheet.
- * "/websites — $795 website offer" -> a tab called "Websites".
+ * Which tab a lead belongs in.
+ *
+ * ⚠️ DELIBERATE, FIXED NAMES — never derived from the Source text. Source is free text that each
+ * form sets independently: the website form says "/websites — $795 website offer", and /apply
+ * sends no source at all. Naming tabs from it produced an "Apply" tab that duplicated the
+ * discovery intake, and would eventually give you a wall of near-identical tabs nobody can read.
+ *
+ * There are exactly three of Steven's own offers. Anything from a CLIENT's website gets a tab of
+ * its own under the business name, which is what the 2026-07-26 record specifies.
  */
+// THREE TABS BECAUSE THERE ARE THREE INTAKE FORMS ON ONE WEBSITE.
+//
+// stevenjamesconsulting.com is a single website carrying three forms — the AI-implementation
+// application, the podcast-guest form, and the website offer at /websites, which is a nested page
+// that behaves like its own site but isn't one. One website, three forms, three tabs. That is the
+// whole reason this sheet exists and the whole reason it should never grow a fourth tab.
+//
+// ⚠️ A CLIENT IS A DIFFERENT SHAPE ENTIRELY. Each client is ONE website with ONE form, and gets
+// its OWN SHEET — Steven owns it and shares it with the client VIEW-ONLY, so they can look any
+// time and copy it if they want to reorganise their own version. Their leads never land here.
+// Until a demo is sold it has no customer to own a sheet, so its enquiries fold into Website Offer.
+var TAB_AI      = 'AI Implementation'; // /apply — the discovery intake. Sends NO source.
+var TAB_WEBSITE = 'Website Offer';     // /websites, and any client site's own form
+var TAB_PODCAST = 'Podcast Guests';    // /guest (normally its own webhook; here as a safety net)
+
 function sheetFor(data, answers) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) throw new Error('script is not attached to a spreadsheet');
@@ -106,10 +128,13 @@ function sheetFor(data, answers) {
     var k = String(answers[i].key || answers[i].label || '').toLowerCase();
     if (k === 'source') { source = String(answers[i].value || ''); break; }
   }
+  var s = source.toLowerCase();
+  var site = String(data.site || '');
+  var isClientSite = site && site.toLowerCase().indexOf('steven james') === -1;
 
-  var raw = (source || data.site || '').split('—')[0].split('|')[0].replace(/^\//, '').trim();
-  raw = raw.replace(/[\[\]:*?\/\\]/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 90);
-  var name = raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : FALLBACK_TAB;
+  var name = TAB_AI; // the default, because /apply sends no source at all
+  if (s.indexOf('website') !== -1 || isClientSite) name = TAB_WEBSITE;
+  else if (s.indexOf('guest') !== -1 || s.indexOf('podcast') !== -1) name = TAB_PODCAST;
 
   var sheet = ss.getSheetByName(name);
   if (!sheet) {

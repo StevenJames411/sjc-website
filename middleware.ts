@@ -44,6 +44,34 @@ function expectedToken(): string | null {
   return Buffer.from(`${user}:${pass}`).toString("base64");
 }
 
+// MACHINE CREDENTIAL (added 2026-07-30). The cookie above only exists inside a browser, so
+// every scripted edit — a draft save, an import, a bulk change — had to be hand-driven through
+// Chrome. SITE_EDIT_TOKEN is the same trick the backup cron already uses (Bearer CRON_SECRET):
+// a bearer token that lets code reach these routes directly.
+//
+// Deliberately narrow:
+//   - /api/* ONLY. Never the /edit pages — a leaked token must not hand somebody the editor UI,
+//     and there is no reason a script needs HTML.
+//   - Refuses anything under 32 chars, so a weak or half-set value fails closed instead of
+//     quietly becoming the weakest way in.
+//   - Constant-time compare: Buffer.compare / crypto aren't available in the edge runtime, and
+//     `===` on secrets leaks length and prefix through timing.
+// Keep the value in 1Password and inject it (`op run`). Unlike the cookie it never expires.
+function bearerAuthorized(req: NextRequest, pathname: string): boolean {
+  if (!pathname.startsWith("/api/")) return false;
+  const secret = process.env.SITE_EDIT_TOKEN;
+  if (!secret || secret.length < 32) return false;
+
+  const header = req.headers.get("authorization") || "";
+  if (!header.startsWith("Bearer ")) return false;
+  const presented = header.slice(7).trim();
+  if (presented.length !== secret.length) return false;
+
+  let diff = 0;
+  for (let i = 0; i < secret.length; i++) diff |= presented.charCodeAt(i) ^ secret.charCodeAt(i);
+  return diff === 0;
+}
+
 function loginPage(error: boolean): string {
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,6 +108,9 @@ export function middleware(req: NextRequest) {
 
   const token = req.cookies.get(COOKIE_NAME)?.value;
   if (token === expected) return NextResponse.next();
+
+  // Same door, machine key. API routes only — see bearerAuthorized().
+  if (bearerAuthorized(req, pathname)) return NextResponse.next();
 
   // No valid cookie: APIs get a JSON 401; page views get the login page.
   if (pathname.startsWith("/api/")) {
