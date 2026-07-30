@@ -41,6 +41,14 @@ export type CardProps = {
   headingColor?: string;
   bodySize?: number;
   bodyColor?: string;
+
+  // BOLD PER LINE (2026-07-30). Once size is adjustable, "heading" vs "body" is really just
+  // weight — so weight becomes its own switch rather than something you pick a field to get.
+  // undefined keeps each line's original weight (eyebrow bold, heading bold, body normal), so
+  // every card already on a page renders exactly as before.
+  eyebrowBold?: boolean;
+  headingBold?: boolean;
+  bodyBold?: boolean;
 };
 
 export const CARD_DEFAULTS: CardProps = {
@@ -61,10 +69,17 @@ export const CARD_DEFAULTS: CardProps = {
   headingColor: "",
   bodySize: 0,
   bodyColor: "",
+  eyebrowBold: true,
+  headingBold: true,
+  bodyBold: false,
 };
 
 /** px override when set, otherwise let the Tailwind class decide. */
 const sizeOf = (n?: number) => (n && n > 0 ? `${n}px` : undefined);
+
+/** Explicit choice wins; undefined falls back to that line's original weight. */
+const weight = (chosen: boolean | undefined, wasBold: boolean) =>
+  (chosen ?? wasBold) ? "font-bold" : "font-normal";
 
 export default function Card({
   badge,
@@ -84,6 +99,9 @@ export default function Card({
   headingColor,
   bodySize,
   bodyColor,
+  eyebrowBold,
+  headingBold,
+  bodyBold,
 }: CardProps) {
   const onEdge = badgePosition === "edge" && !!badge;
   const align = centered ? "text-center items-center" : "";
@@ -104,7 +122,7 @@ export default function Card({
         <div>
           {heading ? (
             <p
-              className="font-bold"
+              className={weight(headingBold, true)}
               style={{
                 fontSize: sizeOf(headingSize),
                 color: resolveColorOr(headingColor, "var(--color-sjc-ink)"),
@@ -115,7 +133,7 @@ export default function Card({
           ) : null}
           {body ? (
             <p
-              className="mt-0.5"
+              className={`mt-0.5 ${weight(bodyBold, false)}`}
               style={{
                 fontSize: sizeOf(bodySize),
                 color: resolveColorOr(bodyColor, "var(--color-sjc-mute)"),
@@ -164,7 +182,7 @@ export default function Card({
           // The size class is dropped when an explicit size is set, otherwise Tailwind's
           // text-xs would fight the inline style. Same pattern on the heading and body.
           <p
-            className={`font-bold uppercase tracking-[0.14em] ${eyebrowSize ? "" : "text-xs"}`}
+            className={`${weight(eyebrowBold, true)} uppercase tracking-[0.14em] ${eyebrowSize ? "" : "text-xs"}`}
             style={{
               fontSize: sizeOf(eyebrowSize),
               color: resolveColorOr(eyebrowColor, "var(--color-sjc-blue)"),
@@ -176,7 +194,7 @@ export default function Card({
 
         {heading ? (
           <h3
-            className={`font-bold leading-snug ${headingSize ? "" : "text-lg md:text-xl"} ${
+            className={`${weight(headingBold, true)} leading-snug ${headingSize ? "" : "text-lg md:text-xl"} ${
               icon ? "" : badge && !onEdge ? "mt-5" : eyebrow ? "mt-3" : ""
             }`}
             style={{
@@ -190,7 +208,7 @@ export default function Card({
 
         {body ? (
           <p
-            className={`mt-3 leading-relaxed ${bodySize ? "" : "text-base"}`}
+            className={`mt-3 leading-relaxed ${weight(bodyBold, false)} ${bodySize ? "" : "text-base"}`}
             style={{
               fontSize: sizeOf(bodySize),
               color: resolveColorOr(bodyColor, "var(--color-sjc-mute)"),

@@ -27,7 +27,7 @@ type Align = "left" | "center" | "right";
 type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean };
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -369,6 +369,14 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        eyebrowBold: {
+          type: "radio" as const,
+          label: "Small label — weight",
+          options: [
+            { label: "Bold", value: true },
+            { label: "Normal", value: false },
+          ],
+        },
         heading: { type: "textarea" as const, label: "Heading" },
         headingSize: {
           type: "custom" as const,
@@ -384,6 +392,14 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        headingBold: {
+          type: "radio" as const,
+          label: "Heading — weight",
+          options: [
+            { label: "Bold", value: true },
+            { label: "Normal", value: false },
+          ],
+        },
         body: { type: "textarea" as const, label: "Body" },
         bodySize: {
           type: "custom" as const,
@@ -398,6 +414,14 @@ export const config: Config<Props, RootProps> = {
           render: ({ onChange, value }) => (
             <ColorField value={value as string} onChange={onChange} />
           ),
+        },
+        bodyBold: {
+          type: "radio" as const,
+          label: "Body — weight",
+          options: [
+            { label: "Bold", value: true },
+            { label: "Normal", value: false },
+          ],
         },
         centered: {
           type: "radio" as const,
@@ -425,7 +449,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor }) => (
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold }) => (
         <Card
           badge={badge} eyebrow={eyebrow} heading={heading} body={body}
           icon={icon} iconColor={iconColor} badgeColor={badgeColor}
@@ -434,6 +458,7 @@ export const config: Config<Props, RootProps> = {
           eyebrowSize={eyebrowSize} eyebrowColor={eyebrowColor}
           headingSize={headingSize} headingColor={headingColor}
           bodySize={bodySize} bodyColor={bodyColor}
+          eyebrowBold={eyebrowBold} headingBold={headingBold} bodyBold={bodyBold}
         />
       ),
     },
