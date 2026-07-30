@@ -213,3 +213,21 @@ export async function deleteSite(id: string): Promise<{ ok: boolean; error?: str
     ? { ok: true }
     : { ok: false, error: "Couldn't save the change." };
 }
+
+/**
+ * SJC'S OWN CONTACT NUMBER — one place, read from the record.
+ *
+ * ⚠️ This number was hardcoded in THIRTEEN files and stored in ZERO editable ones. Steven went
+ * looking for it in the website builder to correct it and couldn't find it, because it was never
+ * there — it lived in the source. That is the bug this exists to end.
+ *
+ * The literals stay only as a floor so nothing renders blank while SJC's record is still empty.
+ * Fill in `business.phoneDisplay` on the SJC site in Website settings and every caller follows,
+ * with no code change.
+ */
+export async function sjcContact(): Promise<{ display: string; dial: string }> {
+  const site = await findSite(SJC);
+  const display = (site?.business?.phoneDisplay || "").trim() || "(210) 851-4906";
+  const dial = (site?.business?.phone || "").trim() || "+12108514906";
+  return { display, dial };
+}

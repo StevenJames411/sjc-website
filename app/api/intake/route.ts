@@ -7,7 +7,8 @@
 // usable — she can be told it over the phone. That means this route must refuse every site that
 // isn't actively being onboarded, and must fail closed for one nobody has opened.
 import { checkIntakeOpen, closeIntake } from "@/lib/intakeLinks";
-import { readIntake, patchIntake } from "@/lib/intake";
+import { readIntake, patchIntake, copyIntakeToSheet } from "@/lib/intake";
+import { findSite } from "@/lib/sites";
 import type { IntakeAnswers } from "@/lib/intakeShared";
 
 export const dynamic = "force-dynamic";
@@ -59,6 +60,21 @@ export async function PUT(req: Request) {
   // to expired. Reopening stays a deliberate act, which is the one nobody forgets.
   if (ok && (body.submittedAt || body.stoppedBecause)) {
     await closeIntake(auth.siteId, body.submittedAt ? "submitted" : "not a fit");
+
+    // Carbon copy to the sheet, so Steven and a VA can read it without an admin URL. Only on a
+    // real submission — a disqualified form has nothing worth a row. Failures are logged, never
+    // raised: her answers are already stored, and telling her the form broke would be a lie.
+    if (body.submittedAt) {
+      const site = await findSite(auth.siteId);
+      // The client's OWN sheet, never SJC's. Until that sheet exists this logs and moves on —
+      // her answers are already stored, and the copy is a convenience, not the record.
+      const problem = await copyIntakeToSheet(
+        auth.siteId,
+        site?.business?.name || site?.name || "",
+        site?.sheetWebhook
+      );
+      if (problem) console.error(`[intake] site=${auth.siteId} ${problem}`);
+    }
   }
 
   // Same lesson as the Puck editor: a save that didn't save must never report success.

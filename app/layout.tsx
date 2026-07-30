@@ -65,7 +65,7 @@ const organizationSchema = {
   url: "https://www.stevenjamesconsulting.com",
   logo: "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public",
   email: "support@stevenjamesconsulting.com",
-  telephone: "+1-210-298-2343",
+  telephone: "+1-210-851-4906",
   founder: { "@type": "Person", name: "Steven Barchetti" },
   description:
     "Steven James Consulting installs a native AI operating system — a workforce of AI employees — on top of the software a service business already uses, so it can find, close, and keep more customers without hiring a bigger team. Founded by Steven Barchetti, a 40-year solo entrepreneur across five businesses who runs his own company on the same system.",

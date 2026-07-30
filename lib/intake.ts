@@ -60,3 +60,68 @@ export async function addIntakePhotos(siteId: string, urls: string[]) {
 
 /** How many photos one client may send. Past this it isn't onboarding, it's a file host. */
 export const MAX_INTAKE_PHOTOS = 40;
+
+/**
+ * One row in the CLIENT'S OWN sheet when she finishes, so she and Steven can both read it.
+ *
+ * ⚠️ NOT SJC's intake sheet (2026-07-30). The first version pointed this at `APPLY_WEBHOOK_URL`,
+ * which is Steven's own three-tab operations sheet. Wrong, and against a rule already written
+ * into scripts/apply-webhook.gs: a client is a different shape — one website, one form, and
+ * their OWN sheet, which Steven owns and shares with them view-only. Her onboarding answers
+ * belong beside her leads, on the sheet she can open, not filed inside Steven's operations.
+ *
+ * The store stays the record of truth either way — the form saves per answer and the builder
+ * reads from it, and a sheet can do neither. This is a CARBON COPY.
+ *
+ * Deliberately NOT deliverLead(): that emails the site's `leadEmail`, which on a client site is
+ * the client — she'd receive her own onboarding answers back by email.
+ *
+ * Never throws. A sheet that's down must not fail her submission; her answers are already stored.
+ */
+export async function copyIntakeToSheet(
+  siteId: string,
+  businessName: string,
+  /** The client's own Apps Script webhook. Absent until their sheet exists. */
+  webhook?: string
+): Promise<string | null> {
+  if (!webhook) {
+    return `no sheet wired up for '${siteId}' yet — answers are stored, nothing was copied`;
+  }
+
+  const { INTAKE_QUESTIONS } = await import("./intakeShared");
+  const record = await readIntake(siteId);
+
+  const answers = [
+    { key: "source", label: "Source", value: "onboarding" },
+    { key: "business", label: "Business", value: businessName || siteId },
+    ...INTAKE_QUESTIONS.filter((q) => q.type !== "photos" && record.answers[q.id]).map((q) => ({
+      key: q.id,
+      label: q.label,
+      value: String(record.answers[q.id]),
+    })),
+    { key: "photoCount", label: "Photos", value: String(record.photos.length) },
+    // The URLs themselves, so the photos are one click away from the row.
+    { key: "photoUrls", label: "Photo links", value: record.photos.join("\n") },
+  ];
+
+  try {
+    const res = await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        submittedAt: record.submittedAt || new Date().toISOString(),
+        answers,
+        site: businessName || siteId,
+        siteId,
+      }),
+    });
+    // ⚠️ Apps Script replies 200 even when it throws — it catches its own exception and puts the
+    // failure in the BODY. Reading the status alone would call every failure a success.
+    const text = (await res.text()).trim();
+    if (!res.ok) return `sheet webhook HTTP ${res.status}`;
+    if (!/^ok\b/i.test(text)) return `sheet webhook said: ${text.slice(0, 200)}`;
+    return null;
+  } catch (e) {
+    return `sheet webhook unreachable: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}

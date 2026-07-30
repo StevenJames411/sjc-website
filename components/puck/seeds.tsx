@@ -91,7 +91,7 @@ const FAQS_SEED: Data = {
           { type: "Heading", props: { id: "faqs-cta-h", text: "Still have a question?", level: "h2", align: "center" } },
           { type: "Text", props: { id: "faqs-cta-p", text: "Apply and ask me directly. You'll leave knowing exactly where AI employees plug into your business — with you holding the keys.", align: "center" } },
           { type: "Button", props: { id: "faqs-cta-btn", title: "Apply to work with me", subtitle: "A quick call to see where AI employees plug into your business.", href: "/#contact" } },
-          { type: "PhoneLink", props: { id: "faqs-cta-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
+          { type: "PhoneLink", props: { id: "faqs-cta-phone", label: "Or call me directly: (210) 851-4906", tel: "+12108514906" } },
         ],
       },
     },
@@ -297,7 +297,7 @@ const HOME_SEED: Data = {
       { type: "Heading", props: { id: "apply-h2", text: "We're not for everybody — and that's on purpose.", align: "center" } },
       { type: "Text", props: { id: "apply-body", text: "We don't bolt this onto every business that asks. We take on a limited number of owners at a time, because we build and run each one by hand — and we'd rather do a few right than a lot halfway. So the next step isn't a sales pitch. It's an application. Tell us about your business. If it's a fit, we'll get on a call, show you exactly where your first hire plugs in and what it would look like on day one, and talk about what it costs. If it's not, we'll tell you that straight too. No pressure, no pitch deck — just a real conversation between people who run businesses.", align: "center" } },
       { type: "Button", props: { id: "apply-btn", title: "Apply to work with me", subtitle: "Tell us about your business. If it's a fit, we'll talk.", href: "/apply" } },
-      { type: "PhoneLink", props: { id: "apply-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" } },
+      { type: "PhoneLink", props: { id: "apply-phone", label: "Or call me directly: (210) 851-4906", tel: "+12108514906" } },
     ] } },
   ],
 };
@@ -421,7 +421,7 @@ const WEBSITES_NAV_SEED: Data = {
         tagline: "",
         // The phone number is the ONLY link — no About, no Podcast, no DIY. No escape hatches.
         links: [
-          { label: "(210) 298-2343", target: "tel:+12102982343", fontSize: 15, color: "#334155", newTab: false },
+          { label: "(210) 851-4906", target: "tel:+12108514906", fontSize: 15, color: "#334155", newTab: false },
         ],
         ctaLabel: "Get Started",
         ctaHref: "#get-started",
@@ -603,9 +603,9 @@ const WEBSITES_SEED: Data = {
                 { label: "What kind of work do you do?", inputType: "text" },
               ],
               buttonLabel: "Send Me My Website",
-              note: "No obligation, and nothing gets built until you say so. Rather just talk? Call (210) 298-2343.",
+              note: "No obligation, and nothing gets built until you say so. Rather just talk? Call (210) 851-4906.",
               successHeading: "Got it. I'll call you today.",
-              successBody: "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 298-2343.",
+              successBody: "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 851-4906.",
             },
           },
         ],

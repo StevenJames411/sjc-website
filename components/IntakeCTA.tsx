@@ -23,10 +23,10 @@ export default function IntakeCTA() {
             </svg>
           </a>
           <a
-            href="tel:+12102982343"
+            href="tel:+12108514906"
             className="text-sm font-semibold text-white/80 hover:text-white hover:underline"
           >
-            Or call us directly: (210) 298-2343
+            Or call us directly: (210) 851-4906
           </a>
         </div>
       </div>
