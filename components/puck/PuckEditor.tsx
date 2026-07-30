@@ -116,6 +116,64 @@ export default function PuckEditor({
     }
   };
 
+  // Swap this page's typed-in business details for references to Website settings.
+  //
+  // An imported page holds the phone number as characters in half a dozen blocks; filling in the
+  // settings screen does nothing for them until they actually point at it. This is the one click
+  // that connects the two.
+  const onLinkBusinessInfo = async () => {
+    setBusy(true);
+    try {
+      const opts = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin" as const,
+      };
+      const body = JSON.stringify({ site: siteId, slug: page });
+      const look = await fetch("/api/admin/tokenize", {
+        ...opts,
+        body: JSON.stringify({ site: siteId, slug: page, dryRun: true }),
+      }).then((r) => r.json());
+
+      if (!look.ok) {
+        return window.alert(
+          `${look.error}\n\n` +
+            (look.missing?.length ? `Still empty: ${look.missing.join(", ")}.\n\n` : "") +
+            `Open "Website settings" and fill in the business details first.`
+        );
+      }
+      if (!look.total) {
+        return window.alert(
+          "Nothing on this page matches what's in Website settings.\n\n" +
+            "Either the details there don't match what's typed on the page, or this page is already linked."
+        );
+      }
+
+      const lines = Object.entries(look.replacements as Record<string, number>)
+        .map(([k, n]) => `• ${n} × ${k}`)
+        .join("\n");
+      if (
+        !window.confirm(
+          `Link this page to Website settings?\n\n${lines}\n\n` +
+            `Those become references, so changing them in settings updates the page. ` +
+            `Saved as a draft — Publish when you've looked at it.`
+        )
+      )
+        return;
+
+      const r = await fetch("/api/admin/tokenize", { ...opts, body }).then((x) => x.json());
+      if (!r.ok) return window.alert(r.error || "Couldn't link it.");
+      window.alert(`Linked ${r.total} value${r.total === 1 ? "" : "s"}. Reloading so the editor shows it.`);
+      // Same reason as Adopt images: the server rewrote the page, Puck is still holding the old
+      // copy, and the next auto-save would put it straight back.
+      window.location.reload();
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Turn this page into a reusable TEMPLATE.
   //
   // Not a copy. The scrub on the server strips the business facts (phone, address, email, the
@@ -338,6 +396,15 @@ export default function PuckEditor({
           title="Copy this page's images onto our own storage so nothing depends on whoever generated the design"
         >
           Adopt images
+        </button>
+        <button
+          type="button"
+          onClick={onLinkBusinessInfo}
+          disabled={busy}
+          style={btn}
+          title="Replace the phone, email and address typed on this page with references to Website settings"
+        >
+          Link business info
         </button>
         <button
           type="button"
