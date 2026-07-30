@@ -27,7 +27,7 @@ type Align = "left" | "center" | "right";
 type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string };
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -346,9 +346,56 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // TYPE CONTROLS (2026-07-30). Each of the card's three text lines gets its own size and
+        // colour, matching what the Text and Heading blocks already offer. Before this, wanting a
+        // bigger eyebrow meant deleting it and stacking a separate Text box above the card — a
+        // workaround that has to be rebuilt every time the row is touched. Blank/0 = the card's
+        // built-in styling, so no existing card changes.
         eyebrow: { type: "text" as const, label: "Small label above (optional)" },
+        eyebrowSize: {
+          type: "custom" as const,
+          label: "Small label — size (0 = default)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Label size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+          ),
+        },
+        eyebrowColor: {
+          type: "custom" as const,
+          label: "Small label — colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         heading: { type: "textarea" as const, label: "Heading" },
+        headingSize: {
+          type: "custom" as const,
+          label: "Heading — size (0 = default)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Heading size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+          ),
+        },
+        headingColor: {
+          type: "custom" as const,
+          label: "Heading — colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         body: { type: "textarea" as const, label: "Body" },
+        bodySize: {
+          type: "custom" as const,
+          label: "Body — size (0 = default)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Body size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+          ),
+        },
+        bodyColor: {
+          type: "custom" as const,
+          label: "Body — colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         centered: {
           type: "radio" as const,
           label: "Text",
@@ -375,12 +422,15 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare }) => (
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor }) => (
         <Card
           badge={badge} eyebrow={eyebrow} heading={heading} body={body}
           icon={icon} iconColor={iconColor} badgeColor={badgeColor}
           badgePosition={badgePosition} centered={centered}
           layout={layout} bare={bare}
+          eyebrowSize={eyebrowSize} eyebrowColor={eyebrowColor}
+          headingSize={headingSize} headingColor={headingColor}
+          bodySize={bodySize} bodyColor={bodyColor}
         />
       ),
     },

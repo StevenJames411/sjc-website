@@ -29,6 +29,18 @@ export type CardProps = {
   layout?: string;
   // Drop the white box + shadow, for rows that sit directly on a coloured band.
   bare?: boolean;
+
+  // TYPE CONTROLS (added 2026-07-30). The card's three text lines had fixed size and colour,
+  // so making an eyebrow bigger meant deleting it and stacking a separate Text box on top of
+  // the card — a workaround that then has to be re-done every time the row is touched.
+  // 0 / "" means "use the card's built-in styling", so every card already on a page is
+  // untouched by this.
+  eyebrowSize?: number;
+  eyebrowColor?: string;
+  headingSize?: number;
+  headingColor?: string;
+  bodySize?: number;
+  bodyColor?: string;
 };
 
 export const CARD_DEFAULTS: CardProps = {
@@ -43,7 +55,16 @@ export const CARD_DEFAULTS: CardProps = {
   centered: false,
   layout: "",
   bare: false,
+  eyebrowSize: 0,
+  eyebrowColor: "",
+  headingSize: 0,
+  headingColor: "",
+  bodySize: 0,
+  bodyColor: "",
 };
+
+/** px override when set, otherwise let the Tailwind class decide. */
+const sizeOf = (n?: number) => (n && n > 0 ? `${n}px` : undefined);
 
 export default function Card({
   badge,
@@ -57,6 +78,12 @@ export default function Card({
   centered,
   layout,
   bare,
+  eyebrowSize,
+  eyebrowColor,
+  headingSize,
+  headingColor,
+  bodySize,
+  bodyColor,
 }: CardProps) {
   const onEdge = badgePosition === "edge" && !!badge;
   const align = centered ? "text-center items-center" : "";
@@ -76,10 +103,26 @@ export default function Card({
         ) : null}
         <div>
           {heading ? (
-            <p className="font-bold text-[color:var(--color-sjc-ink)]">{heading}</p>
+            <p
+              className="font-bold"
+              style={{
+                fontSize: sizeOf(headingSize),
+                color: resolveColorOr(headingColor, "var(--color-sjc-ink)"),
+              }}
+            >
+              {heading}
+            </p>
           ) : null}
           {body ? (
-            <p className="mt-0.5 text-[color:var(--color-sjc-mute)]">{body}</p>
+            <p
+              className="mt-0.5"
+              style={{
+                fontSize: sizeOf(bodySize),
+                color: resolveColorOr(bodyColor, "var(--color-sjc-mute)"),
+              }}
+            >
+              {body}
+            </p>
           ) : null}
         </div>
       </div>
@@ -118,23 +161,43 @@ export default function Card({
         ) : null}
 
         {eyebrow ? (
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[color:var(--color-sjc-blue)]">
+          // The size class is dropped when an explicit size is set, otherwise Tailwind's
+          // text-xs would fight the inline style. Same pattern on the heading and body.
+          <p
+            className={`font-bold uppercase tracking-[0.14em] ${eyebrowSize ? "" : "text-xs"}`}
+            style={{
+              fontSize: sizeOf(eyebrowSize),
+              color: resolveColorOr(eyebrowColor, "var(--color-sjc-blue)"),
+            }}
+          >
             {eyebrow}
           </p>
         ) : null}
 
         {heading ? (
           <h3
-            className={`text-lg font-bold leading-snug text-[color:var(--color-sjc-ink)] md:text-xl ${
+            className={`font-bold leading-snug ${headingSize ? "" : "text-lg md:text-xl"} ${
               icon ? "" : badge && !onEdge ? "mt-5" : eyebrow ? "mt-3" : ""
             }`}
+            style={{
+              fontSize: sizeOf(headingSize),
+              color: resolveColorOr(headingColor, "var(--color-sjc-ink)"),
+            }}
           >
             {heading}
           </h3>
         ) : null}
 
         {body ? (
-          <p className="mt-3 text-base leading-relaxed text-[color:var(--color-sjc-mute)]">{body}</p>
+          <p
+            className={`mt-3 leading-relaxed ${bodySize ? "" : "text-base"}`}
+            style={{
+              fontSize: sizeOf(bodySize),
+              color: resolveColorOr(bodyColor, "var(--color-sjc-mute)"),
+            }}
+          >
+            {body}
+          </p>
         ) : null}
       </div>
     </div>
