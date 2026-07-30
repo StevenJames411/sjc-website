@@ -71,5 +71,21 @@ export function fillBusinessTokens<T>(data: T, b: BusinessFacts, url = ""): T {
   return walk(data) as T;
 }
 
-/** A tel: href needs the dialable form, not the pretty one. */
-export const telHref = (b: BusinessFacts) => (b.phone ? `tel:${b.phone}` : "");
+/**
+ * Build a tel: href from whatever a phone field happens to contain.
+ *
+ * ⚠️ USE THIS EVERYWHERE A tel: LINK IS BUILT. `href={`tel:${phone}`}` looks harmless and produced
+ * `tel:(210) 474-6252` on a live page — a call button that renders perfectly and does nothing when
+ * tapped, on a page whose entire job is getting someone to phone. It happens whenever the field
+ * holds the readable form, which is true if a token resolved to it OR if a human simply typed the
+ * number the way people write it.
+ */
+export function telLink(value: string): string {
+  const digits = String(value || "").replace(/[^\d+]/g, "");
+  if (!digits) return "";
+  const n = digits.startsWith("+") ? digits : digits.length === 10 ? `+1${digits}` : `+${digits}`;
+  return `tel:${n}`;
+}
+
+/** A tel: href for a whole business record. */
+export const telHref = (b: BusinessFacts) => telLink(b.phone || b.phoneDisplay);

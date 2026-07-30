@@ -46,9 +46,20 @@ export function tokenRules(b: BusinessFacts): Rule[] {
   return out;
 }
 
-/** Apply the rules to every string in a page, counting what changed. */
+// Props whose value is fed straight into a tel: link by the component that renders them. A
+// readable number in one of these produces `tel:(210) 474-6252` — a call button that does nothing
+// when tapped. They get the dialable token instead.
+const DIAL_PROPS = new Set(["phone", "tel"]);
+
+/**
+ * Apply the rules to every string in a page, counting what changed.
+ *
+ * The prop NAME matters, not just the value: the same phone number means the readable form in a
+ * heading and the dialable form in `SiteFooter.phone`. Walking strings without knowing which key
+ * they sat under is what put an undialable number on a live page.
+ */
 export function applyTokens<T>(data: T, rules: Rule[], counts: Record<string, number> = {}): T {
-  const walk = (v: unknown): unknown => {
+  const walk = (v: unknown, key = ""): unknown => {
     if (typeof v === "string") {
       let s = v;
       for (const { re, token, label } of rules) {
@@ -56,15 +67,16 @@ export function applyTokens<T>(data: T, rules: Rule[], counts: Record<string, nu
         const hits = s.match(re);
         if (hits?.length) {
           counts[label] = (counts[label] || 0) + hits.length;
-          s = s.replace(re, token);
+          const t = label === "phone" && DIAL_PROPS.has(key) ? "{{business.phoneDial}}" : token;
+          s = s.replace(re, t);
         }
       }
       return s;
     }
-    if (Array.isArray(v)) return v.map(walk);
+    if (Array.isArray(v)) return v.map((x) => walk(x, key));
     if (v && typeof v === "object") {
       const o: Record<string, unknown> = {};
-      for (const [k, val] of Object.entries(v as Record<string, unknown>)) o[k] = walk(val);
+      for (const [k, val] of Object.entries(v as Record<string, unknown>)) o[k] = walk(val, k);
       return o;
     }
     return v;
