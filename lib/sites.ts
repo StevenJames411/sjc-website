@@ -42,8 +42,21 @@ const slugify = (s: string) =>
 
 export async function readSites(): Promise<Site[]> {
   const blob = (await store().read<SitesBlob>()) || {};
-  const saved = (blob.sites || []).filter((s) => s && s.id && s.id !== SJC);
-  return [SJC_SITE, ...saved];
+  const saved = (blob.sites || []).filter((s) => s && s.id);
+
+  // SJC stays IMPLICIT — it exists whether or not anything has been written, so a cold or
+  // unprovisioned store can never make the live site vanish from the builder. But anything saved
+  // for it (a renamed business, SEO defaults) merges on top, so it is editable like any other.
+  const override = saved.find((s) => s.id === SJC);
+  const sjc: Site = {
+    ...SJC_SITE,
+    ...(override || {}),
+    id: SJC,
+    kind: "sjc",
+    business: { ...SJC_SITE.business, ...(override?.business || {}) },
+    seo: { ...SJC_SITE.seo, ...(override?.seo || {}) },
+  };
+  return [sjc, ...saved.filter((s) => s.id !== SJC)];
 }
 
 export async function findSite(id: string): Promise<Site | undefined> {
@@ -55,8 +68,11 @@ export async function readTemplates(): Promise<Site[]> {
   return (await readSites()).filter((s) => s.kind === "template");
 }
 
+// SJC IS persisted once it's been edited — its implicit defaults in SJC_SITE stay the floor that
+// readSites merges over, so a wiped store still shows the live site, but a name or an SEO default
+// set here survives.
 async function writeSites(sites: Site[]): Promise<boolean> {
-  return store().write({ sites: sites.filter((s) => s.id !== SJC) });
+  return store().write({ sites });
 }
 
 /**
@@ -154,11 +170,6 @@ export async function updateSite(
   patch: Partial<Omit<Site, "id">>
 ): Promise<{ ok: boolean; error?: string }> {
   const s = String(id || "").trim();
-  if (s === SJC) {
-    // SJC is implicit, so there is nothing in the registry to patch. Its name and kind are fixed;
-    // its business/seo would need a real record before they could be stored.
-    return { ok: false, error: "The SJC site's details are set in code, not here." };
-  }
   const sites = await readSites();
   const i = sites.findIndex((x) => x.id === s);
   if (i < 0) return { ok: false, error: "No such website." };
@@ -168,6 +179,9 @@ export async function updateSite(
     ...next[i],
     ...patch,
     id: next[i].id,
+    // `kind` is not editable — a client site must not be able to promote itself to "sjc" and
+    // start reading the live site's storage keys.
+    kind: next[i].kind,
     business: { ...next[i].business, ...(patch.business || {}) },
     seo: { ...next[i].seo, ...(patch.seo || {}) },
   };

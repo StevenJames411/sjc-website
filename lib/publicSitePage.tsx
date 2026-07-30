@@ -6,6 +6,7 @@ import { readPuckPublished } from "@/lib/puckContent";
 import { findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
+import { fillBusinessTokens } from "@/lib/businessTokens";
 import type { Site } from "@/lib/sitesShared";
 
 // Rendering + metadata for ONE page of ONE website, shared by the two public catch-all routes:
@@ -102,8 +103,12 @@ export async function resolvePage(
   }
   if (!meta) return null;
 
-  const data = await readPuckPublished(meta.slug, siteId);
-  if (!data) return null;
+  const raw = await readPuckPublished(meta.slug, siteId);
+  if (!raw) return null;
+
+  // Fill {{business.*}} from the website's settings. Public render only — see lib/businessTokens
+  // for why the builder deliberately keeps showing the raw token.
+  const data = fillBusinessTokens(raw, site.business, site.domain ? `https://${site.domain}` : "");
   return { site, slug: meta.slug, data };
 }
 

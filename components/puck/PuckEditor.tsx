@@ -316,6 +316,17 @@ export default function PuckEditor({
             </option>
           ))}
         </select>
+        {/* Everything global to this website — the business's name, phone, address, its domain,
+            its SEO defaults. Lives one level up from a page, because it belongs to all of them. */}
+        <button
+          type="button"
+          onClick={() => router.push(`/edit/${siteId}/settings`)}
+          disabled={busy}
+          style={btn}
+          title="Business name, phone, address, domain — used across the whole website"
+        >
+          ⚙ Website settings
+        </button>
         <button type="button" onClick={onNewPage} disabled={busy} style={btn}>
           + New Page
         </button>

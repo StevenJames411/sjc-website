@@ -59,13 +59,25 @@ export default function SiteGallery({ sites }: Props) {
               <h2 style={cardName}>{s.name}</h2>
               {s.description ? <p style={cardDesc}>{s.description}</p> : null}
             </div>
-            <button
-              type="button"
-              style={editBtn}
-              onClick={() => router.push(`/edit/${s.id}/home`)}
-            >
-              Edit
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                type="button"
+                style={{ ...editBtn, flex: 1 }}
+                onClick={() => router.push(`/edit/${s.id}/home`)}
+              >
+                Edit
+              </button>
+              {/* The card carries the company name; everything else about the business lives one
+                  click in — same as Landingsite and GHL. */}
+              <button
+                type="button"
+                style={gearBtn}
+                title="Website settings — name, phone, address, domain"
+                onClick={() => router.push(`/edit/${s.id}/settings`)}
+              >
+                ⚙
+              </button>
+            </div>
           </div>
         ))}
         {!shown.length ? (
@@ -272,6 +284,7 @@ const cardDesc: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeig
 const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
 const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
+const gearBtn: React.CSSProperties = { ...ghostBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1 };
 const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50 };
 const modal: React.CSSProperties = { background: "#fff", borderRadius: 14, padding: 26, width: "100%", maxWidth: 520, fontFamily: font, maxHeight: "90vh", overflowY: "auto" };
 const tabs: React.CSSProperties = { display: "grid", gap: 8, marginBottom: 18 };

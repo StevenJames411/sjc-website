@@ -84,6 +84,10 @@ export async function renamePage(
 // at /<page> while a client site's serve at /<site>/<page>.
 const ROUTE_FOLDERS = ["about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites"];
 
+// Static segments under /edit/<site>/ — a page with one of these slugs would be shadowed in the
+// builder by the route of the same name and become uneditable.
+const EDITOR_SEGMENTS = ["settings"];
+
 // Every slug already spoken for inside this site.
 //
 // ⚠️ NOT `RESERVED_SITE_IDS`. That list reserves WEBSITE ids and contains "home" — applying it to
@@ -92,6 +96,7 @@ const ROUTE_FOLDERS = ["about", "api", "apply", "edit", "faqs", "guest", "podcas
 async function reservedSlugs(siteId: string): Promise<Set<string>> {
   const pages = await readPages(siteId);
   return new Set([
+    ...EDITOR_SEGMENTS,
     ...(siteId === SJC ? [...ROUTE_FOLDERS, ...PUCK_PAGES.map((p) => p.slug)] : []),
     ...pages.map((p) => p.slug),
   ]);
