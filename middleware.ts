@@ -37,6 +37,11 @@ function isProtected(pathname: string): boolean {
 
 const COOKIE_NAME = "sjc_site_auth";
 
+// Internal request header meaning "this request is an authenticated owner asking for the draft".
+// Set ONLY by middleware, and stripped from every inbound request first — see middleware().
+// lib/puckContent.ts reads it. Nothing else should set it.
+export const PREVIEW_HEADER = "x-sjc-preview";
+
 function expectedToken(): string | null {
   const pass = process.env.SITE_EDIT_PASSWORD;
   if (!pass) return null; // no password set -> fail closed (locked)
@@ -72,6 +77,14 @@ function bearerAuthorized(req: NextRequest, pathname: string): boolean {
   return diff === 0;
 }
 
+// Is this request the owner, by either door — browser cookie or machine token?
+function isOwner(req: NextRequest, pathname: string): boolean {
+  const expected = expectedToken();
+  if (expected === null) return false; // no password configured -> nobody is the owner
+  if (req.cookies.get(COOKIE_NAME)?.value === expected) return true;
+  return bearerAuthorized(req, pathname);
+}
+
 function loginPage(error: boolean): string {
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -93,12 +106,36 @@ f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const authed = isOwner(req, pathname);
+
+  // PREVIEW MODE (added 2026-07-30). `?preview=1` on any public URL renders the DRAFT through
+  // the real public template — same layout, same CSS, same everything a visitor gets — so a
+  // change can be checked on an actual phone before Publish. Previously the only way to see a
+  // draft was the editor canvas, wedged between two panels, which is why "how will this look on
+  // mobile?" was unanswerable.
+  //
+  // The flag travels as a REQUEST HEADER, not a query string the page re-reads, so lib/
+  // puckContent can honour it without every call site having to opt in.
+  //
+  // Two things this must not do:
+  //   1. Let a stranger read unpublished work. The header is only ever set for an authenticated
+  //      owner; an unauthenticated ?preview=1 silently falls through to the published page
+  //      rather than throwing up a login wall on a public URL (no login prompt where a visitor
+  //      wouldn't expect one, and no hint that preview exists at all).
+  //   2. Be forgeable. Any inbound x-sjc-preview is DELETED first — a visitor can send that
+  //      header themselves, and without this line it would be a free read of every draft.
+  const wantsPreview = req.nextUrl.searchParams.get("preview") === "1";
+  const forward = (preview: boolean) => {
+    const headers = new Headers(req.headers);
+    headers.delete(PREVIEW_HEADER);
+    if (preview) headers.set(PREVIEW_HEADER, "1");
+    return NextResponse.next({ request: { headers } });
+  };
 
   // PUBLIC: the site is live. Everything except the owner-edit/admin surfaces is open.
-  if (!isProtected(pathname)) return NextResponse.next();
+  if (!isProtected(pathname)) return forward(wantsPreview && authed);
 
-  const expected = expectedToken();
-  if (!expected) {
+  if (expectedToken() === null) {
     // Fail closed: no password configured means the site stays locked.
     return new NextResponse(
       '<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0b1220;color:#e5e7eb;padding:40px"><h1>Site locked</h1><p>SITE_EDIT_PASSWORD is not set. Configure it in the deployment environment.</p></body></html>',
@@ -106,13 +143,9 @@ export function middleware(req: NextRequest) {
     );
   }
 
-  const token = req.cookies.get(COOKIE_NAME)?.value;
-  if (token === expected) return NextResponse.next();
+  if (authed) return forward(wantsPreview);
 
-  // Same door, machine key. API routes only — see bearerAuthorized().
-  if (bearerAuthorized(req, pathname)) return NextResponse.next();
-
-  // No valid cookie: APIs get a JSON 401; page views get the login page.
+  // No valid credential: APIs get a JSON 401; page views get the login page.
   if (pathname.startsWith("/api/")) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
