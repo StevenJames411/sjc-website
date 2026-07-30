@@ -118,7 +118,14 @@ export default function PuckEditor({
         window.alert(`Done — ${r.adopted} image${r.adopted === 1 ? "" : "s"} copied to our storage.` +
           (r.remainingForeign ? `\n\n⚠️ ${r.remainingForeign} still foreign.` : "\n\nNothing on this page depends on anyone else now."));
       }
-      router.refresh();
+
+      // ⚠️ A FULL RELOAD, NOT router.refresh(). This rewrote the page on the SERVER, but Puck is
+      // still holding the copy it loaded on open — the one with the old URLs in it. router.refresh()
+      // re-renders server components and leaves that untouched, so the next auto-save wrote the
+      // stale copy straight back and Publish pushed it live. The adopt looked like it worked, said
+      // so, and was undone by the click that came after it. Reloading is the only thing that puts
+      // the editor back in sync before it can save again.
+      window.location.reload();
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
