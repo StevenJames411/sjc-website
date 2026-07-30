@@ -352,11 +352,14 @@ export const config: Config<Props, RootProps> = {
         // workaround that has to be rebuilt every time the row is touched. Blank/0 = the card's
         // built-in styling, so no existing card changes.
         eyebrow: { type: "text" as const, label: "Small label above (optional)" },
+        // allowZero={false} + a fallback matching the card's REAL default size, so an untouched
+        // field shows the size the text is actually rendering at (12/20/16) and steps from
+        // there. With allowZero on it displayed a meaningless "0px" that "−" couldn't move.
         eyebrowSize: {
           type: "custom" as const,
-          label: "Small label — size (0 = default)",
+          label: "Small label — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Label size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+            <SizeStepper label="Label size" value={value as number} onChange={onChange} fallback={12} step={2} min={8} allowZero={false} />
           ),
         },
         eyebrowColor: {
@@ -369,9 +372,9 @@ export const config: Config<Props, RootProps> = {
         heading: { type: "textarea" as const, label: "Heading" },
         headingSize: {
           type: "custom" as const,
-          label: "Heading — size (0 = default)",
+          label: "Heading — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Heading size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+            <SizeStepper label="Heading size" value={value as number} onChange={onChange} fallback={20} step={2} min={10} allowZero={false} />
           ),
         },
         headingColor: {
@@ -384,9 +387,9 @@ export const config: Config<Props, RootProps> = {
         body: { type: "textarea" as const, label: "Body" },
         bodySize: {
           type: "custom" as const,
-          label: "Body — size (0 = default)",
+          label: "Body — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Body size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+            <SizeStepper label="Body size" value={value as number} onChange={onChange} fallback={16} step={2} min={10} allowZero={false} />
           ),
         },
         bodyColor: {
