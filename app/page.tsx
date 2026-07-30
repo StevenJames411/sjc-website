@@ -4,8 +4,15 @@ import { Render } from "@measured/puck";
 import { config } from "@/components/puck/config";
 import { readPuckPublished } from "@/lib/puckContent";
 import { seedFor } from "@/components/puck/seeds";
+import { pageMetadata } from "@/lib/pageMeta";
 
 export const dynamic = "force-dynamic";
+
+// Title / preview text / preview image are edited at /edit/home with no block selected — the
+// Page Settings panel. Nothing is passed here, so a blank panel keeps the site-wide defaults.
+export async function generateMetadata() {
+  return pageMetadata("home", { path: "/" });
+}
 
 // Home renders through the Puck builder exactly like every other page: the published snapshot if
 // one exists, otherwise the committed seed (native editable blocks). Edit at /edit/home and hit

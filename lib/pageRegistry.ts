@@ -1,41 +1,37 @@
-// The DYNAMIC page registry — the source of truth for what pages exist in the builder.
-// Replaces the old fixed PUCK_PAGES list at runtime: the built-in pages are still the seed,
-// but the owner can now CREATE new pages and DELETE any page from the editor, and those changes
-// persist in the shared Upstash drawer (Redis key `sjc-pages`). Server-only (pulls in ioredis).
+// The DYNAMIC page registry — what pages exist inside ONE website.
 //
-// Blob shape: { custom: PuckPage[]; hidden: string[] }
-//   custom  = pages the owner created in the builder (served by the app/[slug] catch-all route).
-//   hidden  = slugs of BUILT-IN pages the owner deleted (tombstones — so a code-added built-in
-//             still appears automatically, but a deleted one stays gone).
-// readPages() = the built-ins (minus hidden) + the custom pages. Degrades to the built-ins when
-// Redis is unprovisioned (never crashes the editor).
+// Every function takes a `siteId` and defaults it to SJC, so the original single-site callers keep
+// behaving exactly as before while new code is explicit. The key itself comes from lib/siteKeys,
+// which is what keeps one client's page list out of another's.
+//
+// Blob shape: { custom: PuckPage[]; hidden: string[]; titles: Record<string,string> }
+//   custom  = pages created in the builder (served by the app/[slug] catch-all route).
+//   hidden  = slugs of BUILT-IN pages that were deleted (tombstones — a code-added built-in still
+//             appears automatically, but a deleted one stays gone).
+//   titles  = renames. A built-in's name lives in code, so a rename is stored here keyed by slug.
+//             The SLUG never changes — only the label — so no URL or saved content is affected.
+//
+// ⚠️ The built-in page list (lib/puckPages.ts) belongs to SJC ONLY. A client website starts with
+// whatever its template gave it and nothing else; inheriting SJC's About/Podcast/Apply pages into
+// a groomer's site would be exactly the leak this whole change exists to prevent.
 import { createKvStore } from "./kvStateStore";
-import { getClient } from "./kvRedis";
+import { getClient } from "./store";
 import { PUCK_PAGES, type PuckPage } from "./puckPages";
-import { puckKey } from "./puckContent";
+import { siteKeys, SJC } from "./siteKeys";
+import { RESERVED_SITE_IDS } from "./sitesShared";
 
 export type PageEntry = PuckPage & { custom: boolean };
-
-const REGISTRY_KEY = "sjc-pages";
 
 // Site-wide pieces that can NEVER be deleted (deleting them would break every page).
 const SYSTEM = new Set(["home", "nav", "footer"]);
 
-// Every top-level app/ route folder. A new page's slug can't collide with one of these — a
-// hardcoded Next.js route wins precedence and would silently shadow the new page's content.
-const ROUTE_FOLDERS = [
-  "about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites",
-];
-
-// `titles` = renames. A built-in page's name lives in code, so a rename is stored here as an
-// override keyed by slug. The SLUG never changes — only the label in the switcher — so no URL,
-// no saved content, and no published page is affected by renaming.
 type RegistryBlob = { custom?: PuckPage[]; hidden?: string[]; titles?: Record<string, string> };
 
-const store = () => createKvStore(getClient(), REGISTRY_KEY);
-const readBlob = async (): Promise<RegistryBlob> => (await store().read<RegistryBlob>()) || {};
+const store = (siteId: string) => createKvStore(getClient(), siteKeys(siteId).pages);
+const readBlob = async (siteId: string): Promise<RegistryBlob> =>
+  (await store(siteId).read<RegistryBlob>()) || {};
 
-// Title -> safe, URL-friendly slug. Final class matches puckContent's safe() (a-z0-9-).
+// Title -> safe, URL-friendly slug. Final class matches siteKeys' safe() (a-z0-9-).
 const slugify = (title: string) =>
   String(title || "")
     .toLowerCase()
@@ -43,89 +39,152 @@ const slugify = (title: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-export async function readPages(): Promise<PageEntry[]> {
-  const blob = await readBlob();
+export async function readPages(siteId: string = SJC): Promise<PageEntry[]> {
+  const blob = await readBlob(siteId);
   const hidden = new Set(blob.hidden || []);
   const titles = blob.titles || {};
   const named = (p: PuckPage) => ({ ...p, title: titles[p.slug] || p.title });
-  const builtins: PageEntry[] = PUCK_PAGES
-    .filter((p) => !hidden.has(p.slug))
-    .map((p) => ({ ...named(p), custom: false }));
+
+  // Only SJC gets the hardcoded built-ins; see the warning at the top of this file.
+  const builtins: PageEntry[] =
+    siteId === SJC
+      ? PUCK_PAGES.filter((p) => !hidden.has(p.slug)).map((p) => ({ ...named(p), custom: false }))
+      : [];
   const custom: PageEntry[] = (blob.custom || []).map((p) => ({ ...named(p), custom: true }));
   return [...builtins, ...custom];
 }
 
-// Rename any page — built-in or created. Only the display name changes; the slug, the URL and
-// the page's saved content are untouched.
+export async function findPageMeta(
+  slug: string,
+  siteId: string = SJC
+): Promise<PageEntry | undefined> {
+  return (await readPages(siteId)).find((p) => p.slug === slug);
+}
+
+/** Rename a page. Display name only — slug, URL and saved content are untouched. */
 export async function renamePage(
   slug: string,
-  title: string
+  title: string,
+  siteId: string = SJC
 ): Promise<{ ok: boolean; error?: string }> {
   const s = String(slug || "").trim();
   const t = String(title || "").trim();
   if (!t) return { ok: false, error: "A page name is required." };
-  if (!(await findPageMeta(s))) return { ok: false, error: "No such page." };
+  if (!(await findPageMeta(s, siteId))) return { ok: false, error: "No such page." };
 
-  const blob = await readBlob();
-  const ok = await store().write({ ...blob, titles: { ...(blob.titles || {}), [s]: t } });
+  const blob = await readBlob(siteId);
+  const ok = await store(siteId).write({
+    ...blob,
+    titles: { ...(blob.titles || {}), [s]: t },
+  });
   return ok ? { ok } : { ok: false, error: "Couldn't save — storage is unavailable." };
 }
 
-export async function findPageMeta(slug: string): Promise<PageEntry | undefined> {
-  return (await readPages()).find((p) => p.slug === slug);
-}
+// Top-level Next.js route folders. Only SJC's pages collide with these, because SJC's pages serve
+// at /<page> while a client site's serve at /<site>/<page>.
+const ROUTE_FOLDERS = ["about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites"];
 
-// Every slug already spoken for — existing pages + hardcoded route folders.
-async function reservedSlugs(): Promise<Set<string>> {
-  const pages = await readPages();
+// Every slug already spoken for inside this site.
+//
+// ⚠️ NOT `RESERVED_SITE_IDS`. That list reserves WEBSITE ids and contains "home" — applying it to
+// page slugs meant a new site's first page came out as "home-2", and the public route looks for
+// "home", so the site 404'd at its own address. Site ids and page slugs are different namespaces.
+async function reservedSlugs(siteId: string): Promise<Set<string>> {
+  const pages = await readPages(siteId);
   return new Set([
-    ...ROUTE_FOLDERS,
-    ...PUCK_PAGES.map((p) => p.slug),
+    ...(siteId === SJC ? [...ROUTE_FOLDERS, ...PUCK_PAGES.map((p) => p.slug)] : []),
     ...pages.map((p) => p.slug),
   ]);
 }
 
 export async function createPage(
-  title: string
+  title: string,
+  siteId: string = SJC
 ): Promise<{ ok: boolean; slug?: string; error?: string }> {
   const t = String(title || "").trim();
   if (!t) return { ok: false, error: "A page name is required." };
   const base = slugify(t);
   if (!base) return { ok: false, error: "That name has no usable letters or numbers." };
 
-  // never collide with an existing page or a hardcoded route — bump -2, -3, … if taken
-  const reserved = await reservedSlugs();
+  const reserved = await reservedSlugs(siteId);
   let slug = base;
   let n = 2;
   while (reserved.has(slug)) slug = `${base}-${n++}`;
 
-  const blob = await readBlob();
-  const custom = blob.custom || [];
-  custom.push({ slug, title: t });
-  const ok = await store().write({ ...blob, custom });
+  const blob = await readBlob(siteId);
+  const custom = [...(blob.custom || []), { slug, title: t }];
+  const ok = await store(siteId).write({ ...blob, custom });
   return ok ? { ok, slug } : { ok: false, error: "Couldn't save — storage is unavailable." };
 }
 
-export async function deletePage(slug: string): Promise<{ ok: boolean; error?: string }> {
-  const s = String(slug || "").trim();
-  if (SYSTEM.has(s)) return { ok: false, error: "That page is part of the site and can't be deleted." };
+/**
+ * Copy a page — content and all — to a new name inside the SAME site.
+ *
+ * ⚠️ This is page-level duplication (a second Services page, say). Standing up a new CLIENT is
+ * `createSite({ from })` in lib/sites.ts — copying a finished page into the same drawer is what
+ * produced one flat list of everybody's pages in the first place.
+ *
+ * Copies the DRAFT and the PUBLISHED snapshot separately, stripping `_pub`: a copy starts
+ * unpublished so a half-edited page can never be live at a URL before it's been looked at.
+ */
+export async function duplicatePage(
+  fromSlug: string,
+  title: string,
+  siteId: string = SJC
+): Promise<{ ok: boolean; slug?: string; error?: string }> {
+  const src = String(fromSlug || "").trim();
+  if (!src) return { ok: false, error: "No page to copy from." };
+  if (!(await findPageMeta(src, siteId))) return { ok: false, error: "That page doesn't exist." };
 
-  const blob = await readBlob();
+  const created = await createPage(title, siteId);
+  if (!created.ok || !created.slug) return created;
+  const dest = created.slug;
+
+  const client = getClient();
+  const k = siteKeys(siteId);
+
+  let copied = 0;
+  for (const pub of [false, true]) {
+    const data = await createKvStore(client, k.puck(src, pub)).read<Record<string, unknown>>();
+    if (!data) continue;
+    const { _pub, ...rest } = data as { _pub?: number };
+    if (await createKvStore(client, k.puck(dest, pub)).write(rest)) copied++;
+  }
+
+  if (!copied) {
+    // Nothing came across — don't leave a phantom page in the switcher pointing at nothing.
+    await deletePage(dest, siteId);
+    return { ok: false, error: "Couldn't copy the page's content — nothing was created." };
+  }
+  return { ok: true, slug: dest };
+}
+
+export async function deletePage(
+  slug: string,
+  siteId: string = SJC
+): Promise<{ ok: boolean; error?: string }> {
+  const s = String(slug || "").trim();
+  if (SYSTEM.has(s)) {
+    return { ok: false, error: "That page is part of the site and can't be deleted." };
+  }
+
+  const blob = await readBlob(siteId);
   const prevCustom = blob.custom || [];
   const custom = prevCustom.filter((p) => p.slug !== s);
   const wasCustom = custom.length !== prevCustom.length;
-  const isBuiltin = PUCK_PAGES.some((p) => p.slug === s);
+  const isBuiltin = siteId === SJC && PUCK_PAGES.some((p) => p.slug === s);
   if (!wasCustom && !isBuiltin) return { ok: false, error: "No such page." };
 
   const hidden = new Set(blob.hidden || []);
   if (isBuiltin) hidden.add(s); // tombstone the built-in so it stays gone
 
-  const ok = await store().write({ custom, hidden: [...hidden] });
+  const ok = await store(siteId).write({ ...blob, custom, hidden: [...hidden] });
 
   // purge the page's Puck content (draft + published) so its URL 404s
   const client = getClient();
-  await createKvStore(client, puckKey(s)).write({});
-  await createKvStore(client, puckKey(s, true)).write({});
+  const k = siteKeys(siteId);
+  await createKvStore(client, k.puck(s)).write({});
+  await createKvStore(client, k.puck(s, true)).write({});
 
   return ok ? { ok } : { ok: false, error: "Couldn't save the change." };
 }

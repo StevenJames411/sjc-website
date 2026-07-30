@@ -1,3 +1,4 @@
+import { resolveColorOr } from "@/lib/brandColor";
 // A "what you get" list: coloured dot, bold line, supporting line. Add/remove/reorder rows in
 // the builder. Generic on purpose — works for features, inclusions, deliverables, any page.
 
@@ -21,7 +22,7 @@ export default function CheckList({ dotColor, rows }: CheckListProps) {
           <span
             aria-hidden
             className="mt-1 h-6 w-6 shrink-0 rounded-full"
-            style={{ backgroundColor: dotColor || "#22c55e" }}
+            style={{ backgroundColor: resolveColorOr(dotColor, "#22c55e") }}
           />
           <div>
             {row?.heading ? (

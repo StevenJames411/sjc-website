@@ -1,0 +1,282 @@
+"use client";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { Site } from "@/lib/sitesShared";
+
+// The way into the builder: a wall of website cards, not a dropdown.
+//
+// A dropdown was fine for one site. At a hundred it is a four-hundred-entry list holding every
+// client's pages in one drawer — which is also how one client's work ends up visible while editing
+// another's. Every builder that does this at scale (GoHighLevel, Landingsite, SiteDrop) opens on a
+// gallery with search and a New-website button, and the page switcher lives INSIDE a site.
+
+type Props = { sites: Site[] };
+type Mode = "blank" | "template" | "import";
+
+export default function SiteGallery({ sites }: Props) {
+  const router = useRouter();
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const templates = useMemo(() => sites.filter((s) => s.kind === "template"), [sites]);
+  const shown = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    const live = sites.filter((s) => s.kind !== "template");
+    if (!needle) return live;
+    return live.filter((s) =>
+      [s.name, s.description, s.domain, s.business?.name].filter(Boolean).join(" ").toLowerCase().includes(needle)
+    );
+  }, [sites, q]);
+
+  return (
+    <div style={page}>
+      <div style={head}>
+        <div>
+          <h1 style={h1}>Websites</h1>
+          <p style={sub}>Create and manage your websites</p>
+        </div>
+        <button type="button" style={primaryBtn} onClick={() => setOpen(true)}>
+          + New website
+        </button>
+      </div>
+
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search websites…"
+        style={search}
+      />
+
+      <div style={grid}>
+        {shown.map((s) => (
+          <div key={s.id} style={card}>
+            <div style={cardTop}>
+              <div style={badgeRow}>
+                {s.kind === "sjc" ? <span style={chip}>Yours</span> : null}
+                {s.domain ? <span style={chip}>{s.domain}</span> : <span style={chipMuted}>No domain yet</span>}
+              </div>
+              <h2 style={cardName}>{s.name}</h2>
+              {s.description ? <p style={cardDesc}>{s.description}</p> : null}
+            </div>
+            <button
+              type="button"
+              style={editBtn}
+              onClick={() => router.push(`/edit/${s.id}/home`)}
+            >
+              Edit
+            </button>
+          </div>
+        ))}
+        {!shown.length ? (
+          <p style={{ color: "#6b7280", fontSize: 14 }}>
+            {q ? "No websites match that." : "No websites yet."}
+          </p>
+        ) : null}
+      </div>
+
+      {templates.length ? (
+        <>
+          <h3 style={sectionH}>Templates</h3>
+          <div style={grid}>
+            {templates.map((t) => (
+              <div key={t.id} style={{ ...card, borderStyle: "dashed" }}>
+                <div style={cardTop}>
+                  <span style={chip}>Template</span>
+                  <h2 style={cardName}>{t.name}</h2>
+                  {t.description ? <p style={cardDesc}>{t.description}</p> : null}
+                </div>
+                <button type="button" style={editBtn} onClick={() => router.push(`/edit/${t.id}/home`)}>
+                  Edit template
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {open ? (
+        <NewWebsite
+          templates={templates}
+          busy={busy}
+          setBusy={setBusy}
+          onClose={() => setOpen(false)}
+          onDone={(id) => router.push(`/edit/${id}/home`)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+// Three ways to start, the same three these platforms offer. Import is first because it is the
+// one that saves the most time: the design already exists somewhere else.
+function NewWebsite({
+  templates,
+  busy,
+  setBusy,
+  onClose,
+  onDone,
+}: {
+  templates: Site[];
+  busy: boolean;
+  setBusy: (b: boolean) => void;
+  onClose: () => void;
+  onDone: (id: string) => void;
+}) {
+  const [mode, setMode] = useState<Mode>("import");
+  const [name, setName] = useState("");
+  const [from, setFrom] = useState(templates[0]?.id || "");
+  const [source, setSource] = useState("");
+  const [err, setErr] = useState("");
+  const [note, setNote] = useState("");
+
+  const looksLikeHtml = /<\s*(html|head|body|section|header|div)/i.test(source);
+
+  async function go() {
+    setErr("");
+    setBusy(true);
+    try {
+      if (mode === "import") {
+        if (!source.trim()) throw new Error("Paste the website's address, or its HTML.");
+        setNote("Fetching and parsing… this can take up to a minute.");
+        const r = await fetch("/api/import-html", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify(
+            looksLikeHtml
+              ? { html: source, businessName: name.trim() }
+              : { url: source.trim(), businessName: name.trim() }
+          ),
+        }).then((x) => x.json());
+        if (!r.ok) throw new Error(r.error || "Import failed.");
+        return onDone(r.siteId);
+      }
+
+      if (!name.trim()) throw new Error("A website name is required.");
+      const r = await fetch("/api/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ name: name.trim(), ...(mode === "template" ? { from } : {}) }),
+      }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error || "Couldn't create it.");
+      onDone(r.id);
+    } catch (e) {
+      setErr((e as Error).message);
+      setNote("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div style={scrim} onClick={busy ? undefined : onClose}>
+      <div style={modal} onClick={(e) => e.stopPropagation()}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Create new website</h2>
+        <p style={{ ...sub, marginBottom: 18 }}>Start from an existing design, a template, or nothing.</p>
+
+        <div style={tabs}>
+          {(
+            [
+              ["import", "From import", "Pull in a design from SiteDrop or anywhere else"],
+              ["template", "From template", "Start with a prebuilt layout"],
+              ["blank", "From blank", "An empty website"],
+            ] as [Mode, string, string][]
+          ).map(([m, label, hint]) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              disabled={m === "template" && !templates.length}
+              style={{
+                ...tab,
+                ...(mode === m ? tabOn : {}),
+                ...(m === "template" && !templates.length ? { opacity: 0.45, cursor: "not-allowed" } : {}),
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: 13 }}>{label}</span>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                {m === "template" && !templates.length ? "No templates yet" : hint}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {mode === "import" ? (
+          <>
+            <label style={lbl}>Website address, or paste its HTML</label>
+            <textarea
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              placeholder="best-in-show-grooming.sitedrop.ai"
+              style={{ ...input, minHeight: 78, fontFamily: "ui-monospace,monospace", fontSize: 12 }}
+            />
+            <label style={lbl}>Business name (optional — taken from the address if blank)</label>
+          </>
+        ) : (
+          <label style={lbl}>Website name</label>
+        )}
+
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Lucky Dog Wash House"
+          style={input}
+        />
+
+        {mode === "template" ? (
+          <>
+            <label style={lbl}>Template</label>
+            <select value={from} onChange={(e) => setFrom(e.target.value)} style={input}>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </>
+        ) : null}
+
+        {err ? <p style={errBox}>{err}</p> : null}
+        {busy && note ? <p style={{ ...sub, marginTop: 10 }}>{note}</p> : null}
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 20 }}>
+          <button type="button" style={ghostBtn} onClick={onClose} disabled={busy}>
+            Cancel
+          </button>
+          <button type="button" style={primaryBtn} onClick={go} disabled={busy}>
+            {busy ? "Working…" : "Create"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+const page: React.CSSProperties = { maxWidth: 1100, margin: "0 auto", padding: "40px 24px 80px", fontFamily: font };
+const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 };
+const h1: React.CSSProperties = { fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em" };
+const sub: React.CSSProperties = { color: "#6b7280", fontSize: 14, marginTop: 4 };
+const sectionH: React.CSSProperties = { fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "#6b7280", margin: "36px 0 12px" };
+const search: React.CSSProperties = { width: "100%", maxWidth: 340, margin: "24px 0", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
+const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 };
+const card: React.CSSProperties = { border: "1px solid #e5e7eb", borderRadius: 12, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16, minHeight: 190, background: "#fff" };
+const cardTop: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 8 };
+const badgeRow: React.CSSProperties = { display: "flex", gap: 6, flexWrap: "wrap" };
+const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "#eef2ff", color: "#3730a3", borderRadius: 999, padding: "3px 9px" };
+const chipMuted: React.CSSProperties = { ...chip, background: "#f3f4f6", color: "#6b7280" };
+const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeight: 1.25 };
+const cardDesc: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.45 };
+const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
+const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
+const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50 };
+const modal: React.CSSProperties = { background: "#fff", borderRadius: 14, padding: 26, width: "100%", maxWidth: 520, fontFamily: font, maxHeight: "90vh", overflowY: "auto" };
+const tabs: React.CSSProperties = { display: "grid", gap: 8, marginBottom: 18 };
+const tab: React.CSSProperties = { display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2, textAlign: "left", border: "1px solid #e5e7eb", borderRadius: 10, padding: "10px 12px", background: "#fff", cursor: "pointer" };
+const tabOn: React.CSSProperties = { borderColor: "#111827", boxShadow: "inset 0 0 0 1px #111827" };
+const lbl: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, marginTop: 12 };
+const input: React.CSSProperties = { width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
+const errBox: React.CSSProperties = { marginTop: 12, background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13 };

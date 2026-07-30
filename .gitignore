@@ -7,3 +7,9 @@ out
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# local scratch scripts — never part of the site
+_debug.py
+_pull.py
+harvest.py
+render_harvest.txt

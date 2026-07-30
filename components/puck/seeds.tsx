@@ -421,7 +421,7 @@ const WEBSITES_NAV_SEED: Data = {
         tagline: "",
         // The phone number is the ONLY link — no About, no Podcast, no DIY. No escape hatches.
         links: [
-          { label: "(210) 298-2343", target: "tel:+12102982343", fontSize: 15, color: "#ffffff", newTab: false },
+          { label: "(210) 298-2343", target: "tel:+12102982343", fontSize: 15, color: "#334155", newTab: false },
         ],
         ctaLabel: "Get Started",
         ctaHref: "#get-started",
@@ -464,7 +464,9 @@ const WEBSITES_SEED: Data = {
           { type: "Heading", props: { id: "w-h1", text: "A real website for your business — live in three days.", fontSize: 48, align: "center", spaceBelow: 16 } },
           { type: "Text", props: { id: "w-sub1", text: "Your work, your reviews, your phone number. Somebody fills out the form and it hits your phone before they've closed the browser.", align: "center", color: "#2563eb", fontSize: 22, spaceAbove: 4, spaceBelow: 8 } },
           { type: "Text", props: { id: "w-sub2", text: "You do good work. People just can't find you. I build the site, I put it online, and I keep it running — you never touch any of it.", align: "center", color: "#4b5563", fontSize: 18, spaceAbove: 0, spaceBelow: 0 } },
-          { type: "Button", props: { id: "w-hero-cta", title: "Get My Website Started", subtitle: "$795 to build it. $25/month to keep it running.", href: "#get-started" } },
+          // ⚠️ NO PRICE. Price comes up on the discovery call. This seed renders whenever nothing
+          // is published, so a number left here would put the price back on the live page.
+          { type: "Button", props: { id: "w-hero-cta", title: "Get My Website Started", subtitle: "Built and live in three days.", href: "#get-started" } },
         ],
       },
     },
@@ -571,32 +573,11 @@ const WEBSITES_SEED: Data = {
       },
     },
 
-    // Price
-    {
-      type: "Section",
-      props: {
-        id: "websites-price",
-        background: "#f3f4f6",
-        maxWidth: "48rem",
-        paddingTop: 80,
-        paddingBottom: 80,
-        content: [
-          { type: "Heading", props: { id: "w-price-h2", text: "What it costs", fontSize: 36, align: "center", spaceBelow: 32 } },
-          {
-            type: "PriceBox",
-            props: {
-              id: "w-price-box",
-              topAmount: "$795",
-              topNote: "one time, to build it",
-              bottomAmount: "$25",
-              bottomSuffix: "/month",
-              bottomNote: "to host it, run the form, and keep it current",
-              footnote: "That's the whole price. No contract, no setup fees stacked on top, no packages to pick from. Cancel any time and the site is still yours.",
-            },
-          },
-        ],
-      },
-    },
+    // ⚠️ NO PRICE SECTION — deliberate, matches the live page. Price comes up on the discovery
+    // call, so the page sells the outcome and the number happens in conversation. There used to be
+    // a "What it costs" band with a $795/$25 PriceBox here; Steven pulled it. This seed renders
+    // whenever nothing is published, so putting it back here puts the price back on the live site.
+    // The PriceBox block still exists and is still usable — it just isn't on this page.
 
     // CTA — the anchor every button on the page points at
     {
@@ -633,7 +614,361 @@ const WEBSITES_SEED: Data = {
   ],
 };
 
+// ── /lucky-dog-wash-house — the first client demo, ported from SiteDrop ───────────────────────────────────────────────────────
+//
+// A SiteDrop-generated hero (Lucky Dog Wash House, San Antonio) rebuilt entirely from OUR blocks:
+// Section → Columns → Heading / Text / Button / HeroImage. Nothing here is bespoke markup.
+//
+// THE POINT: their builder makes a beautiful page you can only change by arguing with a chatbot
+// that meters you per attempt. The same design assembled from these blocks has a −/+ control on
+// every padding, size, and colour. That is the whole reason to pull a design over instead of
+// renting the tool that made it.
+//
+// ⚠️ The photo still points at THEIR Supabase. Fine for a scratch page; download it before this
+// look goes anywhere near a client, or their server going away takes the client's site with it.
+const LAB_SEED: Data = {
+  root: { props: { title: "Lab" } },
+  content: [
+    // Header sits INSIDE this page rather than in the site-wide `nav` document, so the whole
+    // port renders top-to-bottom in one editor. On a real client site it moves out to its own
+    // nav document and becomes global — edit the phone number once, every page follows.
+    {
+      type: "SiteHeader",
+      props: {
+        id: "lab-nav",
+        brandName: "Lucky Dog Wash House",
+        brandHref: "#lab-hero",
+        brandSize: 20,
+        tagline: "",
+        taglineColor: "#ffffff",
+        taglineSize: 14,
+        links: [
+          { label: "Services", target: "#lab-services", fontSize: 15, color: "#334155", newTab: false },
+          { label: "About Us", target: "#lab-about", fontSize: 15, color: "#334155", newTab: false },
+          { label: "How It Works", target: "#lab-process", fontSize: 15, color: "#334155", newTab: false },
+          { label: "Reviews", target: "#lab-testimonials", fontSize: 15, color: "#334155", newTab: false },
+        ],
+        ctaLabel: "Book Appointment",
+        ctaHref: "#lab-contact",
+        ctaNewTab: false,
+        // Lucky Dog's own colours, not SJC's. This is the whole point of un-welding them.
+        background: "#ffffff",
+        foreground: "#334155",
+        showLogo: false,
+        ctaColor: "#0ea5e9",
+        brandIcon: "bone",
+        brandIconColor: "#0ea5e9",
+      },
+    },
+    {
+      type: "Section",
+      props: {
+        id: "lab-hero",
+        background: "#f8fafc",
+        maxWidth: "80rem",
+        paddingTop: 72,
+        paddingBottom: 96,
+        decor: "#0ea5e9",
+        content: [
+          {
+            type: "Columns",
+            props: {
+              id: "lab-hero-cols",
+              columns: 2,
+              gap: 48,
+              col1: [
+                {
+                  type: "Text",
+                  props: {
+                    id: "lab-hero-rating",
+                    text: "<span style=\"color:#f59e0b\">★★★★★</span> <strong>4.7 Rating</strong> <span style=\"opacity:.45\">|</span> <span style=\"color:#0ea5e9;font-weight:600\">210+ Google Reviews</span>",
+                    align: "left", color: "#334155", fontSize: 15, spaceAbove: 0, spaceBelow: 24,
+                    pill: "#ffffff", pillBorder: "#e5e7eb", icon: "", iconColor: "",
+                  },
+                },
+                {
+                  type: "Heading",
+                  props: {
+                    id: "lab-hero-h1",
+                    text: "San Antonio's Premier Pet Wash & Grooming",
+                    fontSize: 60, align: "left", color: "#334155",
+                    spaceAbove: 0, spaceBelow: 20,
+                    underline: "#f59e0b",
+                    highlight: "Premier Pet Wash", highlightColor: "#0ea5e9",
+                  },
+                },
+                {
+                  type: "Text",
+                  props: {
+                    id: "lab-hero-sub",
+                    text: "Experience stress-free, professional grooming and easy self-serve wash stations. Clean facilities, friendly staff, and happy tails guaranteed at Lucky Dog Wash House.",
+                    align: "left", color: "#4b5563", fontSize: 19, spaceAbove: 0, spaceBelow: 28,
+                  },
+                },
+                {
+                  type: "Button",
+                  props: {
+                    id: "lab-hero-cta",
+                    title: "Book an Appointment",
+                    subtitle: "",
+                    href: "#contact",
+                  },
+                },
+                {
+                  type: "Button",
+                  props: {
+                    id: "lab-hero-phone",
+                    title: "(210) 474-6252", subtitle: "", href: "tel:+12104746252",
+                    icon: "phone", variant: "outline", shape: "pill",
+                    color: "#10b981", align: "left", fullWidth: false,
+                  },
+                },
+                {
+                  type: "Text",
+                  props: {
+                    id: "lab-hero-addr",
+                    text: "819 New Laredo Hwy, San Antonio, TX 78211",
+                    align: "left", color: "#334155", fontSize: 15, spaceAbove: 28, spaceBelow: 0,
+                    pill: "#ffffff", pillBorder: "#e5e7eb", icon: "map-pin", iconColor: "#f59e0b",
+                  },
+                },
+              ],
+              col2: [
+                {
+                  type: "HeroImage",
+                  props: {
+                    id: "lab-hero-photo",
+                    src: "https://zgnpmogdjnnhpwewavnr.supabase.co/storage/v1/object/public/project-images/bcda9a64-6721-499a-bdaa-5d6a9977abe9/98f8cb82-9922-416a-b87a-8b39fc36d057.png",
+                    alt: "Happy wet Golden Retriever getting a warm bubble bath with suds at a professional dog grooming salon",
+                    height: 560,
+                    tilt: 2,
+                    glow: "#0ea5e9",
+                    frame: "#ffffff",
+                    radius: 40,
+                    badgeTitle: "Premium Spa Add-ons",
+                    badgeBody: "Oatmeal baths, nail trims & more",
+                    pillText: "Open Today",
+                    pillColor: "#10b981",
+                    spaceAbove: 0,
+                    spaceBelow: 0,
+                  },
+                },
+              ],
+              col3: [],
+            },
+          },
+        ],
+      },
+    },
+
+    // ── STATS BAR ────────────────────────────────────────────────────────────────────────────
+    {
+      type: "Section",
+      props: {
+        id: "lab-stats", background: "#ffffff", maxWidth: "80rem",
+        paddingTop: 48, paddingBottom: 48, decor: "",
+        content: [
+          {
+            type: "Columns",
+            props: {
+              id: "lab-stats-cols", columns: 3, gap: 32,
+              col1: [
+                { type: "Heading", props: { id: "lab-stat1-n", text: "210+", fontSize: 40, align: "center", color: "#0ea5e9", spaceAbove: 0, spaceBelow: 4, underline: "" } },
+                { type: "Text", props: { id: "lab-stat1-l", text: "Happy Pups Served", align: "center", color: "#4b5563", fontSize: 16, spaceAbove: 0, spaceBelow: 0 } },
+              ],
+              col2: [
+                { type: "Heading", props: { id: "lab-stat2-n", text: "4.7 Stars", fontSize: 40, align: "center", color: "#0ea5e9", spaceAbove: 0, spaceBelow: 4, underline: "" } },
+                { type: "Text", props: { id: "lab-stat2-l", text: "Average Google Review", align: "center", color: "#4b5563", fontSize: 16, spaceAbove: 0, spaceBelow: 0 } },
+              ],
+              col3: [
+                { type: "Heading", props: { id: "lab-stat3-n", text: "Top Rated", fontSize: 40, align: "center", color: "#0ea5e9", spaceAbove: 0, spaceBelow: 4, underline: "" } },
+                { type: "Text", props: { id: "lab-stat3-l", text: "San Antonio Groomer", align: "center", color: "#4b5563", fontSize: 16, spaceAbove: 0, spaceBelow: 0 } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+
+    // ── SERVICES ─────────────────────────────────────────────────────────────────────────────
+    {
+      type: "Section",
+      props: {
+        id: "lab-services", background: "#f8fafc", maxWidth: "80rem",
+        paddingTop: 80, paddingBottom: 80, decor: "",
+        content: [
+          { type: "Text", props: { id: "lab-svc-eyebrow", text: "OUR SERVICES", align: "center", color: "#0ea5e9", fontSize: 14, spaceAbove: 0, spaceBelow: 8 } },
+          { type: "Heading", props: { id: "lab-svc-h2", text: "Pampering Your Best Friend", fontSize: 44, align: "center", color: "#334155", spaceAbove: 0, spaceBelow: 12, underline: "" } },
+          { type: "Text", props: { id: "lab-svc-sub", text: "From a quick rinse to a full spa day, we have the perfect service to make your dog look and feel amazing.", align: "center", color: "#4b5563", fontSize: 18, spaceAbove: 0, spaceBelow: 40 } },
+          {
+            type: "Columns",
+            props: {
+              id: "lab-svc-cols", columns: 3, gap: 24,
+              col1: [{ type: "Card", props: { id: "lab-svc1", badge: "", icon: "shower-head", iconColor: "#0ea5e9", eyebrow: "", heading: "Self-Serve Wash", body: "Our state-of-the-art wash bays have everything you need: premium shampoos, conditioners, and professional-grade dryers. You bring the dog, we handle the mess!" } }],
+              col2: [{ type: "Card", props: { id: "lab-svc2", badge: "", icon: "scissors", iconColor: "#10b981", eyebrow: "", heading: "Full-Service Grooming", body: "Let our expert groomers take care of everything. Includes a bath, haircut, nail trim, and ear cleaning, all tailored to your dog's specific needs and breed." } }],
+              col3: [{ type: "Card", props: { id: "lab-svc3", badge: "", icon: "sparkles", iconColor: "#f59e0b", eyebrow: "", heading: "Spa Add-Ons", body: "Treat your pup to something extra special. Choose from our menu of de-shedding treatments, teeth brushing, paw pad moisturizers, and more." } }],
+            },
+          },
+        ],
+      },
+    },
+
+    // ── ABOUT ────────────────────────────────────────────────────────────────────────────────
+    {
+      type: "Section",
+      props: {
+        id: "lab-about", background: "#ffffff", maxWidth: "80rem",
+        paddingTop: 80, paddingBottom: 80, decor: "",
+        content: [
+          {
+            type: "Columns",
+            props: {
+              id: "lab-about-cols", columns: 2, gap: 48,
+              col1: [
+                {
+                  type: "HeroImage",
+                  props: {
+                    id: "lab-about-photo",
+                    src: "https://zgnpmogdjnnhpwewavnr.supabase.co/storage/v1/object/public/project-images/bcda9a64-6721-499a-bdaa-5d6a9977abe9/9e8bd702-caf3-4337-8d30-2d4957a127b6.png",
+                    alt: "Smiling female dog groomer in a blue apron gently hugging a clean happy Golden Retriever inside a bright modern pet salon",
+                    height: 480, tilt: -2, glow: "#10b981", frame: "#ffffff", radius: 32,
+                    badgeTitle: "", badgeBody: "", pillText: "", pillColor: "#10b981",
+                    spaceAbove: 0, spaceBelow: 0,
+                  },
+                },
+              ],
+              col2: [
+                { type: "Text", props: { id: "lab-about-eyebrow", text: "YOUR SAN ANTONIO PET OASIS", align: "left", color: "#0ea5e9", fontSize: 14, spaceAbove: 0, spaceBelow: 8 } },
+                { type: "Heading", props: { id: "lab-about-h2", text: "A Clean, Safe, and Stress-Free Haven", fontSize: 40, align: "left", color: "#334155", spaceAbove: 0, spaceBelow: 16, underline: "" } },
+                { type: "Text", props: { id: "lab-about-body", text: "Located conveniently on New Laredo Hwy, Lucky Dog Wash House was founded with a simple mission: to provide a positive and comfortable grooming experience for every pet that walks through our doors. Our facility is meticulously cleaned, our equipment is top-of-the-line, and our staff are passionate animal lovers trained in gentle handling techniques.", align: "left", color: "#4b5563", fontSize: 17, spaceAbove: 0, spaceBelow: 24 } },
+                {
+                  type: "CheckList",
+                  props: {
+                    id: "lab-about-checks", dotColor: "#22c55e",
+                    rows: [
+                      { heading: "Impeccably clean and sanitized environment", body: "" },
+                      { heading: "Premium, pet-safe grooming products", body: "" },
+                      { heading: "Experienced and caring professional staff", body: "" },
+                    ],
+                  },
+                },
+                { type: "Button", props: { id: "lab-about-cta", title: "Book An Appointment", subtitle: "", href: "#lab-contact" } },
+              ],
+              col3: [],
+            },
+          },
+        ],
+      },
+    },
+
+    // ── HOW IT WORKS ─────────────────────────────────────────────────────────────────────────
+    // The numbered steps use Card's `badge` field — the same 1/2/3 circle that started this
+    // whole thread when Steven asked where its hardcoded blue lived.
+    {
+      type: "Section",
+      props: {
+        id: "lab-process", background: "#f8fafc", maxWidth: "80rem",
+        paddingTop: 80, paddingBottom: 80, decor: "#f59e0b",
+        content: [
+          { type: "Text", props: { id: "lab-proc-eyebrow", text: "HOW IT WORKS", align: "center", color: "#0ea5e9", fontSize: 14, spaceAbove: 0, spaceBelow: 8 } },
+          { type: "Heading", props: { id: "lab-proc-h2", text: "A Breeze from Start to Finish", fontSize: 44, align: "center", color: "#334155", spaceAbove: 0, spaceBelow: 12, underline: "" } },
+          { type: "Text", props: { id: "lab-proc-sub", text: "We've designed our process to be as simple and enjoyable as possible for both you and your furry friend.", align: "center", color: "#4b5563", fontSize: 18, spaceAbove: 0, spaceBelow: 40 } },
+          {
+            type: "Columns",
+            props: {
+              id: "lab-proc-cols", columns: 3, gap: 24,
+              col1: [{ type: "Card", props: { id: "lab-proc1", badge: "1", badgeColor: "#f59e0b", badgePosition: "edge", icon: "calendar-check", iconColor: "#f59e0b", centered: true, eyebrow: "", heading: "Check-In & Consult", body: "Arrive for your appointment or walk in. We'll discuss your pet's needs and get them settled in." } }],
+              col2: [{ type: "Card", props: { id: "lab-proc2", badge: "2", badgeColor: "#10b981", badgePosition: "edge", icon: "bath", iconColor: "#10b981", centered: true, eyebrow: "", heading: "Wash & Pamper", body: "Whether it's a self-wash or full grooming, your pup gets the 5-star treatment with our premium products." } }],
+              col3: [{ type: "Card", props: { id: "lab-proc3", badge: "3", badgeColor: "#0ea5e9", badgePosition: "edge", icon: "wind", iconColor: "#0ea5e9", centered: true, eyebrow: "", heading: "Dry & Go Home Happy", body: "We'll get your dog fluffy and dry with our professional dryers. They'll leave looking, smelling, and feeling fantastic!" } }],
+            },
+          },
+        ],
+      },
+    },
+
+    // ── TESTIMONIALS ─────────────────────────────────────────────────────────────────────────
+    {
+      type: "Section",
+      props: {
+        id: "lab-testimonials", background: "#ffffff", maxWidth: "80rem",
+        paddingTop: 80, paddingBottom: 80, decor: "",
+        content: [
+          { type: "Text", props: { id: "lab-rev-eyebrow", text: "DON'T JUST TAKE OUR WORD FOR IT", align: "center", color: "#0ea5e9", fontSize: 14, spaceAbove: 0, spaceBelow: 8 } },
+          { type: "Heading", props: { id: "lab-rev-h2", text: "Hear From Our Happy Customers", fontSize: 44, align: "center", color: "#334155", spaceAbove: 0, spaceBelow: 40, underline: "" } },
+          {
+            type: "Columns",
+            props: {
+              id: "lab-rev-cols", columns: 3, gap: 24,
+              col1: [{ type: "Card", props: { id: "lab-rev1", badge: "", eyebrow: "★★★★★  MARIA G.", heading: "", body: "\"The staff is always so friendly and patient with my anxious dog. The facility is spotless every single time. We love the self-serve wash stations, they have everything!\"" } }],
+              col2: [{ type: "Card", props: { id: "lab-rev2", badge: "", eyebrow: "★★★★★  JOHN S.", heading: "", body: "\"Best place in San Antonio, hands down. The full-service groom they did on my husky was incredible. He came back looking like a show dog. Highly recommend.\"" } }],
+              col3: [{ type: "Card", props: { id: "lab-rev3", badge: "", eyebrow: "★★★★★  LINDA P.", heading: "", body: "\"A fantastic local business. I appreciate how clean and well-maintained everything is. The prices are fair and the results are always great. We're regulars now.\"" } }],
+            },
+          },
+        ],
+      },
+    },
+
+    // ── CONTACT ──────────────────────────────────────────────────────────────────────────────
+    // ⚠️ Their form posts to THEIR Supabase. This one is OUR LeadForm block — instant email plus
+    // a Google Sheet row — which is the second half of why a design gets pulled over here.
+    {
+      type: "Section",
+      props: {
+        id: "lab-contact", background: "#f8fafc", maxWidth: "56rem",
+        paddingTop: 80, paddingBottom: 88, decor: "#0ea5e9",
+        content: [
+          { type: "Heading", props: { id: "lab-contact-h2", text: "Book Your Pup's Pamper Day", fontSize: 44, align: "center", color: "#334155", spaceAbove: 0, spaceBelow: 12, underline: "#f59e0b" } },
+          { type: "Text", props: { id: "lab-contact-sub", text: "819 New Laredo Hwy, San Antonio, TX 78211  ·  Open today", align: "center", color: "#4b5563", fontSize: 17, spaceAbove: 0, spaceBelow: 32 } },
+          {
+            type: "LeadForm",
+            props: {
+              id: "lab-contact-form",
+              source: "/lab — Lucky Dog design port",
+              fields: [
+                { label: "Your name", inputType: "text" },
+                { label: "Best phone number", inputType: "tel" },
+                { label: "Your dog's breed and size", inputType: "text" },
+                { label: "What service are you after?", inputType: "text" },
+              ],
+              buttonLabel: "Request My Appointment",
+              note: "We'll text you back to confirm a time. Rather just talk? Call (210) 474-6252.",
+              successHeading: "Got it — we'll text you shortly.",
+              successBody: "Keep an eye on your phone. If you'd rather not wait, call us at (210) 474-6252.",
+            },
+          },
+        ],
+      },
+    },
+
+    // Same story as the header — lives in this page for the port, moves out to its own global
+    // footer document on a real client site.
+    {
+      type: "SiteFooter",
+      props: {
+        id: "lab-footer",
+        blurb: "Self-serve wash bays and full-service grooming on New Laredo Hwy. Spotless facility, gentle handling, and a dog that comes home happy.",
+        links: [
+          { label: "Services", target: "#lab-services" },
+          { label: "About Us", target: "#lab-about" },
+          { label: "Reviews", target: "#lab-testimonials" },
+        ],
+        phone: "+12104746252",
+        phoneDisplay: "(210) 474-6252",
+        email: "hello@luckydogwashhouse.com",
+        privacyUrl: "",
+        tosUrl: "",
+        copyright: "Lucky Dog Wash House · San Antonio, TX",
+        background: "#334155",
+        foreground: "#ffffff",
+        brandName: "Lucky Dog Wash House",
+        showLogo: false,
+      },
+    },
+  ],
+};
+
 const SEEDS: Record<string, Data> = {
+  "lucky-dog-wash-house": LAB_SEED,
   websites: WEBSITES_SEED,
   "websites-nav": WEBSITES_NAV_SEED,
   "websites-footer": WEBSITES_FOOTER_SEED,

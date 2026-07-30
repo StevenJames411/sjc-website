@@ -38,6 +38,9 @@ export default function BrandStyle({ brand }: { brand: Brand }) {
 --color-sjc-navy:${brand.bandDark};
 --color-sjc-green:${brand.cta};
 --color-sjc-green-hover:${brand.ctaHover};
+--color-sjc-navy-deep:${brand.bandDarker};
+--color-sjc-secondary:${brand.secondary};
+--color-sjc-highlight:${brand.highlight};
 --font-sans:var(${fontVar}), ${FALLBACK_STACK};
 }`;
 

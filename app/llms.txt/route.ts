@@ -3,6 +3,10 @@
 // without wading through rendered HTML. Aligned with the site's committed metadata + JSON-LD in
 // app/layout.tsx. Public-facing (AI-implementation) lane only. Goes live when the password wall
 // comes off at launch.
+//
+// ⚠️ NO PRICES IN THIS FILE. Everything below is served verbatim for an AI assistant to quote back
+// to a prospect. Price on the website offer comes up on the discovery call — putting a number here
+// hands it over before the conversation happens. Same rule as the /websites meta description.
 export const dynamic = "force-static";
 
 const BODY = `# Steven James Consulting
@@ -16,7 +20,7 @@ Steven James Consulting is an AI-implementation partner for service businesses. 
 - [About](https://www.stevenjamesconsulting.com/about): Steven Barchetti — 40 years, five businesses, tech lead in all.
 - [FAQs](https://www.stevenjamesconsulting.com/faqs): What we install, what it costs, how long it takes.
 - [Podcast](https://www.stevenjamesconsulting.com/podcast): Conversations with operators across industries.
-- [Websites](https://www.stevenjamesconsulting.com/websites): Websites for small businesses — a 3-5 page site built and hosted for $795 plus $25/month, live in three days, built to be found on Google and by AI assistants.
+- [Websites](https://www.stevenjamesconsulting.com/websites): Websites for small businesses — a 3-5 page site built, hosted and kept current, live in three days, built to be found on Google and by AI assistants.
 - [Apply](https://www.stevenjamesconsulting.com/apply): Book a discovery call.
 
 ## About Steven Barchetti

@@ -15,15 +15,23 @@ import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
 import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
+import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
+import Icon, { ICON_OPTIONS } from "@/components/blocks/Icon";
+import { resolveColor, resolveColorOr } from "@/lib/brandColor";
 
 type Align = "left" | "center" | "right";
 
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
-  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; content: Slot };
+  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean };
+  HeroImage: {
+    src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
+    radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
+    spaceAbove: number; spaceBelow: number;
+  };
   CheckList: { dotColor: string; rows: { heading: string; body: string }[] };
   PriceBox: {
     topAmount: string;
@@ -40,18 +48,20 @@ type Props = {
     note: string;
     successHeading: string;
     successBody: string;
+    buttonColor: string;
+    inColumn: boolean;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
-  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
-  Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string };
-  Button: { title: string; subtitle: string; href: string };
+  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string };
+  Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
+  Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
   Video: { src: string; caption: string; poster: string };
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -67,6 +77,12 @@ type Props = {
     ctaLabel: string;
     ctaHref: string;
     ctaNewTab: boolean;
+    background: string;
+    foreground: string;
+    showLogo: boolean;
+    ctaColor: string;
+    brandIcon: string;
+    brandIconColor: string;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
   // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
@@ -96,6 +112,7 @@ const BG_FIELD = {
   type: "select" as const,
   options: [
     { label: "White", value: "#ffffff" },
+    { label: "Off-white", value: "#f8fafc" },
     { label: "Light gray", value: "#f3f4f6" },
     { label: "SJC navy", value: "#1e3a6e" },
     { label: "Dark navy", value: "#0f1f3d" },
@@ -160,6 +177,14 @@ export const NAV_DEFAULTS = {
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
   ctaNewTab: false,
+  // Blank/true = today's SJC look. A client build overrides these; nothing already saved has
+  // them, so every existing nav renders exactly as before.
+  background: "",
+  foreground: "",
+  showLogo: true,
+  ctaColor: "",
+  brandIcon: "",
+  brandIconColor: "",
 };
 
 // Single source of truth for the footer — used by the seed (so /edit/footer opens to it) AND
@@ -177,6 +202,10 @@ export const FOOTER_DEFAULTS = {
   privacyUrl: "https://www.privacypolicies.com/live/1cbbc5dd-5b42-4b68-abdd-a279a5e3b4f7",
   tosUrl: "https://www.privacypolicies.com/live/34bb5cc7-32b9-4449-ae32-7cfe78f34e45",
   copyright: "ARV Venture Group LLC Parent Company · Steven James Consulting",
+  background: "",
+  foreground: "",
+  brandName: "",
+  showLogo: true,
 };
 
 export const IMAGE_DEFAULTS = {
@@ -219,7 +248,48 @@ export const STAFFROSTER_DEFAULTS = {
   ] as { name: string; email: string; role: string; isAI: boolean }[],
 };
 
-export const config: Config<Props> = {
+// ── PAGE SETTINGS (the root panel) ────────────────────────────────────────────────────────────
+// What a page IS, as opposed to what's on it. These four show in the right-hand panel the moment
+// the editor opens with no block selected — deliberately the first thing you see, because they
+// used to live in code and could only be changed by a developer.
+//
+// They exist because of a real failure: a demo built for a business still previewed as "Steven
+// James Consulting — AI employees for your business" when its link was texted, since a page with
+// nothing of its own inherits the SJC site defaults from app/layout.tsx. Filling these in is what
+// severs that inheritance. See generateMetadata in app/[slug]/page.tsx — it reads exactly these.
+type RootProps = {
+  title: string;
+  description: string;
+  businessName: string;
+  shareImage: string;
+};
+
+export const config: Config<Props, RootProps> = {
+  // Labels are written for the person filling them in, not for an SEO tool: they name WHERE the
+  // text shows up, because that's the only thing that makes the field self-explanatory on sight.
+  root: {
+    fields: {
+      title: {
+        type: "text" as const,
+        label: "Page title — the browser tab, and the bold line when this link is texted",
+      },
+      description: {
+        type: "textarea" as const,
+        label: "Preview text — the sentence under the title in a text message or Google result",
+      },
+      businessName: {
+        type: "text" as const,
+        label: "Business name — the source line on the preview card (leave blank on SJC's own pages)",
+      },
+      shareImage: {
+        type: "custom" as const,
+        label: "Preview image — the picture in the text-message card",
+        render: ({ onChange, value }) => (
+          <ImageUpload value={(value as string) || ""} onChange={onChange} />
+        ),
+      },
+    },
+  },
   // The parts bin, grouped so the everyday kit is on top and the one-off legacy sections
   // (built for specific pages before the generic blocks existed) stay collapsed out of the way.
   // A block NOT listed in any category falls into "other" automatically.
@@ -228,7 +298,8 @@ export const config: Config<Props> = {
       title: "Building blocks",
       defaultExpanded: true,
       components: ["Section", "Columns", "Heading", "Text", "Button", "Card", "CheckList",
-                   "PriceBox", "Conversation", "Image", "Video", "Spacer", "Divider", "PhoneLink"] as (keyof Props)[],
+                   "PriceBox", "Conversation", "Image", "HeroImage", "Video", "Spacer", "Divider",
+                   "PhoneLink"] as (keyof Props)[],
     },
     forms: {
       title: "Forms",
@@ -251,13 +322,65 @@ export const config: Config<Props> = {
       label: "Card (white box)",
       fields: {
         badge: { type: "text" as const, label: "Number badge (optional — e.g. 1)" },
+        badgeColor: {
+          type: "custom" as const,
+          label: "Badge colour (blank = site blue)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        badgePosition: {
+          type: "radio" as const,
+          label: "Badge position",
+          options: [
+            { label: "Inside, top-left", value: "" },
+            { label: "Floating on the top edge", value: "edge" },
+          ],
+        },
+        icon: { type: "select" as const, label: "Icon", options: ICON_OPTIONS },
+        iconColor: {
+          type: "custom" as const,
+          label: "Icon colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         eyebrow: { type: "text" as const, label: "Small label above (optional)" },
         heading: { type: "textarea" as const, label: "Heading" },
         body: { type: "textarea" as const, label: "Body" },
+        centered: {
+          type: "radio" as const,
+          label: "Text",
+          options: [
+            { label: "Left", value: false },
+            { label: "Centered", value: true },
+          ],
+        },
+        layout: {
+          type: "radio" as const,
+          label: "Layout",
+          options: [
+            { label: "Stacked (icon above)", value: "" },
+            { label: "Row (icon beside — contact details)", value: "row" },
+          ],
+        },
+        bare: {
+          type: "radio" as const,
+          label: "Card box",
+          options: [
+            { label: "White box", value: false },
+            { label: "No box (sits on the band)", value: true },
+          ],
+        },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body }) => (
-        <Card badge={badge} eyebrow={eyebrow} heading={heading} body={body} />
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare }) => (
+        <Card
+          badge={badge} eyebrow={eyebrow} heading={heading} body={body}
+          icon={icon} iconColor={iconColor} badgeColor={badgeColor}
+          badgePosition={badgePosition} centered={centered}
+          layout={layout} bare={bare}
+        />
       ),
     },
 
@@ -337,9 +460,24 @@ export const config: Config<Props> = {
         note: { type: "textarea" as const, label: "Small line under the button" },
         successHeading: { type: "text" as const, label: "Thank-you heading" },
         successBody: { type: "textarea" as const, label: "Thank-you body" },
+        buttonColor: {
+          type: "custom" as const,
+          label: "Submit button colour (blank = site blue)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        inColumn: {
+          type: "radio" as const,
+          label: "Width",
+          options: [
+            { label: "Centred island", value: false },
+            { label: "Fill the column", value: true },
+          ],
+        },
       },
       defaultProps: LEADFORM_DEFAULTS as LeadFormBlock,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn }) => (
         <LeadForm
           source={source}
           fields={fields}
@@ -347,6 +485,8 @@ export const config: Config<Props> = {
           note={note}
           successHeading={successHeading}
           successBody={successBody}
+          buttonColor={buttonColor}
+          inColumn={inColumn}
         />
       ),
     },
@@ -572,9 +712,33 @@ export const config: Config<Props> = {
         privacyUrl: { type: "text" as const, label: "Privacy Policy URL" },
         tosUrl: { type: "text" as const, label: "Terms of Service URL" },
         copyright: { type: "text" as const, label: "Copyright line" },
+        // Same story as the header — blank keeps SJC's look, set them for a client build.
+        background: {
+          type: "custom" as const,
+          label: "Footer band colour (blank = SJC near-black)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        foreground: {
+          type: "custom" as const,
+          label: "Footer text colour (blank = white)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        brandName: { type: "text" as const, label: "Business name (blank = Steven James Consulting)" },
+        showLogo: {
+          type: "radio" as const,
+          label: "SJC logo",
+          options: [
+            { label: "Show", value: true },
+            { label: "Hide (client site)", value: false },
+          ],
+        },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright }) => (
+      render: ({ blurb, links, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -584,6 +748,10 @@ export const config: Config<Props> = {
           privacyUrl={privacyUrl}
           tosUrl={tosUrl}
           copyright={copyright}
+          background={background}
+          foreground={foreground}
+          brandName={brandName}
+          showLogo={showLogo}
         />
       ),
     },
@@ -634,9 +802,49 @@ export const config: Config<Props> = {
         ctaLabel: { type: "text" as const, label: "Button label (leave blank to hide)" },
         ctaHref: { type: "text" as const, label: "Button links to" },
         ctaNewTab: { ...OPENS_IN_FIELD },
+        // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
+        // Blank = SJC's own look. Set these on a client build so their header isn't wearing
+        // our navy. Existing nav documents have none of them saved, so they render unchanged.
+        background: {
+          type: "custom" as const,
+          label: "Header band colour (blank = SJC navy)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        foreground: {
+          type: "custom" as const,
+          label: "Header text colour (blank = white)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        showLogo: {
+          type: "radio" as const,
+          label: "SJC logo",
+          options: [
+            { label: "Show", value: true },
+            { label: "Hide (client site)", value: false },
+          ],
+        },
+        ctaColor: {
+          type: "custom" as const,
+          label: "Button colour (blank = SJC blue)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        brandIcon: { type: "select" as const, label: "Mark beside the name (client sites)", options: ICON_OPTIONS },
+        brandIconColor: {
+          type: "custom" as const,
+          label: "Mark colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor }) => (
         <NavView
           brandName={brandName}
           brandHref={brandHref}
@@ -648,6 +856,12 @@ export const config: Config<Props> = {
           ctaLabel={ctaLabel}
           ctaHref={ctaHref}
           ctaNewTab={ctaNewTab}
+          background={background}
+          foreground={foreground}
+          showLogo={showLogo}
+          ctaColor={ctaColor}
+          brandIcon={brandIcon}
+          brandIconColor={brandIconColor}
         />
       ),
     },
@@ -671,13 +885,42 @@ export const config: Config<Props> = {
             <SizeStepper label="Padding bottom" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
           ),
         },
+        // Soft colour washes bleeding in from the corners. Blank = off, which is what every
+        // existing Section has saved, so nothing already built changes.
+        decor: {
+          type: "custom" as const,
+          label: "Corner glow (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, content: [] },
-      render: ({ id, background, maxWidth, paddingTop, paddingBottom, content: Content }) => (
-        <section id={typeof id === "string" ? id : undefined} style={{ backgroundColor: background }} className="w-full scroll-mt-20">
+      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", content: [] },
+      render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, content: Content }) => (
+        <section
+          id={typeof id === "string" ? id : undefined}
+          style={{ backgroundColor: resolveColor(background) }}
+          className={`w-full scroll-mt-20${decor ? " relative overflow-hidden" : ""}`}
+        >
+          {/* Two large blurred circles, opposite corners, pointer-events-none so they can never
+              swallow a click on anything sitting above them. */}
+          {decor ? (
+            <>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-32 -top-32 h-[36rem] w-[36rem] rounded-full blur-3xl"
+                style={{ background: resolveColor(decor), opacity: 0.12 }}
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-40 -left-40 h-[28rem] w-[28rem] rounded-full blur-3xl"
+                style={{ background: resolveColor(decor), opacity: 0.08 }}
+              />
+            </>
+          ) : null}
           <div
-            className="mx-auto px-6"
+            className={`mx-auto px-6${decor ? " relative z-10" : ""}`}
             style={{
               // Existing pages have no maxWidth saved — fall back to the old max-w-3xl so nothing shifts.
               maxWidth: maxWidth || "48rem",
@@ -730,7 +973,7 @@ export const config: Config<Props> = {
       defaultProps: { color: "#e5e7eb", thickness: 1, spacing: 24 },
       render: ({ color, thickness, spacing }) => (
         <div style={{ padding: `${typeof spacing === "number" ? spacing : 24}px 0` }}>
-          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${color || "#e5e7eb"}`, margin: 0 }} />
+          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${resolveColorOr(color, "#e5e7eb")}`, margin: 0 }} />
         </div>
       ),
     },
@@ -816,24 +1059,86 @@ export const config: Config<Props> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // TWO-TONE — type the words you want in the accent colour and they get picked out of the
+        // headline. A flat single-colour headline is the biggest thing separating a template
+        // from a designed page, and it costs one text field.
+        highlight: { type: "text" as const, label: "Words to colour differently (blank = none)" },
+        highlightColor: {
+          type: "custom" as const,
+          label: "Highlight colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        // The hand-drawn swipe under a headline. Blank = off, which is what every existing
+        // heading on the site has saved, so nothing already built changes.
+        underline: {
+          type: "custom" as const,
+          label: "Hand-drawn underline (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827" },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color }) => {
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "", highlight: "", highlightColor: "" },
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
+
+        // The marker swipe. A straight rule reads like a border; this reads like someone drew it.
+        const swipeUnder = (inner: React.ReactNode, key?: string) => (
+          <span key={key} className="relative inline-block">
+            <span className="relative z-10">{inner}</span>
+            <svg
+              aria-hidden
+              viewBox="0 0 100 10"
+              preserveAspectRatio="none"
+              className="absolute left-0 w-full"
+              style={{ bottom: `-${Math.round(px * 0.08)}px`, height: `${Math.round(px * 0.22)}px`, color: resolveColor(underline), zIndex: 0 }}
+            >
+              <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" strokeLinecap="round" />
+            </svg>
+          </span>
+        );
+
+        // Split the headline around the highlighted words. Case-insensitive, so "premier pet wash"
+        // finds "Premier Pet Wash"; if the words aren't in the text we render it unchanged rather
+        // than silently dropping anything.
+        //
+        // When BOTH a highlight and an underline are set, the swipe goes under the highlighted
+        // words only — not the whole headline. That's the move the design actually makes: one
+        // phrase picked out in colour with a stroke under it, the rest left alone.
+        const hl = (highlight || "").trim();
+        const at = hl && highlightColor ? String(text || "").toLowerCase().indexOf(hl.toLowerCase()) : -1;
+
+        let body: React.ReactNode;
+        if (at >= 0) {
+          const marked = (
+            <span key="hl" style={{ color: resolveColor(highlightColor) }}>
+              {text.slice(at, at + hl.length)}
+            </span>
+          );
+          body = [
+            text.slice(0, at),
+            underline ? swipeUnder(marked, "hl-wrap") : marked,
+            text.slice(at + hl.length),
+          ];
+        } else {
+          body = underline ? swipeUnder(text) : text;
+        }
         return (
           <h2
             className="font-bold leading-tight tracking-tight"
             style={{
               fontSize: `${px}px`,
               textAlign: align,
-              color: color || "#111827",
+              color: resolveColorOr(color, "#111827"),
               marginTop: 0,
               marginBottom: 0,
               paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 0}px`,
               paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 12}px`,
             }}
           >
-            {text}
+            {body}
           </h2>
         );
       },
@@ -873,6 +1178,31 @@ export const config: Config<Props> = {
         },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: { ...COLOR_FIELD, label: "Default color (whole block)" },
+        // PILL MODE — turns a line of text into the little bordered badge a good design uses for
+        // a star rating or an address. Blank = an ordinary paragraph, which is what every
+        // existing Text block on the site has saved.
+        pill: {
+          type: "custom" as const,
+          label: "Pill background (blank = plain text)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        pillBorder: {
+          type: "custom" as const,
+          label: "Pill border colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        icon: { type: "select" as const, label: "Icon before the text", options: ICON_OPTIONS },
+        iconColor: {
+          type: "custom" as const,
+          label: "Icon colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
       defaultProps: {
         text: "New paragraph. Select any word and use the toolbar to format it.",
@@ -881,41 +1211,144 @@ export const config: Config<Props> = {
         spaceBelow: 0,
         align: "left" as const,
         color: "#111827",
+        pill: "",
+        pillBorder: "",
+        icon: "",
+        iconColor: "",
       },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color }) => (
-        <div
-          className="rt leading-relaxed"
-          style={{
-            textAlign: align,
-            color: color || "#111827",
-            marginTop: 0,
-            marginBottom: 0,
-            paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 16}px`,
-            paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px`,
-            fontSize: `${fontSize && fontSize > 0 ? fontSize : 18}px`,
-          }}
-          dangerouslySetInnerHTML={{ __html: text }}
-        />
-      ),
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, pill, pillBorder, icon, iconColor }) => {
+        const pad = {
+          paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 16}px`,
+          paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px`,
+        };
+        const size = `${fontSize && fontSize > 0 ? fontSize : 18}px`;
+        const body = (
+          <span className="rt" style={{ fontSize: size }} dangerouslySetInnerHTML={{ __html: text }} />
+        );
+
+        // Plain paragraph — byte-identical to before when no pill and no icon are set.
+        if (!pill && !pillBorder && !icon) {
+          return (
+            <div
+              className="rt leading-relaxed"
+              style={{ textAlign: align, color: resolveColorOr(color, "#111827"), marginTop: 0, marginBottom: 0, ...pad, fontSize: size }}
+              dangerouslySetInnerHTML={{ __html: text }}
+            />
+          );
+        }
+
+        const justify = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
+        return (
+          <div className="flex" style={{ justifyContent: justify, ...pad }}>
+            <span
+              className={`inline-flex items-center gap-2 leading-snug${pill || pillBorder ? " rounded-full px-4 py-2" : ""}`}
+              style={{
+                color: resolveColorOr(color, "#111827"),
+                background: pill || undefined,
+                border: pillBorder ? `1px solid ${resolveColor(pillBorder)}` : undefined,
+                boxShadow: pill || pillBorder ? "0 1px 2px rgba(0,0,0,0.05)" : undefined,
+              }}
+            >
+              <Icon name={icon} size={Math.round((fontSize && fontSize > 0 ? fontSize : 18) * 0.95)} style={{ color: resolveColor(iconColor) }} />
+              {body}
+            </span>
+          </div>
+        );
+      },
     },
 
+    // Every field here defaults to blank/empty, and blank means "render exactly as before" —
+    // the old .btn-cta, centred, no icon. Existing pages have none of these saved, so nothing
+    // already built moves. Set them and you get the pill/outline/icon treatments a real design
+    // uses (a filled Book button next to an outlined Call button with a phone icon).
     Button: {
       label: "Call-to-action button",
       fields: {
         title: { type: "text" as const, label: "Button text" },
         subtitle: { type: "textarea" as const, label: "Small line under (optional)" },
         href: { type: "text" as const, label: "Link" },
+        icon: { type: "select" as const, label: "Icon", options: ICON_OPTIONS },
+        variant: {
+          type: "radio" as const,
+          label: "Style",
+          options: [
+            { label: "Site default", value: "" },
+            { label: "Filled", value: "filled" },
+            { label: "Outlined", value: "outline" },
+          ],
+        },
+        shape: {
+          type: "radio" as const,
+          label: "Shape",
+          options: [
+            { label: "Rounded", value: "" },
+            { label: "Pill", value: "pill" },
+          ],
+        },
+        color: {
+          type: "custom" as const,
+          label: "Button colour (blank = site default)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        align: { ...ALIGN_FIELD, label: "Align" },
+        fullWidth: {
+          type: "radio" as const,
+          label: "Width",
+          options: [
+            { label: "Fit text", value: false },
+            { label: "Full width", value: true },
+          ],
+        },
       },
       defaultProps: {
         title: "Book the Call",
         subtitle: "",
         href: "/#contact",
+        icon: "",
+        variant: "",
+        shape: "",
+        color: "",
+        align: "center" as Align,
+        fullWidth: false,
       },
-      render: ({ title, subtitle, href }) => (
-        <div className="mt-8 flex justify-center">
-          <CtaButton title={title} subtitle={subtitle || undefined} href={href} />
-        </div>
-      ),
+      render: ({ title, subtitle, href, icon, variant, shape, color, align, fullWidth }) => {
+        // No styling chosen => the original button, untouched.
+        if (!variant && !shape && !color && !icon) {
+          return (
+            <div className="mt-8 flex justify-center">
+              <CtaButton title={title} subtitle={subtitle || undefined} href={href} />
+            </div>
+          );
+        }
+        const accent = resolveColorOr(color, "#2563eb");
+        const outlined = variant === "outline";
+        const justify = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
+        return (
+          <div className="mt-6 flex" style={{ justifyContent: justify }}>
+            <a
+              href={href || "#"}
+              className={`inline-flex items-center justify-center gap-2 px-8 py-4 font-bold transition-all hover:-translate-y-0.5${
+                shape === "pill" ? " rounded-full" : " rounded-xl"
+              }${fullWidth ? " w-full" : ""}`}
+              style={
+                outlined
+                  ? { border: `2px solid ${accent}`, color: accent, background: "#ffffff" }
+                  : { background: accent, color: "#ffffff", boxShadow: accent.startsWith("var(") ? "0 8px 20px -6px rgba(0,0,0,0.25)" : `0 8px 20px -6px ${accent}80` }
+              }
+            >
+              <span className="flex flex-col items-center leading-tight">
+                <span className="flex items-center gap-2">
+                  {title}
+                  <Icon name={icon} size={18} />
+                </span>
+                {subtitle ? <span className="text-xs font-medium opacity-80">{subtitle}</span> : null}
+              </span>
+            </a>
+          </div>
+        );
+      },
     },
 
     PhoneLink: {
@@ -978,6 +1411,98 @@ export const config: Config<Props> = {
           </div>
         );
       },
+    },
+
+    // The hero photo treatment — tilt, glow, white frame, and up to two cards floating on the
+    // photo's corners. Separate from Image because the badges sit ON the photo and therefore have
+    // to live in the same box; assembling that from loose blocks would need absolute-position
+    // controls in the builder. Every effect is optional, so this also renders a plain photo.
+    HeroImage: {
+      label: "Hero photo (tilt + floating cards)",
+      fields: {
+        src: {
+          type: "custom" as const,
+          label: "Photo",
+          render: ({ onChange, value }) => (
+            <ImageUpload value={value as string} onChange={onChange} />
+          ),
+        },
+        alt: { type: "text" as const, label: "Alt text (describe the photo)" },
+        height: {
+          type: "custom" as const,
+          label: "Photo height (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={560} step={20} min={160} allowZero={false} />
+          ),
+        },
+        tilt: {
+          type: "select" as const,
+          label: "Tilt",
+          options: [
+            { label: "Straight", value: 0 },
+            { label: "Slight right (2°)", value: 2 },
+            { label: "Right (3°)", value: 3 },
+            { label: "Slight left (−2°)", value: -2 },
+            { label: "Left (−3°)", value: -3 },
+          ],
+        },
+        radius: {
+          type: "custom" as const,
+          label: "Corner rounding (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Corner rounding" value={value as number} onChange={onChange} fallback={40} step={4} min={0} />
+          ),
+        },
+        frame: {
+          type: "select" as const,
+          label: "White frame",
+          options: [
+            { label: "White frame", value: "#ffffff" },
+            { label: "No frame", value: "" },
+          ],
+        },
+        glow: {
+          type: "custom" as const,
+          label: "Glow behind photo (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        badgeTitle: { type: "text" as const, label: "Floating card — bold line (blank = hide)" },
+        badgeBody: { type: "text" as const, label: "Floating card — small line" },
+        pillText: { type: "text" as const, label: "Corner pill — e.g. Open Today (blank = hide)" },
+        pillColor: {
+          type: "custom" as const,
+          label: "Corner pill color",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+          ),
+        },
+      },
+      defaultProps: HERO_IMAGE_DEFAULTS,
+      // Destructured rather than spread: Puck also injects `puck`, `editMode` and `id` into every
+      // render, and HeroImage only accepts its own props.
+      render: ({ src, alt, height, tilt, glow, frame, radius, badgeTitle, badgeBody, pillText, pillColor, spaceAbove, spaceBelow }) => (
+        <HeroImage
+          src={src} alt={alt} height={height} tilt={tilt} glow={glow} frame={frame} radius={radius}
+          badgeTitle={badgeTitle} badgeBody={badgeBody} pillText={pillText} pillColor={pillColor}
+          spaceAbove={spaceAbove} spaceBelow={spaceBelow}
+        />
+      ),
     },
 
     Image: {

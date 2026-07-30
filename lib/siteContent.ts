@@ -1,7 +1,7 @@
 // Server-only content loaders. Reads the shared Upstash drawer (ioredis) — never import
 // this from a client component (it would pull the redis client into the browser bundle).
 import { createKvStore } from "./kvStateStore";
-import { getClient } from "./kvRedis";
+import { getClient } from "./store";
 import { keyFor, type SiteDoc } from "./contentShared";
 
 // RETIRED: the old inline-editor override layer (`sjc-site-<page>-pub`) is dead. It was

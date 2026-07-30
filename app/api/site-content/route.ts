@@ -3,7 +3,7 @@
 // `sjc-site-<page>-pub` (published snapshot). GET is public so pages can read content;
 // PUT is gated by middleware (only the signed-in editor can write).
 import { createKvStore } from "@/lib/kvStateStore";
-import { getClient } from "@/lib/kvRedis";
+import { getClient } from "@/lib/store";
 import { keyFor } from "@/lib/contentShared";
 
 export const dynamic = "force-dynamic";

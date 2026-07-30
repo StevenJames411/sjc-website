@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { resolveColor } from "@/lib/brandColor";
 
 // A short lead-capture form, fully driven by props so it can be dropped on ANY page from the
 // builder and re-labelled without touching code. Add/remove/reorder the questions, change the
@@ -18,6 +19,12 @@ export type LeadFormProps = {
   note?: string;
   successHeading?: string;
   successBody?: string;
+  // The submit button was welded to SJC blue — our brand on the client's most important
+  // element. Blank keeps the old behaviour exactly.
+  buttonColor?: string;
+  // Drops the centring + max-width so the form can sit in one half of a two-column layout
+  // (contact details on the left, form on the right) instead of always being a centred island.
+  inColumn?: boolean;
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
@@ -31,6 +38,8 @@ export const LEADFORM_DEFAULTS: LeadFormProps = {
   buttonLabel: "Send Me My Website",
   note: "No obligation, and nothing gets built until you say so. Rather just talk? Call (210) 298-2343.",
   successHeading: "Got it. I'll call you today.",
+  buttonColor: "",
+  inColumn: false,
   successBody:
     "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 298-2343.",
 };
@@ -49,6 +58,8 @@ export default function LeadForm(props: LeadFormProps) {
     note = LEADFORM_DEFAULTS.note,
     successHeading = LEADFORM_DEFAULTS.successHeading,
     successBody = LEADFORM_DEFAULTS.successBody,
+    buttonColor,
+    inColumn,
   } = props;
 
   const list = (Array.isArray(fields) && fields.length ? fields : LEADFORM_DEFAULTS.fields) || [];
@@ -92,7 +103,7 @@ export default function LeadForm(props: LeadFormProps) {
 
   if (state === "done") {
     return (
-      <div className="mx-auto max-w-xl rounded-2xl bg-white p-8 text-center shadow-sm md:p-10">
+      <div className={`rounded-2xl bg-white p-8 text-center shadow-sm md:p-10${inColumn ? "" : " mx-auto max-w-xl"}`}>
         <h3 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
           {successHeading}
         </h3>
@@ -107,7 +118,7 @@ export default function LeadForm(props: LeadFormProps) {
     <form
       onSubmit={submit}
       noValidate
-      className="mx-auto max-w-xl rounded-2xl bg-white p-8 text-left shadow-sm md:p-10"
+      className={`rounded-2xl bg-white p-8 text-left shadow-sm md:p-10${inColumn ? "" : " mx-auto max-w-xl"}`}
     >
       <div className="space-y-5">
         {list.map((f, i) => {
@@ -146,7 +157,10 @@ export default function LeadForm(props: LeadFormProps) {
       <button
         type="submit"
         disabled={state === "sending"}
-        className="mt-8 w-full rounded-lg bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-white shadow-sm transition hover:bg-[color:var(--color-sjc-green)] disabled:opacity-60"
+        className={`mt-8 w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
+          buttonColor ? " hover:opacity-90" : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
+        }`}
+        style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
       >
         {state === "sending" ? "Sending…" : buttonLabel}
       </button>

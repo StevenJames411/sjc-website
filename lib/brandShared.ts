@@ -19,11 +19,15 @@ export type Brand = {
   font: BrandFont;
   accent: string;      // links, badges, eyebrows — the "brand" color
   accentHover: string;
+  secondary: string;   // second accent — confirmations, "open now", the softer of two buttons
+  highlight: string;   // warm third accent — star ratings, underline swipes, small emphasis
   ink: string;         // headings / body-dark
   mute: string;        // supporting text
   line: string;        // hairlines + borders
   bandSoft: string;    // light section band
   bandDark: string;    // dark section band
+  bandDarker: string;  // the DEEPER dark band — a design routinely has two dark tones, and
+                       // collapsing them into one visibly flattens the page
   cta: string;         // button fill
   ctaHover: string;
 };
@@ -33,11 +37,16 @@ export const BRAND_DEFAULTS: Brand = {
   font: "lexend",
   accent: "#2563eb",
   accentHover: "#1d4fd7",
+  // Nothing on the live site uses these yet, so any value is safe; these are sane starting
+  // points a client build overrides.
+  secondary: "#22c55e",
+  highlight: "#f59e0b",
   ink: "#111827",
   mute: "#4b5563",
   line: "#e5e7eb",
   bandSoft: "#f3f4f6",
   bandDark: "#1e3a6e",
+  bandDarker: "#0f1f3d",
   cta: "#22c55e",
   ctaHover: "#16a34a",
 };

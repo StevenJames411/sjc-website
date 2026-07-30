@@ -5,7 +5,7 @@
 //   POST /api/site-content/publish?page=home&action=unpublish -> clear pub  (back to defaults)
 // Gated by middleware (only the signed-in editor can publish).
 import { createKvStore } from "@/lib/kvStateStore";
-import { getClient } from "@/lib/kvRedis";
+import { getClient } from "@/lib/store";
 import { keyFor } from "@/lib/contentShared";
 
 export const dynamic = "force-dynamic";
