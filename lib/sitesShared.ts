@@ -74,4 +74,6 @@ export const emptySeo = (): SiteSeo => ({
 export const RESERVED_SITE_IDS = [
   "about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites",
   "home", "nav", "footer", "brand", "import", "new", "sites", "admin",
+  // The client intake link lives at /start/<id>.
+  "start",
 ];

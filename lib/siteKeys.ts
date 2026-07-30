@@ -32,6 +32,12 @@ export function siteKeys(siteId: string) {
       `${ns}-puck-${safe(page) || "home"}` + (pub ? "-pub" : ""),
     /** This site's fonts + colours. */
     brand: (pub = false) => `${ns}-brand` + (pub ? "-pub" : ""),
+    /**
+     * What the business owner filled in on her intake link, and the photos she sent.
+     * Built here like every other key, so one client's answers can never land in another's
+     * record — the isolation is structural, not something the intake route has to remember.
+     */
+    intake: `${ns}-intake`,
   };
 }
 
