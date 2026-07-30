@@ -49,6 +49,10 @@ export type CardProps = {
   eyebrowBold?: boolean;
   headingBold?: boolean;
   bodyBold?: boolean;
+
+  // The top line was force-uppercased with wide letter-spacing, which is an eyebrow label's
+  // look and nothing else. undefined keeps it, so nothing already built changes.
+  eyebrowCaps?: boolean;
 };
 
 export const CARD_DEFAULTS: CardProps = {
@@ -72,6 +76,7 @@ export const CARD_DEFAULTS: CardProps = {
   eyebrowBold: true,
   headingBold: true,
   bodyBold: false,
+  eyebrowCaps: true,
 };
 
 /** px override when set, otherwise let the Tailwind class decide. */
@@ -102,6 +107,7 @@ export default function Card({
   eyebrowBold,
   headingBold,
   bodyBold,
+  eyebrowCaps,
 }: CardProps) {
   const onEdge = badgePosition === "edge" && !!badge;
   const align = centered ? "text-center items-center" : "";
@@ -182,7 +188,7 @@ export default function Card({
           // The size class is dropped when an explicit size is set, otherwise Tailwind's
           // text-xs would fight the inline style. Same pattern on the heading and body.
           <p
-            className={`${weight(eyebrowBold, true)} uppercase tracking-[0.14em] ${eyebrowSize ? "" : "text-xs"}`}
+            className={`${weight(eyebrowBold, true)} ${(eyebrowCaps ?? true) ? "uppercase tracking-[0.14em]" : ""} ${eyebrowSize ? "" : "text-xs"}`}
             style={{
               fontSize: sizeOf(eyebrowSize),
               color: resolveColorOr(eyebrowColor, "var(--color-sjc-blue)"),
