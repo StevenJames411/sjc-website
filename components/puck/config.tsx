@@ -248,7 +248,48 @@ export const STAFFROSTER_DEFAULTS = {
   ] as { name: string; email: string; role: string; isAI: boolean }[],
 };
 
-export const config: Config<Props> = {
+// ── PAGE SETTINGS (the root panel) ────────────────────────────────────────────────────────────
+// What a page IS, as opposed to what's on it. These four show in the right-hand panel the moment
+// the editor opens with no block selected — deliberately the first thing you see, because they
+// used to live in code and could only be changed by a developer.
+//
+// They exist because of a real failure: a demo built for a business still previewed as "Steven
+// James Consulting — AI employees for your business" when its link was texted, since a page with
+// nothing of its own inherits the SJC site defaults from app/layout.tsx. Filling these in is what
+// severs that inheritance. See generateMetadata in app/[slug]/page.tsx — it reads exactly these.
+type RootProps = {
+  title: string;
+  description: string;
+  businessName: string;
+  shareImage: string;
+};
+
+export const config: Config<Props, RootProps> = {
+  // Labels are written for the person filling them in, not for an SEO tool: they name WHERE the
+  // text shows up, because that's the only thing that makes the field self-explanatory on sight.
+  root: {
+    fields: {
+      title: {
+        type: "text" as const,
+        label: "Page title — the browser tab, and the bold line when this link is texted",
+      },
+      description: {
+        type: "textarea" as const,
+        label: "Preview text — the sentence under the title in a text message or Google result",
+      },
+      businessName: {
+        type: "text" as const,
+        label: "Business name — the source line on the preview card (leave blank on SJC's own pages)",
+      },
+      shareImage: {
+        type: "custom" as const,
+        label: "Preview image — the picture in the text-message card",
+        render: ({ onChange, value }) => (
+          <ImageUpload value={(value as string) || ""} onChange={onChange} />
+        ),
+      },
+    },
+  },
   // The parts bin, grouped so the everyday kit is on top and the one-off legacy sections
   // (built for specific pages before the generic blocks existed) stay collapsed out of the way.
   // A block NOT listed in any category falls into "other" automatically.
