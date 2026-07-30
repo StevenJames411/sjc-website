@@ -12,5 +12,11 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ s
   const site = await findSite(id);
   if (!site) notFound();
   const pages = await readPages(id);
-  return <SiteSettings site={site} pageCount={pages.length} />;
+  return (
+    <SiteSettings
+      site={site}
+      pageCount={pages.length}
+      pages={pages.map((p) => ({ slug: p.slug, title: p.title }))}
+    />
+  );
 }

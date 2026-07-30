@@ -13,7 +13,7 @@ import type { Site } from "@/lib/sitesShared";
 // Fill this in once and the whole website can use it: any text on any block can carry a token
 // like {{business.phone}} and it resolves at render. Change the number here, every page updates.
 
-type Props = { site: Site; pageCount: number };
+type Props = { site: Site; pageCount: number; pages: { slug: string; title: string }[] };
 
 const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.name}}", "name"],
@@ -23,12 +23,45 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.hours}}", "hours"],
 ];
 
-export default function SiteSettings({ site, pageCount }: Props) {
+export default function SiteSettings({ site, pageCount, pages }: Props) {
   const router = useRouter();
   const [s, setS] = useState<Site>(site);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const [sweepMsg, setSweepMsg] = useState("");
+
+  /** Catch-up sweep: link every page of this website to the fields above. */
+  async function sweep() {
+    setBusy(true);
+    setSweepMsg("");
+    try {
+      const post = (slug: string, dryRun: boolean) =>
+        fetch("/api/admin/tokenize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, slug, dryRun }),
+        }).then((r) => r.json());
+
+      const looks = await Promise.all(pages.map((p) => post(p.slug, true)));
+      const total = looks.reduce((n, l) => n + (l?.total || 0), 0);
+      if (!total) {
+        setSweepMsg("Nothing to link — these pages either match nothing here, or are already linked.");
+        return;
+      }
+      if (!window.confirm(`Link ${total} value${total === 1 ? "" : "s"} across ${pages.length} page(s)?\n\nSaved as drafts — Publish each page when you've looked at it.`))
+        return;
+
+      const done = await Promise.all(pages.map((p) => post(p.slug, false)));
+      const n = done.reduce((a, d) => a + (d?.total || 0), 0);
+      setSweepMsg(`Linked ${n} value${n === 1 ? "" : "s"}. Open each page and Publish to put it live.`);
+    } catch {
+      setSweepMsg("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const biz = (k: keyof Site["business"], v: string) =>
     setS({ ...s, business: { ...s.business, [k]: v } });
@@ -102,6 +135,21 @@ export default function SiteSettings({ site, pageCount }: Props) {
           The builder shows the token; the live page shows the value. That way editing a page can
           never bake the number in and break the link back to this screen.
         </p>
+
+        {/* An IMPORTED website is wired to these automatically — the importer writes the tokens
+            as it parses. This is the catch-up for pages built before that, or where someone typed
+            a number in by hand. It lives here, beside the fields it reads, rather than in the page
+            toolbar where it would be a one-off task sitting in permanent view. */}
+        <div style={{ borderTop: "1px solid #e5e7eb", marginTop: 14, paddingTop: 14 }}>
+          <button type="button" style={ghost} onClick={sweep} disabled={busy}>
+            {busy ? "Working…" : "Apply these to existing pages"}
+          </button>
+          <p style={{ ...hint, margin: "8px 0 0" }}>
+            Finds these values typed into the pages of this website and swaps them for the tokens
+            above. New imports arrive already wired, so this is only for older pages.
+          </p>
+          {sweepMsg ? <p style={{ ...hint, margin: "8px 0 0", color: "#166534" }}>{sweepMsg}</p> : null}
+        </div>
       </div>
 
       <h2 style={sec}>Web address</h2>

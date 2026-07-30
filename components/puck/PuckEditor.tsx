@@ -20,11 +20,14 @@ type PageItem = { slug: string; title: string; custom?: boolean };
 // To reset a page to its seed: navigate to /edit/<page>?reset=1 — the URL param triggers the
 // reset on load and is then stripped, so no fumble-able button sits on the toolbar.
 //
-// THE TOOLBAR HOLDS RECURRING WORK ONLY. "Duplicate for a client" and "Move to its own website"
-// lived here and were both removed: the first is what "New website" does properly now, and the
-// second was a one-time migration. A one-off task in a permanent toolbar is clutter you re-read
-// every single day. (split-page survives as an API route with no button — maintenance, not a
-// feature.)
+// THE TOOLBAR HOLDS RECURRING WORK ONLY. A one-off task sitting in a permanent toolbar is clutter
+// you re-read every single day. Three have been removed for that reason:
+//   "Duplicate for a client"    — "New website" does it properly now
+//   "Move to its own website"   — a one-time migration, done
+//   "Link business info"        — the importer writes the tokens itself now, so this was only ever
+//                                 needed for pages built before that existed; the sweep moved to
+//                                 the settings screen, beside the fields it uses
+// Each survives as an API route with no button — maintenance, not a feature.
 type SaveState = "idle" | "saving" | "saved";
 
 export default function PuckEditor({
@@ -128,64 +131,6 @@ export default function PuckEditor({
       // stale copy straight back and Publish pushed it live. The adopt looked like it worked, said
       // so, and was undone by the click that came after it. Reloading is the only thing that puts
       // the editor back in sync before it can save again.
-      window.location.reload();
-    } catch {
-      window.alert("Couldn't reach the server. Try again in a moment.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  // Swap this page's typed-in business details for references to Website settings.
-  //
-  // An imported page holds the phone number as characters in half a dozen blocks; filling in the
-  // settings screen does nothing for them until they actually point at it. This is the one click
-  // that connects the two.
-  const onLinkBusinessInfo = async () => {
-    setBusy(true);
-    try {
-      const opts = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin" as const,
-      };
-      const body = JSON.stringify({ site: siteId, slug: page });
-      const look = await fetch("/api/admin/tokenize", {
-        ...opts,
-        body: JSON.stringify({ site: siteId, slug: page, dryRun: true }),
-      }).then((r) => r.json());
-
-      if (!look.ok) {
-        return window.alert(
-          `${look.error}\n\n` +
-            (look.missing?.length ? `Still empty: ${look.missing.join(", ")}.\n\n` : "") +
-            `Open "Website settings" and fill in the business details first.`
-        );
-      }
-      if (!look.total) {
-        return window.alert(
-          "Nothing on this page matches what's in Website settings.\n\n" +
-            "Either the details there don't match what's typed on the page, or this page is already linked."
-        );
-      }
-
-      const lines = Object.entries(look.replacements as Record<string, number>)
-        .map(([k, n]) => `• ${n} × ${k}`)
-        .join("\n");
-      if (
-        !window.confirm(
-          `Link this page to Website settings?\n\n${lines}\n\n` +
-            `Those become references, so changing them in settings updates the page. ` +
-            `Saved as a draft — Publish when you've looked at it.`
-        )
-      )
-        return;
-
-      const r = await fetch("/api/admin/tokenize", { ...opts, body }).then((x) => x.json());
-      if (!r.ok) return window.alert(r.error || "Couldn't link it.");
-      window.alert(`Linked ${r.total} value${r.total === 1 ? "" : "s"}. Reloading so the editor shows it.`);
-      // Same reason as Adopt images: the server rewrote the page, Puck is still holding the old
-      // copy, and the next auto-save would put it straight back.
       window.location.reload();
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
@@ -431,15 +376,6 @@ export default function PuckEditor({
           title="Copy this page's images onto our own storage so nothing depends on whoever generated the design"
         >
           Adopt images
-        </button>
-        <button
-          type="button"
-          onClick={onLinkBusinessInfo}
-          disabled={busy}
-          style={btn}
-          title="Replace the phone, email and address typed on this page with references to Website settings"
-        >
-          Link business info
         </button>
         <button
           type="button"
