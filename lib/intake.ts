@@ -60,3 +60,62 @@ export async function addIntakePhotos(siteId: string, urls: string[]) {
 
 /** How many photos one client may send. Past this it isn't onboarding, it's a file host. */
 export const MAX_INTAKE_PHOTOS = 40;
+
+/**
+ * One row in the Google Sheet when she finishes, so Steven and a VA can read what she said
+ * without touching the builder or an admin URL.
+ *
+ * The store stays the record of truth — the form saves per answer and the builder reads from it,
+ * and a sheet can do neither. This is a CARBON COPY, the same split already used for leads.
+ *
+ * Deliberately NOT deliverLead(): that also emails the site's `leadEmail`, which for a client
+ * site is the client — who would receive her own onboarding answers back by email.
+ *
+ * Never throws. A sheet that's down must not make her submission fail; her answers are already
+ * safely stored by the time this runs.
+ */
+export async function copyIntakeToSheet(
+  siteId: string,
+  businessName: string
+): Promise<string | null> {
+  const webhook = process.env.APPLY_WEBHOOK_URL;
+  if (!webhook) return "APPLY_WEBHOOK_URL not set — no sheet row written";
+
+  const { INTAKE_QUESTIONS } = await import("./intakeShared");
+  const record = await readIntake(siteId);
+
+  const answers = [
+    // Routes the row to its own tab. The script picks the tab from this, never from free text.
+    { key: "source", label: "Source", value: "onboarding" },
+    { key: "business", label: "Business", value: businessName || siteId },
+    ...INTAKE_QUESTIONS.filter((q) => q.type !== "photos" && record.answers[q.id]).map((q) => ({
+      key: q.id,
+      label: q.label,
+      value: String(record.answers[q.id]),
+    })),
+    { key: "photoCount", label: "Photos", value: String(record.photos.length) },
+    // The URLs themselves, so the photos are one click away from the row.
+    { key: "photoUrls", label: "Photo links", value: record.photos.join("\n") },
+  ];
+
+  try {
+    const res = await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        submittedAt: record.submittedAt || new Date().toISOString(),
+        answers,
+        site: businessName || siteId,
+        siteId,
+      }),
+    });
+    // ⚠️ Apps Script replies 200 even when it throws — it catches its own exception and puts the
+    // failure in the BODY. Reading the status alone would call every failure a success.
+    const text = (await res.text()).trim();
+    if (!res.ok) return `sheet webhook HTTP ${res.status}`;
+    if (!/^ok\b/i.test(text)) return `sheet webhook said: ${text.slice(0, 200)}`;
+    return null;
+  } catch (e) {
+    return `sheet webhook unreachable: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
