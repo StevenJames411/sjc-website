@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef, useState } from "react";
+import { prepareImage } from "@/lib/imagePrep";
 
 // Custom Puck field rendered inside the Image block's sidebar panel.
 // "Upload image" picks a file → POSTs to /api/upload → sets the block src to the
@@ -12,23 +13,34 @@ export default function ImageUpload({
   value: string;
   onChange: (url: string) => void;
 }) {
-  const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "preparing" | "uploading" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [note, setNote] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setStatus("uploading");
     setErrorMsg("");
+    setNote("");
     try {
+      // Every file goes through here first — HEIC decoded, oversized photos scaled down, GPS
+      // and the rest of the EXIF dropped. See lib/imagePrep.ts for why it's the browser's job.
+      setStatus("preparing");
+      const { file: ready, note: what } = await prepareImage(file);
+
+      setStatus("uploading");
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", ready);
       const res = await fetch("/api/upload", { method: "POST", body: form });
-      if (!res.ok) throw new Error(`Upload failed (${res.status})`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || `Upload failed (${res.status})`);
+      }
       const json = await res.json();
       if (!json.url) throw new Error("No URL returned");
       onChange(json.url);
+      if (what) setNote(what);
       setStatus("idle");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Upload failed");
@@ -50,15 +62,23 @@ export default function ImageUpload({
 
       <button
         type="button"
-        disabled={status === "uploading"}
+        disabled={status === "preparing" || status === "uploading"}
         onClick={() => inputRef.current?.click()}
         style={BTN}
       >
-        {status === "uploading" ? "Uploading…" : "Upload image"}
+        {status === "preparing"
+          ? "Preparing photo…"
+          : status === "uploading"
+            ? "Uploading…"
+            : "Upload image"}
       </button>
 
       {status === "error" && (
         <span style={{ fontSize: 12, color: "#dc2626" }}>{errorMsg}</span>
+      )}
+
+      {note && (
+        <span style={{ fontSize: 12, color: "#16a34a" }}>{note}</span>
       )}
 
       <span style={{ fontSize: 12, color: "#6b7280" }}>Or paste a URL</span>

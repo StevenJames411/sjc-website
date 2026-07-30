@@ -29,6 +29,30 @@ export type CardProps = {
   layout?: string;
   // Drop the white box + shadow, for rows that sit directly on a coloured band.
   bare?: boolean;
+
+  // TYPE CONTROLS (added 2026-07-30). The card's three text lines had fixed size and colour,
+  // so making an eyebrow bigger meant deleting it and stacking a separate Text box on top of
+  // the card — a workaround that then has to be re-done every time the row is touched.
+  // 0 / "" means "use the card's built-in styling", so every card already on a page is
+  // untouched by this.
+  eyebrowSize?: number;
+  eyebrowColor?: string;
+  headingSize?: number;
+  headingColor?: string;
+  bodySize?: number;
+  bodyColor?: string;
+
+  // BOLD PER LINE (2026-07-30). Once size is adjustable, "heading" vs "body" is really just
+  // weight — so weight becomes its own switch rather than something you pick a field to get.
+  // undefined keeps each line's original weight (eyebrow bold, heading bold, body normal), so
+  // every card already on a page renders exactly as before.
+  eyebrowBold?: boolean;
+  headingBold?: boolean;
+  bodyBold?: boolean;
+
+  // The top line was force-uppercased with wide letter-spacing, which is an eyebrow label's
+  // look and nothing else. undefined keeps it, so nothing already built changes.
+  eyebrowCaps?: boolean;
 };
 
 export const CARD_DEFAULTS: CardProps = {
@@ -43,7 +67,24 @@ export const CARD_DEFAULTS: CardProps = {
   centered: false,
   layout: "",
   bare: false,
+  eyebrowSize: 0,
+  eyebrowColor: "",
+  headingSize: 0,
+  headingColor: "",
+  bodySize: 0,
+  bodyColor: "",
+  eyebrowBold: true,
+  headingBold: true,
+  bodyBold: false,
+  eyebrowCaps: true,
 };
+
+/** px override when set, otherwise let the Tailwind class decide. */
+const sizeOf = (n?: number) => (n && n > 0 ? `${n}px` : undefined);
+
+/** Explicit choice wins; undefined falls back to that line's original weight. */
+const weight = (chosen: boolean | undefined, wasBold: boolean) =>
+  (chosen ?? wasBold) ? "font-bold" : "font-normal";
 
 export default function Card({
   badge,
@@ -57,6 +98,16 @@ export default function Card({
   centered,
   layout,
   bare,
+  eyebrowSize,
+  eyebrowColor,
+  headingSize,
+  headingColor,
+  bodySize,
+  bodyColor,
+  eyebrowBold,
+  headingBold,
+  bodyBold,
+  eyebrowCaps,
 }: CardProps) {
   const onEdge = badgePosition === "edge" && !!badge;
   const align = centered ? "text-center items-center" : "";
@@ -76,10 +127,26 @@ export default function Card({
         ) : null}
         <div>
           {heading ? (
-            <p className="font-bold text-[color:var(--color-sjc-ink)]">{heading}</p>
+            <p
+              className={weight(headingBold, true)}
+              style={{
+                fontSize: sizeOf(headingSize),
+                color: resolveColorOr(headingColor, "var(--color-sjc-ink)"),
+              }}
+            >
+              {heading}
+            </p>
           ) : null}
           {body ? (
-            <p className="mt-0.5 text-[color:var(--color-sjc-mute)]">{body}</p>
+            <p
+              className={`mt-0.5 ${weight(bodyBold, false)}`}
+              style={{
+                fontSize: sizeOf(bodySize),
+                color: resolveColorOr(bodyColor, "var(--color-sjc-mute)"),
+              }}
+            >
+              {body}
+            </p>
           ) : null}
         </div>
       </div>
@@ -118,23 +185,43 @@ export default function Card({
         ) : null}
 
         {eyebrow ? (
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[color:var(--color-sjc-blue)]">
+          // The size class is dropped when an explicit size is set, otherwise Tailwind's
+          // text-xs would fight the inline style. Same pattern on the heading and body.
+          <p
+            className={`${weight(eyebrowBold, true)} ${(eyebrowCaps ?? true) ? "uppercase tracking-[0.14em]" : ""} ${eyebrowSize ? "" : "text-xs"}`}
+            style={{
+              fontSize: sizeOf(eyebrowSize),
+              color: resolveColorOr(eyebrowColor, "var(--color-sjc-blue)"),
+            }}
+          >
             {eyebrow}
           </p>
         ) : null}
 
         {heading ? (
           <h3
-            className={`text-lg font-bold leading-snug text-[color:var(--color-sjc-ink)] md:text-xl ${
+            className={`${weight(headingBold, true)} leading-snug ${headingSize ? "" : "text-lg md:text-xl"} ${
               icon ? "" : badge && !onEdge ? "mt-5" : eyebrow ? "mt-3" : ""
             }`}
+            style={{
+              fontSize: sizeOf(headingSize),
+              color: resolveColorOr(headingColor, "var(--color-sjc-ink)"),
+            }}
           >
             {heading}
           </h3>
         ) : null}
 
         {body ? (
-          <p className="mt-3 text-base leading-relaxed text-[color:var(--color-sjc-mute)]">{body}</p>
+          <p
+            className={`mt-3 leading-relaxed ${weight(bodyBold, false)} ${bodySize ? "" : "text-base"}`}
+            style={{
+              fontSize: sizeOf(bodySize),
+              color: resolveColorOr(bodyColor, "var(--color-sjc-mute)"),
+            }}
+          >
+            {body}
+          </p>
         ) : null}
       </div>
     </div>

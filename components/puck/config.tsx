@@ -27,7 +27,7 @@ type Align = "left" | "center" | "right";
 type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean };
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -346,9 +346,91 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
-        eyebrow: { type: "text" as const, label: "Small label above (optional)" },
-        heading: { type: "textarea" as const, label: "Heading" },
-        body: { type: "textarea" as const, label: "Body" },
+        // TYPE CONTROLS (2026-07-30). Each of the card's three text lines gets its own size and
+        // colour, matching what the Text and Heading blocks already offer. Before this, wanting a
+        // bigger eyebrow meant deleting it and stacking a separate Text box above the card — a
+        // workaround that has to be rebuilt every time the row is touched. Blank/0 = the card's
+        // built-in styling, so no existing card changes.
+        eyebrow: { type: "text" as const, label: "Top line — small label (optional)" },
+        // allowZero={false} + a fallback matching the card's REAL default size, so an untouched
+        // field shows the size the text is actually rendering at (12/20/16) and steps from
+        // there. With allowZero on it displayed a meaningless "0px" that "−" couldn't move.
+        eyebrowSize: {
+          type: "custom" as const,
+          label: "Top line — size",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Label size" value={value as number} onChange={onChange} fallback={12} step={2} min={8} allowZero={false} />
+          ),
+        },
+        eyebrowColor: {
+          type: "custom" as const,
+          label: "Top line — colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        eyebrowBold: {
+          type: "radio" as const,
+          label: "Top line — weight",
+          options: [
+            { label: "Bold", value: true },
+            { label: "Normal", value: false },
+          ],
+        },
+        eyebrowCaps: {
+          type: "radio" as const,
+          label: "Top line — letters",
+          options: [
+            { label: "ALL CAPS", value: true },
+            { label: "Normal case", value: false },
+          ],
+        },
+        heading: { type: "textarea" as const, label: "Middle line — the card's heading (an H3 for Google)" },
+        headingSize: {
+          type: "custom" as const,
+          label: "Middle line — size",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Heading size" value={value as number} onChange={onChange} fallback={20} step={2} min={10} allowZero={false} />
+          ),
+        },
+        headingColor: {
+          type: "custom" as const,
+          label: "Middle line — colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        headingBold: {
+          type: "radio" as const,
+          label: "Middle line — weight",
+          options: [
+            { label: "Bold", value: true },
+            { label: "Normal", value: false },
+          ],
+        },
+        body: { type: "textarea" as const, label: "Bottom line — paragraph" },
+        bodySize: {
+          type: "custom" as const,
+          label: "Bottom line — size",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Body size" value={value as number} onChange={onChange} fallback={16} step={2} min={10} allowZero={false} />
+          ),
+        },
+        bodyColor: {
+          type: "custom" as const,
+          label: "Bottom line — colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        bodyBold: {
+          type: "radio" as const,
+          label: "Bottom line — weight",
+          options: [
+            { label: "Bold", value: true },
+            { label: "Normal", value: false },
+          ],
+        },
         centered: {
           type: "radio" as const,
           label: "Text",
@@ -375,12 +457,17 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare }) => (
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps }) => (
         <Card
           badge={badge} eyebrow={eyebrow} heading={heading} body={body}
           icon={icon} iconColor={iconColor} badgeColor={badgeColor}
           badgePosition={badgePosition} centered={centered}
           layout={layout} bare={bare}
+          eyebrowSize={eyebrowSize} eyebrowColor={eyebrowColor}
+          headingSize={headingSize} headingColor={headingColor}
+          bodySize={bodySize} bodyColor={bodyColor}
+          eyebrowBold={eyebrowBold} headingBold={headingBold} bodyBold={bodyBold}
+          eyebrowCaps={eyebrowCaps}
         />
       ),
     },
