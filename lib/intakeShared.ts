@@ -161,3 +161,14 @@ export const INTAKE_QUESTIONS: IntakeQuestion[] = [
 export function questionsFor(site: Site | null): IntakeQuestion[] {
   return INTAKE_QUESTIONS.filter((q) => !valueAt(site, q.satisfiedBy));
 }
+
+/** What the site gallery shows about one business's onboarding, at a glance. */
+export type IntakeSummary = {
+  status: "open" | "closed" | "never opened";
+  /** How many of her questions have answers — the chase signal. */
+  answered: number;
+  /** How many she'll be asked. Fewer for a prospected client; see `satisfiedBy`. */
+  asked: number;
+  photos: number;
+  submitted: boolean;
+};

@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Site } from "@/lib/sitesShared";
+import type { IntakeSummary } from "@/lib/intakeShared";
 
 // The way into the builder: a wall of website cards, not a dropdown.
 //
@@ -10,14 +11,39 @@ import type { Site } from "@/lib/sitesShared";
 // another's. Every builder that does this at scale (GoHighLevel, Landingsite, SiteDrop) opens on a
 // gallery with search and a New-website button, and the page switcher lives INSIDE a site.
 
-type Props = { sites: Site[] };
+type Props = { sites: Site[]; intake: Record<string, IntakeSummary> };
 type Mode = "blank" | "template" | "import";
 
-export default function SiteGallery({ sites }: Props) {
+export default function SiteGallery({ sites, intake }: Props) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Which card's onboarding button is mid-flight, so it can't be double-clicked.
+  const [flip, setFlip] = useState("");
+  const [copied, setCopied] = useState("");
+
+  // Open or close a business's onboarding form. The state IS the guard — the URL is her business
+  // name and deliberately guessable, so this switch is the only thing standing between a stranger
+  // and her record. See lib/intakeLinks.ts.
+  async function setIntake(siteId: string, action: "open" | "close") {
+    setFlip(siteId);
+    try {
+      await fetch(`/api/admin/intake?site=${encodeURIComponent(siteId)}&action=${action}`, {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      router.refresh();
+    } finally {
+      setFlip("");
+    }
+  }
+
+  async function copyLink(siteId: string) {
+    await navigator.clipboard?.writeText(`${window.location.origin}/${siteId}/onboard`);
+    setCopied(siteId);
+    setTimeout(() => setCopied(""), 1800);
+  }
 
   const templates = useMemo(() => sites.filter((s) => s.kind === "template"), [sites]);
   const shown = useMemo(() => {
@@ -80,6 +106,63 @@ export default function SiteGallery({ sites }: Props) {
                 {s.domain ? s.domain : `/${s.id}`} ↗
               </a>
             </div>
+
+            {/* ONBOARDING — the chase list.
+                One control whose label follows the state, because there is only ever one sensible
+                next move: switch it on, send her the link, or open it again when you need more.
+                The count is the point — "open · 1 of 9" for four days is a client who needs a
+                nudge, visible without opening anything.
+                Not shown for SJC's own site, which has nobody to onboard. */}
+            {s.kind !== "sjc" ? (
+              <div style={intakeRow}>
+                <span style={intakeLabel}>
+                  {(() => {
+                    const it = intake[s.id];
+                    if (!it || it.status === "never opened") return "Onboarding: not started";
+                    if (it.submitted) return `Onboarding: done · ${it.photos} photos`;
+                    if (it.status === "closed") return "Onboarding: closed";
+                    return `Onboarding: open · ${it.answered} of ${it.asked}`;
+                  })()}
+                </span>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {intake[s.id]?.status === "open" ? (
+                    <>
+                      <button
+                        type="button"
+                        style={linkBtn}
+                        title="Copy her link, ready to text or email"
+                        onClick={() => copyLink(s.id)}
+                      >
+                        {copied === s.id ? "Copied" : "Copy link"}
+                      </button>
+                      <button
+                        type="button"
+                        style={linkBtn}
+                        disabled={flip === s.id}
+                        onClick={() => setIntake(s.id, "close")}
+                      >
+                        Close
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      style={openBtn}
+                      disabled={flip === s.id}
+                      title="Switch her form on so she can fill it in"
+                      onClick={() => setIntake(s.id, "open")}
+                    >
+                      {flip === s.id
+                        ? "…"
+                        : intake[s.id]?.submitted
+                          ? "Reopen"
+                          : "Open it"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 type="button"
@@ -317,3 +400,38 @@ const tabOn: React.CSSProperties = { borderColor: "#111827", boxShadow: "inset 0
 const lbl: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, marginTop: 12 };
 const input: React.CSSProperties = { width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
 const errBox: React.CSSProperties = { marginTop: 12, background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+
+// Onboarding row. Sits between the card body and the Edit button because it's status you SCAN,
+// not an action you go looking for — the eye should hit it on the way past.
+const intakeRow: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  padding: "8px 0 10px",
+  borderTop: "1px solid #f1f5f9",
+  marginTop: 10,
+};
+
+const intakeLabel: React.CSSProperties = {
+  fontSize: 12,
+  color: "#64748b",
+  fontWeight: 600,
+};
+
+const linkBtn: React.CSSProperties = {
+  padding: "5px 9px",
+  borderRadius: 6,
+  border: "1px solid #d1d5db",
+  background: "#fff",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#374151",
+  cursor: "pointer",
+};
+
+const openBtn: React.CSSProperties = {
+  ...linkBtn,
+  borderColor: "#2563eb",
+  color: "#2563eb",
+};
