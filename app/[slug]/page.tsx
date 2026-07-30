@@ -102,7 +102,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Blank fields must never fall through to SJC's name on someone else's page, so a demo backstops
   // to the name it was created under ("Lucky Dog Wash House"). Every other route on this site is a
   // real SJC page, where inheriting the SJC default is the correct behaviour — hence the split.
-  const pageName = (meta?.title ?? "").trim();
+  // The page name is an INTERNAL label — it's what shows in the builder's dropdown, so it carries
+  // notes to self like "(demo)" or "(v2)". Those must never reach the client's preview card, and
+  // relying on remembering to clear them by hand fails on the seventh demo. Stripped here so the
+  // fallback is safe by construction; anything typed into Business name still wins outright.
+  const pageName = (meta?.title ?? "").replace(/\s*\((demo|draft|v\d+|wip|copy|old|test)\)\s*$/i, "").trim();
   const title = str("title") || (isDemo ? pageName : "");
   const businessName = str("businessName") || (isDemo ? pageName : "");
 
