@@ -80,13 +80,19 @@ export async function renamePage(
   return ok ? { ok } : { ok: false, error: "Couldn't save — storage is unavailable." };
 }
 
-// Every slug already spoken for inside this site. Route folders are reserved everywhere, because
-// a hardcoded Next.js route wins precedence and would silently shadow the page.
+// Top-level Next.js route folders. Only SJC's pages collide with these, because SJC's pages serve
+// at /<page> while a client site's serve at /<site>/<page>.
+const ROUTE_FOLDERS = ["about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites"];
+
+// Every slug already spoken for inside this site.
+//
+// ⚠️ NOT `RESERVED_SITE_IDS`. That list reserves WEBSITE ids and contains "home" — applying it to
+// page slugs meant a new site's first page came out as "home-2", and the public route looks for
+// "home", so the site 404'd at its own address. Site ids and page slugs are different namespaces.
 async function reservedSlugs(siteId: string): Promise<Set<string>> {
   const pages = await readPages(siteId);
   return new Set([
-    ...RESERVED_SITE_IDS,
-    ...(siteId === SJC ? PUCK_PAGES.map((p) => p.slug) : []),
+    ...(siteId === SJC ? [...ROUTE_FOLDERS, ...PUCK_PAGES.map((p) => p.slug)] : []),
     ...pages.map((p) => p.slug),
   ]);
 }

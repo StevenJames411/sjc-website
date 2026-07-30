@@ -18,6 +18,12 @@ type PageItem = { slug: string; title: string; custom?: boolean };
 //
 // To reset a page to its seed: navigate to /edit/<page>?reset=1 — the URL param triggers the
 // reset on load and is then stripped, so no fumble-able button sits on the toolbar.
+//
+// THE TOOLBAR HOLDS RECURRING WORK ONLY. "Duplicate for a client" and "Move to its own website"
+// lived here and were both removed: the first is what "New website" does properly now, and the
+// second was a one-time migration. A one-off task in a permanent toolbar is clutter you re-read
+// every single day. (split-page survives as an API route with no button — maintenance, not a
+// feature.)
 type SaveState = "idle" | "saving" | "saved";
 
 export default function PuckEditor({
@@ -54,33 +60,6 @@ export default function PuckEditor({
       });
       const j = await r.json();
       if (!j.ok) return window.alert(j.error || "Couldn't create the page.");
-      router.push(`/edit/${siteId}/${j.slug}`);
-    } catch {
-      window.alert("Couldn't reach the server. Try again in a moment.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  // Copy THIS page — design and all — to a new business's name and URL. The whole point of
-  // building a demo once: the second one should be a rename, not a rebuild. The copy lands
-  // UNPUBLISHED, so a half-edited page carrying the previous business's phone number can never
-  // be live at a URL before it's been looked at.
-  const onDuplicatePage = async () => {
-    const name = window.prompt(
-      `Copy "${title}" for which business?\n\nThe name becomes the web address — "Lucky Dog Wash House" gives you /lucky-dog-wash-house.`
-    );
-    if (!name || !name.trim()) return;
-    setBusy(true);
-    try {
-      const r = await fetch("/api/pages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ title: name.trim(), from: page, site: siteId }),
-      });
-      const j = await r.json();
-      if (!j.ok) return window.alert(j.error || "Couldn't copy the page.");
       router.push(`/edit/${siteId}/${j.slug}`);
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
@@ -130,51 +109,6 @@ export default function PuckEditor({
       // so, and was undone by the click that came after it. Reloading is the only thing that puts
       // the editor back in sync before it can save again.
       window.location.reload();
-    } catch {
-      window.alert("Couldn't reach the server. Try again in a moment.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  // Move this page out into a website of its own.
-  //
-  // Making "website" a real object didn't separate what was already tangled: a client's whole site
-  // was still sitting in SJC's page list, one row under "About". This is the cleanup, and it keeps
-  // the public URL identical — the new site's id is the page's slug.
-  const onSplitOut = async () => {
-    setBusy(true);
-    try {
-      const opts = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin" as const,
-      };
-      const look = await fetch("/api/admin/split-page", {
-        ...opts,
-        body: JSON.stringify({ fromSite: siteId, slug: page, dryRun: true }),
-      }).then((r) => r.json());
-      if (!look.ok) return window.alert(look.error || "Couldn't check that page.");
-
-      const b = look.business || {};
-      if (
-        !window.confirm(
-          `Move "${title}" out of ${siteName} into its own website?\n\n` +
-            `Name: ${look.name}\n` +
-            `Phone: ${b.phoneDisplay || b.phone || "—"}\n` +
-            `Email: ${b.email || "—"}\n\n` +
-            `Its address stays ${look.urlAfter}. It leaves this site's page list.`
-        )
-      )
-        return;
-
-      const r = await fetch("/api/admin/split-page", {
-        ...opts,
-        body: JSON.stringify({ fromSite: siteId, slug: page }),
-      }).then((x) => x.json());
-      if (!r.ok) return window.alert(r.error || "Couldn't move it.");
-      window.alert(`Moved. It's now its own website with ${r.blocks} blocks, still at ${r.url}.`);
-      router.push(`/edit/${r.id}/${r.page}`);
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -385,16 +319,6 @@ export default function PuckEditor({
         <button type="button" onClick={onNewPage} disabled={busy} style={btn}>
           + New Page
         </button>
-        {/* The demo workflow's whole shortcut — build one, copy it per prospect. */}
-        <button
-          type="button"
-          onClick={onDuplicatePage}
-          disabled={busy}
-          style={btn}
-          title="Copy this page's design to a new business name and URL"
-        >
-          Duplicate for a client
-        </button>
         <button
           type="button"
           onClick={onAdoptImages}
@@ -404,19 +328,6 @@ export default function PuckEditor({
         >
           Adopt images
         </button>
-        {/* Only offered on a page that carries its OWN SiteHeader — that is the existing rule for
-            "this belongs to another business", and it stops the button appearing on /about. */}
-        {(data?.content || []).some((b) => (b as { type?: string })?.type === "SiteHeader") ? (
-          <button
-            type="button"
-            onClick={onSplitOut}
-            disabled={busy}
-            style={btn}
-            title="This page is a whole business's site — move it out of here into its own website"
-          >
-            Move to its own website
-          </button>
-        ) : null}
         <button
           type="button"
           onClick={onSaveAsTemplate}

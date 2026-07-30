@@ -10,8 +10,9 @@ import { resolvePage, metadataFor, SitePageBody, SJC } from "@/lib/publicSitePag
 // Every hardcoded route (app/about, app/websites, …) still takes precedence over both.
 export const dynamic = "force-dynamic";
 
+// homeFallback: a website serves its FIRST page at its own address, whatever that page is called.
 async function find(slug: string) {
-  return (await resolvePage(slug, "home")) || (await resolvePage(SJC, slug));
+  return (await resolvePage(slug, "home", true)) || (await resolvePage(SJC, slug));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

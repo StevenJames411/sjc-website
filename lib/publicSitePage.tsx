@@ -78,13 +78,31 @@ export const cleanName = (s: string) =>
 
 export type Resolved = { site: Site; slug: string; data: unknown } | null;
 
-/** Find the published page behind a public URL, or null if there isn't one. */
-export async function resolvePage(siteId: string, page: string): Promise<Resolved> {
+/**
+ * Find the published page behind a public URL, or null if there isn't one.
+ *
+ * `homeFallback` — a website's front page is whatever page comes FIRST, not necessarily one whose
+ * slug happens to be "home". Assuming the literal slug already 404'd a live client site once: its
+ * first page was created as "home-2" because of a name collision, and the site went dark at its
+ * own address while the page itself was fine. The site is the thing being addressed; it should
+ * serve its first page regardless of what that page is called.
+ */
+export async function resolvePage(
+  siteId: string,
+  page: string,
+  homeFallback = false
+): Promise<Resolved> {
   const site = await findSite(siteId);
   if (!site) return null;
-  const meta = await findPageMeta(page, siteId);
+
+  let meta = await findPageMeta(page, siteId);
+  if (!meta && homeFallback) {
+    const { readPages } = await import("@/lib/pageRegistry");
+    meta = (await readPages(siteId))[0];
+  }
   if (!meta) return null;
-  const data = await readPuckPublished(page, siteId);
+
+  const data = await readPuckPublished(meta.slug, siteId);
   if (!data) return null;
   return { site, slug: meta.slug, data };
 }
