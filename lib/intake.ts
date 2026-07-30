@@ -151,3 +151,49 @@ export async function intakeSummaries(
   );
   return out;
 }
+
+/**
+ * HER ANSWERS BECOME HER FACTS.
+ *
+ * Without this the form only moves the typing around: she types her hours, Steven reads them in
+ * the panel and types them into Website settings. The point of asking was to stop that.
+ *
+ * ⚠️ ONLY FILLS WHAT IS EMPTY. Never overwrites. That is not caution for its own sake — it is
+ * true by construction: a question is only ever ASKED when the record has no answer (see
+ * `satisfiedBy` in intakeShared). So a field she answered is a field that was blank. Writing
+ * only into blanks means a fat-fingered phone number cannot destroy a good one, and it means
+ * this can run automatically on submit with no review step and no button to remember.
+ */
+export async function applyAnswersToSite(siteId: string): Promise<string[]> {
+  const { findSite, updateSite } = await import("./sites");
+  const site = await findSite(siteId);
+  if (!site) return [];
+
+  const { answers } = await readIntake(siteId);
+  const get = (k: string) => String(answers[k] ?? "").trim();
+
+  const b = { ...site.business };
+  const filled: string[] = [];
+  const put = (field: keyof typeof b, value: string) => {
+    if (!value || String(b[field] || "").trim()) return;
+    b[field] = value;
+    filled.push(field);
+  };
+
+  put("name", get("businessName"));
+  put("address", get("address"));
+  put("hours", get("hours"));
+
+  // One answer, two fields: what a human reads and what a phone dials. Storing only the display
+  // form gives a tel: link that cannot dial — a bug already fixed once on 2026-07-30.
+  const phone = get("phone");
+  if (phone) {
+    put("phoneDisplay", phone);
+    const digits = phone.replace(/[^\d+]/g, "");
+    if (digits) put("phone", digits.startsWith("+") ? digits : `+1${digits.replace(/^1/, "")}`);
+  }
+
+  if (!filled.length) return [];
+  await updateSite(siteId, { business: b });
+  return filled;
+}

@@ -7,7 +7,7 @@
 // usable — she can be told it over the phone. That means this route must refuse every site that
 // isn't actively being onboarded, and must fail closed for one nobody has opened.
 import { checkIntakeOpen, closeIntake } from "@/lib/intakeLinks";
-import { readIntake, patchIntake, copyIntakeToSheet } from "@/lib/intake";
+import { readIntake, patchIntake, copyIntakeToSheet, applyAnswersToSite } from "@/lib/intake";
 import { findSite } from "@/lib/sites";
 import type { IntakeAnswers } from "@/lib/intakeShared";
 
@@ -65,6 +65,11 @@ export async function PUT(req: Request) {
     // real submission — a disqualified form has nothing worth a row. Failures are logged, never
     // raised: her answers are already stored, and telling her the form broke would be a lie.
     if (body.submittedAt) {
+      // Her answers fill the blanks on her record, so the build starts from real facts instead
+      // of Steven retyping what she just told us. Only empty fields — see applyAnswersToSite.
+      const filled = await applyAnswersToSite(auth.siteId);
+      if (filled.length) console.log(`[intake] ${auth.siteId} filled from answers: ${filled.join(", ")}`);
+
       const site = await findSite(auth.siteId);
       // The client's OWN sheet, never SJC's. Until that sheet exists this logs and moves on —
       // her answers are already stored, and the copy is a convenience, not the record.
