@@ -137,6 +137,51 @@ export default function PuckEditor({
     }
   };
 
+  // Move this page out into a website of its own.
+  //
+  // Making "website" a real object didn't separate what was already tangled: a client's whole site
+  // was still sitting in SJC's page list, one row under "About". This is the cleanup, and it keeps
+  // the public URL identical — the new site's id is the page's slug.
+  const onSplitOut = async () => {
+    setBusy(true);
+    try {
+      const opts = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin" as const,
+      };
+      const look = await fetch("/api/admin/split-page", {
+        ...opts,
+        body: JSON.stringify({ fromSite: siteId, slug: page, dryRun: true }),
+      }).then((r) => r.json());
+      if (!look.ok) return window.alert(look.error || "Couldn't check that page.");
+
+      const b = look.business || {};
+      if (
+        !window.confirm(
+          `Move "${title}" out of ${siteName} into its own website?\n\n` +
+            `Name: ${look.name}\n` +
+            `Phone: ${b.phoneDisplay || b.phone || "—"}\n` +
+            `Email: ${b.email || "—"}\n\n` +
+            `Its address stays ${look.urlAfter}. It leaves this site's page list.`
+        )
+      )
+        return;
+
+      const r = await fetch("/api/admin/split-page", {
+        ...opts,
+        body: JSON.stringify({ fromSite: siteId, slug: page }),
+      }).then((x) => x.json());
+      if (!r.ok) return window.alert(r.error || "Couldn't move it.");
+      window.alert(`Moved. It's now its own website with ${r.blocks} blocks, still at ${r.url}.`);
+      router.push(`/edit/${r.id}/${r.page}`);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Turn this page into a reusable TEMPLATE.
   //
   // Not a copy. The scrub on the server strips the business facts (phone, address, email, the
@@ -359,6 +404,19 @@ export default function PuckEditor({
         >
           Adopt images
         </button>
+        {/* Only offered on a page that carries its OWN SiteHeader — that is the existing rule for
+            "this belongs to another business", and it stops the button appearing on /about. */}
+        {(data?.content || []).some((b) => (b as { type?: string })?.type === "SiteHeader") ? (
+          <button
+            type="button"
+            onClick={onSplitOut}
+            disabled={busy}
+            style={btn}
+            title="This page is a whole business's site — move it out of here into its own website"
+          >
+            Move to its own website
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={onSaveAsTemplate}
