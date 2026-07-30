@@ -31,6 +31,9 @@ export async function GET(req: Request) {
   const access = await intakeAccess(id);
   const record = await readIntake(id);
   const asked = questionsFor(site);
+  // The SAME count the gallery card shows. Computing it separately here is how the card ended up
+  // saying "5 of 9" while this said "4 of 9" for the same client at the same moment.
+  const summary = (await intakeSummaries([{ id }]))[id];
 
   // Her answers with the question text beside them, so this is readable without cross-referencing
   // the code to find out what "wantMore" was asking.
