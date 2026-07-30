@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { deliverLead } from "@/lib/leadDelivery";
 
 // Discovery-call intake handler. Receives a dynamic ordered list of {label, value} answers
 // (whatever questions the /apply page currently has) and forwards them to a Google Apps Script
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 type Answer = { key: string; label: string; value: string };
 
 export async function POST(req: Request) {
-  let body: { submittedAt?: string; answers?: unknown };
+  let body: { submittedAt?: string; answers?: unknown; siteId?: string };
   try {
     body = await req.json();
   } catch {
@@ -31,27 +32,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "no answers" }, { status: 400 });
   }
 
-  const payload = {
-    submittedAt: typeof body.submittedAt === "string" ? body.submittedAt : new Date().toISOString(),
-    answers,
-  };
+  const submittedAt =
+    typeof body.submittedAt === "string" ? body.submittedAt : new Date().toISOString();
+  // Sent by the form from the route it was served under — NOT from an editable field, so a lead
+  // can't be routed to the wrong business by a typo. See components/blocks/SiteContext.
+  const siteId = String(body.siteId || "").trim();
 
-  const webhook = process.env.APPLY_WEBHOOK_URL;
-  if (!webhook) {
-    console.warn("[apply] APPLY_WEBHOOK_URL not set — intake not persisted:", answers[0]?.value);
-    return NextResponse.json({ ok: true, note: "webhook not configured" });
-  }
+  const d = await deliverLead(siteId, answers, submittedAt);
 
-  try {
-    const res = await fetch(webhook, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(`webhook ${res.status}`);
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("[apply] webhook forward failed:", err);
+  // Loud on every problem. A lead that vanishes while the visitor is told "thanks!" is the worst
+  // outcome this route has, and it is silent by nature — so it gets shouted into the log.
+  for (const p of d.problems) console.error(`[apply] site=${siteId || "-"} ${p}`);
+
+  // The visitor still sees success as long as SOMEBODY has it. Failing the form in front of a
+  // real customer because our second copy bounced would lose the lead outright.
+  const landed = d.toRecord || d.toOwner === true;
+  if (!landed) {
     return NextResponse.json({ ok: false, error: "forward failed" }, { status: 502 });
   }
+  return NextResponse.json({ ok: true, toOwner: d.toOwner, toRecord: d.toRecord });
 }

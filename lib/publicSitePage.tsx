@@ -7,6 +7,7 @@ import { findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
 import { fillBusinessTokens } from "@/lib/businessTokens";
+import { SiteProvider } from "@/components/blocks/SiteContext";
 import type { Site } from "@/lib/sitesShared";
 
 // Rendering + metadata for ONE page of ONE website, shared by the two public catch-all routes:
@@ -176,14 +177,18 @@ export function metadataFor(r: NonNullable<Resolved>, path: string) {
 }
 
 /** The page itself. SJC chrome only when the page didn't bring its own. */
-export function SitePageBody({ data }: { data: unknown }) {
+export function SitePageBody({ data, siteId }: { data: unknown; siteId: string }) {
   const ownHeader = hasBlock(data, "SiteHeader");
   const ownFooter = hasBlock(data, "SiteFooter");
   return (
     <>
       {ownHeader ? null : <Nav />}
       <main>
-        <Render config={config} data={data as never} />
+        {/* Blocks read the site from here rather than from an editable field — the lead form's
+            destination in particular must never depend on someone typing it correctly. */}
+        <SiteProvider siteId={siteId}>
+          <Render config={config} data={data as never} />
+        </SiteProvider>
       </main>
       {ownFooter ? null : <Footer />}
     </>

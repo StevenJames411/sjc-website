@@ -48,6 +48,7 @@ export default function SiteSettings({ site, pageCount }: Props) {
           name: s.name.trim(),
           description: s.description || "",
           domain: (s.domain || "").trim(),
+          leadEmail: (s.leadEmail || "").trim(),
           business: s.business,
           seo: s.seo,
         }),
@@ -129,6 +130,22 @@ export default function SiteSettings({ site, pageCount }: Props) {
           </>
         )}
       </p>
+
+      <h2 style={sec}>Where the leads go</h2>
+      <p style={hint}>
+        Blank means enquiries from this website stay in your own intake — right for a demo, and for
+        your own pages. Put the owner&apos;s address in when they buy, and every enquiry goes
+        straight to them with reply-to set to the customer, so hitting reply on their phone
+        answers the person who asked.{" "}
+        <strong>Your copy is kept either way</strong> — that&apos;s the record at renewal and the
+        answer to &quot;I never got that lead&quot;.
+      </p>
+      <Field
+        label="Owner's email for leads"
+        v={s.leadEmail || ""}
+        on={(v) => setS({ ...s, leadEmail: v })}
+        ph="the client's own inbox — leave blank while it's a demo"
+      />
 
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
