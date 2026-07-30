@@ -5,6 +5,7 @@ import { Puck, type Data } from "@measured/puck";
 import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
 import { seedFor } from "@/components/puck/seeds";
+import { SJC as SJC_ID } from "@/lib/siteKeys";
 
 // The page list is passed in from the server route (it's Redis-backed now, so the client can't
 // read it directly). Shape mirrors lib/pageRegistry's PageEntry.
@@ -19,11 +20,14 @@ type PageItem = { slug: string; title: string; custom?: boolean };
 // To reset a page to its seed: navigate to /edit/<page>?reset=1 — the URL param triggers the
 // reset on load and is then stripped, so no fumble-able button sits on the toolbar.
 //
-// THE TOOLBAR HOLDS RECURRING WORK ONLY. "Duplicate for a client" and "Move to its own website"
-// lived here and were both removed: the first is what "New website" does properly now, and the
-// second was a one-time migration. A one-off task in a permanent toolbar is clutter you re-read
-// every single day. (split-page survives as an API route with no button — maintenance, not a
-// feature.)
+// THE TOOLBAR HOLDS RECURRING WORK ONLY. A one-off task sitting in a permanent toolbar is clutter
+// you re-read every single day. Three have been removed for that reason:
+//   "Duplicate for a client"    — "New website" does it properly now
+//   "Move to its own website"   — a one-time migration, done
+//   "Link business info"        — the importer writes the tokens itself now, so this was only ever
+//                                 needed for pages built before that existed; the sweep moved to
+//                                 the settings screen, beside the fields it uses
+// Each survives as an API route with no button — maintenance, not a feature.
 type SaveState = "idle" | "saving" | "saved";
 
 export default function PuckEditor({
@@ -43,7 +47,26 @@ export default function PuckEditor({
   const [data, setData] = useState<Data | null>(null);
   const [save, setSave] = useState<SaveState>("idle");
   const [busy, setBusy] = useState(false);
+  const [live, setLive] = useState<boolean | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // WHERE THIS PAGE ACTUALLY LIVES. Every other builder shows the address under the toolbar; not
+  // having it meant the only way to see a finished site was to ask someone what the URL was.
+  //
+  // The shape differs by site: SJC's pages sit at the domain root (its home IS "/"), while a
+  // client's website is served under its own id, with its FIRST page at that id's bare address.
+  // nav/footer are fragments shared across pages and have no address of their own.
+  const isFirstPage = pages[0]?.slug === page;
+  const publicPath =
+    ["nav", "footer", "websites-nav", "websites-footer"].includes(page)
+      ? null
+      : siteId === SJC_ID
+        ? page === "home"
+          ? "/"
+          : `/${page}`
+        : isFirstPage
+          ? `/${siteId}`
+          : `/${siteId}/${page}`;
 
   // Create a brand-new page: name it, the server slugifies + saves it to the registry, then we
   // jump straight into editing the blank page. It won't be public until you hit Publish.
@@ -221,6 +244,21 @@ export default function PuckEditor({
     }
   };
 
+  // Is there actually a published version behind that address? A link that 404s is worse than no
+  // link, so the bar says which it is rather than letting you find out by clicking.
+  useEffect(() => {
+    let alive = true;
+    setLive(null);
+    if (!publicPath) return;
+    fetch(`/api/puck?page=${encodeURIComponent(page)}&site=${encodeURIComponent(siteId)}&pub=1`)
+      .then((r) => r.json())
+      .then((j) => alive && setLive(Boolean(j?.data?._pub)))
+      .catch(() => alive && setLive(null));
+    return () => {
+      alive = false;
+    };
+  }, [page, siteId, publicPath]);
+
   const writeDraft = (d: Data) => {
     setSave("saving");
     return fetch("/api/puck", {
@@ -316,6 +354,17 @@ export default function PuckEditor({
             </option>
           ))}
         </select>
+        {/* Everything global to this website — the business's name, phone, address, its domain,
+            its SEO defaults. Lives one level up from a page, because it belongs to all of them. */}
+        <button
+          type="button"
+          onClick={() => router.push(`/edit/${siteId}/settings`)}
+          disabled={busy}
+          style={btn}
+          title="Business name, phone, address, domain — used across the whole website"
+        >
+          ⚙ Website settings
+        </button>
         <button type="button" onClick={onNewPage} disabled={busy} style={btn}>
           + New Page
         </button>
@@ -348,9 +397,42 @@ export default function PuckEditor({
         <span style={{ fontSize: 12, color: save === "saved" ? "#16a34a" : "#6b7280" }}>
           {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : ""}
         </span>
-        <span style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
-          Edits auto-save as a draft · use Publish to go live · reset via /edit/{page}?reset=1
-        </span>
+        {/* The live address, the way every other builder shows it. A dot for whether anything is
+            actually published there, so a link that would 404 says so before you click it. */}
+        {publicPath ? (
+          <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              title={live ? "Published" : "Not published yet"}
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 999,
+                background: live === null ? "#d1d5db" : live ? "#16a34a" : "#f59e0b",
+              }}
+            />
+            <a
+              href={publicPath}
+              target="_blank"
+              rel="noreferrer"
+              style={{ fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 600 }}
+              title={live === false ? "Nothing published here yet — hit Publish first" : "Open the live page"}
+            >
+              {publicPath} ↗
+            </a>
+            <button
+              type="button"
+              style={{ ...btn, padding: "4px 8px", fontSize: 12 }}
+              title="Copy the link"
+              onClick={() => navigator.clipboard?.writeText(`${window.location.origin}${publicPath}`)}
+            >
+              Copy
+            </button>
+          </span>
+        ) : (
+          <span style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
+            Site-wide piece — appears on every page, no address of its own
+          </span>
+        )}
       </div>
       <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
         <Puck
@@ -365,9 +447,10 @@ export default function PuckEditor({
               method: "POST",
               credentials: "same-origin",
             });
+            setLive(true);
             if (typeof window !== "undefined") {
-              const path = page === "home" ? "/" : `/${page}`;
-              window.alert(`Published — live on ${path}`);
+              // The real address, not a guess — /<page> was wrong for every client website.
+              window.alert(`Published — live on ${publicPath || "this site"}`);
             }
           }}
         />

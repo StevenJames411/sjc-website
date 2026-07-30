@@ -38,6 +38,17 @@ export type Site = {
   logo?: string;
   /** The client's own domain, once they have one. Empty = served from the demo URL. */
   domain?: string;
+  /**
+   * WHERE THIS WEBSITE'S LEADS GO.
+   *
+   * ⚠️ THE ONE THAT ENDS RELATIONSHIPS. Every lead form used to post to one endpoint that fed
+   * SJC's own intake sheet, with the site name riding along as a text label. Sell a site with that
+   * still true and the owner's enquiries land in Steven's pile instead of theirs — they find out
+   * when a customer asks why nobody called back.
+   *
+   * Blank = the lead stays in SJC's intake (correct for a demo, and for SJC's own pages).
+   */
+  leadEmail?: string;
   business: BusinessFacts;
   seo: SiteSeo;
 };

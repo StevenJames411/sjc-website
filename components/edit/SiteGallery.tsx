@@ -52,20 +52,53 @@ export default function SiteGallery({ sites }: Props) {
         {shown.map((s) => (
           <div key={s.id} style={card}>
             <div style={cardTop}>
+              {/* The badge says what the SITE is, not what a field is missing. "No domain yet"
+                  described the record; "Demo" describes the thing you actually need to know when
+                  scanning a hundred of these — is this out with a prospect, or is it a paying
+                  client pointed at their own domain? */}
               <div style={badgeRow}>
                 {s.kind === "sjc" ? <span style={chip}>Yours</span> : null}
-                {s.domain ? <span style={chip}>{s.domain}</span> : <span style={chipMuted}>No domain yet</span>}
+                {s.domain ? (
+                  <span style={chipLive}>{s.domain}</span>
+                ) : (
+                  <span style={chipDemo} title="No domain yet — served from our address and kept out of Google">
+                    Demo
+                  </span>
+                )}
               </div>
               <h2 style={cardName}>{s.name}</h2>
               {s.description ? <p style={cardDesc}>{s.description}</p> : null}
+              {/* The live address, so you can look at a site without opening the builder. Once a
+                  domain is attached that becomes the real address; until then it's our path. */}
+              <a
+                href={s.domain ? `https://${s.domain}` : `/${s.id}`}
+                target="_blank"
+                rel="noreferrer"
+                style={cardLink}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {s.domain ? s.domain : `/${s.id}`} ↗
+              </a>
             </div>
-            <button
-              type="button"
-              style={editBtn}
-              onClick={() => router.push(`/edit/${s.id}/home`)}
-            >
-              Edit
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                type="button"
+                style={{ ...editBtn, flex: 1 }}
+                onClick={() => router.push(`/edit/${s.id}/home`)}
+              >
+                Edit
+              </button>
+              {/* The card carries the company name; everything else about the business lives one
+                  click in — same as Landingsite and GHL. */}
+              <button
+                type="button"
+                style={gearBtn}
+                title="Website settings — name, phone, address, domain"
+                onClick={() => router.push(`/edit/${s.id}/settings`)}
+              >
+                ⚙
+              </button>
+            </div>
           </div>
         ))}
         {!shown.length ? (
@@ -267,11 +300,15 @@ const cardTop: React.CSSProperties = { display: "flex", flexDirection: "column",
 const badgeRow: React.CSSProperties = { display: "flex", gap: 6, flexWrap: "wrap" };
 const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "#eef2ff", color: "#3730a3", borderRadius: 999, padding: "3px 9px" };
 const chipMuted: React.CSSProperties = { ...chip, background: "#f3f4f6", color: "#6b7280" };
+const chipLive: React.CSSProperties = { ...chip, background: "#f0fdf4", color: "#166534" };
+const chipDemo: React.CSSProperties = { ...chip, background: "#fffbeb", color: "#92400e" };
 const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeight: 1.25 };
 const cardDesc: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.45 };
+const cardLink: React.CSSProperties = { fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 600 };
 const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
 const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
+const gearBtn: React.CSSProperties = { ...ghostBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1 };
 const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50 };
 const modal: React.CSSProperties = { background: "#fff", borderRadius: 14, padding: 26, width: "100%", maxWidth: 520, fontFamily: font, maxHeight: "90vh", overflowY: "auto" };
 const tabs: React.CSSProperties = { display: "grid", gap: 8, marginBottom: 18 };

@@ -18,6 +18,7 @@ import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
 import Icon, { ICON_OPTIONS } from "@/components/blocks/Icon";
 import { resolveColor, resolveColorOr } from "@/lib/brandColor";
+import { telLink } from "@/lib/businessTokens";
 
 type Align = "left" | "center" | "right";
 
@@ -1364,7 +1365,7 @@ export const config: Config<Props, RootProps> = {
       render: ({ label, tel }) => (
         <div className="mt-4 text-center">
           <a
-            href={`tel:${tel}`}
+            href={telLink(tel)}
             className="text-sm font-semibold text-[color:var(--color-sjc-blue)] hover:underline"
           >
             {label}

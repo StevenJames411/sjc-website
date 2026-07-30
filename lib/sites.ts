@@ -29,6 +29,8 @@ const SJC_SITE: Site = {
   name: "Steven James Consulting",
   kind: "sjc",
   description: "The consulting site — AI employees, podcast, the $795 website offer.",
+  // It has had a domain the whole time; leaving this blank made its own card report "no domain".
+  domain: "stevenjamesconsulting.com",
   business: emptyBusiness(),
   seo: emptySeo(),
 };
@@ -68,8 +70,11 @@ export async function readTemplates(): Promise<Site[]> {
   return (await readSites()).filter((s) => s.kind === "template");
 }
 
+// SJC IS persisted once it's been edited — its implicit defaults in SJC_SITE stay the floor that
+// readSites merges over, so a wiped store still shows the live site, but a name or an SEO default
+// set here survives.
 async function writeSites(sites: Site[]): Promise<boolean> {
-  return store().write({ sites: sites.filter((s) => s.id !== SJC) });
+  return store().write({ sites });
 }
 
 /**
@@ -167,11 +172,6 @@ export async function updateSite(
   patch: Partial<Omit<Site, "id">>
 ): Promise<{ ok: boolean; error?: string }> {
   const s = String(id || "").trim();
-  if (s === SJC) {
-    // SJC is implicit, so there is nothing in the registry to patch. Its name and kind are fixed;
-    // its business/seo would need a real record before they could be stored.
-    return { ok: false, error: "The SJC site's details are set in code, not here." };
-  }
   const sites = await readSites();
   const i = sites.findIndex((x) => x.id === s);
   if (i < 0) return { ok: false, error: "No such website." };
@@ -181,6 +181,9 @@ export async function updateSite(
     ...next[i],
     ...patch,
     id: next[i].id,
+    // `kind` is not editable — a client site must not be able to promote itself to "sjc" and
+    // start reading the live site's storage keys.
+    kind: next[i].kind,
     business: { ...next[i].business, ...(patch.business || {}) },
     seo: { ...next[i].seo, ...(patch.seo || {}) },
   };

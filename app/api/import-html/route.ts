@@ -24,6 +24,7 @@ import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey } from "@/lib/puckContent";
 import { writeBrand } from "@/lib/brand";
+import { applyTokens, tokenRules } from "@/lib/tokenizePage";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -124,29 +125,34 @@ export async function POST(req: Request) {
   const created = await createPage("Home", siteId);
   if (!created.ok || !created.slug) return Response.json(created, { status: 400 });
 
-  // DRAFT only — an imported site always needs a pass before anyone sees it, and a half-checked
-  // page carrying a real business's phone number must not be live at a URL.
-  const store = createKvStore(getClient(), puckKey(created.slug, false, siteId));
-  if (!(await store.write(result.data as unknown as Record<string, unknown>))) {
-    return Response.json({ ok: false, error: "Website created but its content couldn't be saved." }, { status: 500 });
-  }
-
-  // The importer already digs the business facts and the palette out of the markup. Before, they
-  // only ever landed inside block props; now they go where they belong — on the site record — so
-  // every page can reference them and a later clone can't drag them along.
+  // The importer already digs the business facts out of the markup. They go on the SITE RECORD —
+  // not just into block props — so every page can reference them and a later clone can't drag the
+  // previous owner's details along.
   const footer = (result.data.content || []).find((b) => b?.type === "SiteFooter")?.props as
     | { phone?: string; phoneDisplay?: string; email?: string }
     | undefined;
-  await updateSite(siteId, {
-    business: {
-      name: businessName,
-      phone: footer?.phone || "",
-      phoneDisplay: footer?.phoneDisplay || "",
-      email: footer?.email || "",
-      address: "",
-      hours: "",
-    },
-  });
+  const business = {
+    name: businessName,
+    phone: footer?.phone || "",
+    phoneDisplay: footer?.phoneDisplay || "",
+    email: footer?.email || "",
+    address: "",
+    hours: "",
+  };
+  await updateSite(siteId, { business });
+
+  // …AND the page is wired to them in the same breath. Doing this at import is the whole point:
+  // otherwise every imported site arrives with the phone number typed into six blocks and needs a
+  // manual sweep afterwards, which is a migration step masquerading as a feature.
+  const tokenCounts: Record<string, number> = {};
+  const wired = applyTokens(result.data, tokenRules(business), tokenCounts);
+
+  // DRAFT only — an imported site always needs a pass before anyone sees it, and a half-checked
+  // page carrying a real business's phone number must not be live at a URL.
+  const store = createKvStore(getClient(), puckKey(created.slug, false, siteId));
+  if (!(await store.write(wired as unknown as Record<string, unknown>))) {
+    return Response.json({ ok: false, error: "Website created but its content couldn't be saved." }, { status: 500 });
+  }
 
   const p = result.palette as unknown as Record<string, string>;
   await writeBrand(
@@ -179,6 +185,7 @@ export async function POST(req: Request) {
     palette: result.palette,
     report: result.report,
     blocks: blockCount,
+    linked: tokenCounts,
     images,
   });
 }

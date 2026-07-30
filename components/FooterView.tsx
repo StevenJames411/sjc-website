@@ -1,4 +1,5 @@
 import { resolveColor } from "@/lib/brandColor";
+import { telLink } from "@/lib/businessTokens";
 const LOGO_URL =
   "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
 
@@ -59,7 +60,7 @@ export default function FooterView({
             </div>
             {blurb ? <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">{blurb}</p> : null}
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <a href={`tel:${phone}`} className={btn}>
+              <a href={telLink(phone)} className={btn}>
                 <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                   <path fillRule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clipRule="evenodd" />
                 </svg>
@@ -89,7 +90,7 @@ export default function FooterView({
               ) : null}
               {phoneDisplay ? (
                 <li>
-                  <a href={`tel:${phone}`} className="text-white/80 hover:text-white">{phoneDisplay}</a>
+                  <a href={telLink(phone)} className="text-white/80 hover:text-white">{phoneDisplay}</a>
                 </li>
               ) : null}
             </ul>

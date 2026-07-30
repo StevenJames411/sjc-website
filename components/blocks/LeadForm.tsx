@@ -1,4 +1,5 @@
 "use client";
+import { useSiteId } from "@/components/blocks/SiteContext";
 
 import { useState } from "react";
 import { resolveColor } from "@/lib/brandColor";
@@ -62,6 +63,9 @@ export default function LeadForm(props: LeadFormProps) {
     inColumn,
   } = props;
 
+  // Comes from the route this page is served under, not from anything editable on the block.
+  const siteId = useSiteId();
+
   const list = (Array.isArray(fields) && fields.length ? fields : LEADFORM_DEFAULTS.fields) || [];
 
   const [values, setValues] = useState<Record<string, string>>({});
@@ -84,6 +88,10 @@ export default function LeadForm(props: LeadFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           submittedAt: new Date().toISOString(),
+          // Which WEBSITE this came from, taken from the route rather than a typed field. The
+          // server decides the destination from it — see app/api/apply. `source` stays as a
+          // human label only; it must never be the thing that routes a lead.
+          siteId,
           answers: [
             { key: "source", label: "Source", value: source || "" },
             ...list.map((f, i) => ({
