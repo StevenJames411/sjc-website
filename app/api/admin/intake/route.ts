@@ -9,7 +9,7 @@
 // thing deciding whether it works. If opening a form were reachable by a stranger, the open/closed
 // state would be decoration.
 import { openIntake, closeIntake, intakeAccess } from "@/lib/intakeLinks";
-import { readIntake } from "@/lib/intake";
+import { readIntake, patchIntake } from "@/lib/intake";
 import { findSite } from "@/lib/sites";
 import { questionsFor, INTAKE_QUESTIONS } from "@/lib/intakeShared";
 
@@ -66,6 +66,10 @@ export async function POST(req: Request) {
   const action = new URL(req.url).searchParams.get("action");
   if (action === "open") {
     const ok = await openIntake(id);
+    // REOPENING MEANS "KEEP GOING". Without this, a form she already submitted reopens straight
+    // onto "Got it — thank you", with no way to add the photos that were the whole reason for
+    // opening it again. Her answers stay; only the finished flag is lifted.
+    await patchIntake(id, { submittedAt: "", stoppedBecause: "" });
     return Response.json({ ok, status: "open", url: `${new URL(req.url).origin}/${id}/onboard` });
   }
   if (action === "close") {
