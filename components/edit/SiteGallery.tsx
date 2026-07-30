@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Site } from "@/lib/sitesShared";
 import type { IntakeSummary } from "@/lib/intakeShared";
+import IntakeAnswers from "./IntakeAnswers";
 
 // The way into the builder: a wall of website cards, not a dropdown.
 //
@@ -22,6 +23,8 @@ export default function SiteGallery({ sites, intake }: Props) {
   // Which card's onboarding button is mid-flight, so it can't be double-clicked.
   const [flip, setFlip] = useState("");
   const [copied, setCopied] = useState("");
+  // Which business's answers are on screen. Fetched when opened, not shipped with the gallery.
+  const [reading, setReading] = useState<{ id: string; name: string } | null>(null);
 
   // Open or close a business's onboarding form. The state IS the guard — the URL is her business
   // name and deliberately guessable, so this switch is the only thing standing between a stranger
@@ -57,6 +60,13 @@ export default function SiteGallery({ sites, intake }: Props) {
 
   return (
     <div style={page}>
+      {reading ? (
+        <IntakeAnswers
+          siteId={reading.id}
+          businessName={reading.name}
+          onClose={() => setReading(null)}
+        />
+      ) : null}
       <div style={head}>
         <div>
           <h1 style={h1}>Websites</h1>
@@ -125,6 +135,16 @@ export default function SiteGallery({ sites, intake }: Props) {
                   })()}
                 </span>
                 <div style={{ display: "flex", gap: 6 }}>
+                  {(intake[s.id]?.answered || 0) > 0 || intake[s.id]?.submitted ? (
+                    <button
+                      type="button"
+                      style={linkBtn}
+                      title="Read what she's told us so far"
+                      onClick={() => setReading({ id: s.id, name: s.name })}
+                    >
+                      View answers
+                    </button>
+                  ) : null}
                   {intake[s.id]?.status === "open" ? (
                     <>
                       <button
