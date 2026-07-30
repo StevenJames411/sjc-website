@@ -50,7 +50,7 @@ export type Site = {
    */
   leadEmail?: string;
   /**
-   * THIS CLIENT'S OWN GOOGLE SHEET — the Apps Script webhook that writes to it.
+   * THIS CLIENT'S OWN GOOGLE SHEET — its spreadsheet id.
    *
    * Each client gets one sheet, which Steven owns and shares with them view-only: their leads on
    * one tab, what they told us at onboarding on another. It is theirs to look at any time, and
@@ -60,10 +60,14 @@ export type Site = {
    * A client's data never lands there — see scripts/apply-webhook.gs, which says so and was
    * nearly overruled on 2026-07-30.
    *
+   * An ID, not a webhook. The first version stored a per-client Apps Script URL, which meant
+   * deploying and authorizing a script for every customer. One script now writes to every sheet
+   * by id (lib/sheets.ts), so this is just which spreadsheet is hers.
+   *
    * Blank = no sheet yet. The intake copy logs and moves on; nothing fails, because the durable
    * store holds the answers regardless.
    */
-  sheetWebhook?: string;
+  sheetId?: string;
   business: BusinessFacts;
   seo: SiteSeo;
 };

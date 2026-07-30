@@ -1,0 +1,69 @@
+// Talking to SJC Sheets — the ONE Apps Script that owns every client's spreadsheet. SERVER ONLY.
+//
+// Before this, each client's sheet had its own bound script, which meant a deployment and a Google
+// authorization click per customer, forever. One script that opens any spreadsheet by id removes
+// all of that: authorize once, then adding a client is an API call.
+//
+// Source of the script: scripts/sjc-sheets.gs (the copy of record; it lives in Google).
+//
+// ⚠️ Two things about Apps Script that will waste an afternoon if you don't know them:
+//
+//  1. It answers a POST with a 302 to script.googleusercontent.com, and the JSON is at the far
+//     end. fetch() follows that correctly. `curl -X POST -L` does NOT — forcing the method makes
+//     curl re-POST to the redirect and you get an HTML login page instead of your answer.
+//  2. It returns HTTP 200 even when the script throws. Success has to be read from the BODY,
+//     never from the status code, or every failure looks like a success.
+
+const url = () => process.env.SHEETS_WEBHOOK_URL || "";
+const secret = () => process.env.SHEETS_SECRET || "";
+
+export const sheetsConfigured = () => Boolean(url() && secret());
+
+type Ok<T> = { ok: true } & T;
+type Err = { ok: false; error: string };
+
+async function call<T>(action: string, payload: Record<string, unknown>): Promise<Ok<T> | Err> {
+  if (!sheetsConfigured()) {
+    return { ok: false, error: "SHEETS_WEBHOOK_URL / SHEETS_SECRET are not set" };
+  }
+  try {
+    const res = await fetch(url(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, action, secret: secret() }),
+    });
+    const text = await res.text();
+    let body: unknown;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      // Almost always Google's sign-in page, which means the deployment is not set to "Anyone".
+      return { ok: false, error: `sheets webhook returned non-JSON (${text.slice(0, 120)})` };
+    }
+    const b = body as Record<string, unknown>;
+    if (!b?.ok) return { ok: false, error: String(b?.error || "sheets webhook refused") };
+    return b as Ok<T>;
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "sheets webhook unreachable" };
+  }
+}
+
+/** Make a client their own spreadsheet — Leads + Onboarding tabs, ready to use. */
+export function createClientSheet(businessName: string, shareWith?: string) {
+  return call<{ spreadsheetId: string; url: string }>("createClientSheet", {
+    businessName,
+    shareWith: shareWith || "",
+  });
+}
+
+/** Write one row into a client's sheet. `tab` is "Leads" or "Onboarding". */
+export function writeSheetRow(opts: {
+  spreadsheetId: string;
+  tab: "Leads" | "Onboarding";
+  answers: { key: string; label: string; value: string }[];
+  submittedAt?: string;
+  /** Who gets the "new enquiry" email. Leads only — onboarding never emails. */
+  notifyEmail?: string;
+}) {
+  return call<{ tab: string; row: number }>("write", opts);
+}
