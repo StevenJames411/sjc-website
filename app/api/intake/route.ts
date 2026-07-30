@@ -66,7 +66,13 @@ export async function PUT(req: Request) {
     // raised: her answers are already stored, and telling her the form broke would be a lie.
     if (body.submittedAt) {
       const site = await findSite(auth.siteId);
-      const problem = await copyIntakeToSheet(auth.siteId, site?.business?.name || site?.name || "");
+      // The client's OWN sheet, never SJC's. Until that sheet exists this logs and moves on —
+      // her answers are already stored, and the copy is a convenience, not the record.
+      const problem = await copyIntakeToSheet(
+        auth.siteId,
+        site?.business?.name || site?.name || "",
+        site?.sheetWebhook
+      );
       if (problem) console.error(`[intake] site=${auth.siteId} ${problem}`);
     }
   }

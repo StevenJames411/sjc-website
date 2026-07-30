@@ -49,6 +49,21 @@ export type Site = {
    * Blank = the lead stays in SJC's intake (correct for a demo, and for SJC's own pages).
    */
   leadEmail?: string;
+  /**
+   * THIS CLIENT'S OWN GOOGLE SHEET — the Apps Script webhook that writes to it.
+   *
+   * Each client gets one sheet, which Steven owns and shares with them view-only: their leads on
+   * one tab, what they told us at onboarding on another. It is theirs to look at any time, and
+   * it is the renewal proof and the "I never got that lead" safety net.
+   *
+   * ⚠️ NOT SJC's own intake sheet. Steven's three-tab operations sheet is for HIS three forms.
+   * A client's data never lands there — see scripts/apply-webhook.gs, which says so and was
+   * nearly overruled on 2026-07-30.
+   *
+   * Blank = no sheet yet. The intake copy logs and moves on; nothing fails, because the durable
+   * store holds the answers regardless.
+   */
+  sheetWebhook?: string;
   business: BusinessFacts;
   seo: SiteSeo;
 };

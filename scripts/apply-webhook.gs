@@ -119,17 +119,6 @@ var TAB_AI      = 'AI Implementation'; // /apply — the discovery intake. Sends
 var TAB_WEBSITE = 'Website Offer';     // /websites, and any client site's own form
 var TAB_PODCAST = 'Podcast Guests';    // /guest (normally its own webhook; here as a safety net)
 
-// ── AND ONE THAT IS NOT A LEAD TAB (2026-07-30) ────────────────────────────────────────────────
-// The rule above — never a fourth tab — is about LEAD forms proliferating from free-text Source
-// values, which is what produced a duplicate "Apply" tab. This is a different animal and breaks
-// none of that reasoning:
-//   • It is not a lead. It's a client who has already bought, filling in onboarding once.
-//   • It is ONE row per client, not a stream of enquiries.
-//   • The tab name is fixed here, never derived from anything the caller sends.
-// Their onboarding answers belong with Steven because it's his build process — unlike their
-// LEADS, which go to their own sheet and never land here.
-var TAB_ONBOARD = 'Onboarding';        // /<business>/onboard — filled once, after the sale
-
 function sheetFor(data, answers) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) throw new Error('script is not attached to a spreadsheet');
@@ -143,14 +132,9 @@ function sheetFor(data, answers) {
   var site = String(data.site || '');
   var isClientSite = site && site.toLowerCase().indexOf('steven james') === -1;
 
-  // Checked FIRST and matched exactly. An onboarding row also carries the business name, and a
-  // client site sets isClientSite — either would otherwise drag it into Website Offer, mixing a
-  // finished customer's onboarding in with raw enquiries.
-  var name;
-  if (s === 'onboarding') name = TAB_ONBOARD;
-  else if (s.indexOf('website') !== -1 || isClientSite) name = TAB_WEBSITE;
+  var name = TAB_AI; // the default, because /apply sends no source at all
+  if (s.indexOf('website') !== -1 || isClientSite) name = TAB_WEBSITE;
   else if (s.indexOf('guest') !== -1 || s.indexOf('podcast') !== -1) name = TAB_PODCAST;
-  else name = TAB_AI; // the default, because /apply sends no source at all
 
   var sheet = ss.getSheetByName(name);
   if (!sheet) {
