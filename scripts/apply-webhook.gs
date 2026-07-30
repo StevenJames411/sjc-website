@@ -104,12 +104,17 @@ function reply(text) {
  * There are exactly three of Steven's own offers. Anything from a CLIENT's website gets a tab of
  * its own under the business name, which is what the 2026-07-26 record specifies.
  */
-// EXACTLY THREE TABS. Steven's three offers, and nothing else — ever.
+// THREE TABS BECAUSE THERE ARE THREE INTAKE FORMS ON ONE WEBSITE.
 //
-// ⚠️ A PAYING CUSTOMER DOES NOT GET A TAB HERE. Once websites are selling, each customer gets
-// their OWN SHEET of their own leads — they keep a copy, Steven keeps a copy. This sheet stays
-// what it is: Steven's own funnel, three offers, three tabs. Until then a demo site's enquiries
-// fold into Website Offer, because a demo has no customer to own a sheet yet.
+// stevenjamesconsulting.com is a single website carrying three forms — the AI-implementation
+// application, the podcast-guest form, and the website offer at /websites, which is a nested page
+// that behaves like its own site but isn't one. One website, three forms, three tabs. That is the
+// whole reason this sheet exists and the whole reason it should never grow a fourth tab.
+//
+// ⚠️ A CLIENT IS A DIFFERENT SHAPE ENTIRELY. Each client is ONE website with ONE form, and gets
+// its OWN SHEET — Steven owns it and shares it with the client VIEW-ONLY, so they can look any
+// time and copy it if they want to reorganise their own version. Their leads never land here.
+// Until a demo is sold it has no customer to own a sheet, so its enquiries fold into Website Offer.
 var TAB_AI      = 'AI Implementation'; // /apply — the discovery intake. Sends NO source.
 var TAB_WEBSITE = 'Website Offer';     // /websites, and any client site's own form
 var TAB_PODCAST = 'Podcast Guests';    // /guest (normally its own webhook; here as a safety net)
