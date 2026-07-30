@@ -29,6 +29,8 @@ const SJC_SITE: Site = {
   name: "Steven James Consulting",
   kind: "sjc",
   description: "The consulting site — AI employees, podcast, the $795 website offer.",
+  // It has had a domain the whole time; leaving this blank made its own card report "no domain".
+  domain: "stevenjamesconsulting.com",
   business: emptyBusiness(),
   seo: emptySeo(),
 };
