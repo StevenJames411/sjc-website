@@ -18,6 +18,7 @@ import type { IntakeAnswers, IntakeQuestion } from "@/lib/intakeShared";
 
 export default function IntakeForm({
   site,
+  contact,
   businessName,
   questions,
   initialAnswers,
@@ -27,6 +28,8 @@ export default function IntakeForm({
 }: {
   /** Which business this form belongs to. The server checks it's open on every call. */
   site: string;
+  /** SJC's number, read from the site record — never hardcoded here. See lib/sites.ts. */
+  contact: { display: string; dial: string };
   businessName: string;
   questions: IntakeQuestion[];
   initialAnswers: IntakeAnswers;
@@ -143,7 +146,7 @@ export default function IntakeForm({
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  if (stopped) return <Shell title="Thanks for being straight with me."><P>{stopped}</P><Phone /></Shell>;
+  if (stopped) return <Shell title="Thanks for being straight with me."><P>{stopped}</P><Phone contact={contact} /></Shell>;
 
   if (done) {
     return (
@@ -153,12 +156,12 @@ export default function IntakeForm({
           before anyone else sees it.
         </P>
         <P>If you think of something you forgot, just text me.</P>
-        <Phone />
+        <Phone contact={contact} />
       </Shell>
     );
   }
 
-  if (!q) return <Shell title="All done."><P>Nothing left to answer.</P><Phone /></Shell>;
+  if (!q) return <Shell title="All done."><P>Nothing left to answer.</P><Phone contact={contact} /></Shell>;
 
   const canAdvance = q.type === "photos" ? !q.required || photos.length > 0 : !q.required || !!answer.trim();
 
@@ -330,10 +333,10 @@ const P = ({ children, small, danger }: { children: React.ReactNode; small?: boo
   </p>
 );
 
-const Phone = () => (
+const Phone = ({ contact }: { contact: { display: string; dial: string } }) => (
   <p style={{ marginTop: 18, fontSize: 17 }}>
-    <a href="tel:+12102982343" style={{ color: "#2563eb", fontWeight: 600 }}>
-      (210) 298-2343
+    <a href={`tel:${contact.dial}`} style={{ color: "#2563eb", fontWeight: 600 }}>
+      {contact.display}
     </a>
   </p>
 );
