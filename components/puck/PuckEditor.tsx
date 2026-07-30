@@ -28,7 +28,7 @@ type PageItem = { slug: string; title: string; custom?: boolean };
 //                                 needed for pages built before that existed; the sweep moved to
 //                                 the settings screen, beside the fields it uses
 // Each survives as an API route with no button — maintenance, not a feature.
-type SaveState = "idle" | "saving" | "saved";
+type SaveState = "idle" | "saving" | "saved" | "failed";
 
 export default function PuckEditor({
   siteId,
@@ -46,6 +46,7 @@ export default function PuckEditor({
   const router = useRouter();
   const [data, setData] = useState<Data | null>(null);
   const [save, setSave] = useState<SaveState>("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState<boolean | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -259,6 +260,15 @@ export default function PuckEditor({
     };
   }, [page, siteId, publicPath]);
 
+  // A SAVE THAT DIDN'T SAVE MUST NOT SAY "Saved" (2026-07-30).
+  //
+  // This used to be `.then(() => setSave("saved"))` — the response was never read. The write
+  // guard in pgClient refuses saves that look like data loss, the API returned ok:false, and
+  // this still went green. Steven edited, saw "Saved", and watched the page stay unchanged with
+  // no error anywhere on screen or in the console.
+  //
+  // Now: only ok:true goes green. Anything else goes red, keeps the reason on screen, and logs
+  // it. saveError holds the guard's own words ("top-level keys disappeared: zones").
   const writeDraft = (d: Data) => {
     setSave("saving");
     return fetch("/api/puck", {
@@ -267,8 +277,24 @@ export default function PuckEditor({
       credentials: "same-origin",
       body: JSON.stringify({ page, site: siteId, data: d }),
     })
-      .then(() => setSave("saved"))
-      .catch(() => setSave("idle"));
+      .then(async (r) => {
+        const body = await r.json().catch(() => ({}));
+        if (r.ok && body?.ok) {
+          setSaveError(null);
+          setSave("saved");
+          return;
+        }
+        const reason = body?.reason || `HTTP ${r.status}`;
+        console.error("[PuckEditor] draft save REFUSED:", reason);
+        setSaveError(reason);
+        setSave("failed");
+      })
+      .catch((e) => {
+        const reason = e instanceof Error ? e.message : "network error";
+        console.error("[PuckEditor] draft save failed:", reason);
+        setSaveError(reason);
+        setSave("failed");
+      });
   };
 
   // Load this page's saved draft, or fall back to its seed. If ?reset=1 is in the URL,
@@ -394,8 +420,21 @@ export default function PuckEditor({
             Delete Page
           </button>
         ) : null}
-        <span style={{ fontSize: 12, color: save === "saved" ? "#16a34a" : "#6b7280" }}>
-          {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : ""}
+        <span
+          title={saveError || undefined}
+          style={{
+            fontSize: 12,
+            fontWeight: save === "failed" ? 700 : 400,
+            color: save === "failed" ? "#dc2626" : save === "saved" ? "#16a34a" : "#6b7280",
+          }}
+        >
+          {save === "saving"
+            ? "Saving…"
+            : save === "saved"
+              ? "Saved"
+              : save === "failed"
+                ? `NOT SAVED — ${saveError || "unknown error"}`
+                : ""}
         </span>
         {/* The live address, the way every other builder shows it. A dot for whether anything is
             actually published there, so a link that would 404 says so before you click it. */}

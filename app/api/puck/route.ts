@@ -29,8 +29,10 @@ export async function PUT(req: Request) {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
   }
   const store = createKvStore(getClient(), puckKey(body?.page || "about", false, siteOf(body?.site)));
-  const ok = await store.write(body?.data || {});
-  return Response.json({ ok, configured: store.configured });
+  // Report the REASON, not just a boolean. A refused save used to return ok:false with an HTTP
+  // 200 and no explanation, which the editor rendered as "saved". 409 = the write guard said no.
+  const { ok, reason } = await store.writeResult(body?.data || {});
+  return Response.json({ ok, reason, configured: store.configured }, { status: ok ? 200 : 409 });
 }
 
 export async function POST(req: Request) {
