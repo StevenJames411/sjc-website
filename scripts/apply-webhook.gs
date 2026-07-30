@@ -1,53 +1,84 @@
-/**
- * apply-webhook.gs — the Google Apps Script behind APPLY_WEBHOOK_URL.
- *
- * REPLACES the previous script wholesale. Paste over everything, save, then
- * Deploy > Manage deployments > (pencil) > Version: New version > Deploy.
- * ⚠️ Use "Manage deployments", NOT "New deployment" — a new deployment gets a
- * NEW URL and APPLY_WEBHOOK_URL in Vercel would still point at the old one.
- *
- * ── WHAT WENT WRONG WITH THE OLD ONE ────────────────────────────────────────
- * It appended a fresh column for every question label it hadn't seen in that
- * exact combination, instead of reusing the column already there. So one tab
- * ended up 22 columns wide with "Your name" in three of them, and every form
- * wrote into its own little island off to the right. Opening the sheet showed
- * columns A–M empty and looked like nothing had arrived — while the leads were
- * sitting in columns N through V the whole time.
- *
- * ── WHAT THIS ONE DOES ──────────────────────────────────────────────────────
- *  • ONE TAB PER SOURCE. Website-offer leads, discovery applications and
- *    podcast guests stop sharing a grid. A tab is created the first time that
- *    source appears.
- *  • COLUMNS MATCHED BY LABEL, case- and space-insensitive. A question that
- *    already has a column reuses it. A genuinely new question adds one column,
- *    once, at the end.
- *  • Nothing is ever overwritten and no existing tab is touched, so the old
- *    "New-Client" tab keeps its history exactly as it is.
- *  • Emails on every lead, and says loudly in the reply when something failed
- *    instead of returning a cheerful 200 over a lost enquiry.
- */
+// SJC Intake — Google Apps Script webhook (KEYED columns, one TAB PER OFFER).
+//
+// Each question maps to a column by a STABLE ID kept invisibly in the header cell's NOTE.
+// Reword a question -> same column (header just updates). Add a question -> new column.
+// Drag any column anywhere (Time included) -> nothing breaks. Also emails Steven every lead.
+//
+// ── WHAT CHANGED AND WHY ────────────────────────────────────────────────────
+// The old version ended line 10 with getSheets()[0] — it wrote EVERY form to the
+// FIRST tab. Three different offers (AI discovery, podcast guests, the website
+// build) all piled into "New-Client", each carving out its own columns off to
+// the right because their question keys differ. Opening the sheet showed
+// columns A–M empty and read as "the website leads never arrived", when they
+// were sitting in columns N–V the whole time.
+//
+// Now the TAB is chosen by the lead's Source. The website offer gets its own
+// tab, created the first time one comes in. Nothing existing is moved or
+// touched — "New-Client" keeps its history exactly as it stands.
 
-const EMAIL_TO = 'steven@stevenbarchetti.com';
-const FALLBACK_TAB = 'Leads';
+var EMAIL_TO = 'steven@stevenbarchetti.com';
+var FALLBACK_TAB = 'Leads';
 
 function doPost(e) {
   try {
-    const data = JSON.parse(e.postData.contents);
-    const answers = (data.answers || []).filter(function (a) {
-      return a && String(a.label || '').trim();
+    var data = JSON.parse(e.postData.contents);
+    var answers = data.answers || [];
+    var sheet = sheetFor(data, answers);
+
+    // Everything to write, timestamp first. Each item carries a stable key + a display label.
+    var items = [{ key: '__time__', label: 'Time', value: data.submittedAt || new Date() }];
+    answers.forEach(function (a) {
+      items.push({ key: String(a.key || a.label), label: String(a.label || ''), value: a.value });
     });
-    if (!answers.length) return reply('error: no answers in payload');
 
-    const received = data.submittedAt ? new Date(data.submittedAt) : new Date();
-    const tab = tabNameFor(data, answers);
+    // Current header row: values (labels) + notes (keys). Empty sheet => empty arrays.
+    var lastCol = sheet.getLastColumn();
+    var headerVals = [], headerNotes = [];
+    if (lastCol > 0) {
+      var hr = sheet.getRange(1, 1, 1, lastCol);
+      headerVals = hr.getValues()[0];
+      headerNotes = hr.getNotes()[0];
+    }
 
-    appendLead(tab, received, answers, data);
-    notify(tab, received, answers);
+    // Find (or create) the column for a key; keep its header label current.
+    function columnFor(key, label) {
+      // 1) match by the stable key (the note) — reword just updates the visible label
+      for (var i = 0; i < headerNotes.length; i++) {
+        if (headerNotes[i] === key) {
+          if (headerVals[i] !== label) { sheet.getRange(1, i + 1).setValue(label); headerVals[i] = label; }
+          return i;
+        }
+      }
+      // 2) migrate an existing label-only column (no key yet) by matching its label
+      for (var j = 0; j < headerVals.length; j++) {
+        if (!headerNotes[j] && headerVals[j] === label) {
+          sheet.getRange(1, j + 1).setNote(key); headerNotes[j] = key;
+          return j;
+        }
+      }
+      // 3) brand-new column at the end
+      var idx = headerVals.length;
+      sheet.getRange(1, idx + 1).setValue(label).setNote(key).setFontWeight('bold');
+      headerVals.push(label); headerNotes.push(key);
+      return idx;
+    }
 
+    var row = [];
+    items.forEach(function (it) {
+      var c = columnFor(it.key, it.label);
+      while (row.length <= c) row.push('');
+      row[c] = it.value == null ? '' : it.value;
+    });
+    while (row.length < headerVals.length) row.push('');
+
+    sheet.appendRow(row);
+    if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
+
+    notify(sheet.getName(), items);
     return reply('ok');
   } catch (err) {
-    // Surfaced in the reply on purpose. The caller checks the BODY, so a failure
-    // here shows up as a failure instead of being swallowed behind a 200.
+    // Returned in the BODY on purpose — Apps Script sends HTTP 200 even when it throws, so the
+    // caller has no other way to tell a failed write from a successful one.
     console.error(err);
     return reply('error: ' + (err && err.message ? err.message : err));
   }
@@ -62,96 +93,60 @@ function reply(text) {
   return ContentService.createTextOutput(text);
 }
 
-/** "/websites — $795 website offer" -> "Websites". Keeps each form in its own tab. */
-function tabNameFor(data, answers) {
-  var source = '';
-  for (var i = 0; i < answers.length; i++) {
-    if (String(answers[i].key || answers[i].label).toLowerCase() === 'source') {
-      source = String(answers[i].value || '');
-      break;
-    }
-  }
-  var raw = source || data.site || '';
-  raw = raw.split('—')[0].split('|')[0].replace(/^\//, '').trim();
-  if (!raw) return FALLBACK_TAB;
+/**
+ * Which tab a lead belongs in.
+ *
+ * ⚠️ DELIBERATE, FIXED NAMES — never derived from the Source text. Source is free text that each
+ * form sets independently: the website form says "/websites — $795 website offer", and /apply
+ * sends no source at all. Naming tabs from it produced an "Apply" tab that duplicated the
+ * discovery intake, and would eventually give you a wall of near-identical tabs nobody can read.
+ *
+ * There are exactly three of Steven's own offers. Anything from a CLIENT's website gets a tab of
+ * its own under the business name, which is what the 2026-07-26 record specifies.
+ */
+// EXACTLY THREE TABS. Steven's three offers, and nothing else — ever.
+//
+// ⚠️ A PAYING CUSTOMER DOES NOT GET A TAB HERE. Once websites are selling, each customer gets
+// their OWN SHEET of their own leads — they keep a copy, Steven keeps a copy. This sheet stays
+// what it is: Steven's own funnel, three offers, three tabs. Until then a demo site's enquiries
+// fold into Website Offer, because a demo has no customer to own a sheet yet.
+var TAB_AI      = 'AI Implementation'; // /apply — the discovery intake. Sends NO source.
+var TAB_WEBSITE = 'Website Offer';     // /websites, and any client site's own form
+var TAB_PODCAST = 'Podcast Guests';    // /guest (normally its own webhook; here as a safety net)
 
-  var name = raw
-    .replace(/[\[\]:*?\/\\]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .substring(0, 90);
-  return name
-    ? name.charAt(0).toUpperCase() + name.slice(1)
-    : FALLBACK_TAB;
-}
-
-/** Labels differing only by case, spacing or a trailing colon are the SAME column. */
-function norm(label) {
-  return String(label || '')
-    .toLowerCase()
-    .replace(/[:?]+$/, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function appendLead(tabName, received, answers, data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+function sheetFor(data, answers) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) throw new Error('script is not attached to a spreadsheet');
 
-  var sheet = ss.getSheetByName(tabName);
+  var source = '';
+  for (var i = 0; i < answers.length; i++) {
+    var k = String(answers[i].key || answers[i].label || '').toLowerCase();
+    if (k === 'source') { source = String(answers[i].value || ''); break; }
+  }
+  var s = source.toLowerCase();
+  var site = String(data.site || '');
+  var isClientSite = site && site.toLowerCase().indexOf('steven james') === -1;
+
+  var name = TAB_AI; // the default, because /apply sends no source at all
+  if (s.indexOf('website') !== -1 || isClientSite) name = TAB_WEBSITE;
+  else if (s.indexOf('guest') !== -1 || s.indexOf('podcast') !== -1) name = TAB_PODCAST;
+
+  var sheet = ss.getSheetByName(name);
   if (!sheet) {
-    sheet = ss.insertSheet(tabName);
-    sheet.appendRow(['Received', 'Website']);
-    sheet.getRange(1, 1, 1, 2).setFontWeight('bold');
+    sheet = ss.insertSheet(name);
     sheet.setFrozenRows(1);
   }
-
-  var lastCol = Math.max(sheet.getLastColumn(), 1);
-  var header = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-
-  // label -> column index, so an existing question is never duplicated.
-  var colOf = {};
-  for (var c = 0; c < header.length; c++) {
-    var key = norm(header[c]);
-    if (key && colOf[key] === undefined) colOf[key] = c + 1;
-  }
-  if (colOf['received'] === undefined) colOf['received'] = 1;
-
-  // Any genuinely new question gets ONE new column, appended once.
-  var added = [];
-  for (var i = 0; i < answers.length; i++) {
-    var k = norm(answers[i].label);
-    if (k && colOf[k] === undefined) {
-      lastCol += 1;
-      colOf[k] = lastCol;
-      added.push({ col: lastCol, label: String(answers[i].label).trim() });
-    }
-  }
-  for (var a = 0; a < added.length; a++) {
-    sheet.getRange(1, added[a].col, 1, 1).setValue(added[a].label).setFontWeight('bold');
-  }
-
-  var row = new Array(lastCol).fill('');
-  row[colOf['received'] - 1] = received;
-  if (colOf['website'] !== undefined) row[colOf['website'] - 1] = data.site || '';
-  for (var j = 0; j < answers.length; j++) {
-    var col = colOf[norm(answers[j].label)];
-    if (col) row[col - 1] = String(answers[j].value == null ? '' : answers[j].value);
-  }
-
-  sheet.appendRow(row);
+  return sheet;
 }
 
-function notify(tabName, received, answers) {
+function notify(tabName, items) {
   var lines = [];
-  for (var i = 0; i < answers.length; i++) {
-    if (String(answers[i].value || '').trim()) {
-      lines.push(answers[i].label + ': ' + answers[i].value);
-    }
+  for (var i = 0; i < items.length; i++) {
+    if (String(items[i].value || '').trim()) lines.push(items[i].label + ': ' + items[i].value);
   }
   MailApp.sendEmail({
     to: EMAIL_TO,
     subject: 'New lead — ' + tabName,
-    body: lines.join('\n') + '\n\nReceived: ' + received + '\nTab: ' + tabName,
+    body: lines.join('\n') + '\n\nTab: ' + tabName,
   });
 }
