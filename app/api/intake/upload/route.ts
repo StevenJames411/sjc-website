@@ -1,10 +1,10 @@
-// Photo upload for the intake form. PUBLIC, code-gated, and deliberately meaner than /api/upload.
+// Photo upload for the intake form. PUBLIC, gated by the form's open state.
 //
 // /api/upload trusts its caller because middleware already proved they're the owner. This route
 // cannot: whoever holds a client link can reach it. So it re-checks everything, and it stores into
-// a path derived from the RESOLVED code — never from anything the caller typed.
+// a path derived from the site id we just verified is open — never a caller-supplied path.
 import { put } from "@vercel/blob";
-import { resolveIntakeCode } from "@/lib/intakeLinks";
+import { checkIntakeOpen } from "@/lib/intakeLinks";
 import { readIntake, addIntakePhotos, MAX_INTAKE_PHOTOS } from "@/lib/intake";
 
 export const dynamic = "force-dynamic";
@@ -12,12 +12,10 @@ export const dynamic = "force-dynamic";
 const MAX_BYTES = 4 * 1024 * 1024;
 
 export async function POST(req: Request) {
-  const url = new URL(req.url);
-  const check = await resolveIntakeCode(url.searchParams.get("k"));
-  if (!check.ok) {
-    return Response.json({ ok: false, error: "link not valid" }, { status: 401 });
-  }
-  const siteId = check.siteId;
+  const siteId = (new URL(req.url).searchParams.get("site") || "").trim();
+  if (!siteId) return Response.json({ ok: false, error: "site required" }, { status: 400 });
+  const open = await checkIntakeOpen(siteId);
+  if (!open.ok) return Response.json({ ok: false, error: "form is closed" }, { status: 403 });
 
   // A cap per client, not per request — otherwise "one at a time" is an unlimited upload loop.
   const existing = await readIntake(siteId);

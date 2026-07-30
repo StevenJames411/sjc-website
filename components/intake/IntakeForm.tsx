@@ -17,7 +17,7 @@ import { prepareImage } from "@/lib/imagePrep";
 import type { IntakeAnswers, IntakeQuestion } from "@/lib/intakeShared";
 
 export default function IntakeForm({
-  code,
+  site,
   businessName,
   questions,
   initialAnswers,
@@ -25,8 +25,8 @@ export default function IntakeForm({
   alreadySubmitted,
   stoppedBecause,
 }: {
-  /** The eight-character link code. It is the credential; nothing else authenticates her. */
-  code: string;
+  /** Which business this form belongs to. The server checks it's open on every call. */
+  site: string;
   businessName: string;
   questions: IntakeQuestion[];
   initialAnswers: IntakeAnswers;
@@ -59,7 +59,7 @@ export default function IntakeForm({
     async (patch: Partial<{ answers: IntakeAnswers; submittedAt: string; stoppedBecause: string }>) => {
       setSaveState("saving");
       try {
-        const res = await fetch(`/api/intake?k=${encodeURIComponent(code)}`, {
+        const res = await fetch(`/api/intake?site=${encodeURIComponent(site)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(patch),
@@ -77,7 +77,7 @@ export default function IntakeForm({
         return false;
       }
     },
-    [code]
+    [site]
   );
 
   // A last-ditch save if she closes the tab mid-answer.
@@ -85,13 +85,13 @@ export default function IntakeForm({
     const onHide = () => {
       if (saveState === "saving") return;
       navigator.sendBeacon?.(
-        `/api/intake?k=${encodeURIComponent(code)}`,
+        `/api/intake?site=${encodeURIComponent(site)}`,
         new Blob([JSON.stringify({ answers })], { type: "application/json" })
       );
     };
     document.addEventListener("visibilitychange", onHide);
     return () => document.removeEventListener("visibilitychange", onHide);
-  }, [answers, code, saveState]);
+  }, [answers, site, saveState]);
 
   async function next() {
     if (!q) return;
@@ -125,7 +125,7 @@ export default function IntakeForm({
         const { file } = await prepareImage(files[n]);
         const form = new FormData();
         form.append("file", file);
-        const res = await fetch(`/api/intake/upload?k=${encodeURIComponent(code)}`, {
+        const res = await fetch(`/api/intake/upload?site=${encodeURIComponent(site)}`, {
           method: "POST",
           body: form,
         });

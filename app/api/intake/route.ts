@@ -1,30 +1,25 @@
 // The intake form's read/write endpoint. PUBLIC by necessity, token-gated by design.
 //
-//   GET  /api/intake?k=<code>   -> { answers, photos, submittedAt }
-//   PUT  /api/intake?k=<code>   { answers?, submittedAt?, stoppedBecause? } -> { ok }
+//   GET  /api/intake?site=<id>   -> { answers, photos, submittedAt }
+//   PUT  /api/intake?site=<id>   { answers?, submittedAt?, stoppedBecause? } -> { ok }
 //
-// ⚠️ THE RULE THIS FILE EXISTS TO ENFORCE: the site id is resolved from the CODE, never from
-// the query string. `?site=` is only ever used to fail fast on an obvious mismatch. If the id came
-// from the URL, anyone holding one valid link could read and overwrite every other client's
-// answers by editing one word — the failure that ends a business, not an afternoon.
-import { resolveIntakeCode } from "@/lib/intakeLinks";
+// ⚠️ THE GUARD IS THE OPEN STATE, NOT THE URL. Steven chose a guessable address so the link is
+// usable — she can be told it over the phone. That means this route must refuse every site that
+// isn't actively being onboarded, and must fail closed for one nobody has opened.
+import { checkIntakeOpen, closeIntake } from "@/lib/intakeLinks";
 import { readIntake, patchIntake } from "@/lib/intake";
 import type { IntakeAnswers } from "@/lib/intakeShared";
 
 export const dynamic = "force-dynamic";
 
 async function authorize(req: Request): Promise<{ siteId: string } | Response> {
-  const url = new URL(req.url);
-  const check = await resolveIntakeCode(url.searchParams.get("k"));
-  if (!check.ok) {
-    return Response.json({ ok: false, error: "link not valid" }, { status: 401 });
-  }
-  const claimed = url.searchParams.get("site");
-  if (claimed && claimed !== check.siteId) {
-    // The code is real but points somewhere else — that's someone editing the URL.
-    return Response.json({ ok: false, error: "link not valid" }, { status: 403 });
-  }
-  return { siteId: check.siteId };
+  const siteId = (new URL(req.url).searchParams.get("site") || "").trim();
+  if (!siteId) return Response.json({ ok: false, error: "site required" }, { status: 400 });
+  // The open/closed state is the ONLY guard — the URL is public by design. A site nobody opened
+  // fails closed, so this can never be a write path into a business that isn't onboarding.
+  const open = await checkIntakeOpen(siteId);
+  if (!open.ok) return Response.json({ ok: false, error: "form is closed" }, { status: 403 });
+  return { siteId };
 }
 
 export async function GET(req: Request) {
@@ -58,6 +53,13 @@ export async function PUT(req: Request) {
     ...(body.submittedAt ? { submittedAt: body.submittedAt } : {}),
     ...(body.stoppedBecause ? { stoppedBecause: body.stoppedBecause.slice(0, 500) } : {}),
   });
+
+  // THE LINK CLOSES ITSELF. Steven's objection to a manual open/close was that somebody always
+  // forgets — so the completion event does it. She submits, every open link for this site flips
+  // to expired. Reopening stays a deliberate act, which is the one nobody forgets.
+  if (ok && (body.submittedAt || body.stoppedBecause)) {
+    await closeIntake(auth.siteId, body.submittedAt ? "submitted" : "not a fit");
+  }
 
   // Same lesson as the Puck editor: a save that didn't save must never report success.
   return Response.json({ ok, reason }, { status: ok ? 200 : 409 });

@@ -1,102 +1,116 @@
-// Short, human-looking intake links. SERVER ONLY.
+// Whether a business's onboarding form is OPEN. SERVER ONLY.
 //
-//   https://stevenjamesconsulting.com/start/lucky-dog/7k2m9x4p
+//   https://stevenjamesconsulting.com/lucky-dog-wash-house/onboard
 //
-// WHY NOT A SIGNED TOKEN. The first version put a signed payload in the query string, which was
-// stateless and correct and looked like this:
+// ── THE URL IS THE BUSINESS NAME. THAT'S DELIBERATE ────────────────────────────────────────────
+// Two earlier versions put a credential in the link — a signed token, then a word pair. Steven
+// rejected both, and the reasoning is sound: a groomer who gets a link with a code in it doesn't
+// tap it, and a link she can't read out over the phone is a link she can't use. The address of
+// her onboarding form should look like the address of her website, because it is.
 //
-//   /start/lucky-dog-wash-house?k=eyJzIjoibHVja3ktZG9nLXdhc2gtaG91c2UiLCJlIjoxNzg4…
+// So the URL is guessable. It has to be, to be usable.
 //
-// A groomer receives that in a text message and does not tap it. It reads like phishing, and the
-// business it's supposedly from looks like it doesn't know what it's doing. The security was fine
-// and the link was unusable, which makes the security irrelevant.
+// ── WHICH MEANS THE STATE IS THE GUARD ─────────────────────────────────────────────────────────
+// Protection moves from "you can't find the URL" to "the URL only works while it's open". The
+// exposure window is the days you're actively onboarding, not forever.
 //
-// A stored code is eight characters, and it buys something signing can't: REVOCATION. A signed
-// token is valid until it expires no matter who ends up holding it; a code can be killed the
-// moment a link goes to the wrong person.
+// What's behind it during that window: her business hours, the work she wants, and photos she is
+// paying to have published. Everything here is destined for a public website. The real risk isn't
+// someone reading it, it's someone overwriting it — which is why the store keeps every revision
+// (append-only `state_rev`), so a vandalised answer is recoverable rather than lost.
 //
-// UNGUESSABILITY: 8 chars from a 32-symbol alphabet is ~10^12 combinations, drawn from a CSPRNG.
-// Guessing one is not the attack to worry about here.
+// ── NOBODY HAS TO REMEMBER TO CLOSE IT ─────────────────────────────────────────────────────────
+// Steven's objection to a manual switch was the right one: anything a person must remember to
+// turn off, they eventually don't. So it CLOSES ITSELF the moment she submits — the completion is
+// the trigger. Reopening stays manual because it's driven by a want ("I need more photos"), and
+// nobody forgets to do the thing they're actively trying to do.
+//
+// A 60-day inactivity backstop catches the ones she never finished, so an abandoned form doesn't
+// sit open for a year.
 
-import crypto from "crypto";
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
 
-/** No 0/O/1/I/L — these get read aloud on the phone and typed in by hand. */
-const ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
-const CODE_LEN = 8;
-const LINKS_KEY = "sjc-intake-links";
+const STALE_DAYS = 60;
+const ACCESS_KEY = "sjc-intake-access";
 
-type Link = { site: string; expires: number; createdAt: string; revoked?: boolean };
-type LinksBlob = { links?: Record<string, Link> };
+export type AccessStatus = "open" | "closed";
 
-const store = () => createKvStore(getClient(), LINKS_KEY);
+type Access = {
+  status: AccessStatus;
+  openedAt: string;
+  /** Touched on every read/write, so the inactivity backstop measures something real. */
+  lastUsedAt: string;
+  closedBecause?: string;
+  closedAt?: string;
+};
+type AccessBlob = { access?: Record<string, Access> };
 
-function newCode(): string {
-  const bytes = crypto.randomBytes(CODE_LEN);
-  let out = "";
-  for (let i = 0; i < CODE_LEN; i++) out += ALPHABET[bytes[i] % ALPHABET.length];
-  return out;
+const store = () => createKvStore(getClient(), ACCESS_KEY);
+const now = () => new Date().toISOString();
+
+async function readAll(): Promise<Record<string, Access>> {
+  return ((await store().read<AccessBlob>()) || {}).access || {};
+}
+async function writeAll(access: Record<string, Access>) {
+  return store().writeResult({ access });
 }
 
-async function readAll(): Promise<Record<string, Link>> {
-  return ((await store().read<LinksBlob>()) || {}).links || {};
+export type AccessCheck = { ok: true } | { ok: false; reason: "never-opened" | "closed" };
+
+/**
+ * Is this business's form open right now? The ONLY thing standing between a stranger and her
+ * record, so it is the one function to be careful about.
+ */
+export async function checkIntakeOpen(siteId: string): Promise<AccessCheck> {
+  const all = await readAll();
+  const a = all[siteId];
+  // Fail closed. A site nobody has explicitly opened is not open.
+  if (!a) return { ok: false, reason: "never-opened" };
+  if (a.status !== "open") return { ok: false, reason: "closed" };
+
+  if (Date.now() - Date.parse(a.lastUsedAt) > STALE_DAYS * 86400_000) {
+    all[siteId] = { ...a, status: "closed", closedBecause: "no activity", closedAt: now() };
+    await writeAll(all);
+    return { ok: false, reason: "closed" };
+  }
+
+  all[siteId] = { ...a, lastUsedAt: now() };
+  await writeAll(all);
+  return { ok: true };
 }
 
-/** Create a link code for one site. */
-export async function mintIntakeCode(
-  siteId: string,
-  days = 45
-): Promise<{ ok: boolean; code?: string; expires?: string; reason?: string }> {
-  const links = await readAll();
-  let code = newCode();
-  while (links[code]) code = newCode();
-
-  const expires = Date.now() + days * 86400_000;
-  links[code] = { site: siteId, expires, createdAt: new Date().toISOString() };
-
-  const res = await store().writeResult({ links });
-  if (!res.ok) return { ok: false, reason: res.reason };
-  return { ok: true, code, expires: new Date(expires).toISOString() };
+/** Open it — the deliberate act that starts an onboarding. */
+export async function openIntake(siteId: string) {
+  const all = await readAll();
+  all[siteId] = {
+    status: "open",
+    openedAt: now(),
+    lastUsedAt: now(),
+    closedBecause: undefined,
+    closedAt: undefined,
+  };
+  return (await writeAll(all)).ok;
 }
 
-export type CodeCheck =
-  | { ok: true; siteId: string }
-  | { ok: false; reason: "missing" | "unknown" | "expired" | "revoked" };
-
-/** Which site — if any — this code is allowed to touch. The ONLY source of that answer. */
-export async function resolveIntakeCode(code: string | null | undefined): Promise<CodeCheck> {
-  const c = String(code || "").trim().toLowerCase();
-  if (!c) return { ok: false, reason: "missing" };
-  const link = (await readAll())[c];
-  if (!link) return { ok: false, reason: "unknown" };
-  if (link.revoked) return { ok: false, reason: "revoked" };
-  if (Date.now() > link.expires) return { ok: false, reason: "expired" };
-  return { ok: true, siteId: link.site };
+/** Close it. Called automatically on submit, and manually when Steven wants it shut. */
+export async function closeIntake(siteId: string, because: string) {
+  const all = await readAll();
+  const a = all[siteId];
+  if (!a) return false;
+  all[siteId] = { ...a, status: "closed", closedBecause: because, closedAt: now() };
+  return (await writeAll(all)).ok;
 }
 
-/** Kill a link without deleting the record of it having existed. */
-export async function revokeIntakeCode(code: string): Promise<boolean> {
-  const links = await readAll();
-  const c = code.trim().toLowerCase();
-  if (!links[c]) return false;
-  links[c] = { ...links[c], revoked: true };
-  return (await store().writeResult({ links })).ok;
+export async function intakeAccess(siteId: string): Promise<Access | null> {
+  return (await readAll())[siteId] || null;
 }
 
-/** Every link ever issued for a site, newest first — so Steven can see what's out there. */
-export async function linksForSite(siteId: string) {
-  const links = await readAll();
-  return Object.entries(links)
-    .filter(([, l]) => l.site === siteId)
-    .map(([code, l]) => ({ code, ...l, expired: Date.now() > l.expires }))
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-}
-
-/** What the person sees. Never which part was wrong. */
-export const CODE_MESSAGE: Record<Exclude<CodeCheck, { ok: true }>["reason"], string> = {
-  missing: "This link is incomplete. Use the full link Steven sent you.",
-  unknown: "This link doesn't look right. Use the full link Steven sent you.",
-  expired: "This link has expired. Text Steven and he'll send you a fresh one.",
-  revoked: "This link has been replaced. Text Steven for the current one.",
+/** What she sees when it isn't open. Never a hint that a different URL would work. */
+export const CLOSED_MESSAGE: Record<Exclude<AccessCheck, { ok: true }>["reason"], string> = {
+  "never-opened":
+    "This form isn't open yet. Text Steven and he'll switch it on for you.",
+  closed:
+    "This form is closed — thanks, I've got what I need. If you've got more to send, text me " +
+    "and I'll open it back up.",
 };
