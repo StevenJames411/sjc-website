@@ -81,18 +81,18 @@ export const MAX_INTAKE_PHOTOS = 40;
 export async function copyIntakeToSheet(
   siteId: string,
   businessName: string,
-  /** The client's own Apps Script webhook. Absent until their sheet exists. */
-  webhook?: string
+  /** Which spreadsheet is hers. Absent until one has been created for her. */
+  spreadsheetId?: string
 ): Promise<string | null> {
-  if (!webhook) {
-    return `no sheet wired up for '${siteId}' yet — answers are stored, nothing was copied`;
+  if (!spreadsheetId) {
+    return `no sheet for '${siteId}' yet — answers are stored, nothing was copied`;
   }
 
   const { INTAKE_QUESTIONS } = await import("./intakeShared");
+  const { writeSheetRow } = await import("./sheets");
   const record = await readIntake(siteId);
 
   const answers = [
-    { key: "source", label: "Source", value: "onboarding" },
     { key: "business", label: "Business", value: businessName || siteId },
     ...INTAKE_QUESTIONS.filter((q) => q.type !== "photos" && record.answers[q.id]).map((q) => ({
       key: q.id,
@@ -104,26 +104,13 @@ export async function copyIntakeToSheet(
     { key: "photoUrls", label: "Photo links", value: record.photos.join("\n") },
   ];
 
-  try {
-    const res = await fetch(webhook, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        submittedAt: record.submittedAt || new Date().toISOString(),
-        answers,
-        site: businessName || siteId,
-        siteId,
-      }),
-    });
-    // ⚠️ Apps Script replies 200 even when it throws — it catches its own exception and puts the
-    // failure in the BODY. Reading the status alone would call every failure a success.
-    const text = (await res.text()).trim();
-    if (!res.ok) return `sheet webhook HTTP ${res.status}`;
-    if (!/^ok\b/i.test(text)) return `sheet webhook said: ${text.slice(0, 200)}`;
-    return null;
-  } catch (e) {
-    return `sheet webhook unreachable: ${e instanceof Error ? e.message : String(e)}`;
-  }
+  const res = await writeSheetRow({
+    spreadsheetId,
+    tab: "Onboarding",
+    answers,
+    submittedAt: record.submittedAt || new Date().toISOString(),
+  });
+  return res.ok ? null : res.error;
 }
 
 /**

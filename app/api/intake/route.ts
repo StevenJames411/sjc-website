@@ -71,7 +71,7 @@ export async function PUT(req: Request) {
       const problem = await copyIntakeToSheet(
         auth.siteId,
         site?.business?.name || site?.name || "",
-        site?.sheetWebhook
+        site?.sheetId
       );
       if (problem) console.error(`[intake] site=${auth.siteId} ${problem}`);
     }
