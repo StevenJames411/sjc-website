@@ -6,6 +6,7 @@ import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
+import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -27,30 +28,31 @@ const sourceSans = Source_Sans_3({ subsets: ["latin"], weight: ["300", "400", "5
 const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans]
   .map((f) => f.variable).join(" ");
 
+// The site-wide safety net. Every real page now builds its own metadata from its Page Settings
+// (lib/pageMeta.ts), so this is what's left over for anything that doesn't — and the values come
+// from the SAME constants those fallbacks use, so the two can't drift into disagreeing.
+//
+// ⚠️ This block is INHERITED by any route that declares none — that is how a texted /websites
+// link used to preview as "Your AI Growth Partner." Inheriting is only ever correct for an SJC
+// page; a page built for a client must emit its own (see app/[slug]/page.tsx).
+// The card image comes from app/opengraph-image.tsx; `images` stays unset so it isn't overridden,
+// and so each segment's own opengraph-image.tsx can take over.
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.stevenjamesconsulting.com"),
-  title: "Steven James Consulting — Your AI Growth Partner",
-  description:
-    "We install a native AI operating system on top of the software you already run — AI employees that answer every lead in seconds, work your old leads, close and book appointments, cover the phones 24/7, and keep customers coming back. Nothing to switch, nothing new to learn. You get the growth and stay in control of your own system.",
+  title: SITE_DEFAULTS.title,
+  description: SITE_DEFAULTS.description,
   alternates: { canonical: "/" },
-  // ⚠️ This block is INHERITED by every route that doesn't declare its own — that is how a
-  // texted /websites link used to preview as "Your AI Growth Partner." Any page selling to a
-  // different audience needs its own openGraph block (see app/websites/page.tsx).
-  // The card image comes from app/opengraph-image.tsx; leave `images` unset so it isn't
-  // overridden, and so each segment's own opengraph-image.tsx can take over.
   openGraph: {
-    title: "Steven James Consulting — AI employees for your business",
-    description:
-      "AI employees that answer every lead in seconds, work your old leads, book the appointments, and cover the phones 24/7 — installed on top of the software you already run. Nothing to switch, nothing new to learn.",
+    title: SITE_DEFAULTS.ogTitle,
+    description: SITE_DEFAULTS.ogDescription,
     url: "https://www.stevenjamesconsulting.com",
-    siteName: "Steven James Consulting",
+    siteName: SITE_NAME,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Steven James Consulting — AI employees for your business",
-    description:
-      "AI employees that answer every lead in seconds, book the appointments, and cover the phones 24/7 — on top of the software you already run.",
+    title: SITE_DEFAULTS.ogTitle,
+    description: SITE_DEFAULTS.twitterDescription,
   },
   robots: { index: true, follow: true },
 };

@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import ApplyForm, { type Step, type Intro, type Booking } from "@/components/ApplyForm";
 import { readPuckPublished } from "@/lib/puckContent";
 import { seedFor } from "@/components/puck/seeds";
+import { pageMetadata } from "@/lib/pageMeta";
 
 // Public discovery-call intake. ALL copy comes from the Puck "apply" page (edited at
 // /edit/apply) — intro, questions, the disclaimer, and the booking-step copy are every one an
@@ -10,10 +11,15 @@ import { seedFor } from "@/components/puck/seeds";
 // allow-listed through the site password gate in middleware.ts so real prospects can reach this.
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Apply — Steven James Consulting",
-  description: "Tell us about your business. If it's a fit, we'll talk.",
-};
+// Preview text too — edited at /edit/apply with no block selected (the Page Settings panel).
+// What's below is only the fallback this page shipped with, used while the panel is empty.
+export async function generateMetadata() {
+  return pageMetadata("apply", {
+    path: "/apply",
+    title: "Apply — Steven James Consulting",
+    description: "Tell us about your business. If it's a fit, we'll talk.",
+  });
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function extract(data: any): { intro: Intro; disclaimer: string; booking: Booking; steps: Step[] } {

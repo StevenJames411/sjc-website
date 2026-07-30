@@ -3,16 +3,22 @@ import Footer from "@/components/Footer";
 import ApplyForm, { type Step, type Intro, type Booking } from "@/components/ApplyForm";
 import { readPuckPublished } from "@/lib/puckContent";
 import { seedFor } from "@/components/puck/seeds";
+import { pageMetadata } from "@/lib/pageMeta";
 
 // Public podcast-GUEST intake. Same wizard as /apply, but fed by the Puck "guest" page (edited at
 // /edit/guest) and its own calendar. Every piece of copy + question is editable/deletable there.
 // /guest and /api/guest are allow-listed through the site password gate in middleware.ts.
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Come on the show — Steven James Consulting",
-  description: "Want to be a guest? Tell us a bit about you and grab a time to record.",
-};
+// Preview text too — edited at /edit/guest with no block selected (the Page Settings panel).
+// What's below is only the fallback this page shipped with, used while the panel is empty.
+export async function generateMetadata() {
+  return pageMetadata("guest", {
+    path: "/guest",
+    title: "Come on the show — Steven James Consulting",
+    description: "Want to be a guest? Tell us a bit about you and grab a time to record.",
+  });
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function extract(data: any): {
