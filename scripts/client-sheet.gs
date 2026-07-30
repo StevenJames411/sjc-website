@@ -16,15 +16,26 @@
 //
 // ── SETUP, ONCE PER CLIENT ─────────────────────────────────────────────────────────────────────
 //   1. Create a new spreadsheet named "<Business> — Leads".
-//   2. Extensions → Apps Script. Paste this file in. Save.
-//   3. Set EMAIL_TO below to the OWNER's email — leads should reach them, not Steven.
-//   4. Deploy → New deployment → Web app.
+//   2. Rename the default "Sheet1" to "Leads", or delete it. Otherwise the client opens their
+//      sheet and finds an empty tab sitting next to their real ones.
+//   3. Extensions → Apps Script. Paste this file in. Save.
+//   4. Set EMAIL_TO below to the OWNER's email — leads should reach them, not Steven.
+//   5. Deploy → New deployment → Web app.
 //        Execute as:  Me
-//        Who has access:  Anyone
+//        Who has access:  Anyone      ← NOT "Only myself", or the website cannot post to it
 //      Copy the /exec URL.
-//   5. Put that URL on the site record as `sheetWebhook` (lib/sitesShared.ts).
-//   6. Share the spreadsheet with the owner as VIEWER. Not editor — one accidental sort and
+//   6. ⚠️ AUTHORIZE. Google will demand consent before the deployment works, and it CANNOT be
+//      automated — it is a per-client click, every time. Expect "Google hasn't verified this
+//      app" (you wrote it a minute ago): Advanced → Go to project → Allow. It asks for the
+//      spreadsheet and for send-email, which is exactly what the script does.
+//   7. Put the /exec URL on the site record as `sheetWebhook` (lib/sitesShared.ts).
+//   8. Open the /exec URL in a browser. It must say "ok — client-sheet is deployed".
+//   9. Share the spreadsheet with the owner as VIEWER. Not editor — one accidental sort and
 //      their own history is scrambled, and they'll ask you to fix it.
+//
+// Proven end to end on Lucky Dog Wash House, 2026-07-30: onboarding wrote one row with the
+// questions as headers, re-submitting after a reopen UPDATED that row rather than adding a
+// second, a newly-answered question added its own column, and SJC's own sheet gained nothing.
 //
 // ⚠️ Redeploying: use Deploy → Manage deployments → edit the EXISTING one. "New deployment"
 // mints a different URL and silently orphans the one stored on the record.
