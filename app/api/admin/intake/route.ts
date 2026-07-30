@@ -9,7 +9,7 @@
 // thing deciding whether it works. If opening a form were reachable by a stranger, the open/closed
 // state would be decoration.
 import { openIntake, closeIntake, intakeAccess } from "@/lib/intakeLinks";
-import { readIntake, patchIntake } from "@/lib/intake";
+import { readIntake, patchIntake, intakeSummaries } from "@/lib/intake";
 import { findSite } from "@/lib/sites";
 import { questionsFor, INTAKE_QUESTIONS } from "@/lib/intakeShared";
 
@@ -50,7 +50,10 @@ export async function GET(req: Request) {
     // What she'll be asked — a prospected client sees fewer, and this is how to check that
     // before sending the link.
     willAsk: asked.map((q) => q.id),
-    progress: `${answers.length} of ${asked.length} answered · ${record.photos.length} photos`,
+    // ONE definition of "answered", shared with the gallery card — photos count as one of her
+    // questions, because they are one. Two counts of the same thing that disagree (the card said
+    // 5 of 9 while this said 4 of 9) make the number worthless.
+    progress: `${summary.answered} of ${summary.asked} answered · ${summary.photos} photos`,
     submittedAt: record.submittedAt || null,
     stoppedBecause: record.stoppedBecause || null,
     answers,
