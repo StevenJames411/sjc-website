@@ -58,6 +58,16 @@ export default function SiteGallery({ sites }: Props) {
               </div>
               <h2 style={cardName}>{s.name}</h2>
               {s.description ? <p style={cardDesc}>{s.description}</p> : null}
+              {/* The live address, so you can look at a site without opening the builder. */}
+              <a
+                href={s.kind === "sjc" ? "/" : `/${s.id}`}
+                target="_blank"
+                rel="noreferrer"
+                style={cardLink}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {s.kind === "sjc" ? "/" : `/${s.id}`} ↗
+              </a>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button
@@ -281,6 +291,7 @@ const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "
 const chipMuted: React.CSSProperties = { ...chip, background: "#f3f4f6", color: "#6b7280" };
 const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeight: 1.25 };
 const cardDesc: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.45 };
+const cardLink: React.CSSProperties = { fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 600 };
 const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
 const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
