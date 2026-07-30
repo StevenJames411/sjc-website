@@ -197,8 +197,8 @@ export const FOOTER_DEFAULTS = {
     { label: "About Steven James — who I am & why listen", target: "/about" },
     { label: "FAQs", target: "/faqs" },
   ] as { label: string; target: string }[],
-  phone: "+12102982343",
-  phoneDisplay: "(210) 298-2343",
+  phone: "+12108514906",
+  phoneDisplay: "(210) 851-4906",
   email: "support@stevenjamesconsulting.com",
   privacyUrl: "https://www.privacypolicies.com/live/1cbbc5dd-5b42-4b68-abdd-a279a5e3b4f7",
   tosUrl: "https://www.privacypolicies.com/live/34bb5cc7-32b9-4449-ae32-7cfe78f34e45",
@@ -794,8 +794,8 @@ export const config: Config<Props, RootProps> = {
           getItemSummary: (i: { label?: string }) => i?.label || "link",
           defaultItemProps: { label: "New link", target: "/" },
         },
-        phone: { type: "text" as const, label: "Phone — raw for Call/Text (e.g. +12102982343)" },
-        phoneDisplay: { type: "text" as const, label: "Phone — display (e.g. (210) 298-2343)" },
+        phone: { type: "text" as const, label: "Phone — raw for Call/Text (e.g. +12108514906)" },
+        phoneDisplay: { type: "text" as const, label: "Phone — display (e.g. (210) 851-4906)" },
         email: { type: "text" as const, label: "Email" },
         privacyUrl: { type: "text" as const, label: "Privacy Policy URL" },
         tosUrl: { type: "text" as const, label: "Terms of Service URL" },
@@ -1443,11 +1443,11 @@ export const config: Config<Props, RootProps> = {
       label: "Phone link",
       fields: {
         label: { type: "text" as const, label: "Text" },
-        tel: { type: "text" as const, label: "Phone number (digits, e.g. +12102982343)" },
+        tel: { type: "text" as const, label: "Phone number (digits, e.g. +12108514906)" },
       },
       defaultProps: {
-        label: "Or call me directly: (210) 298-2343",
-        tel: "+12102982343",
+        label: "Or call me directly: (210) 851-4906",
+        tel: "+12108514906",
       },
       render: ({ label, tel }) => (
         <div className="mt-4 text-center">
@@ -1988,7 +1988,7 @@ export const SEED: Data = {
           },
           {
             type: "PhoneLink",
-            props: { id: "s5-phone", label: "Or call me directly: (210) 298-2343", tel: "+12102982343" },
+            props: { id: "s5-phone", label: "Or call me directly: (210) 851-4906", tel: "+12108514906" },
           },
         ],
       },

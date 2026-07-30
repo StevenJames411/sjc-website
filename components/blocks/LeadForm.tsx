@@ -37,12 +37,12 @@ export const LEADFORM_DEFAULTS: LeadFormProps = {
     { label: "What kind of work do you do?", inputType: "text" },
   ],
   buttonLabel: "Send Me My Website",
-  note: "No obligation, and nothing gets built until you say so. Rather just talk? Call (210) 298-2343.",
+  note: "No obligation, and nothing gets built until you say so. Rather just talk? Call (210) 851-4906.",
   successHeading: "Got it. I'll call you today.",
   buttonColor: "",
   inColumn: false,
   successBody:
-    "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 298-2343.",
+    "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 851-4906.",
 };
 
 const keyFor = (label: string, i: number) =>

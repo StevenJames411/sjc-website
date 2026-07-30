@@ -6,7 +6,7 @@ export default function Contact() {
       <div className="mx-auto max-w-3xl px-6 py-20">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <a
-            href="tel:+12102982343"
+            href="tel:+12108514906"
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-6 py-3 font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)] sm:w-auto"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
@@ -15,7 +15,7 @@ export default function Contact() {
             Call Us
           </a>
           <a
-            href="sms:+12102982343"
+            href="sms:+12108514906"
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-6 py-3 font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)] sm:w-auto"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">

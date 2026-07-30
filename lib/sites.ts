@@ -227,7 +227,7 @@ export async function deleteSite(id: string): Promise<{ ok: boolean; error?: str
  */
 export async function sjcContact(): Promise<{ display: string; dial: string }> {
   const site = await findSite(SJC);
-  const display = (site?.business?.phoneDisplay || "").trim() || "(210) 298-2343";
-  const dial = (site?.business?.phone || "").trim() || "+12102982343";
+  const display = (site?.business?.phoneDisplay || "").trim() || "(210) 851-4906";
+  const dial = (site?.business?.phone || "").trim() || "+12108514906";
   return { display, dial };
 }

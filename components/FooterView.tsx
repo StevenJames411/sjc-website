@@ -30,8 +30,8 @@ export type FooterViewProps = {
 export default function FooterView({
   blurb = "",
   links = [],
-  phone = "+12102982343",
-  phoneDisplay = "(210) 298-2343",
+  phone = "+12108514906",
+  phoneDisplay = "(210) 851-4906",
   email = "support@stevenjamesconsulting.com",
   privacyUrl = "",
   tosUrl = "",
