@@ -125,3 +125,42 @@ export async function copyIntakeToSheet(
     return `sheet webhook unreachable: ${e instanceof Error ? e.message : String(e)}`;
   }
 }
+
+/**
+ * Onboarding state for every site, for the builder's gallery.
+ *
+ * THE QUESTION THIS ANSWERS is never "what's the state of this one business" — you already know
+ * that, you're standing in her site. It's "WHICH OF MY CLIENTS STILL OWE ME THEIR INFORMATION",
+ * which is a question across all of them at once. That's why this is a batch read feeding the
+ * gallery, and why the count matters: "open · 1 of 9" for four days is a client who needs a nudge,
+ * and you can see it without opening anything.
+ */
+export async function intakeSummaries(
+  sites: { id: string }[]
+): Promise<Record<string, import("./intakeShared").IntakeSummary>> {
+  const { intakeAccess } = await import("./intakeLinks");
+  const { questionsFor } = await import("./intakeShared");
+  const { findSite } = await import("./sites");
+
+  const out: Record<string, import("./intakeShared").IntakeSummary> = {};
+  await Promise.all(
+    sites.map(async (s) => {
+      const [access, record, site] = await Promise.all([
+        intakeAccess(s.id),
+        readIntake(s.id),
+        findSite(s.id),
+      ]);
+      const asked = questionsFor(site || null);
+      out[s.id] = {
+        status: !access ? "never opened" : access.status === "open" ? "open" : "closed",
+        answered: asked.filter((q) =>
+          q.type === "photos" ? record.photos.length > 0 : Boolean(record.answers[q.id])
+        ).length,
+        asked: asked.length,
+        photos: record.photos.length,
+        submitted: Boolean(record.submittedAt),
+      };
+    })
+  );
+  return out;
+}
