@@ -21,10 +21,14 @@ type PageItem = { slug: string; title: string; custom?: boolean };
 type SaveState = "idle" | "saving" | "saved";
 
 export default function PuckEditor({
+  siteId,
+  siteName,
   page,
   title,
   pages,
 }: {
+  siteId: string;
+  siteName: string;
   page: string;
   title: string;
   pages: PageItem[];
@@ -46,11 +50,11 @@ export default function PuckEditor({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ title: name.trim() }),
+        body: JSON.stringify({ title: name.trim(), site: siteId }),
       });
       const j = await r.json();
       if (!j.ok) return window.alert(j.error || "Couldn't create the page.");
-      router.push(`/edit/${j.slug}`);
+      router.push(`/edit/${siteId}/${j.slug}`);
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -73,11 +77,11 @@ export default function PuckEditor({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ title: name.trim(), from: page }),
+        body: JSON.stringify({ title: name.trim(), from: page, site: siteId }),
       });
       const j = await r.json();
       if (!j.ok) return window.alert(j.error || "Couldn't copy the page.");
-      router.push(`/edit/${j.slug}`);
+      router.push(`/edit/${siteId}/${j.slug}`);
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -96,7 +100,7 @@ export default function PuckEditor({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ slug: page, dryRun: true }),
+        body: JSON.stringify({ slug: page, siteId, dryRun: true }),
       }).then((r) => r.json());
 
       const foreign = (look.urls || []).length;
@@ -107,7 +111,7 @@ export default function PuckEditor({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ slug: page }),
+        body: JSON.stringify({ slug: page, siteId }),
       }).then((x) => x.json());
 
       if (r.failures?.length) {
@@ -133,6 +137,61 @@ export default function PuckEditor({
     }
   };
 
+  // Turn this page into a reusable TEMPLATE.
+  //
+  // Not a copy. The scrub on the server strips the business facts (phone, address, email, the
+  // name) and converts every literal hex to the brand role it was playing, then refuses to create
+  // anything if something identifiable survived. That refusal is the point: a template still
+  // carrying a real business's phone number is worse than no template, because it looks finished.
+  const onSaveAsTemplate = async () => {
+    const name = window.prompt(
+      "Save this page as a template.\n\nWhat should the template be called? (e.g. \"Service business — starter\")",
+      "Service business — starter"
+    );
+    if (!name || !name.trim()) return;
+    setBusy(true);
+    try {
+      const body = JSON.stringify({ from: page, fromSite: siteId, name: name.trim() });
+      const opts = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin" as const,
+      };
+
+      // Look before creating — the scrub either comes out clean or it doesn't.
+      const check = await fetch("/api/admin/make-template", {
+        ...opts,
+        body: JSON.stringify({ from: page, fromSite: siteId, dryRun: true }),
+      }).then((r) => r.json());
+      if (!check.ok) {
+        return window.alert(
+          `Can't make a template from this page yet.\n\n${check.error}\n\n` +
+            `Fix those on the page first — a template must carry no real business details.`
+        );
+      }
+
+      const c = check.counts || {};
+      if (
+        !window.confirm(
+          `Ready to save as a template.\n\n` +
+            `• ${c.facts || 0} business details replaced with placeholders\n` +
+            `• ${(c.colours || 0) + (c.strayColours || 0)} colours converted to brand roles\n\n` +
+            `This creates a new template. Nothing on this page changes.`
+        )
+      )
+        return;
+
+      const r = await fetch("/api/admin/make-template", { ...opts, body }).then((x) => x.json());
+      if (!r.ok) return window.alert(r.error || "Couldn't save the template.");
+      window.alert(`Template saved. It's now an option under "New website".`);
+      router.push("/edit");
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Rename the current page. LABEL ONLY — the slug, the URL, and everything saved on the page
   // stay exactly as they are, so renaming can never break a link or lose content.
   const onRenamePage = async () => {
@@ -146,7 +205,7 @@ export default function PuckEditor({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ slug: page, title: name.trim() }),
+        body: JSON.stringify({ slug: page, title: name.trim(), site: siteId }),
       });
       const j = await r.json();
       if (!j.ok) return window.alert(j.error || "Couldn't rename the page.");
@@ -171,11 +230,11 @@ export default function PuckEditor({
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ slug: page }),
+        body: JSON.stringify({ slug: page, site: siteId }),
       });
       const j = await r.json();
       if (!j.ok) return window.alert(j.error || "Couldn't delete the page.");
-      router.push("/edit/home");
+      router.push("/edit");
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -189,7 +248,7 @@ export default function PuckEditor({
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({ page, data: d }),
+      body: JSON.stringify({ page, site: siteId, data: d }),
     })
       .then(() => setSave("saved"))
       .catch(() => setSave("idle"));
@@ -212,7 +271,7 @@ export default function PuckEditor({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ page, data: s }),
+        body: JSON.stringify({ page, site: siteId, data: s }),
       });
       return () => { alive = false; };
     }
@@ -232,15 +291,15 @@ export default function PuckEditor({
         }
       };
       const key = encodeURIComponent(page);
-      const draft = await read(`/api/puck?page=${key}`);
-      const next = draft || (await read(`/api/puck?page=${key}&pub=1`)) || seedFor(page, title);
+      const draft = await read(`/api/puck?page=${key}&site=${siteId}`);
+      const next = draft || (await read(`/api/puck?page=${key}&site=${siteId}&pub=1`)) || seedFor(page, title);
       if (alive) setData(next);
     };
     load();
     return () => {
       alive = false;
     };
-  }, [page, title]);
+  }, [page, title, siteId]);
 
   // Debounced auto-save on every edit.
   const onChange = (d: Data) => {
@@ -256,10 +315,20 @@ export default function PuckEditor({
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={bar}>
+        {/* Which WEBSITE you're in, and the way back out. Without this the only clue you were
+            editing a client's site rather than SJC's was the page names in the dropdown. */}
+        <button
+          type="button"
+          onClick={() => router.push("/edit")}
+          style={{ ...btn, fontWeight: 700 }}
+          title="Back to all websites"
+        >
+          ← {siteName}
+        </button>
         <span style={{ fontWeight: 700, fontSize: 13 }}>Page:</span>
         <select
           value={page}
-          onChange={(e) => router.push(`/edit/${e.target.value}`)}
+          onChange={(e) => router.push(`/edit/${siteId}/${e.target.value}`)}
           style={select}
         >
           {pages.map((p) => (
@@ -290,6 +359,15 @@ export default function PuckEditor({
         >
           Adopt images
         </button>
+        <button
+          type="button"
+          onClick={onSaveAsTemplate}
+          disabled={busy}
+          style={btn}
+          title="Strip the business details and save this layout as a reusable template"
+        >
+          Save as template
+        </button>
         <button type="button" onClick={onRenamePage} disabled={busy} style={btn}>
           Rename
         </button>
@@ -314,7 +392,7 @@ export default function PuckEditor({
           onChange={onChange}
           onPublish={async (d) => {
             await writeDraft(d);
-            await fetch(`/api/puck?page=${encodeURIComponent(page)}&action=publish`, {
+            await fetch(`/api/puck?page=${encodeURIComponent(page)}&site=${encodeURIComponent(siteId)}&action=publish`, {
               method: "POST",
               credentials: "same-origin",
             });

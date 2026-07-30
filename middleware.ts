@@ -22,6 +22,14 @@ function isProtected(pathname: string): boolean {
     pathname.startsWith("/edit/") ||
     pathname.startsWith("/api/puck") ||
     pathname.startsWith("/api/pages") ||
+    // The website registry + the importer. Both create and destroy client sites, so they are
+    // owner-only for the same reason /api/pages is.
+    pathname.startsWith("/api/sites") ||
+    pathname.startsWith("/api/import-html") ||
+    pathname.startsWith("/api/adopt-images") ||
+    // One-time maintenance routes. They create and rewrite stored content, so they are owner-only
+    // — an unauthenticated /api/admin/* is a stranger with write access to every client's site.
+    pathname.startsWith("/api/admin") ||
     pathname.startsWith("/api/site-content") ||
     pathname.startsWith("/api/upload")
   );

@@ -15,7 +15,7 @@ type Palette = {
   ink?: string; mute?: string; bandSoft?: string; bandDark?: string;
   ranked: { hex: string; count: number }[];
 };
-type Result = { ok: boolean; error?: string; slug?: string; dryRun?: boolean; palette?: Palette; report?: string[]; blocks?: number;
+type Result = { ok: boolean; error?: string; slug?: string; siteId?: string; dryRun?: boolean; palette?: Palette; report?: string[]; blocks?: number;
   images?: { adopted?: number; failures?: { url: string; why: string }[]; error?: string } };
 
 const ROLE_ROWS: { key: keyof Palette; label: string; why: string }[] = [
@@ -43,11 +43,18 @@ export default function ImportPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ html, businessName: name, dryRun }),
+        // A URL is fetched server-side; anything with tags in it is treated as pasted markup.
+        body: JSON.stringify(
+          /<\s*(html|head|body|section|header|div)/i.test(html)
+            ? { html, businessName: name, dryRun }
+            : { url: html.trim(), businessName: name, dryRun }
+        ),
       });
       const j: Result = await r.json();
       setRes(j);
-      if (j.ok && !dryRun && j.slug) setTimeout(() => router.push(`/edit/${j.slug}`), 1200);
+      // An import now creates a WEBSITE of its own, so the builder link needs both ids.
+      if (j.ok && !dryRun && j.siteId)
+        setTimeout(() => router.push(`/edit/${j.siteId}/${j.slug || "home"}`), 1200);
     } catch {
       setRes({ ok: false, error: "Couldn't reach the server." });
     } finally {
@@ -67,9 +74,10 @@ export default function ImportPage() {
     <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 24px 80px", fontFamily: "system-ui, sans-serif" }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0 }}>Import a design</h1>
       <p style={{ color: "#4b5563", marginTop: 8, lineHeight: 1.6 }}>
-        Paste the full HTML of a generated one-page site. It comes across as real blocks —
-        every padding, colour and icon editable — with the colours mapped to this site&apos;s brand
-        roles so the whole thing can be re-skinned from one screen.
+        Paste a published web address (best-in-show-grooming.sitedrop.ai) or the full HTML of a
+        generated one-page site. It arrives as its own website — real blocks,
+        every padding, colour and icon editable — with the colours mapped to brand roles so the
+        whole thing can be re-skinned from one screen, and every photo copied onto our storage.
       </p>
 
       <label style={{ display: "block", fontWeight: 600, marginTop: 24, marginBottom: 6 }}>
@@ -108,10 +116,10 @@ export default function ImportPage() {
 
       {res?.ok ? (
         <div style={{ marginTop: 28 }}>
-          {res.slug ? (
+          {res.siteId ? (
             <>
               <p style={{ color: "#047857", fontWeight: 700 }}>
-                Imported as /{res.slug} — opening the builder…{" "}
+                Imported as its own website, /{res.siteId} — opening the builder…{" "}
                 <span style={{ fontWeight: 400, color: "#6b7280" }}>(saved as a draft, not published)</span>
               </p>
               {res.images ? (

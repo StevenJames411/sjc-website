@@ -19,6 +19,7 @@ import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey } from "@/lib/puckContent";
 import { findPageMeta } from "@/lib/pageRegistry";
+import { SJC } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -50,20 +51,24 @@ function imageSlots(nodes: Node[] | undefined, out: { props: Record<string, unkn
 const isForeign = (url: string) => !OURS.some((h) => url.includes(h));
 
 export async function POST(req: Request) {
-  let body: { slug?: string; dryRun?: boolean };
+  let body: { slug?: string; siteId?: string; dryRun?: boolean };
   try {
     body = await req.json();
   } catch {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
   }
   const slug = String(body?.slug || "").trim();
+  // Defaults to SJC so the editor's existing button keeps working unchanged.
+  const siteId = String(body?.siteId || SJC).trim() || SJC;
   if (!slug) return Response.json({ ok: false, error: "Which page?" }, { status: 400 });
-  if (!(await findPageMeta(slug))) return Response.json({ ok: false, error: "No such page." }, { status: 404 });
+  if (!(await findPageMeta(slug, siteId))) {
+    return Response.json({ ok: false, error: "No such page." }, { status: 404 });
+  }
 
   const client = getClient();
   const stores = [
-    { label: "draft", store: createKvStore(client, puckKey(slug, false)) },
-    { label: "published", store: createKvStore(client, puckKey(slug, true)) },
+    { label: "draft", store: createKvStore(client, puckKey(slug, false, siteId)) },
+    { label: "published", store: createKvStore(client, puckKey(slug, true, siteId)) },
   ];
 
   // One download per distinct URL even when the draft and the published copy share it.
@@ -93,8 +98,8 @@ export async function POST(req: Request) {
           const type = res.headers.get("content-type") || "image/png";
           if (!type.startsWith("image/")) throw new Error(`not an image (${type})`);
           const ext = (type.split("/")[1] || "png").split("+")[0].replace("jpeg", "jpg");
-          // Per-page prefix, so handing a client their site later means copying one folder.
-          const name = `sites/${slug}/${Date.now()}-${rehosted.size + 1}.${ext}`;
+          // Per-SITE prefix, so handing a client their website later means copying one folder.
+          const name = `sites/${siteId}/${slug}/${Date.now()}-${rehosted.size + 1}.${ext}`;
           const blob = await put(name, Buffer.from(buf), { access: "public", contentType: type });
           rehosted.set(url, blob.url);
           adopted++;
