@@ -48,7 +48,15 @@ export async function POST(req: Request) {
   // real customer because our second copy bounced would lose the lead outright.
   const landed = d.toRecord || d.toOwner === true;
   if (!landed) {
-    return NextResponse.json({ ok: false, error: "forward failed" }, { status: 502 });
+    return NextResponse.json({ ok: false, error: "forward failed", problems: d.problems }, { status: 502 });
   }
-  return NextResponse.json({ ok: true, toOwner: d.toOwner, toRecord: d.toRecord });
+  // `problems` rides along even on success: a lead can reach one destination and miss the other,
+  // and that half-failure is exactly what went unnoticed — the email arrived, the sheet row never
+  // did, and the form said thank-you. A test submission can now see what actually happened.
+  return NextResponse.json({
+    ok: true,
+    toOwner: d.toOwner,
+    toRecord: d.toRecord,
+    ...(d.problems.length ? { problems: d.problems } : {}),
+  });
 }

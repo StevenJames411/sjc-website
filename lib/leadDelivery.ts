@@ -71,14 +71,35 @@ export async function deliverLead(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           submittedAt,
-          // Stamped server-side from the site, so the record can't disagree with where it went.
-          answers: [
-            { key: "site", label: "Website", value: site?.name || siteId || "(unknown)" },
-            ...answers,
-          ],
+          // ⚠️ `answers` STAYS EXACTLY AS THE FORM SENT IT. The receiving Apps Script is not in
+          // this repo and may well write its columns positionally, so inserting anything into
+          // this array would silently shift every column in the sheet. Site info rides alongside.
+          answers,
+          site: site?.name || siteId || "",
+          siteId: siteId || "",
         }),
       });
-      if (!res.ok) throw new Error(`webhook ${res.status}`);
+
+      // ⚠️ APPS SCRIPT RETURNS 200 EVEN WHEN IT FAILS. It catches its own exception and replies
+      // with the text "error" (or "unauthorized") under a 200, so checking res.ok alone reports
+      // success on a lead that never reached the sheet — an email arrives, no row appears, and
+      // nothing anywhere says so. The BODY is the real answer.
+      const body = (await res.text()).trim();
+      // Logged every time. What this script actually replies is undocumented — it lives only in
+      // Google Apps Script, not in this repo — so the reply is the only evidence available when a
+      // lead emails through but never reaches the sheet.
+      console.log(`[apply] sheet replied ${res.status}: ${JSON.stringify(body.slice(0, 300))}`);
+
+      if (!res.ok) throw new Error(`http ${res.status}: ${body.slice(0, 200)}`);
+      if (/^(error|unauthorized|forbidden)/i.test(body)) {
+        throw new Error(`the sheet script replied "${body.slice(0, 200)}"`);
+      }
+      // An HTML reply means Google served a sign-in or permission page instead of running the
+      // script — the deployment's access setting, not our payload. Silent until now.
+      if (/^\s*<(!doctype|html)/i.test(body)) {
+        throw new Error("Google returned a sign-in/permission page — the web app's access setting is wrong");
+      }
+      if (!body) throw new Error("the sheet script replied with nothing");
       toRecord = true;
     } catch (e) {
       problems.push(`record failed: ${(e as Error).message}`);
