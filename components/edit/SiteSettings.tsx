@@ -78,14 +78,14 @@ export default function SiteSettings({ site, pageCount }: Props) {
         These are the facts about the company. Put a token from the list below into any text on any
         page and it fills itself in from here.
       </p>
-      <Field label="Business name" v={s.business.name} on={(v) => biz("name", v)} ph="Lucky Dog Wash House" />
+      <Field label="Business name" v={s.business.name} on={(v) => biz("name", v)} ph="Your Business Name" />
       <Row>
-        <Field label="Phone — as people read it" v={s.business.phoneDisplay} on={(v) => biz("phoneDisplay", v)} ph="(210) 474-6252" />
-        <Field label="Phone — as it dials" v={s.business.phone} on={(v) => biz("phone", v)} ph="+12104746252" />
+        <Field label="Phone — as people read it" v={s.business.phoneDisplay} on={(v) => biz("phoneDisplay", v)} ph="(555) 123-4567" />
+        <Field label="Phone — as it dials" v={s.business.phone} on={(v) => biz("phone", v)} ph="+15551234567" />
       </Row>
-      <Field label="Email" v={s.business.email} on={(v) => biz("email", v)} ph="hello@luckydogwashhouse.com" />
-      <Field label="Address" v={s.business.address} on={(v) => biz("address", v)} ph="819 New Laredo Hwy, San Antonio, TX 78211" />
-      <Field label="Hours" v={s.business.hours} on={(v) => biz("hours", v)} ph="Mon – Sat: 9:00 AM – 6:00 PM" />
+      <Field label="Email" v={s.business.email} on={(v) => biz("email", v)} ph="hello@yourbusiness.com" />
+      <Field label="Address" v={s.business.address} on={(v) => biz("address", v)} ph="123 Main Street, Your City, ST 00000" />
+      <Field label="Hours" v={s.business.hours} on={(v) => biz("hours", v)} ph="Mon – Fri: 9:00 AM – 5:00 PM" />
 
       <div style={tokenBox}>
         <strong style={{ fontSize: 13 }}>Tokens you can paste into any text block</strong>
@@ -108,23 +108,37 @@ export default function SiteSettings({ site, pageCount }: Props) {
         label="Custom domain (leave blank until they've bought one)"
         v={s.domain || ""}
         on={(v) => setS({ ...s, domain: v })}
-        ph="luckydogwashhouse.com"
+        ph="theirbusiness.com"
       />
+      {/* SJC is the domain root; a client site is served under its own id until it has a domain.
+          Saying "/sjc" on the site that owns the domain was just wrong. */}
       <p style={hint}>
-        Today it&apos;s served at <code style={code}>/{s.id}</code>. A site with no domain stays out
-        of Google on purpose — it carries a real business&apos;s details on someone else&apos;s
-        address. Pointing the domain is a separate step and isn&apos;t wired up yet.
+        {s.kind === "sjc" ? (
+          <>
+            Served at <code style={code}>/</code> — this is the site the domain belongs to.
+          </>
+        ) : s.domain ? (
+          <>
+            Currently reachable at <code style={code}>/{s.id}</code>. Pointing{" "}
+            <strong>{s.domain}</strong> at it is a separate step and isn&apos;t wired up yet.
+          </>
+        ) : (
+          <>
+            Served at <code style={code}>/{s.id}</code>, and kept out of Google on purpose — it
+            carries a real business&apos;s details on our address. Add their domain once they buy.
+          </>
+        )}
       </p>
 
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
       <Field label="Preview text" v={s.seo.description} on={(v) => seo("description", v)} ph="What this business does, in one sentence." area />
       <Field label="Preview image URL" v={s.seo.shareImage} on={(v) => seo("shareImage", v)} ph="https://…" />
-      <Field label="Title suffix" v={s.seo.titleSuffix} on={(v) => seo("titleSuffix", v)} ph="| Lucky Dog Wash House" />
+      <Field label="Title suffix" v={s.seo.titleSuffix} on={(v) => seo("titleSuffix", v)} ph="| Your Business Name" />
 
       <h2 style={sec}>In your list</h2>
-      <Field label="Website name" v={s.name} on={(v) => setS({ ...s, name: v })} ph="Lucky Dog Wash House" />
-      <Field label="Note to yourself" v={s.description || ""} on={(v) => setS({ ...s, description: v })} ph="Groomer on New Laredo — demo sent 7/30" />
+      <Field label="Website name" v={s.name} on={(v) => setS({ ...s, name: v })} ph="What you call it in your list" />
+      <Field label="Note to yourself" v={s.description || ""} on={(v) => setS({ ...s, description: v })} ph="Where this one came from, or what it's waiting on" />
 
       {err ? <p style={errBox}>{err}</p> : null}
       {msg ? <p style={okBox}>{msg}</p> : null}
