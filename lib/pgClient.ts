@@ -43,7 +43,23 @@ export function guardReason(prev: unknown, next: unknown): string | null {
     return null;
   }
   const p = prev as Record<string, unknown>, n = next as Record<string, unknown>;
-  const lost = Object.keys(p).filter((k) => !(k in n));
+  // An EMPTY container going missing is not data loss (fix 2026-07-30).
+  //
+  // This rule exists to stop a section full of content silently vanishing. But it counted any
+  // absent key, including ones that held nothing. Puck used to write `zones: {}` and current
+  // versions don't send it at all — so every stored page carrying that leftover key refused
+  // EVERY save from the editor, forever, on any edit. Combined with a save indicator that never
+  // read the response (see PuckEditor), it looked exactly like the editor working fine while the
+  // page never changed. Steven lost an afternoon to it.
+  //
+  // Losing `{}` or `[]` costs nothing and can always be re-created. Losing populated content is
+  // still refused, which is the case the guard was written for.
+  const isEmpty = (v: unknown) =>
+    v === null ||
+    v === undefined ||
+    (Array.isArray(v) && v.length === 0) ||
+    (typeof v === "object" && Object.keys(v as object).length === 0);
+  const lost = Object.keys(p).filter((k) => !(k in n) && !isEmpty(p[k]));
   if (lost.length) return `top-level keys disappeared: ${lost.join(", ")}`;
   for (const k of Object.keys(p)) {
     const a = p[k], b = n[k];
