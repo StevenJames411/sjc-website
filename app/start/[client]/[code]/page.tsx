@@ -1,10 +1,15 @@
 // The client intake page — the link Steven texts a business owner after the call.
 //
-// Public, so she never signs in; gated by the signed token in `?k=`. The path segment is only
-// there so the link reads like something a person sent ("/start/riverbend-grooming"): the site it
-// actually opens comes from the token, so editing the URL gets you nothing.
+//   https://stevenjamesconsulting.com/start/lucky-dog/7k2m9x4p
+//
+// Public, so she never signs in. The last segment IS the credential: eight characters, looked up
+// in the store. It reads like a normal link, which is the entire point — the first version put a
+// signed token in a query string and looked like phishing, so nobody would have tapped it.
+//
+// The `client` segment is decoration for the human eye. The site this opens comes from the CODE,
+// so editing the name in the path gets you nothing.
 import type { Metadata } from "next";
-import { readIntakeToken, TOKEN_MESSAGE } from "@/lib/intakeToken";
+import { resolveIntakeCode, CODE_MESSAGE } from "@/lib/intakeLinks";
 import { findSite } from "@/lib/sites";
 import { readIntake } from "@/lib/intake";
 import { questionsFor } from "@/lib/intakeShared";
@@ -21,22 +26,13 @@ export const metadata: Metadata = {
 
 export default async function StartPage({
   params,
-  searchParams,
 }: {
-  params: Promise<{ client: string }>;
-  searchParams: Promise<{ k?: string }>;
+  params: Promise<{ client: string; code: string }>;
 }) {
-  const { client } = await params;
-  const { k } = await searchParams;
+  const { code } = await params;
 
-  const check = readIntakeToken(k);
-  if (!check.ok) return <Blocked message={TOKEN_MESSAGE[check.reason]} />;
-
-  // The token is valid but for a different business — someone edited the path. Say the same thing
-  // as any other bad link; a more specific message just tells them what to try next.
-  if (client && client !== check.siteId) {
-    return <Blocked message={TOKEN_MESSAGE["bad-signature"]} />;
-  }
+  const check = await resolveIntakeCode(code);
+  if (!check.ok) return <Blocked message={CODE_MESSAGE[check.reason]} />;
 
   const site = (await findSite(check.siteId)) || null;
   const record = await readIntake(check.siteId);
@@ -46,8 +42,7 @@ export default async function StartPage({
 
   return (
     <IntakeForm
-      token={k as string}
-      siteId={check.siteId}
+      code={code}
       businessName={site?.business?.name || site?.name || ""}
       questions={questions}
       initialAnswers={record.answers}

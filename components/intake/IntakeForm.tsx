@@ -17,7 +17,7 @@ import { prepareImage } from "@/lib/imagePrep";
 import type { IntakeAnswers, IntakeQuestion } from "@/lib/intakeShared";
 
 export default function IntakeForm({
-  token,
+  code,
   businessName,
   questions,
   initialAnswers,
@@ -25,8 +25,8 @@ export default function IntakeForm({
   alreadySubmitted,
   stoppedBecause,
 }: {
-  token: string;
-  siteId: string;
+  /** The eight-character link code. It is the credential; nothing else authenticates her. */
+  code: string;
   businessName: string;
   questions: IntakeQuestion[];
   initialAnswers: IntakeAnswers;
@@ -59,7 +59,7 @@ export default function IntakeForm({
     async (patch: Partial<{ answers: IntakeAnswers; submittedAt: string; stoppedBecause: string }>) => {
       setSaveState("saving");
       try {
-        const res = await fetch(`/api/intake?k=${encodeURIComponent(token)}`, {
+        const res = await fetch(`/api/intake?k=${encodeURIComponent(code)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(patch),
@@ -77,7 +77,7 @@ export default function IntakeForm({
         return false;
       }
     },
-    [token]
+    [code]
   );
 
   // A last-ditch save if she closes the tab mid-answer.
@@ -85,13 +85,13 @@ export default function IntakeForm({
     const onHide = () => {
       if (saveState === "saving") return;
       navigator.sendBeacon?.(
-        `/api/intake?k=${encodeURIComponent(token)}`,
+        `/api/intake?k=${encodeURIComponent(code)}`,
         new Blob([JSON.stringify({ answers })], { type: "application/json" })
       );
     };
     document.addEventListener("visibilitychange", onHide);
     return () => document.removeEventListener("visibilitychange", onHide);
-  }, [answers, token, saveState]);
+  }, [answers, code, saveState]);
 
   async function next() {
     if (!q) return;
@@ -125,7 +125,7 @@ export default function IntakeForm({
         const { file } = await prepareImage(files[n]);
         const form = new FormData();
         form.append("file", file);
-        const res = await fetch(`/api/intake/upload?k=${encodeURIComponent(token)}`, {
+        const res = await fetch(`/api/intake/upload?k=${encodeURIComponent(code)}`, {
           method: "POST",
           body: form,
         });

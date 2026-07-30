@@ -1,10 +1,10 @@
-// Photo upload for the intake form. PUBLIC, token-gated, and deliberately meaner than /api/upload.
+// Photo upload for the intake form. PUBLIC, code-gated, and deliberately meaner than /api/upload.
 //
 // /api/upload trusts its caller because middleware already proved they're the owner. This route
 // cannot: whoever holds a client link can reach it. So it re-checks everything, and it stores into
-// a path derived from the SIGNED token — never from anything the caller typed.
+// a path derived from the RESOLVED code — never from anything the caller typed.
 import { put } from "@vercel/blob";
-import { readIntakeToken } from "@/lib/intakeToken";
+import { resolveIntakeCode } from "@/lib/intakeLinks";
 import { readIntake, addIntakePhotos, MAX_INTAKE_PHOTOS } from "@/lib/intake";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ const MAX_BYTES = 4 * 1024 * 1024;
 
 export async function POST(req: Request) {
   const url = new URL(req.url);
-  const check = readIntakeToken(url.searchParams.get("k"));
+  const check = await resolveIntakeCode(url.searchParams.get("k"));
   if (!check.ok) {
     return Response.json({ ok: false, error: "link not valid" }, { status: 401 });
   }
