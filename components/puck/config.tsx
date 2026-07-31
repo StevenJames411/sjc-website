@@ -64,6 +64,7 @@ type Props = {
     successBody: string;
     buttonColor: string;
     inColumn: boolean;
+    theme: string;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
@@ -727,6 +728,14 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        theme: {
+          type: "radio" as const,
+          label: "Form panel",
+          options: [
+            { label: "White", value: "light" },
+            { label: "Glass (on dark)", value: "dark" },
+          ],
+        },
         inColumn: {
           type: "radio" as const,
           label: "Width",
@@ -737,7 +746,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: LEADFORM_DEFAULTS as LeadFormBlock,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme }) => (
         <LeadForm
           source={source}
           fields={fields}
@@ -747,6 +756,7 @@ export const config: Config<Props, RootProps> = {
           successBody={successBody}
           buttonColor={buttonColor}
           inColumn={inColumn}
+          theme={theme === "dark" ? "dark" : "light"}
         />
       ),
     },

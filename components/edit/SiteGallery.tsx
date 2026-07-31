@@ -364,6 +364,10 @@ function NewWebsite({
   const [name, setName] = useState("");
   const [from, setFrom] = useState(templates[0]?.id || "");
   const [source, setSource] = useState("");
+  // How a bought design comes in. "editable" maps it onto real blocks — drag, drop, restructure,
+  // at roughly 95% of the original. "design" keeps the markup sealed: pixel-exact, but only the
+  // words and photos can be changed. Neither is right for every design, so it's a choice.
+  const [importAs, setImportAs] = useState<"editable" | "design">("editable");
   const [err, setErr] = useState("");
   const [note, setNote] = useState("");
 
@@ -382,8 +386,8 @@ function NewWebsite({
           credentials: "same-origin",
           body: JSON.stringify(
             looksLikeHtml
-              ? { html: source, businessName: name.trim() }
-              : { url: source.trim(), businessName: name.trim() }
+              ? { html: source, businessName: name.trim(), mode: importAs }
+              : { url: source.trim(), businessName: name.trim(), mode: importAs }
           ),
         }).then((x) => x.json());
         if (!r.ok) throw new Error(r.error || "Import failed.");
@@ -449,6 +453,34 @@ function NewWebsite({
               placeholder="best-in-show-grooming.sitedrop.ai"
               style={{ ...input, minHeight: 78, fontFamily: "ui-monospace,monospace", fontSize: 12 }}
             />
+            <label style={lbl}>How should it come in?</label>
+            <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
+              {([
+                ["editable", "Editable blocks", "Rebuilt as real blocks — drag, drop, add a photo anywhere. About 95% of the original look."],
+                ["design", "Exactly as designed", "Kept sealed. Pixel-perfect, but only the words and photos can be changed."],
+              ] as const).map(([v, title, why]) => (
+                <label
+                  key={v}
+                  style={{
+                    ...pickBox,
+                    borderColor: importAs === v ? "#111827" : "#e5e7eb",
+                    background: importAs === v ? "#f9fafb" : "#fff",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="importAs"
+                    checked={importAs === v}
+                    onChange={() => setImportAs(v)}
+                    style={{ marginTop: 3 }}
+                  />
+                  <span>
+                    <strong style={{ display: "block", fontSize: 14 }}>{title}</strong>
+                    <span style={{ fontSize: 12, color: "#6b7280" }}>{why}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
             <label style={lbl}>Business name (optional — taken from the address if blank)</label>
           </>
         ) : (
@@ -512,6 +544,7 @@ const cardLink: React.CSSProperties = { fontSize: 12, color: "#2563eb", textDeco
 const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
 const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
+const pickBox: React.CSSProperties = { display: "flex", gap: 10, alignItems: "flex-start", border: "1px solid #e5e7eb", borderRadius: 10, padding: "10px 12px", cursor: "pointer" };
 const gearBtn: React.CSSProperties = { ...ghostBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1 };
 // Quiet by default and red only once you've committed to it — a destructive control shouldn't
 // compete with Edit for attention on a card you open twenty times a day.

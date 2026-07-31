@@ -45,6 +45,7 @@ export const LEADFORM_DEFAULTS: LeadFormProps = {
   successHeading: "Got it. I'll call you today.",
   buttonColor: "",
   inColumn: false,
+  theme: "light",
   successBody:
     "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 851-4906.",
 };
