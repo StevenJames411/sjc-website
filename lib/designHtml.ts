@@ -8,14 +8,22 @@ import type { DesignText, DesignImage } from "@/components/blocks/DesignSection"
 
 // Tags that can execute or phone home. A bought design has no business containing any of them,
 // and the whole point of this pipeline is that the markup reaches a customer's live website.
-const STRIP_TAGS = new Set([
-  "script", "iframe", "object", "embed", "link", "meta", "base", "form", "input", "textarea",
-  "select", "button",
-]);
+const STRIP_TAGS = new Set(["script", "iframe", "object", "embed", "link", "meta", "base"]);
 
-// `button` and `form` are stripped above on purpose: a design's own contact form must never
-// survive. Leads route through the shared LeadForm block so they reach the site's owner — a
-// design that brought its own form would post somewhere else, or nowhere.
+// ── WHY THE FORM SURVIVES, AS A <div> ────────────────────────────────────────────────────────
+// The inputs and the button are KEPT: a generated contact section is mostly form, and stripping
+// it leaves a heading floating over empty space — the section looks broken, which is no good for
+// a demo you're showing a prospect. The generator's form isn't wired to anything on its end
+// either, so nothing is lost by keeping the shell.
+//
+// But the <form> ELEMENT is renamed to <div>, because the danger isn't a form that does nothing —
+// it's a form that LOOKS like it works. A homeowner filling it in on a live site and pressing
+// send would think she'd contacted the business. With no form element there is nothing to submit
+// and no action to post to, so the failure can't happen.
+//
+// Real leads route through the shared LeadForm block. The import reports the placeholder so
+// swapping it in doesn't depend on anyone remembering.
+const FORM_TO_DIV = "form";
 
 /** Remove anything executable from a chunk of imported markup. */
 export function sanitizeDesignHtml(html: string): string {
@@ -26,6 +34,14 @@ export function sanitizeDesignHtml(html: string): string {
     if (tag && STRIP_TAGS.has(tag)) {
       el.remove();
       continue;
+    }
+    // Keep the look, remove the ability to submit. See FORM_TO_DIV above.
+    if (tag === FORM_TO_DIV) {
+      el.rawTagName = "div";
+      el.removeAttribute("action");
+      el.removeAttribute("method");
+      el.removeAttribute("enctype");
+      el.removeAttribute("target");
     }
     for (const name of Object.keys(el.attributes)) {
       const lower = name.toLowerCase();

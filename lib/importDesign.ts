@@ -133,6 +133,19 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
   const photos = content.reduce((n, b) => n + b.props.images.length, 0);
   report.push(`${sections.length} sections`, `${words} editable text fields`, `${photos} photos`);
 
+  // The design's contact form is kept as a dead shell so the section doesn't look broken, but it
+  // cannot submit. Say so out loud — a page that ships with only the placeholder has a contact
+  // section that looks perfect and collects nothing, and that is not something to leave to memory.
+  const placeholders = /<input|<textarea|<select/i.test(withIcons)
+    ? content.filter((b) => /<input|<textarea|<select/i.test(b.props.html)).length
+    : 0;
+  if (placeholders) {
+    report.push(
+      `⚠️ ${placeholders} placeholder form${placeholders > 1 ? "s" : ""} kept for looks — it cannot ` +
+        `submit. Drop a LeadForm block in before publishing or the section collects nothing.`
+    );
+  }
+
   // Compile from the icon-inlined markup, not the original — the CSS must be built from exactly
   // what will render, or a class that only exists post-transform compiles to nothing.
   const css = await compileDesignCss(withIcons, inlineStyles(html));
