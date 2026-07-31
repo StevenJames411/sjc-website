@@ -82,6 +82,19 @@ export async function readDesignCss(page: string, siteId: string = SJC): Promise
   return read(true);
 }
 
+/**
+ * The DRAFT stylesheet, explicitly — no preview-mode logic.
+ *
+ * ⚠️ Publish must use this, not readDesignCss(). That one consults preview mode, which is false
+ * in an API request, so it would read the PUBLISHED key — the very key publish is about to write.
+ * Publishing would then copy the old (usually empty) stylesheet over itself and report success.
+ */
+export async function readDesignCssDraft(page: string, siteId: string = SJC): Promise<string> {
+  const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, false));
+  const v = await store.read<{ css?: string }>();
+  return (v && typeof v.css === "string" ? v.css : "") || "";
+}
+
 /** Store a page's compiled design stylesheet. Draft by default, like everything else. */
 export async function writeDesignCss(
   page: string,

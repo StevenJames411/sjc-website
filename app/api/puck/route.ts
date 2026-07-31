@@ -5,7 +5,7 @@
 // All routes are gated by middleware (only the signed-in owner can reach them).
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { puckKey } from "@/lib/puckContent";
+import { puckKey, readDesignCssDraft, writeDesignCss } from "@/lib/puckContent";
 import { SJC } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
@@ -51,5 +51,18 @@ export async function POST(req: Request) {
   const draft = createKvStore(client, puckKey(page, false, site));
   const data = ((await draft.read()) || {}) as Record<string, unknown>;
   const ok = await pub.write({ ...data, _pub: 1 });
+
+  // ⚠️ THE STYLESHEET HAS TO GO WITH IT. A page imported from a bought design keeps its compiled
+  // CSS in a separate key, on the same draft/-pub convention. Publishing the CONTENT alone put
+  // the page live with no stylesheet at all — and because only inline styles survive that, the
+  // result wasn't "a bit plain", it was wreckage: the grid overlay lost its `absolute inset-0`
+  // and covered the whole page in cyan lines.
+  //
+  // Worst of all it reported success, and `?preview=1` still looked perfect — preview reads the
+  // DRAFT css, so the one view you'd check to reassure yourself was the one that couldn't show
+  // the problem.
+  const css = await readDesignCssDraft(page, site);
+  if (css) await writeDesignCss(page, css, true, site);
+
   return Response.json({ ok, published: true });
 }
