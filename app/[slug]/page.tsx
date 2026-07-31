@@ -25,5 +25,5 @@ export default async function PublicPage({ params }: { params: Promise<{ slug: s
   const { slug } = await params;
   const r = await find(slug);
   if (!r) notFound();
-  return <SitePageBody data={r.data} siteId={r.site.id} />;
+  return <SitePageBody data={r.data} siteId={r.site.id} page={r.slug} />;
 }

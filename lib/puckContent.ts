@@ -60,3 +60,35 @@ export async function readPuckDraft(page: string, siteId: string = SJC): Promise
   const store = createKvStore(getClient(), puckKey(page, false, siteId));
   return (await store.read<Data>()) || null;
 }
+
+/**
+ * The compiled stylesheet for a page that came from a bought design, or "" when the page wasn't
+ * imported (which is most of them).
+ *
+ * Follows the SAME draft/published rules as the content above, including preview: a design change
+ * has to go live with the page it belongs to, or a published page would suddenly be wearing a
+ * stylesheet nobody approved.
+ */
+export async function readDesignCss(page: string, siteId: string = SJC): Promise<string> {
+  const read = async (pub: boolean) => {
+    const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, pub));
+    const v = await store.read<{ css?: string }>();
+    return (v && typeof v.css === "string" ? v.css : "") || "";
+  };
+  if (await previewRequested()) {
+    const draft = await read(false);
+    if (draft) return draft;
+  }
+  return read(true);
+}
+
+/** Store a page's compiled design stylesheet. Draft by default, like everything else. */
+export async function writeDesignCss(
+  page: string,
+  css: string,
+  pub = false,
+  siteId: string = SJC
+): Promise<boolean> {
+  const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, pub));
+  return store.write({ css: String(css || "") });
+}

@@ -13,10 +13,23 @@
 
 export type BrandFont =
   | "lexend" | "inter" | "poppins" | "montserrat"
-  | "merriweather" | "playfair" | "sourceSans";
+  | "merriweather" | "playfair" | "sourceSans" | "spaceGrotesk";
 
 export type Brand = {
+  /**
+   * The body font, and the whole-site font when no heading font is set.
+   *
+   * ⚠️ KEEP THIS NAME. Every brand already saved has `font` and no `headingFont`, and a rename
+   * would silently reset those sites to Lexend. `headingFont` is additive: blank = headings use
+   * this one, which is exactly how the site behaved before pairing existed.
+   */
   font: BrandFont;
+  /**
+   * Optional second family for h1–h4. Bought designs routinely pair two — SiteDrop's uses Space
+   * Grotesk for headings over Inter for body — and collapsing them to one visibly cheapens the
+   * page. Blank keeps the old single-font behaviour.
+   */
+  headingFont?: BrandFont | "";
   accent: string;      // links, badges, eyebrows — the "brand" color
   accentHover: string;
   secondary: string;   // second accent — confirmations, "open now", the softer of two buttons
@@ -35,6 +48,10 @@ export type Brand = {
 // Today's live palette (app/globals.css @theme). Changing nothing changes nothing.
 export const BRAND_DEFAULTS: Brand = {
   font: "lexend",
+  // Blank on purpose — headings share `font`, which is what the site did before pairing existed.
+  // BrandStyle only emits when the brand differs from these defaults, so this must stay the
+  // do-nothing value.
+  headingFont: "",
   accent: "#2563eb",
   accentHover: "#1d4fd7",
   // Nothing on the live site uses these yet, so any value is safe; these are sane starting
@@ -61,4 +78,42 @@ export const FONTS: { value: BrandFont; label: string; note: string }[] = [
   { value: "merriweather", label: "Merriweather",     note: "Serif — traditional, trustworthy" },
   { value: "playfair",     label: "Playfair Display", note: "Serif — high-end, editorial" },
   { value: "sourceSans",   label: "Source Sans 3",    note: "Plain and workmanlike" },
+  { value: "spaceGrotesk", label: "Space Grotesk",    note: "Techy, confident — good for headings" },
 ];
+
+/**
+ * Map a font family NAME found in a bought design onto the nearest family we actually have.
+ *
+ * next/font is build-time, so an imported design can never bring its own file — it gets the
+ * closest match from the fixed set above. Unknown names fall back to Inter rather than failing
+ * the import: a design that arrives in the wrong typeface is fixable in one dropdown, a design
+ * that refuses to import is not.
+ */
+export function nearestFont(name: string): BrandFont {
+  const n = String(name || "").toLowerCase().replace(/["']/g, "").trim();
+  if (!n) return "inter";
+  const exact: Record<string, BrandFont> = {
+    "space grotesk": "spaceGrotesk",
+    lexend: "lexend",
+    inter: "inter",
+    poppins: "poppins",
+    montserrat: "montserrat",
+    merriweather: "merriweather",
+    "playfair display": "playfair",
+    playfair: "playfair",
+    "source sans 3": "sourceSans",
+    "source sans pro": "sourceSans",
+  };
+  // The first family in a CSS stack is the one that was actually chosen.
+  const first = n.split(",")[0].trim();
+  if (exact[first]) return exact[first];
+
+  // Not one of ours — match on shape so the page at least keeps its character.
+  const serif = /(serif|georgia|times|garamond|merriweather|playfair|lora|roboto slab)/.test(first);
+  if (serif) return /(playfair|didot|bodoni|display)/.test(first) ? "playfair" : "merriweather";
+  const geometric = /(grotesk|space|futura|jost|outfit|sora|manrope|dm sans)/.test(first);
+  if (geometric) return "spaceGrotesk";
+  const rounded = /(poppins|nunito|quicksand|rubik|circular)/.test(first);
+  if (rounded) return "poppins";
+  return "inter";
+}

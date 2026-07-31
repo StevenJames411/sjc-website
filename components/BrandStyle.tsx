@@ -15,18 +15,25 @@ const FONT_VAR: Record<BrandFont, string> = {
   merriweather: "--font-merriweather",
   playfair: "--font-playfair",
   sourceSans: "--font-source-sans",
+  spaceGrotesk: "--font-space-grotesk",
 };
 
 const FALLBACK_STACK =
   'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
-export default function BrandStyle({ brand }: { brand: Brand }) {
+export default function BrandStyle({ brand, id = "sjc-brand" }: { brand: Brand; id?: string }) {
   // Nothing customised yet → emit nothing at all, so the stylesheet stays exactly as shipped.
+  //
+  // ⚠️ This comparison is why every new Brand field must have a do-nothing default and why
+  // lib/brand.ts `normalize()` merges over BRAND_DEFAULTS: a brand saved before the field existed
+  // reads back with the default, stays "default", and its site keeps rendering byte-identical.
   const isDefault = (Object.keys(BRAND_DEFAULTS) as (keyof Brand)[])
     .every((k) => brand[k] === BRAND_DEFAULTS[k]);
   if (isDefault) return null;
 
-  const fontVar = FONT_VAR[brand.font] || FONT_VAR.lexend;
+  const bodyVar = FONT_VAR[brand.font] || FONT_VAR.lexend;
+  // Blank heading font = headings share the body font, which is how this behaved before pairing.
+  const headVar = (brand.headingFont && FONT_VAR[brand.headingFont]) || bodyVar;
 
   const css = `:root{
 --color-sjc-blue:${brand.accent};
@@ -41,8 +48,11 @@ export default function BrandStyle({ brand }: { brand: Brand }) {
 --color-sjc-navy-deep:${brand.bandDarker};
 --color-sjc-secondary:${brand.secondary};
 --color-sjc-highlight:${brand.highlight};
---font-sans:var(${fontVar}), ${FALLBACK_STACK};
-}`;
+--font-sans:var(${bodyVar}), ${FALLBACK_STACK};
+--font-body:var(${bodyVar}), ${FALLBACK_STACK};
+--font-heading:var(${headVar}), ${FALLBACK_STACK};
+}
+h1,h2,h3,h4{font-family:var(--font-heading);}`;
 
-  return <style id="sjc-brand" dangerouslySetInnerHTML={{ __html: css }} />;
+  return <style id={id} dangerouslySetInnerHTML={{ __html: css }} />;
 }

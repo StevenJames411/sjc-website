@@ -2,12 +2,15 @@ import { Render } from "@measured/puck";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
-import { readPuckPublished } from "@/lib/puckContent";
+import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
+import { DESIGN_SCOPE } from "@/lib/designCss";
 import { findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
 import { fillBusinessTokens } from "@/lib/businessTokens";
 import { SiteProvider } from "@/components/blocks/SiteContext";
+import BrandStyle from "@/components/BrandStyle";
+import { readBrand } from "@/lib/brand";
 import type { Site } from "@/lib/sitesShared";
 
 // Rendering + metadata for ONE page of ONE website, shared by the two public catch-all routes:
@@ -176,19 +179,55 @@ export function metadataFor(r: NonNullable<Resolved>, path: string) {
   };
 }
 
-/** The page itself. SJC chrome only when the page didn't bring its own. */
-export function SitePageBody({ data, siteId }: { data: unknown; siteId: string }) {
+/**
+ * The page itself. SJC chrome only when the page didn't bring its own.
+ *
+ * ⚠️ WHY THE BRAND IS APPLIED HERE AND NOT IN THE ROOT LAYOUT. `readBrand(pub, siteId)` has always
+ * taken a siteId, and the importer has always WRITTEN a per-site palette — but app/layout.tsx
+ * called `readBrand(true)` bare, and it was the only public caller. So every client site rendered
+ * in SJC's blue and the palette written for it was dead data. The root layout can't fix this: it
+ * has no idea which site the request is for. This function does, and it is already the deliberate
+ * can't-drift seam for client-vs-SJC rendering, so it is the right place.
+ *
+ * The root layout still emits SJC's own brand. This one comes later in document order and both
+ * target :root, so the site's own values win on its own pages. SJC's pages never reach here.
+ */
+export async function SitePageBody({
+  data,
+  siteId,
+  page,
+}: {
+  data: unknown;
+  siteId: string;
+  page?: string;
+}) {
   const ownHeader = hasBlock(data, "SiteHeader");
   const ownFooter = hasBlock(data, "SiteFooter");
+  // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
+  const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
+
+  // A page built from a bought design carries its own compiled stylesheet. Every rule in it is
+  // scoped under .sjc-design (lib/designCss.ts), so it cannot reach the nav, the footer, or any
+  // other page — but the wrapper still has to be here for those rules to match anything.
+  const designCss = page ? await readDesignCss(page, siteId) : "";
+
+  const body = (
+    <SiteProvider siteId={siteId}>
+      <Render config={config} data={data as never} />
+    </SiteProvider>
+  );
+
   return (
     <>
+      {brand ? <BrandStyle brand={brand} id="site-brand" /> : null}
+      {designCss ? (
+        <style id="site-design" dangerouslySetInnerHTML={{ __html: designCss }} />
+      ) : null}
       {ownHeader ? null : <Nav />}
       <main>
         {/* Blocks read the site from here rather than from an editable field — the lead form's
             destination in particular must never depend on someone typing it correctly. */}
-        <SiteProvider siteId={siteId}>
-          <Render config={config} data={data as never} />
-        </SiteProvider>
+        {designCss ? <div className={DESIGN_SCOPE}>{body}</div> : body}
       </main>
       {ownFooter ? null : <Footer />}
     </>

@@ -6,6 +6,7 @@ import {
   Leaf, Sun, Droplet, Bath, ShowerHead, Wind, Scissors, PawPrint, Bone, Dog, Cat, Bird, Bug,
   Sofa, Fence, TreePine, Flame, Snowflake, Zap, Car, Sparkle, Brush, Wallet, DollarSign,
   CreditCard, FileText, Smile, Gift, Tag, Percent, Store, Building2, Navigation, Send,
+  BrainCircuit, Code, CodeXml, LifeBuoy, Lock, Menu, MousePointerClick, Palette, Rocket, Search, Smartphone, TrendingUp, LayoutGrid, Globe, BarChart3,
   type LucideIcon,
 } from "lucide-react";
 
@@ -103,6 +104,32 @@ export const ICONS: Record<string, LucideIcon> = {
   store: Store,
   building: Building2,
   camera: Camera,
+
+  // ── ADDED 2026-07-31, from importing a bought design ────────────────────────────────────
+  // A generated design reaches for generic UI icons, not trade icons — the curated set was
+  // all trades (paw, bone, hammer) and matched 8 of the 23 this design used, so two thirds of
+  // its cards imported with no icon at all. These are the ones any business page wants.
+  "brain-circuit": BrainCircuit,
+  "code": Code,
+  "code-xml": CodeXml,
+  "life-buoy": LifeBuoy,
+  "lock": Lock,
+  "menu": Menu,
+  "mouse-pointer-click": MousePointerClick,
+  "palette": Palette,
+  "rocket": Rocket,
+  "search": Search,
+  "smartphone": Smartphone,
+  "trending-up": TrendingUp,
+  "layout-grid": LayoutGrid,
+  "globe": Globe,
+  "bar-chart-3": BarChart3,
+
+  // Legacy lucide names a design may still emit. Lucide renamed these; the generator hasn't
+  // caught up, and an icon that silently doesn't render is worse than one that's approximate.
+  "check-circle-2": CheckCircle2,
+  "code-2": CodeXml,
+  "shield-check": ShieldCheck,
 };
 
 export const ICON_NAMES = Object.keys(ICONS).sort();

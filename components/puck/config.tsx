@@ -16,6 +16,11 @@ import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
 import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
+import DesignSection, {
+  DESIGNSECTION_DEFAULTS,
+  type DesignText,
+  type DesignImage,
+} from "@/components/blocks/DesignSection";
 import Icon, { ICON_OPTIONS } from "@/components/blocks/Icon";
 import { resolveColor, resolveColorOr } from "@/lib/brandColor";
 import { telLink } from "@/lib/businessTokens";
@@ -25,9 +30,17 @@ type Align = "left" | "center" | "right";
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
-  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
+  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; grid: string; gradientTo: string; gradientAngle: number; content: Slot };
+  /** One section of a bought design, kept verbatim. Words, photos and vertical spacing editable. */
+  DesignSection: {
+    html: string;
+    text: DesignText[];
+    images: DesignImage[];
+    paddingTop: number | null;
+    paddingBottom: number | null;
+  };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; surfaceOpacity: number; borderColor: string; hoverBorderColor: string; shadowColor: string; hoverLift: boolean; radius: number };
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -54,8 +67,8 @@ type Props = {
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
-  Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
-  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string };
+  Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
+  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
   Video: { src: string; caption: string; poster: string };
@@ -320,8 +333,100 @@ export const config: Config<Props, RootProps> = {
       defaultExpanded: false,
       components: ["StaffRoster"] as (keyof Props)[],
     },
+    design: {
+      title: "Imported design",
+      defaultExpanded: false,
+      components: ["DesignSection"] as (keyof Props)[],
+    },
   },
   components: {
+    // A section of a bought design. Created by the importer, not by dragging one on — an empty
+    // one renders nothing, because there is no design in it to edit.
+    DesignSection: {
+      label: "Design section (imported)",
+      // ⚠️ PHOTOS FIRST, AND ON PURPOSE. Words came first originally, and a section has ~16 of
+      // them against one or two photos — so "Photos on this section" sat below a long scroll and
+      // read as unreachable. The first person to use this concluded imported photos couldn't be
+      // changed at all. A control nobody can find is the same as a control that isn't there.
+      fields: {
+        // Same stepper as the native Section block, so imported and hand-built sections are
+        // adjusted the same way. Blank = keep whatever spacing the design shipped with.
+        paddingTop: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper
+              label="Space above"
+              value={value as number}
+              onChange={onChange}
+              fallback={80}
+              step={8}
+              min={0}
+            />
+          ),
+        },
+        paddingBottom: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper
+              label="Space below"
+              value={value as number}
+              onChange={onChange}
+              fallback={80}
+              step={8}
+              min={0}
+            />
+          ),
+        },
+        images: {
+          type: "array" as const,
+          label: "Photos on this section",
+          // Short and obviously an item. A full alt-text paragraph as the summary looked like
+          // static label text rather than something you click to open.
+          getItemSummary: (item: DesignImage, i) => {
+            const alt = (item?.alt || "").trim();
+            const n = (i ?? 0) + 1;
+            return alt ? `Photo ${n} — ${alt.slice(0, 32)}${alt.length > 32 ? "…" : ""}` : `Photo ${n}`;
+          },
+          arrayFields: {
+            src: {
+              type: "custom" as const,
+              label: "Photo — click to replace",
+              render: ({ onChange, value }) => (
+                <ImageUpload value={value as string} onChange={onChange} />
+              ),
+            },
+            alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
+            key: { type: "text" as const, label: "Token (do not change)" },
+          },
+        },
+        text: {
+          type: "array" as const,
+          label: "Words on this section",
+          getItemSummary: (item: DesignText, i) => item?.label || `Text ${(i ?? 0) + 1}`,
+          arrayFields: {
+            // Shown so you know which one you're editing; the value is the part you change.
+            value: { type: "textarea" as const, label: "Text" },
+            label: { type: "text" as const, label: "Where it appears" },
+            key: { type: "text" as const, label: "Token (do not change)" },
+          },
+        },
+        // Deliberately last and plain: this is the design itself. Editing it by hand is how you
+        // break the layout you paid for.
+        html: { type: "textarea" as const, label: "Markup (imported — leave this alone)" },
+      },
+      defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
+      render: ({ html, text, images, paddingTop, paddingBottom }) => (
+        <DesignSection
+          html={html}
+          text={text}
+          images={images}
+          paddingTop={paddingTop}
+          paddingBottom={paddingBottom}
+        />
+      ),
+    },
     Card: {
       label: "Card (white box)",
       fields: {
@@ -387,6 +492,67 @@ export const config: Config<Props, RootProps> = {
             { label: "ALL CAPS", value: true },
             { label: "Normal case", value: false },
           ],
+        },
+        // ── SURFACE. "White box" is the original and stays the default, so nothing already
+        // built moves. Glass is what makes a card sit on a dark band like a bought design does.
+        surface: {
+          type: "radio" as const,
+          label: "Card surface",
+          options: [
+            { label: "White box", value: "" },
+            { label: "Glass (on dark)", value: "glass" },
+            { label: "Outline only", value: "outline" },
+          ],
+        },
+        surfaceColor: {
+          type: "custom" as const,
+          label: "Glass tint (blank = white)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        surfaceOpacity: {
+          type: "custom" as const,
+          label: "How solid the glass is (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Solidity" value={value as number} onChange={onChange} fallback={7} step={5} min={0} />
+          ),
+        },
+        borderColor: {
+          type: "custom" as const,
+          label: "Hairline edge (blank = white)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        hoverBorderColor: {
+          type: "custom" as const,
+          label: "Edge on hover (blank = no change)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        shadowColor: {
+          type: "custom" as const,
+          label: "Glow underneath (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        hoverLift: {
+          type: "radio" as const,
+          label: "Lift on hover",
+          options: [
+            { label: "No", value: false },
+            { label: "Yes", value: true },
+          ],
+        },
+        radius: {
+          type: "custom" as const,
+          label: "Corner roundness (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+          ),
         },
         heading: { type: "textarea" as const, label: "Middle line — the card's heading (an H3 for Google)" },
         headingSize: {
@@ -460,7 +626,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps }) => (
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps, surface, surfaceColor, surfaceOpacity, borderColor, hoverBorderColor, shadowColor, hoverLift, radius }) => (
         <Card
           badge={badge} eyebrow={eyebrow} heading={heading} body={body}
           icon={icon} iconColor={iconColor} badgeColor={badgeColor}
@@ -471,6 +637,9 @@ export const config: Config<Props, RootProps> = {
           bodySize={bodySize} bodyColor={bodyColor}
           eyebrowBold={eyebrowBold} headingBold={headingBold} bodyBold={bodyBold}
           eyebrowCaps={eyebrowCaps}
+          surface={surface} surfaceColor={surfaceColor} surfaceOpacity={surfaceOpacity}
+          borderColor={borderColor} hoverBorderColor={hoverBorderColor} shadowColor={shadowColor}
+          hoverLift={hoverLift} radius={radius}
         />
       ),
     },
@@ -976,6 +1145,22 @@ export const config: Config<Props, RootProps> = {
             <SizeStepper label="Padding bottom" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
           ),
         },
+        // ── The three things a bought design does to a band that we couldn't say before.
+        // All blank/off by default, so every Section already saved renders byte-identical.
+        gradientTo: {
+          type: "custom" as const,
+          label: "Fade to (blank = flat colour)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        gradientAngle: {
+          type: "custom" as const,
+          label: "Fade direction (degrees)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Angle" value={value as number} onChange={onChange} fallback={135} step={15} min={0} />
+          ),
+        },
         // Soft colour washes bleeding in from the corners. Blank = off, which is what every
         // existing Section has saved, so nothing already built changes.
         decor: {
@@ -985,15 +1170,43 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // Faint graph-paper overlay. Reads as "technical" and is most of why a dark band in a
+        // generated design doesn't look like a flat rectangle.
+        grid: {
+          type: "custom" as const,
+          label: "Grid overlay (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", content: [] },
-      render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, content: Content }) => (
+      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", grid: "", gradientTo: "", gradientAngle: 135, content: [] },
+      render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, grid, gradientTo, gradientAngle, content: Content }) => (
         <section
           id={typeof id === "string" ? id : undefined}
-          style={{ backgroundColor: resolveColor(background) }}
-          className={`w-full scroll-mt-20${decor ? " relative overflow-hidden" : ""}`}
+          style={
+            gradientTo
+              ? {
+                  backgroundImage: `linear-gradient(${
+                    typeof gradientAngle === "number" ? gradientAngle : 135
+                  }deg, ${resolveColor(background)} 0%, ${resolveColor(gradientTo)} 100%)`,
+                }
+              : { backgroundColor: resolveColor(background) }
+          }
+          className={`w-full scroll-mt-20${decor || grid ? " relative overflow-hidden" : ""}`}
         >
+          {grid ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(${resolveColor(grid)} 1px, transparent 1px), linear-gradient(90deg, ${resolveColor(grid)} 1px, transparent 1px)`,
+                backgroundSize: "60px 60px",
+                opacity: 0.07,
+              }}
+            />
+          ) : null}
           {/* Two large blurred circles, opposite corners, pointer-events-none so they can never
               swallow a click on anything sitting above them. */}
           {decor ? (
@@ -1011,7 +1224,7 @@ export const config: Config<Props, RootProps> = {
             </>
           ) : null}
           <div
-            className={`mx-auto px-6${decor ? " relative z-10" : ""}`}
+            className={`mx-auto px-6${decor || grid ? " relative z-10" : ""}`}
             style={{
               // Existing pages have no maxWidth saved — fall back to the old max-w-3xl so nothing shifts.
               maxWidth: maxWidth || "48rem",
@@ -1070,7 +1283,7 @@ export const config: Config<Props, RootProps> = {
     },
 
     Columns: {
-      label: "Columns (1 / 2 / 3)",
+      label: "Columns (1 / 2 / 3 / 4)",
       fields: {
         columns: {
           type: "select" as const,
@@ -1079,6 +1292,7 @@ export const config: Config<Props, RootProps> = {
             { label: "1 column", value: 1 },
             { label: "2 columns", value: 2 },
             { label: "3 columns", value: 3 },
+            { label: "4 columns", value: 4 },
           ],
         },
         gap: {
@@ -1091,12 +1305,22 @@ export const config: Config<Props, RootProps> = {
         col1: { type: "slot" as const },
         col2: { type: "slot" as const },
         col3: { type: "slot" as const },
+        col4: { type: "slot" as const },
       },
-      defaultProps: { columns: 2, gap: 24, col1: [], col2: [], col3: [] },
-      render: ({ columns, gap, col1: Col1, col2: Col2, col3: Col3 }) => {
+      defaultProps: { columns: 2, gap: 24, col1: [], col2: [], col3: [], col4: [] },
+      render: ({ columns, gap, col1: Col1, col2: Col2, col3: Col3, col4: Col4 }) => {
         const n = Number(columns) || 1;
+        // ⚠️ FOUR ACROSS GOES 1 -> 2 -> 4, NOT 1 -> 4. Four cards side by side on a phone are
+        // unreadable, and jumping straight to four at md crushes them on a tablet. A four-step
+        // process reading as 2x2 on a tablet is the design's own intent, not a compromise.
         const cls =
-          n >= 3 ? "grid-cols-1 md:grid-cols-3" : n === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1";
+          n >= 4
+            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+            : n === 3
+              ? "grid-cols-1 md:grid-cols-3"
+              : n === 2
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1";
         return (
           <div className={`grid ${cls}`} style={{ gap: `${typeof gap === "number" ? gap : 24}px` }}>
             <div>
@@ -1110,6 +1334,11 @@ export const config: Config<Props, RootProps> = {
             {n >= 3 && (
               <div>
                 <Col3 />
+              </div>
+            )}
+            {n >= 4 && (
+              <div>
+                <Col4 />
               </div>
             )}
           </div>
@@ -1154,6 +1383,13 @@ export const config: Config<Props, RootProps> = {
         // headline. A flat single-colour headline is the biggest thing separating a template
         // from a designed page, and it costs one text field.
         highlight: { type: "text" as const, label: "Words to colour differently (blank = none)" },
+        highlightFade: {
+          type: "custom" as const,
+          label: "Fade those words to (blank = flat colour)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         highlightColor: {
           type: "custom" as const,
           label: "Highlight colour",
@@ -1171,8 +1407,8 @@ export const config: Config<Props, RootProps> = {
           ),
         },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "", highlight: "", highlightColor: "" },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor }) => {
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "", highlight: "", highlightColor: "", highlightFade: "" },
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor, highlightFade }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
 
         // The marker swipe. A straight rule reads like a border; this reads like someone drew it.
@@ -1203,8 +1439,23 @@ export const config: Config<Props, RootProps> = {
 
         let body: React.ReactNode;
         if (at >= 0) {
+          // A second colour turns the picked-out phrase into a GRADIENT rather than a flat
+          // colour — the "Win Everywhere." treatment, where the words fade from the accent into
+          // white. Blank keeps the flat colour, so every heading already written is untouched.
           const marked = (
-            <span key="hl" style={{ color: resolveColor(highlightColor) }}>
+            <span
+              key="hl"
+              style={
+                highlightFade
+                  ? {
+                      backgroundImage: `linear-gradient(90deg, ${resolveColor(highlightColor)} 0%, ${resolveColor(highlightFade)} 100%)`,
+                      WebkitBackgroundClip: "text",
+                      backgroundClip: "text",
+                      color: "transparent",
+                    }
+                  : { color: resolveColor(highlightColor) }
+              }
+            >
               {text.slice(at, at + hl.length)}
             </span>
           );

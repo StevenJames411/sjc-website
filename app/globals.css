@@ -68,3 +68,9 @@ textarea { resize: vertical !important; min-height: 76px; }
 /* Edit fields use the SAME font as the live site (Lexend) so what you type matches what ships
    — capital "I" reads as I, not a lowercase l. */
 .rt-input, textarea, input { font-family: var(--font-sans) !important; }
+
+/* Card's hover edge. A :hover colour can't be an inline style, and the value is per-card, so the
+   card sets --sjc-hover-edge and this rule spends it. Paired with Card's `hoverBorderColor`. */
+.sjc-hover-edge:hover {
+  border-color: var(--sjc-hover-edge) !important;
+}

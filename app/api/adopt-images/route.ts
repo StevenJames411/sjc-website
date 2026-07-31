@@ -34,16 +34,25 @@ const MAX_BYTES = 12 * 1024 * 1024; // a page photo has no business being bigger
 
 type Node = { type?: string; props?: Record<string, unknown> };
 
-/** Every prop on the page that holds an image URL, wherever it's nested. */
+/**
+ * Every prop on the page that holds an image URL, wherever it's nested.
+ *
+ * ⚠️ AN ITEM IN AN ARRAY IS NOT ALWAYS A BLOCK. This used to read `n.props` only, so it recursed
+ * into arrays but then skipped anything whose items were plain records rather than blocks —
+ * which is exactly how DesignSection stores an imported design's photos (`images: [{key, alt,
+ * src}]`). The result was silent and slow-acting: the adopter reported success, adopted nothing,
+ * and the client's website kept loading its photos from the design tool that generated them,
+ * until that tool cleaned them up.
+ */
 function imageSlots(nodes: Node[] | undefined, out: { props: Record<string, unknown>; key: string }[] = []) {
   for (const n of nodes || []) {
-    const p = n?.props;
-    if (p) {
-      for (const key of ["src", "poster", "image", "logo"]) {
-        if (typeof p[key] === "string" && /^https?:\/\//i.test(p[key] as string)) out.push({ props: p, key });
-      }
-      for (const v of Object.values(p)) if (Array.isArray(v)) imageSlots(v as Node[], out);
+    if (!n || typeof n !== "object") continue;
+    // A block keeps its values under `props`; a plain record IS its own values.
+    const p = (n.props ?? n) as Record<string, unknown>;
+    for (const key of ["src", "poster", "image", "logo"]) {
+      if (typeof p[key] === "string" && /^https?:\/\//i.test(p[key] as string)) out.push({ props: p, key });
     }
+    for (const v of Object.values(p)) if (Array.isArray(v)) imageSlots(v as Node[], out);
   }
   return out;
 }

@@ -17,13 +17,16 @@
 // ⚠️ IT CREATES A SITE, NOT A PAGE. This route used to call createPage(), which dropped every
 // import into SJC's own page list — one flat drawer holding every client's work, and the reason
 // "clone" used to mean "clone Steven James Consulting".
+import type { Data } from "@measured/puck";
 import { importHtml } from "@/lib/importHtml";
+import { importDesign, detectFonts, detectAccent } from "@/lib/importDesign";
 import { createSite, updateSite } from "@/lib/sites";
 import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { puckKey } from "@/lib/puckContent";
+import { puckKey, writeDesignCss } from "@/lib/puckContent";
 import { writeBrand } from "@/lib/brand";
+import type { BrandFont } from "@/lib/brandShared";
 import { applyTokens, tokenRules } from "@/lib/tokenizePage";
 
 export const dynamic = "force-dynamic";
@@ -73,7 +76,7 @@ function nameFromUrl(raw: string): string {
 }
 
 export async function POST(req: Request) {
-  let body: { html?: string; url?: string; businessName?: string; dryRun?: boolean };
+  let body: { html?: string; url?: string; businessName?: string; dryRun?: boolean; mode?: string };
   try {
     body = await req.json();
   } catch {
@@ -101,9 +104,34 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "That doesn't look like a full page — no <section>, <header> or <footer> found." }, { status: 400 });
   }
 
-  let result;
+  // ── WHICH IMPORT ────────────────────────────────────────────────────────────────────────────
+  // "design" (the default) keeps the look: the markup stays verbatim, its Tailwind is compiled
+  // into a real stylesheet, and only the words and photos become editable. See lib/importDesign.
+  //
+  // "blocks" is the original behaviour — map the page onto our own block vocabulary. It gives
+  // full drag-and-drop editing but flattens gradients, glass, shadows and the type scale, so it
+  // is only the right call for a plain page that was never worth much visually.
+  // "editable" (the goal): map onto REAL blocks and KEEP the look — colours stay exact, the
+  // gradient/glass/glow are read rather than dropped. Fully drag-and-drop afterwards.
+  // "design": sealed HTML — pixel-perfect, not editable. The fallback.
+  // "blocks": the original, colours quantised to brand roles. For a plain page.
+  const raw = String(body?.mode || "editable").toLowerCase();
+  const mode: "editable" | "design" | "blocks" =
+    raw === "design" ? "design" : raw === "blocks" ? "blocks" : "editable";
+
+  let result: {
+    data: Data;
+    report: string[] | Record<string, unknown>;
+    palette?: unknown;
+    css?: string;
+    fonts?: { headingFont: BrandFont; bodyFont: BrandFont };
+    accent?: string;
+  };
   try {
-    result = importHtml(html, businessName);
+    result =
+      mode === "design"
+        ? await importDesign(html, businessName)
+        : importHtml(html, businessName, { preserve: mode === "editable" });
   } catch (e) {
     return Response.json({ ok: false, error: `Couldn't parse that HTML: ${(e as Error).message}` }, { status: 400 });
   }
@@ -114,7 +142,18 @@ export async function POST(req: Request) {
   }
 
   if (body?.dryRun) {
-    return Response.json({ ok: true, dryRun: true, palette: result.palette, report: result.report, blocks: blockCount, businessName });
+    return Response.json({
+      ok: true,
+      dryRun: true,
+      mode,
+      palette: result.palette,
+      report: result.report,
+      blocks: blockCount,
+      businessName,
+      ...(mode === "design"
+        ? { cssKB: +((result.css || "").length / 1024).toFixed(1), fonts: result.fonts, accent: result.accent }
+        : {}),
+    });
   }
 
   // ── THE WEBSITE ─────────────────────────────────────────────────────────────────────────────
@@ -154,12 +193,44 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "Website created but its content couldn't be saved." }, { status: 500 });
   }
 
-  const p = result.palette as unknown as Record<string, string>;
-  await writeBrand(
-    { accent: p.accent, secondary: p.secondary, highlight: p.highlight, ink: p.ink, cta: p.cta },
-    false,
-    siteId
-  );
+  // ── THE DESIGN'S OWN STYLESHEET ─────────────────────────────────────────────────────────────
+  // Draft, like the content. A design has to go live with the page it belongs to — publishing the
+  // stylesheet on import would restyle a page nobody had approved yet.
+  if (mode === "design" && result.css) {
+    if (!(await writeDesignCss(created.slug, result.css, false, siteId))) {
+      return Response.json(
+        { ok: false, error: "Website created but its design stylesheet couldn't be saved." },
+        { status: 500 }
+      );
+    }
+  }
+
+  // ── THE BRAND ───────────────────────────────────────────────────────────────────────────────
+  // ⚠️ LOAD-BEARING IN "editable" MODE, not cosmetic. There the page is made of OUR blocks, and
+  // our blocks take their typeface from the brand — so if this doesn't run, a design built in
+  // Space Grotesk imports and renders in Lexend, and it reads as a botched import rather than a
+  // missing setting. (In "design" mode the sections carry their own CSS and this only governs
+  // what a section added LATER picks up.)
+  if (mode !== "blocks") {
+    const fonts = result.fonts ?? detectFonts(html);
+    const accent = result.accent ?? detectAccent(html);
+    await writeBrand(
+      {
+        font: fonts.bodyFont,
+        headingFont: fonts.headingFont,
+        ...(accent ? { accent, cta: accent } : {}),
+      },
+      false,
+      siteId
+    );
+  } else {
+    const p = result.palette as unknown as Record<string, string>;
+    await writeBrand(
+      { accent: p.accent, secondary: p.secondary, highlight: p.highlight, ink: p.ink, cta: p.cta },
+      false,
+      siteId
+    );
+  }
 
   // ADOPT THE IMAGES IMMEDIATELY. An imported page's photos point at the tool that generated them
   // — a live dependency on a third party inside a site a client will pay for. Doing this on import

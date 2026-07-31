@@ -206,8 +206,14 @@ export async function deleteSite(id: string): Promise<{ ok: boolean; error?: str
   for (const p of await readPages(s)) {
     await createKvStore(client, k.puck(p.slug)).write({});
     await createKvStore(client, k.puck(p.slug, true)).write({});
+    // A page imported from a bought design keeps its compiled stylesheet in its own key. It
+    // belongs to this website, so it goes with it.
+    await createKvStore(client, k.designCss(p.slug)).write({});
+    await createKvStore(client, k.designCss(p.slug, true)).write({});
   }
   await createKvStore(client, k.pages).write({});
+  await createKvStore(client, k.brand()).write({});
+  await createKvStore(client, k.brand(true)).write({});
 
   return (await writeSites(sites.filter((x) => x.id !== s)))
     ? { ok: true }
