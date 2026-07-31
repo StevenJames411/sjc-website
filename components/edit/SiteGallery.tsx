@@ -367,7 +367,7 @@ function NewWebsite({
   // How a bought design comes in. "editable" maps it onto real blocks — drag, drop, restructure,
   // at roughly 95% of the original. "design" keeps the markup sealed: pixel-exact, but only the
   // words and photos can be changed. Neither is right for every design, so it's a choice.
-  const [importAs, setImportAs] = useState<"editable" | "design">("editable");
+  const [importAs, setImportAs] = useState<"editable" | "design">("design");
   const [err, setErr] = useState("");
   const [note, setNote] = useState("");
 
@@ -456,8 +456,8 @@ function NewWebsite({
             <label style={lbl}>How should it come in?</label>
             <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
               {([
-                ["editable", "Editable blocks", "Rebuilt as real blocks — drag, drop, add a photo anywhere. About 95% of the original look."],
-                ["design", "Exactly as designed", "Kept sealed. Pixel-perfect, but only the words and photos can be changed."],
+                ["design", "Exactly as designed (recommended)", "Pixel-perfect. Edit every word, photo, link and colour, resize things, and your real contact form goes in. You just can't move elements around."],
+                ["editable", "Rebuilt as blocks", "Full drag-and-drop, but about 95% of the original look — some detail is lost in translation."],
               ] as const).map(([v, title, why]) => (
                 <label
                   key={v}
