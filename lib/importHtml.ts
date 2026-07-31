@@ -126,13 +126,51 @@ function toRole(hex: string | undefined, p: Palette): string {
 const cls = (el: HTMLElement) => el.getAttribute("class") || "";
 const styleOf = (el: HTMLElement) => el.getAttribute("style") || "";
 
-/** Pull a hex out of a Tailwind arbitrary class (`bg-[#0ea5e9]`) or an inline style. */
+/**
+ * Tailwind's NAMED colours, which a generated design uses constantly and this function used to
+ * ignore completely.
+ *
+ * ⚠️ THIS IS WHY EVERY HEADING IMPORTED INVISIBLE. A design writes `text-white` on a headline
+ * sitting on a dark band, and `text-slate-400` on the paragraph under it. Reading only the
+ * ARBITRARY form (`text-[#ffffff]`) meant white came back as "no colour found", the heading fell
+ * back to `ink` — near-black — and rendered black-on-navy. The body text survived by luck: its
+ * fallback, `mute`, is grey, which is roughly what slate-400 looks like anyway. So the page
+ * looked 80% right and the single most important line on it was gone.
+ *
+ * Only the neutral families are here. An accent is virtually always an arbitrary hex (that IS
+ * the brand colour), while text and surfaces are named — so this covers the gap without
+ * pretending to be a full Tailwind palette.
+ */
+const TW_NAMED: Record<string, string> = {
+  white: "#ffffff", black: "#000000",
+  "slate-50": "#f8fafc", "slate-100": "#f1f5f9", "slate-200": "#e2e8f0", "slate-300": "#cbd5e1",
+  "slate-400": "#94a3b8", "slate-500": "#64748b", "slate-600": "#475569", "slate-700": "#334155",
+  "slate-800": "#1e293b", "slate-900": "#0f172a", "slate-950": "#020617",
+  "gray-100": "#f3f4f6", "gray-200": "#e5e7eb", "gray-300": "#d1d5db", "gray-400": "#9ca3af",
+  "gray-500": "#6b7280", "gray-600": "#4b5563", "gray-700": "#374151", "gray-800": "#1f2937",
+  "gray-900": "#111827",
+  "zinc-400": "#a1a1aa", "zinc-500": "#71717a", "zinc-800": "#27272a", "zinc-900": "#18181b",
+  "neutral-400": "#a3a3a3", "neutral-800": "#262626", "neutral-900": "#171717",
+};
+
+/** Pull a hex out of a Tailwind class (arbitrary OR named) or an inline style. */
 function hexFrom(el: HTMLElement, kind: "bg" | "text"): string | undefined {
   const c = cls(el), s = styleOf(el);
   const bracket = kind === "bg"
     ? c.match(/bg-\[(#[0-9a-fA-F]{6})\]/)
     : c.match(/text-\[(#[0-9a-fA-F]{6})\]/);
   if (bracket) return bracket[1].toLowerCase();
+
+  // Named form. The opacity suffix (`text-white/70`) is deliberately ignored — the block system
+  // has no per-text opacity, and a slightly-too-solid heading beats an invisible one.
+  // ⚠️ SCAN EVERY CANDIDATE, don't stop at the first. `text-xl font-bold text-white` matched
+  // `text-xl`, found no colour called "xl", and gave up — so the heading came back colourless
+  // and fell through to near-black. Tailwind puts size and colour in the same `text-` namespace.
+  const re = kind === "bg"
+    ? /(?:^|\s)bg-([a-z]+(?:-\d{2,3})?)(?:\/\d+)?(?=\s|$)/g
+    : /(?:^|\s)text-([a-z]+(?:-\d{2,3})?)(?:\/\d+)?(?=\s|$)/g;
+  for (const m of c.matchAll(re)) if (TW_NAMED[m[1]]) return TW_NAMED[m[1]];
+
   const inline = kind === "bg"
     ? s.match(/background(?:-color)?:\s*(#[0-9a-fA-F]{6})/)
     : s.match(/(?<!-)color:\s*(#[0-9a-fA-F]{6})/);
@@ -258,6 +296,15 @@ function cardBlock(el: HTMLElement, p: Palette, badge?: string): Block {
       eyebrow: "",
       heading: h ? clean(h.text) : "",
       body: paras.length ? clean(paras[paras.length - 1].text) : "",
+      // ⚠️ READ THE CARD'S OWN TEXT COLOURS. Card defaults to near-black ink, which is right on a
+      // white box and invisible on a glass pane over a dark band — the exact failure seen on the
+      // first editable import: six cards with readable body copy and no visible headings.
+      ...(PRESERVE
+        ? {
+            headingColor: h ? toRole(hexFrom(h, "text"), p) : "",
+            bodyColor: paras.length ? toRole(hexFrom(paras[paras.length - 1], "text"), p) : "",
+          }
+        : {}),
       icon,
       iconColor: iconHex ? toRole(iconHex, p) : icon ? "accent" : "",
       centered: /text-center/.test(cls(el)),
