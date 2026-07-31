@@ -16,7 +16,7 @@
 // by hand.
 
 import type { Data } from "@measured/puck";
-import { splitSections, tokenizeSection, inlineLucideIcons } from "./designHtml";
+import { splitSections, tokenizeSection, inlineLucideIcons, paddingOf } from "./designHtml";
 import { compileDesignCss } from "./designCss";
 import { nearestFont, type BrandFont } from "./brandShared";
 
@@ -120,13 +120,17 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
 
   const content = sections.map((section, i) => {
     const { html: tokenized, text, images } = tokenizeSection(section);
+    // Seed the spacing control with what the design actually used, so the stepper opens at the
+    // real number. The override is an inline style at render — the markup keeps its own classes,
+    // so clearing the field restores the design's spacing exactly.
+    const pad = paddingOf(section);
     // ⚠️ EVERY BLOCK NEEDS ITS OWN `id`. Puck identifies a component instance by props.id; give
     // several blocks the same one (or none) and it treats them as one node — the page renders the
     // LAST block's content in every slot. First import of this design came back as the footer,
     // seven times, with the styling perfectly intact, which is what made it look like a splitting
     // bug rather than a missing key. lib/importHtml.ts has always done this via nid().
     const id = `design-${i + 1}`;
-    return { type: "DesignSection", props: { id, html: tokenized, text, images } };
+    return { type: "DesignSection", props: { id, html: tokenized, text, images, paddingTop: pad.top, paddingBottom: pad.bottom } };
   });
 
   const words = content.reduce((n, b) => n + b.props.text.length, 0);

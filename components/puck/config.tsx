@@ -31,8 +31,14 @@ type Align = "left" | "center" | "right";
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
-  /** One section of a bought design, kept verbatim. Only its words and photos are editable. */
-  DesignSection: { html: string; text: DesignText[]; images: DesignImage[] };
+  /** One section of a bought design, kept verbatim. Words, photos and vertical spacing editable. */
+  DesignSection: {
+    html: string;
+    text: DesignText[];
+    images: DesignImage[];
+    paddingTop: number | null;
+    paddingBottom: number | null;
+  };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
   Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean };
   HeroImage: {
@@ -343,6 +349,36 @@ export const config: Config<Props, RootProps> = {
       // read as unreachable. The first person to use this concluded imported photos couldn't be
       // changed at all. A control nobody can find is the same as a control that isn't there.
       fields: {
+        // Same stepper as the native Section block, so imported and hand-built sections are
+        // adjusted the same way. Blank = keep whatever spacing the design shipped with.
+        paddingTop: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper
+              label="Space above"
+              value={value as number}
+              onChange={onChange}
+              fallback={80}
+              step={8}
+              min={0}
+            />
+          ),
+        },
+        paddingBottom: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper
+              label="Space below"
+              value={value as number}
+              onChange={onChange}
+              fallback={80}
+              step={8}
+              min={0}
+            />
+          ),
+        },
         images: {
           type: "array" as const,
           label: "Photos on this section",
@@ -381,8 +417,14 @@ export const config: Config<Props, RootProps> = {
         html: { type: "textarea" as const, label: "Markup (imported — leave this alone)" },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images }) => (
-        <DesignSection html={html} text={text} images={images} />
+      render: ({ html, text, images, paddingTop, paddingBottom }) => (
+        <DesignSection
+          html={html}
+          text={text}
+          images={images}
+          paddingTop={paddingTop}
+          paddingBottom={paddingBottom}
+        />
       ),
     },
     Card: {

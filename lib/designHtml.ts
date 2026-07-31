@@ -251,6 +251,35 @@ export function tokenizeSection(html: string): {
  * app/api/import-html/route.ts already guards for. Each becomes one DesignSection block, which is
  * what gives Steven delete / reorder / duplicate at the section level.
  */
+/**
+ * The vertical padding a generated section shipped with, in px.
+ *
+ * Read so the builder's stepper OPENS at the design's real number instead of a guess — dialling
+ * 128 down to 64 is obvious, dialling an arbitrary 80 is someone fighting the control.
+ *
+ * Tailwind's spacing scale is 4px per step (`py-20` = 80px). Where a section declares responsive
+ * padding (`py-20 md:py-28 lg:py-32`) the LARGEST is taken, because that is the desktop value and
+ * desktop is where the spacing looks wrong.
+ */
+export function paddingOf(sectionHtml: string): { top: number | null; bottom: number | null } {
+  const open = String(sectionHtml || "").match(/<[a-z][a-z0-9]*\b[^>]*>/i)?.[0] || "";
+  const cls = open.match(/class\s*=\s*(["'])([\s\S]*?)\1/i)?.[2] || "";
+
+  const biggest = (re: RegExp) => {
+    let best: number | null = null;
+    for (const m of cls.matchAll(re)) {
+      const n = Number(m[1]) * 4;
+      if (Number.isFinite(n) && (best === null || n > best)) best = n;
+    }
+    return best;
+  };
+
+  const py = biggest(/(?:^|\s|:)py-(\d+(?:\.\d+)?)\b/g);
+  const pt = biggest(/(?:^|\s|:)pt-(\d+(?:\.\d+)?)\b/g);
+  const pb = biggest(/(?:^|\s|:)pb-(\d+(?:\.\d+)?)\b/g);
+  return { top: pt ?? py, bottom: pb ?? py };
+}
+
 export function splitSections(html: string): string[] {
   const root = parse(String(html || ""), { comment: false });
 
