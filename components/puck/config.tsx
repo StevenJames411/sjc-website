@@ -413,6 +413,30 @@ export const config: Config<Props, RootProps> = {
                 <ImageUpload value={value as string} onChange={onChange} />
               ),
             },
+            // Blank/0 = however the design sized it, so an untouched photo is unchanged.
+            width: {
+              type: "custom" as const,
+              label: "Max width (− / +, blank = as designed)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Max width" value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
+              ),
+            },
+            radius: {
+              type: "custom" as const,
+              label: "Corner roundness (− / +)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+              ),
+            },
+            fit: {
+              type: "radio" as const,
+              label: "If the shape doesn't match",
+              options: [
+                { label: "As designed", value: "" },
+                { label: "Crop to fill", value: "cover" },
+                { label: "Fit it all in", value: "contain" },
+              ],
+            },
             alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
             key: { type: "text" as const, label: "Token (do not change)" },
           },
@@ -437,6 +461,31 @@ export const config: Config<Props, RootProps> = {
           arrayFields: {
             // Shown so you know which one you're editing; the value is the part you change.
             value: { type: "textarea" as const, label: "Text" },
+            // Blank/0/"As designed" leaves the design's own styling — nothing is wrapped and the
+            // markup stays byte-identical to the import.
+            size: {
+              type: "custom" as const,
+              label: "Size (− / +, blank = as designed)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+              ),
+            },
+            color: {
+              type: "custom" as const,
+              label: "Colour (blank = as designed)",
+              render: ({ onChange, value }) => (
+                <ColorField value={value as string} onChange={onChange} />
+              ),
+            },
+            bold: {
+              type: "radio" as const,
+              label: "Weight",
+              options: [
+                { label: "As designed", value: null },
+                { label: "Bold", value: true },
+                { label: "Normal", value: false },
+              ],
+            },
             label: { type: "text" as const, label: "Where it appears" },
             key: { type: "text" as const, label: "Token (do not change)" },
           },

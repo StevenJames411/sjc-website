@@ -27,8 +27,42 @@ import { DESIGN_SCOPE } from "@/lib/designShared";
 import DesignFormMount from "./DesignFormMount";
 import type { LeadFormField } from "./LeadForm";
 
-export type DesignText = { key: string; label: string; value: string };
-export type DesignImage = { key: string; alt: string; src: string };
+/**
+ * One editable line in an imported section.
+ *
+ * `value` is the words. The rest are OVERRIDES — blank/0/null means "leave the design alone",
+ * which is what every field starts as, so an untouched import renders exactly as bought.
+ *
+ * ⚠️ WHY THESE EXIST. The design bakes size, colour and weight into its classes, so a sealed
+ * section let you change every word and none of how it looked — you could fix a typo but not
+ * shrink a headline that ran onto three lines with a longer business name. An inline style beats
+ * a class, so an override needs no change to the markup and clearing it restores the design.
+ */
+export type DesignText = {
+  key: string;
+  label: string;
+  value: string;
+  /** px. 0/blank = the design's own size. */
+  size?: number;
+  /** blank = the design's own colour. */
+  color?: string;
+  /** null/undefined = the design's own weight. */
+  bold?: boolean | null;
+};
+export type DesignImage = {
+  key: string;
+  alt: string;
+  src: string;
+  /** Max width in px. 0/blank = however the design sized it. */
+  width?: number;
+  /** Corner radius in px. 0/blank = the design's own. */
+  radius?: number;
+  /**
+   * How a photo fills its box when its shape doesn't match the design's.
+   * "" = leave it; "cover" crops to fill; "contain" fits the whole photo in.
+   */
+  fit?: string;
+};
 /** One link in an imported section: what it says, and where it goes. */
 export type DesignLink = { key: string; label: string; href: string };
 
@@ -88,6 +122,14 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
 
 const TOKEN = /\{\{([tih]):([a-z0-9_-]+)\}\}/gi;
 
+/** Build an inline style string from whatever overrides were actually set. */
+function styleFor(parts: Array<[string, string | undefined | null]>): string {
+  return parts
+    .filter(([, v]) => v !== undefined && v !== null && v !== "")
+    .map(([k, v]) => `${k}:${v}`)
+    .join(";");
+}
+
 /** HTML-escape a value going into markup. The values are Steven's, but they still can't break it. */
 function esc(s: string): string {
   return String(s ?? "")
@@ -107,11 +149,28 @@ export function fillTokens(
   const t = new Map(text.map((r) => [String(r?.key || "").toLowerCase(), r?.value ?? ""]));
   const i = new Map(images.map((r) => [String(r?.key || "").toLowerCase(), r?.src ?? ""]));
   const h = new Map(links.map((r) => [String(r?.key || "").toLowerCase(), r?.href ?? ""]));
+  // Text rows are needed by key for their style overrides, not just their value.
+  const tRow = new Map(text.map((r) => [String(r?.key || "").toLowerCase(), r]));
+
   return String(html || "").replace(TOKEN, (_m, kind: string, key: string) => {
     const k = kind.toLowerCase();
+    const id = String(key).toLowerCase();
     const map = k === "t" ? t : k === "i" ? i : h;
     // Unknown key -> empty. Never render the token itself onto a live page.
-    return esc(map.get(String(key).toLowerCase()) ?? "");
+    const raw = esc(map.get(id) ?? "");
+
+    // A style override wraps the words in a span. Inline beats the design's class, and with no
+    // overrides set nothing is wrapped at all — the markup stays byte-identical to the import.
+    if (k === "t") {
+      const row = tRow.get(id);
+      const css = styleFor([
+        ["font-size", row?.size ? `${row.size}px` : ""],
+        ["color", row?.color || ""],
+        ["font-weight", row?.bold === true ? "700" : row?.bold === false ? "400" : ""],
+      ]);
+      if (css) return `<span style="${css}">${raw}</span>`;
+    }
+    return raw;
   });
 }
 
@@ -154,6 +213,33 @@ export function injectStyle(html: string, decls: string): string {
   return html.replace(open, next);
 }
 
+/**
+ * Apply per-photo overrides by adding a style to the marked <img>.
+ *
+ * Targeted rather than global: `data-sjc-img="i2"` identifies one image, so resizing the founder
+ * photo can't touch the phone mockup. Images with nothing set are not rewritten at all.
+ */
+function styleImages(html: string, images: DesignImage[]): string {
+  let out = html;
+  for (const img of images) {
+    const css = styleFor([
+      ["max-width", img?.width ? `${img.width}px` : ""],
+      ["width", img?.width ? "100%" : ""],
+      ["border-radius", img?.radius ? `${img.radius}px` : ""],
+      ["object-fit", img?.fit || ""],
+    ]);
+    if (!css || !img?.key) continue;
+    const re = new RegExp(`(<img\\b[^>]*data-sjc-img="${img.key}"[^>]*)>`, "i");
+    out = out.replace(re, (m, open: string) => {
+      const existing = open.match(/\sstyle\s*=\s*(["'])([\s\S]*?)\1/i);
+      return existing
+        ? `${open.replace(existing[0], ` style="${existing[2].replace(/;\s*$/, "")};${css}"`)}>`
+        : `${open} style="${css}">`;
+    });
+  }
+  return out;
+}
+
 export default function DesignSection(props: DesignSectionProps) {
   const {
     html = "",
@@ -177,7 +263,10 @@ export default function DesignSection(props: DesignSectionProps) {
     .filter(Boolean)
     .join(";");
 
-  const filled = injectStyle(stripDangerous(fillTokens(html, text, images, links)), decls);
+  const filled = injectStyle(
+    styleImages(stripDangerous(fillTokens(html, text, images, links)), images),
+    decls
+  );
   // The scope class rides on the block so the design styles identically in the builder canvas,
   // in preview and on the live page — see lib/designShared.
   const swapForm = !!hasForm && useRealForm !== false;

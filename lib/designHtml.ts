@@ -270,6 +270,9 @@ export function tokenizeSection(html: string): {
             const key = `i${images.length + 1}`;
             images.push({ key, alt: child.getAttribute("alt") || `Image ${images.length + 1}`, src });
             child.setAttribute("src", `{{i:${key}}}`);
+            // Marked so a size/crop override can be applied to THIS image later. The token lives
+            // in the src attribute, which styles nothing — the element itself has to be findable.
+            child.setAttribute("data-sjc-img", key);
           }
         }
         walk(child);
