@@ -29,12 +29,16 @@ import type { LeadFormField } from "./LeadForm";
 
 export type DesignText = { key: string; label: string; value: string };
 export type DesignImage = { key: string; alt: string; src: string };
+/** One link in an imported section: what it says, and where it goes. */
+export type DesignLink = { key: string; label: string; href: string };
 
 export type DesignSectionProps = {
   /** The section's markup, with {{t:…}} / {{i:…}} where the editable bits were. */
   html?: string;
   text?: DesignText[];
   images?: DesignImage[];
+  /** Every link's destination — phone, email, page or #section. */
+  links?: DesignLink[];
   /**
    * Top/bottom padding in px, overriding whatever the design baked in.
    *
@@ -73,6 +77,7 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   html: "",
   text: [],
   images: [],
+  links: [],
   paddingTop: null,
   paddingBottom: null,
   hasForm: false,
@@ -81,7 +86,7 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   formButton: "",
 };
 
-const TOKEN = /\{\{([ti]):([a-z0-9_-]+)\}\}/gi;
+const TOKEN = /\{\{([tih]):([a-z0-9_-]+)\}\}/gi;
 
 /** HTML-escape a value going into markup. The values are Steven's, but they still can't break it. */
 function esc(s: string): string {
@@ -96,12 +101,15 @@ function esc(s: string): string {
 export function fillTokens(
   html: string,
   text: DesignText[] = [],
-  images: DesignImage[] = []
+  images: DesignImage[] = [],
+  links: DesignLink[] = []
 ): string {
   const t = new Map(text.map((r) => [String(r?.key || "").toLowerCase(), r?.value ?? ""]));
   const i = new Map(images.map((r) => [String(r?.key || "").toLowerCase(), r?.src ?? ""]));
+  const h = new Map(links.map((r) => [String(r?.key || "").toLowerCase(), r?.href ?? ""]));
   return String(html || "").replace(TOKEN, (_m, kind: string, key: string) => {
-    const map = kind.toLowerCase() === "t" ? t : i;
+    const k = kind.toLowerCase();
+    const map = k === "t" ? t : k === "i" ? i : h;
     // Unknown key -> empty. Never render the token itself onto a live page.
     return esc(map.get(String(key).toLowerCase()) ?? "");
   });
@@ -151,6 +159,7 @@ export default function DesignSection(props: DesignSectionProps) {
     html = "",
     text = [],
     images = [],
+    links = [],
     paddingTop,
     paddingBottom,
     hasForm,
@@ -168,7 +177,7 @@ export default function DesignSection(props: DesignSectionProps) {
     .filter(Boolean)
     .join(";");
 
-  const filled = injectStyle(stripDangerous(fillTokens(html, text, images)), decls);
+  const filled = injectStyle(stripDangerous(fillTokens(html, text, images, links)), decls);
   // The scope class rides on the block so the design styles identically in the builder canvas,
   // in preview and on the live page — see lib/designShared.
   const swapForm = !!hasForm && useRealForm !== false;

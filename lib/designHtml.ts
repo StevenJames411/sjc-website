@@ -4,7 +4,7 @@
 // and components/blocks/DesignSection.tsx (which renders the result).
 
 import { parse, HTMLElement, NodeType, type Node } from "node-html-parser";
-import type { DesignText, DesignImage } from "@/components/blocks/DesignSection";
+import type { DesignText, DesignImage, DesignLink } from "@/components/blocks/DesignSection";
 
 // Tags that can execute or phone home. A bought design has no business containing any of them,
 // and the whole point of this pipeline is that the markup reaches a customer's live website.
@@ -214,6 +214,7 @@ export function tokenizeSection(html: string): {
   html: string;
   text: DesignText[];
   images: DesignImage[];
+  links: DesignLink[];
   hasForm: boolean;
   formFields: { label: string; inputType: string }[];
   formButton: string;
@@ -221,6 +222,7 @@ export function tokenizeSection(html: string): {
   const root = parse(sanitizeDesignHtml(html), { comment: false });
   const text: DesignText[] = [];
   const images: DesignImage[] = [];
+  const links: DesignLink[] = [];
 
   const walk = (node: Node) => {
     for (const child of [...node.childNodes]) {
@@ -238,6 +240,30 @@ export function tokenizeSection(html: string): {
         continue;
       }
       if (child instanceof HTMLElement) {
+        // ⚠️ WHERE A LINK GOES IS CONTENT, NOT DESIGN. Only the link's TEXT was editable, so a
+        // footer could be renamed but every destination stayed whatever the generator invented —
+        // "Call" dialling a made-up number, nav items pointing at sections that don't exist.
+        // Unusable on a client's site, and not fixable without a code change.
+        if (child.rawTagName?.toLowerCase() === "a") {
+          const href = child.getAttribute("href") || "";
+          if (href) {
+            const key = `h${links.length + 1}`;
+            // An icon-only link has no text, so the list would read "Link 1, Link 2, Link 3"
+            // and you'd have to guess which social button you were editing. aria-label is what
+            // the design already wrote there for screen readers.
+            const label =
+              clean(child.text).slice(0, 40) ||
+              clean(child.getAttribute("aria-label") || "") ||
+              clean(child.getAttribute("title") || "") ||
+              (href.startsWith("tel:")
+                ? `Call ${href.slice(4)}`
+                : href.startsWith("mailto:")
+                  ? `Email ${href.slice(7)}`
+                  : `Link ${links.length + 1}`);
+            links.push({ key, label, href });
+            child.setAttribute("href", `{{h:${key}}}`);
+          }
+        }
         if (child.rawTagName?.toLowerCase() === "img") {
           const src = child.getAttribute("src") || "";
           if (src) {
@@ -282,6 +308,7 @@ export function tokenizeSection(html: string): {
     html: root.toString(),
     text,
     images,
+    links,
     hasForm: !!formEl,
     formFields,
     formButton,

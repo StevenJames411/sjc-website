@@ -119,7 +119,7 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
   if (!sections.length) throw new Error("No top-level sections found in that page.");
 
   const content = sections.map((section, i) => {
-    const { html: tokenized, text, images, hasForm, formFields, formButton } = tokenizeSection(section);
+    const { html: tokenized, text, images, links, hasForm, formFields, formButton } = tokenizeSection(section);
     // Seed the spacing control with what the design actually used, so the stepper opens at the
     // real number. The override is an inline style at render — the markup keeps its own classes,
     // so clearing the field restores the design's spacing exactly.
@@ -137,6 +137,7 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
         html: tokenized,
         text,
         images,
+        links,
         paddingTop: pad.top,
         paddingBottom: pad.bottom,
         // The real form goes in by default — see DesignSection's `useRealForm`.
@@ -150,7 +151,13 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
 
   const words = content.reduce((n, b) => n + b.props.text.length, 0);
   const photos = content.reduce((n, b) => n + b.props.images.length, 0);
-  report.push(`${sections.length} sections`, `${words} editable text fields`, `${photos} photos`);
+  const linkCount = content.reduce((n, b) => n + (b.props.links?.length || 0), 0);
+  report.push(
+    `${sections.length} sections`,
+    `${words} editable text fields`,
+    `${photos} photos`,
+    `${linkCount} editable links`
+  );
 
   // The design's contact form is kept as a dead shell so the section doesn't look broken, but it
   // cannot submit. Say so out loud — a page that ships with only the placeholder has a contact

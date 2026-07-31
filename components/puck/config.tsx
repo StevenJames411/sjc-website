@@ -20,6 +20,7 @@ import DesignSection, {
   DESIGNSECTION_DEFAULTS,
   type DesignText,
   type DesignImage,
+  type DesignLink,
 } from "@/components/blocks/DesignSection";
 import Icon, { ICON_OPTIONS } from "@/components/blocks/Icon";
 import { resolveColor, resolveColorOr } from "@/lib/brandColor";
@@ -36,6 +37,7 @@ type Props = {
     html: string;
     text: DesignText[];
     images: DesignImage[];
+    links: DesignLink[];
     paddingTop: number | null;
     paddingBottom: number | null;
     hasForm: boolean;
@@ -415,6 +417,19 @@ export const config: Config<Props, RootProps> = {
             key: { type: "text" as const, label: "Token (do not change)" },
           },
         },
+        links: {
+          type: "array" as const,
+          label: "Where the links go",
+          getItemSummary: (item: DesignLink, i) => item?.label || `Link ${(i ?? 0) + 1}`,
+          arrayFields: {
+            href: {
+              type: "text" as const,
+              label: "Goes to — a page (/about), a section (#services), tel:+12105551234 or mailto:",
+            },
+            label: { type: "text" as const, label: "Which link this is" },
+            key: { type: "text" as const, label: "Token (do not change)" },
+          },
+        },
         text: {
           type: "array" as const,
           label: "Words on this section",
@@ -459,11 +474,12 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton }) => (
+      render: ({ html, text, images, links, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton }) => (
         <DesignSection
           html={html}
           text={text}
           images={images}
+          links={links}
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
           hasForm={hasForm}
