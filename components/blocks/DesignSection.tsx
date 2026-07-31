@@ -53,15 +53,23 @@ export type DesignImage = {
   key: string;
   alt: string;
   src: string;
-  /** Max width in px. 0/blank = however the design sized it. */
-  width?: number;
-  /** Corner radius in px. 0/blank = the design's own. */
-  radius?: number;
   /**
-   * How a photo fills its box when its shape doesn't match the design's.
-   * "" = leave it; "cover" crops to fill; "contain" fits the whole photo in.
+   * ── SAME THREE CONTROLS AS THE IMAGE BLOCK: shape, zoom, keep-in-view. ────────────────────
+   *
+   * ⚠️ NOT max-width. In an imported design the SLOT is fixed — the design decided how big that
+   * photo is and where it sits. What actually goes wrong is that the replacement photo is a
+   * different shape from the one it replaces, so a head gets cut off. The fix is reframing
+   * inside the slot, not resizing the slot.
+   *
+   * Non-destructive: the upload is never altered, and setting shape back to "" restores the
+   * design exactly.
    */
-  fit?: string;
+  /** Aspect ratio to crop to — "4/3", "1/1", "16/9". "" = the design's own framing, no crop. */
+  shape?: string;
+  /** 100 = fit, higher = closer. */
+  zoom?: number;
+  /** What the crop keeps in view: "center", "top", "left top"… */
+  focus?: string;
 };
 /** One link in an imported section: what it says, and where it goes. */
 export type DesignLink = { key: string; label: string; href: string };
@@ -222,12 +230,22 @@ export function injectStyle(html: string, decls: string): string {
 function styleImages(html: string, images: DesignImage[]): string {
   let out = html;
   for (const img of images) {
-    const css = styleFor([
-      ["max-width", img?.width ? `${img.width}px` : ""],
-      ["width", img?.width ? "100%" : ""],
-      ["border-radius", img?.radius ? `${img.radius}px` : ""],
-      ["object-fit", img?.fit || ""],
-    ]);
+    // No shape = the design's own framing, untouched. A shape turns cropping on: the image
+    // covers its slot at the chosen ratio, and zoom/focus pick which part shows. `transform`
+    // scales from the same point the crop favours so zooming doesn't drift off the subject.
+    const z = typeof img?.zoom === "number" && img.zoom > 100 ? img.zoom : 100;
+    const pos = img?.focus || "center";
+    const css = img?.shape
+      ? styleFor([
+          ["aspect-ratio", img.shape],
+          ["width", "100%"],
+          ["height", "auto"],
+          ["object-fit", "cover"],
+          ["object-position", pos],
+          ["transform", z > 100 ? `scale(${z / 100})` : ""],
+          ["transform-origin", z > 100 ? pos : ""],
+        ])
+      : "";
     if (!css || !img?.key) continue;
     const re = new RegExp(`(<img\\b[^>]*data-sjc-img="${img.key}"[^>]*)>`, "i");
     out = out.replace(re, (m, open: string) => {

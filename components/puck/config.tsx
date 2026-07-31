@@ -413,28 +413,37 @@ export const config: Config<Props, RootProps> = {
                 <ImageUpload value={value as string} onChange={onChange} />
               ),
             },
-            // Blank/0 = however the design sized it, so an untouched photo is unchanged.
-            width: {
-              type: "custom" as const,
-              label: "Max width (− / +, blank = as designed)",
-              render: ({ onChange, value }) => (
-                <SizeStepper label="Max width" value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
-              ),
-            },
-            radius: {
-              type: "custom" as const,
-              label: "Corner roundness (− / +)",
-              render: ({ onChange, value }) => (
-                <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
-              ),
-            },
-            fit: {
-              type: "radio" as const,
-              label: "If the shape doesn't match",
+            // The SAME three controls as the Image block — a photo is reframed the one way
+            // everywhere, not a different way depending on where it came from.
+            shape: {
+              type: "select" as const,
+              label: "Shape — crop the image to fit",
               options: [
-                { label: "As designed", value: "" },
-                { label: "Crop to fill", value: "cover" },
-                { label: "Fit it all in", value: "contain" },
+                { label: "As designed (no crop)", value: "" },
+                { label: "Landscape 4:3", value: "4/3" },
+                { label: "Wide 16:9", value: "16/9" },
+                { label: "Square", value: "1/1" },
+                { label: "Tall 3:4", value: "3/4" },
+              ],
+            },
+            zoom: {
+              type: "custom" as const,
+              label: "Zoom % (100 = fit, higher = closer)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Zoom %" value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} />
+              ),
+            },
+            focus: {
+              type: "select" as const,
+              label: "Keep in view — what the crop centres on",
+              options: [
+                { label: "Centre", value: "center" },
+                { label: "Top", value: "top" },
+                { label: "Bottom", value: "bottom" },
+                { label: "Left", value: "left" },
+                { label: "Right", value: "right" },
+                { label: "Top left", value: "left top" },
+                { label: "Top right", value: "right top" },
               ],
             },
             alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
