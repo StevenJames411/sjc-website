@@ -25,6 +25,43 @@ export default function SiteGallery({ sites, intake }: Props) {
   const [copied, setCopied] = useState("");
   // Which business's answers are on screen. Fetched when opened, not shipped with the gallery.
   const [reading, setReading] = useState<{ id: string; name: string } | null>(null);
+  // Which card is asking "are you sure", what's been typed to confirm it, and what's mid-delete.
+  const [confirmDel, setConfirmDel] = useState("");
+  const [typed, setTyped] = useState("");
+  const [deleting, setDeleting] = useState("");
+  const [delErr, setDelErr] = useState("");
+
+  /**
+   * Delete a website and everything under it.
+   *
+   * ⚠️ THERE IS NO UNDO. lib/sites.ts deleteSite() purges the page registry, every page's draft
+   * and published content, its imported design stylesheet and its brand before removing the
+   * registry row. That is the correct order — a failed registry write must not strand live pages
+   * at a URL — but it also means a mis-click costs a client's entire website.
+   *
+   * So the confirmation scales with what's at stake: a demo needs one deliberate second click; a
+   * site with a domain on it is a real business's live address, and needs its name typed.
+   */
+  async function removeSite(s: Site) {
+    setDeleting(s.id);
+    setDelErr("");
+    try {
+      const r = await fetch("/api/sites", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ id: s.id }),
+      }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error || "Couldn't delete it.");
+      setConfirmDel("");
+      setTyped("");
+      router.refresh();
+    } catch (e) {
+      setDelErr((e as Error).message);
+    } finally {
+      setDeleting("");
+    }
+  }
 
   // Open or close a business's onboarding form. The state IS the guard — the URL is her business
   // name and deliberately guessable, so this switch is the only thing standing between a stranger
@@ -183,25 +220,89 @@ export default function SiteGallery({ sites, intake }: Props) {
               </div>
             ) : null}
 
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                type="button"
-                style={{ ...editBtn, flex: 1 }}
-                onClick={() => router.push(`/edit/${s.id}/home`)}
-              >
-                Edit
-              </button>
-              {/* The card carries the company name; everything else about the business lives one
-                  click in — same as Landingsite and GHL. */}
-              <button
-                type="button"
-                style={gearBtn}
-                title="Website settings — name, phone, address, domain"
-                onClick={() => router.push(`/edit/${s.id}/settings`)}
-              >
-                ⚙
-              </button>
-            </div>
+            {confirmDel === s.id ? (
+              /* The confirm REPLACES the row rather than opening a dialog, so the thing being
+                 deleted stays on screen underneath the question. */
+              <div style={delPanel}>
+                <p style={delWarn}>
+                  Delete <strong>{s.name}</strong> and everything in it — every page, its content
+                  and its design. This can&rsquo;t be undone.
+                </p>
+                {s.domain ? (
+                  <>
+                    <p style={delTypeHint}>
+                      This one is live at <strong>{s.domain}</strong>. Type its name to confirm.
+                    </p>
+                    <input
+                      value={typed}
+                      onChange={(e) => setTyped(e.target.value)}
+                      placeholder={s.name}
+                      style={delInput}
+                      autoFocus
+                    />
+                  </>
+                ) : null}
+                {delErr ? <p style={delErrText}>{delErr}</p> : null}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    style={{ ...ghostBtn, flex: 1 }}
+                    onClick={() => {
+                      setConfirmDel("");
+                      setTyped("");
+                      setDelErr("");
+                    }}
+                  >
+                    Keep it
+                  </button>
+                  <button
+                    type="button"
+                    style={{ ...dangerBtn, flex: 1 }}
+                    disabled={deleting === s.id || (!!s.domain && typed.trim() !== s.name)}
+                    onClick={() => removeSite(s)}
+                  >
+                    {deleting === s.id ? "Deleting…" : "Delete for good"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  type="button"
+                  style={{ ...editBtn, flex: 1 }}
+                  onClick={() => router.push(`/edit/${s.id}/home`)}
+                >
+                  Edit
+                </button>
+                {/* The card carries the company name; everything else about the business lives one
+                    click in — same as Landingsite and GHL. */}
+                <button
+                  type="button"
+                  style={gearBtn}
+                  title="Website settings — name, phone, address, domain"
+                  onClick={() => router.push(`/edit/${s.id}/settings`)}
+                >
+                  ⚙
+                </button>
+                {/* Not offered for SJC's own site — deleteSite() refuses it anyway, and a button
+                    that always fails is worse than no button. */}
+                {s.kind !== "sjc" ? (
+                  <button
+                    type="button"
+                    style={trashBtn}
+                    title={`Delete ${s.name}`}
+                    aria-label={`Delete ${s.name}`}
+                    onClick={() => {
+                      setConfirmDel(s.id);
+                      setTyped("");
+                      setDelErr("");
+                    }}
+                  >
+                    🗑
+                  </button>
+                ) : null}
+              </div>
+            )}
           </div>
         ))}
         {!shown.length ? (
@@ -412,6 +513,15 @@ const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", 
 const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
 const gearBtn: React.CSSProperties = { ...ghostBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1 };
+// Quiet by default and red only once you've committed to it — a destructive control shouldn't
+// compete with Edit for attention on a card you open twenty times a day.
+const trashBtn: React.CSSProperties = { ...gearBtn, color: "#b91c1c", borderColor: "#e5e7eb" };
+const dangerBtn: React.CSSProperties = { background: "#b91c1c", color: "#fff", border: "1px solid #b91c1c", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const delPanel: React.CSSProperties = { border: "1px solid #fecaca", background: "#fef2f2", borderRadius: 10, padding: 12, display: "grid", gap: 10 };
+const delWarn: React.CSSProperties = { margin: 0, fontSize: 13, lineHeight: 1.45, color: "#7f1d1d" };
+const delTypeHint: React.CSSProperties = { margin: 0, fontSize: 12, color: "#7f1d1d" };
+const delErrText: React.CSSProperties = { margin: 0, fontSize: 13, fontWeight: 600, color: "#b91c1c" };
+const delInput: React.CSSProperties = { width: "100%", border: "1px solid #fca5a5", borderRadius: 8, padding: "9px 11px", fontSize: 14 };
 const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50 };
 const modal: React.CSSProperties = { background: "#fff", borderRadius: 14, padding: 26, width: "100%", maxWidth: 520, fontFamily: font, maxHeight: "90vh", overflowY: "auto" };
 const tabs: React.CSSProperties = { display: "grid", gap: 8, marginBottom: 18 };
