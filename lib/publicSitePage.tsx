@@ -201,8 +201,17 @@ export async function SitePageBody({
   siteId: string;
   page?: string;
 }) {
-  const ownHeader = hasBlock(data, "SiteHeader");
-  const ownFooter = hasBlock(data, "SiteFooter");
+  // ⚠️ SJC'S CHROME MUST NEVER APPEAR ON A CLIENT'S SITE. The old test was "does this page have a
+  // SiteHeader block" — true for a page built in our builder, FALSE for one imported as sealed
+  // design, whose header lives inside the markup. So an imported client site rendered SJC's own
+  // nav above it: Steven's branding on someone else's business, with a link to the free Skool
+  // community that teaches what he charges for.
+  //
+  // The site's KIND is the real answer. A client site brings its own chrome or has none; it never
+  // borrows ours.
+  const isClientSite = siteId !== SJC;
+  const ownHeader = isClientSite || hasBlock(data, "SiteHeader");
+  const ownFooter = isClientSite || hasBlock(data, "SiteFooter");
   // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
   const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
 
