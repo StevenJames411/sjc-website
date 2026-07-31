@@ -262,6 +262,10 @@ export function tokenizeSection(html: string): {
                   : `Link ${links.length + 1}`);
             links.push({ key, label, href });
             child.setAttribute("href", `{{h:${key}}}`);
+            // Marked so the renderer can REMOVE this link if its row is deleted. Without a
+            // marker, deleting a row only blanked the destination and the link stayed on the
+            // page pointing nowhere — five dead social icons you couldn't get rid of.
+            child.setAttribute("data-sjc-link", key);
           }
         }
         if (child.rawTagName?.toLowerCase() === "img") {

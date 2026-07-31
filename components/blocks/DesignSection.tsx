@@ -222,6 +222,47 @@ export function injectStyle(html: string, decls: string): string {
 }
 
 /**
+ * Remove links whose row was deleted from the list.
+ *
+ * ⚠️ DELETE HAS TO MEAN DELETE. The list is "where the links go", so removing a row only dropped
+ * the destination — the anchor stayed in the markup and rendered as a dead link. Deleting the
+ * five social icons a design ships with left five icons on the page going nowhere.
+ *
+ * `<a>` cannot nest inside `<a>`, so the closing tag can be found by scanning forward and
+ * counting opens and closes. That is exact, where a regex across nested markup is not: these
+ * anchors wrap an inline <svg>, and a lazy `</a>` match would cut in the wrong place.
+ */
+function dropRemovedLinks(html: string, links: DesignLink[]): string {
+  const keep = new Set(links.map((l) => String(l?.key || "").toLowerCase()));
+  let out = html;
+  for (const m of [...html.matchAll(/<a\b[^>]*data-sjc-link="([^"]+)"[^>]*>/gi)]) {
+    if (keep.has(m[1].toLowerCase())) continue;
+    const start = out.indexOf(m[0]);
+    if (start === -1) continue;
+    let depth = 0;
+    let i = start;
+    while (i < out.length) {
+      const open = out.indexOf("<a", i);
+      const close = out.indexOf("</a", i);
+      if (close === -1) break;
+      if (open !== -1 && open < close) {
+        depth++;
+        i = open + 2;
+        continue;
+      }
+      depth--;
+      if (depth === 0) {
+        const end = out.indexOf(">", close);
+        out = out.slice(0, start) + out.slice(end + 1);
+        break;
+      }
+      i = close + 3;
+    }
+  }
+  return out;
+}
+
+/**
  * Apply per-photo overrides by adding a style to the marked <img>.
  *
  * Targeted rather than global: `data-sjc-img="i2"` identifies one image, so resizing the founder
@@ -282,7 +323,10 @@ export default function DesignSection(props: DesignSectionProps) {
     .join(";");
 
   const filled = injectStyle(
-    styleImages(stripDangerous(fillTokens(html, text, images, links)), images),
+    styleImages(
+      dropRemovedLinks(stripDangerous(fillTokens(html, text, images, links)), links),
+      images
+    ),
     decls
   );
   // The scope class rides on the block so the design styles identically in the builder canvas,
