@@ -59,7 +59,7 @@ type Props = {
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
   Video: { src: string; caption: string; poster: string };
-  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string };
+  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
   SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
@@ -220,6 +220,9 @@ export const IMAGE_DEFAULTS = {
   spaceBelow: 0,
   linkUrl: "",
   openInNewTab: "yes",
+  shape: "",
+  zoom: 100,
+  focus: "center",
 };
 
 export const CONVERSATION_DEFAULTS = {
@@ -1603,6 +1606,45 @@ export const config: Config<Props, RootProps> = {
             <ImageUpload value={value as string} onChange={onChange} />
           ),
         },
+        // CROPPING, WITHOUT TOUCHING THE FILE. A phone screen in a wide photo is unreadable in a
+        // narrow card because most of the frame is blurred background. Re-cropping the file in an
+        // image editor and re-uploading works, and it means every reframe goes through Claude.
+        // These three do it live: pick a shape, zoom in, choose what stays in view. The original
+        // upload is never altered, so nothing is lost and it can be undone by setting Shape to
+        // "Whole image".
+        shape: {
+          type: "select" as const,
+          label: "Shape — crop the image to fit",
+          options: [
+            { label: "Whole image (no crop)", value: "" },
+            { label: "Landscape 4:3", value: "4/3" },
+            { label: "Wide 16:9", value: "16/9" },
+            { label: "Square", value: "1/1" },
+            { label: "Tall 3:4", value: "3/4" },
+          ],
+        },
+        zoom: {
+          type: "custom" as const,
+          label: "Zoom % (100 = fit, higher = closer)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Zoom %" value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} />
+          ),
+        },
+        focus: {
+          type: "select" as const,
+          label: "Keep in view — what the crop centres on",
+          options: [
+            { label: "Centre", value: "center" },
+            { label: "Top", value: "top" },
+            { label: "Bottom", value: "bottom" },
+            { label: "Left", value: "left" },
+            { label: "Right", value: "right" },
+            { label: "Top left", value: "left top" },
+            { label: "Top right", value: "right top" },
+            { label: "Bottom left", value: "left bottom" },
+            { label: "Bottom right", value: "right bottom" },
+          ],
+        },
         alt: { type: "text" as const, label: "Alt text (describe the image)" },
         caption: { type: "textarea" as const, label: "Caption (optional)" },
         maxWidth: {
@@ -1648,24 +1690,59 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: IMAGE_DEFAULTS,
-      render: ({ src, alt, caption, maxWidth, rounded, align, spaceAbove, spaceBelow, linkUrl, openInNewTab }) => {
+      render: ({ src, alt, caption, maxWidth, rounded, align, spaceAbove, spaceBelow, linkUrl, openInNewTab, shape, zoom, focus }) => {
         const alignItems = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
         const maxW = maxWidth && maxWidth > 0 ? `${maxWidth}px` : undefined;
         const radius = rounded || "16px";
+        // No shape chosen => the original behaviour exactly: the whole image, letterboxed to fit.
+        // A shape turns on cropping — the frame holds the aspect ratio, the image covers it, and
+        // zoom/focus decide which part you see. Nothing is written back to the file.
+        const z = typeof zoom === "number" && zoom > 100 ? zoom : 100;
+        const pos = focus || "center";
         const img = src ? (
-          <img
-            src={src}
-            alt={alt || ""}
-            style={{
-              width: "100%",
-              maxWidth: maxW,
-              borderRadius: radius,
-              display: "block",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
-              objectFit: "contain" as const,
-            }}
-          />
+          shape ? (
+            <div
+              style={{
+                width: "100%",
+                maxWidth: maxW,
+                aspectRatio: shape,
+                overflow: "hidden",
+                borderRadius: radius,
+                border: "1px solid #e5e7eb",
+                boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+              }}
+            >
+              <img
+                src={src}
+                alt={alt || ""}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "block",
+                  objectFit: "cover" as const,
+                  objectPosition: pos,
+                  // Scale from the same point the crop favours, so zooming in does not drift
+                  // away from whatever you asked to keep in view.
+                  transform: z > 100 ? `scale(${z / 100})` : undefined,
+                  transformOrigin: pos,
+                }}
+              />
+            </div>
+          ) : (
+            <img
+              src={src}
+              alt={alt || ""}
+              style={{
+                width: "100%",
+                maxWidth: maxW,
+                borderRadius: radius,
+                display: "block",
+                border: "1px solid #e5e7eb",
+                boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+                objectFit: "contain" as const,
+              }}
+            />
+          )
         ) : null;
         // When a Link URL is set, the image becomes a clickable link (new tab by default).
         // Empty Link URL => bare image, exactly as before (zero change to existing pages).
