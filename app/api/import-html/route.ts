@@ -19,7 +19,7 @@
 // "clone" used to mean "clone Steven James Consulting".
 import type { Data } from "@measured/puck";
 import { importHtml } from "@/lib/importHtml";
-import { importDesign } from "@/lib/importDesign";
+import { importDesign, detectFonts, detectAccent } from "@/lib/importDesign";
 import { createSite, updateSite } from "@/lib/sites";
 import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
@@ -111,7 +111,13 @@ export async function POST(req: Request) {
   // "blocks" is the original behaviour — map the page onto our own block vocabulary. It gives
   // full drag-and-drop editing but flattens gradients, glass, shadows and the type scale, so it
   // is only the right call for a plain page that was never worth much visually.
-  const mode = String(body?.mode || "design").toLowerCase() === "blocks" ? "blocks" : "design";
+  // "editable" (the goal): map onto REAL blocks and KEEP the look — colours stay exact, the
+  // gradient/glass/glow are read rather than dropped. Fully drag-and-drop afterwards.
+  // "design": sealed HTML — pixel-perfect, not editable. The fallback.
+  // "blocks": the original, colours quantised to brand roles. For a plain page.
+  const raw = String(body?.mode || "editable").toLowerCase();
+  const mode: "editable" | "design" | "blocks" =
+    raw === "design" ? "design" : raw === "blocks" ? "blocks" : "editable";
 
   let result: {
     data: Data;
@@ -125,7 +131,7 @@ export async function POST(req: Request) {
     result =
       mode === "design"
         ? await importDesign(html, businessName)
-        : importHtml(html, businessName);
+        : importHtml(html, businessName, { preserve: mode === "editable" });
   } catch (e) {
     return Response.json({ ok: false, error: `Couldn't parse that HTML: ${(e as Error).message}` }, { status: 400 });
   }
@@ -200,14 +206,19 @@ export async function POST(req: Request) {
   }
 
   // ── THE BRAND ───────────────────────────────────────────────────────────────────────────────
-  // In design mode this is NOT what paints the imported sections — they carry their own CSS. It
-  // is what a section Steven adds LATER picks up, so a hand-added band lands in the same
-  // typeface and accent instead of announcing itself.
-  if (mode === "design") {
+  // ⚠️ LOAD-BEARING IN "editable" MODE, not cosmetic. There the page is made of OUR blocks, and
+  // our blocks take their typeface from the brand — so if this doesn't run, a design built in
+  // Space Grotesk imports and renders in Lexend, and it reads as a botched import rather than a
+  // missing setting. (In "design" mode the sections carry their own CSS and this only governs
+  // what a section added LATER picks up.)
+  if (mode !== "blocks") {
+    const fonts = result.fonts ?? detectFonts(html);
+    const accent = result.accent ?? detectAccent(html);
     await writeBrand(
       {
-        ...(result.fonts ? { font: result.fonts.bodyFont, headingFont: result.fonts.headingFont } : {}),
-        ...(result.accent ? { accent: result.accent, cta: result.accent } : {}),
+        font: fonts.bodyFont,
+        headingFont: fonts.headingFont,
+        ...(accent ? { accent, cta: accent } : {}),
       },
       false,
       siteId

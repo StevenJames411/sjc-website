@@ -94,9 +94,21 @@ export function detectPalette(html: string): Palette {
   };
 }
 
+/**
+ * PRESERVE MODE (2026-07-31). Off = the original behaviour: every colour is quantised into one of
+ * our brand roles so the copy re-skins from one screen. That is right for a plain page and WRONG
+ * for a design that was paid for — the exact cyan IS the product.
+ *
+ * On, `toRole` hands the literal hex straight back (resolveColor passes raw hex through
+ * untouched), and the section/card readers below pick up the gradient, glass and glow that used
+ * to be dropped on the floor.
+ */
+let PRESERVE = false;
+
 /** Map a literal hex from their markup to one of our roles, or keep it as a marked one-off. */
 function toRole(hex: string | undefined, p: Palette): string {
   if (!hex) return "";
+  if (PRESERVE) return hex.toLowerCase();
   const h = hex.toLowerCase();
   if (h === "#ffffff" || h === "#fff") return "white";
   if (h === p.accent) return "accent";
@@ -142,10 +154,17 @@ const clean = (s: string) => s.replace(/\s+/g, " ").trim();
 /** Their section's vertical padding, so a band doesn't come across squashed or bloated. */
 function paddingFrom(el: HTMLElement): { top: number; bottom: number } {
   const c = cls(el);
-  const scale: Record<string, number> = { "12": 48, "16": 64, "20": 80, "24": 96, "28": 112, "32": 128, "40": 160 };
-  const pt = c.match(/(?:^|\s)pt-(\d+)/)?.[1] || c.match(/(?:^|\s)py-(\d+)/)?.[1];
-  const pb = c.match(/(?:^|\s)pb-(\d+)/)?.[1] || c.match(/(?:^|\s)py-(\d+)/)?.[1];
-  return { top: scale[pt || ""] ?? 80, bottom: scale[pb || ""] ?? 80 };
+  // Tailwind's spacing scale is 4px a step. Responsive padding (`py-20 md:py-28 lg:py-32`) takes
+  // the LARGEST — that is the desktop value, and desktop is where a band's spacing is judged.
+  // Reading the base value imported every section at 80px when the design drew it at 128.
+  const biggest = (re: RegExp) => {
+    const hits = [...c.matchAll(re)].map((m) => Number(m[1]) * 4).filter(Number.isFinite);
+    return hits.length ? Math.max(...hits) : undefined;
+  };
+  const py = biggest(/(?:^|\s|:)py-(\d+)/g);
+  const pt = biggest(/(?:^|\s|:)pt-(\d+)/g);
+  const pb = biggest(/(?:^|\s|:)pb-(\d+)/g);
+  return { top: pt ?? py ?? 80, bottom: pb ?? py ?? 80 };
 }
 
 let seq = 0;
@@ -244,6 +263,18 @@ function cardBlock(el: HTMLElement, p: Palette, badge?: string): Block {
       centered: /text-center/.test(cls(el)),
       layout: "",
       bare: false,
+      // A bought design's card is a translucent pane on a dark band, not a white box. Read from
+      // the markup rather than guessed: an opacity-suffixed background (`bg-[#1E293B]/50`,
+      // `bg-white/5`) or a backdrop blur means glass.
+      ...(PRESERVE
+        ? {
+            surface: /bg-\[#[0-9a-f]{3,8}\]\/\d|bg-white\/\d|backdrop-blur/i.test(cls(el)) ? "glass" : "",
+            surfaceColor: hexFrom(el, "bg") || "",
+            hoverLift: /hover:-translate-y/.test(cls(el)),
+            shadowColor: "",
+            radius: 0,
+          }
+        : {}),
     },
   };
 }
@@ -349,11 +380,16 @@ function blocksFrom(root: HTMLElement, p: Palette, depth = 0): Block[] {
     }
 
     // a grid becomes Columns; its children become the column contents
-    const gridN = cls(el).match(/(?:md|lg):grid-cols-(\d)/)?.[1];
+    // ⚠️ TAKE THE LARGEST BREAKPOINT, NOT THE FIRST. `md:grid-cols-2 lg:grid-cols-4` matched md
+    // first and imported a four-across process row as two columns.
+    // ⚠️ MULTI-DIGIT, AND THE LARGEST. `grid-cols-(\d)` matched only one digit, so a
+    // `lg:grid-cols-12` layout grid came through as ONE column; and matching the first
+    // breakpoint turned `md:grid-cols-2 lg:grid-cols-4` into two.
+    const gridNs = [...cls(el).matchAll(/(?:sm|md|lg|xl):grid-cols-(\d+)/g)].map((m) => Number(m[1]));
+    const gridN = gridNs.length ? Math.max(...gridNs) : undefined;
     if (gridN && /grid/.test(cls(el))) {
       const kids = el.childNodes.filter((n) => n.nodeType === 1) as HTMLElement[];
-      const n = Math.min(Number(gridN), 3);
-      const cols: Block[][] = [[], [], []];
+      const cols: Block[][] = [[], [], [], []];
 
       // Resolve every child FIRST, then drop the empties. Decorative children (their dotted
       // connector line between the steps) map to nothing but were still eating a column, which
@@ -366,11 +402,16 @@ function blocksFrom(root: HTMLElement, p: Palette, depth = 0): Block[] {
         })
         .filter((blocks) => blocks.length > 0);
 
+      // ⚠️ A GRID OF MORE THAN 4 IS A LAYOUT GRID, NOT A ROW OF COLUMNS. `grid-cols-12` with two
+      // col-span children is a 7/5 split; `grid-cols-5` with two is 2/3. Taking the declared
+      // number would shred both into empty columns — so above 4, the CHILD COUNT is the truth.
+      const n = gridN <= 4 ? gridN : Math.min(resolved.length || 1, 4);
+
       // More items than columns still works — the extras wrap onto the next row.
       resolved.forEach((blocks, i) => cols[i % n].push(...blocks));
       out.push({
         type: "Columns",
-        props: { id: nid("cols"), columns: n, gap: 24, col1: cols[0], col2: cols[1], col3: cols[2] },
+        props: { id: nid("cols"), columns: n, gap: 24, col1: cols[0], col2: cols[1], col3: cols[2], col4: cols[3] },
       });
       continue;
     }
@@ -381,6 +422,44 @@ function blocksFrom(root: HTMLElement, p: Palette, depth = 0): Block[] {
   return out;
 }
 
+/**
+ * The three things a bought design does to a band that the old importer threw away.
+ *
+ * Each is read from the markup, never guessed. All return "" when absent, which is the
+ * do-nothing value on the Section block — so a plain page imports exactly as it always did.
+ */
+function bandLook(sec: HTMLElement): {
+  background: string;
+  gradientTo: string;
+  gradientAngle: number;
+  grid: string;
+  decor: string;
+} {
+  const style = styleOf(sec);
+
+  // `background: linear-gradient(135deg, #0A0E27 0%, #1E293B 100%)` — the contact band.
+  const g = style.match(/linear-gradient\(\s*(\d+)deg\s*,\s*(#[0-9a-f]{3,8})[^,]*,\s*(#[0-9a-f]{3,8})/i);
+
+  // The faint graph-paper overlay is a child whose background-image is two 1px gradients.
+  const gridEl = sec
+    .querySelectorAll("[style]")
+    .find((d) => /linear-gradient\([^)]*1px/i.test(styleOf(d)));
+  const gridHex = gridEl ? (styleOf(gridEl).match(/#[0-9a-f]{3,8}/i)?.[0] || "") : "";
+
+  // Glow blobs: big blurred circles. Their colour is the band's accent wash.
+  const blob = sec
+    .querySelectorAll("div")
+    .find((d) => /rounded-full/.test(cls(d)) && /blur-/.test(cls(d)) && hexFrom(d, "bg"));
+
+  return {
+    background: (g ? g[2] : hexFrom(sec, "bg")) || "",
+    gradientTo: g ? g[3] : "",
+    gradientAngle: g ? Number(g[1]) : 135,
+    grid: gridHex.toLowerCase(),
+    decor: blob ? (hexFrom(blob, "bg") || "") : "",
+  };
+}
+
 // ── the whole page ────────────────────────────────────────────────────────────────────────────
 
 export type ImportResult = {
@@ -389,8 +468,13 @@ export type ImportResult = {
   report: string[];
 };
 
-export function importHtml(html: string, businessName: string): ImportResult {
+export function importHtml(
+  html: string,
+  businessName: string,
+  opts?: { preserve?: boolean }
+): ImportResult {
   seq = 0;
+  PRESERVE = !!opts?.preserve;
   const palette = detectPalette(html);
   const root = parse(html);
   const report: string[] = [];
@@ -435,15 +519,21 @@ export function importHtml(html: string, businessName: string): ImportResult {
     // "first div" reliably found an empty one and skipped the section's real content.
     const kids = blocksFrom(sec, palette);
     if (!kids.length) { report.push(`section #${id}: SKIPPED (nothing recognised)`); continue; }
+    const look = PRESERVE ? bandLook(sec) : null;
     content.push({
       type: "Section",
       props: {
         id,
-        background: toRole(hexFrom(sec, "bg"), palette) || "white",
+        background: look
+          ? look.background || toRole(hexFrom(sec, "bg"), palette) || "white"
+          : toRole(hexFrom(sec, "bg"), palette) || "white",
         maxWidth: "80rem",
         paddingTop: pad.top,
         paddingBottom: pad.bottom,
-        decor: "",
+        decor: look?.decor || "",
+        grid: look?.grid || "",
+        gradientTo: look?.gradientTo || "",
+        gradientAngle: look?.gradientAngle ?? 135,
         content: kids,
       },
     });
