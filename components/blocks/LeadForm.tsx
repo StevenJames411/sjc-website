@@ -26,6 +26,10 @@ export type LeadFormProps = {
   // Drops the centring + max-width so the form can sit in one half of a two-column layout
   // (contact details on the left, form on the right) instead of always being a centred island.
   inColumn?: boolean;
+  // "dark" restyles the card for a dark section (glass panel, light labels) without touching the
+  // delivery path. Added for /websites, whose contact band is near-black — a white card sat on it
+  // like a patch. Everything else keeps "light", so no existing page changes.
+  theme?: "light" | "dark";
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
@@ -61,7 +65,22 @@ export default function LeadForm(props: LeadFormProps) {
     successBody = LEADFORM_DEFAULTS.successBody,
     buttonColor,
     inColumn,
+    theme = "light",
   } = props;
+
+  const dark = theme === "dark";
+  const cardCls = dark
+    ? "rounded-3xl border border-white/20 bg-white/[0.07] p-8 text-left shadow-2xl backdrop-blur-2xl md:p-10"
+    : "rounded-2xl bg-white p-8 text-left shadow-sm md:p-10";
+  const labelCls = dark
+    ? "mb-2 block text-xs font-medium uppercase tracking-wider text-slate-300"
+    : "mb-2 block text-sm font-semibold text-[color:var(--color-sjc-ink)]";
+  const inputCls = dark
+    ? "w-full rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-[#00D9FF]"
+    : "w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-[color:var(--color-sjc-ink)] outline-none transition focus:border-[color:var(--color-sjc-blue)] focus:ring-2 focus:ring-[color:var(--color-sjc-blue)]/20";
+  const noteCls = dark
+    ? "mt-5 text-center text-sm text-slate-400"
+    : "mt-5 text-center text-sm text-[color:var(--color-sjc-mute)]";
 
   // Comes from the route this page is served under, not from anything editable on the block.
   const siteId = useSiteId();
@@ -111,11 +130,19 @@ export default function LeadForm(props: LeadFormProps) {
 
   if (state === "done") {
     return (
-      <div className={`rounded-2xl bg-white p-8 text-center shadow-sm md:p-10${inColumn ? "" : " mx-auto max-w-xl"}`}>
-        <h3 className="text-2xl font-bold text-[color:var(--color-sjc-ink)] md:text-3xl">
+      <div className={`${cardCls} text-center${inColumn ? "" : " mx-auto max-w-xl"}`}>
+        <h3
+          className={`text-2xl font-bold md:text-3xl ${
+            dark ? "text-white" : "text-[color:var(--color-sjc-ink)]"
+          }`}
+        >
           {successHeading}
         </h3>
-        <p className="mt-4 text-lg leading-relaxed text-[color:var(--color-sjc-mute)]">
+        <p
+          className={`mt-4 text-lg leading-relaxed ${
+            dark ? "text-slate-300" : "text-[color:var(--color-sjc-mute)]"
+          }`}
+        >
           {successBody}
         </p>
       </div>
@@ -126,17 +153,14 @@ export default function LeadForm(props: LeadFormProps) {
     <form
       onSubmit={submit}
       noValidate
-      className={`rounded-2xl bg-white p-8 text-left shadow-sm md:p-10${inColumn ? "" : " mx-auto max-w-xl"}`}
+      className={`${cardCls}${inColumn ? "" : " mx-auto max-w-xl"}`}
     >
       <div className="space-y-5">
         {list.map((f, i) => {
           const k = keyFor(f?.label, i);
           return (
             <div key={k}>
-              <label
-                htmlFor={`lf-${k}`}
-                className="mb-2 block text-sm font-semibold text-[color:var(--color-sjc-ink)]"
-              >
+              <label htmlFor={`lf-${k}`} className={labelCls}>
                 {f?.label}
               </label>
               <input
@@ -144,7 +168,7 @@ export default function LeadForm(props: LeadFormProps) {
                 type={f?.inputType || "text"}
                 value={values[k] || ""}
                 onChange={(e) => setValues((prev) => ({ ...prev, [k]: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-[color:var(--color-sjc-ink)] outline-none transition focus:border-[color:var(--color-sjc-blue)] focus:ring-2 focus:ring-[color:var(--color-sjc-blue)]/20"
+                className={inputCls}
               />
             </div>
           );
@@ -165,25 +189,33 @@ export default function LeadForm(props: LeadFormProps) {
       <button
         type="submit"
         disabled={state === "sending"}
-        className={`mt-8 w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
-          buttonColor ? " hover:opacity-90" : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
-        }`}
-        style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
+        className={
+          dark
+            ? "mt-8 w-full rounded-xl bg-[#00D9FF] px-6 py-4 text-lg font-bold text-[#0A0E27] shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[#00D9FF]/50 disabled:opacity-60"
+            : `mt-8 w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
+                buttonColor
+                  ? " hover:opacity-90"
+                  : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
+              }`
+        }
+        style={!dark && buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
       >
         {state === "sending" ? "Sending…" : buttonLabel}
       </button>
 
       {state === "error" ? (
-        <p className="mt-4 text-center text-base font-semibold text-red-600">
+        <p
+          className={`mt-4 text-center text-base font-semibold ${
+            dark ? "text-red-400" : "text-red-600"
+          }`}
+        >
           {missing.length
             ? "Fill in every box and try again."
             : "That didn't go through — give it another try, or just call."}
         </p>
       ) : null}
 
-      {note ? (
-        <p className="mt-5 text-center text-sm text-[color:var(--color-sjc-mute)]">{note}</p>
-      ) : null}
+      {note ? <p className={noteCls}>{note}</p> : null}
     </form>
   );
 }
