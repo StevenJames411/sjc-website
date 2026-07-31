@@ -67,7 +67,7 @@ type Props = {
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
-  Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
+  Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
@@ -1261,7 +1261,7 @@ export const config: Config<Props, RootProps> = {
     },
 
     Columns: {
-      label: "Columns (1 / 2 / 3)",
+      label: "Columns (1 / 2 / 3 / 4)",
       fields: {
         columns: {
           type: "select" as const,
@@ -1270,6 +1270,7 @@ export const config: Config<Props, RootProps> = {
             { label: "1 column", value: 1 },
             { label: "2 columns", value: 2 },
             { label: "3 columns", value: 3 },
+            { label: "4 columns", value: 4 },
           ],
         },
         gap: {
@@ -1282,12 +1283,22 @@ export const config: Config<Props, RootProps> = {
         col1: { type: "slot" as const },
         col2: { type: "slot" as const },
         col3: { type: "slot" as const },
+        col4: { type: "slot" as const },
       },
-      defaultProps: { columns: 2, gap: 24, col1: [], col2: [], col3: [] },
-      render: ({ columns, gap, col1: Col1, col2: Col2, col3: Col3 }) => {
+      defaultProps: { columns: 2, gap: 24, col1: [], col2: [], col3: [], col4: [] },
+      render: ({ columns, gap, col1: Col1, col2: Col2, col3: Col3, col4: Col4 }) => {
         const n = Number(columns) || 1;
+        // ⚠️ FOUR ACROSS GOES 1 -> 2 -> 4, NOT 1 -> 4. Four cards side by side on a phone are
+        // unreadable, and jumping straight to four at md crushes them on a tablet. A four-step
+        // process reading as 2x2 on a tablet is the design's own intent, not a compromise.
         const cls =
-          n >= 3 ? "grid-cols-1 md:grid-cols-3" : n === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1";
+          n >= 4
+            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+            : n === 3
+              ? "grid-cols-1 md:grid-cols-3"
+              : n === 2
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1";
         return (
           <div className={`grid ${cls}`} style={{ gap: `${typeof gap === "number" ? gap : 24}px` }}>
             <div>
@@ -1301,6 +1312,11 @@ export const config: Config<Props, RootProps> = {
             {n >= 3 && (
               <div>
                 <Col3 />
+              </div>
+            )}
+            {n >= 4 && (
+              <div>
+                <Col4 />
               </div>
             )}
           </div>
