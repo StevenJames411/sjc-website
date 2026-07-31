@@ -25,5 +25,5 @@ export default async function ClientSubPage({
   const { slug, page } = await params;
   const r = await resolvePage(slug, page);
   if (!r) notFound();
-  return <SitePageBody data={r.data} siteId={r.site.id} />;
+  return <SitePageBody data={r.data} siteId={r.site.id} page={r.slug} />;
 }

@@ -33,6 +33,17 @@ export function siteKeys(siteId: string) {
     /** This site's fonts + colours. */
     brand: (pub = false) => `${ns}-brand` + (pub ? "-pub" : ""),
     /**
+     * The compiled stylesheet for a page that came from a bought design.
+     *
+     * Kept in its OWN key rather than inside the page data on purpose: the save-guard in the store
+     * layer refuses writes that drop keys or gut a section, and a 50KB blob of CSS riding inside
+     * the content would make every diff it inspects meaningless. Same draft/`-pub` convention as
+     * the content, so a design change publishes with the page it belongs to instead of going live
+     * the moment it's imported.
+     */
+    designCss: (page: string, pub = false) =>
+      `${ns}-designcss-${safe(page) || "home"}` + (pub ? "-pub" : ""),
+    /**
      * What the business owner filled in on her intake link, and the photos she sent.
      * Built here like every other key, so one client's answers can never land in another's
      * record — the isolation is structural, not something the intake route has to remember.

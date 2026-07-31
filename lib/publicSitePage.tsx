@@ -2,7 +2,8 @@ import { Render } from "@measured/puck";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
-import { readPuckPublished } from "@/lib/puckContent";
+import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
+import { DESIGN_SCOPE } from "@/lib/designCss";
 import { findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
@@ -191,21 +192,42 @@ export function metadataFor(r: NonNullable<Resolved>, path: string) {
  * The root layout still emits SJC's own brand. This one comes later in document order and both
  * target :root, so the site's own values win on its own pages. SJC's pages never reach here.
  */
-export async function SitePageBody({ data, siteId }: { data: unknown; siteId: string }) {
+export async function SitePageBody({
+  data,
+  siteId,
+  page,
+}: {
+  data: unknown;
+  siteId: string;
+  page?: string;
+}) {
   const ownHeader = hasBlock(data, "SiteHeader");
   const ownFooter = hasBlock(data, "SiteFooter");
   // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
   const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
+
+  // A page built from a bought design carries its own compiled stylesheet. Every rule in it is
+  // scoped under .sjc-design (lib/designCss.ts), so it cannot reach the nav, the footer, or any
+  // other page — but the wrapper still has to be here for those rules to match anything.
+  const designCss = page ? await readDesignCss(page, siteId) : "";
+
+  const body = (
+    <SiteProvider siteId={siteId}>
+      <Render config={config} data={data as never} />
+    </SiteProvider>
+  );
+
   return (
     <>
       {brand ? <BrandStyle brand={brand} id="site-brand" /> : null}
+      {designCss ? (
+        <style id="site-design" dangerouslySetInnerHTML={{ __html: designCss }} />
+      ) : null}
       {ownHeader ? null : <Nav />}
       <main>
         {/* Blocks read the site from here rather than from an editable field — the lead form's
             destination in particular must never depend on someone typing it correctly. */}
-        <SiteProvider siteId={siteId}>
-          <Render config={config} data={data as never} />
-        </SiteProvider>
+        {designCss ? <div className={DESIGN_SCOPE}>{body}</div> : body}
       </main>
       {ownFooter ? null : <Footer />}
     </>

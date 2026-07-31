@@ -16,6 +16,11 @@ import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
 import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
+import DesignSection, {
+  DESIGNSECTION_DEFAULTS,
+  type DesignText,
+  type DesignImage,
+} from "@/components/blocks/DesignSection";
 import Icon, { ICON_OPTIONS } from "@/components/blocks/Icon";
 import { resolveColor, resolveColorOr } from "@/lib/brandColor";
 import { telLink } from "@/lib/businessTokens";
@@ -26,6 +31,8 @@ type Align = "left" | "center" | "right";
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
+  /** One section of a bought design, kept verbatim. Only its words and photos are editable. */
+  DesignSection: { html: string; text: DesignText[]; images: DesignImage[] };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
   Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean };
   HeroImage: {
@@ -320,8 +327,54 @@ export const config: Config<Props, RootProps> = {
       defaultExpanded: false,
       components: ["StaffRoster"] as (keyof Props)[],
     },
+    design: {
+      title: "Imported design",
+      defaultExpanded: false,
+      components: ["DesignSection"] as (keyof Props)[],
+    },
   },
   components: {
+    // A section of a bought design. Created by the importer, not by dragging one on — an empty
+    // one renders nothing, because there is no design in it to edit.
+    DesignSection: {
+      label: "Design section (imported)",
+      fields: {
+        text: {
+          type: "array" as const,
+          label: "Words on this section",
+          getItemSummary: (item: DesignText, i) => item?.label || `Text ${(i ?? 0) + 1}`,
+          arrayFields: {
+            // Shown so you know which one you're editing; the value is the part you change.
+            label: { type: "text" as const, label: "Where it appears" },
+            value: { type: "textarea" as const, label: "Text" },
+            key: { type: "text" as const, label: "Token (do not change)" },
+          },
+        },
+        images: {
+          type: "array" as const,
+          label: "Photos on this section",
+          getItemSummary: (item: DesignImage, i) => item?.alt || `Image ${(i ?? 0) + 1}`,
+          arrayFields: {
+            alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
+            src: {
+              type: "custom" as const,
+              label: "Photo",
+              render: ({ onChange, value }) => (
+                <ImageUpload value={value as string} onChange={onChange} />
+              ),
+            },
+            key: { type: "text" as const, label: "Token (do not change)" },
+          },
+        },
+        // Deliberately last and plain: this is the design itself. Editing it by hand is how you
+        // break the layout you paid for.
+        html: { type: "textarea" as const, label: "Markup (imported — leave this alone)" },
+      },
+      defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
+      render: ({ html, text, images }) => (
+        <DesignSection html={html} text={text} images={images} />
+      ),
+    },
     Card: {
       label: "Card (white box)",
       fields: {
