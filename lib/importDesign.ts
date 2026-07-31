@@ -118,9 +118,15 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
   const sections = splitSections(withIcons);
   if (!sections.length) throw new Error("No top-level sections found in that page.");
 
-  const content = sections.map((section) => {
+  const content = sections.map((section, i) => {
     const { html: tokenized, text, images } = tokenizeSection(section);
-    return { type: "DesignSection", props: { html: tokenized, text, images } };
+    // ⚠️ EVERY BLOCK NEEDS ITS OWN `id`. Puck identifies a component instance by props.id; give
+    // several blocks the same one (or none) and it treats them as one node — the page renders the
+    // LAST block's content in every slot. First import of this design came back as the footer,
+    // seven times, with the styling perfectly intact, which is what made it look like a splitting
+    // bug rather than a missing key. lib/importHtml.ts has always done this via nid().
+    const id = `design-${i + 1}`;
+    return { type: "DesignSection", props: { id, html: tokenized, text, images } };
   });
 
   const words = content.reduce((n, b) => n + b.props.text.length, 0);
