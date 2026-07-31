@@ -338,31 +338,41 @@ export const config: Config<Props, RootProps> = {
     // one renders nothing, because there is no design in it to edit.
     DesignSection: {
       label: "Design section (imported)",
+      // ⚠️ PHOTOS FIRST, AND ON PURPOSE. Words came first originally, and a section has ~16 of
+      // them against one or two photos — so "Photos on this section" sat below a long scroll and
+      // read as unreachable. The first person to use this concluded imported photos couldn't be
+      // changed at all. A control nobody can find is the same as a control that isn't there.
       fields: {
+        images: {
+          type: "array" as const,
+          label: "Photos on this section",
+          // Short and obviously an item. A full alt-text paragraph as the summary looked like
+          // static label text rather than something you click to open.
+          getItemSummary: (item: DesignImage, i) => {
+            const alt = (item?.alt || "").trim();
+            const n = (i ?? 0) + 1;
+            return alt ? `Photo ${n} — ${alt.slice(0, 32)}${alt.length > 32 ? "…" : ""}` : `Photo ${n}`;
+          },
+          arrayFields: {
+            src: {
+              type: "custom" as const,
+              label: "Photo — click to replace",
+              render: ({ onChange, value }) => (
+                <ImageUpload value={value as string} onChange={onChange} />
+              ),
+            },
+            alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
+            key: { type: "text" as const, label: "Token (do not change)" },
+          },
+        },
         text: {
           type: "array" as const,
           label: "Words on this section",
           getItemSummary: (item: DesignText, i) => item?.label || `Text ${(i ?? 0) + 1}`,
           arrayFields: {
             // Shown so you know which one you're editing; the value is the part you change.
-            label: { type: "text" as const, label: "Where it appears" },
             value: { type: "textarea" as const, label: "Text" },
-            key: { type: "text" as const, label: "Token (do not change)" },
-          },
-        },
-        images: {
-          type: "array" as const,
-          label: "Photos on this section",
-          getItemSummary: (item: DesignImage, i) => item?.alt || `Image ${(i ?? 0) + 1}`,
-          arrayFields: {
-            alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
-            src: {
-              type: "custom" as const,
-              label: "Photo",
-              render: ({ onChange, value }) => (
-                <ImageUpload value={value as string} onChange={onChange} />
-              ),
-            },
+            label: { type: "text" as const, label: "Where it appears" },
             key: { type: "text" as const, label: "Token (do not change)" },
           },
         },
