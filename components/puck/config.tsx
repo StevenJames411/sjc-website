@@ -38,6 +38,10 @@ type Props = {
     images: DesignImage[];
     paddingTop: number | null;
     paddingBottom: number | null;
+    hasForm: boolean;
+    useRealForm: boolean;
+    formFields: { label: string; inputType: string }[];
+    formButton: string;
   };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
   Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; surfaceOpacity: number; borderColor: string; hoverBorderColor: string; shadowColor: string; hoverLift: boolean; radius: number };
@@ -350,6 +354,15 @@ export const config: Config<Props, RootProps> = {
       // read as unreachable. The first person to use this concluded imported photos couldn't be
       // changed at all. A control nobody can find is the same as a control that isn't there.
       fields: {
+        // Only meaningful on a section that HAS a form; harmless elsewhere.
+        useRealForm: {
+          type: "radio" as const,
+          label: "Contact form",
+          options: [
+            { label: "Use my real form (it delivers)", value: true },
+            { label: "Show the design's mock form", value: false },
+          ],
+        },
         // Same stepper as the native Section block, so imported and hand-built sections are
         // adjusted the same way. Blank = keep whatever spacing the design shipped with.
         paddingTop: {
@@ -416,15 +429,47 @@ export const config: Config<Props, RootProps> = {
         // Deliberately last and plain: this is the design itself. Editing it by hand is how you
         // break the layout you paid for.
         html: { type: "textarea" as const, label: "Markup (imported — leave this alone)" },
+        // Carriers, set by the importer. Puck requires a field for every prop, so they are here
+        // rather than hidden — but nothing above depends on anyone touching them.
+        formButton: { type: "text" as const, label: "Form button text (imported)" },
+        formFields: {
+          type: "array" as const,
+          label: "Form questions (imported)",
+          getItemSummary: (item: { label?: string }, i) => item?.label || `Question ${(i ?? 0) + 1}`,
+          arrayFields: {
+            label: { type: "text" as const, label: "Question" },
+            inputType: {
+              type: "select" as const,
+              label: "Answer type",
+              options: [
+                { label: "Text", value: "text" },
+                { label: "Email", value: "email" },
+                { label: "Phone", value: "tel" },
+              ],
+            },
+          },
+        },
+        hasForm: {
+          type: "radio" as const,
+          label: "Section contains a form (imported — leave this alone)",
+          options: [
+            { label: "No", value: false },
+            { label: "Yes", value: true },
+          ],
+        },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, paddingTop, paddingBottom }) => (
+      render: ({ html, text, images, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton }) => (
         <DesignSection
           html={html}
           text={text}
           images={images}
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
+          hasForm={hasForm}
+          useRealForm={useRealForm}
+          formFields={formFields}
+          formButton={formButton}
         />
       ),
     },

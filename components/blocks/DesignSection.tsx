@@ -24,6 +24,8 @@
 // gap in the design, never leak the machinery onto a customer's live website.
 
 import { DESIGN_SCOPE } from "@/lib/designShared";
+import DesignFormMount from "./DesignFormMount";
+import type { LeadFormField } from "./LeadForm";
 
 export type DesignText = { key: string; label: string; value: string };
 export type DesignImage = { key: string; alt: string; src: string };
@@ -49,6 +51,22 @@ export type DesignSectionProps = {
    */
   paddingTop?: number | null;
   paddingBottom?: number | null;
+
+  // ── THE FORM ────────────────────────────────────────────────────────────────────────────────
+  /** True when the imported section contained a form shell (set at import). */
+  hasForm?: boolean;
+  /**
+   * Put OUR working form where the design drew its fake one.
+   *
+   * ⚠️ DEFAULT ON, and deliberately. The design's form is a picture: real-looking boxes that
+   * accept typing and deliver nowhere. Shipping that to a client means a customer fills it in,
+   * presses send, believes she has made contact, and nothing happens — the worst failure on the
+   * page. Off is available for showing a prospect the untouched design.
+   */
+  useRealForm?: boolean;
+  /** The questions the DESIGN asked, so the swap keeps its intent rather than imposing ours. */
+  formFields?: LeadFormField[];
+  formButton?: string;
 };
 
 export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
@@ -57,6 +75,10 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   images: [],
   paddingTop: null,
   paddingBottom: null,
+  hasForm: false,
+  useRealForm: true,
+  formFields: [],
+  formButton: "",
 };
 
 const TOKEN = /\{\{([ti]):([a-z0-9_-]+)\}\}/gi;
@@ -125,7 +147,17 @@ export function injectStyle(html: string, decls: string): string {
 }
 
 export default function DesignSection(props: DesignSectionProps) {
-  const { html = "", text = [], images = [], paddingTop, paddingBottom } = props;
+  const {
+    html = "",
+    text = [],
+    images = [],
+    paddingTop,
+    paddingBottom,
+    hasForm,
+    useRealForm = true,
+    formFields,
+    formButton,
+  } = props;
   if (!html.trim()) return null;
 
   // Only emit what was actually set, so an untouched section keeps the design's own rhythm.
@@ -139,5 +171,22 @@ export default function DesignSection(props: DesignSectionProps) {
   const filled = injectStyle(stripDangerous(fillTokens(html, text, images)), decls);
   // The scope class rides on the block so the design styles identically in the builder canvas,
   // in preview and on the live page — see lib/designShared.
-  return <div className={DESIGN_SCOPE} dangerouslySetInnerHTML={{ __html: filled }} />;
+  const swapForm = !!hasForm && useRealForm !== false;
+
+  // The markup is rendered WHOLE either way — the real form is mounted into the design's own
+  // box afterwards, so nothing about the surrounding layout moves. See DesignFormMount.
+  return (
+    <div className={DESIGN_SCOPE}>
+      <div dangerouslySetInnerHTML={{ __html: filled }} />
+      {swapForm ? (
+        <DesignFormMount
+          inColumn
+          theme="dark"
+          fields={formFields?.length ? formFields : undefined}
+          buttonLabel={formButton || undefined}
+          source="imported design — contact section"
+        />
+      ) : null}
+    </div>
+  );
 }

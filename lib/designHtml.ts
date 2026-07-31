@@ -36,8 +36,14 @@ export function sanitizeDesignHtml(html: string): string {
       continue;
     }
     // Keep the look, remove the ability to submit. See FORM_TO_DIV above.
+    //
+    // It is also MARKED. `data-sjc-form` is how the renderer finds this exact node later and
+    // mounts the real LeadForm into it — the design's own layout, its own column, its own
+    // spacing, with a form that actually delivers. Without a marker the only way to get a
+    // working form was to delete the section and rebuild it.
     if (tag === FORM_TO_DIV) {
       el.rawTagName = "div";
+      el.setAttribute("data-sjc-form", "1");
       el.removeAttribute("action");
       el.removeAttribute("method");
       el.removeAttribute("enctype");
@@ -64,6 +70,8 @@ export function sanitizeDesignHtml(html: string): string {
 }
 
 const TEXT_SKIP = new Set(["script", "style", "svg", "path", "noscript"]);
+
+const clean = (s: string) => String(s || "").replace(/\s+/g, " ").trim();
 
 /** "PhoneCall" / "phone_call" -> "phone-call" — lucide's own per-icon module filename. */
 const kebab = (name: string) =>
@@ -206,6 +214,9 @@ export function tokenizeSection(html: string): {
   html: string;
   text: DesignText[];
   images: DesignImage[];
+  hasForm: boolean;
+  formFields: { label: string; inputType: string }[];
+  formButton: string;
 } {
   const root = parse(sanitizeDesignHtml(html), { comment: false });
   const text: DesignText[] = [];
@@ -240,8 +251,41 @@ export function tokenizeSection(html: string): {
     }
   };
 
+  // ⚠️ READ THE FORM BEFORE WALKING. walk() replaces every text node with a token, so reading
+  // the field labels afterwards returned "{{t:t18}}" instead of "Your Name" — the swap would have
+  // mounted a form asking three questions named after their own placeholders.
+  const formEl = root.querySelector("[data-sjc-form]");
+  const formFields = formEl
+    ? formEl
+        .querySelectorAll("input,textarea")
+        .filter((i) => i.getAttribute("type") !== "hidden")
+        .map((i) => ({
+          label: clean(
+            formEl.querySelector(`label[for="${i.getAttribute("id")}"]`)?.text ||
+              i.getAttribute("placeholder") ||
+              i.getAttribute("name") ||
+              "Field"
+          ),
+          inputType:
+            i.getAttribute("type") === "email"
+              ? "email"
+              : i.getAttribute("type") === "tel"
+                ? "tel"
+                : "text",
+        }))
+    : [];
+  const formButton = clean(formEl?.querySelector("button")?.text || "");
+
   walk(root);
-  return { html: root.toString(), text, images };
+
+  return {
+    html: root.toString(),
+    text,
+    images,
+    hasForm: !!formEl,
+    formFields,
+    formButton,
+  };
 }
 
 /**
