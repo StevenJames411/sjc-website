@@ -1,4 +1,4 @@
-import { Space_Grotesk } from "next/font/google";
+
 import {
   ArrowRight,
   BrainCircuit,
@@ -41,7 +41,7 @@ export const dynamic = "force-dynamic";
 //
 // WHAT CHANGED FROM THE RAW HTML (plumbing only, no design):
 //   • Tailwind CDN  -> the repo's own Tailwind v4
-//   • Google Fonts <link> -> next/font (Space Grotesk here, Inter already global)
+//   • Google Fonts <link> -> next/font (Space Grotesk and Inter are both in the global set now)
 //   • Lucide CDN    -> lucide-react
 //   • Supabase-hosted images -> /public (they lived on SiteDrop's storage and would 404 later)
 //   • Its own <form> + fetch -> our shared LeadForm block, so a lead lands where every other
@@ -58,12 +58,9 @@ export const dynamic = "force-dynamic";
 // ⚠️ NO GLOBAL NAV. The site-wide header links to the free Skool community, which teaches what
 // this page sells. The header in ./Chrome.tsx is deliberately self-contained.
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-space-grotesk",
-  display: "swap",
-});
+// Space Grotesk is registered site-wide in app/layout.tsx (it joined the curated brand set), so
+// --font-space-grotesk is already on <html>. Registering it again here would load the same font
+// twice under two hashes.
 
 const PHONE_DISPLAY = "(210) 851-4906";
 const PHONE_HREF = "tel:+12108514906";
@@ -167,7 +164,7 @@ const FOOTER_COMPANY = [
 
 export default function WebsitesPage() {
   return (
-    <div className={`${spaceGrotesk.variable} ${styles.page} bg-[#FAFAFA]`}>
+    <div className={`${styles.page} bg-[#FAFAFA]`}>
       <Header />
 
       <main>

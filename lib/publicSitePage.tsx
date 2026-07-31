@@ -8,6 +8,8 @@ import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
 import { fillBusinessTokens } from "@/lib/businessTokens";
 import { SiteProvider } from "@/components/blocks/SiteContext";
+import BrandStyle from "@/components/BrandStyle";
+import { readBrand } from "@/lib/brand";
 import type { Site } from "@/lib/sitesShared";
 
 // Rendering + metadata for ONE page of ONE website, shared by the two public catch-all routes:
@@ -176,12 +178,27 @@ export function metadataFor(r: NonNullable<Resolved>, path: string) {
   };
 }
 
-/** The page itself. SJC chrome only when the page didn't bring its own. */
-export function SitePageBody({ data, siteId }: { data: unknown; siteId: string }) {
+/**
+ * The page itself. SJC chrome only when the page didn't bring its own.
+ *
+ * ⚠️ WHY THE BRAND IS APPLIED HERE AND NOT IN THE ROOT LAYOUT. `readBrand(pub, siteId)` has always
+ * taken a siteId, and the importer has always WRITTEN a per-site palette — but app/layout.tsx
+ * called `readBrand(true)` bare, and it was the only public caller. So every client site rendered
+ * in SJC's blue and the palette written for it was dead data. The root layout can't fix this: it
+ * has no idea which site the request is for. This function does, and it is already the deliberate
+ * can't-drift seam for client-vs-SJC rendering, so it is the right place.
+ *
+ * The root layout still emits SJC's own brand. This one comes later in document order and both
+ * target :root, so the site's own values win on its own pages. SJC's pages never reach here.
+ */
+export async function SitePageBody({ data, siteId }: { data: unknown; siteId: string }) {
   const ownHeader = hasBlock(data, "SiteHeader");
   const ownFooter = hasBlock(data, "SiteFooter");
+  // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
+  const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
   return (
     <>
+      {brand ? <BrandStyle brand={brand} id="site-brand" /> : null}
       {ownHeader ? null : <Nav />}
       <main>
         {/* Blocks read the site from here rather than from an editable field — the lead form's

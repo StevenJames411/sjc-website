@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
   Lexend, Inter, Poppins, Montserrat, Merriweather, Playfair_Display, Source_Sans_3,
+  Space_Grotesk,
 } from "next/font/google";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
@@ -24,8 +25,10 @@ const montserrat = Montserrat({ subsets: ["latin"], weight: ["300", "400", "500"
 const merriweather = Merriweather({ subsets: ["latin"], weight: ["300", "400", "700"], variable: "--font-merriweather", display: "swap" });
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-playfair", display: "swap" });
 const sourceSans = Source_Sans_3({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], variable: "--font-source-sans", display: "swap" });
+// Added for bought designs, which routinely pair a display face with a plain body face.
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-space-grotesk", display: "swap" });
 
-const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans]
+const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans, spaceGrotesk]
   .map((f) => f.variable).join(" ");
 
 // The site-wide safety net. Every real page now builds its own metadata from its Page Settings
