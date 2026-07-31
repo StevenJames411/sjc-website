@@ -317,6 +317,17 @@ function cardBlock(el: HTMLElement, p: Palette, badge?: string): Block {
         ? {
             surface: /bg-\[#[0-9a-f]{3,8}\]\/\d|bg-white\/\d|backdrop-blur/i.test(cls(el)) ? "glass" : "",
             surfaceColor: hexFrom(el, "bg") || "",
+            // ⚠️ THE OPACITY IS THE EFFECT, not a detail. `bg-[#1E293B]/50` is the card's colour
+            // at HALF — render it at a hardcoded 7% over a dark band and the pane vanishes,
+            // which is what "the cards are dark on dark" looks like.
+            surfaceOpacity: Number(cls(el).match(/bg-(?:\[#[0-9a-fA-F]{3,8}\]|white|black)\/(\d{1,3})/)?.[1] || 0),
+            // The edge is its OWN colour: designs pair a dark translucent fill with a LIGHT
+            // hairline (`border-white/5`). Deriving it from the fill gave a dark border on a
+            // dark card, so the pane had no edge and stopped reading as glass.
+            borderColor:
+              /border-white/.test(cls(el))
+                ? "#ffffff"
+                : cls(el).match(/border-\[(#[0-9a-fA-F]{3,8})\]/)?.[1]?.toLowerCase() || "",
             hoverLift: /hover:-translate-y/.test(cls(el)),
             shadowColor: "",
             radius: 0,

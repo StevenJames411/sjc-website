@@ -67,6 +67,22 @@ export type CardProps = {
   surface?: string;
   /** Tint of the glass/outline shell. Blank = white (i.e. a light pane on a dark band). */
   surfaceColor?: string;
+  /**
+   * How solid the glass is, 0–100. Blank = 7.
+   *
+   * ⚠️ THE NUMBER IS THE WHOLE EFFECT. A design writes `bg-[#1E293B]/50` — the card's own colour
+   * at HALF opacity. Rendering that at a hardcoded 7% over a dark band produces a pane you
+   * cannot see, which is exactly what "the cards are dark on dark" looks like.
+   */
+  surfaceOpacity?: number;
+  /**
+   * The hairline. Blank = white.
+   *
+   * ⚠️ SEPARATE FROM THE FILL ON PURPOSE. Designs use `bg-[#1E293B]/50 border-white/5` — a dark
+   * translucent fill with a LIGHT edge. Deriving the border from the fill colour gave a dark
+   * border on a dark card, so the pane had no edge and stopped reading as glass.
+   */
+  borderColor?: string;
   /** Coloured glow under the card. Blank = the plain soft shadow. */
   shadowColor?: string;
   /** Lift and brighten the border on hover — what makes a grid of cards feel alive. */
@@ -99,6 +115,8 @@ export const CARD_DEFAULTS: CardProps = {
   eyebrowCaps: true,
   surface: "",
   surfaceColor: "",
+  surfaceOpacity: 0,
+  borderColor: "",
   shadowColor: "",
   hoverLift: false,
   radius: 0,
@@ -135,6 +153,8 @@ export default function Card({
   eyebrowCaps,
   surface,
   surfaceColor,
+  surfaceOpacity,
+  borderColor,
   shadowColor,
   hoverLift,
   radius,
@@ -147,6 +167,8 @@ export default function Card({
   // this existed renders byte-identical.
   const glassy = surface === "glass" || surface === "outline";
   const tone = resolveColorOr(surfaceColor, "#ffffff");
+  const fillPct = typeof surfaceOpacity === "number" && surfaceOpacity > 0 ? surfaceOpacity : 7;
+  const edge = resolveColorOr(borderColor, "#ffffff");
 
   const shell = bare
     ? "h-full"
@@ -167,8 +189,8 @@ export default function Card({
         // invisible and reads as "the glass setting does nothing".
         ...(glassy
           ? {
-              backgroundColor: surface === "outline" ? "transparent" : tint(tone, 7),
-              border: `1px solid ${tint(tone, 14)}`,
+              backgroundColor: surface === "outline" ? "transparent" : tint(tone, fillPct),
+              border: `1px solid ${tint(edge, 12)}`,
               backdropFilter: surface === "glass" ? "blur(16px)" : undefined,
             }
           : {}),

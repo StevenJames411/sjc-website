@@ -40,7 +40,7 @@ type Props = {
     paddingBottom: number | null;
   };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; shadowColor: string; hoverLift: boolean; radius: number };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; surfaceOpacity: number; borderColor: string; shadowColor: string; hoverLift: boolean; radius: number };
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -511,6 +511,20 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        surfaceOpacity: {
+          type: "custom" as const,
+          label: "How solid the glass is (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Solidity" value={value as number} onChange={onChange} fallback={7} step={5} min={0} />
+          ),
+        },
+        borderColor: {
+          type: "custom" as const,
+          label: "Hairline edge (blank = white)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         shadowColor: {
           type: "custom" as const,
           label: "Glow underneath (blank = none)",
@@ -605,7 +619,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps, surface, surfaceColor, shadowColor, hoverLift, radius }) => (
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps, surface, surfaceColor, surfaceOpacity, borderColor, shadowColor, hoverLift, radius }) => (
         <Card
           badge={badge} eyebrow={eyebrow} heading={heading} body={body}
           icon={icon} iconColor={iconColor} badgeColor={badgeColor}
@@ -616,7 +630,8 @@ export const config: Config<Props, RootProps> = {
           bodySize={bodySize} bodyColor={bodyColor}
           eyebrowBold={eyebrowBold} headingBold={headingBold} bodyBold={bodyBold}
           eyebrowCaps={eyebrowCaps}
-          surface={surface} surfaceColor={surfaceColor} shadowColor={shadowColor}
+          surface={surface} surfaceColor={surfaceColor} surfaceOpacity={surfaceOpacity}
+          borderColor={borderColor} shadowColor={shadowColor}
           hoverLift={hoverLift} radius={radius}
         />
       ),
