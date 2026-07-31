@@ -87,6 +87,14 @@ export type CardProps = {
   shadowColor?: string;
   /** Lift and brighten the border on hover — what makes a grid of cards feel alive. */
   hoverLift?: boolean;
+  /**
+   * The edge colour on hover. Blank = the edge doesn't change.
+   *
+   * Designs pair a nearly-invisible resting edge with an ACCENT edge on hover
+   * (`border-white/5 hover:border-[#00D9FF]/40`). That change is most of what makes a grid of
+   * cards feel alive, and it can't be done with an inline style — hence the class + variable.
+   */
+  hoverBorderColor?: string;
   /** Corner radius in px. 0/blank = the built-in rounded-2xl (16px). */
   radius?: number;
 };
@@ -117,6 +125,7 @@ export const CARD_DEFAULTS: CardProps = {
   surfaceColor: "",
   surfaceOpacity: 0,
   borderColor: "",
+  hoverBorderColor: "",
   shadowColor: "",
   hoverLift: false,
   radius: 0,
@@ -157,6 +166,7 @@ export default function Card({
   borderColor,
   shadowColor,
   hoverLift,
+  hoverBorderColor,
   radius,
 }: CardProps) {
   const onEdge = badgePosition === "edge" && !!badge;
@@ -173,7 +183,9 @@ export default function Card({
   const shell = bare
     ? "h-full"
     : glassy
-      ? `h-full p-7${hoverLift ? " transition-all duration-500 hover:-translate-y-2" : ""}`
+      ? `h-full p-7${hoverLift ? " transition-all duration-500 hover:-translate-y-2" : ""}${
+          hoverBorderColor ? " sjc-hover-edge" : ""
+        }`
       : `h-full rounded-2xl bg-white p-7 shadow-sm${
           hoverLift ? " transition-all duration-500 hover:-translate-y-2 hover:shadow-lg" : ""
         }`;
@@ -196,6 +208,9 @@ export default function Card({
           : {}),
         ...(shadowColor
           ? { boxShadow: `0 18px 40px -12px ${tint(resolveColor(shadowColor), 35)}` }
+          : {}),
+        ...(hoverBorderColor
+          ? ({ ["--sjc-hover-edge"]: tint(resolveColor(hoverBorderColor), 40) } as React.CSSProperties)
           : {}),
       };
 
@@ -264,8 +279,16 @@ export default function Card({
       <div className={`flex flex-col ${align}`}>
         {icon ? (
           <span
-            className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${onEdge || centered ? "" : ""}`}
-            style={{ background: tint(iconColor, 8), color: resolveColorOr(iconColor, "#2563eb") }}
+            className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
+            style={{
+              background: tint(iconColor, glassy ? 10 : 8),
+              color: resolveColorOr(iconColor, "#2563eb"),
+              // The tile's own hairline. A bought design draws it in the accent
+              // (`bg-[#00D9FF]/10 border border-[#00D9FF]/20`) and it is a surprising amount of
+              // what reads as "expensive" — without it the icon floats on a flat patch.
+              // Glass-only so every white-box card already on a page is untouched.
+              ...(glassy ? { border: `1px solid ${tint(iconColor, 20)}` } : {}),
+            }}
           >
             <Icon name={icon} size={26} />
           </span>

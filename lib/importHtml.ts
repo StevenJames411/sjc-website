@@ -328,6 +328,10 @@ function cardBlock(el: HTMLElement, p: Palette, badge?: string): Block {
               /border-white/.test(cls(el))
                 ? "#ffffff"
                 : cls(el).match(/border-\[(#[0-9a-fA-F]{3,8})\]/)?.[1]?.toLowerCase() || "",
+            // The accent edge on hover — `hover:border-[#00D9FF]/40`. Reading it is what makes a
+            // grid of imported cards feel alive rather than static.
+            hoverBorderColor:
+              cls(el).match(/hover:border-\[(#[0-9a-fA-F]{3,8})\]/)?.[1]?.toLowerCase() || "",
             hoverLift: /hover:-translate-y/.test(cls(el)),
             shadowColor: "",
             radius: 0,
@@ -447,7 +451,6 @@ function blocksFrom(root: HTMLElement, p: Palette, depth = 0): Block[] {
     const gridN = gridNs.length ? Math.max(...gridNs) : undefined;
     if (gridN && /grid/.test(cls(el))) {
       const kids = el.childNodes.filter((n) => n.nodeType === 1) as HTMLElement[];
-      const cols: Block[][] = [[], [], [], []];
 
       // Resolve every child FIRST, then drop the empties. Decorative children (their dotted
       // connector line between the steps) map to nothing but were still eating a column, which
@@ -465,12 +468,23 @@ function blocksFrom(root: HTMLElement, p: Palette, depth = 0): Block[] {
       // number would shred both into empty columns — so above 4, the CHILD COUNT is the truth.
       const n = gridN <= 4 ? gridN : Math.min(resolved.length || 1, 4);
 
-      // More items than columns still works — the extras wrap onto the next row.
-      resolved.forEach((blocks, i) => cols[i % n].push(...blocks));
-      out.push({
-        type: "Columns",
-        props: { id: nid("cols"), columns: n, gap: 24, col1: cols[0], col2: cols[1], col3: cols[2], col4: cols[3] },
-      });
+      // ⚠️ ONE `Columns` PER ROW, not one for the whole grid.
+      //
+      // Six cards into three columns used to mean two cards STACKED inside each column — so
+      // card 4 started wherever card 1 happened to end, and the second row came out ragged and
+      // misaligned. Their markup is a single grid with six children flowing 3-across, where a
+      // row's cards share a row and therefore share a height.
+      //
+      // Our Columns block is genuinely one row, so a 3x2 grid is TWO of them. Splitting here is
+      // what makes the rows line up, and it also leaves each row independently editable.
+      for (let i = 0; i < resolved.length; i += n) {
+        const row: Block[][] = [[], [], [], []];
+        resolved.slice(i, i + n).forEach((blocks, j) => row[j].push(...blocks));
+        out.push({
+          type: "Columns",
+          props: { id: nid("cols"), columns: n, gap: 24, col1: row[0], col2: row[1], col3: row[2], col4: row[3] },
+        });
+      }
       continue;
     }
 
