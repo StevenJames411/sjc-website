@@ -3,7 +3,6 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
 import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
-import { DESIGN_SCOPE } from "@/lib/designCss";
 import { findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
@@ -216,8 +215,9 @@ export async function SitePageBody({
   const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
 
   // A page built from a bought design carries its own compiled stylesheet. Every rule in it is
-  // scoped under .sjc-design (lib/designCss.ts), so it cannot reach the nav, the footer, or any
-  // other page — but the wrapper still has to be here for those rules to match anything.
+  // scoped under .sjc-design, and that class rides on the DesignSection block itself
+  // (lib/designShared) — so this only has to EMIT the stylesheet, and the same rules apply
+  // identically in the builder canvas, which renders the same blocks.
   const designCss = page ? await readDesignCss(page, siteId) : "";
 
   const body = (
@@ -236,7 +236,7 @@ export async function SitePageBody({
       <main>
         {/* Blocks read the site from here rather than from an editable field — the lead form's
             destination in particular must never depend on someone typing it correctly. */}
-        {designCss ? <div className={DESIGN_SCOPE}>{body}</div> : body}
+        {body}
       </main>
       {ownFooter ? null : <Footer />}
     </>

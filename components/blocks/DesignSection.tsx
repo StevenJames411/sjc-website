@@ -23,6 +23,8 @@
 // ⚠️ A MISSING TOKEN RENDERS AS EMPTY, NOT AS `{{t:k3}}`. A field someone deleted must leave a
 // gap in the design, never leak the machinery onto a customer's live website.
 
+import { DESIGN_SCOPE } from "@/lib/designShared";
+
 export type DesignText = { key: string; label: string; value: string };
 export type DesignImage = { key: string; alt: string; src: string };
 
@@ -135,5 +137,7 @@ export default function DesignSection(props: DesignSectionProps) {
     .join(";");
 
   const filled = injectStyle(stripDangerous(fillTokens(html, text, images)), decls);
-  return <div dangerouslySetInnerHTML={{ __html: filled }} />;
+  // The scope class rides on the block so the design styles identically in the builder canvas,
+  // in preview and on the live page — see lib/designShared.
+  return <div className={DESIGN_SCOPE} dangerouslySetInnerHTML={{ __html: filled }} />;
 }

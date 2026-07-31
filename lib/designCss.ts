@@ -24,8 +24,8 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 
-/** Wrapper class the whole design is rendered inside. Every selector gets scoped under it. */
-export const DESIGN_SCOPE = "sjc-design";
+export { DESIGN_SCOPE } from "./designShared";
+import { DESIGN_SCOPE } from "./designShared";
 
 /**
  * Every class name used anywhere in a chunk of markup.
