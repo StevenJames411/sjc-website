@@ -30,7 +30,7 @@ type Align = "left" | "center" | "right";
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
-  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; content: Slot };
+  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; grid: string; gradientTo: string; gradientAngle: number; content: Slot };
   /** One section of a bought design, kept verbatim. Words, photos and vertical spacing editable. */
   DesignSection: {
     html: string;
@@ -40,7 +40,7 @@ type Props = {
     paddingBottom: number | null;
   };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
-  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean };
+  Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; shadowColor: string; hoverLift: boolean; radius: number };
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -68,7 +68,7 @@ type Props = {
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot };
-  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string };
+  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
   Video: { src: string; caption: string; poster: string };
@@ -493,6 +493,46 @@ export const config: Config<Props, RootProps> = {
             { label: "Normal case", value: false },
           ],
         },
+        // ── SURFACE. "White box" is the original and stays the default, so nothing already
+        // built moves. Glass is what makes a card sit on a dark band like a bought design does.
+        surface: {
+          type: "radio" as const,
+          label: "Card surface",
+          options: [
+            { label: "White box", value: "" },
+            { label: "Glass (on dark)", value: "glass" },
+            { label: "Outline only", value: "outline" },
+          ],
+        },
+        surfaceColor: {
+          type: "custom" as const,
+          label: "Glass tint (blank = white)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        shadowColor: {
+          type: "custom" as const,
+          label: "Glow underneath (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        hoverLift: {
+          type: "radio" as const,
+          label: "Lift on hover",
+          options: [
+            { label: "No", value: false },
+            { label: "Yes", value: true },
+          ],
+        },
+        radius: {
+          type: "custom" as const,
+          label: "Corner roundness (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+          ),
+        },
         heading: { type: "textarea" as const, label: "Middle line — the card's heading (an H3 for Google)" },
         headingSize: {
           type: "custom" as const,
@@ -565,7 +605,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: CARD_DEFAULTS as CardBlock,
-      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps }) => (
+      render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps, surface, surfaceColor, shadowColor, hoverLift, radius }) => (
         <Card
           badge={badge} eyebrow={eyebrow} heading={heading} body={body}
           icon={icon} iconColor={iconColor} badgeColor={badgeColor}
@@ -576,6 +616,8 @@ export const config: Config<Props, RootProps> = {
           bodySize={bodySize} bodyColor={bodyColor}
           eyebrowBold={eyebrowBold} headingBold={headingBold} bodyBold={bodyBold}
           eyebrowCaps={eyebrowCaps}
+          surface={surface} surfaceColor={surfaceColor} shadowColor={shadowColor}
+          hoverLift={hoverLift} radius={radius}
         />
       ),
     },
@@ -1081,6 +1123,22 @@ export const config: Config<Props, RootProps> = {
             <SizeStepper label="Padding bottom" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
           ),
         },
+        // ── The three things a bought design does to a band that we couldn't say before.
+        // All blank/off by default, so every Section already saved renders byte-identical.
+        gradientTo: {
+          type: "custom" as const,
+          label: "Fade to (blank = flat colour)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        gradientAngle: {
+          type: "custom" as const,
+          label: "Fade direction (degrees)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Angle" value={value as number} onChange={onChange} fallback={135} step={15} min={0} />
+          ),
+        },
         // Soft colour washes bleeding in from the corners. Blank = off, which is what every
         // existing Section has saved, so nothing already built changes.
         decor: {
@@ -1090,15 +1148,43 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // Faint graph-paper overlay. Reads as "technical" and is most of why a dark band in a
+        // generated design doesn't look like a flat rectangle.
+        grid: {
+          type: "custom" as const,
+          label: "Grid overlay (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", content: [] },
-      render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, content: Content }) => (
+      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", grid: "", gradientTo: "", gradientAngle: 135, content: [] },
+      render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, grid, gradientTo, gradientAngle, content: Content }) => (
         <section
           id={typeof id === "string" ? id : undefined}
-          style={{ backgroundColor: resolveColor(background) }}
-          className={`w-full scroll-mt-20${decor ? " relative overflow-hidden" : ""}`}
+          style={
+            gradientTo
+              ? {
+                  backgroundImage: `linear-gradient(${
+                    typeof gradientAngle === "number" ? gradientAngle : 135
+                  }deg, ${resolveColor(background)} 0%, ${resolveColor(gradientTo)} 100%)`,
+                }
+              : { backgroundColor: resolveColor(background) }
+          }
+          className={`w-full scroll-mt-20${decor || grid ? " relative overflow-hidden" : ""}`}
         >
+          {grid ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(${resolveColor(grid)} 1px, transparent 1px), linear-gradient(90deg, ${resolveColor(grid)} 1px, transparent 1px)`,
+                backgroundSize: "60px 60px",
+                opacity: 0.07,
+              }}
+            />
+          ) : null}
           {/* Two large blurred circles, opposite corners, pointer-events-none so they can never
               swallow a click on anything sitting above them. */}
           {decor ? (
@@ -1116,7 +1202,7 @@ export const config: Config<Props, RootProps> = {
             </>
           ) : null}
           <div
-            className={`mx-auto px-6${decor ? " relative z-10" : ""}`}
+            className={`mx-auto px-6${decor || grid ? " relative z-10" : ""}`}
             style={{
               // Existing pages have no maxWidth saved — fall back to the old max-w-3xl so nothing shifts.
               maxWidth: maxWidth || "48rem",
@@ -1259,6 +1345,13 @@ export const config: Config<Props, RootProps> = {
         // headline. A flat single-colour headline is the biggest thing separating a template
         // from a designed page, and it costs one text field.
         highlight: { type: "text" as const, label: "Words to colour differently (blank = none)" },
+        highlightFade: {
+          type: "custom" as const,
+          label: "Fade those words to (blank = flat colour)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         highlightColor: {
           type: "custom" as const,
           label: "Highlight colour",
@@ -1276,8 +1369,8 @@ export const config: Config<Props, RootProps> = {
           ),
         },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "", highlight: "", highlightColor: "" },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor }) => {
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "", highlight: "", highlightColor: "", highlightFade: "" },
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor, highlightFade }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
 
         // The marker swipe. A straight rule reads like a border; this reads like someone drew it.
@@ -1308,8 +1401,23 @@ export const config: Config<Props, RootProps> = {
 
         let body: React.ReactNode;
         if (at >= 0) {
+          // A second colour turns the picked-out phrase into a GRADIENT rather than a flat
+          // colour — the "Win Everywhere." treatment, where the words fade from the accent into
+          // white. Blank keeps the flat colour, so every heading already written is untouched.
           const marked = (
-            <span key="hl" style={{ color: resolveColor(highlightColor) }}>
+            <span
+              key="hl"
+              style={
+                highlightFade
+                  ? {
+                      backgroundImage: `linear-gradient(90deg, ${resolveColor(highlightColor)} 0%, ${resolveColor(highlightFade)} 100%)`,
+                      WebkitBackgroundClip: "text",
+                      backgroundClip: "text",
+                      color: "transparent",
+                    }
+                  : { color: resolveColor(highlightColor) }
+              }
+            >
               {text.slice(at, at + hl.length)}
             </span>
           );

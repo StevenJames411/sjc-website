@@ -53,6 +53,26 @@ export type CardProps = {
   // The top line was force-uppercased with wide letter-spacing, which is an eyebrow label's
   // look and nothing else. undefined keeps it, so nothing already built changes.
   eyebrowCaps?: boolean;
+
+  // ── SURFACE (2026-07-31) ────────────────────────────────────────────────────────────────────
+  // The single biggest visual gap between this card and the one a bought design draws. Theirs
+  // sits on a dark band as a translucent pane — a hint of background showing through, a 1px
+  // light border, a blurred backdrop, and a lift on hover. Ours was an opaque white box with a
+  // soft shadow, which is why a hand-built row next to an imported one announced itself
+  // instantly no matter how well the colours were matched.
+  //
+  // "" keeps the original white box, so every card already on a page is untouched.
+  //   "glass"   — translucent + backdrop blur + hairline border. For dark bands.
+  //   "outline" — no fill, just a border. For light bands.
+  surface?: string;
+  /** Tint of the glass/outline shell. Blank = white (i.e. a light pane on a dark band). */
+  surfaceColor?: string;
+  /** Coloured glow under the card. Blank = the plain soft shadow. */
+  shadowColor?: string;
+  /** Lift and brighten the border on hover — what makes a grid of cards feel alive. */
+  hoverLift?: boolean;
+  /** Corner radius in px. 0/blank = the built-in rounded-2xl (16px). */
+  radius?: number;
 };
 
 export const CARD_DEFAULTS: CardProps = {
@@ -77,6 +97,11 @@ export const CARD_DEFAULTS: CardProps = {
   headingBold: true,
   bodyBold: false,
   eyebrowCaps: true,
+  surface: "",
+  surfaceColor: "",
+  shadowColor: "",
+  hoverLift: false,
+  radius: 0,
 };
 
 /** px override when set, otherwise let the Tailwind class decide. */
@@ -108,15 +133,54 @@ export default function Card({
   headingBold,
   bodyBold,
   eyebrowCaps,
+  surface,
+  surfaceColor,
+  shadowColor,
+  hoverLift,
+  radius,
 }: CardProps) {
   const onEdge = badgePosition === "edge" && !!badge;
   const align = centered ? "text-center items-center" : "";
-  const shell = bare ? "h-full" : "h-full rounded-2xl bg-white p-7 shadow-sm";
+
+  // ── THE SHELL ───────────────────────────────────────────────────────────────────────────────
+  // Three looks off one switch. Blank is the original white box, so a card saved before any of
+  // this existed renders byte-identical.
+  const glassy = surface === "glass" || surface === "outline";
+  const tone = resolveColorOr(surfaceColor, "#ffffff");
+
+  const shell = bare
+    ? "h-full"
+    : glassy
+      ? `h-full p-7${hoverLift ? " transition-all duration-500 hover:-translate-y-2" : ""}`
+      : `h-full rounded-2xl bg-white p-7 shadow-sm${
+          hoverLift ? " transition-all duration-500 hover:-translate-y-2 hover:shadow-lg" : ""
+        }`;
+
+  // Inline because these are colour-derived and can't be utility classes. `color-mix` is what
+  // lets one picked colour produce both the translucent fill and the hairline border, so the
+  // card stays a single decision rather than three.
+  const shellStyle: React.CSSProperties | undefined = bare
+    ? undefined
+    : {
+        ...(radius ? { borderRadius: `${radius}px` } : glassy ? { borderRadius: "16px" } : {}),
+        // ⚠️ tint() takes a PERCENTAGE (0–100), not a fraction — 0.07 here is 0.07%, which is
+        // invisible and reads as "the glass setting does nothing".
+        ...(glassy
+          ? {
+              backgroundColor: surface === "outline" ? "transparent" : tint(tone, 7),
+              border: `1px solid ${tint(tone, 14)}`,
+              backdropFilter: surface === "glass" ? "blur(16px)" : undefined,
+            }
+          : {}),
+        ...(shadowColor
+          ? { boxShadow: `0 18px 40px -12px ${tint(resolveColor(shadowColor), 35)}` }
+          : {}),
+      };
 
   // Icon left, text right — a contact detail rather than a feature card.
   if (layout === "row") {
     return (
-      <div className={`${shell} flex items-start gap-4`}>
+      <div className={`${shell} flex items-start gap-4`} style={shellStyle}>
         {icon ? (
           <span
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
@@ -167,6 +231,7 @@ export default function Card({
       // Extra top padding + visible overflow only when a badge is floating on the edge, so a
       // normal card keeps its exact original box.
       className={`relative ${shell} ${onEdge ? "mt-6 pt-10" : ""}`}
+      style={shellStyle}
     >
       {onEdge ? (
         <div className="absolute -top-5 left-1/2 -translate-x-1/2">{badgeEl}</div>
