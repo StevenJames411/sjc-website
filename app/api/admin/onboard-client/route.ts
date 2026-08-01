@@ -91,8 +91,23 @@ export async function POST(req: Request) {
     }
     sheetId = made.spreadsheetId;
     sheetUrl = made.url;
-    await updateSite(siteId, { sheetId, leadEmail: str("email") || undefined });
   }
+
+  // ⚠️ THIS USED TO LIVE INSIDE `if (!sheetId)`, AND THAT WAS THE BUG.
+  //
+  // `leadEmail` is the ONLY thing that triggers the owner's new-lead alert. Setting it only on the
+  // call that happened to create the sheet meant that a site made by hand in the gallery, or a
+  // "Sold" tick processed twice, ended up with a working website, a shared spreadsheet, and no
+  // alert — with nothing on any screen saying so. Silent, and only discovered when a customer asks
+  // why nobody called back.
+  //
+  // Built conditionally because `updateSite` spreads the patch: passing `leadEmail: undefined`
+  // would overwrite a good address with nothing. An address already on the record wins — this
+  // route runs off a call sheet, and what Steven typed in Website settings is the better source.
+  const patch: Record<string, string> = {};
+  if (sheetId && sheetId !== site?.sheetId) patch.sheetId = sheetId;
+  if (str("email") && !site?.leadEmail) patch.leadEmail = str("email");
+  if (Object.keys(patch).length) await updateSite(siteId, patch);
 
   // Everything the call sheet knew, kept verbatim — see the note at the top of this file.
   const extra = (body.extra && typeof body.extra === "object" ? body.extra : {}) as Record<string, unknown>;

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
   // The visitor still sees success as long as SOMEBODY has it. Failing the form in front of a
   // real customer because our second copy bounced would lose the lead outright.
-  const landed = d.toRecord || d.toOwner === true;
+  const landed = d.toRecord || d.toOwner === true || d.toSheet === true;
   if (!landed) {
     return NextResponse.json({ ok: false, error: "forward failed", problems: d.problems }, { status: 502 });
   }
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
     ok: true,
     toOwner: d.toOwner,
     toRecord: d.toRecord,
+    toSheet: d.toSheet,
     ...(d.problems.length ? { problems: d.problems } : {}),
   });
 }
