@@ -11,6 +11,8 @@ import { SiteProvider } from "@/components/blocks/SiteContext";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import type { Site } from "@/lib/sitesShared";
+import { localBusinessSchema } from "@/lib/siteSchema";
+import { publicUrlFor } from "@/lib/hostShared";
 
 // Rendering + metadata for ONE page of ONE website, shared by the two public catch-all routes:
 //
@@ -146,7 +148,10 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
         title: title || businessName,
         description,
         siteName: businessName || title,
-        url: path,
+        // ABSOLUTE, from the site's own domain. A relative path resolves against `metadataBase`,
+        // which is SJC's — so a client's texted link claimed stevenjamesconsulting.com as its
+        // address. The caller passes the canonical it already computed for this exact reason.
+        url: canonical || path,
         type: "website" as const,
         // An explicit value overrides the generated card in app/opengraph-image.tsx. `[]` is the
         // deliberate no-image case: a plain text preview is honest, SJC's logo on a groomer's
@@ -231,6 +236,18 @@ export async function SitePageBody({
   // identically in the builder canvas, which renders the same blocks.
   const designCss = page ? await readDesignCss(page, siteId) : "";
 
+  // THIS BUSINESS'S OWN STRUCTURED DATA.
+  //
+  // The root layout emits SJC's Organization/Service/FAQ blocks on SJC's domain only — a client's
+  // page telling Google it was Steven James Consulting is the failure that scoping fixed. But
+  // removing it left client sites with nothing at all, which is the wrong end of the trade for a
+  // product sold on being found by Google and by AI search.
+  //
+  // Built entirely from Website settings, so it costs nothing per client: fill in her phone and
+  // address at onboarding and the markup writes itself. See lib/siteSchema.
+  const site = isClientSite ? await findSite(siteId) : null;
+  const schema = site ? localBusinessSchema(site, publicUrlFor(site)) : null;
+
   const body = (
     <SiteProvider siteId={siteId}>
       <Render config={config} data={data as never} />
@@ -239,6 +256,12 @@ export async function SitePageBody({
 
   return (
     <>
+      {schema ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ) : null}
       {brand ? <BrandStyle brand={brand} id="site-brand" /> : null}
       {designCss ? (
         <style id="site-design" dangerouslySetInnerHTML={{ __html: designCss }} />

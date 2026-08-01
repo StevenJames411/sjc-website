@@ -1,28 +1,57 @@
 import type { MetadataRoute } from "next";
+import { resolveHost, publicUrlFor } from "@/lib/host";
+import { readPages } from "@/lib/pageRegistry";
+import { SJC_HOST } from "@/lib/hostShared";
 
 // /sitemap.xml — the map crawlers (and AI indexers) use to find every page worth reading.
-// Referenced from robots.ts. Keep this to the CURRENT public pages; add a line when a new page
-// should be indexed. (Stale/retired pages stay off the list on purpose.)
-const BASE = "https://www.stevenjamesconsulting.com";
+// Referenced from robots.ts.
+//
+// ⚠️ IT ANSWERS ON WHATEVER DOMAIN ASKS, so it has to know which one that is. It used to be a
+// hardcoded list of SJC's paths under a hardcoded SJC hostname — which meant a crawler fetching
+// stevenjamesdesigns.com/sitemap.xml was told this site's pages all live on
+// stevenjamesconsulting.com. That's an instruction to index the wrong domain.
+//
+// Three cases, same rule as everywhere else: SJC keeps its curated list, any other site publishes
+// its own pages, and a site with no domain publishes NOTHING — a demo is noindex, and listing it
+// in a sitemap contradicts that.
+export const dynamic = "force-dynamic";
 
-const PAGES: { path: string; priority: number }[] = [
+const SJC_BASE = `https://www.${SJC_HOST}`;
+
+const SJC_PAGES: { path: string; priority: number }[] = [
   { path: "/", priority: 1 },
   { path: "/about", priority: 0.8 },
   { path: "/podcast", priority: 0.7 },
   { path: "/faqs", priority: 0.7 },
-  // /websites is NOT here any more. The web studio moved to its own domain
-  // (stevenjamesdesigns.com) and this address only forwards. Listing a 308 in a sitemap tells
-  // Google to index a redirect, and listing another business's page under SJC's map is exactly
-  // the conflation the separate domain exists to end.
+  // /websites is deliberately absent: the studio moved to its own domain and that address only
+  // forwards. A sitemap listing a redirect tells Google to index the redirect.
   { path: "/apply", priority: 0.6 },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
-  return PAGES.map(({ path, priority }) => ({
-    url: `${BASE}${path}`,
+  const h = await resolveHost();
+
+  if (h.kind === "client") {
+    // No domain means demo means noindex — nothing to publish.
+    if (!h.site.domain) return [];
+    const pages = await readPages(h.site.id);
+    const origin = publicUrlFor(h.site);
+    return pages.map((p, i) => ({
+      // The FIRST page is the site's front door and lives at the bare address, whatever it's
+      // called — same rule the public router uses. See resolvePage's homeFallback.
+      url: i === 0 ? origin : `${origin}/${p.slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: i === 0 ? 1 : 0.7,
+    }));
+  }
+
+  // The studio before a site claims its domain, and SJC itself.
+  return SJC_PAGES.map(({ path, priority }) => ({
+    url: `${SJC_BASE}${path}`,
     lastModified,
-    changeFrequency: "monthly",
+    changeFrequency: "monthly" as const,
     priority,
   }));
 }
