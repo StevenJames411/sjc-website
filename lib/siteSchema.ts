@@ -1,5 +1,5 @@
-// Structured data for a client's website — the block Google and the AI crawlers read to work out
-// what this business IS.
+// Structured data for a website — the block Google and the AI crawlers read to work out what this
+// business IS, and which TYPE of business it is.
 //
 // ── WHY THIS EXISTS ───────────────────────────────────────────────────────────────────────────
 // app/layout.tsx used to emit SJC's Organization, Service and FAQPage schema on EVERY route, so a
@@ -55,7 +55,8 @@ function postalAddress(address: string) {
 }
 
 /**
- * The site's own LocalBusiness block, or null when there isn't enough to say anything true.
+ * The site's own structured data — LocalBusiness or Organization — or null when there isn't
+ * enough on the record to say anything true.
  *
  * A name alone is not worth emitting — schema with nothing in it is noise to a crawler and can
  * look like spam. It needs a name plus at least one way to reach the business.
@@ -70,18 +71,38 @@ export function localBusinessSchema(site: Site, siteUrl: string): Record<string,
   const email = (b.email || "").trim();
   if (!phone && !address && !email) return null;
 
+  // ── THE TYPE FOLLOWS THE BUSINESS ───────────────────────────────────────────────────────────
+  //
+  // `LocalBusiness` means a premises customers travel to — a grooming shop on New Laredo Hwy.
+  // Emitting it for a business that has no address publishes an incomplete record and tells Google
+  // to expect a location that isn't there. Steven's own studio is remote and serves the whole
+  // country; it was the first site to hit this.
+  //
+  // `Organization` is the honest type for that, and it has no address field to leave blank. So the
+  // shape is chosen from the DATA rather than assumed: fill in an address and the site is treated
+  // as a local business; leave it out and it's an organisation serving the US. A client who never
+  // hands over an address now produces valid markup instead of broken markup nobody notices.
+  const isLocal = Boolean(address);
+
   const schema = compact({
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": isLocal ? "LocalBusiness" : "Organization",
     name,
     url: siteUrl,
     telephone: phone || undefined,
     email: email || undefined,
-    address: address ? postalAddress(address) : undefined,
+    address: isLocal ? postalAddress(address) : undefined,
     // The one-line form, kept when the parse wasn't confident enough — a crawler can still read
     // it, and it is better than dropping the address entirely.
-    ...(address && !postalAddress(address) ? { description: `${name} — ${address}` } : {}),
-    openingHours: (b.hours || "").trim() || undefined,
+    ...(isLocal && !postalAddress(address) ? { description: `${name} — ${address}` } : {}),
+    // Only meaningful with a premises. Opening hours on a remote business say nothing useful.
+    openingHours: isLocal ? (b.hours || "").trim() || undefined : undefined,
+    // Nationwide reach, stated explicitly, so "no address" reads as remote rather than as missing
+    // data. Country-level on purpose — claiming a service area you can't back up is worse than
+    // claiming none.
+    ...(isLocal
+      ? {}
+      : { areaServed: { "@type": "Country", name: "United States" } }),
     image: site.seo?.shareImage || site.logo || undefined,
   });
 
