@@ -25,6 +25,7 @@
 
 import { DESIGN_SCOPE } from "@/lib/designShared";
 import DesignFormMount from "./DesignFormMount";
+import DesignMenu from "./DesignMenu";
 import type { LeadFormField } from "./LeadForm";
 
 /**
@@ -384,6 +385,10 @@ export default function DesignSection(props: DesignSectionProps) {
         />
       ) : null}
       <div dangerouslySetInnerHTML={{ __html: filled }} />
+      {/* The design's own <script> was stripped at import, so its hamburger has nothing wiring it
+          to the panel. This does that one toggle in first-party code. Cheap and inert on a section
+          with no menu — it looks for the pair, finds nothing, and stops. */}
+      <DesignMenu />
       {swapForm ? (
         // ⚠️ THE SUCCESS COPY IS PASSED EXPLICITLY, AND MUST STAY THAT WAY.
         //
