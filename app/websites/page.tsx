@@ -1,8 +1,4 @@
-import { Render } from "@measured/puck";
-import { config } from "@/components/puck/config";
-import { seedFor } from "@/components/puck/seeds";
-import { readPuckPublished } from "@/lib/puckContent";
-import { WebsitesHeader, WebsitesFooter } from "@/components/websites/WebsitesChrome";
+import { StudioBody } from "@/lib/studioPage";
 import { pageMetadata } from "@/lib/pageMeta";
 
 export const dynamic = "force-dynamic";
@@ -39,17 +35,8 @@ export async function generateMetadata() {
 // and footer at /edit/websites-nav and /edit/websites-footer). This route just renders whatever
 // is published; before anything is published it renders the same seed the builder opens to, so
 // the live page and the editor can never drift apart.
+// The body lives in lib/studioPage so the studio's own domain can serve the identical page at its
+// root. This address stays working because links to it are already out in the world.
 export default async function WebsitesPage() {
-  const published = await readPuckPublished("websites");
-  const data = published || seedFor("websites", "Websites");
-
-  return (
-    <>
-      <WebsitesHeader />
-      <main>
-        <Render config={config} data={data} />
-      </main>
-      <WebsitesFooter />
-    </>
-  );
+  return <StudioBody />;
 }

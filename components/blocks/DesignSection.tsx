@@ -335,16 +335,46 @@ export default function DesignSection(props: DesignSectionProps) {
 
   // The markup is rendered WHOLE either way — the real form is mounted into the design's own
   // box afterwards, so nothing about the surrounding layout moves. See DesignFormMount.
+  //
+  // ⚠️ THE DESIGN'S FAKE INPUTS MUST NOT BE VISIBLE BEFORE THE REAL FORM ARRIVES.
+  //
+  // sanitizeDesignHtml turns the design's <form> into a <div> but KEEPS its <input> elements, so
+  // they ship in the server HTML. DesignFormMount deletes them, but only after hydration. On a
+  // slow phone that leaves a window where a visitor sees real-looking boxes, types into them, taps
+  // a dead button — and then hydration wipes what they typed. A lead lost with no error anywhere.
+  //
+  // So the box starts hidden and DesignFormMount reveals it by removing this attribute once the
+  // working form is in place. With JavaScript off the box stays empty, which is honest: the real
+  // form is a React component and could never have worked there anyway.
   return (
-    <div className={DESIGN_SCOPE}>
+    <div className={DESIGN_SCOPE} {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}>
+      {swapForm ? (
+        <style
+          dangerouslySetInnerHTML={{
+            __html: "[data-sjc-form-pending] [data-sjc-form]{visibility:hidden}",
+          }}
+        />
+      ) : null}
       <div dangerouslySetInnerHTML={{ __html: filled }} />
       {swapForm ? (
+        // ⚠️ THE SUCCESS COPY IS PASSED EXPLICITLY, AND MUST STAY THAT WAY.
+        //
+        // Leaving it off doesn't leave it blank — LeadForm falls back to LEADFORM_DEFAULTS, which
+        // is SJC's own copy: "Got it. I'll call you today… call me straight out at (210)
+        // 851-4906." That is Steven's phone number, on a client's website, in the message their
+        // customer sees after asking that business to call them back.
+        //
+        // The tokens resolve per-site at public render (lib/businessTokens), so this says the
+        // client's number on the client's site. A literal number here is the bug coming back.
         <DesignFormMount
           inColumn
           theme="dark"
           fields={formFields?.length ? formFields : undefined}
           buttonLabel={formButton || undefined}
           source="imported design — contact section"
+          note=""
+          successHeading="Got it — thank you."
+          successBody="We'll be in touch shortly. Rather talk now? Call {{business.phone}}."
         />
       ) : null}
     </div>

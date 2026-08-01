@@ -124,7 +124,7 @@ export async function resolvePage(
  * business" over the SJC card. So a non-SJC site always emits a COMPLETE block, even where that
  * means repeating a value or emitting an empty string on purpose.
  */
-export function metadataFor(r: NonNullable<Resolved>, path: string) {
+export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: string) {
   const { site, data } = r;
   const root = ((data as { root?: { props?: Record<string, unknown> } } | null)?.root?.props ??
     {}) as Record<string, unknown>;
@@ -169,9 +169,20 @@ export function metadataFor(r: NonNullable<Resolved>, path: string) {
       ...(isClient || description ? { description } : {}),
       ...(ogImage ? { images: [ogImage] } : {}),
     },
-    // A client's site lives on the SJC domain until they buy their own, carrying a real business's
-    // name, phone and address, while robots.txt welcomes every AI crawler. Until it's on its own
-    // domain it stays out of the index.
+    // ⚠️ EVERY CLIENT PAGE USED TO NAME SJC'S HOME PAGE AS ITS CANONICAL.
+    //
+    // app/layout.tsx sets `alternates: { canonical: "/" }`, and Next merges metadata downward, so
+    // a page that declares no `alternates` of its own inherits it. Every client site was therefore
+    // telling Google "the real version of this page is stevenjamesconsulting.com" — an instruction
+    // to credit SJC for the client's content and drop the client's page from the index. Same
+    // inheritance trap as the og: block above, one field over.
+    //
+    // The caller passes an ABSOLUTE url for a client page, because it is served from THEIR domain
+    // once they buy while metadataBase still points at SJC — a path would resolve to the wrong
+    // origin. SJC's own pages keep the relative form they've always had.
+    alternates: { canonical: canonical || path },
+    // A demo lives on the studio's domain carrying a real business's name, phone and address,
+    // while robots.txt welcomes every AI crawler. Until it's on its own domain it stays out.
     ...(isClient && !site.domain
       ? { robots: { index: false, follow: false, nocache: true } }
       : {}),

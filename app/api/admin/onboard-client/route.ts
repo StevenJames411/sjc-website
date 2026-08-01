@@ -21,6 +21,7 @@ import { createSite, updateSite, findSite } from "@/lib/sites";
 import { createClientSheet, sheetsConfigured } from "@/lib/sheets";
 import { openIntake } from "@/lib/intakeLinks";
 import { patchIntake } from "@/lib/intake";
+import { onboardUrlFor } from "@/lib/hostShared";
 
 export const dynamic = "force-dynamic";
 // Creating a spreadsheet through Apps Script is slow enough to trip the default limit.
@@ -108,7 +109,7 @@ export async function POST(req: Request) {
   return Response.json({
     ok: true,
     siteId,
-    onboardUrl: `${origin}/${siteId}/onboard`,
+    onboardUrl: onboardUrlFor({ id: siteId, domain: site?.domain }),
     sheetUrl,
     editUrl: `${origin}/edit/${siteId}/home`,
     reused: Boolean(already),

@@ -34,6 +34,10 @@ export default function DesignFormMount(props: LeadFormProps) {
     // Clear the mock inputs, then hand the box to React.
     target.replaceChildren();
     setHost(target);
+    // Reveal it. DesignSection ships the box hidden so the design's fake inputs are never typable
+    // during the gap before hydration — see the note there. Removing the attribute is what turns
+    // the box back on, now that what's inside it actually delivers.
+    root.removeAttribute("data-sjc-form-pending");
   }, []);
 
   return (

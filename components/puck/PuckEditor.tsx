@@ -6,6 +6,7 @@ import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
 import { seedFor } from "@/components/puck/seeds";
 import { SJC as SJC_ID } from "@/lib/siteKeys";
+import { publicUrlFor } from "@/lib/hostShared";
 
 // The page list is passed in from the server route (it's Redis-backed now, so the client can't
 // read it directly). Shape mirrors lib/pageRegistry's PageEntry.
@@ -36,12 +37,15 @@ export default function PuckEditor({
   page,
   title,
   pages,
+  siteDomain,
 }: {
   siteId: string;
   siteName: string;
   page: string;
   title: string;
   pages: PageItem[];
+  /** Set once the client owns a domain — it moves the whole site off the studio address. */
+  siteDomain?: string;
 }) {
   const router = useRouter();
   const [data, setData] = useState<Data | null>(null);
@@ -54,20 +58,24 @@ export default function PuckEditor({
   // WHERE THIS PAGE ACTUALLY LIVES. Every other builder shows the address under the toolbar; not
   // having it meant the only way to see a finished site was to ask someone what the URL was.
   //
-  // The shape differs by site: SJC's pages sit at the domain root (its home IS "/"), while a
-  // client's website is served under its own id, with its FIRST page at that id's bare address.
+  // Three shapes now, and the URL is built by lib/hostShared — the SAME function the server uses
+  // to decide what to serve — so the link here can't drift from the page a prospect opens:
+  //   SJC's own pages     at the domain root (its home IS "/")
+  //   a demo              on the studio domain, under the site's id
+  //   a customer who paid at the root of their own domain
   // nav/footer are fragments shared across pages and have no address of their own.
   const isFirstPage = pages[0]?.slug === page;
-  const publicPath =
+  const publicUrl =
     ["nav", "footer", "websites-nav", "websites-footer"].includes(page)
       ? null
       : siteId === SJC_ID
         ? page === "home"
           ? "/"
           : `/${page}`
-        : isFirstPage
-          ? `/${siteId}`
-          : `/${siteId}/${page}`;
+        : publicUrlFor({ id: siteId, domain: siteDomain }, page, isFirstPage);
+  // What to show in the toolbar: a bare path for SJC, the full address for anything with a home
+  // of its own — because "which domain is this on" is the question that matters there.
+  const publicPath = publicUrl;
 
   // Create a brand-new page: name it, the server slugifies + saves it to the registry, then we
   // jump straight into editing the blank page. It won't be public until you hit Publish.
@@ -462,7 +470,16 @@ export default function PuckEditor({
               type="button"
               style={{ ...btn, padding: "4px 8px", fontSize: 12 }}
               title="Copy the link"
-              onClick={() => navigator.clipboard?.writeText(`${window.location.origin}${publicPath}`)}
+              // An absolute URL is already absolute — only SJC's bare paths need the origin
+              // prefixed, and prefixing a client's own domain with the editor's would produce a
+              // link to nowhere.
+              onClick={() =>
+                navigator.clipboard?.writeText(
+                  publicPath?.startsWith("http")
+                    ? publicPath
+                    : `${window.location.origin}${publicPath}`
+                )
+              }
             >
               Copy
             </button>

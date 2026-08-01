@@ -11,6 +11,7 @@
 import { openIntake, closeIntake, intakeAccess } from "@/lib/intakeLinks";
 import { readIntake, patchIntake, intakeSummaries } from "@/lib/intake";
 import { findSite } from "@/lib/sites";
+import { onboardUrlFor } from "@/lib/hostShared";
 import { questionsFor, INTAKE_QUESTIONS } from "@/lib/intakeShared";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +46,7 @@ export async function GET(req: Request) {
   return Response.json({
     ok: true,
     site: id,
-    url: `${new URL(req.url).origin}/${id}/onboard`,
+    url: onboardUrlFor({ id, domain: (await findSite(id))?.domain }),
     status: access?.status || "never opened",
     openedAt: access?.openedAt || null,
     lastUsedAt: access?.lastUsedAt || null,
@@ -76,7 +77,7 @@ export async function POST(req: Request) {
     // onto "Got it — thank you", with no way to add the photos that were the whole reason for
     // opening it again. Her answers stay; only the finished flag is lifted.
     await patchIntake(id, { submittedAt: "", stoppedBecause: "" });
-    return Response.json({ ok, status: "open", url: `${new URL(req.url).origin}/${id}/onboard` });
+    return Response.json({ ok, status: "open", url: onboardUrlFor({ id, domain: (await findSite(id))?.domain }) });
   }
   if (action === "close") {
     const ok = await closeIntake(id, "closed by Steven");

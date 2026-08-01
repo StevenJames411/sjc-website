@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Site } from "@/lib/sitesShared";
 import type { IntakeSummary } from "@/lib/intakeShared";
+import { publicUrlFor, onboardUrlFor } from "@/lib/hostShared";
 import IntakeAnswers from "./IntakeAnswers";
 
 // The way into the builder: a wall of website cards, not a dropdown.
@@ -79,9 +80,11 @@ export default function SiteGallery({ sites, intake }: Props) {
     }
   }
 
-  async function copyLink(siteId: string) {
-    await navigator.clipboard?.writeText(`${window.location.origin}/${siteId}/onboard`);
-    setCopied(siteId);
+  async function copyLink(site: Site) {
+    // The onboarding link has to look like her website's address, because that's what makes it
+    // legitimate in a text message — so it follows the same host rules, not the editor's origin.
+    await navigator.clipboard?.writeText(onboardUrlFor(site));
+    setCopied(site.id);
     setTimeout(() => setCopied(""), 1800);
   }
 
@@ -154,14 +157,17 @@ export default function SiteGallery({ sites, intake }: Props) {
               {s.description ? <p style={cardDesc}>{s.description}</p> : null}
               {/* The live address, so you can look at a site without opening the builder. Once a
                   domain is attached that becomes the real address; until then it's our path. */}
+              {/* Built by the same function the server uses to decide what to serve, so this
+                  link and the live page can never disagree. A demo points at the studio domain;
+                  once a client owns a domain it points there instead. */}
               <a
-                href={s.domain ? `https://${s.domain}` : `/${s.id}`}
+                href={publicUrlFor(s)}
                 target="_blank"
                 rel="noreferrer"
                 style={cardLink}
                 onClick={(e) => e.stopPropagation()}
               >
-                {s.domain ? s.domain : `/${s.id}`} ↗
+                {publicUrlFor(s).replace(/^https:\/\//, "")} ↗
               </a>
             </div>
 
@@ -199,7 +205,7 @@ export default function SiteGallery({ sites, intake }: Props) {
                         type="button"
                         style={linkBtn}
                         title="Copy her link, ready to text or email"
-                        onClick={() => copyLink(s.id)}
+                        onClick={() => copyLink(s)}
                       >
                         {copied === s.id ? "Copied" : "Copy link"}
                       </button>

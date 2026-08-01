@@ -8,6 +8,7 @@ import EditLink from "@/components/edit/EditLink";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
+import { resolveHost } from "@/lib/host";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -117,14 +118,35 @@ const faqSchema = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Published brand only — a draft must never leak onto the live site.
+  // ⚠️ SJC'S IDENTITY IS SCOPED TO SJC'S OWN DOMAIN.
+  //
+  // These three blocks used to render on EVERY route unconditionally, which meant a groomer's
+  // website told Google it was Steven James Consulting — ARV Venture Group LLC, Steven Barchetti,
+  // SJC's phone number and SJC's logo, on her page, under her business name. Her own LocalBusiness
+  // markup was competing with a company she's never heard of.
+  //
+  // The metadata warning higher up this file records the same failure for og: tags. The JSON-LD
+  // was missed at the time because it lives in the body of the component rather than in the
+  // exported metadata, and nothing about it looked route-specific.
+  //
+  // BrandStyle deliberately stays unconditional: app/globals.css already defines every
+  // --color-sjc-* default, BrandStyle emits nothing at all when the brand is unchanged, and
+  // SitePageBody's per-site brand comes later in document order and wins. Scoping it too would be
+  // churn on a path that already behaves.
+  const h = await resolveHost();
+  const isSjc = h.kind === "sjc";
   const brand = await readBrand(true);
+
   return (
     <html lang="en" className={FONT_VARS}>
       <head>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+        {isSjc ? (
+          <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+          </>
+        ) : null}
         <BrandStyle brand={brand} />
       </head>
       <body>

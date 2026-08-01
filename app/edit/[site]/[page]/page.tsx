@@ -54,6 +54,9 @@ export default async function EditPage({
       page={entry.slug}
       title={entry.title}
       pages={pages}
+      // Decides whether the toolbar's live link points at the studio's demo address or at the
+      // client's own domain. Same input the server uses to decide what to serve.
+      siteDomain={site.domain}
     />
     </>
   );
