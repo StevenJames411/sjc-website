@@ -62,3 +62,13 @@ export const SITES_KEY = "sjc-sites";
  * spreadsheet id on it could.
  */
 export const FORMS_KEY = "sjc-forms";
+
+/**
+ * The invoice book, and your own business details.
+ *
+ * One key, not per-site — and unlike the form library, that is NOT because the contents are
+ * neutral. An invoice names a customer and an amount. It is global because these are Steven's own
+ * business records, belonging to the person doing the billing rather than to any website, exactly
+ * like the brand or the login. No public page ever reads this key.
+ */
+export const INVOICES_KEY = "sjc-invoices";

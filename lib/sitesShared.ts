@@ -130,6 +130,8 @@ export const RESERVED_SITE_IDS = [
   // The form library lives at /edit/forms, a static segment that shadows /edit/<site>. A site
   // with this id would be created happily and then be permanently unopenable.
   "forms",
+  // The invoice book lives at /edit/invoices, same static-segment reason as "forms".
+  "invoices",
   // The client intake link lives at /start/<id>.
   "start",
 ];

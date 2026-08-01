@@ -164,6 +164,9 @@ export default function SiteGallery({ sites, intake }: Props) {
           <a href="/edit/forms" style={navBtn}>
             Forms
           </a>
+          <a href="/edit/invoices" style={navBtn}>
+            Invoices
+          </a>
           <a href="/edit/brand" style={navBtn}>
             Brand
           </a>
