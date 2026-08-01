@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Site } from "@/lib/sitesShared";
+import { RETENTION_DAYS, daysLeft, type Site } from "@/lib/sitesShared";
 import type { IntakeSummary } from "@/lib/intakeShared";
 import { publicUrlFor, onboardUrlFor } from "@/lib/hostShared";
 import IntakeAnswers from "./IntakeAnswers";
@@ -88,15 +88,60 @@ export default function SiteGallery({ sites, intake }: Props) {
     setTimeout(() => setCopied(""), 1800);
   }
 
-  const templates = useMemo(() => sites.filter((s) => s.kind === "template"), [sites]);
+  // The bin. Kept out of every other list — a deleted site must not appear as a template, in
+  // search, or anywhere it could be mistaken for live.
+  const binned = useMemo(() => sites.filter((s) => s.deletedAt), [sites]);
+  const templates = useMemo(
+    () => sites.filter((s) => s.kind === "template" && !s.deletedAt),
+    [sites]
+  );
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const live = sites.filter((s) => s.kind !== "template");
+    const live = sites.filter((s) => s.kind !== "template" && !s.deletedAt);
     if (!needle) return live;
     return live.filter((s) =>
       [s.name, s.description, s.domain, s.business?.name].filter(Boolean).join(" ").toLowerCase().includes(needle)
     );
   }, [sites, q]);
+
+  async function restore(s: Site) {
+    setDeleting(s.id);
+    try {
+      const r = await fetch("/api/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ action: "restore", id: s.id }),
+      });
+      const body = await r.json();
+      if (!body?.ok) throw new Error(body?.error || "Couldn't put it back.");
+      router.refresh();
+    } catch (e) {
+      setDelErr((e as Error).message);
+    } finally {
+      setDeleting("");
+    }
+  }
+
+  async function eraseNow(s: Site) {
+    setDeleting(s.id);
+    try {
+      const r = await fetch("/api/sites", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ id: s.id, forever: true }),
+      });
+      const body = await r.json();
+      if (!body?.ok) throw new Error(body?.error || "Couldn't erase it.");
+      setConfirmDel("");
+      router.refresh();
+    } catch (e) {
+      setDelErr((e as Error).message);
+    } finally {
+      setDeleting("");
+    }
+  }
 
   return (
     <div style={page}>
@@ -241,9 +286,12 @@ export default function SiteGallery({ sites, intake }: Props) {
               /* The confirm REPLACES the row rather than opening a dialog, so the thing being
                  deleted stays on screen underneath the question. */
               <div style={delPanel}>
+                {/* Deleting is REVERSIBLE now, and the copy has to say so — the old wording
+                    ("can't be undone") is why Steven hesitated over this button. */}
                 <p style={delWarn}>
-                  Delete <strong>{s.name}</strong> and everything in it — every page, its content
-                  and its design. This can&rsquo;t be undone.
+                  Delete <strong>{s.name}</strong>? It stops being live straight away and moves to
+                  Deleted, where you can put it back for <strong>{RETENTION_DAYS} days</strong>.
+                  After that it&rsquo;s erased for good.
                 </p>
                 {s.domain ? (
                   <>
@@ -278,7 +326,7 @@ export default function SiteGallery({ sites, intake }: Props) {
                     disabled={deleting === s.id || (!!s.domain && typed.trim() !== s.name)}
                     onClick={() => removeSite(s)}
                   >
-                    {deleting === s.id ? "Deleting…" : "Delete for good"}
+                    {deleting === s.id ? "Deleting…" : "Delete it"}
                   </button>
                 </div>
               </div>
@@ -345,6 +393,71 @@ export default function SiteGallery({ sites, intake }: Props) {
                 </button>
               </div>
             ))}
+          </div>
+        </>
+      ) : null}
+
+      {/* THE BIN. Deleted websites live here for RETENTION_DAYS and can be put back with one
+          click. Shown last and muted — it's a safety net, not part of the daily view. */}
+      {binned.length ? (
+        <>
+          <h3 style={sectionH}>Deleted</h3>
+          <p style={binNote}>
+            Not live any more. Kept for {RETENTION_DAYS} days in case you want them back, then
+            erased for good — pages, content and the owner&rsquo;s onboarding answers.
+          </p>
+          <div style={grid}>
+            {binned.map((s) => {
+              const left = daysLeft(s) ?? 0;
+              return (
+                <div key={s.id} style={{ ...card, opacity: 0.72 }}>
+                  <div style={cardTop}>
+                    <span style={{ ...chip, background: "#fef2f2", color: "#b91c1c" }}>
+                      {left > 0 ? `${left} day${left === 1 ? "" : "s"} left` : "erasing today"}
+                    </span>
+                    <h2 style={cardName}>{s.name}</h2>
+                    {s.domain ? <p style={cardDesc}>{s.domain}</p> : null}
+                  </div>
+                  {confirmDel === s.id ? (
+                    <div style={delPanel}>
+                      <p style={delWarn}>
+                        Erase <strong>{s.name}</strong> now — every page, its design, and the
+                        owner&rsquo;s onboarding answers, including the saved history. This one
+                        really can&rsquo;t be undone.
+                      </p>
+                      {delErr ? <p style={delErrText}>{delErr}</p> : null}
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button type="button" style={{ ...ghostBtn, flex: 1 }} onClick={() => setConfirmDel("")}>
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          style={{ ...dangerBtn, flex: 1 }}
+                          disabled={deleting === s.id}
+                          onClick={() => eraseNow(s)}
+                        >
+                          {deleting === s.id ? "Erasing…" : "Erase for good"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        type="button"
+                        style={{ ...editBtn, flex: 1 }}
+                        disabled={deleting === s.id}
+                        onClick={() => restore(s)}
+                      >
+                        {deleting === s.id ? "Putting it back…" : "Put it back"}
+                      </button>
+                      <button type="button" style={trashBtn} title="Erase now" onClick={() => setConfirmDel(s.id)}>
+                        🗑
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </>
       ) : null}
@@ -568,6 +681,7 @@ const gearBtn: React.CSSProperties = { ...ghostBtn, padding: "10px 13px", fontSi
 // compete with Edit for attention on a card you open twenty times a day.
 const trashBtn: React.CSSProperties = { ...gearBtn, color: "#b91c1c", borderColor: "#e5e7eb" };
 const dangerBtn: React.CSSProperties = { background: "#b91c1c", color: "#fff", border: "1px solid #b91c1c", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const binNote: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.55, margin: "0 0 14px", maxWidth: 640 };
 const delPanel: React.CSSProperties = { border: "1px solid #fecaca", background: "#fef2f2", borderRadius: 10, padding: 12, display: "grid", gap: 10 };
 const delWarn: React.CSSProperties = { margin: 0, fontSize: 13, lineHeight: 1.45, color: "#7f1d1d" };
 const delTypeHint: React.CSSProperties = { margin: 0, fontSize: 12, color: "#7f1d1d" };

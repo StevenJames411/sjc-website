@@ -29,6 +29,22 @@ export type SiteSeo = {
   titleSuffix: string;
 };
 
+/**
+ * How long a deleted website is recoverable before it is erased for good.
+ *
+ * 30 days is the industry default — Google Workspace, Shopify, Mailchimp, Squarespace and
+ * GoHighLevel all use it, and it's the standard notice period in hosting contracts. Seven is too
+ * short (a client on holiday misses it); ninety means holding a stranger's data for no reason.
+ *
+ * It is also a re-sign window, not just a courtesy: a client who leaves in a huff and cools off a
+ * fortnight later gets switched back on in a minute instead of rebuilt from nothing.
+ *
+ * What Steven tells a client, in one line:
+ *   "If you cancel we keep your site and your leads for 30 days in case you change your mind.
+ *    After that it's permanently deleted."
+ */
+export const RETENTION_DAYS = 30;
+
 export type Site = {
   id: string;
   name: string;
@@ -36,6 +52,17 @@ export type Site = {
   description?: string;
   /** Gallery card image. */
   logo?: string;
+  /**
+   * SET WHEN THE SITE WAS DELETED. Absent = live.
+   *
+   * Deleting is deliberately NOT destruction. The site stops serving and leaves the list, and its
+   * content sits untouched for RETENTION_DAYS so it can be put back with one click. Only after
+   * that is anything actually erased.
+   *
+   * Steven hesitated over the delete button because it used to be one-way. Making it reversible
+   * for a month is what lets him stop being careful — which is the point.
+   */
+  deletedAt?: string;
   /** The client's own domain, once they have one. Empty = served from the demo URL. */
   domain?: string;
   /**
@@ -80,6 +107,13 @@ export const emptyBusiness = (): BusinessFacts => ({
   address: "",
   hours: "",
 });
+
+/** Days left before a deleted site is erased. Negative means it's overdue for the sweep. */
+export function daysLeft(site: Pick<Site, "deletedAt">, now = Date.now()): number | null {
+  if (!site.deletedAt) return null;
+  const gone = new Date(site.deletedAt).getTime() + RETENTION_DAYS * 86_400_000;
+  return Math.ceil((gone - now) / 86_400_000);
+}
 
 export const emptySeo = (): SiteSeo => ({
   businessName: "",

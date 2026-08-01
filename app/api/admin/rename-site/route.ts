@@ -18,7 +18,7 @@
 // SAFETY: copy-then-verify-then-clear. Nothing is deleted until the new keys have been read back
 // and compared, so a failure halfway leaves the ORIGINAL site fully intact and the worst outcome
 // is a duplicate. dryRun is the default posture for anything destructive in this codebase.
-import { readSites, findSite } from "@/lib/sites";
+import { readSitesRaw, findSite } from "@/lib/sites";
 import { readPages } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   const site = await findSite(from);
   if (!site) return Response.json({ ok: false, error: `No website with id '${from}'.` }, { status: 404 });
 
-  const all = await readSites();
+  const all = await readSitesRaw();
   if (RESERVED_SITE_IDS.includes(to) || all.some((s) => s.id === to)) {
     return Response.json({ ok: false, error: `'${to}' is taken or reserved.` }, { status: 400 });
   }

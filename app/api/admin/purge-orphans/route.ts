@@ -17,7 +17,7 @@
 //
 // ⚠️ This empties live documents; `state_rev` keeps every prior revision. Not erasure in the
 // data-retention sense — see the note on deleteSite.
-import { readSites } from "@/lib/sites";
+import { readSitesRaw } from "@/lib/sites";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { SJC } from "@/lib/siteKeys";
@@ -65,7 +65,8 @@ export async function POST(req: Request) {
     await pool.end();
   }
 
-  const live = new Set((await readSites()).map((s) => s.id));
+  // Raw: a binned site is NOT an orphan — its content is meant to still be there.
+  const live = new Set((await readSitesRaw()).map((s) => s.id));
   live.add(SJC); // implicit, and its keys aren't namespaced anyway
 
   const byId = new Map<string, { keys: string[]; bytes: number }>();
