@@ -36,7 +36,10 @@ export function publicBaseFor(site: { id: string; domain?: string }): {
 } {
   const domain = normalizeHost(site.domain || "");
   if (domain) return { origin: `https://${domain}`, prefix: "" };
-  return { origin: `https://${STUDIO_HOST}`, prefix: `/${site.id}` };
+  // No domain yet: a demo on its own subdomain of the studio. The prefix is always empty — a demo
+  // is served at the root of its subdomain, so its pages sit at /services, not /bobs/services,
+  // and nothing about the URL has to change when the domain is swapped in at sale.
+  return { origin: `https://${site.id}.${STUDIO_HOST}`, prefix: "" };
 }
 
 /** The absolute public URL of one page. A site's FIRST page sits at its bare address. */
