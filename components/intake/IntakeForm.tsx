@@ -24,7 +24,6 @@ export default function IntakeForm({
   initialAnswers,
   initialPhotos,
   alreadySubmitted,
-  stoppedBecause,
 }: {
   /** Which business this form belongs to. The server checks it's open on every call. */
   site: string;
@@ -35,12 +34,10 @@ export default function IntakeForm({
   initialAnswers: IntakeAnswers;
   initialPhotos: string[];
   alreadySubmitted: boolean;
-  stoppedBecause?: string;
 }) {
   const [answers, setAnswers] = useState<IntakeAnswers>(initialAnswers || {});
   const [photos, setPhotos] = useState<string[]>(initialPhotos || []);
   const [done, setDone] = useState(alreadySubmitted);
-  const [stopped, setStopped] = useState<string | undefined>(stoppedBecause);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [saveError, setSaveError] = useState("");
   const [busy, setBusy] = useState("");
@@ -59,7 +56,7 @@ export default function IntakeForm({
   const answer = (q && (answers[q.id] as string)) || "";
 
   const save = useCallback(
-    async (patch: Partial<{ answers: IntakeAnswers; submittedAt: string; stoppedBecause: string }>) => {
+    async (patch: Partial<{ answers: IntakeAnswers; submittedAt: string }>) => {
       setSaveState("saving");
       try {
         const res = await fetch(`/api/intake?site=${encodeURIComponent(site)}`, {
@@ -101,14 +98,6 @@ export default function IntakeForm({
     if (q.required && q.type !== "photos" && !answer.trim()) return;
     if (q.required && q.type === "photos" && photos.length === 0) return;
 
-    // The gate. Prospecting filtered the outbound list; an inbound has passed no filter, so a bad
-    // fit gets caught here — one question in, not one week in.
-    if (q.disqualifyOn && answer === q.disqualifyOn.equals) {
-      await save({ answers, stoppedBecause: q.disqualifyOn.because });
-      setStopped(q.disqualifyOn.because);
-      return;
-    }
-
     const ok = await save({ answers });
     if (!ok) return; // don't advance past work that isn't stored
     if (i + 1 >= questions.length) {
@@ -145,8 +134,6 @@ export default function IntakeForm({
     setBusy("");
     if (fileRef.current) fileRef.current.value = "";
   }
-
-  if (stopped) return <Shell title="Thanks for being straight with me."><P>{stopped}</P><Phone contact={contact} /></Shell>;
 
   if (done) {
     return (

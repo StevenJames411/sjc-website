@@ -78,7 +78,6 @@ export default async function OnboardPage({ params }: { params: Promise<{ slug: 
       initialAnswers={record.answers}
       initialPhotos={record.photos}
       alreadySubmitted={Boolean(record.submittedAt)}
-      stoppedBecause={record.stoppedBecause}
     />
   );
 }

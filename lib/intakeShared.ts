@@ -32,13 +32,13 @@ export type IntakeQuestion = {
    * question is skipped entirely — this is the whole prospect-vs-inbound mechanism.
    */
   satisfiedBy?: string;
-  /**
-   * A disqualifier. Prospecting already filtered the outbound list (ICP-scored, no website, no
-   * paid ads); an inbound has passed no filter at all. Catching a bad fit HERE costs one question
-   * — catching it after the build costs a week and a refund conversation.
-   */
-  disqualifyOn?: { equals: string; because: string };
 };
+
+// ⚠️ NO QUALIFIERS ON THIS FORM. There used to be a `disqualifyOn` mechanism that ended the flow
+// when someone answered "yes, and it works fine" to the website question. It's gone on purpose.
+// This form's only job is collecting what's needed to build the site. It is not a filter, and it
+// is not where we decide whether to work with someone — if they don't want to work with us, no
+// wording on a form changes that. Questions here either have an answer or they don't.
 
 /** Read "business.phoneDisplay" off a Site. */
 export function valueAt(site: Site | null, path?: string): string {
@@ -94,7 +94,7 @@ export const INTAKE_QUESTIONS: IntakeQuestion[] = [
     satisfiedBy: "business.hours",
   },
 
-  // ── The gate. Only bites an inbound; a prospected client was already filtered ───────────────
+  // Information only — what's there now, so we know what we're replacing. Not a test.
   {
     id: "currentSite",
     label: "Do you have a website now?",
@@ -104,14 +104,6 @@ export const INTAKE_QUESTIONS: IntakeQuestion[] = [
       "Something old I can't update",
       "Yes, and it works fine",
     ],
-    required: true,
-    disqualifyOn: {
-      equals: "Yes, and it works fine",
-      because:
-        "If your site already works, you don't need me — and I'd rather tell you that now than " +
-        "take your money. If it's not bringing you calls, reply to my text and say so, because " +
-        "that's a different problem and I can help with it.",
-    },
   },
 
   // ── The ones only she can answer ───────────────────────────────────────────────────────────
