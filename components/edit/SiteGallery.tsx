@@ -109,9 +109,20 @@ export default function SiteGallery({ sites, intake }: Props) {
           <h1 style={h1}>Websites</h1>
           <p style={sub}>Create and manage your websites</p>
         </div>
-        <button type="button" style={primaryBtn} onClick={() => setOpen(true)}>
-          + New website
-        </button>
+        {/* The only navigation this back office has. /edit/brand and /edit/import were built and
+            then linked from nowhere — reachable only by typing the URL — so anything new gets a
+            button here or it doesn't exist. */}
+        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+          <a href="/edit/forms" style={navBtn}>
+            Forms
+          </a>
+          <a href="/edit/brand" style={navBtn}>
+            Brand
+          </a>
+          <button type="button" style={primaryBtn} onClick={() => setOpen(true)}>
+            + New website
+          </button>
+        </div>
       </div>
 
       <input
@@ -542,6 +553,7 @@ const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeigh
 const cardDesc: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.45 };
 const cardLink: React.CSSProperties = { fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 600 };
 const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const navBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-block", whiteSpace: "nowrap" };
 const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
 const pickBox: React.CSSProperties = { display: "flex", gap: 10, alignItems: "flex-start", border: "1px solid #e5e7eb", borderRadius: 10, padding: "10px 12px", cursor: "pointer" };

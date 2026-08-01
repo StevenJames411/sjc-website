@@ -54,3 +54,11 @@ export function siteKeys(siteId: string) {
 
 /** The registry of all websites. One key, not per-site. */
 export const SITES_KEY = "sjc-sites";
+
+/**
+ * The form library. One key, not per-site — and that is only safe because a form carries no
+ * destination and no business facts (see lib/formsShared.ts). A global library of QUESTIONS
+ * cannot leak one client into another; a global library of anything with an email or a
+ * spreadsheet id on it could.
+ */
+export const FORMS_KEY = "sjc-forms";

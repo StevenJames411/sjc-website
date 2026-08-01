@@ -3,11 +3,12 @@
 // what Steven drags onto the canvas matches the live site. No "use client" here: this module
 // is imported by BOTH the client editor (app/about/edit) and the server <Render> on the
 // public /about page, so it must stay framework-neutral (types only from @measured/puck).
-import type { Config, Data, Slot } from "@measured/puck";
+import type { ComponentConfig, Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
 import SizeStepper from "@/components/puck/SizeStepper";
 import ColorField from "@/components/puck/ColorField";
+import FormPicker from "@/components/puck/FormPicker";
 import ImageUpload from "@/components/puck/ImageUpload";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
@@ -63,7 +64,9 @@ type Props = {
   };
   LeadForm: {
     source: string;
-    fields: { label: string; inputType: string }[];
+    /** Write-only. Holds a form id for one beat while resolveData copies it in, then clears. */
+    preset: string;
+    fields: { label: string; inputType: string; fieldId?: string; required?: boolean }[];
     buttonLabel: string;
     note: string;
     successHeading: string;
@@ -287,6 +290,60 @@ type RootProps = {
   businessName: string;
   shareImage: string;
 };
+
+/**
+ * Copy a form library preset's questions into ONE LeadForm block, then forget the preset.
+ *
+ * `preset` is cleared on the way out, so a saved page never holds a reference to a library form.
+ * That is the whole point of copy-on-use: editing the preset later cannot reach this page,
+ * deleting it cannot break this page, and two clients sharing a preset can never affect each
+ * other. The questions on the page ARE the record.
+ *
+ * Fetches rather than importing lib/forms — this runs in the browser, and the storage module
+ * would drag the database client into the editor bundle.
+ *
+ * Written standalone and cast because Puck's own `resolveData` param type falls back to a
+ * self-contradictory shape (`Record<string, boolean> & { id: string }`) when it can't infer, and
+ * nothing can be assigned to it. The runtime contract is unaffected.
+ */
+const resolveLeadFormPreset = (async (
+  data: { props: Props["LeadForm"] },
+  params: { changed?: Record<string, boolean> }
+) => {
+  const props = data.props;
+  const id = String(props?.preset || "").trim();
+  if (!params?.changed?.preset || !id) return { props };
+  try {
+    const res = await fetch("/api/forms", { credentials: "same-origin" });
+    const body = await res.json();
+    const f = (body?.forms || []).find((x: { id: string }) => x.id === id);
+    if (!f) return { props: { ...props, preset: "" } };
+    return {
+      props: {
+        ...props,
+        preset: "",
+        fields: (f.fields || []).map(
+          (x: { label: string; type: string; fieldId: string; required?: boolean }) => ({
+            label: x.label,
+            // The block renders plain inputs, so the library's richer types collapse to the three
+            // it understands. The KEY and the required flag ride along intact — those are what
+            // keep the spreadsheet column stable and let a question be optional.
+            inputType: x.type === "tel" || x.type === "email" ? x.type : "text",
+            fieldId: x.fieldId,
+            required: x.required ?? true,
+          })
+        ),
+        buttonLabel: f.buttonLabel || props.buttonLabel,
+        note: f.note ?? props.note,
+        successHeading: f.successHeading || props.successHeading,
+        successBody: f.successBody || props.successBody,
+      },
+    };
+  } catch {
+    // Leave the block exactly as it was; the picker stays available to try again.
+    return { props: { ...props, preset: "" } };
+  }
+}) as unknown as ComponentConfig<Props["LeadForm"]>["resolveData"];
 
 export const config: Config<Props, RootProps> = {
   // Labels are written for the person filling them in, not for an SEO tool: they name WHERE the
@@ -817,6 +874,12 @@ export const config: Config<Props, RootProps> = {
     LeadForm: {
       label: "Lead form (name / phone / etc.)",
       fields: {
+        // First, because it's the fast path: pick a preset and the questions below fill in.
+        preset: {
+          type: "custom" as const,
+          label: "Questions",
+          render: ({ onChange }) => <FormPicker onApply={(id) => onChange(id)} />,
+        },
         source: { type: "text" as const, label: "Source tag (shows in the intake sheet)" },
         fields: {
           type: "array" as const,
@@ -864,7 +927,19 @@ export const config: Config<Props, RootProps> = {
           ],
         },
       },
-      defaultProps: LEADFORM_DEFAULTS as LeadFormBlock,
+      defaultProps: { ...LEADFORM_DEFAULTS, preset: "" } as LeadFormBlock,
+      /**
+       * Copy a preset's questions into THIS block, then forget the preset.
+       *
+       * `preset` is cleared on the way out, so a saved page never holds a reference to a library
+       * form. That is the whole point of copy-on-use: editing the preset later cannot reach this
+       * page, deleting it cannot break this page, and two clients sharing a preset can never
+       * affect each other. The questions on the page ARE the record.
+       *
+       * Fetches rather than importing lib/forms: this runs in the browser, and the storage module
+       * would drag the database client into the editor bundle.
+       */
+      resolveData: resolveLeadFormPreset,
       render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme }) => (
         <LeadForm
           source={source}

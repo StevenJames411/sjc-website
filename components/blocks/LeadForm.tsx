@@ -12,7 +12,23 @@ import { resolveColor } from "@/lib/brandColor";
 // sheet + an email to Steven). The "source" value rides along as the first answer so leads from
 // different pages stay sortable in the one sheet.
 
-export type LeadFormField = { label: string; inputType: string };
+export type LeadFormField = {
+  label: string;
+  inputType: string;
+  /**
+   * THE SPREADSHEET COLUMN. Present on any question that came from the form library; absent on
+   * blocks built before the library existed.
+   *
+   * ⚠️ When it's absent we fall back to slugifying the label, which is what the old code always
+   * did — and that is the bug: reword the question and the answer starts landing in a NEW column,
+   * orphaning everything collected so far. The fallback exists only so published pages keep
+   * behaving exactly as they do today. Anything picked from the library carries a real key and
+   * can be reworded freely.
+   */
+  fieldId?: string;
+  /** Library questions can be optional. A block without this stays all-or-nothing, as before. */
+  required?: boolean;
+};
 export type LeadFormProps = {
   source?: string;
   fields?: LeadFormField[];
@@ -50,11 +66,23 @@ export const LEADFORM_DEFAULTS: LeadFormProps = {
     "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 851-4906.",
 };
 
-const keyFor = (label: string, i: number) =>
-  String(label || `q${i + 1}`)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || `q${i + 1}`;
+// The stored key wins. Only fall back to the label when a block predates the form library —
+// see the note on LeadFormField.fieldId.
+const keyFor = (f: LeadFormField | undefined, i: number) => {
+  const stored = String(f?.fieldId || "").trim();
+  if (stored) return stored;
+  return (
+    String(f?.label || `q${i + 1}`)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || `q${i + 1}`
+  );
+};
+
+// A question is mandatory unless the library explicitly marked it optional. Blocks from before
+// the library have no `required` on any field, so they stay all-or-nothing exactly as before.
+const isRequired = (f: LeadFormField | undefined, list: LeadFormField[]) =>
+  list.some((x) => typeof x?.required === "boolean") ? !!f?.required : true;
 
 export default function LeadForm(props: LeadFormProps) {
   const {
@@ -92,7 +120,9 @@ export default function LeadForm(props: LeadFormProps) {
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [trap, setTrap] = useState("");
 
-  const missing = list.filter((f, i) => !(values[keyFor(f?.label, i)] || "").trim());
+  const missing = list.filter(
+    (f, i) => isRequired(f, list) && !(values[keyFor(f, i)] || "").trim()
+  );
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -115,9 +145,9 @@ export default function LeadForm(props: LeadFormProps) {
           answers: [
             { key: "source", label: "Source", value: source || "" },
             ...list.map((f, i) => ({
-              key: keyFor(f?.label, i),
+              key: keyFor(f, i),
               label: f?.label || `Question ${i + 1}`,
-              value: (values[keyFor(f?.label, i)] || "").trim(),
+              value: (values[keyFor(f, i)] || "").trim(),
             })),
           ],
         }),
@@ -158,11 +188,14 @@ export default function LeadForm(props: LeadFormProps) {
     >
       <div className="space-y-5">
         {list.map((f, i) => {
-          const k = keyFor(f?.label, i);
+          const k = keyFor(f, i);
           return (
             <div key={k}>
               <label htmlFor={`lf-${k}`} className={labelCls}>
                 {f?.label}
+                {isRequired(f, list) ? null : (
+                  <span className="ml-1 font-normal opacity-60">(optional)</span>
+                )}
               </label>
               <input
                 id={`lf-${k}`}

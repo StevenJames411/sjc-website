@@ -93,6 +93,9 @@ export const emptySeo = (): SiteSeo => ({
 export const RESERVED_SITE_IDS = [
   "about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites",
   "home", "nav", "footer", "brand", "import", "new", "sites", "admin",
+  // The form library lives at /edit/forms, a static segment that shadows /edit/<site>. A site
+  // with this id would be created happily and then be permanently unopenable.
+  "forms",
   // The client intake link lives at /start/<id>.
   "start",
 ];
