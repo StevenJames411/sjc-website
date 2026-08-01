@@ -327,10 +327,11 @@ export default function DesignSection(props: DesignSectionProps) {
 
   // Only emit what was actually set, so an untouched section keeps the design's own rhythm.
   const decls = [
-    // Sticky rides on the section's own outer element, so the design keeps its own background,
-    // height and spacing — nothing is wrapped and nothing about the layout moves. z-index sits
-    // above ordinary content but below the form portal and any modal.
-    sticky ? "position:sticky;top:0;z-index:40" : "",
+    // ⚠️ STICKY IS NOT IN HERE — see the wrapper below. These declarations are injected into the
+    // design's own outer tag, and `position: sticky` on that element does nothing: it can only
+    // travel within its PARENT'S box, and the parent is a div exactly as tall as the header, so it
+    // unsticks immediately. SiteDrop's markup already ships `class="sticky top-0"` on the header
+    // and it fails for the same reason.
     typeof paddingTop === "number" ? `padding-top:${paddingTop}px` : "",
     typeof paddingBottom === "number" ? `padding-bottom:${paddingBottom}px` : "",
   ]
@@ -362,7 +363,19 @@ export default function DesignSection(props: DesignSectionProps) {
   // working form is in place. With JavaScript off the box stays empty, which is honest: the real
   // form is a React component and could never have worked there anyway.
   return (
-    <div className={DESIGN_SCOPE} {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}>
+    <div
+      className={DESIGN_SCOPE}
+      {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
+      // STICKY BELONGS ON THIS ELEMENT, not on the design's header inside it.
+      //
+      // `position: sticky` sticks within its parent's box and no further. The header's parent is
+      // the inner div that holds only the header, so it has zero distance to travel. THIS div's
+      // parent is <main>, which is the whole page — so the section pins to the top and stays
+      // there for the length of the scroll, which is what "sticky nav" actually means.
+      //
+      // z-index 40 sits above page content and below the form portal.
+      style={sticky ? { position: "sticky", top: 0, zIndex: 40 } : undefined}
+    >
       {swapForm ? (
         <style
           dangerouslySetInnerHTML={{
