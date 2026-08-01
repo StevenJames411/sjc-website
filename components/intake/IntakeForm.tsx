@@ -152,8 +152,8 @@ export default function IntakeForm({
     return (
       <Shell title="Got it — thank you.">
         <P>
-          That&apos;s everything I need. I&apos;ll put it together and send you the site to look at
-          before anyone else sees it.
+          That&apos;s everything we need. We&apos;ll put it together and send you the site to look
+          at before anyone else sees it.
         </P>
         <P>If you think of something you forgot, just text me.</P>
         <Phone contact={contact} />
@@ -167,7 +167,7 @@ export default function IntakeForm({
 
   return (
     <Shell
-      title={businessName ? `${businessName}` : "Tell me about your business"}
+      title={businessName ? `${businessName}` : "Tell us about your business"}
       progress={{ at: i + 1, of: questions.length }}
     >
       <label style={{ display: "block", fontSize: 21, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>
@@ -257,7 +257,7 @@ export default function IntakeForm({
           disabled={!canAdvance || saveState === "saving" || !!busy}
           style={{ ...BTN, ...PRIMARY, opacity: canAdvance && !busy ? 1 : 0.5, flex: 1 }}
         >
-          {saveState === "saving" ? "Saving…" : i + 1 >= questions.length ? "Send it to Steven" : "Next"}
+          {saveState === "saving" ? "Saving…" : i + 1 >= questions.length ? "Send it in" : "Next"}
         </button>
       </div>
 

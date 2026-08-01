@@ -36,7 +36,7 @@ export async function GET(req: Request) {
   const summary = (await intakeSummaries([{ id }]))[id];
 
   // Her answers with the question text beside them, so this is readable without cross-referencing
-  // the code to find out what "wantMore" was asking.
+  // the code to find out what "whyYou" was asking.
   const answers = INTAKE_QUESTIONS.filter((q) => record.answers[q.id]).map((q) => ({
     question: q.label,
     answer: record.answers[q.id],
