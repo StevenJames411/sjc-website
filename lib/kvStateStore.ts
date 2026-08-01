@@ -5,7 +5,7 @@
 
 type KvClient = {
   get(key: string): Promise<unknown>;
-  set(key: string, value: unknown): Promise<void>;
+  set(key: string, value: unknown, opts?: { force?: boolean }): Promise<void>;
 };
 
 export function createKvStore(client: KvClient | null, key: string) {
@@ -45,6 +45,34 @@ export function createKvStore(client: KvClient | null, key: string) {
       } catch (e) {
         const reason = e instanceof Error ? e.message : String(e);
         console.error(`[kvStateStore] write to '${key}' failed: ${reason}`);
+        return { ok: false, reason };
+      }
+    },
+
+    /**
+     * EMPTY THIS KEY ON PURPOSE, past the write guard.
+     *
+     * A deliberate erasure is indistinguishable from accidental data loss as far as the guard can
+     * tell, so `deleteSite` writing `{}` over a page was refused every single time — and because
+     * it used write() and dropped the boolean, delete reported success while removing nothing.
+     * Every website Steven ever deleted was still sitting in the store.
+     *
+     * Kept as its own method rather than a flag on write(): the guarded path stays the default,
+     * and nothing acquires a bypass by passing an option it didn't think about. Only code that
+     * means to destroy something calls this.
+     *
+     * ⚠️ This empties the LIVE document. `state_rev` is append-only, so previous revisions remain
+     * — that is what makes a bad write recoverable, and it means this is NOT erasure in the
+     * data-retention sense. See the note on deleteSite.
+     */
+    async purge(): Promise<{ ok: boolean; reason?: string }> {
+      if (!client) return { ok: false, reason: "no storage client configured" };
+      try {
+        await client.set(key, {}, { force: true });
+        return { ok: true };
+      } catch (e) {
+        const reason = e instanceof Error ? e.message : String(e);
+        console.error(`[kvStateStore] purge of '${key}' failed: ${reason}`);
         return { ok: false, reason };
       }
     },

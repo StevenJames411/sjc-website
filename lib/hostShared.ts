@@ -36,10 +36,18 @@ export function publicBaseFor(site: { id: string; domain?: string }): {
 } {
   const domain = normalizeHost(site.domain || "");
   if (domain) return { origin: `https://${domain}`, prefix: "" };
-  // No domain yet: a demo on its own subdomain of the studio. The prefix is always empty — a demo
-  // is served at the root of its subdomain, so its pages sit at /services, not /bobs/services,
-  // and nothing about the URL has to change when the domain is swapped in at sale.
-  return { origin: `https://${site.id}.${STUDIO_HOST}`, prefix: "" };
+  // No domain yet: a demo on its own subdomain of the studio.
+  //
+  // The `-demo` suffix says what the link is. A prospect opening
+  // bobs-landscaping-demo.stevenjamesdesigns.com sees his own business name first and knows it's a
+  // mockup; the studio's brand sits in the tail where it belongs. It's driven by the SAME rule
+  // that already decides sandbox-vs-live — no domain means demo — so there's one concept, not two,
+  // and the suffix disappears on its own the moment a domain is set.
+  //
+  // The prefix stays empty: a demo is served at the ROOT of its subdomain, so its pages sit at
+  // /services rather than /bobs/services. That's what makes the swap at sale free — no URL inside
+  // the site changes, only the address in front of them.
+  return { origin: `https://${site.id}-demo.${STUDIO_HOST}`, prefix: "" };
 }
 
 /** The absolute public URL of one page. A site's FIRST page sits at its bare address. */

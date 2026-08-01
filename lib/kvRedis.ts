@@ -8,7 +8,8 @@ import Redis from "ioredis";
 
 type KvClient = {
   get(key: string): Promise<unknown>;
-  set(key: string, value: unknown): Promise<void>;
+  /** `opts` is accepted for parity with the Postgres client; Redis has no write guard. */
+  set(key: string, value: unknown, opts?: { force?: boolean }): Promise<void>;
 };
 
 let _redis: Redis | null = null;
@@ -31,7 +32,10 @@ export function getClient(): KvClient | null {
         const v = await _redis!.get(key);
         return v ? JSON.parse(v) : null;
       },
-      async set(key: string, value: unknown) {
+      // The third argument is the Postgres client's `force` flag. Redis has no guard, so every
+      // write is already unguarded and there is nothing to bypass — accepted and ignored so both
+      // backends satisfy the same KvClient type.
+      async set(key: string, value: unknown, _opts?: { force?: boolean }) {
         await _redis!.set(key, JSON.stringify(value));
       },
     };

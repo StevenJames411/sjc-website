@@ -89,7 +89,10 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
     const label = host.slice(0, -(studio.length + 1));
     // Only one level. a.b.stevenjamesdesigns.com is not a demo.
     if (label && !label.includes(".")) {
-      const demo = sites.find((s) => s.id !== SJC && s.id === label);
+      // `-demo` is a label, not part of the id — see publicBaseFor in ./hostShared. The bare form
+      // is still matched so any link sent before the suffix existed keeps resolving.
+      const bare = label.endsWith("-demo") ? label.slice(0, -"-demo".length) : label;
+      const demo = sites.find((s) => s.id !== SJC && (s.id === bare || s.id === label));
       if (demo) return { kind: "client", site: demo };
     }
   }

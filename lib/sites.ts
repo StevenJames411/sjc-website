@@ -199,25 +199,55 @@ export async function deleteSite(id: string): Promise<{ ok: boolean; error?: str
   const sites = await readSites();
   if (!sites.some((x) => x.id === s)) return { ok: false, error: "No such website." };
 
-  // Purge its content first, so a failed registry write can't strand live pages at a URL.
+  // ⚠️ THIS USED TO DELETE NOTHING. Found 2026-08-01, after Steven deleted a site, re-imported the
+  // same design under the same name, and his old edits were still there.
+  //
+  // The purge wrote `{}` over each key with write(). The guard in pgClient sees `root` and
+  // `content` disappearing and refuses — correctly, by its own rules, since a deliberate erasure
+  // looks exactly like a page being gutted. write() returns a boolean, this function discarded it,
+  // and then returned { ok: true }. So delete removed the registry row and left every byte of
+  // content in the store; a new site with the same slug inherited all of it. Thirteen dead
+  // websites had accumulated that way, two of them still holding a real business's intake answers.
+  //
+  // Two changes: purge() goes past the guard on purpose, and failures are COLLECTED and returned
+  // instead of dropped. A delete that silently doesn't is worse than one that says it couldn't.
+  //
+  // ⚠️ WHAT THIS STILL DOES NOT DO: `state_rev` is append-only — it is the undo history and the
+  // reason a bad write is recoverable. Purging empties the live document; every prior revision
+  // survives. That is right for a builder and WRONG for "delete my data". Telling a departing
+  // client their information is gone is not yet true. A real erasure path is a separate job and
+  // belongs with the data-retention clause in the agreement.
   const { readPages } = await import("./pageRegistry");
   const client = getClient();
   const k = siteKeys(s);
+  const failed: string[] = [];
+  const kill = async (key: string) => {
+    const res = await createKvStore(client, key).purge();
+    if (!res.ok) failed.push(`${key}: ${res.reason}`);
+  };
+
   for (const p of await readPages(s)) {
-    await createKvStore(client, k.puck(p.slug)).write({});
-    await createKvStore(client, k.puck(p.slug, true)).write({});
+    await kill(k.puck(p.slug));
+    await kill(k.puck(p.slug, true));
     // A page imported from a bought design keeps its compiled stylesheet in its own key. It
     // belongs to this website, so it goes with it.
-    await createKvStore(client, k.designCss(p.slug)).write({});
-    await createKvStore(client, k.designCss(p.slug, true)).write({});
+    await kill(k.designCss(p.slug));
+    await kill(k.designCss(p.slug, true));
   }
-  await createKvStore(client, k.pages).write({});
-  await createKvStore(client, k.brand()).write({});
-  await createKvStore(client, k.brand(true)).write({});
+  await kill(k.pages);
+  await kill(k.brand());
+  await kill(k.brand(true));
+  // The onboarding answers and photo links. This was never in the purge list at all, so it
+  // survived even when the rest worked — and it is the key that holds a real person's details.
+  await kill(k.intake);
+
+  if (failed.length) {
+    return { ok: false, error: `Content couldn't be removed, so nothing was deleted: ${failed.join("; ")}` };
+  }
 
   return (await writeSites(sites.filter((x) => x.id !== s)))
     ? { ok: true }
-    : { ok: false, error: "Couldn't save the change." };
+    : { ok: false, error: "Content was removed but the list couldn't be saved." };
 }
 
 /**
