@@ -33,9 +33,11 @@ export default function InvoiceLibrary({
   const [err, setErr] = useState("");
   const [confirming, setConfirming] = useState("");
 
-  // "Your details" opens by itself when it's empty, because an invoice with no business name on
-  // it is the first thing that would go out wrong.
-  const [openDetails, setOpenDetails] = useState(!issuer.businessName);
+  // Closed by default. Your details are editable on the invoice itself now, which is where you
+  // actually are when you notice something is wrong with them — this panel only sets what NEW
+  // invoices start with. It used to open by itself when empty, and that made this page look like
+  // the invoice form with the wrong fields on it.
+  const [openDetails, setOpenDetails] = useState(false);
   const [d, setD] = useState<IssuerDetails>({ ...EMPTY_ISSUER, ...issuer });
   const [dDirty, setDDirty] = useState(false);
   const [dSaved, setDSaved] = useState(false);
@@ -147,7 +149,10 @@ export default function InvoiceLibrary({
           <div style={panelHeadRow}>
             <div>
               <h2 style={panelH}>Your details</h2>
-              <p style={hint}>Typed once. These print at the top of every invoice.</p>
+              <p style={hint}>
+                What every <strong>new</strong> invoice starts with. Each invoice keeps its own
+                copy, so changing these never rewrites one you already sent.
+              </p>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={saveState}>{dDirty ? "Unsaved" : dSaved ? "Saved" : ""}</span>

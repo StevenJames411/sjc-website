@@ -85,6 +85,10 @@ function normalize(i: Invoice): Invoice {
     notes: String(i.notes || ""),
     terms: String(i.terms || ""),
     createdAt: String(i.createdAt || new Date().toISOString()),
+    // Left undefined when absent rather than filled with blanks: `undefined` means "this invoice
+    // predates snapshots, fall back to the current template", while an empty object would mean
+    // "this invoice was genuinely sent with no business name on it" and print a blank header.
+    ...(i.from ? { from: { ...EMPTY_ISSUER, ...i.from } } : {}),
   };
 }
 
@@ -142,6 +146,9 @@ export async function createInvoice(opts: {
     notes: source?.notes || "",
     terms: source?.terms || issuer.terms,
     createdAt: new Date().toISOString(),
+    // The template, copied in. From here it belongs to this invoice — editing it on the invoice
+    // changes this document only, unless you explicitly save it back as the default.
+    from: { ...issuer },
   };
 
   const res = await writeBlob({ ...blob, invoices: [...all, invoice] });

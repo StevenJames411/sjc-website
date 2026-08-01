@@ -51,6 +51,19 @@ export type Invoice = {
   /** Payment terms for this invoice, defaulted from your details but editable per invoice. */
   terms: string;
   createdAt: string;
+  /**
+   * YOUR details, as they were when this invoice was made.
+   *
+   * A snapshot, not a reference. The alternative — every invoice rendering the one current set of
+   * details — means changing your address next year silently rewrites the address on invoices you
+   * already sent, and reprinting an old one produces a document that never existed. An invoice is
+   * a record of what went out.
+   *
+   * Copied from the saved template when the invoice is created, and editable right here, which is
+   * what makes filling one in a single step. Older invoices written before this existed have no
+   * snapshot; those fall back to the current template.
+   */
+  from?: IssuerDetails;
 };
 
 /**

@@ -22,5 +22,7 @@ export default async function PrintInvoicePage({
   const [found, issuer] = await Promise.all([findInvoice(invoice), readIssuer()]);
   if (!found) notFound();
 
-  return <InvoicePrint invoice={found} issuer={issuer} auto={sp?.print === "1"} />;
+  // The invoice's OWN snapshot of your details, so reprinting an old one reproduces what was
+  // actually sent. Only invoices written before snapshots existed fall back to the template.
+  return <InvoicePrint invoice={found} issuer={found.from ?? issuer} auto={sp?.print === "1"} />;
 }

@@ -58,6 +58,14 @@ export default function InvoiceEditor({
     }))
   );
 
+  // YOUR details, on the invoice rather than on another page. They arrive pre-filled from the
+  // saved template, so making an invoice is one step: change who you're billing, add the lines,
+  // print. Editing here changes THIS invoice; "Save as my default" pushes it back to the template
+  // for the next one. Nothing is hard-coded anywhere.
+  const [from, setFrom] = useState<IssuerDetails>(invoice.from ?? issuer);
+  const [defaultSaved, setDefaultSaved] = useState(false);
+  const [openFrom, setOpenFrom] = useState(!(invoice.from ?? issuer).businessName);
+
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -86,6 +94,7 @@ export default function InvoiceEditor({
       notes,
       discountLabel,
       discountCents: toCents(discountText),
+      from,
       lines: lines.map((l) => ({
         id: l.id,
         description: l.description,
@@ -93,7 +102,7 @@ export default function InvoiceEditor({
         rateCents: toCents(l.rateText),
       })),
     }),
-    [invoice, number, issuedOn, dueOn, billTo, terms, notes, discountLabel, discountText, lines]
+    [invoice, number, issuedOn, dueOn, billTo, terms, notes, discountLabel, discountText, lines, from]
   );
 
   const t = totals(draft);
@@ -143,6 +152,7 @@ export default function InvoiceEditor({
           discountLabel: draft.discountLabel,
           notes: draft.notes,
           terms: draft.terms,
+          from: draft.from,
         }),
       });
       const body = await res.json();
@@ -166,6 +176,32 @@ export default function InvoiceEditor({
     if (dirty && !(await save())) return;
     window.location.href = `/edit/invoices/${invoice.id}/print?print=1`;
   }
+
+  /** Push this invoice's From block back to the template, so the next invoice starts with it. */
+  async function saveAsDefault() {
+    setSaving(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/invoices", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ issuer: from }),
+      });
+      const body = await res.json();
+      if (!body?.ok) throw new Error(body?.error || "Couldn't save.");
+      setDefaultSaved(true);
+      setTimeout(() => setDefaultSaved(false), 2600);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const setFromField = (k: keyof IssuerDetails) => (v: string) => {
+    edit(setFrom)({ ...from, [k]: v });
+  };
 
   return (
     <div style={page}>
@@ -198,6 +234,78 @@ export default function InvoiceEditor({
       <div style={cols}>
         {/* ── the form ───────────────────────────────────────────────────────────── */}
         <div style={formCol}>
+          {/* FROM — collapsed to one line once it's filled in, because on all but the first
+              invoice it's already correct and only takes up room. Expanded automatically when
+              there's no business name yet, which is the one time it needs attention. */}
+          <section style={panel}>
+            <div style={panelHeadRow}>
+              <div style={{ minWidth: 0 }}>
+                <h2 style={{ ...panelH, marginBottom: 2 }}>From</h2>
+                {!openFrom ? (
+                  <p style={fromSummary}>
+                    {from.businessName || "No business name yet"}
+                    {from.dba ? ` · dba ${from.dba}` : ""}
+                  </p>
+                ) : (
+                  <p style={hint}>These print at the top of this invoice.</p>
+                )}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                {openFrom ? (
+                  <button type="button" style={smallBtn} onClick={saveAsDefault} disabled={saving}>
+                    {defaultSaved ? "Saved as default" : "Save as my default"}
+                  </button>
+                ) : null}
+                <button type="button" style={smallBtn} onClick={() => setOpenFrom((v) => !v)}>
+                  {openFrom ? "Done" : "Change"}
+                </button>
+              </div>
+            </div>
+
+            {openFrom ? (
+              <>
+                <div style={row2}>
+                  <Field label="Business name (the legal entity)">
+                    <input
+                      style={input}
+                      value={from.businessName}
+                      onChange={(e) => setFromField("businessName")(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="DBA / trading name">
+                    <input style={input} value={from.dba} onChange={(e) => setFromField("dba")(e.target.value)} />
+                  </Field>
+                </div>
+                <div style={row2}>
+                  <Field label="Email">
+                    <input style={input} value={from.email} onChange={(e) => setFromField("email")(e.target.value)} />
+                  </Field>
+                  <Field label="Phone">
+                    <input style={input} value={from.phone} onChange={(e) => setFromField("phone")(e.target.value)} />
+                  </Field>
+                </div>
+                <Field label="Address">
+                  <textarea
+                    style={{ ...input, minHeight: 58, resize: "vertical" }}
+                    value={from.address}
+                    onChange={(e) => setFromField("address")(e.target.value)}
+                  />
+                </Field>
+                <Field label="How to pay">
+                  <textarea
+                    style={{ ...input, minHeight: 58, resize: "vertical" }}
+                    value={from.payTo}
+                    onChange={(e) => setFromField("payTo")(e.target.value)}
+                  />
+                </Field>
+                <p style={hint}>
+                  Changes here apply to <strong>this invoice</strong>. Use “Save as my default” to
+                  start every future invoice with them.
+                </p>
+              </>
+            ) : null}
+          </section>
+
           <section style={panel}>
             <h2 style={panelH}>Details</h2>
             <div style={row2}>
@@ -361,13 +469,6 @@ export default function InvoiceEditor({
                 onChange={(e) => edit(setNotes)(e.target.value)}
               />
             </Field>
-            <p style={hint}>
-              Your business name, DBA and payment details come from{" "}
-              <a href="/edit/invoices" style={link}>
-                Your details
-              </a>{" "}
-              and appear on every invoice.
-            </p>
           </section>
         </div>
 
@@ -451,5 +552,6 @@ const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", bo
 const picker: React.CSSProperties = { border: "1px solid #d1d5db", borderRadius: 8, padding: "6px 9px", fontSize: 12.5, background: "#fff", fontFamily: font };
 const saveState: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", fontWeight: 600, minWidth: 96, textAlign: "right" };
 const hint: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", marginTop: 2, lineHeight: 1.5 };
-const link: React.CSSProperties = { color: "#2563eb", fontWeight: 600 };
+const fromSummary: React.CSSProperties = { fontSize: 13, color: "#374151", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
+const smallBtn: React.CSSProperties = { background: "#fff", border: "1px solid #d1d5db", borderRadius: 7, padding: "6px 11px", fontSize: 12.5, fontWeight: 600, color: "#374151", cursor: "pointer", whiteSpace: "nowrap" };
 const errBox: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13, marginBottom: 16 };
