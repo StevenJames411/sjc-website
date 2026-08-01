@@ -10,7 +10,10 @@ const PAGES: { path: string; priority: number }[] = [
   { path: "/about", priority: 0.8 },
   { path: "/podcast", priority: 0.7 },
   { path: "/faqs", priority: 0.7 },
-  { path: "/websites", priority: 0.7 },
+  // /websites is NOT here any more. The web studio moved to its own domain
+  // (stevenjamesdesigns.com) and this address only forwards. Listing a 308 in a sitemap tells
+  // Google to index a redirect, and listing another business's page under SJC's map is exactly
+  // the conflation the separate domain exists to end.
   { path: "/apply", priority: 0.6 },
 ];
 
