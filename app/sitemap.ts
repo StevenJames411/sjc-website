@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { resolveHost, publicUrlFor } from "@/lib/host";
 import { readPages } from "@/lib/pageRegistry";
+import { readPuckPublished } from "@/lib/puckContent";
 import { SJC_HOST } from "@/lib/hostShared";
 
 // /sitemap.xml — the map crawlers (and AI indexers) use to find every page worth reading.
@@ -37,14 +38,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!h.site.domain) return [];
     const pages = await readPages(h.site.id);
     const origin = publicUrlFor(h.site);
-    return pages.map((p, i) => ({
-      // The FIRST page is the site's front door and lives at the bare address, whatever it's
-      // called — same rule the public router uses. See resolvePage's homeFallback.
-      url: i === 0 ? origin : `${origin}/${p.slug}`,
-      lastModified,
-      changeFrequency: "monthly" as const,
-      priority: i === 0 ? 1 : 0.7,
-    }));
+
+    // ⚠️ PUBLISHED ONLY. Listing every page in the registry put an unpublished duplicate
+    // ("home-2", left behind by a re-import) into the sitemap — inviting Google to index an
+    // address that serves nothing. A page exists in the builder long before it's meant to be
+    // found, and the sitemap is a list of what IS findable.
+    const published = await Promise.all(
+      pages.map(async (p) => ((await readPuckPublished(p.slug, h.site.id)) ? p : null))
+    );
+
+    return published
+      .filter((p): p is NonNullable<typeof p> => Boolean(p))
+      .map((p, i) => ({
+        // The FIRST page is the site's front door and lives at the bare address, whatever it's
+        // called — same rule the public router uses. See resolvePage's homeFallback.
+        url: i === 0 ? origin : `${origin}/${p.slug}`,
+        lastModified,
+        changeFrequency: "monthly" as const,
+        priority: i === 0 ? 1 : 0.7,
+      }));
   }
 
   // The studio before a site claims its domain, and SJC itself.
