@@ -95,6 +95,15 @@ export type DesignSectionProps = {
    *
    * null/undefined = leave the design alone.
    */
+  /**
+   * Pin this section to the top of the window while the visitor scrolls.
+   *
+   * Bought designs ship a static header, but a sticky nav is what a small business's site is
+   * expected to have — the phone number and the Get-a-quote button stay reachable at the point
+   * someone has scrolled far enough to want them. Left off by default so no imported design's
+   * layout changes on its own.
+   */
+  sticky?: boolean;
   paddingTop?: number | null;
   paddingBottom?: number | null;
 
@@ -120,6 +129,7 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   text: [],
   images: [],
   links: [],
+  sticky: false,
   paddingTop: null,
   paddingBottom: null,
   hasForm: false,
@@ -305,6 +315,7 @@ export default function DesignSection(props: DesignSectionProps) {
     text = [],
     images = [],
     links = [],
+    sticky,
     paddingTop,
     paddingBottom,
     hasForm,
@@ -316,6 +327,10 @@ export default function DesignSection(props: DesignSectionProps) {
 
   // Only emit what was actually set, so an untouched section keeps the design's own rhythm.
   const decls = [
+    // Sticky rides on the section's own outer element, so the design keeps its own background,
+    // height and spacing — nothing is wrapped and nothing about the layout moves. z-index sits
+    // above ordinary content but below the form portal and any modal.
+    sticky ? "position:sticky;top:0;z-index:40" : "",
     typeof paddingTop === "number" ? `padding-top:${paddingTop}px` : "",
     typeof paddingBottom === "number" ? `padding-bottom:${paddingBottom}px` : "",
   ]

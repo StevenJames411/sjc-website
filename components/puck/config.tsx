@@ -35,6 +35,7 @@ type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; grid: string; gradientTo: string; gradientAngle: number; content: Slot };
   /** One section of a bought design, kept verbatim. Words, photos and vertical spacing editable. */
   DesignSection: {
+    sticky: boolean;
     html: string;
     text: DesignText[];
     images: DesignImage[];
@@ -422,6 +423,17 @@ export const config: Config<Props, RootProps> = {
             { label: "Show the design's mock form", value: false },
           ],
         },
+        // Only meaningful on the header section; harmless elsewhere. A bought design ships a
+        // static header, and a small business's site is expected to keep the phone number and the
+        // quote button reachable once a visitor has scrolled far enough to want them.
+        sticky: {
+          type: "radio" as const,
+          label: "When scrolling",
+          options: [
+            { label: "Stays put", value: false },
+            { label: "Sticks to the top", value: true },
+          ],
+        },
         // Same stepper as the native Section block, so imported and hand-built sections are
         // adjusted the same way. Blank = keep whatever spacing the design shipped with.
         paddingTop: {
@@ -589,12 +601,13 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton }) => (
+      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton }) => (
         <DesignSection
           html={html}
           text={text}
           images={images}
           links={links}
+          sticky={sticky}
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
           hasForm={hasForm}
