@@ -161,6 +161,9 @@ export default function SiteGallery({ sites, intake }: Props) {
             then linked from nowhere — reachable only by typing the URL — so anything new gets a
             button here or it doesn't exist. */}
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+          <a href="/edit/board" style={navBtn}>
+            Board
+          </a>
           <a href="/edit/forms" style={navBtn}>
             Forms
           </a>
