@@ -77,6 +77,22 @@ const printCss = `
     /* Nothing but the document. */
     .screen-only { display: none !important; }
 
+    /* ── ISOLATE THE SHEET ────────────────────────────────────────────────────────────────
+       Hiding only our own controls is not enough: the app's global chrome is rendered by the
+       root layout, outside this component's markup entirely. The floating "Sign out" button
+       (components/edit/EditLink.tsx — position:fixed, so it lands on top of the page) printed
+       on a customer's invoice because of exactly that.
+
+       So instead of naming things to hide, hide EVERYTHING and un-hide the sheet. Any future
+       banner, chat bubble or toast is excluded by default rather than the day someone notices
+       it on a PDF that already went out.
+
+       visibility rather than display: it doesn't disturb layout, and it's inherited, so the
+       second rule re-reveals the sheet's whole subtree in one line. */
+    body * { visibility: hidden !important; }
+    .page, .page * { visibility: visible !important; }
+    .page { position: absolute; left: 0; top: 0; width: 100%; }
+
     html, body { background: #fff !important; }
     .page {
       max-width: none;
