@@ -3,7 +3,7 @@
 // ── WHY THE BOARD IS TWO PAGES ────────────────────────────────────────────────────────────────
 // Every check fans out one row per client, so the single-page version repeated the same eight
 // headlines for every customer and the ONLY thing telling two tiles apart was a grey subtitle.
-// At two clients that's survivable; at ten it's forty tiles reading "Her domain registration is
+// At two clients that's survivable; at ten it's forty tiles reading "Their domain registration is
 // not about to lapse" and you scan subtitles to find anybody.
 //
 // So /edit/board is now a ROSTER — one row per owner, keyed by the DOMAIN, because the domain is

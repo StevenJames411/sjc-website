@@ -57,8 +57,11 @@ export async function readBoardView(): Promise<BoardView> {
   const groups: Group[] = [
     {
       key: SJC_KEY,
-      title: "SJC itself",
-      subtitle: "The store and the sending domain that sit under every client",
+      // ⛔ NOT "SJC itself". Steven read that row against "Steven James Designs" one line below and
+      // had to stop and work out which initialism was which. Two brands that share initials cannot
+      // both be abbreviated on the same screen — the row that ISN'T a customer says so in words.
+      title: "The shared floor — not a customer",
+      subtitle: "The durable store and the one sending domain that sit under every website",
       rows: globalRows,
       colour: worst(globalRows.map((r) => r.colour)),
     },

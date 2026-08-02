@@ -70,15 +70,18 @@ export const CHECKS: CheckDef[] = [
   },
   {
     id: "site.reachable",
-    label: "Her website answers, and it is HERS",
+    // ⛔ NEVER "her"/"his" ANYWHERE A BUSINESS IS MEANT. We do not know who owns the company — a
+    // man, a woman, a veteran — and guessing wrong in a tile Steven reads every morning trains the
+    // wrong habit into the copy that eventually faces the customer. The business is THEY.
+    label: "Their website answers, and it is THEIRS",
     layer: 2,
     scope: "site",
     expectation:
-      "Fetching her public address returns 200 AND the HTML contains her business name.",
+      "Fetching their public address returns 200 AND the HTML contains their business name.",
     runbook:
       "An unknown host resolves to SJC by design — that is what stops a new hostname taking the " +
-      "selling site down. The cost is that a domain typo or a missing Vercel attachment sends her " +
-      "customers to Steven's site with no error anywhere. Attach the domain in Vercel or fix the " +
+      "selling site down. The cost is that a domain typo or a missing Vercel attachment sends " +
+      "their customers to Steven's site with no error anywhere. Attach the domain in Vercel or fix the " +
       "A record. Every visitor in the window is lost, so this is red on the first failure.",
     cadenceSeconds: HOUR,
     freshSeconds: 3 * HOUR,
@@ -86,7 +89,7 @@ export const CHECKS: CheckDef[] = [
   },
   {
     id: "site.domain_expiry",
-    label: "Her domain registration is not about to lapse",
+    label: "Their domain registration is not about to lapse",
     layer: 1,
     scope: "site",
     expectation: "The registry says the domain expires more than 45 days from now.",
@@ -101,7 +104,7 @@ export const CHECKS: CheckDef[] = [
   },
   {
     id: "site.lead_destination",
-    label: "Her leads have somewhere to go",
+    label: "Their leads have somewhere to go",
     layer: 2,
     scope: "site",
     expectation:
@@ -111,7 +114,7 @@ export const CHECKS: CheckDef[] = [
       "⛔ Two live sites sharing a lead email or a GHL webhook is client A's enquiries landing in " +
       "client B's inbox. That ends the retainer and the referral behind it, so it is red on the " +
       "first sighting, never yellow. Fix in Website settings. A missing destination is yellow — " +
-      "she is paying for a lead record she does not have.",
+      "they are paying for a lead record they do not have.",
     cadenceSeconds: 6 * HOUR,
     freshSeconds: 12 * HOUR,
     staleSeconds: 2 * DAY,
@@ -284,8 +287,8 @@ async function checkSiteReachable(site: Site): Promise<CheckRun> {
   const name = (site.business?.name || site.name || "").trim();
 
   // ⚠️ A 200 IS NOT THE ASSERTION. lib/host.ts resolves an unknown host to SJC, so a misconfigured
-  // domain answers 200 all day while serving Steven's consulting site to her customers. The name
-  // appearing in the HTML is the only thing that proves the page is HERS.
+  // domain answers 200 all day while serving Steven's consulting site to their customers. The name
+  // appearing in the HTML is the only thing that proves the page is THEIRS.
   const isHers = name ? html.toLowerCase().includes(name.toLowerCase()) : res.ok;
   return {
     checkId: "site.reachable",
@@ -308,7 +311,7 @@ async function checkDomainExpiry(site: Site): Promise<CheckRun> {
       checkId: "site.domain_expiry",
       siteId: site.id,
       status: "skipped",
-      detail: "No domain yet — she is on the demo address, so there is nothing to expire.",
+      detail: "No domain yet — they are on the demo address, so there is nothing to expire.",
       evidence: { domain: null },
       at: now(),
     };
@@ -362,7 +365,7 @@ async function checkDomainExpiry(site: Site): Promise<CheckRun> {
 
 /**
  * Pure config audit — no vendor is called, so this one can never be wrong about the outside world.
- * It answers the question nothing else does: does she have a destination at all, and is it hers.
+ * It answers the question nothing else does: is there a destination at all, and is it theirs alone.
  */
 function checkLeadDestinations(site: Site, all: Site[]): CheckRun {
   const email = (site.leadEmail || "").trim().toLowerCase();
@@ -387,11 +390,11 @@ function checkLeadDestinations(site: Site, all: Site[]): CheckRun {
   return {
     checkId: "site.lead_destination",
     siteId: site.id,
-    // ⛔ A collision is RED on sight. Missing is yellow — she is owed something she hasn't got.
-    // Shared is a different animal: her customer's enquiry arrives in someone else's inbox.
+    // ⛔ A collision is RED on sight. Missing is yellow — they are owed something they haven't got.
+    // Shared is a different animal: their customer's enquiry arrives in someone else's inbox.
     status: collision ? "fail" : missing.length ? "warn" : "pass",
     detail: collision
-      ? `SHARES A DESTINATION with ${collision.name} — her leads can land in their inbox.`
+      ? `SHARES A DESTINATION with ${collision.name} — leads can land in that inbox instead.`
       : missing.length
         ? `${missing.join(", ")}.`
         : "email, sheet and CRM webhook all set, and none shared with another client.",

@@ -1,7 +1,7 @@
 // ONE OWNER'S BOARD — every joint under one customer, on one page.
 //
 // The roster (../page.tsx) answers "is anything on fire anywhere." This answers "what exactly is
-// wrong with HER machine," which is the question you have the moment the answer to the first one
+// wrong with THIS ONE's machine," which is the question you have the moment the answer to the first
 // is yes. Nothing else belongs here: no other client's tiles, no cross-client rollup.
 //
 // `owner` is either a site id or the reserved `_sjc` for the global checks that sit under
@@ -54,7 +54,7 @@ export default async function OwnerBoardPage({ params }: { params: Promise<{ own
         <a href="/api/cron/checks" style={{ color: "#2563eb" }}>run one now</a>
         {group.key !== SJC_KEY && (
           <>
-            {" "}· <Link href={`/edit/${group.key}`} style={{ color: "#2563eb" }}>open her website</Link>
+            {" "}· <Link href={`/edit/${group.key}`} style={{ color: "#2563eb" }}>open their website</Link>
           </>
         )}
       </p>
