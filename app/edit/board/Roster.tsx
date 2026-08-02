@@ -37,9 +37,17 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [saveErr, setSaveErr] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-  // The order as it stands mid-drag. State is async, and a pointermove fires far faster than React
-  // re-renders — reading `order` inside the handler would compute the next swap from a stale list.
+  // ⚠️ THE DRAG STATE LIVES IN REFS, AND THE STATE COPY IS ONLY FOR PAINTING.
+  //
+  // React state is asynchronous. A pointermove can arrive in the same task as the pointerdown that
+  // started the drag — a fast flick, or any synthetic event — and at that moment the handler's
+  // closure still sees dragKey === null and throws the move away. That is exactly why the first
+  // version looked dead: not a broken listener, a listener reading a value that hadn't landed yet.
+  //
+  // Same reason for the order: pointermove outruns re-renders, so reading `order` would compute
+  // each swap from a stale list and the row would fight the pointer.
   const live = useRef<RosterRow[]>(rows);
+  const dragRef = useRef<string | null>(null);
 
   function save(next: RosterRow[]) {
     setSaveErr("");
@@ -78,13 +86,15 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
     if (e.button !== 0) return;
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    dragRef.current = key;
     setDragKey(key);
   }
 
   function onPointerMove(e: React.PointerEvent) {
-    if (!dragKey || !listRef.current) return;
+    const key = dragRef.current;
+    if (!key || !listRef.current) return;
     e.preventDefault();
-    const from = live.current.findIndex((r) => r.key === dragKey);
+    const from = live.current.findIndex((r) => r.key === key);
     if (from < 0) return;
 
     // Which row is the pointer sitting over? Measured from the live DOM rather than from assumed
@@ -99,7 +109,8 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
   }
 
   function onPointerUp() {
-    if (!dragKey) return;
+    if (!dragRef.current) return;
+    dragRef.current = null;
     setDragKey(null);
     save(live.current);
   }
