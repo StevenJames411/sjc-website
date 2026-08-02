@@ -66,6 +66,10 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
   const dragRef = useRef<number | null>(null);
   const liveRef = useRef<NavEntry[]>(nav.entries);
   const listRef = useRef<HTMLDivElement>(null);
+  // The authoritative document. State is only what gets painted — see the note above commit().
+  const docRef = useRef<NavDoc>(nav);
+  const dirtyRef = useRef(false);
+  const inFlightRef = useRef(false);
 
   // Both preferences are restored AFTER the first render, deliberately. Reading localStorage during
   // render makes the server's HTML and the browser's first pass disagree, and React throws away the
@@ -113,39 +117,67 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
     href === "/edit" ? pathname === "/edit" : pathname.startsWith(href);
 
   // ── saving ──────────────────────────────────────────────────────────────────────────────────
-  function save(next: NavDoc) {
-    setSaveErr("");
+  //
+  // ⚠️ SINGLE-FLIGHT, AND EVERY SEND CARRIES THE LATEST DOCUMENT. Two saves used to race: an
+  // input's blur fires as you click the ▼ beside it, so the blur (holding the OLD order) and the
+  // move (holding the new one) went out together and whichever landed second won. Rename a row and
+  // immediately drag it and the drag silently vanished on the next reload — which is exactly the
+  // "I edit one surface and it breaks something else" failure this whole design is meant to refuse.
+  //
+  // So: mutations write to docRef, and asking to save only marks it dirty. One request is in the
+  // air at a time, it reads docRef at the moment it goes out, and if anything changed while it was
+  // flying it goes again. Out-of-order overwrites become impossible rather than unlikely.
+  function commit(next: NavDoc) {
+    docRef.current = next;
+    setDoc(next);
+    liveRef.current = next.entries;
+    requestSave();
+  }
+
+  function requestSave() {
+    dirtyRef.current = true;
+    if (inFlightRef.current) return;
+    flush();
+  }
+
+  function flush() {
+    if (!dirtyRef.current) return;
+    dirtyRef.current = false;
+    inFlightRef.current = true;
     fetch("/api/edit-nav", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify(next),
+      body: JSON.stringify(docRef.current),
     })
       .then((r) => r.json())
       .then((j) => {
         if (!j?.ok) setSaveErr("That didn't save — a reload will put the menu back as it was.");
+        else setSaveErr("");
       })
-      .catch(() => setSaveErr("That didn't save — a reload will put the menu back as it was."));
+      .catch(() => setSaveErr("That didn't save — a reload will put the menu back as it was."))
+      .finally(() => {
+        inFlightRef.current = false;
+        flush(); // anything that changed mid-flight goes now, carrying the newest document
+      });
   }
 
   function setEntries(entries: NavEntry[]) {
-    liveRef.current = entries;
-    const next = { ...doc, entries };
-    setDoc(next);
-    return next;
+    commit({ ...docRef.current, entries });
   }
 
   function relabel(i: number, label: string) {
-    const entries = liveRef.current.map((e, n) => (n === i ? { ...e, label } : e));
-    setEntries(entries);
+    setEntries(docRef.current.entries.map((e, n) => (n === i ? { ...e, label } : e)));
   }
 
   function move(from: number, to: number) {
-    if (to < 0 || to >= liveRef.current.length || from === to) return null;
-    const entries = [...liveRef.current];
+    const cur = docRef.current.entries;
+    if (to < 0 || to >= cur.length || from === to) return false;
+    const entries = [...cur];
     const [row] = entries.splice(from, 1);
     entries.splice(to, 0, row);
-    return setEntries(entries);
+    setEntries(entries);
+    return true;
   }
 
   // ⚠️ Drag state in a ref, not state: a pointermove can land in the same task as its pointerdown
@@ -175,7 +207,7 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
   function onPointerUp() {
     if (dragRef.current === null) return;
     dragRef.current = null;
-    save({ ...doc, entries: liveRef.current });
+    // Each swap already committed during the move; nothing to send on release.
   }
 
   async function signOut() {
@@ -226,8 +258,7 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
               className="edit-nav-input is-brand"
               value={doc.brand}
               placeholder="Name this place"
-              onChange={(e) => setDoc({ ...doc, brand: e.target.value })}
-              onBlur={() => save(doc)}
+              onChange={(e) => commit({ ...docRef.current, brand: e.target.value })}
             />
           ) : (
             <span className="edit-side-brand">{doc.brand}</span>
@@ -236,7 +267,6 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
             <button
               className={`edit-side-collapse${editing ? " is-on" : ""}`}
               onClick={() => {
-                if (editing) save(doc);
                 setEditing((v) => !v);
               }}
               aria-label={editing ? "Done renaming" : "Rename and reorder the menu"}
@@ -289,11 +319,10 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
                   value={e.label}
                   placeholder={e.type === "section" ? "Group heading" : "Name"}
                   onChange={(ev) => relabel(i, ev.target.value)}
-                  onBlur={() => save({ ...doc, entries: liveRef.current })}
                 />
                 <span className="edit-nav-nudge">
-                  <button type="button" onClick={() => { const n = move(i, i - 1); if (n) save(n); }} aria-label="Move up">▲</button>
-                  <button type="button" onClick={() => { const n = move(i, i + 1); if (n) save(n); }} aria-label="Move down">▼</button>
+                  <button type="button" onClick={() => move(i, i - 1)} aria-label="Move up">▲</button>
+                  <button type="button" onClick={() => move(i, i + 1)} aria-label="Move down">▼</button>
                 </span>
               </div>
             ) : e.type === "section" ? (
@@ -321,15 +350,13 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
               className="edit-nav-input"
               value={doc.mainline.title}
               placeholder="Title"
-              onChange={(ev) => setDoc({ ...doc, mainline: { ...doc.mainline, title: ev.target.value } })}
-              onBlur={() => save(doc)}
+              onChange={(ev) => commit({ ...docRef.current, mainline: { ...docRef.current.mainline, title: ev.target.value } })}
             />
             <input
               className="edit-nav-input"
               value={doc.mainline.subtitle}
               placeholder="The line underneath"
-              onChange={(ev) => setDoc({ ...doc, mainline: { ...doc.mainline, subtitle: ev.target.value } })}
-              onBlur={() => save(doc)}
+              onChange={(ev) => commit({ ...docRef.current, mainline: { ...docRef.current.mainline, subtitle: ev.target.value } })}
             />
             <button type="button" className="edit-side-link edit-nav-reset" onClick={reset}>
               Put every name back
