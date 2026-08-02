@@ -116,6 +116,10 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
   const active = (href: string) =>
     href === "/edit" ? pathname === "/edit" : pathname.startsWith(href);
 
+  /** Is anything actually drawn above entry `i`? An emptied heading draws nothing. */
+  const rendersBefore = (i: number) =>
+    doc.entries.slice(0, i).some((e) => e.type === "item" || e.label.trim());
+
   // ── saving ──────────────────────────────────────────────────────────────────────────────────
   //
   // ⚠️ SINGLE-FLIGHT, AND EVERY SEND CARRIES THE LATEST DOCUMENT. Two saves used to race: an
@@ -329,7 +333,16 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
               // An emptied heading disappears rather than leaving a blank gap — that is how you
               // delete a group without a delete button that could strip its items too.
               e.label.trim() ? (
-                <div key={`s:${e.key}`} className="edit-side-section">{e.label}</div>
+                <div
+                  key={`s:${e.key}`}
+                  // The hairline sits ABOVE a heading, and only when something is actually above it
+                  // to divide from — so the first group never opens with a stray line, and a group
+                  // whose heading Steven emptied takes its divider with it. Computed against what
+                  // RENDERS, not against the index, because an emptied heading renders nothing.
+                  className={`edit-side-section${rendersBefore(i) ? " has-rule" : ""}`}
+                >
+                  {e.label}
+                </div>
               ) : null
             ) : (
               <a

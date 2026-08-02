@@ -133,6 +133,13 @@
   color: #7d8896;
   margin: 18px 10px 6px;
 }
+/* The same hairline that sits above Sign out, now between groups. Only where there is something
+   above to divide from — see rendersBefore() in EditShell. */
+.edit-side-section.has-rule {
+  border-top: 1px solid var(--e-rail-line);
+  margin-top: 16px;
+  padding-top: 16px;
+}
 
 .edit-side-link {
   display: block;
