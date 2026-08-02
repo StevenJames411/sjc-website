@@ -95,8 +95,68 @@ export type Site = {
    * store holds the answers regardless.
    */
   sheetId?: string;
+  /**
+   * THE THIRD LEAD DESTINATION — her GoHighLevel inbound webhook.
+   *
+   * The $97 offer says "every lead in one place — calls, texts and website forms in a single
+   * inbox." Calls and texts arrive in GHL on their own. Website forms are OURS, and until this
+   * existed they went to an email and a spreadsheet and nowhere else — so the one lead source we
+   * actually built was the one missing from the inbox we sold him. He'd find out when a lead he
+   * never saw turned up in a sheet he never opens.
+   *
+   * Blank = no GHL for this business, which is correct for a demo and for the $50 tier (website
+   * plus email plus sheet, no CRM). Blank is not an error.
+   *
+   * ⚠️ This does not make us a CRM. We WRITE a submission and forget it. Nothing here ever reads
+   * a contact back — GHL stays the truth.
+   */
+  ghlWebhookUrl?: string;
+  /**
+   * EVERY VENDOR ACCOUNT ATTACHED TO THIS BUSINESS — the join key for the whole operation.
+   *
+   * A client is a row here, a sub-account in GoHighLevel, a customer in Stripe, a number at
+   * Twilio and a domain at a registrar. Before this field the only vendor joined to a site was
+   * her Google Sheet; everything else was connected by Steven remembering it. That is what makes
+   * offboarding a feat of recall instead of a derived checklist, and it is why a per-customer
+   * health board could not be assembled at all — nothing said which subscription was hers.
+   *
+   * ⚠️ A MAP, NOT NAMED FIELDS, and that is the whole design. Adding a vendor has to be a new key
+   * and nothing else — no type change, no migration, no editor rewrite. The moment this becomes
+   * fifteen optional properties, vendor sixteen means touching five files and the modularity is
+   * gone.
+   *
+   * Identities only. Where leads GO lives above (leadEmail, sheetId, ghlWebhookUrl) because that
+   * group answers a different question and earns a different badge on the card.
+   */
+  accounts?: SiteAccounts;
   business: BusinessFacts;
   seo: SiteSeo;
+};
+
+/**
+ * Vendor account identifiers for one business, keyed by vendor.
+ *
+ * Open on purpose — an unrecognised key stores and renders exactly like a known one, so a vendor
+ * nobody has thought of yet costs nothing to record.
+ */
+export type SiteAccounts = Record<string, string>;
+
+/**
+ * Labels for the vendors we already know about. Purely cosmetic: a key missing from this list is
+ * still stored, still shown and still offboarded — it just renders under its own name.
+ */
+export const ACCOUNT_LABELS: Record<string, string> = {
+  ghlLocationId: "GoHighLevel sub-account",
+  stripeCustomerId: "Stripe customer",
+  stripeSubscriptionId: "Stripe subscription",
+  twilioNumber: "Twilio number",
+  twilioA2pBrandId: "Twilio A2P brand",
+  registrarAccount: "Domain registrar",
+  metaAdAccountId: "Meta ad account",
+  metaPixelId: "Meta pixel",
+  gbpLocation: "Google Business Profile",
+  anthropicKeyRef: "Anthropic key (1Password ref)",
+  vercelProject: "Vercel project",
 };
 
 export const emptyBusiness = (): BusinessFacts => ({
