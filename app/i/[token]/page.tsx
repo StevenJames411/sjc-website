@@ -46,6 +46,11 @@ export default async function PublicInvoicePage({
 
   return (
     <main style={page}>
+      {/* A real stylesheet, not inline styles, because the layout needs a media query and an
+          inline style can't hold one. Two columns on a desktop so the Pay button is on screen
+          WITHOUT scrolling past the document; one column on a phone, invoice first. */}
+      <style>{css}</style>
+
       <div style={shell}>
         <header style={brandBar}>
           <div style={brandName}>{issuer.dba || issuer.businessName || "Invoice"}</div>
@@ -61,33 +66,41 @@ export default async function PublicInvoicePage({
           </div>
         ) : null}
 
-        <div style={sheetWrap}>
-          <InvoiceDoc invoice={invoice} issuer={issuer} />
-        </div>
+        <div className="inv-cols">
+          <div style={sheetWrap}>
+            <InvoiceDoc invoice={invoice} issuer={issuer} />
+          </div>
 
-        {canPay ? (
-          <section style={payPanel}>
-            <div style={payHead}>
-              <div style={payLbl}>Pay this invoice</div>
-              <div style={payAmount}>{money(t.totalCents)}</div>
-            </div>
-            <PayButton
-              buttonId={(invoice.pay as { buttonId: string }).buttonId}
-              publishableKey={(invoice.pay as { publishableKey: string }).publishableKey}
-            />
-            <p style={payNote}>
-              Secure checkout by Stripe. Card details are entered on Stripe&rsquo;s page and never
-              touch this one.
-            </p>
-          </section>
-        ) : !paid ? (
-          // No button on this invoice. Say so plainly rather than showing an empty panel — the
-          // other payment methods are already printed on the document above.
-          <p style={noBtn}>
-            To pay, use the payment details on the invoice above, or reply to
-            {issuer.email ? ` ${issuer.email}` : " the email this came from"}.
-          </p>
-        ) : null}
+          {/* Sticky, so it stays put while a long invoice scrolls past it. */}
+          <aside className="inv-side">
+            {canPay ? (
+              <section style={payPanel}>
+                <div style={payHead}>
+                  <div style={payLbl}>Pay this invoice</div>
+                  <div style={payAmount}>{money(t.totalCents)}</div>
+                </div>
+                <PayButton
+                  buttonId={(invoice.pay as { buttonId: string }).buttonId}
+                  publishableKey={(invoice.pay as { publishableKey: string }).publishableKey}
+                />
+                <p style={payNote}>
+                  Secure checkout by Stripe. Card details are entered on Stripe&rsquo;s page and
+                  never touch this one.
+                </p>
+              </section>
+            ) : !paid ? (
+              // No button on this invoice. Say so plainly rather than showing an empty panel — the
+              // other payment methods are already printed on the document itself.
+              <section style={payPanel}>
+                <div style={payLbl}>How to pay</div>
+                <p style={payNote}>
+                  Use the payment details on the invoice, or reply to
+                  {issuer.email ? ` ${issuer.email}` : " the email this came from"}.
+                </p>
+              </section>
+            ) : null}
+          </aside>
+        </div>
 
         <footer style={foot}>
           {(issuer.businessName || EMPTY_ISSUER.businessName) && (
@@ -101,6 +114,17 @@ export default async function PublicInvoicePage({
   );
 }
 
+// 340px is the width Stripe's own button card wants; below ~880 there isn't room for both, so it
+// stacks — document first, then the button, which is the order a phone should read anyway.
+const css = `
+.inv-cols { display: grid; gap: 16px; align-items: start; }
+.inv-side { min-width: 0; }
+@media (min-width: 880px) {
+  .inv-cols { grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; }
+  .inv-side { position: sticky; top: 24px; }
+}
+`;
+
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 const page: React.CSSProperties = {
   minHeight: "100vh",
@@ -108,7 +132,9 @@ const page: React.CSSProperties = {
   padding: "32px 16px 64px",
   fontFamily: font,
 };
-const shell: React.CSSProperties = { maxWidth: 780, margin: "0 auto" };
+// Wide enough for the document plus the Pay column beside it, and no wider — a line of body text
+// that runs the full width of a monitor stops being readable.
+const shell: React.CSSProperties = { maxWidth: 1120, margin: "0 auto" };
 const brandBar: React.CSSProperties = {
   display: "flex",
   alignItems: "baseline",
@@ -142,7 +168,6 @@ const payPanel: React.CSSProperties = {
   border: "1px solid #e5e7eb",
   borderRadius: 10,
   padding: "20px 22px",
-  marginTop: 16,
   boxShadow: "0 1px 3px rgba(0,0,0,.07)",
 };
 const payHead: React.CSSProperties = {
@@ -160,5 +185,4 @@ const payAmount: React.CSSProperties = {
   letterSpacing: "-0.01em",
 };
 const payNote: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", marginTop: 12, lineHeight: 1.5 };
-const noBtn: React.CSSProperties = { fontSize: 13.5, color: "#6b7280", marginTop: 16, lineHeight: 1.6 };
 const foot: React.CSSProperties = { fontSize: 12, color: "#9ca3af", marginTop: 22, textAlign: "center" };
