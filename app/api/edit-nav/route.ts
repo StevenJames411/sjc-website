@@ -3,18 +3,13 @@
 // Everything arriving here goes through mergeNav before it is stored, so the document in Postgres
 // is always normalised: known keys only, hrefs from code, labels from Steven. There is no shape a
 // caller can post that makes a link point somewhere new.
-import { resetNav, writeNav } from "@/lib/editNav";
+import { writeNav } from "@/lib/editNav";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
-    if (body?.reset === true) {
-      const ok = await resetNav();
-      return Response.json({ ok }, { status: ok ? 200 : 500 });
-    }
 
     // ⛔ AN EMPTY MENU IS NOT A SAVE. A rail with no entries is a back office with no way out of
     // whatever page you happen to be on — and no way to reach the editor that would fix it.

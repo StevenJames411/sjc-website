@@ -184,6 +184,23 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
     return true;
   }
 
+  // A GROUP IS JUST A WORD, so Steven makes his own. A section links nowhere and owns nothing, so
+  // unlike an item there is no reason code has to be the one that defines it — see the note in
+  // lib/editNav.ts about why items and sections are not the same kind of thing.
+  //
+  // `u-` marks it as his rather than shipped, which is what stops the merge from ever treating it
+  // as a section that has gone missing from the code.
+  function addSection() {
+    const key = `u-${Math.random().toString(36).slice(2, 8)}`;
+    setEntries([...docRef.current.entries, { type: "section", key, label: "New group" }]);
+  }
+
+  // Only a heading can be removed. Its items don't move or vanish — they simply fall under whatever
+  // heading is now above them, which is what "delete the group, keep the pages" has to mean.
+  function removeSection(i: number) {
+    setEntries(docRef.current.entries.filter((_, n) => n !== i));
+  }
+
   // ⚠️ Drag state in a ref, not state: a pointermove can land in the same task as its pointerdown
   // (a fast flick, or a synthetic event) and a closure reading state would still see null and throw
   // the move away. Same fix as the board roster — see the note in app/edit/board/Roster.tsx.
@@ -223,16 +240,6 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
     window.location.href = "/edit";
   }
 
-  async function reset() {
-    if (!window.confirm("Put every name and the order back the way it shipped?")) return;
-    await fetch("/api/edit-nav", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ reset: true }),
-    });
-    window.location.reload();
-  }
 
   return (
     <div
@@ -301,8 +308,8 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
 
         {editing && (
           <p className="edit-nav-hint">
-            Rename anything. Drag a row — past a heading to move it into that group. Where each one
-            goes never changes.
+            Rename anything. Drag a row — past a heading to move it into that group. Add your own
+            groups below. Where each one goes never changes.
           </p>
         )}
 
@@ -328,6 +335,19 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
                   <button type="button" onClick={() => move(i, i - 1)} aria-label="Move up">▲</button>
                   <button type="button" onClick={() => move(i, i + 1)} aria-label="Move down">▼</button>
                 </span>
+                {/* Headings only. An item is a page — removing it from the menu would just make the
+                    page unreachable, which is the same failure as letting a label move a link. */}
+                {e.type === "section" && (
+                  <button
+                    type="button"
+                    className="edit-nav-x"
+                    onClick={() => removeSection(i)}
+                    aria-label="Remove this group"
+                    title="Remove this group — the pages under it stay"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             ) : e.type === "section" ? (
               // An emptied heading disappears rather than leaving a blank gap — that is how you
@@ -358,6 +378,10 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
 
         {editing && (
           <div className="edit-nav-extra">
+            <button type="button" className="edit-nav-add" onClick={addSection}>
+              + Add a group
+            </button>
+
             <div className="edit-side-section">The board&apos;s shared row</div>
             <input
               className="edit-nav-input"
@@ -371,9 +395,6 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
               placeholder="The line underneath"
               onChange={(ev) => commit({ ...docRef.current, mainline: { ...docRef.current.mainline, subtitle: ev.target.value } })}
             />
-            <button type="button" className="edit-side-link edit-nav-reset" onClick={reset}>
-              Put every name back
-            </button>
           </div>
         )}
 

@@ -63,6 +63,14 @@ export type NavDoc = {
   brand: string;
   entries: NavEntry[];
   /**
+   * Every SHIPPED section key this document has ever been merged against.
+   *
+   * The ledger that lets "he deleted it" and "it didn't exist yet" be told apart. Without it,
+   * deleting a shipped group is impossible: the next merge sees a code section missing from the
+   * entries and helpfully puts it back, forever.
+   */
+  knownSections?: string[];
+  /**
    * The board's shared row. It lives here rather than on the board because it is the same KIND of
    * thing as the rail's labels — a name Steven should own — and one editor beats two.
    *
@@ -74,35 +82,78 @@ export type NavDoc = {
 const DEFAULT_DOC: NavDoc = {
   brand: DEFAULT_BRAND,
   entries: ENTRIES,
+  knownSections: ENTRIES.filter((e) => e.type === "section").map((e) => e.key),
   mainline: DEFAULT_MAINLINE,
 };
 
-/** A flat, ordered menu: sections and items in one list, so "move it past that heading" just works. */
+const SAFE_KEY = /^[a-z0-9][a-z0-9-]{0,39}$/;
+
+/**
+ * A flat, ordered menu: sections and items in one list, so "move it past that heading" just works.
+ *
+ * ── ⛔ ITEMS AND SECTIONS ARE NOT THE SAME KIND OF THING ──────────────────────────────────────
+ * An ITEM carries a destination, so code owns it absolutely: an item key the code doesn't define
+ * is dropped, and the href always comes from ENTRIES. That is the law.
+ *
+ * A SECTION carries nothing but a word. It links nowhere and breaks nothing, so Steven creates and
+ * deletes them freely — "Import a design belongs under Websites, and my brand settings need a
+ * Company settings group of their own." A user-made key (`u-…`) is as valid as a shipped one.
+ *
+ * ── DELETED VS NEW, without resurrecting what he threw away ───────────────────────────────────
+ * `knownSections` records every code section key the document has ever seen. A shipped section
+ * missing from the entries is one he DELETED — leave it gone. A shipped section that isn't in
+ * knownSections is one that didn't exist when he last saved — append it, same as a new item.
+ * Without that ledger the two cases are indistinguishable and delete silently stops working.
+ */
 export function mergeNav(stored: Partial<NavDoc> | null): NavDoc {
   if (!stored) return DEFAULT_DOC;
 
-  const byKey = new Map(ENTRIES.map((e) => [`${e.type}:${e.key}`, e]));
-  const seen = new Set<string>();
+  const itemDefs = new Map(ENTRIES.filter((e) => e.type === "item").map((e) => [e.key, e]));
+  const codeSections = ENTRIES.filter((e) => e.type === "section");
+  const seenItems = new Set<string>();
+  const seenSections = new Set<string>();
   const entries: NavEntry[] = [];
 
   for (const raw of Array.isArray(stored.entries) ? stored.entries : []) {
-    const id = `${raw?.type}:${raw?.key}`;
-    const def = byKey.get(id);
-    if (!def || seen.has(id)) continue; // unknown or duplicate — code decides what exists
-    seen.add(id);
-    const label = typeof raw.label === "string" ? raw.label : def.label;
+    const key = typeof raw?.key === "string" ? raw.key : "";
+    if (!SAFE_KEY.test(key)) continue;
+    const label = typeof raw?.label === "string" ? raw.label : "";
+
+    if (raw.type === "section") {
+      if (seenSections.has(key)) continue;
+      seenSections.add(key);
+      entries.push({ type: "section", key, label });
+      continue;
+    }
+
+    const def = itemDefs.get(key);
+    if (!def || seenItems.has(key)) continue; // unknown or duplicate — code decides what exists
+    seenItems.add(key);
     // ⛔ href comes from `def`, never from the document. This line is the law.
-    entries.push(def.type === "item" ? { ...def, label } : { type: "section", key: def.key, label });
+    entries.push({ ...def, label: label || def.label });
   }
 
-  // Anything code knows about that the document didn't mention, in code order, at the end.
+  // Sections shipped SINCE he last saved. Ones he deleted stay deleted — see knownSections above.
+  const known = new Set(
+    Array.isArray(stored.knownSections) ? stored.knownSections.filter((k) => typeof k === "string") : []
+  );
+  for (const s of codeSections) {
+    if (!known.has(s.key) && !seenSections.has(s.key)) {
+      entries.push(s);
+      seenSections.add(s.key);
+    }
+  }
+
+  // Every item code knows about that the document didn't mention, in code order, at the end.
   for (const def of ENTRIES) {
-    if (!seen.has(`${def.type}:${def.key}`)) entries.push(def);
+    if (def.type === "item" && !seenItems.has(def.key)) entries.push(def);
   }
 
   return {
     brand: typeof stored.brand === "string" && stored.brand.trim() ? stored.brand : DEFAULT_BRAND,
     entries,
+    // Everything code ships today, whether or not it survived his editing — that is the ledger.
+    knownSections: codeSections.map((s) => s.key),
     mainline: {
       title: stored.mainline?.title?.trim() || DEFAULT_MAINLINE.title,
       subtitle: stored.mainline?.subtitle?.trim() || DEFAULT_MAINLINE.subtitle,
@@ -132,10 +183,12 @@ export async function writeNav(doc: Partial<NavDoc>): Promise<boolean> {
   return true;
 }
 
-/** Back to the code defaults. The way out of a menu renamed into a corner at 11pm. */
-export async function resetNav(): Promise<boolean> {
-  const kv = getClient();
-  if (!kv) return false;
-  await kv.set(KEY, JSON.stringify({ ...DEFAULT_DOC, updatedAt: new Date().toISOString() }));
-  return true;
-}
+// ⛔ THERE IS NO "RESET TO DEFAULTS", DELIBERATELY. Steven, once he had it:
+//
+//   *"I don't know when I'm ever going to use that, because when I rename everything for the first
+//   time, that's kind of the new default. If it saves every update, I don't really need a default
+//   setting."*
+//
+// He is right, and the reason it is SAFE to have no escape hatch is that nothing here can be lost:
+// every entry stays visible as a row in edit mode even when its label is empty, so anything typed
+// wrong is retyped. A reset button that only ever destroys the user's work is not a safety net.

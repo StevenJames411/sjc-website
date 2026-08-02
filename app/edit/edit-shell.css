@@ -194,7 +194,18 @@
 .edit-nav-error { font-size: 11.5px; color: #ff9c96; padding: 0 10px 8px; line-height: 1.45; }
 .edit-nav-extra { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--e-rail-line); }
 .edit-nav-extra .edit-nav-input { margin-bottom: 6px; }
-.edit-nav-reset { color: #ff9c96; margin-top: 4px; }
+.edit-nav-x {
+  width: 20px; height: 20px; padding: 0; line-height: 1; font-size: 10px; flex: 0 0 auto;
+  background: none; color: #7d8896; border: 1px solid var(--e-rail-line);
+  border-radius: 4px; cursor: pointer;
+}
+.edit-nav-x:hover { color: #ff9c96; border-color: #ff9c96; }
+.edit-nav-add {
+  display: block; width: 100%; text-align: left; margin: 0 0 14px;
+  background: none; border: 1px dashed var(--e-rail-line); border-radius: 7px;
+  color: var(--e-rail-ink); font: inherit; font-size: 13px; padding: 8px 10px; cursor: pointer;
+}
+.edit-nav-add:hover { border-color: var(--e-accent); color: var(--e-rail-ink-strong); }
 .edit-side-collapse.is-on { border-color: var(--e-accent); color: var(--e-rail-ink-strong); }
 
 .edit-side-foot {
