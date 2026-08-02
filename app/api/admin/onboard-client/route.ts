@@ -80,6 +80,7 @@ export async function POST(req: Request) {
   const site = await findSite(siteId);
   let sheetId = site?.sheetId || "";
   let sheetUrl = sheetId ? `https://docs.google.com/spreadsheets/d/${sheetId}/edit` : "";
+  let shareWarning = "";
   if (!sheetId) {
     const made = await createClientSheet(businessName, str("shareWith"));
     if (!made.ok) {
@@ -91,6 +92,22 @@ export async function POST(req: Request) {
     }
     sheetId = made.spreadsheetId;
     sheetUrl = made.url;
+
+    // ⚠️ THE SHEET EXISTING AND THE CLIENT BEING ABLE TO OPEN IT ARE TWO DIFFERENT OUTCOMES.
+    //
+    // addViewer is caught inside the Apps Script on purpose — a typo'd address must not lose a
+    // spreadsheet that was built correctly. But it meant a failed share and a successful one were
+    // indistinguishable here: sheet created, id stored, everything green, and she cannot open the
+    // record of her own leads. The only person who ever found out was her, months later.
+    //
+    // Not fatal — the sheet is real, leads still land in it, re-sharing takes ten seconds. So it
+    // rides back on the response as a warning Steven sees while he still has her on the phone.
+    if (str("shareWith") && !made.sharedWith) {
+      shareWarning = `sheet created but NOT shared with ${str("shareWith")}${
+        made.shareError ? ` — ${made.shareError}` : ""
+      }`;
+      console.error(`[onboard] ${shareWarning}`);
+    }
   }
 
   // ⚠️ THIS USED TO LIVE INSIDE `if (!sheetId)`, AND THAT WAS THE BUG.
@@ -128,5 +145,7 @@ export async function POST(req: Request) {
     sheetUrl,
     editUrl: `${origin}/edit/${siteId}/home`,
     reused: Boolean(already),
+    // Present only when something needs a human. Everything else here is a success field.
+    ...(shareWarning ? { warning: shareWarning } : {}),
   });
 }

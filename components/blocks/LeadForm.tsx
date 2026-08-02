@@ -153,6 +153,40 @@ export default function LeadForm(props: LeadFormProps) {
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
+
+      // ⚠️ A 200 HERE DOES NOT MEAN THE LEAD GOT EVERYWHERE IT WAS OWED.
+      //
+      // /api/apply deliberately answers 200 when ANY destination landed, because a visitor must
+      // never be punished for our plumbing — she typed her name in good faith and the enquiry does
+      // exist somewhere. But this component used to stop reading at res.ok, so a lead that reached
+      // SJC's intake and never reached the client's inbox or sheet rendered a green thank-you and
+      // nobody anywhere was told. The one failure lib/leadDelivery.ts exists to prevent, reported
+      // as a success by the last component in the chain.
+      //
+      // deliverLead already returns per-leg truth and the route already puts it on the wire, so the
+      // fix is to READ it. She still sees success — that part was right. The difference is that a
+      // partial delivery now leaves a trace instead of looking identical to a clean one.
+      const body = await res.json().catch(() => null);
+      const problems: string[] = Array.isArray(body?.problems) ? body.problems : [];
+      if (problems.length) {
+        // Console first: it costs nothing, it's visible in Vercel's logs against this request, and
+        // it works even if the beacon below is blocked.
+        console.error(`[lead] partial delivery for ${siteId}: ${problems.join(" | ")}`);
+        // Fire-and-forget. `sendBeacon` survives the page being closed a moment later, which a
+        // fetch does not — and a visitor who submits and immediately navigates away is exactly the
+        // case where losing the report would matter most.
+        try {
+          navigator.sendBeacon?.(
+            "/api/lead-problem",
+            new Blob([JSON.stringify({ siteId, problems, at: new Date().toISOString() })], {
+              type: "application/json",
+            })
+          );
+        } catch {
+          /* reporting must never break the thank-you screen */
+        }
+      }
+
       setState("done");
     } catch {
       setState("error");

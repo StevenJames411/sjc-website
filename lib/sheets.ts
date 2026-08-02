@@ -48,9 +48,24 @@ async function call<T>(action: string, payload: Record<string, unknown>): Promis
   }
 }
 
-/** Make a client their own spreadsheet — Leads + Onboarding tabs, ready to use. */
+/**
+ * Make a client their own spreadsheet — Leads + Onboarding tabs, ready to use.
+ *
+ * ⚠️ CHECK `sharedWith`, NOT JUST `ok`. Creating the sheet and sharing it are two separate
+ * outcomes, and the script deliberately does not throw when the share fails — a typo'd address must
+ * not lose a spreadsheet that was built correctly. So `ok: true` with `sharedWith: null` is a real
+ * and important state: the sheet exists, we stored its id, and the client cannot open the thing she
+ * is paying for. She finds out months later when she goes looking for her leads. `shareError`
+ * carries the reason when an address was given and rejected.
+ */
 export function createClientSheet(businessName: string, shareWith?: string) {
-  return call<{ spreadsheetId: string; url: string }>("createClientSheet", {
+  return call<{
+    spreadsheetId: string;
+    url: string;
+    /** Null when no address was given OR when sharing failed — `shareError` tells them apart. */
+    sharedWith: string | null;
+    shareError?: string | null;
+  }>("createClientSheet", {
     businessName,
     shareWith: shareWith || "",
   });
