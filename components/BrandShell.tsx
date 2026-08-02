@@ -179,9 +179,10 @@ export default function BrandShell({
 const css = (b: Brand) => `
 :root { color-scheme: dark; }
 /* CLIP, NOT HIDDEN. Both stop one over-wide element making the whole page scroll sideways, but
-   `overflow: hidden` turns html/body into a scroll container — and a scroll container silently
-   kills `position: sticky` on everything inside it. That's what un-stuck the header and the Pay
-   column. `clip` does the same job without creating one. */
+   overflow:hidden turns html/body into a scroll container — and a scroll container silently kills
+   position:sticky on everything inside it. That is what un-stuck the header and the Pay column.
+   overflow-x:clip does the same job without creating one.
+   (No backticks in this comment: the whole stylesheet is a template literal.) */
 html, body { overflow-x: clip; }
 .bs-wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 @media (max-width: 640px) {
