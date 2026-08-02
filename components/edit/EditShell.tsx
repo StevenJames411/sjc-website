@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import type { NavDoc, NavEntry } from "@/lib/editNav";
+import type { NavDoc, NavEntry } from "@/lib/editNavShared";
+import { NavContext } from "./navContext";
 
 // THE BACK-OFFICE SHELL.
 //
@@ -90,7 +91,9 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
   // The drawer must close on navigation or it covers the page you just asked for.
   useEffect(() => setOpen(false), [pathname]);
 
-  if (isBare(pathname)) return <>{children}</>;
+  // ⚠️ Bare routes get the context too. The page builder is a client page like any other and a
+  // missing provider would silently fall back to the code default instead of Steven's name.
+  if (isBare(pathname)) return <NavContext.Provider value={doc}>{children}</NavContext.Provider>;
 
   const persist = (key: string, value: string) => {
     try {
@@ -242,6 +245,7 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
 
 
   return (
+    <NavContext.Provider value={doc}>
     <div
       className={`edit-shell${collapsed ? " is-collapsed" : ""}`}
       data-theme={dark ? "dark" : "light"}
@@ -417,5 +421,6 @@ export default function EditShell({ nav, children }: { nav: NavDoc; children: Re
         ))}
       </nav>
     </div>
+    </NavContext.Provider>
   );
 }

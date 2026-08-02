@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useNavTitle } from "@/components/edit/navContext";
 
 // Paste a generated design's HTML → get it as editable blocks.
 //
@@ -29,6 +30,8 @@ const ROLE_ROWS: { key: keyof Palette; label: string; why: string }[] = [
 ];
 
 export default function ImportPage() {
+  // Whatever this screen is called in the rail — see components/edit/navContext.tsx.
+  const title = useNavTitle("import");
   const router = useRouter();
   const [html, setHtml] = useState("");
   const [name, setName] = useState("");
@@ -72,7 +75,7 @@ export default function ImportPage() {
 
   return (
     <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 24px 80px", fontFamily: "system-ui, sans-serif" }}>
-      <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0 }}>Import a design</h1>
+      <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0 }}>{title}</h1>
       <p style={{ color: "var(--e-muted)", marginTop: 8, lineHeight: 1.6 }}>
         Paste a published web address (best-in-show-grooming.sitedrop.ai) or the full HTML of a
         generated one-page site. It arrives as its own website — real blocks,

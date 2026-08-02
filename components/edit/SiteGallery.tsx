@@ -13,10 +13,10 @@ import IntakeAnswers from "./IntakeAnswers";
 // another's. Every builder that does this at scale (GoHighLevel, Landingsite, SiteDrop) opens on a
 // gallery with search and a New-website button, and the page switcher lives INSIDE a site.
 
-type Props = { sites: Site[]; intake: Record<string, IntakeSummary> };
+type Props = { sites: Site[]; intake: Record<string, IntakeSummary>; title: string };
 type Mode = "blank" | "template" | "import";
 
-export default function SiteGallery({ sites, intake }: Props) {
+export default function SiteGallery({ sites, intake, title }: Props) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
@@ -154,7 +154,7 @@ export default function SiteGallery({ sites, intake }: Props) {
       ) : null}
       <div style={head}>
         <div>
-          <h1 style={h1}>Websites</h1>
+          <h1 style={h1}>{title}</h1>
           <p style={sub}>Create and manage your websites</p>
         </div>
         {/* NAVIGATION LIVES IN THE RAIL NOW — components/edit/EditShell.tsx.

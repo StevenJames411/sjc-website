@@ -26,10 +26,12 @@ export default function InvoiceLibrary({
   invoices,
   issuer,
   packages,
+  title,
 }: {
   invoices: Invoice[];
   issuer: IssuerDetails;
   packages: PaymentPackage[];
+  title: string;
 }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -133,7 +135,7 @@ export default function InvoiceLibrary({
       <div style={head}>
         <div>
           {/* "← Websites" lived here until the rail took over global navigation. */}
-          <h1 style={h1}>Invoices</h1>
+          <h1 style={h1}>{title}</h1>
           <p style={sub}>Fill one in, print it to PDF, send it.</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>

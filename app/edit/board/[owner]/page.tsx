@@ -12,6 +12,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ageText } from "@/lib/checksShared";
+import { navLabel } from "@/lib/editNav";
 import { readBoardView, summarise, SJC_KEY } from "../groups";
 import { Dot, FOOTNOTE, LayerSections, SWATCH } from "../shared";
 
@@ -19,7 +20,7 @@ export const dynamic = "force-dynamic";
 
 export default async function OwnerBoardPage({ params }: { params: Promise<{ owner: string }> }) {
   const { owner } = await params;
-  const view = await readBoardView();
+  const [view, boardName] = await Promise.all([readBoardView(), navLabel("board")]);
   const group = view.groups.find((g) => g.key === owner);
   if (!group) notFound();
 
@@ -28,7 +29,7 @@ export default async function OwnerBoardPage({ params }: { params: Promise<{ own
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
       <Link href="/edit/board" style={{ fontSize: 14, color: "var(--e-muted)", textDecoration: "none" }}>
-        ← The board
+        ← {boardName}
       </Link>
 
       <h1 style={{ fontSize: 32, fontWeight: 800, margin: "18px 0 4px", overflowWrap: "anywhere" }}>

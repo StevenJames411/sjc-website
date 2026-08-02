@@ -13,14 +13,20 @@
 //
 // Owner-only: /edit/* is gated in middleware.ts.
 import { ageText, type Colour } from "@/lib/checksShared";
+import { navLabel } from "@/lib/editNav";
 import { readBoardView, summarise } from "./groups";
 import Roster from "./Roster";
 import { Dot, FOOTNOTE, SWATCH } from "./shared";
 
 export const dynamic = "force-dynamic";
 
+// Heading and tab both read the name Steven gave this screen in the rail. See lib/editNav.ts.
+export async function generateMetadata() {
+  return { title: await navLabel("board") };
+}
+
 export default async function BoardPage() {
-  const view = await readBoardView();
+  const [view, title] = await Promise.all([readBoardView(), navLabel("board")]);
   // ⛔ THE ROWS NO LONGER RE-SORT THEMSELVES, so the count has to be the thing that finds trouble.
   // Each pill with a non-zero count jumps to the first owner in that state. Steven's arrangement
   // stays put and the broken row is still one click away — instead of the row coming to him and
@@ -30,7 +36,7 @@ export default async function BoardPage() {
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
       {/* "← All websites" lived here until the rail took over global navigation. */}
-      <h1 style={{ fontSize: 34, fontWeight: 800, margin: "0 0 6px" }}>The board</h1>
+      <h1 style={{ fontSize: 34, fontWeight: 800, margin: "0 0 6px" }}>{title}</h1>
       <p style={{ color: "var(--e-muted)", margin: "0 0 4px", maxWidth: 720 }}>
         Every joint between the fifteen systems that carry a client. No vendor watches a joint —
         each end reports success on its own side — so this is the only place they meet.

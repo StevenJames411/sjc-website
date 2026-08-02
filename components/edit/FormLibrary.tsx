@@ -12,7 +12,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FIELD_TYPE_LABELS, type FormDef } from "@/lib/formsShared";
 
-export default function FormLibrary({ forms }: { forms: FormDef[] }) {
+export default function FormLibrary({ forms, title }: { forms: FormDef[]; title: string }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
@@ -141,7 +141,7 @@ export default function FormLibrary({ forms }: { forms: FormDef[] }) {
 
       <div style={head}>
         <div>
-          <h1 style={h1}>Forms</h1>
+          <h1 style={h1}>{title}</h1>
           <p style={sub}>Question sets you can drop onto any website</p>
         </div>
         <button type="button" style={primaryBtn} onClick={() => setNaming({ name: "" })}>

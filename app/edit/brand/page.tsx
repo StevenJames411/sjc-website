@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FONTS, BRAND_DEFAULTS, type Brand, type BrandFont } from "@/lib/brandShared";
+import { useNavTitle } from "@/components/edit/navContext";
 
 // The one screen that sets a whole site's look. Font + colors, once, and every page follows.
 // Plain English labels on purpose — this gets used per client, not per developer.
@@ -18,6 +19,8 @@ const SWATCHES: { key: keyof Brand; label: string; help: string }[] = [
 ];
 
 export default function BrandEditor() {
+  // Whatever this screen is called in the rail — see components/edit/navContext.tsx.
+  const title = useNavTitle("brand");
   const [brand, setBrand] = useState<Brand | null>(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ good?: boolean; text: string } | null>(null);
@@ -64,7 +67,7 @@ export default function BrandEditor() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-2xl font-bold text-[color:var(--color-sjc-ink)]">Brand</h1>
+      <h1 className="text-2xl font-bold text-[color:var(--color-sjc-ink)]">{title}</h1>
       <p className="mt-2 text-[color:var(--color-sjc-mute)]">
         Set the font and colours once. Every page on this site follows them — you never set a
         colour on an individual block again. Changes are saved as a draft; nothing reaches the
