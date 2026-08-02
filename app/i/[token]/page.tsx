@@ -10,12 +10,21 @@
 // gets the same 404 as a token that never existed. There is no way to walk from one invoice to
 // another, and the page carries `noindex` so a forwarded link can't end up in a search result.
 //
-// It renders the same <InvoiceDoc> as the editor preview and the print page. Three surfaces, one
-// component — a customer's copy that differs from the printed one is a document dispute.
+// ── WHY IT'S DRESSED LIKE THE STUDIO SITE ─────────────────────────────────────────────────────
+// The invoice arrives in an inbox a few days after somebody signed off on a design. Landing on a
+// bare white page asking for a card is the moment a person wonders whether the email was real.
+// So it sits between the same header and footer as stevenjamesdesigns.com — dark, branded, his
+// phone number visible — and the invoice itself stays a plain white document in the middle of it,
+// because that part has to read as a business record and print like one.
+//
+// The header/footer are written HERE rather than reused from the studio site: that site is an
+// imported design stored as page content, not React components, and there is nothing to import.
+// Everything that can be data IS data — the name, phone and email all come off the invoice's own
+// issuer snapshot, so this page can never advertise details the document doesn't carry.
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { findInvoiceByPublicId, readIssuer } from "@/lib/invoices";
-import { EMPTY_ISSUER, isPayable, money, prettyDate, totals } from "@/lib/invoicesShared";
+import { isPayable, money, prettyDate, totals } from "@/lib/invoicesShared";
 import InvoiceDoc from "@/components/edit/InvoiceDoc";
 import PayButton from "@/components/PayButton";
 
@@ -27,6 +36,8 @@ export const metadata: Metadata = {
   title: "Invoice",
   robots: { index: false, follow: false, nocache: true },
 };
+
+const STUDIO = "https://stevenjamesdesigns.com";
 
 export default async function PublicInvoicePage({
   params,
@@ -44,145 +55,245 @@ export default async function PublicInvoicePage({
   const paid = Boolean(invoice.paidOn);
   const canPay = !paid && isPayable(invoice.pay);
 
+  // "Steven James Designs" splits so "Designs" can take the accent, the way it does on the site.
+  const brand = issuer.dba || issuer.businessName || "Invoice";
+  const words = brand.split(" ");
+  const brandTail = words.length > 1 ? words.pop() : "";
+  const brandHead = words.join(" ");
+
   return (
-    <main style={page}>
-      {/* A real stylesheet, not inline styles, because the layout needs a media query and an
-          inline style can't hold one. Two columns on a desktop so the Pay button is on screen
-          WITHOUT scrolling past the document; one column on a phone, invoice first. */}
+    <>
       <style>{css}</style>
 
-      <div style={shell}>
-        <header style={brandBar}>
-          <div style={brandName}>{issuer.dba || issuer.businessName || "Invoice"}</div>
-          <div style={brandMeta}>
-            {invoice.number}
-            {invoice.dueOn && !paid ? ` · due ${prettyDate(invoice.dueOn)}` : ""}
-          </div>
-        </header>
-
-        {paid ? (
-          <div style={paidBanner}>
-            <strong>Paid</strong> — {prettyDate(invoice.paidOn as string)}. Thank you.
-          </div>
-        ) : null}
-
-        <div className="inv-cols">
-          <div style={sheetWrap}>
-            <InvoiceDoc invoice={invoice} issuer={issuer} />
-          </div>
-
-          {/* Sticky, so it stays put while a long invoice scrolls past it. */}
-          <aside className="inv-side">
-            {canPay ? (
-              <section style={payPanel}>
-                <div style={payHead}>
-                  <div style={payLbl}>Pay this invoice</div>
-                  <div style={payAmount}>{money(t.totalCents)}</div>
-                </div>
-                <PayButton
-                  buttonId={(invoice.pay as { buttonId: string }).buttonId}
-                  publishableKey={(invoice.pay as { publishableKey: string }).publishableKey}
-                />
-                <p style={payNote}>
-                  Secure checkout by Stripe. Card details are entered on Stripe&rsquo;s page and
-                  never touch this one.
-                </p>
-              </section>
-            ) : !paid ? (
-              // No button on this invoice. Say so plainly rather than showing an empty panel — the
-              // other payment methods are already printed on the document itself.
-              <section style={payPanel}>
-                <div style={payLbl}>How to pay</div>
-                <p style={payNote}>
-                  Use the payment details on the invoice, or reply to
-                  {issuer.email ? ` ${issuer.email}` : " the email this came from"}.
-                </p>
-              </section>
+      <header className="sjd-head">
+        <div className="sjd-wrap sjd-head-in">
+          <a className="sjd-brand" href={STUDIO}>
+            <span className="sjd-mark" aria-hidden>
+              &lt;/&gt;
+            </span>
+            <span className="sjd-brand-txt">
+              {brandHead} {brandTail ? <em>{brandTail}</em> : null}
+            </span>
+          </a>
+          <div className="sjd-head-right">
+            {issuer.phone ? (
+              <a className="sjd-phone" href={`tel:${issuer.phone.replace(/[^\d+]/g, "")}`}>
+                {issuer.phone}
+              </a>
             ) : null}
-          </aside>
+            <span className="sjd-pill">
+              {invoice.number}
+              {invoice.dueOn && !paid ? ` · due ${prettyDate(invoice.dueOn)}` : ""}
+            </span>
+          </div>
         </div>
+      </header>
 
-        <footer style={foot}>
-          {(issuer.businessName || EMPTY_ISSUER.businessName) && (
-            <span>{issuer.businessName}</span>
-          )}
-          {issuer.email ? <span> · {issuer.email}</span> : null}
-          {issuer.phone ? <span> · {issuer.phone}</span> : null}
-        </footer>
-      </div>
-    </main>
+      <main className="sjd-main">
+        <div className="sjd-wrap">
+          <div className="sjd-title">
+            <h1>{paid ? "Your receipt" : "Your invoice"}</h1>
+            <p>
+              {paid
+                ? `Paid ${prettyDate(invoice.paidOn as string)}. Thank you — keep this for your records.`
+                : `Prepared for ${invoice.billTo.name || "you"}. Review it below and pay by card when you're ready.`}
+            </p>
+          </div>
+
+          <div className="inv-cols">
+            <div className="inv-sheet">
+              <InvoiceDoc invoice={invoice} issuer={issuer} />
+            </div>
+
+            {/* Sticky, so it stays put while a long invoice scrolls past it. */}
+            <aside className="inv-side">
+              {canPay ? (
+                <section className="pay-card">
+                  <div className="pay-head">
+                    <span className="pay-lbl">Pay this invoice</span>
+                    <span className="pay-amt">{money(t.totalCents)}</span>
+                  </div>
+                  <PayButton
+                    buttonId={(invoice.pay as { buttonId: string }).buttonId}
+                    publishableKey={(invoice.pay as { publishableKey: string }).publishableKey}
+                  />
+                  <p className="pay-note">
+                    Secure checkout by Stripe. Card details are entered on Stripe&rsquo;s page and
+                    never touch this one.
+                  </p>
+                </section>
+              ) : paid ? (
+                <section className="pay-card pay-done">
+                  <div className="pay-tick" aria-hidden>
+                    ✓
+                  </div>
+                  <div className="pay-lbl">Paid in full</div>
+                  <p className="pay-note">
+                    {prettyDate(invoice.paidOn as string)} · {money(t.totalCents)}
+                  </p>
+                </section>
+              ) : (
+                // No button on this invoice. Say so plainly rather than showing an empty panel —
+                // the other ways to pay are already printed on the document itself.
+                <section className="pay-card">
+                  <div className="pay-lbl">How to pay</div>
+                  <p className="pay-note">
+                    Use the payment details on the invoice, or reply to
+                    {issuer.email ? ` ${issuer.email}` : " the email this came from"}.
+                  </p>
+                </section>
+              )}
+
+              <p className="side-help">
+                Questions about this invoice?{" "}
+                {issuer.email ? <a href={`mailto:${issuer.email}`}>Email us</a> : "Reply to the email it came from"}
+                {issuer.phone ? (
+                  <>
+                    {" "}
+                    or call <a href={`tel:${issuer.phone.replace(/[^\d+]/g, "")}`}>{issuer.phone}</a>
+                  </>
+                ) : null}
+                .
+              </p>
+            </aside>
+          </div>
+        </div>
+      </main>
+
+      <footer className="sjd-foot">
+        <div className="sjd-wrap">
+          <div className="foot-cols">
+            <div>
+              <div className="sjd-brand foot-brand">
+                <span className="sjd-mark" aria-hidden>
+                  &lt;/&gt;
+                </span>
+                <span className="sjd-brand-txt">
+                  {brandHead} {brandTail ? <em>{brandTail}</em> : null}
+                </span>
+              </div>
+              <p className="foot-blurb">
+                Building websites that win everywhere — mobile-first, Google-optimized, and ready
+                for the AI search era.
+              </p>
+            </div>
+
+            <div className="foot-contact">
+              <div className="foot-h">Get in touch</div>
+              {issuer.phone ? (
+                <a href={`tel:${issuer.phone.replace(/[^\d+]/g, "")}`}>{issuer.phone}</a>
+              ) : null}
+              {issuer.email ? <a href={`mailto:${issuer.email}`}>{issuer.email}</a> : null}
+              <a href={STUDIO}>stevenjamesdesigns.com</a>
+            </div>
+          </div>
+
+          <div className="foot-base">
+            <span>
+              © {new Date().getFullYear()} {issuer.businessName || brand}. All rights reserved.
+            </span>
+            <span>Crafted with precision.</span>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }
 
-// 340px is the width Stripe's own button card wants; below ~880 there isn't room for both, so it
-// stacks — document first, then the button, which is the order a phone should read anyway.
+// A real stylesheet rather than inline styles, because the layout needs media queries and an
+// inline style can't hold one. Colours lifted off stevenjamesdesigns.com so the page reads as the
+// same company; the invoice sheet itself stays white, because a business document should.
 const css = `
-.inv-cols { display: grid; gap: 16px; align-items: start; }
-.inv-side { min-width: 0; }
-@media (min-width: 880px) {
-  .inv-cols { grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; }
-  .inv-side { position: sticky; top: 24px; }
+:root { color-scheme: dark; }
+.sjd-wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+
+.sjd-head {
+  background: #232c3d;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  position: sticky; top: 0; z-index: 20;
+}
+.sjd-head-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 68px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+.sjd-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.sjd-mark {
+  width: 38px; height: 38px; border-radius: 11px; flex: 0 0 auto;
+  display: grid; place-items: center;
+  font-size: 15px; font-weight: 800; letter-spacing: -.04em; color: #06263a;
+  background: linear-gradient(150deg, #7fe3ff 0%, #38c9f5 45%, #2b8fd6 100%);
+  box-shadow: 0 6px 18px rgba(56,201,245,.28);
+}
+.sjd-brand-txt { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -.01em; }
+.sjd-brand-txt em { font-style: normal; color: #4fd2f7; }
+.sjd-head-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.sjd-phone { color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 600; }
+.sjd-phone:hover { color: #fff; }
+.sjd-pill {
+  font-size: 12.5px; font-weight: 700; color: #06263a;
+  background: #4fd2f7; border-radius: 999px; padding: 7px 14px; white-space: nowrap;
+}
+
+.sjd-main {
+  background:
+    radial-gradient(900px 420px at 78% -6%, rgba(56,201,245,.10), transparent 62%),
+    #0a1628;
+  padding: 34px 0 56px;
+  min-height: 60vh;
+}
+.sjd-title { margin-bottom: 20px; }
+.sjd-title h1 { font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -.025em; margin: 0; }
+.sjd-title p { font-size: 14.5px; color: #94a3b8; margin: 7px 0 0; line-height: 1.6; }
+
+.inv-cols { display: grid; gap: 18px; align-items: start; }
+.inv-side { min-width: 0; display: grid; gap: 12px; }
+.inv-sheet {
+  background: #fff; border-radius: 14px; padding: 38px 34px;
+  box-shadow: 0 18px 46px rgba(0,0,0,.34);
+}
+/* 340px is the width Stripe's own button card wants; below ~900 there isn't room for both, so it
+   stacks — document first, then the button, which is the order a phone should read anyway. */
+@media (min-width: 900px) {
+  .inv-cols { grid-template-columns: minmax(0,1fr) 348px; gap: 22px; }
+  .inv-side { position: sticky; top: 92px; }
+}
+
+.pay-card {
+  background: #fff; border-radius: 14px; padding: 20px 20px 18px;
+  box-shadow: 0 18px 46px rgba(0,0,0,.34);
+}
+.pay-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.pay-lbl { font-size: 15px; font-weight: 700; color: #0f172a; }
+.pay-amt { font-size: 21px; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.pay-note { font-size: 12.5px; color: #64748b; line-height: 1.55; margin: 12px 0 0; }
+.pay-done { text-align: center; }
+.pay-tick {
+  width: 44px; height: 44px; border-radius: 50%; margin: 2px auto 10px;
+  display: grid; place-items: center; font-size: 22px; font-weight: 700;
+  background: #ecfdf5; color: #047857;
+}
+.side-help { font-size: 12.5px; color: #8fa3bd; line-height: 1.6; padding: 0 4px; margin: 0; }
+.side-help a { color: #4fd2f7; text-decoration: none; }
+.side-help a:hover { text-decoration: underline; }
+
+.sjd-foot { background: #071120; border-top: 1px solid rgba(255,255,255,.07); padding: 40px 0 26px; }
+.foot-cols { display: grid; gap: 26px; }
+@media (min-width: 760px) { .foot-cols { grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); gap: 40px; } }
+.foot-brand { margin-bottom: 12px; }
+.foot-blurb { font-size: 14px; color: #8fa3bd; line-height: 1.7; margin: 0; max-width: 470px; }
+.foot-h { font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #64748b; margin-bottom: 12px; }
+.foot-contact { display: grid; gap: 9px; align-content: start; }
+.foot-contact a { color: #cbd5e1; text-decoration: none; font-size: 14px; }
+.foot-contact a:hover { color: #4fd2f7; }
+.foot-base {
+  display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  border-top: 1px solid rgba(255,255,255,.07);
+  margin-top: 30px; padding-top: 18px; font-size: 12.5px; color: #55657c;
+}
+
+/* The invoice is a document. If somebody prints this page, print the document — not the dark
+   brand furniture around it, which would come out as a grey slab or vanish entirely. */
+@media print {
+  .sjd-head, .sjd-foot, .sjd-title, .inv-side { display: none !important; }
+  .sjd-main { background: #fff !important; padding: 0 !important; }
+  .inv-sheet { box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; }
+  .sjd-wrap { max-width: none; padding: 0; }
 }
 `;
-
-const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-const page: React.CSSProperties = {
-  minHeight: "100vh",
-  background: "#f3f4f6",
-  padding: "32px 16px 64px",
-  fontFamily: font,
-};
-// Wide enough for the document plus the Pay column beside it, and no wider — a line of body text
-// that runs the full width of a monitor stops being readable.
-const shell: React.CSSProperties = { maxWidth: 1120, margin: "0 auto" };
-const brandBar: React.CSSProperties = {
-  display: "flex",
-  alignItems: "baseline",
-  justifyContent: "space-between",
-  gap: 16,
-  flexWrap: "wrap",
-  marginBottom: 14,
-};
-const brandName: React.CSSProperties = { fontSize: 18, fontWeight: 800, letterSpacing: "-0.01em", color: "#111827" };
-const brandMeta: React.CSSProperties = { fontSize: 13, color: "#6b7280", fontWeight: 600 };
-const paidBanner: React.CSSProperties = {
-  background: "#ecfdf5",
-  border: "1px solid #a7f3d0",
-  color: "#065f46",
-  borderRadius: 10,
-  padding: "11px 14px",
-  fontSize: 14,
-  marginBottom: 14,
-};
-// The document sits on white with real margins, the way it prints. A customer comparing this page
-// to the PDF you also sent should not be able to tell them apart.
-const sheetWrap: React.CSSProperties = {
-  background: "#fff",
-  border: "1px solid #e5e7eb",
-  borderRadius: 10,
-  padding: "38px 34px",
-  boxShadow: "0 1px 3px rgba(0,0,0,.07)",
-};
-const payPanel: React.CSSProperties = {
-  background: "#fff",
-  border: "1px solid #e5e7eb",
-  borderRadius: 10,
-  padding: "20px 22px",
-  boxShadow: "0 1px 3px rgba(0,0,0,.07)",
-};
-const payHead: React.CSSProperties = {
-  display: "flex",
-  alignItems: "baseline",
-  justifyContent: "space-between",
-  gap: 12,
-  marginBottom: 14,
-};
-const payLbl: React.CSSProperties = { fontSize: 15, fontWeight: 700, color: "#111827" };
-const payAmount: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 800,
-  fontVariantNumeric: "tabular-nums",
-  letterSpacing: "-0.01em",
-};
-const payNote: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", marginTop: 12, lineHeight: 1.5 };
-const foot: React.CSSProperties = { fontSize: 12, color: "#9ca3af", marginTop: 22, textAlign: "center" };
