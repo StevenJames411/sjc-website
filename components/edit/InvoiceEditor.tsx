@@ -9,18 +9,23 @@
 // and erases the zero the cursor is sitting behind, and re-formatting mid-keystroke moves the
 // caret. So every amount is a STRING in this component and becomes cents only when it's read —
 // for the preview, and for the save. The stored record never sees a float. See lib/invoicesShared.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import InvoiceDoc from "./InvoiceDoc";
 import {
   addDays,
   fromCents,
+  isPayable,
   mintLineId,
+  money,
   toCents,
+  today,
   toQty,
   totals,
   type Invoice,
   type IssuerDetails,
+  type PackageKey,
+  type PaymentPackage,
 } from "@/lib/invoicesShared";
 import type { Site } from "@/lib/sitesShared";
 
@@ -32,10 +37,12 @@ export default function InvoiceEditor({
   invoice,
   issuer,
   sites,
+  packages,
 }: {
   invoice: Invoice;
   issuer: IssuerDetails;
   sites: Site[];
+  packages: PaymentPackage[];
 }) {
   const router = useRouter();
 
@@ -66,6 +73,18 @@ export default function InvoiceEditor({
   const [defaultSaved, setDefaultSaved] = useState(false);
   const [openFrom, setOpenFrom] = useState(!(invoice.from ?? issuer).businessName);
 
+  // HOW IT GETS PAID. `pay` is a snapshot taken when the package is picked, not a live reference —
+  // same law as the From block. Re-mint a button in Stripe next quarter and this invoice keeps
+  // pointing at the one the customer was actually sent.
+  const [packageKey, setPackageKey] = useState<PackageKey | "">(invoice.packageKey ?? "");
+  const [pay, setPay] = useState(invoice.pay);
+  const [paidOn, setPaidOn] = useState(invoice.paidOn || "");
+  // Handed back by the save, because invoices written before public links existed get one there.
+  const [publicId, setPublicId] = useState(invoice.publicId || "");
+  const [origin, setOrigin] = useState("");
+  const [copied, setCopied] = useState(false);
+  useEffect(() => setOrigin(window.location.origin), []);
+
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -95,6 +114,9 @@ export default function InvoiceEditor({
       discountLabel,
       discountCents: toCents(discountText),
       from,
+      ...(packageKey ? { packageKey } : {}),
+      ...(pay ? { pay } : {}),
+      ...(paidOn ? { paidOn } : {}),
       lines: lines.map((l) => ({
         id: l.id,
         description: l.description,
@@ -102,10 +124,44 @@ export default function InvoiceEditor({
         rateCents: toCents(l.rateText),
       })),
     }),
-    [invoice, number, issuedOn, dueOn, billTo, terms, notes, discountLabel, discountText, lines, from]
+    [
+      invoice,
+      number,
+      issuedOn,
+      dueOn,
+      billTo,
+      terms,
+      notes,
+      discountLabel,
+      discountText,
+      lines,
+      from,
+      packageKey,
+      pay,
+      paidOn,
+    ]
   );
 
   const t = totals(draft);
+
+  const picked = packages.find((p) => p.key === packageKey);
+  /**
+   * THE GUARD. The button's price is fixed in Stripe; the invoice total is typed here. Nothing on
+   * the printed page shows the difference, so a $1,195 invoice quietly carrying the $795 button
+   * would be discovered by the customer paying $795 and considering it settled.
+   */
+  const mismatch = Boolean(picked && t.totalCents !== picked.buildCents);
+
+  /** Pick a package: record the choice AND freeze the button it points at right now. */
+  function pickPackage(key: string) {
+    const next = packages.find((p) => p.key === key);
+    edit(setPackageKey)((next?.key ?? "") as PackageKey | "");
+    setPay(
+      next && isPayable(next)
+        ? { label: next.label, buttonId: next.buttonId, publishableKey: next.publishableKey }
+        : undefined
+    );
+  }
 
   function setLine(id: string, patch: Partial<EditLine>) {
     edit(setLines)(lines.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -153,12 +209,19 @@ export default function InvoiceEditor({
           notes: draft.notes,
           terms: draft.terms,
           from: draft.from,
+          // null, NOT undefined: JSON.stringify DROPS undefined values, so an unset package would
+          // never reach the server and un-picking one would silently do nothing. null arrives,
+          // fails the checks in normalize(), and the field comes back off.
+          packageKey: packageKey || null,
+          pay: pay || null,
+          paidOn: paidOn || null,
         }),
       });
       const body = await res.json();
       // The store's save guard can REFUSE a write and still return 200-shaped JSON, so the flag
       // is what's checked — not res.ok, and never nothing at all.
       if (!body?.ok) throw new Error(body?.error || "Couldn't save.");
+      if (body.publicId) setPublicId(String(body.publicId));
       setDirty(false);
       setSaved(true);
       router.refresh();
@@ -456,6 +519,107 @@ export default function InvoiceEditor({
             </div>
           </section>
 
+          {/* ── HOW IT GETS PAID ─────────────────────────────────────────────────────────────
+              The package picks the button; the link is what you actually email. The printed PDF
+              stays exactly as it was — a buy button is a <script> embed, which no email client
+              and no PDF will run, so the page is the only place it can live. */}
+          <section style={panel}>
+            <h2 style={panelH}>Payment</h2>
+
+            <Field label="Package">
+              <select
+                style={{ ...input, cursor: "pointer" }}
+                value={packageKey}
+                onChange={(e) => pickPackage(e.target.value)}
+              >
+                <option value="">No package — this invoice has no Pay button</option>
+                {packages.map((p) => (
+                  <option key={p.key} value={p.key}>
+                    {p.label} — {money(p.buildCents)} build · {money(p.hostingCents)}/mo
+                    {isPayable(p) ? "" : "  (no button yet)"}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            {picked && !pay ? (
+              <p style={warnBox}>
+                <strong>{picked.label} has no buy button yet.</strong> Mint one in Stripe and paste
+                it under Packages on the invoice list — until then this page can&rsquo;t take a card.
+              </p>
+            ) : null}
+
+            {mismatch && picked ? (
+              <p style={warnBox}>
+                <strong>This invoice says {money(t.totalCents)}.</strong> The {picked.label} button
+                charges {money(picked.buildCents)}. Fix the amount, or pick the package that matches
+                — the printed page won&rsquo;t show the difference.
+              </p>
+            ) : null}
+
+            <div style={{ ...shareBox, marginTop: 14 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={lbl}>The customer&rsquo;s link</div>
+                {publicId ? (
+                  <div style={linkText}>{origin}/i/{publicId}</div>
+                ) : (
+                  <div style={hint}>Save this invoice once and its link appears here.</div>
+                )}
+              </div>
+              {publicId ? (
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    style={smallBtn}
+                    onClick={async () => {
+                      // Save first: the link opens the SAVED invoice, so copying it while there
+                      // are unsaved edits hands the customer a document you're not looking at.
+                      if (dirty && !(await save())) return;
+                      await navigator.clipboard.writeText(`${origin}/i/${publicId}`);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2200);
+                    }}
+                  >
+                    {copied ? "Copied" : "Copy link"}
+                  </button>
+                  <a
+                    href={`/i/${publicId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ ...smallBtn, textDecoration: "none", display: "inline-block" }}
+                  >
+                    Open
+                  </a>
+                </div>
+              ) : null}
+            </div>
+
+            {/* A STAMP, not a ledger. It changes what this one document says and nothing else —
+                no balance owed, no aging, no reminders. See lib/invoices.ts. */}
+            <label style={paidRow}>
+              <input
+                type="checkbox"
+                checked={Boolean(paidOn)}
+                onChange={(e) => edit(setPaidOn)(e.target.checked ? today() : "")}
+              />
+              <span style={{ fontSize: 13.5, fontWeight: 600 }}>Mark as paid</span>
+              {paidOn ? (
+                <input
+                  type="date"
+                  style={{ ...input, width: "auto", marginLeft: 6 }}
+                  value={paidOn}
+                  onChange={(e) => edit(setPaidOn)(e.target.value)}
+                />
+              ) : null}
+            </label>
+            {paidOn ? (
+              <p style={hint}>
+                The document now says paid, and the Pay button is gone from the customer&rsquo;s
+                page. Print it and send that as his receipt.
+              </p>
+            ) : null}
+          </section>
+
           <section style={panel}>
             <h2 style={panelH}>Terms &amp; notes</h2>
             <Field label="Payment terms">
@@ -555,3 +719,8 @@ const hint: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", marginTop:
 const fromSummary: React.CSSProperties = { fontSize: 13, color: "#374151", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
 const smallBtn: React.CSSProperties = { background: "#fff", border: "1px solid #d1d5db", borderRadius: 7, padding: "6px 11px", fontSize: 12.5, fontWeight: 600, color: "#374151", cursor: "pointer", whiteSpace: "nowrap" };
 const errBox: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13, marginBottom: 16 };
+// Amber, not red: nothing is broken, but something on this invoice would go out wrong.
+const warnBox: React.CSSProperties = { background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e", borderRadius: 8, padding: "10px 12px", fontSize: 13, lineHeight: 1.55, marginBottom: 12 };
+const shareBox: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, border: "1px solid #e5e7eb", borderRadius: 10, padding: "12px 14px", background: "#fcfcfd", flexWrap: "wrap" };
+const linkText: React.CSSProperties = { fontSize: 12.5, fontFamily: "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace", color: "#374151", overflowWrap: "anywhere" };
+const paidRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 9, marginTop: 16, cursor: "pointer", flexWrap: "wrap" };

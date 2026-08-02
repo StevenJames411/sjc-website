@@ -18,14 +18,18 @@ import {
   EMPTY_ISSUER,
   type Invoice,
   type IssuerDetails,
+  type PaymentPackage,
 } from "@/lib/invoicesShared";
+import InvoicePackages from "./InvoicePackages";
 
 export default function InvoiceLibrary({
   invoices,
   issuer,
+  packages,
 }: {
   invoices: Invoice[];
   issuer: IssuerDetails;
+  packages: PaymentPackage[];
 }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -38,6 +42,8 @@ export default function InvoiceLibrary({
   // invoices start with. It used to open by itself when empty, and that made this page look like
   // the invoice form with the wrong fields on it.
   const [openDetails, setOpenDetails] = useState(false);
+  // Same reasoning: set once when a button is minted, then never touched again for months.
+  const [openPackages, setOpenPackages] = useState(false);
   const [d, setD] = useState<IssuerDetails>({ ...EMPTY_ISSUER, ...issuer });
   const [dDirty, setDDirty] = useState(false);
   const [dSaved, setDSaved] = useState(false);
@@ -133,6 +139,9 @@ export default function InvoiceLibrary({
           <p style={sub}>Fill one in, print it to PDF, send it.</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+          <button type="button" style={navBtn} onClick={() => setOpenPackages((v) => !v)}>
+            Packages
+          </button>
           <button type="button" style={navBtn} onClick={() => setOpenDetails((v) => !v)}>
             Your details
           </button>
@@ -143,6 +152,8 @@ export default function InvoiceLibrary({
       </div>
 
       {err ? <p style={errBox}>{err}</p> : null}
+
+      {openPackages ? <InvoicePackages packages={packages} /> : null}
 
       {openDetails ? (
         <section style={detailsPanel}>

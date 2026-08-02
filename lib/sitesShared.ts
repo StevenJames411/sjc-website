@@ -134,4 +134,7 @@ export const RESERVED_SITE_IDS = [
   "invoices",
   // The client intake link lives at /start/<id>.
   "start",
+  // A customer's copy of an invoice lives at /i/<publicId>. Short on purpose — it gets pasted into
+  // an email — which is exactly why nothing else may ever claim it.
+  "i",
 ];

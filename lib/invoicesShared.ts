@@ -35,6 +35,67 @@ export type BillTo = {
   email: string;
 };
 
+/**
+ * A Stripe buy button, reduced to the only two things it actually is.
+ *
+ * Steven pastes the whole snippet Stripe hands him; what gets STORED is these two ids, never his
+ * markup. That is the point — the public invoice page renders a `<stripe-buy-button>` element this
+ * file writes itself, so nothing pasted into an admin box can ever become live HTML on a page a
+ * customer opens. A bad paste fails at the paste box, where he can see it, instead of silently
+ * rendering nothing on an invoice already emailed.
+ */
+export type BuyButton = {
+  /** `buy_btn_…` — identifies the button, and through it the payment link and its prices. */
+  buttonId: string;
+  /** `pk_live_…`. PUBLISHABLE, not secret: it is designed to sit in a public page. */
+  publishableKey: string;
+};
+
+export type PackageKey = "bronze" | "silver" | "gold";
+
+/**
+ * One of the three packages, as sold.
+ *
+ * The prices are here so the editor can tell you the invoice and the button disagree BEFORE it
+ * goes out — a $1,195 invoice carrying the $795 button is the one mistake in this whole feature
+ * that costs real money, and it is invisible on the printed page.
+ */
+export type PaymentPackage = {
+  key: PackageKey;
+  label: string;
+  buildCents: number;
+  hostingCents: number;
+} & Partial<BuyButton>;
+
+/** The ladder, as locked. Prices live here; the buttons get pasted in once Stripe has them. */
+export const DEFAULT_PACKAGES: PaymentPackage[] = [
+  { key: "bronze", label: "Bronze", buildCents: 79500, hostingCents: 3500 },
+  { key: "silver", label: "Silver", buildCents: 119500, hostingCents: 5500 },
+  { key: "gold", label: "Gold", buildCents: 299500, hostingCents: 9500 },
+];
+
+export const PACKAGE_KEYS: PackageKey[] = ["bronze", "silver", "gold"];
+
+/**
+ * Pull the two ids out of whatever Stripe's dialog produced.
+ *
+ * Tolerant about the markup around them and strict about the values themselves: the ids have to
+ * look like Stripe ids or this returns null, because "it saved" on a typo'd key means a Pay button
+ * that renders as nothing on the customer's screen with no error anywhere.
+ */
+export function parseBuyButton(pasted: string): BuyButton | null {
+  const src = String(pasted || "");
+  const id = src.match(/buy-button-id\s*=\s*["']\s*(buy_btn_[A-Za-z0-9]+)\s*["']/);
+  const pk = src.match(/publishable-key\s*=\s*["']\s*(pk_(?:live|test)_[A-Za-z0-9]+)\s*["']/);
+  if (!id || !pk) return null;
+  return { buttonId: id[1], publishableKey: pk[1] };
+}
+
+/** True once a package can actually take money. */
+export function isPayable(p?: Partial<BuyButton>): p is BuyButton {
+  return Boolean(p?.buttonId && p?.publishableKey);
+}
+
 export type Invoice = {
   id: string;
   /** What the customer sees and quotes back at you. Auto-assigned, editable. */
@@ -64,6 +125,34 @@ export type Invoice = {
    * snapshot; those fall back to the current template.
    */
   from?: IssuerDetails;
+
+  /* ── paying it ──────────────────────────────────────────────────────────────────────────── */
+
+  /** Which package was picked, so the editor can compare the total against its price. */
+  packageKey?: PackageKey;
+  /**
+   * The button, SNAPSHOTTED at the moment it was picked — same law as `from`.
+   *
+   * Re-mint a package's button in Stripe next quarter and every invoice already sent would
+   * otherwise start pointing at the new one. An invoice is a record of what went out, including
+   * what it asked the customer to pay.
+   */
+  pay?: BuyButton & { label: string };
+  /**
+   * The unguessable half of the public URL: /i/<publicId>.
+   *
+   * Not the invoice id. The id appears in the owner's address bar and is short enough to guess at;
+   * this is 32 random hex characters and is the only thing standing between a stranger and a
+   * customer's name, address and what he paid. Minted on create, and backfilled on first save for
+   * invoices written before this existed.
+   */
+  publicId?: string;
+  /**
+   * yyyy-mm-dd, set by hand when he's been paid. A STAMP on the document, not a ledger — it
+   * changes what this one page says and nothing else. No aging, no reminders, no balance owed;
+   * see the boundary note at the top of lib/invoices.ts.
+   */
+  paidOn?: string;
 };
 
 /**

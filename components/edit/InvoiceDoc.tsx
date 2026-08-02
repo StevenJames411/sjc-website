@@ -120,9 +120,19 @@ export default function InvoiceDoc({
               </tr>
             ) : null}
             <tr>
-              <td style={grandLbl}>Total due</td>
+              <td style={grandLbl}>{invoice.paidOn ? "Total" : "Total due"}</td>
               <td style={grandVal}>${fromCents(t.totalCents)}</td>
             </tr>
+            {/* The paid stamp is a row in the totals table, not a rotated graphic across the page:
+                a watermark depends on background printing, which browsers strip by default, so the
+                "PAID" a customer sees on screen would be missing from the copy he files. */}
+            {invoice.paidOn ? (
+              <tr>
+                <td style={paidLbl} colSpan={2}>
+                  Paid in full — {prettyDate(invoice.paidOn)}
+                </td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>
@@ -293,6 +303,17 @@ const grandVal: React.CSSProperties = {
   textAlign: "right",
   borderTop: `2px solid ${ink}`,
   fontVariantNumeric: "tabular-nums",
+};
+
+const paidLbl: React.CSSProperties = {
+  padding: "9px 0 0",
+  fontFamily: sans,
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: ".12em",
+  textTransform: "uppercase",
+  textAlign: "right",
+  color: "#047857",
 };
 
 // Underlined AND coloured. The underline is what survives a black-and-white printout, where the

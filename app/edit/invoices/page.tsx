@@ -6,13 +6,17 @@
 //
 // Owner-only for free: middleware.ts protects everything under /edit/.
 import type { Metadata } from "next";
-import { readInvoices, readIssuer } from "@/lib/invoices";
+import { readInvoices, readIssuer, readPackages } from "@/lib/invoices";
 import InvoiceLibrary from "@/components/edit/InvoiceLibrary";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Invoices" };
 
 export default async function InvoicesPage() {
-  const [invoices, issuer] = await Promise.all([readInvoices(), readIssuer()]);
-  return <InvoiceLibrary invoices={invoices} issuer={issuer} />;
+  const [invoices, issuer, packages] = await Promise.all([
+    readInvoices(),
+    readIssuer(),
+    readPackages(),
+  ]);
+  return <InvoiceLibrary invoices={invoices} issuer={issuer} packages={packages} />;
 }
