@@ -24,7 +24,6 @@ export default function IntakeForm({
   initialAnswers,
   initialPhotos,
   alreadySubmitted,
-  stoppedBecause,
 }: {
   /** Which business this form belongs to. The server checks it's open on every call. */
   site: string;
@@ -35,12 +34,10 @@ export default function IntakeForm({
   initialAnswers: IntakeAnswers;
   initialPhotos: string[];
   alreadySubmitted: boolean;
-  stoppedBecause?: string;
 }) {
   const [answers, setAnswers] = useState<IntakeAnswers>(initialAnswers || {});
   const [photos, setPhotos] = useState<string[]>(initialPhotos || []);
   const [done, setDone] = useState(alreadySubmitted);
-  const [stopped, setStopped] = useState<string | undefined>(stoppedBecause);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [saveError, setSaveError] = useState("");
   const [busy, setBusy] = useState("");
@@ -59,7 +56,7 @@ export default function IntakeForm({
   const answer = (q && (answers[q.id] as string)) || "";
 
   const save = useCallback(
-    async (patch: Partial<{ answers: IntakeAnswers; submittedAt: string; stoppedBecause: string }>) => {
+    async (patch: Partial<{ answers: IntakeAnswers; submittedAt: string }>) => {
       setSaveState("saving");
       try {
         const res = await fetch(`/api/intake?site=${encodeURIComponent(site)}`, {
@@ -101,14 +98,6 @@ export default function IntakeForm({
     if (q.required && q.type !== "photos" && !answer.trim()) return;
     if (q.required && q.type === "photos" && photos.length === 0) return;
 
-    // The gate. Prospecting filtered the outbound list; an inbound has passed no filter, so a bad
-    // fit gets caught here — one question in, not one week in.
-    if (q.disqualifyOn && answer === q.disqualifyOn.equals) {
-      await save({ answers, stoppedBecause: q.disqualifyOn.because });
-      setStopped(q.disqualifyOn.because);
-      return;
-    }
-
     const ok = await save({ answers });
     if (!ok) return; // don't advance past work that isn't stored
     if (i + 1 >= questions.length) {
@@ -146,14 +135,12 @@ export default function IntakeForm({
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  if (stopped) return <Shell title="Thanks for being straight with me."><P>{stopped}</P><Phone contact={contact} /></Shell>;
-
   if (done) {
     return (
       <Shell title="Got it — thank you.">
         <P>
-          That&apos;s everything I need. I&apos;ll put it together and send you the site to look at
-          before anyone else sees it.
+          That&apos;s everything we need. We&apos;ll put it together and send you the site to look
+          at before anyone else sees it.
         </P>
         <P>If you think of something you forgot, just text me.</P>
         <Phone contact={contact} />
@@ -167,7 +154,7 @@ export default function IntakeForm({
 
   return (
     <Shell
-      title={businessName ? `${businessName}` : "Tell me about your business"}
+      title={businessName ? `${businessName}` : "Tell us about your business"}
       progress={{ at: i + 1, of: questions.length }}
     >
       <label style={{ display: "block", fontSize: 21, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>
@@ -257,7 +244,7 @@ export default function IntakeForm({
           disabled={!canAdvance || saveState === "saving" || !!busy}
           style={{ ...BTN, ...PRIMARY, opacity: canAdvance && !busy ? 1 : 0.5, flex: 1 }}
         >
-          {saveState === "saving" ? "Saving…" : i + 1 >= questions.length ? "Send it to Steven" : "Next"}
+          {saveState === "saving" ? "Saving…" : i + 1 >= questions.length ? "Send it in" : "Next"}
         </button>
       </div>
 
@@ -272,6 +259,16 @@ export default function IntakeForm({
   );
 }
 
+/**
+ * The column this form sits in.
+ *
+ * It renders NO page background and no <main> of its own: the page around it (BrandShell) owns
+ * the branding, so this was the grey slab that made an onboarding link look like it came from
+ * nobody. What's left is the part that has to live here — the progress bar, which moves as she
+ * answers and so can't be server-rendered up in the header.
+ *
+ * Narrow on purpose. She is filling this in on a phone, between jobs.
+ */
 function Shell({
   title,
   progress,
@@ -282,41 +279,40 @@ function Shell({
   children: React.ReactNode;
 }) {
   return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        background: "#f3f4f6",
-        fontFamily: "system-ui, -apple-system, sans-serif",
-        padding: "24px 18px 56px",
-      }}
-    >
-      <div style={{ maxWidth: 560, margin: "0 auto" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#2563eb", letterSpacing: ".08em", textTransform: "uppercase" }}>
-          {title}
-        </div>
-        {progress && (
-          <>
-            <div style={{ height: 5, background: "#e5e7eb", borderRadius: 99, marginTop: 12 }}>
-              <div
-                style={{
-                  height: 5,
-                  width: `${(progress.at / progress.of) * 100}%`,
-                  background: "#2563eb",
-                  borderRadius: 99,
-                  transition: "width .2s",
-                }}
-              />
-            </div>
-            <div style={{ fontSize: 13, color: "#6b7280", marginTop: 6 }}>
-              {progress.at} of {progress.of}
-            </div>
-          </>
-        )}
-        <div style={{ background: "#fff", borderRadius: 16, padding: 22, marginTop: 16, boxShadow: "0 1px 3px rgba(0,0,0,.06)" }}>
-          {children}
-        </div>
+    <div style={{ maxWidth: 560, margin: "0 auto", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#7fe3ff", letterSpacing: ".08em", textTransform: "uppercase" }}>
+        {title}
       </div>
-    </main>
+      {progress && (
+        <>
+          <div style={{ height: 5, background: "rgba(255,255,255,.14)", borderRadius: 99, marginTop: 12 }}>
+            <div
+              style={{
+                height: 5,
+                width: `${(progress.at / progress.of) * 100}%`,
+                background: "#4fd2f7",
+                borderRadius: 99,
+                transition: "width .2s",
+              }}
+            />
+          </div>
+          <div style={{ fontSize: 13, color: "#94a3b8", marginTop: 6 }}>
+            {progress.at} of {progress.of}
+          </div>
+        </>
+      )}
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          padding: 22,
+          marginTop: 16,
+          boxShadow: "0 18px 46px rgba(0,0,0,.34)",
+        }}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
 

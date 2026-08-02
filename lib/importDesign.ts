@@ -119,7 +119,7 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
   if (!sections.length) throw new Error("No top-level sections found in that page.");
 
   const content = sections.map((section, i) => {
-    const { html: tokenized, text, images } = tokenizeSection(section);
+    const { html: tokenized, text, images, links, hasForm, formFields, formButton } = tokenizeSection(section);
     // Seed the spacing control with what the design actually used, so the stepper opens at the
     // real number. The override is an inline style at render — the markup keeps its own classes,
     // so clearing the field restores the design's spacing exactly.
@@ -130,12 +130,34 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
     // seven times, with the styling perfectly intact, which is what made it look like a splitting
     // bug rather than a missing key. lib/importHtml.ts has always done this via nid().
     const id = `design-${i + 1}`;
-    return { type: "DesignSection", props: { id, html: tokenized, text, images, paddingTop: pad.top, paddingBottom: pad.bottom } };
+    return {
+      type: "DesignSection",
+      props: {
+        id,
+        html: tokenized,
+        text,
+        images,
+        links,
+        paddingTop: pad.top,
+        paddingBottom: pad.bottom,
+        // The real form goes in by default — see DesignSection's `useRealForm`.
+        hasForm,
+        useRealForm: hasForm,
+        formFields,
+        formButton,
+      },
+    };
   });
 
   const words = content.reduce((n, b) => n + b.props.text.length, 0);
   const photos = content.reduce((n, b) => n + b.props.images.length, 0);
-  report.push(`${sections.length} sections`, `${words} editable text fields`, `${photos} photos`);
+  const linkCount = content.reduce((n, b) => n + (b.props.links?.length || 0), 0);
+  report.push(
+    `${sections.length} sections`,
+    `${words} editable text fields`,
+    `${photos} photos`,
+    `${linkCount} editable links`
+  );
 
   // The design's contact form is kept as a dead shell so the section doesn't look broken, but it
   // cannot submit. Say so out loud — a page that ships with only the placeholder has a contact
@@ -145,8 +167,9 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
     : 0;
   if (placeholders) {
     report.push(
-      `⚠️ ${placeholders} placeholder form${placeholders > 1 ? "s" : ""} kept for looks — it cannot ` +
-        `submit. Drop a LeadForm block in before publishing or the section collects nothing.`
+      `${placeholders} form${placeholders > 1 ? "s" : ""} found — the real lead form is mounted in ` +
+        `its place, so the design's layout is kept and the enquiry actually reaches the owner. ` +
+        `Turn "Use my real form" off on the section to show the design untouched.`
     );
   }
 

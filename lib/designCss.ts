@@ -24,8 +24,8 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 
-/** Wrapper class the whole design is rendered inside. Every selector gets scoped under it. */
-export const DESIGN_SCOPE = "sjc-design";
+export { DESIGN_SCOPE } from "./designShared";
+import { DESIGN_SCOPE } from "./designShared";
 
 /**
  * Every class name used anywhere in a chunk of markup.
@@ -55,7 +55,7 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
   const out: string[] = [];
   let i = 0;
 
-  const NO_SCOPE = /^@(keyframes|-\w+-keyframes|font-face|property|import|charset|namespace|layer\s+[\w.,\s]+;)/;
+  const NO_SCOPE = /^@(keyframes|-\w+-keyframes|font-face|property|import|charset|namespace)/;
   const NESTED = /^@(media|supports|container|layer|scope)\b/;
 
   while (i < css.length) {
@@ -63,7 +63,18 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
     const brace = css.indexOf("{", i);
     if (brace === -1) break;
 
-    const prelude = css.slice(i, brace).trim();
+    let prelude = css.slice(i, brace).trim();
+
+    // ⚠️ STATEMENT AT-RULES ARE NOT SELECTORS. `@layer theme, base, components, utilities;`
+    // declares layer ORDER — commas separate layer NAMES, not selectors. Splitting it on commas
+    // and prefixing each part produced `@layer theme,.sjc-design base,…`, which is invalid, so
+    // the browser dropped the ordering entirely and Tailwind's preflight could out-rank the
+    // utilities. Anything ending in `;` before the next `{` is a statement: emit it untouched.
+    const stmtEnd = prelude.lastIndexOf(";");
+    if (stmtEnd !== -1) {
+      out.push(prelude.slice(0, stmtEnd + 1));
+      prelude = prelude.slice(stmtEnd + 1).trim();
+    }
 
     // Walk to the matching close brace, counting depth.
     let depth = 0;

@@ -3,7 +3,6 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
 import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
-import { DESIGN_SCOPE } from "@/lib/designCss";
 import { findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
@@ -12,6 +11,8 @@ import { SiteProvider } from "@/components/blocks/SiteContext";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import type { Site } from "@/lib/sitesShared";
+import { localBusinessSchema } from "@/lib/siteSchema";
+import { publicUrlFor } from "@/lib/hostShared";
 
 // Rendering + metadata for ONE page of ONE website, shared by the two public catch-all routes:
 //
@@ -125,7 +126,7 @@ export async function resolvePage(
  * business" over the SJC card. So a non-SJC site always emits a COMPLETE block, even where that
  * means repeating a value or emitting an empty string on purpose.
  */
-export function metadataFor(r: NonNullable<Resolved>, path: string) {
+export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: string) {
   const { site, data } = r;
   const root = ((data as { root?: { props?: Record<string, unknown> } } | null)?.root?.props ??
     {}) as Record<string, unknown>;
@@ -147,7 +148,10 @@ export function metadataFor(r: NonNullable<Resolved>, path: string) {
         title: title || businessName,
         description,
         siteName: businessName || title,
-        url: path,
+        // ABSOLUTE, from the site's own domain. A relative path resolves against `metadataBase`,
+        // which is SJC's — so a client's texted link claimed stevenjamesconsulting.com as its
+        // address. The caller passes the canonical it already computed for this exact reason.
+        url: canonical || path,
         type: "website" as const,
         // An explicit value overrides the generated card in app/opengraph-image.tsx. `[]` is the
         // deliberate no-image case: a plain text preview is honest, SJC's logo on a groomer's
@@ -170,9 +174,20 @@ export function metadataFor(r: NonNullable<Resolved>, path: string) {
       ...(isClient || description ? { description } : {}),
       ...(ogImage ? { images: [ogImage] } : {}),
     },
-    // A client's site lives on the SJC domain until they buy their own, carrying a real business's
-    // name, phone and address, while robots.txt welcomes every AI crawler. Until it's on its own
-    // domain it stays out of the index.
+    // ⚠️ EVERY CLIENT PAGE USED TO NAME SJC'S HOME PAGE AS ITS CANONICAL.
+    //
+    // app/layout.tsx sets `alternates: { canonical: "/" }`, and Next merges metadata downward, so
+    // a page that declares no `alternates` of its own inherits it. Every client site was therefore
+    // telling Google "the real version of this page is stevenjamesconsulting.com" — an instruction
+    // to credit SJC for the client's content and drop the client's page from the index. Same
+    // inheritance trap as the og: block above, one field over.
+    //
+    // The caller passes an ABSOLUTE url for a client page, because it is served from THEIR domain
+    // once they buy while metadataBase still points at SJC — a path would resolve to the wrong
+    // origin. SJC's own pages keep the relative form they've always had.
+    alternates: { canonical: canonical || path },
+    // A demo lives on the studio's domain carrying a real business's name, phone and address,
+    // while robots.txt welcomes every AI crawler. Until it's on its own domain it stays out.
     ...(isClient && !site.domain
       ? { robots: { index: false, follow: false, nocache: true } }
       : {}),
@@ -201,15 +216,37 @@ export async function SitePageBody({
   siteId: string;
   page?: string;
 }) {
-  const ownHeader = hasBlock(data, "SiteHeader");
-  const ownFooter = hasBlock(data, "SiteFooter");
+  // ⚠️ SJC'S CHROME MUST NEVER APPEAR ON A CLIENT'S SITE. The old test was "does this page have a
+  // SiteHeader block" — true for a page built in our builder, FALSE for one imported as sealed
+  // design, whose header lives inside the markup. So an imported client site rendered SJC's own
+  // nav above it: Steven's branding on someone else's business, with a link to the free Skool
+  // community that teaches what he charges for.
+  //
+  // The site's KIND is the real answer. A client site brings its own chrome or has none; it never
+  // borrows ours.
+  const isClientSite = siteId !== SJC;
+  const ownHeader = isClientSite || hasBlock(data, "SiteHeader");
+  const ownFooter = isClientSite || hasBlock(data, "SiteFooter");
   // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
   const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
 
   // A page built from a bought design carries its own compiled stylesheet. Every rule in it is
-  // scoped under .sjc-design (lib/designCss.ts), so it cannot reach the nav, the footer, or any
-  // other page — but the wrapper still has to be here for those rules to match anything.
+  // scoped under .sjc-design, and that class rides on the DesignSection block itself
+  // (lib/designShared) — so this only has to EMIT the stylesheet, and the same rules apply
+  // identically in the builder canvas, which renders the same blocks.
   const designCss = page ? await readDesignCss(page, siteId) : "";
+
+  // THIS BUSINESS'S OWN STRUCTURED DATA.
+  //
+  // The root layout emits SJC's Organization/Service/FAQ blocks on SJC's domain only — a client's
+  // page telling Google it was Steven James Consulting is the failure that scoping fixed. But
+  // removing it left client sites with nothing at all, which is the wrong end of the trade for a
+  // product sold on being found by Google and by AI search.
+  //
+  // Built entirely from Website settings, so it costs nothing per client: fill in her phone and
+  // address at onboarding and the markup writes itself. See lib/siteSchema.
+  const site = isClientSite ? await findSite(siteId) : null;
+  const schema = site ? localBusinessSchema(site, publicUrlFor(site)) : null;
 
   const body = (
     <SiteProvider siteId={siteId}>
@@ -219,6 +256,12 @@ export async function SitePageBody({
 
   return (
     <>
+      {schema ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ) : null}
       {brand ? <BrandStyle brand={brand} id="site-brand" /> : null}
       {designCss ? (
         <style id="site-design" dangerouslySetInnerHTML={{ __html: designCss }} />
@@ -227,7 +270,7 @@ export async function SitePageBody({
       <main>
         {/* Blocks read the site from here rather than from an editable field — the lead form's
             destination in particular must never depend on someone typing it correctly. */}
-        {designCss ? <div className={DESIGN_SCOPE}>{body}</div> : body}
+        {body}
       </main>
       {ownFooter ? null : <Footer />}
     </>

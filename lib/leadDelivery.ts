@@ -21,15 +21,30 @@ export type Delivery = {
   toOwner: boolean | null;
   /** Did SJC's record get written? */
   toRecord: boolean;
+  /** Did the row reach the CLIENT'S OWN sheet? null = they have no sheet yet. */
+  toSheet: boolean | null;
   problems: string[];
 };
 
 const RESEND = "https://api.resend.com/emails";
 
-/** The reply-to is the LEAD, so hitting reply on a phone goes straight back to the customer. */
+/**
+ * The reply-to is the LEAD, so hitting reply on a phone goes straight back to the customer.
+ *
+ * This is the whole reason the alert goes out through Resend rather than through the sheet
+ * script's own mailer: Google would send it from Steven's account, so an owner replying to his
+ * own customer would reach STEVEN, and he'd be hand-forwarding messages between a groomer and a
+ * homeowner forever. Here the owner replies and it goes to the customer; nobody is in the middle.
+ *
+ * Matched on the field KEY first — forms from the library use `email` — and on the label second,
+ * for blocks built before the library that only ever had a label to go on.
+ */
 function guessReplyTo(answers: Answer[]): string | undefined {
-  const hit = answers.find((a) => /email/i.test(a.label) && /@/.test(a.value));
-  return hit?.value.trim();
+  const looksLikeEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  const byKey = answers.find((a) => a.key === "email" && looksLikeEmail(a.value));
+  if (byKey) return byKey.value.trim();
+  const byLabel = answers.find((a) => /e-?mail/i.test(a.label) && looksLikeEmail(a.value));
+  return byLabel?.value.trim();
 }
 
 function asHtml(businessName: string, answers: Answer[]): string {
@@ -106,14 +121,43 @@ export async function deliverLead(
     }
   }
 
-  // ── 2. the owner's copy, when the site has an address ──────────────────────────────────────
-  if (!owner) return { toOwner: null, toRecord, problems };
+  // ── 2. THE CLIENT'S OWN SHEET ──────────────────────────────────────────────────────────────
+  //
+  // This leg did not exist until 2026-08-01. `createClientSheet` had been making every client a
+  // spreadsheet with a Leads tab and sharing it with them at onboarding, and NOTHING in the
+  // codebase ever wrote a row into it — `writeSheetRow` had exactly one caller, the onboarding
+  // questionnaire, on the other tab. So the thing the client is actually paying for, the record
+  // of their own enquiries, was an empty sheet with their name on it.
+  //
+  // ⚠️ notifyEmail is deliberately NOT passed. The Apps Script would send its own alert through
+  // MailApp from Steven's Google account — a second email per lead, from the wrong sender, with
+  // replies coming back to Steven. Resend owns the alert; see guessReplyTo above.
+  let toSheet: boolean | null = null;
+  if (site?.sheetId) {
+    try {
+      const { writeSheetRow } = await import("./sheets");
+      const res = await writeSheetRow({
+        spreadsheetId: site.sheetId,
+        tab: "Leads",
+        answers,
+        submittedAt,
+      });
+      if (!res.ok) throw new Error(res.error);
+      toSheet = true;
+    } catch (e) {
+      toSheet = false;
+      problems.push(`client sheet failed: ${(e as Error).message}`);
+    }
+  }
+
+  // ── 3. the owner's copy, when the site has an address ──────────────────────────────────────
+  if (!owner) return { toOwner: null, toRecord, toSheet, problems };
 
   const key = process.env.RESEND_API_KEY;
   const from = process.env.LEAD_FROM || "leads@send.stevenjamesconsulting.com";
   if (!key) {
     problems.push("RESEND_API_KEY not set — the owner's copy could NOT be sent");
-    return { toOwner: false, toRecord, problems };
+    return { toOwner: false, toRecord, toSheet, problems };
   }
 
   try {
@@ -129,9 +173,9 @@ export async function deliverLead(
       }),
     });
     if (!res.ok) throw new Error(`resend ${res.status} ${await res.text()}`);
-    return { toOwner: true, toRecord, problems };
+    return { toOwner: true, toRecord, toSheet, problems };
   } catch (e) {
     problems.push(`owner copy failed: ${(e as Error).message}`);
-    return { toOwner: false, toRecord, problems };
+    return { toOwner: false, toRecord, toSheet, problems };
   }
 }

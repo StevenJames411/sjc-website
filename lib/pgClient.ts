@@ -11,7 +11,8 @@ import pg from "pg";
 
 type KvClient = {
   get(key: string): Promise<unknown>;
-  set(key: string, value: unknown): Promise<void>;
+  /** `force` skips the write guard — deliberate erasure only. See the note on set() below. */
+  set(key: string, value: unknown, opts?: { force?: boolean }): Promise<void>;
 };
 
 let _pool: pg.Pool | null = null;
@@ -59,7 +60,20 @@ export function guardReason(prev: unknown, next: unknown): string | null {
     v === undefined ||
     (Array.isArray(v) && v.length === 0) ||
     (typeof v === "object" && Object.keys(v as object).length === 0);
-  const lost = Object.keys(p).filter((k) => !(k in n) && !isEmpty(p[k]));
+
+  // `_pub` is BOOKKEEPING, not content (fix 2026-08-01). Same class of problem as `zones: {}`
+  // above, and the same answer.
+  //
+  // The publish action stamps `_pub: 1` onto the published snapshot; a draft should never carry
+  // it. When one ends up on a draft key — a bad repair script copied a published doc into the
+  // draft — every subsequent save from the editor drops the marker, the guard reads that as a
+  // key vanishing, and refuses. The editor then shows NOT SAVED on every keystroke with no way
+  // out, because the only thing that would clear it is the write being refused.
+  //
+  // Losing a one-byte flag can never be data loss, and exempting it lets the key heal itself on
+  // the next save instead of needing a hand-run repair.
+  const BOOKKEEPING = new Set(["_pub"]);
+  const lost = Object.keys(p).filter((k) => !(k in n) && !isEmpty(p[k]) && !BOOKKEEPING.has(k));
   if (lost.length) return `top-level keys disappeared: ${lost.join(", ")}`;
   for (const k of Object.keys(p)) {
     const a = p[k], b = n[k];
@@ -92,13 +106,25 @@ export function getClient(): KvClient | null {
       return rows.length ? rows[0].value : null;
     },
     // Upsert + revision in ONE statement so they can never drift apart.
-    async set(key: string, value: unknown) {
+    //
+    // `force` is the DELIBERATE-DESTRUCTION door, and it exists because the guard was silently
+    // breaking delete. The guard's job is to catch ACCIDENTAL gutting — a bad publish, a save
+    // that lost half a page. Emptying a key on purpose looks identical to it, so `deleteSite`'s
+    // purge writes were all refused, the boolean was discarded, and delete reported success while
+    // removing nothing. Every test site Steven ever deleted was still in the store.
+    //
+    // So the way past is explicit and narrow rather than the guard being loosened: only callers
+    // that mean it pass `force`, and the revision is noted "purge" so the history says which
+    // writes were intentional erasures rather than edits.
+    async set(key: string, value: unknown, opts?: { force?: boolean }) {
       const { rows } = await p.query("select value from state where key = $1", [key]);
       const prev = rows.length ? rows[0].value : null;
-      const reason = guardReason(prev, value);
-      if (reason) {
-        console.error(`[pgClient] REFUSED write to '${key}': ${reason}`);
-        throw new GuardRefusal(key, reason);
+      if (!opts?.force) {
+        const reason = guardReason(prev, value);
+        if (reason) {
+          console.error(`[pgClient] REFUSED write to '${key}': ${reason}`);
+          throw new GuardRefusal(key, reason);
+        }
       }
       await p.query(
         `with up as (
@@ -107,7 +133,7 @@ export function getClient(): KvClient | null {
            returning key
          )
          insert into state_rev (key, value, note) select $1, $2::jsonb, $3`,
-        [key, JSON.stringify(value), "website"]
+        [key, JSON.stringify(value), opts?.force ? "purge" : "website"]
       );
     },
   };

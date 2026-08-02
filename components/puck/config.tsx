@@ -3,11 +3,12 @@
 // what Steven drags onto the canvas matches the live site. No "use client" here: this module
 // is imported by BOTH the client editor (app/about/edit) and the server <Render> on the
 // public /about page, so it must stay framework-neutral (types only from @measured/puck).
-import type { Config, Data, Slot } from "@measured/puck";
+import type { ComponentConfig, Config, Data, Slot } from "@measured/puck";
 import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
 import SizeStepper from "@/components/puck/SizeStepper";
 import ColorField from "@/components/puck/ColorField";
+import FormPicker from "@/components/puck/FormPicker";
 import ImageUpload from "@/components/puck/ImageUpload";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
@@ -20,6 +21,7 @@ import DesignSection, {
   DESIGNSECTION_DEFAULTS,
   type DesignText,
   type DesignImage,
+  type DesignLink,
 } from "@/components/blocks/DesignSection";
 import Icon, { ICON_OPTIONS } from "@/components/blocks/Icon";
 import { resolveColor, resolveColorOr } from "@/lib/brandColor";
@@ -33,11 +35,17 @@ type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; grid: string; gradientTo: string; gradientAngle: number; content: Slot };
   /** One section of a bought design, kept verbatim. Words, photos and vertical spacing editable. */
   DesignSection: {
+    sticky: boolean;
     html: string;
     text: DesignText[];
     images: DesignImage[];
+    links: DesignLink[];
     paddingTop: number | null;
     paddingBottom: number | null;
+    hasForm: boolean;
+    useRealForm: boolean;
+    formFields: { label: string; inputType: string }[];
+    formButton: string;
   };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
   Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; surfaceOpacity: number; borderColor: string; hoverBorderColor: string; shadowColor: string; hoverLift: boolean; radius: number };
@@ -57,13 +65,16 @@ type Props = {
   };
   LeadForm: {
     source: string;
-    fields: { label: string; inputType: string }[];
+    /** Write-only. Holds a form id for one beat while resolveData copies it in, then clears. */
+    preset: string;
+    fields: { label: string; inputType: string; fieldId?: string; required?: boolean }[];
     buttonLabel: string;
     note: string;
     successHeading: string;
     successBody: string;
     buttonColor: string;
     inColumn: boolean;
+    theme: string;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
@@ -281,6 +292,60 @@ type RootProps = {
   shareImage: string;
 };
 
+/**
+ * Copy a form library preset's questions into ONE LeadForm block, then forget the preset.
+ *
+ * `preset` is cleared on the way out, so a saved page never holds a reference to a library form.
+ * That is the whole point of copy-on-use: editing the preset later cannot reach this page,
+ * deleting it cannot break this page, and two clients sharing a preset can never affect each
+ * other. The questions on the page ARE the record.
+ *
+ * Fetches rather than importing lib/forms — this runs in the browser, and the storage module
+ * would drag the database client into the editor bundle.
+ *
+ * Written standalone and cast because Puck's own `resolveData` param type falls back to a
+ * self-contradictory shape (`Record<string, boolean> & { id: string }`) when it can't infer, and
+ * nothing can be assigned to it. The runtime contract is unaffected.
+ */
+const resolveLeadFormPreset = (async (
+  data: { props: Props["LeadForm"] },
+  params: { changed?: Record<string, boolean> }
+) => {
+  const props = data.props;
+  const id = String(props?.preset || "").trim();
+  if (!params?.changed?.preset || !id) return { props };
+  try {
+    const res = await fetch("/api/forms", { credentials: "same-origin" });
+    const body = await res.json();
+    const f = (body?.forms || []).find((x: { id: string }) => x.id === id);
+    if (!f) return { props: { ...props, preset: "" } };
+    return {
+      props: {
+        ...props,
+        preset: "",
+        fields: (f.fields || []).map(
+          (x: { label: string; type: string; fieldId: string; required?: boolean }) => ({
+            label: x.label,
+            // The block renders plain inputs, so the library's richer types collapse to the three
+            // it understands. The KEY and the required flag ride along intact — those are what
+            // keep the spreadsheet column stable and let a question be optional.
+            inputType: x.type === "tel" || x.type === "email" ? x.type : "text",
+            fieldId: x.fieldId,
+            required: x.required ?? true,
+          })
+        ),
+        buttonLabel: f.buttonLabel || props.buttonLabel,
+        note: f.note ?? props.note,
+        successHeading: f.successHeading || props.successHeading,
+        successBody: f.successBody || props.successBody,
+      },
+    };
+  } catch {
+    // Leave the block exactly as it was; the picker stays available to try again.
+    return { props: { ...props, preset: "" } };
+  }
+}) as unknown as ComponentConfig<Props["LeadForm"]>["resolveData"];
+
 export const config: Config<Props, RootProps> = {
   // Labels are written for the person filling them in, not for an SEO tool: they name WHERE the
   // text shows up, because that's the only thing that makes the field self-explanatory on sight.
@@ -349,6 +414,26 @@ export const config: Config<Props, RootProps> = {
       // read as unreachable. The first person to use this concluded imported photos couldn't be
       // changed at all. A control nobody can find is the same as a control that isn't there.
       fields: {
+        // Only meaningful on a section that HAS a form; harmless elsewhere.
+        useRealForm: {
+          type: "radio" as const,
+          label: "Contact form",
+          options: [
+            { label: "Use my real form (it delivers)", value: true },
+            { label: "Show the design's mock form", value: false },
+          ],
+        },
+        // Only meaningful on the header section; harmless elsewhere. A bought design ships a
+        // static header, and a small business's site is expected to keep the phone number and the
+        // quote button reachable once a visitor has scrolled far enough to want them.
+        sticky: {
+          type: "radio" as const,
+          label: "When scrolling",
+          options: [
+            { label: "Stays put", value: false },
+            { label: "Sticks to the top", value: true },
+          ],
+        },
         // Same stepper as the native Section block, so imported and hand-built sections are
         // adjusted the same way. Blank = keep whatever spacing the design shipped with.
         paddingTop: {
@@ -397,7 +482,53 @@ export const config: Config<Props, RootProps> = {
                 <ImageUpload value={value as string} onChange={onChange} />
               ),
             },
+            // The SAME three controls as the Image block — a photo is reframed the one way
+            // everywhere, not a different way depending on where it came from.
+            shape: {
+              type: "select" as const,
+              label: "Shape — crop the image to fit",
+              options: [
+                { label: "As designed (no crop)", value: "" },
+                { label: "Landscape 4:3", value: "4/3" },
+                { label: "Wide 16:9", value: "16/9" },
+                { label: "Square", value: "1/1" },
+                { label: "Tall 3:4", value: "3/4" },
+              ],
+            },
+            zoom: {
+              type: "custom" as const,
+              label: "Zoom % (100 = fit, higher = closer)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Zoom %" value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} />
+              ),
+            },
+            focus: {
+              type: "select" as const,
+              label: "Keep in view — what the crop centres on",
+              options: [
+                { label: "Centre", value: "center" },
+                { label: "Top", value: "top" },
+                { label: "Bottom", value: "bottom" },
+                { label: "Left", value: "left" },
+                { label: "Right", value: "right" },
+                { label: "Top left", value: "left top" },
+                { label: "Top right", value: "right top" },
+              ],
+            },
             alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
+            key: { type: "text" as const, label: "Token (do not change)" },
+          },
+        },
+        links: {
+          type: "array" as const,
+          label: "Where the links go",
+          getItemSummary: (item: DesignLink, i) => item?.label || `Link ${(i ?? 0) + 1}`,
+          arrayFields: {
+            href: {
+              type: "text" as const,
+              label: "Goes to — a page (/about), a section (#services), tel:+12105551234 or mailto:",
+            },
+            label: { type: "text" as const, label: "Which link this is" },
             key: { type: "text" as const, label: "Token (do not change)" },
           },
         },
@@ -408,6 +539,31 @@ export const config: Config<Props, RootProps> = {
           arrayFields: {
             // Shown so you know which one you're editing; the value is the part you change.
             value: { type: "textarea" as const, label: "Text" },
+            // Blank/0/"As designed" leaves the design's own styling — nothing is wrapped and the
+            // markup stays byte-identical to the import.
+            size: {
+              type: "custom" as const,
+              label: "Size (− / +, blank = as designed)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+              ),
+            },
+            color: {
+              type: "custom" as const,
+              label: "Colour (blank = as designed)",
+              render: ({ onChange, value }) => (
+                <ColorField value={value as string} onChange={onChange} />
+              ),
+            },
+            bold: {
+              type: "radio" as const,
+              label: "Weight",
+              options: [
+                { label: "As designed", value: null },
+                { label: "Bold", value: true },
+                { label: "Normal", value: false },
+              ],
+            },
             label: { type: "text" as const, label: "Where it appears" },
             key: { type: "text" as const, label: "Token (do not change)" },
           },
@@ -415,15 +571,49 @@ export const config: Config<Props, RootProps> = {
         // Deliberately last and plain: this is the design itself. Editing it by hand is how you
         // break the layout you paid for.
         html: { type: "textarea" as const, label: "Markup (imported — leave this alone)" },
+        // Carriers, set by the importer. Puck requires a field for every prop, so they are here
+        // rather than hidden — but nothing above depends on anyone touching them.
+        formButton: { type: "text" as const, label: "Form button text (imported)" },
+        formFields: {
+          type: "array" as const,
+          label: "Form questions (imported)",
+          getItemSummary: (item: { label?: string }, i) => item?.label || `Question ${(i ?? 0) + 1}`,
+          arrayFields: {
+            label: { type: "text" as const, label: "Question" },
+            inputType: {
+              type: "select" as const,
+              label: "Answer type",
+              options: [
+                { label: "Text", value: "text" },
+                { label: "Email", value: "email" },
+                { label: "Phone", value: "tel" },
+              ],
+            },
+          },
+        },
+        hasForm: {
+          type: "radio" as const,
+          label: "Section contains a form (imported — leave this alone)",
+          options: [
+            { label: "No", value: false },
+            { label: "Yes", value: true },
+          ],
+        },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, paddingTop, paddingBottom }) => (
+      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton }) => (
         <DesignSection
           html={html}
           text={text}
           images={images}
+          links={links}
+          sticky={sticky}
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
+          hasForm={hasForm}
+          useRealForm={useRealForm}
+          formFields={formFields}
+          formButton={formButton}
         />
       ),
     },
@@ -697,6 +887,12 @@ export const config: Config<Props, RootProps> = {
     LeadForm: {
       label: "Lead form (name / phone / etc.)",
       fields: {
+        // First, because it's the fast path: pick a preset and the questions below fill in.
+        preset: {
+          type: "custom" as const,
+          label: "Questions",
+          render: ({ onChange }) => <FormPicker onApply={(id) => onChange(id)} />,
+        },
         source: { type: "text" as const, label: "Source tag (shows in the intake sheet)" },
         fields: {
           type: "array" as const,
@@ -727,6 +923,14 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        theme: {
+          type: "radio" as const,
+          label: "Form panel",
+          options: [
+            { label: "White", value: "light" },
+            { label: "Glass (on dark)", value: "dark" },
+          ],
+        },
         inColumn: {
           type: "radio" as const,
           label: "Width",
@@ -736,8 +940,20 @@ export const config: Config<Props, RootProps> = {
           ],
         },
       },
-      defaultProps: LEADFORM_DEFAULTS as LeadFormBlock,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn }) => (
+      defaultProps: { ...LEADFORM_DEFAULTS, preset: "" } as LeadFormBlock,
+      /**
+       * Copy a preset's questions into THIS block, then forget the preset.
+       *
+       * `preset` is cleared on the way out, so a saved page never holds a reference to a library
+       * form. That is the whole point of copy-on-use: editing the preset later cannot reach this
+       * page, deleting it cannot break this page, and two clients sharing a preset can never
+       * affect each other. The questions on the page ARE the record.
+       *
+       * Fetches rather than importing lib/forms: this runs in the browser, and the storage module
+       * would drag the database client into the editor bundle.
+       */
+      resolveData: resolveLeadFormPreset,
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme }) => (
         <LeadForm
           source={source}
           fields={fields}
@@ -747,6 +963,7 @@ export const config: Config<Props, RootProps> = {
           successBody={successBody}
           buttonColor={buttonColor}
           inColumn={inColumn}
+          theme={theme === "dark" ? "dark" : "light"}
         />
       ),
     },

@@ -21,16 +21,19 @@ export const PUCK_PAGES: PuckPage[] = [
   // link points at the free community that teaches exactly what that page sells.
   { slug: "websites-nav", title: "Websites — Header" },
   { slug: "websites-footer", title: "Websites — Footer" },
-  // CLIENT DEMO. The slug IS the URL a prospect gets texted, so it's the business's name —
-  // stevenjamesconsulting.com/lucky-dog-wash-house, not /lab or /demo-3.
+  // ⚠️ VESTIGIAL. Steven's original scratch pad from the SiteDrop port, kept as an SJC page slug
+  // because its data was carried over rather than rebuilt.
   //
-  // Demo pages need no entry here once Duplicate exists; they're created in the builder and
-  // live in the dynamic registry. This one is in code because it started life as the scratch
-  // pad the SiteDrop port was built on, and its data was carried over rather than rebuilt.
+  // A registry site now owns this id, and a registry site always wins, so this entry is
+  // unreachable — but it is NOT a template to copy. Demos belong in the registry, where they get
+  // their own identity, their own brand and noindex until they have a domain. A demo that is an
+  // SJC *page* gets none of that: it inherits SJC's header, footer and metadata, which is exactly
+  // why this one looked wrong.
   //
-  // It gets noindex and no SJC header/footer automatically — see app/[slug]/page.tsx. The rule
-  // is "the page carries its own SiteHeader", so nothing here needs remembering.
-  { slug: "lucky-dog-wash-house", title: "Lucky Dog Wash House (demo)" },
+  // The old comment here claimed noindex and SJC chrome were handled automatically "because the
+  // page carries its own SiteHeader". That rule was replaced by a site.kind check in
+  // lib/publicSitePage.tsx and the claim had been false for some time.
+  { slug: "lucky-dog-wash-house", title: "Lucky Dog Wash House (old scratch pad)" },
 ];
 
 export const findPage = (slug: string) => PUCK_PAGES.find((p) => p.slug === slug);

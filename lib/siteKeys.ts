@@ -54,3 +54,21 @@ export function siteKeys(siteId: string) {
 
 /** The registry of all websites. One key, not per-site. */
 export const SITES_KEY = "sjc-sites";
+
+/**
+ * The form library. One key, not per-site — and that is only safe because a form carries no
+ * destination and no business facts (see lib/formsShared.ts). A global library of QUESTIONS
+ * cannot leak one client into another; a global library of anything with an email or a
+ * spreadsheet id on it could.
+ */
+export const FORMS_KEY = "sjc-forms";
+
+/**
+ * The invoice book, and your own business details.
+ *
+ * One key, not per-site — and unlike the form library, that is NOT because the contents are
+ * neutral. An invoice names a customer and an amount. It is global because these are Steven's own
+ * business records, belonging to the person doing the billing rather than to any website, exactly
+ * like the brand or the login. No public page ever reads this key.
+ */
+export const INVOICES_KEY = "sjc-invoices";

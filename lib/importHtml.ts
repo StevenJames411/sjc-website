@@ -105,6 +105,15 @@ export function detectPalette(html: string): Palette {
  */
 let PRESERVE = false;
 
+/**
+ * Whether the section currently being walked has a dark background.
+ *
+ * Module-level for the same reason `seq` is: blocksFrom() recurses many levels down and the band
+ * colour is a property of the SECTION, not of the element being mapped. Threading it through
+ * every call signature would touch every mapper for one boolean.
+ */
+let sectionIsDark = false;
+
 /** Map a literal hex from their markup to one of our roles, or keep it as a marked one-off. */
 function toRole(hex: string | undefined, p: Palette): string {
   if (!hex) return "";
@@ -446,6 +455,10 @@ function blocksFrom(root: HTMLElement, p: Palette, depth = 0): Block[] {
           successBody: "",
           buttonColor: "accent",
           inColumn: true,
+          // ⚠️ A WHITE FORM CARD ON A NEAR-BLACK BAND. LeadForm defaults to a white panel, which
+          // is right on a light page and a glaring slab on a dark contact section — the one place
+          // a visitor is asked to do something. Decided by the band it sits on, not guessed.
+          ...(PRESERVE ? { theme: sectionIsDark ? "dark" : "light" } : {}),
         },
       });
       continue;
@@ -477,7 +490,9 @@ function blocksFrom(root: HTMLElement, p: Palette, depth = 0): Block[] {
           // four-step process row failed the card test and got walked apart into loose headings
           // and paragraphs: no shell, no number badge, no icon. Look through the wrapper.
           const cardEl = cardShell(k);
-          const badge = cardEl ? (clean(k.text).match(/^([1-9])\b/)?.[1] || "") : "";
+          // ⚠️ "01", NOT "1". Designs zero-pad step numbers, and `^([1-9])` refuses a leading
+          // zero — so all four process steps imported with no number badge at all.
+          const badge = cardEl ? (clean(k.text).match(/^(\d{1,2})\b/)?.[1] || "") : "";
           return cardEl ? [cardBlock(cardEl, p, badge)] : blocksFrom(k, p, depth + 1);
         })
         .filter((blocks) => blocks.length > 0);
@@ -606,6 +621,16 @@ export function importHtml(
   for (const sec of root.querySelectorAll("section")) {
     const id = sec.getAttribute("id") || nid("section");
     const pad = paddingFrom(sec);
+    // Set BEFORE the section is walked — blocks inside ask for it (see LeadForm's theme).
+    // ⚠️ READ THROUGH A GRADIENT. The contact band is `background: linear-gradient(135deg,
+    // #0A0E27 0%, …)` — hexFrom looks for a hex straight after `background:` and finds
+    // `linear-gradient(`, so the darkest section on the page tested as WHITE and its form came
+    // out as a white slab. The first stop is the band's colour.
+    const bandHex =
+      styleOf(sec).match(/linear-gradient\([^)]*?(#[0-9a-fA-F]{6})/)?.[1] ||
+      hexFrom(sec, "bg") ||
+      "#ffffff";
+    sectionIsDark = lightness(bandHex) < 0.5;
     // Walk the SECTION, not its first <div>: these designs open with decorative blur blobs, so
     // "first div" reliably found an empty one and skipped the section's real content.
     const kids = blocksFrom(sec, palette);

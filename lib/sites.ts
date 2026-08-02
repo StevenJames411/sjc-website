@@ -14,7 +14,7 @@
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
 import { siteKeys, SITES_KEY, SJC } from "./siteKeys";
-import { RESERVED_SITE_IDS, type Site, type SiteKind, emptyBusiness, emptySeo } from "./sitesShared";
+import { RESERVED_SITE_IDS, daysLeft, type Site, type SiteKind, emptyBusiness, emptySeo } from "./sitesShared";
 
 export * from "./sitesShared";
 
@@ -42,7 +42,21 @@ const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-export async function readSites(): Promise<Site[]> {
+/**
+ * Every website, DELETED ONES EXCLUDED.
+ *
+ * Deleting is reversible for RETENTION_DAYS, so a deleted site still has a registry row and all
+ * its content. Everything that asks "what websites are there" — the public router, the gallery's
+ * main grid, name-collision checks — must not see it. Only the code that manages the bin passes
+ * `{ includeDeleted: true }`.
+ */
+export async function readSites(opts?: { includeDeleted?: boolean }): Promise<Site[]> {
+  const all = await readSitesRaw();
+  return opts?.includeDeleted ? all : all.filter((s) => !s.deletedAt);
+}
+
+/** Every row, deleted included. The bin, the sweep and restore need this. */
+export async function readSitesRaw(): Promise<Site[]> {
   const blob = (await store().read<SitesBlob>()) || {};
   const saved = (blob.sites || []).filter((s) => s && s.id);
 
@@ -100,7 +114,9 @@ export async function createSite(opts: {
   const base = slugify(name);
   if (!base) return { ok: false, error: "That name has no usable letters or numbers." };
 
-  const existing = await readSites();
+  // Raw: a site sitting in the bin still owns its id and its storage keys, so reusing the name
+  // would collide with content that is about to come back.
+  const existing = await readSitesRaw();
   const taken = new Set([...RESERVED_SITE_IDS, ...existing.map((s) => s.id)]);
   let id = base;
   let n = 2;
@@ -192,32 +208,141 @@ export async function updateSite(
     : { ok: false, error: "Couldn't save — storage is unavailable." };
 }
 
+/**
+ * Delete a website — RECOVERABLE for RETENTION_DAYS, then erased by the sweep.
+ *
+ * Deleting does not destroy anything. The row is stamped `deletedAt`, which takes the site out of
+ * readSites() — so it stops serving publicly, leaves the gallery, and frees nothing else — and its
+ * content sits exactly where it was. One click puts it back.
+ *
+ * ⚠️ WHY IT ISN'T IMMEDIATE ANY MORE. It used to be one-way, and 30 days is what every comparable
+ * product gives you (Google Workspace, Shopify, Mailchimp, Squarespace, GoHighLevel) because a
+ * client who cancels in a huff often wants back in a fortnight later. It also means Steven can
+ * stop hesitating over the button.
+ */
 export async function deleteSite(id: string): Promise<{ ok: boolean; error?: string }> {
   const s = String(id || "").trim();
   if (s === SJC) return { ok: false, error: "The SJC site can't be deleted." };
 
-  const sites = await readSites();
-  if (!sites.some((x) => x.id === s)) return { ok: false, error: "No such website." };
+  const all = await readSitesRaw();
+  const row = all.find((x) => x.id === s);
+  if (!row) return { ok: false, error: "No such website." };
+  if (row.deletedAt) return { ok: true }; // already in the bin; deleting twice is not an error
 
-  // Purge its content first, so a failed registry write can't strand live pages at a URL.
+  const next = all.map((x) => (x.id === s ? { ...x, deletedAt: new Date().toISOString() } : x));
+  return (await writeSites(next))
+    ? { ok: true }
+    : { ok: false, error: "Couldn't save — storage is unavailable." };
+}
+
+/** Put a deleted website back. Nothing was removed, so this is just clearing the stamp. */
+export async function restoreSite(id: string): Promise<{ ok: boolean; error?: string }> {
+  const s = String(id || "").trim();
+  const all = await readSitesRaw();
+  const row = all.find((x) => x.id === s);
+  if (!row) return { ok: false, error: "No such website." };
+  if (!row.deletedAt) return { ok: true };
+
+  // A site whose name was reused while it sat in the bin can't come back to a taken address.
+  const clash = all.some((x) => x.id !== s && !x.deletedAt && x.domain && row.domain && x.domain === row.domain);
+  if (clash) return { ok: false, error: `Another website is already using ${row.domain}.` };
+
+  const next = all.map((x) => (x.id === s ? { ...x, deletedAt: undefined } : x));
+  return (await writeSites(next))
+    ? { ok: true }
+    : { ok: false, error: "Couldn't save — storage is unavailable." };
+}
+
+/**
+ * ERASE A WEBSITE FOR GOOD. No undo, by design.
+ *
+ * Runs from the 30-day sweep, or by hand from the bin when Steven wants it gone now. Everything
+ * this site owns is emptied — pages, draft and published content, the compiled design stylesheet,
+ * brand, and the intake record with the owner's answers and photo links.
+ *
+ * ⚠️ THE HISTORY GOES TOO. `state_rev` is append-only and is what makes a bad save recoverable, so
+ * nothing else in the codebase touches it. But "we delete your data after 30 days" is not true
+ * while every past revision of their pages is still sitting there, and that promise is the whole
+ * reason this function exists. Deleting those rows is the difference between the live copy being
+ * gone and the DATA being gone.
+ *
+ * Order matters: content first, history second, registry row last — a failure part-way leaves the
+ * site visible in the bin rather than stranding orphaned content nobody can see. That exact
+ * failure is how thirteen dead websites accumulated unnoticed.
+ */
+export async function purgeSiteForever(id: string): Promise<{ ok: boolean; error?: string }> {
+  const s = String(id || "").trim();
+  if (s === SJC) return { ok: false, error: "The SJC site can't be deleted." };
+
+  const all = await readSitesRaw();
+  if (!all.some((x) => x.id === s)) return { ok: false, error: "No such website." };
+
   const { readPages } = await import("./pageRegistry");
   const client = getClient();
   const k = siteKeys(s);
-  for (const p of await readPages(s)) {
-    await createKvStore(client, k.puck(p.slug)).write({});
-    await createKvStore(client, k.puck(p.slug, true)).write({});
-    // A page imported from a bought design keeps its compiled stylesheet in its own key. It
-    // belongs to this website, so it goes with it.
-    await createKvStore(client, k.designCss(p.slug)).write({});
-    await createKvStore(client, k.designCss(p.slug, true)).write({});
-  }
-  await createKvStore(client, k.pages).write({});
-  await createKvStore(client, k.brand()).write({});
-  await createKvStore(client, k.brand(true)).write({});
+  const failed: string[] = [];
+  const keys: string[] = [];
+  const kill = async (key: string) => {
+    keys.push(key);
+    const res = await createKvStore(client, key).purge();
+    if (!res.ok) failed.push(`${key}: ${res.reason}`);
+  };
 
-  return (await writeSites(sites.filter((x) => x.id !== s)))
+  for (const p of await readPages(s)) {
+    await kill(k.puck(p.slug));
+    await kill(k.puck(p.slug, true));
+    // A page from a bought design keeps its compiled stylesheet in its own key.
+    await kill(k.designCss(p.slug));
+    await kill(k.designCss(p.slug, true));
+  }
+  await kill(k.pages);
+  await kill(k.brand());
+  await kill(k.brand(true));
+  await kill(k.intake);
+
+  if (failed.length) {
+    return { ok: false, error: `Nothing was erased — ${failed.join("; ")}` };
+  }
+
+  await dropHistory(keys);
+
+  return (await writeSites(all.filter((x) => x.id !== s)))
     ? { ok: true }
-    : { ok: false, error: "Couldn't save the change." };
+    : { ok: false, error: "Content was erased but the list couldn't be saved." };
+}
+
+/**
+ * Remove these keys' revision history.
+ *
+ * Deliberately the ONLY place in the codebase that deletes from state_rev, and it runs only from
+ * purgeSiteForever. Everywhere else the history is untouchable on purpose.
+ *
+ * Best-effort: if it fails the content is still gone, which is the part that matters operationally
+ * — so it logs rather than failing the erase and leaving a half-deleted site in the list.
+ */
+async function dropHistory(keys: string[]): Promise<void> {
+  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  if (!url || !keys.length) return;
+  try {
+    const pg = (await import("pg")).default;
+    const pool = new pg.Pool({ connectionString: url, max: 2 });
+    try {
+      await pool.query("delete from state_rev where key = any($1::text[])", [keys]);
+    } finally {
+      await pool.end();
+    }
+  } catch (e) {
+    console.error(`[sites] history not removed for ${keys.length} keys: ${(e as Error).message}`);
+  }
+}
+
+/** Deleted sites whose 30 days are up. The sweep's input. */
+export async function expiredSites(now = Date.now()): Promise<Site[]> {
+  const all = await readSitesRaw();
+  return all.filter((s) => {
+    const left = daysLeft(s, now);
+    return left !== null && left <= 0;
+  });
 }
 
 /**

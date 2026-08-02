@@ -115,7 +115,12 @@ export async function POST(req: Request) {
   // gradient/glass/glow are read rather than dropped. Fully drag-and-drop afterwards.
   // "design": sealed HTML — pixel-perfect, not editable. The fallback.
   // "blocks": the original, colours quantised to brand roles. For a plain page.
-  const raw = String(body?.mode || "editable").toLowerCase();
+  // ⚠️ DEFAULT IS "design". Sealed used to mean "words and photos only", so blocks were the
+  // richer choice. That inverted: a sealed section now takes edits to every word, photo, link,
+  // colour, size and its spacing, AND mounts the real lead form in place — with none of the
+  // fidelity lost in translating a design into our block vocabulary. Blocks are now the trade,
+  // not the upgrade.
+  const raw = String(body?.mode || "design").toLowerCase();
   const mode: "editable" | "design" | "blocks" =
     raw === "design" ? "design" : raw === "blocks" ? "blocks" : "editable";
 

@@ -25,6 +25,11 @@ function isProtected(pathname: string): boolean {
     // The website registry + the importer. Both create and destroy client sites, so they are
     // owner-only for the same reason /api/pages is.
     pathname.startsWith("/api/sites") ||
+    // The form library. Owner-only: the public site never reads it (a preset is copied into the
+    // page when it's picked), so nothing legitimate calls this from a visitor's browser.
+    pathname.startsWith("/api/forms") ||
+    // The invoice book. Owner-only for the obvious reason: it records who was billed what.
+    pathname.startsWith("/api/invoices") ||
     pathname.startsWith("/api/import-html") ||
     pathname.startsWith("/api/adopt-images") ||
     // One-time maintenance routes. They create and rewrite stored content, so they are owner-only

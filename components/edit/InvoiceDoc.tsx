@@ -1,0 +1,362 @@
+// THE DOCUMENT. One component, rendered in two places: the live preview beside the editor, and
+// the print page that becomes the PDF. That is the whole reason it exists as its own file — a
+// preview that is "close to" what prints is worse than no preview, because it teaches you to
+// trust it and then surprises you on the page a customer reads.
+//
+// No "use client": it's pure presentation with no state, so the client-side editor and the
+// server-rendered print route can both use it.
+//
+// Deliberately plain. This is a business document, not a web page: black on white, one accent
+// weight, real margins, and nothing that depends on a colour printer or a background graphic —
+// browsers strip backgrounds when printing unless you fight them, and a design that needs the
+// fight is the wrong design.
+import {
+  fromCents,
+  lineTotalCents,
+  prettyDate,
+  totals,
+  type Invoice,
+  type IssuerDetails,
+} from "@/lib/invoicesShared";
+
+export default function InvoiceDoc({
+  invoice,
+  issuer,
+}: {
+  invoice: Invoice;
+  issuer: IssuerDetails;
+}) {
+  const t = totals(invoice);
+  // Blank rows are normal while typing; they must not print as empty ruled lines.
+  const lines = invoice.lines.filter(
+    (l) => l.description.trim() || l.rateCents || lineTotalCents(l)
+  );
+
+  return (
+    <div style={sheet} className="invoice-sheet">
+      {/* ── THE PHONE ────────────────────────────────────────────────────────────────────────
+          Everything else here is inline styles, which is right for a document — they survive being
+          copied into a print route or an email client. What an inline style CANNOT hold is a media
+          query, and this document has a four-column table whose fixed widths add up to 300px
+          before the description gets any. On a 390px phone that leaves the description nothing and
+          pushes the sheet wider than the screen.
+
+          So the handful of rules that have to change with the viewport live here. The `!important`
+          is not laziness: an inline style beats a stylesheet on specificity, and these exist
+          precisely to override inline styles. Nothing else in the file needs it. */}
+      <style>{responsive}</style>
+
+      <header style={topRow} className="doc-top">
+        <div>
+          {issuer.businessName ? <div style={bizName}>{issuer.businessName}</div> : null}
+          {/* The DBA prints directly under the legal name and is never a substitute for it: the
+              cheque has to be made out to the entity, the customer only recognises the trade
+              name, and an invoice showing one without the other looks wrong to whoever pays. */}
+          {issuer.dba ? <div style={bizDba}>dba {issuer.dba}</div> : null}
+          <div style={bizMeta}>
+            {issuer.address ? <div style={preLine}>{issuer.address}</div> : null}
+            {issuer.email ? <div>{issuer.email}</div> : null}
+            {issuer.phone ? <div>{issuer.phone}</div> : null}
+          </div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }} className="doc-meta">
+          <div style={invWord}>Invoice</div>
+          <div style={invNum}>{invoice.number}</div>
+          <table style={dateTable} className="doc-dates">
+            <tbody>
+              <tr>
+                <td style={dateLbl}>Issued</td>
+                <td style={dateVal}>{prettyDate(invoice.issuedOn)}</td>
+              </tr>
+              {invoice.dueOn ? (
+                <tr>
+                  <td style={dateLbl}>Due</td>
+                  <td style={dateVal}>{prettyDate(invoice.dueOn)}</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </header>
+
+      <section style={billBlock}>
+        <div style={billLabel}>Bill to</div>
+        <div style={billName}>{invoice.billTo.name || "—"}</div>
+        {invoice.billTo.attn ? <div style={billLine}>Attn: {invoice.billTo.attn}</div> : null}
+        {invoice.billTo.address ? (
+          <div style={{ ...billLine, ...preLine }}>{invoice.billTo.address}</div>
+        ) : null}
+        {invoice.billTo.email ? <div style={billLine}>{invoice.billTo.email}</div> : null}
+      </section>
+
+      <table style={table}>
+        <thead>
+          <tr>
+            <th style={{ ...th, textAlign: "left" }}>Description</th>
+            <th style={{ ...th, ...numCol, width: 70 }} className="doc-qty">Qty</th>
+            <th style={{ ...th, ...numCol, width: 110 }} className="doc-rate">Rate</th>
+            <th style={{ ...th, ...numCol, width: 120 }} className="doc-amt">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lines.length ? (
+            lines.map((l) => (
+              <tr key={l.id}>
+                <td style={{ ...td, ...preLine }}>{l.description}</td>
+                <td style={{ ...td, ...numCol }} className="doc-qty">{formatQty(l.qty)}</td>
+                <td style={{ ...td, ...numCol }} className="doc-rate">{fromCents(l.rateCents)}</td>
+                <td style={{ ...td, ...numCol }} className="doc-amt">{fromCents(lineTotalCents(l))}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td style={{ ...td, color: "#9ca3af" }} colSpan={4}>
+                No items yet.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      <div style={totalsWrap}>
+        <table style={totalsTable} className="doc-totals">
+          <tbody>
+            <tr>
+              <td style={totLbl}>Subtotal</td>
+              <td style={totVal}>{fromCents(t.subtotalCents)}</td>
+            </tr>
+            {t.discountCents ? (
+              <tr>
+                <td style={totLbl}>{invoice.discountLabel || "Discount"}</td>
+                <td style={totVal}>−{fromCents(t.discountCents)}</td>
+              </tr>
+            ) : null}
+            <tr>
+              <td style={grandLbl}>{invoice.paidOn ? "Total" : "Total due"}</td>
+              <td style={grandVal}>${fromCents(t.totalCents)}</td>
+            </tr>
+            {/* The paid stamp is a row in the totals table, not a rotated graphic across the page:
+                a watermark depends on background printing, which browsers strip by default, so the
+                "PAID" a customer sees on screen would be missing from the copy he files. */}
+            {invoice.paidOn ? (
+              <tr>
+                <td style={paidLbl} colSpan={2}>
+                  Paid in full — {prettyDate(invoice.paidOn)}
+                </td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+
+      {invoice.terms || issuer.payTo || invoice.notes ? (
+        <footer style={foot}>
+          {invoice.terms ? (
+            <div style={{ ...footLine, fontWeight: 600 }}>
+              <Linkified text={invoice.terms} />
+            </div>
+          ) : null}
+          {issuer.payTo ? (
+            <div style={{ ...footLine, ...preLine }}>
+              <Linkified text={issuer.payTo} />
+            </div>
+          ) : null}
+          {invoice.notes ? (
+            <div style={{ ...footNote, ...preLine }}>
+              <Linkified text={invoice.notes} />
+            </div>
+          ) : null}
+        </footer>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Turn URLs and email addresses in free text into real links.
+ *
+ * ── WHY THIS EXISTS ───────────────────────────────────────────────────────────────────────────
+ * A payment link is the whole point of emailing an invoice: the customer opens the PDF and pays
+ * without hunting for a card or replying to ask how. But a URL typed into a text box is just
+ * characters. Chrome's "Save as PDF" carries <a href> elements across as clickable link
+ * annotations; it does NOT auto-detect a bare string that looks like an address. So a Stripe link
+ * pasted into "How to pay" would print as unclickable grey text — visible, useless, and the
+ * failure is silent because it LOOKS right on screen.
+ *
+ * Only http, https and mailto are ever produced. The text is Steven's own, but this renders into
+ * a document that gets sent to other people, so a `javascript:` or `data:` string typed in by
+ * accident (or pasted from somewhere) must not become a live link.
+ */
+function Linkified({ text }: { text: string }) {
+  // One capture group, so String.split returns [text, match, text, match, …] and the odd indices
+  // are the matches. Trailing punctuation is excluded so "pay at example.com/x." doesn't swallow
+  // the full stop into the href.
+  const pattern = /((?:https?:\/\/|www\.)[^\s<>()]*[^\s<>().,;:!?'"]|[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+)/g;
+  const parts = String(text || "").split(pattern);
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (!part) return null;
+        if (i % 2 === 0) return <span key={i}>{part}</span>;
+
+        const isUrl = /^(https?:\/\/|www\.)/i.test(part);
+        const href = isUrl
+          ? part.replace(/^www\./i, "https://www.")
+          : `mailto:${part}`;
+        return (
+          <a key={i} href={href} rel="noreferrer" style={docLink}>
+            {part}
+          </a>
+        );
+      })}
+    </>
+  );
+}
+
+/**
+ * The document on a narrow screen.
+ *
+ * Scoped under `.invoice-sheet` so it can only ever touch this component, wherever it's rendered.
+ * The header stops sitting side-by-side and stacks; the number columns give back the width they
+ * were reserving; everything steps down a size. The numbers keep `tabular-nums` and stay right
+ * aligned, because a column of amounts that doesn't line up reads as arithmetic you can't trust.
+ */
+const responsive = `
+@media (max-width: 640px) {
+  .invoice-sheet { font-size: 13px !important; }
+  .invoice-sheet .doc-top { flex-direction: column !important; gap: 12px !important; padding-bottom: 14px !important; }
+  .invoice-sheet .doc-meta { text-align: left !important; }
+  .invoice-sheet .doc-dates { margin-left: 0 !important; margin-top: 6px !important; }
+  .invoice-sheet .doc-dates td { text-align: left !important; padding-right: 12px !important; }
+  .invoice-sheet table th, .invoice-sheet table td { font-size: 12px !important; }
+  .invoice-sheet .doc-qty { width: 30px !important; padding-left: 6px !important; }
+  .invoice-sheet .doc-rate { width: 62px !important; padding-left: 6px !important; }
+  .invoice-sheet .doc-amt { width: 72px !important; padding-left: 6px !important; }
+  .invoice-sheet .doc-totals { min-width: 0 !important; width: 100% !important; }
+}
+@media (max-width: 380px) {
+  .invoice-sheet .doc-rate { display: none !important; }
+}
+`;
+
+/** 1 stays "1"; 1.5 stays "1.5". Trailing zeros on a quantity read like a units mistake. */
+function formatQty(qty: number): string {
+  const n = Number.isFinite(qty) ? qty : 0;
+  return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(3)));
+}
+
+// Serif for the body: an invoice is read as a document, and the whole page is set at a size that
+// survives being printed and scanned back.
+const font = "'Times New Roman', Times, serif";
+const sans = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+const ink = "#111827";
+const rule = "#d1d5db";
+
+const sheet: React.CSSProperties = {
+  fontFamily: font,
+  color: ink,
+  background: "#fff",
+  fontSize: 14,
+  lineHeight: 1.5,
+};
+const topRow: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  gap: 32,
+  paddingBottom: 20,
+  borderBottom: `2px solid ${ink}`,
+};
+const bizName: React.CSSProperties = { fontSize: 20, fontWeight: 700, lineHeight: 1.2 };
+const bizDba: React.CSSProperties = { fontSize: 14, fontStyle: "italic", marginTop: 1 };
+const bizMeta: React.CSSProperties = { fontSize: 12.5, marginTop: 8, color: "#374151" };
+const preLine: React.CSSProperties = { whiteSpace: "pre-line" };
+const invWord: React.CSSProperties = {
+  fontFamily: sans,
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: ".18em",
+  textTransform: "uppercase",
+  color: "#6b7280",
+};
+const invNum: React.CSSProperties = { fontSize: 20, fontWeight: 700, marginTop: 2 };
+const dateTable: React.CSSProperties = { marginTop: 10, marginLeft: "auto", borderCollapse: "collapse" };
+const dateLbl: React.CSSProperties = { fontSize: 12, color: "#6b7280", paddingRight: 10, textAlign: "right" };
+const dateVal: React.CSSProperties = { fontSize: 12.5, textAlign: "right", whiteSpace: "nowrap" };
+
+const billBlock: React.CSSProperties = { marginTop: 22 };
+const billLabel: React.CSSProperties = {
+  fontFamily: sans,
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: ".14em",
+  textTransform: "uppercase",
+  color: "#6b7280",
+  marginBottom: 4,
+};
+const billName: React.CSSProperties = { fontSize: 15, fontWeight: 700 };
+const billLine: React.CSSProperties = { fontSize: 13, color: "#374151" };
+
+const table: React.CSSProperties = { width: "100%", borderCollapse: "collapse", marginTop: 26 };
+const th: React.CSSProperties = {
+  fontFamily: sans,
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: ".12em",
+  textTransform: "uppercase",
+  color: "#6b7280",
+  padding: "0 0 7px",
+  borderBottom: `1px solid ${ink}`,
+};
+const td: React.CSSProperties = { padding: "9px 0", borderBottom: `1px solid ${rule}`, verticalAlign: "top" };
+// Tabular figures so the decimal points line up down the column — without this the amounts
+// wander and the arithmetic looks wrong even when it isn't.
+const numCol: React.CSSProperties = {
+  textAlign: "right",
+  fontVariantNumeric: "tabular-nums",
+  whiteSpace: "nowrap",
+  paddingLeft: 14,
+};
+
+const totalsWrap: React.CSSProperties = { display: "flex", justifyContent: "flex-end", marginTop: 14 };
+const totalsTable: React.CSSProperties = { borderCollapse: "collapse", minWidth: 260 };
+const totLbl: React.CSSProperties = { padding: "4px 16px 4px 0", fontSize: 13, color: "#374151" };
+const totVal: React.CSSProperties = {
+  padding: "4px 0",
+  fontSize: 13,
+  textAlign: "right",
+  fontVariantNumeric: "tabular-nums",
+};
+const grandLbl: React.CSSProperties = {
+  padding: "10px 16px 0 0",
+  fontSize: 15,
+  fontWeight: 700,
+  borderTop: `2px solid ${ink}`,
+};
+const grandVal: React.CSSProperties = {
+  padding: "10px 0 0",
+  fontSize: 17,
+  fontWeight: 700,
+  textAlign: "right",
+  borderTop: `2px solid ${ink}`,
+  fontVariantNumeric: "tabular-nums",
+};
+
+const paidLbl: React.CSSProperties = {
+  padding: "9px 0 0",
+  fontFamily: sans,
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: ".12em",
+  textTransform: "uppercase",
+  textAlign: "right",
+  color: "#047857",
+};
+
+// Underlined AND coloured. The underline is what survives a black-and-white printout, where the
+// colour is the only other signal that it's clickable and there's no cursor to reveal it.
+const docLink: React.CSSProperties = { color: "#1d4ed8", textDecoration: "underline" };
+const foot: React.CSSProperties = { marginTop: 34, paddingTop: 14, borderTop: `1px solid ${rule}`, fontSize: 12.5 };
+const footLine: React.CSSProperties = { marginBottom: 4 };
+const footNote: React.CSSProperties = { marginTop: 10, color: "#374151" };

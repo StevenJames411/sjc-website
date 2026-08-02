@@ -32,13 +32,13 @@ export type IntakeQuestion = {
    * question is skipped entirely — this is the whole prospect-vs-inbound mechanism.
    */
   satisfiedBy?: string;
-  /**
-   * A disqualifier. Prospecting already filtered the outbound list (ICP-scored, no website, no
-   * paid ads); an inbound has passed no filter at all. Catching a bad fit HERE costs one question
-   * — catching it after the build costs a week and a refund conversation.
-   */
-  disqualifyOn?: { equals: string; because: string };
 };
+
+// ⚠️ NO QUALIFIERS ON THIS FORM. There used to be a `disqualifyOn` mechanism that ended the flow
+// when someone answered "yes, and it works fine" to the website question. It's gone on purpose.
+// This form's only job is collecting what's needed to build the site. It is not a filter, and it
+// is not where we decide whether to work with someone — if they don't want to work with us, no
+// wording on a form changes that. Questions here either have an answer or they don't.
 
 /** Read "business.phoneDisplay" off a Site. */
 export function valueAt(site: Site | null, path?: string): string {
@@ -59,7 +59,7 @@ export const INTAKE_QUESTIONS: IntakeQuestion[] = [
     label: "Your Google Business listing",
     help:
       "Search your business name on Google, then copy the link to your listing. This saves you " +
-      "typing your address, hours and phone number — I can read all of it from there.",
+      "typing your address, hours and phone number — we can read all of it from there.",
     type: "url",
     placeholder: "https://maps.google.com/…",
   },
@@ -94,7 +94,7 @@ export const INTAKE_QUESTIONS: IntakeQuestion[] = [
     satisfiedBy: "business.hours",
   },
 
-  // ── The gate. Only bites an inbound; a prospected client was already filtered ───────────────
+  // Information only — what's there now, so we know what we're replacing. Not a test.
   {
     id: "currentSite",
     label: "Do you have a website now?",
@@ -104,30 +104,16 @@ export const INTAKE_QUESTIONS: IntakeQuestion[] = [
       "Something old I can't update",
       "Yes, and it works fine",
     ],
-    required: true,
-    disqualifyOn: {
-      equals: "Yes, and it works fine",
-      because:
-        "If your site already works, you don't need me — and I'd rather tell you that now than " +
-        "take your money. If it's not bringing you calls, reply to my text and say so, because " +
-        "that's a different problem and I can help with it.",
-    },
   },
 
-  // ── The six only she can answer ────────────────────────────────────────────────────────────
-  {
-    id: "wantMore",
-    label: "What work do you want more of?",
-    help: "The jobs you'd take every day if the phone rang with them.",
-    type: "textarea",
-    required: true,
-  },
-  {
-    id: "wantLess",
-    label: "What do you NOT want to be called for?",
-    help: "Just as useful. I'll keep it off the site so you stop getting those calls.",
-    type: "textarea",
-  },
+  // ── The ones only she can answer ───────────────────────────────────────────────────────────
+  //
+  // ⚠️ WHAT DOES NOT BELONG HERE: anything that sounds like lead generation. "What work do you
+  // want more of", "what do you NOT want to be called for" and "describe your best customer"
+  // were cut for exactly that reason — they put the owner in mind of MORE customers and IDEAL
+  // customers, which is a promise this product does not make. We sell a website, affordably.
+  // Don't introduce a problem we're not solving. Lead-gen is a different offer at a different
+  // price; asking its questions here sets an expectation the $795 build will never meet.
   {
     id: "whyYou",
     label: "Why do customers pick you over the other guy?",
@@ -136,23 +122,17 @@ export const INTAKE_QUESTIONS: IntakeQuestion[] = [
     required: true,
   },
   {
-    id: "bestCustomer",
-    label: "Describe your best customer",
-    help: "The one you wish you had ten more of.",
-    type: "textarea",
-  },
-  {
     id: "photos",
     label: "Photos of your work",
     help:
-      "Ten or so is plenty. Straight off your phone is fine — I'll size and clean them up. " +
-      "Real photos of your own work beat anything I could buy.",
+      "Ten or so is plenty. Straight off your phone is fine — we'll size and clean them up. " +
+      "Real photos of your own work beat anything we could buy.",
     type: "photos",
     required: true,
   },
   {
     id: "anythingElse",
-    label: "Anything else I should know?",
+    label: "Anything else we should know?",
     type: "textarea",
   },
 ];
