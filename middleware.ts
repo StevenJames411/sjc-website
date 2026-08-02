@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { normalizeHost, SJC_HOST, STUDIO_HOST } from "@/lib/hostShared";
 
 // PUBLIC SITE (launched 2026-07-09) — the website is live to the general public. Only the
 // owner-edit + admin surfaces stay gated behind the app password (mirroring the private
@@ -109,8 +110,42 @@ f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
 </body></html>`;
 }
 
+/**
+ * ONBOARDING LINKS BELONG TO THE STUDIO — see onboardUrlFor in lib/hostShared.
+ *
+ * Links already texted to a client point at stevenjamesconsulting.com/<id>/onboard, and both
+ * domains serve this same deployment, so that address answers. It must keep answering — a link
+ * in someone's message thread is not ours to break. But it must not keep that ADDRESS: the page
+ * says it's from Steven James Designs, and where a document lives is part of the document. The
+ * link preview arriving under the wrong brand is the exact failure this whole split exists to
+ * stop, so the fix is a redirect, not a second correct-looking home.
+ *
+ * Narrow on purpose: only the SJC host, only `/<something>/onboard`. Demo subdomains, custom
+ * domains, *.vercel.app, and localhost all fall through untouched.
+ */
+function onboardingRedirect(req: NextRequest, pathname: string): URL | null {
+  if (!/^\/[^/]+\/onboard\/?$/.test(pathname)) return null;
+
+  const here = normalizeHost(
+    req.headers.get("x-forwarded-host") || req.headers.get("host") || ""
+  );
+  if (here !== normalizeHost(SJC_HOST)) return null;
+
+  const url = new URL(req.nextUrl);
+  url.protocol = "https:";
+  url.port = "";
+  url.host = normalizeHost(process.env.NEXT_PUBLIC_STUDIO_DOMAIN || STUDIO_HOST);
+  return url;
+}
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Before anything else: this one is public, and it's a change of address, not a decision
+  // about who's allowed in.
+  const moved = onboardingRedirect(req, pathname);
+  if (moved) return NextResponse.redirect(moved, 308);
+
   const authed = isOwner(req, pathname);
 
   // PREVIEW MODE (added 2026-07-30). `?preview=1` on any public URL renders the DRAFT through

@@ -72,10 +72,33 @@ export function publicPathFor(
   return `${prefix}${tail}` || "/";
 }
 
-/** The onboarding link for a business. Same shape as her website, deliberately. */
+/**
+ * The onboarding link for a business.
+ *
+ * ON THE STUDIO HOST, ALWAYS, AND IT NEVER MOVES — same rule as invoiceUrlFor above.
+ *
+ * ── WHY THIS IS NOT DERIVED FROM publicBaseFor ────────────────────────────────────────────────
+ * It used to be, and that made the address change the moment a domain landed on her record: the
+ * link went from <id>-demo.stevenjamesdesigns.com/onboard to herdomain.com/onboard. She'd have
+ * been texted the first one, be halfway through, and the page would still be telling her "your
+ * answers save as you go — come back to the same link." Buying her domain locked her out of her
+ * own form.
+ *
+ * The mistake underneath was tying an EARLY-phase artifact to a LATE-phase fact. She fills this
+ * in so the site can be built; the domain doesn't exist yet and won't for days.
+ *
+ * A site's id is permanent, so this address is permanent — domain purchase, DNS propagation, a
+ * change of registrar later, none of it reaches her form. Her business name is still in the path,
+ * which is the part that makes it read as legitimate in a text message; the demo subdomain was
+ * never doing anything the path doesn't do.
+ *
+ * ⚠️ It also has to be a URL something ANSWERS. app/[slug]/onboard/page.tsx takes the business
+ * from the PATH, so on her own subdomain (`/onboard`, no slug) it looked for a page of her site
+ * named "onboard" and 404'd. Generating this shape is what makes that route correct again.
+ */
 export function onboardUrlFor(site: { id: string; domain?: string }): string {
-  const { origin, prefix } = publicBaseFor(site);
-  return `${origin}${prefix}/onboard`;
+  const host = normalizeHost(process.env.NEXT_PUBLIC_STUDIO_DOMAIN || STUDIO_HOST);
+  return `https://${host}/${site.id}/onboard`;
 }
 
 /**
