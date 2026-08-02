@@ -59,7 +59,11 @@ export const CHECKS: CheckDef[] = [
     runbook:
       "ONE sending domain sends for every client, so a lapse silences every lead alert at once — " +
       "and the send API keeps returning success while it does. Re-add the DKIM/SPF records at " +
-      "whatever DNS host holds the zone now, then Verify. Replay missed alerts from the sheets.",
+      "whatever DNS host holds the zone now, then Verify. Replay missed alerts from the sheets. " +
+      "⚠️ GREY here means the opposite of a problem: the key is sending-scoped and simply cannot " +
+      "read the domain list. To turn this tile green rather than grey, the board needs a key with " +
+      "domain read access — which is a real privilege increase for a read, so leaving it grey is a " +
+      "legitimate choice. Grey is honest; it is not an alarm.",
     cadenceSeconds: 6 * HOUR,
     freshSeconds: 12 * HOUR,
     staleSeconds: 2 * DAY,
@@ -232,6 +236,29 @@ async function checkResendDomain(): Promise<CheckRun> {
   const res = await fetch("https://api.resend.com/domains", {
     headers: { Authorization: `Bearer ${key}` },
   });
+
+  // ⚠️ "I AM NOT ALLOWED TO LOOK" IS NOT "THE THING IS BROKEN."
+  //
+  // A Resend key is scoped either `Sending access` or `Full access`, and SJC's is sending-only —
+  // correct for what it does, and unable to read /domains, which answers 401. The first version
+  // reported that as "the lead-alert sending domain is verified: FAIL", i.e. the loudest red on the
+  // board, for an account where nothing whatsoever was wrong. That is the failure mode that gets a
+  // board closed and never reopened, so it is worth more care than the outage it was watching for.
+  //
+  // Grey, not red, and the tile says which it is. The distinction the board has to preserve:
+  // a thing that is broken, versus a thing nobody has been able to check.
+  if (res.status === 401 || res.status === 403) {
+    return {
+      checkId: "resend.domain",
+      status: "skipped",
+      detail:
+        `The Resend key is scoped for sending only, so it cannot read the domain list (${res.status}). ` +
+        `Email is unaffected — nothing here says the domain is bad, only that this key can't confirm it.`,
+      evidence: { http: res.status, reason: "key lacks domain read scope" },
+      at: now(),
+    };
+  }
+
   const body = await res.json().catch(() => null);
   const domains: { name?: string; status?: string }[] = body?.data || [];
   const bad = domains.filter((d) => d.status !== "verified");
