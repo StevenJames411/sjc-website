@@ -65,27 +65,24 @@ export default async function PublicInvoicePage({
     <>
       <style>{css}</style>
 
+      {/* NOTHING IN THE HEADER IS CLICKABLE, on purpose. This page has one job: get the invoice
+          read and paid. A brand mark linking to the studio site, or a phone number sitting above
+          the Pay button, is a door out of the page at the exact moment somebody was about to
+          settle up. Every way to reach him lives in the footer, past the payment. */}
       <header className="sjd-head">
         <div className="sjd-wrap sjd-head-in">
-          <a className="sjd-brand" href={STUDIO}>
+          <div className="sjd-brand">
             <span className="sjd-mark" aria-hidden>
               &lt;/&gt;
             </span>
             <span className="sjd-brand-txt">
               {brandHead} {brandTail ? <em>{brandTail}</em> : null}
             </span>
-          </a>
-          <div className="sjd-head-right">
-            {issuer.phone ? (
-              <a className="sjd-phone" href={`tel:${issuer.phone.replace(/[^\d+]/g, "")}`}>
-                {issuer.phone}
-              </a>
-            ) : null}
-            <span className="sjd-pill">
-              {invoice.number}
-              {invoice.dueOn && !paid ? ` · due ${prettyDate(invoice.dueOn)}` : ""}
-            </span>
           </div>
+          <span className="sjd-pill">
+            {invoice.number}
+            {invoice.dueOn && !paid ? ` · due ${prettyDate(invoice.dueOn)}` : ""}
+          </span>
         </div>
       </header>
 
@@ -144,17 +141,6 @@ export default async function PublicInvoicePage({
                 </section>
               )}
 
-              <p className="side-help">
-                Questions about this invoice?{" "}
-                {issuer.email ? <a href={`mailto:${issuer.email}`}>Email us</a> : "Reply to the email it came from"}
-                {issuer.phone ? (
-                  <>
-                    {" "}
-                    or call <a href={`tel:${issuer.phone.replace(/[^\d+]/g, "")}`}>{issuer.phone}</a>
-                  </>
-                ) : null}
-                .
-              </p>
             </aside>
           </div>
         </div>
@@ -180,8 +166,12 @@ export default async function PublicInvoicePage({
 
             <div className="foot-contact">
               <div className="foot-h">Get in touch</div>
+              {/* A button, not a string of digits — on the phone this invoice is most likely
+                  being read on, a tel: link IS the call. */}
               {issuer.phone ? (
-                <a href={`tel:${issuer.phone.replace(/[^\d+]/g, "")}`}>{issuer.phone}</a>
+                <a className="call-btn" href={`tel:${issuer.phone.replace(/[^\d+]/g, "")}`}>
+                  <span aria-hidden>📞</span> Call {issuer.phone}
+                </a>
               ) : null}
               {issuer.email ? <a href={`mailto:${issuer.email}`}>{issuer.email}</a> : null}
               <a href={STUDIO}>stevenjamesdesigns.com</a>
@@ -213,7 +203,7 @@ const css = `
   position: sticky; top: 0; z-index: 20;
 }
 .sjd-head-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 68px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
-.sjd-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.sjd-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; user-select: none; }
 .sjd-mark {
   width: 38px; height: 38px; border-radius: 11px; flex: 0 0 auto;
   display: grid; place-items: center;
@@ -223,9 +213,6 @@ const css = `
 }
 .sjd-brand-txt { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -.01em; }
 .sjd-brand-txt em { font-style: normal; color: #4fd2f7; }
-.sjd-head-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.sjd-phone { color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 600; }
-.sjd-phone:hover { color: #fff; }
 .sjd-pill {
   font-size: 12.5px; font-weight: 700; color: #06263a;
   background: #4fd2f7; border-radius: 999px; padding: 7px 14px; white-space: nowrap;
@@ -269,9 +256,6 @@ const css = `
   display: grid; place-items: center; font-size: 22px; font-weight: 700;
   background: #ecfdf5; color: #047857;
 }
-.side-help { font-size: 12.5px; color: #8fa3bd; line-height: 1.6; padding: 0 4px; margin: 0; }
-.side-help a { color: #4fd2f7; text-decoration: none; }
-.side-help a:hover { text-decoration: underline; }
 
 .sjd-foot { background: #071120; border-top: 1px solid rgba(255,255,255,.07); padding: 40px 0 26px; }
 .foot-cols { display: grid; gap: 26px; }
@@ -279,9 +263,17 @@ const css = `
 .foot-brand { margin-bottom: 12px; }
 .foot-blurb { font-size: 14px; color: #8fa3bd; line-height: 1.7; margin: 0; max-width: 470px; }
 .foot-h { font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #64748b; margin-bottom: 12px; }
-.foot-contact { display: grid; gap: 9px; align-content: start; }
+.foot-contact { display: grid; gap: 11px; align-content: start; justify-items: start; }
 .foot-contact a { color: #cbd5e1; text-decoration: none; font-size: 14px; }
 .foot-contact a:hover { color: #4fd2f7; }
+.call-btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: #4fd2f7; color: #06263a !important;
+  font-size: 14.5px; font-weight: 700; letter-spacing: -.01em;
+  border-radius: 999px; padding: 11px 20px; margin-bottom: 3px;
+  box-shadow: 0 8px 22px rgba(79,210,247,.22);
+}
+.call-btn:hover { background: #7fe3ff; }
 .foot-base {
   display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
   border-top: 1px solid rgba(255,255,255,.07);
