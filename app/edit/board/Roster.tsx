@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Colour } from "@/lib/checksShared";
 import { SWATCH, Dot } from "./shared";
 
@@ -10,13 +10,19 @@ import { SWATCH, Dot } from "./shared";
 // wants them to STAY there through every sweep, whatever colour they turn. The order saves to
 // Postgres, so it survives a reload and follows him to his phone.
 //
-// The reorder itself is the same ten lines as components/edit/SectionsPanel.tsx — native HTML5
-// drag-and-drop, no library, originally ported from the cockpit's map engine.
+// ── ⚠️ WHY POINTER EVENTS AND NOT HTML5 DRAG-AND-DROP ─────────────────────────────────────────
+// components/edit/SectionsPanel.tsx uses the HTML5 `draggable` API, and this started as a copy of
+// it. Two problems, and the second is the one that matters:
 //
-// ⚠️ HTML5 DRAG-AND-DROP DOES NOT WORK ON iOS SAFARI, and the phone is the whole reason the back
-// office got a cockpit shell in the first place. So every row also carries ▲▼ buttons, revealed on
-// coarse pointers. Drag on the laptop, tap on the phone, one stored order behind both — never a
-// desktop-only feature on a surface built for the field.
+//   1. HTML5 drag-and-drop does not fire on iOS Safari at all. The phone is the entire reason the
+//      back office got a cockpit shell — shipping a desktop-only reorder onto a surface built for
+//      the field is shipping half a feature.
+//   2. It cannot be verified. Synthetic mouse events (Chrome DevTools Protocol, which is how this
+//      gets driven and tested) do not trigger native drag events either, so a broken HTML5 drag
+//      and a working one look identical from outside. "Probably fine" is not a receipt.
+//
+// Pointer events fire for a mouse, a trackpad, a finger and a test harness, identically. One code
+// path, one behaviour, actually checkable. The ▲▼ buttons stay as the keyboard/accessible path.
 
 export type RosterRow = {
   key: string;
@@ -30,12 +36,13 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
   const [order, setOrder] = useState<RosterRow[]>(rows);
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [saveErr, setSaveErr] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+  // The order as it stands mid-drag. State is async, and a pointermove fires far faster than React
+  // re-renders — reading `order` inside the handler would compute the next swap from a stale list.
+  const live = useRef<RosterRow[]>(rows);
 
-  function commit(next: RosterRow[]) {
-    setOrder(next);
+  function save(next: RosterRow[]) {
     setSaveErr("");
-    // Optimistic: the row is already where he dropped it. If the save fails he is TOLD, rather
-    // than finding out on the next reload when his arrangement is silently gone.
     fetch("/api/board-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -44,45 +51,76 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
     })
       .then((r) => r.json())
       .then((j) => {
-        if (!j?.ok) setSaveErr("The new order didn't save — it will be back to normal on reload.");
+        // Optimistic: the row is already where he dropped it. If the save failed he is TOLD, rather
+        // than finding out on the next reload when his arrangement is quietly gone.
+        if (!j?.ok) setSaveErr("That new order didn't save — a reload will put it back as it was.");
       })
-      .catch(() => setSaveErr("The new order didn't save — it will be back to normal on reload."));
+      .catch(() => setSaveErr("That new order didn't save — a reload will put it back as it was."));
   }
 
-  function move(from: number, to: number) {
-    if (to < 0 || to >= order.length || from === to) return;
-    const next = [...order];
+  function reorder(from: number, to: number): RosterRow[] | null {
+    if (to < 0 || to >= live.current.length || from === to) return null;
+    const next = [...live.current];
     const [row] = next.splice(from, 1);
     next.splice(to, 0, row);
-    commit(next);
+    live.current = next;
+    setOrder(next);
+    return next;
   }
 
-  function drop(targetKey: string) {
-    if (!dragKey || dragKey === targetKey) return;
-    move(
-      order.findIndex((r) => r.key === dragKey),
-      order.findIndex((r) => r.key === targetKey)
-    );
+  function nudge(from: number, to: number) {
+    const next = reorder(from, to);
+    if (next) save(next);
+  }
+
+  function onPointerDown(e: React.PointerEvent, key: string) {
+    // Left button / touch / pen only — a right-click must not start a drag.
+    if (e.button !== 0) return;
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    setDragKey(key);
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    if (!dragKey || !listRef.current) return;
+    e.preventDefault();
+    const from = live.current.findIndex((r) => r.key === dragKey);
+    if (from < 0) return;
+
+    // Which row is the pointer sitting over? Measured from the live DOM rather than from assumed
+    // row heights — the rows are different heights (one, two or three status phrases) and a fixed
+    // height would make the swap point drift further down the list on every row.
+    const kids = Array.from(listRef.current.children) as HTMLElement[];
+    const to = kids.findIndex((el) => {
+      const r = el.getBoundingClientRect();
+      return e.clientY >= r.top && e.clientY <= r.bottom;
+    });
+    if (to >= 0 && to !== from) reorder(from, to);
+  }
+
+  function onPointerUp() {
+    if (!dragKey) return;
+    setDragKey(null);
+    save(live.current);
   }
 
   return (
     <>
-      {saveErr && (
-        <p style={{ fontSize: 13, color: "#b91c1c", margin: "0 0 12px" }}>{saveErr}</p>
-      )}
+      {saveErr && <p style={{ fontSize: 13, color: "#b91c1c", margin: "0 0 12px" }}>{saveErr}</p>}
 
-      <div style={{ display: "grid", gap: 10 }}>
+      <div
+        ref={listRef}
+        style={{ display: "grid", gap: 10 }}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
         {order.map((g, i) => {
           const sw = SWATCH[g.colour];
           return (
             <div
               key={g.key}
               id={`row-${g.key}`}
-              draggable
-              onDragStart={() => setDragKey(g.key)}
-              onDragEnd={() => setDragKey(null)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => drop(g.key)}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -91,23 +129,37 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                 border: `1px solid ${sw.border}`,
                 borderRadius: 12,
                 padding: "14px 16px",
-                opacity: dragKey === g.key ? 0.4 : 1,
+                opacity: dragKey === g.key ? 0.55 : 1,
+                boxShadow: dragKey === g.key ? "0 8px 24px rgba(0,0,0,0.18)" : "none",
               }}
             >
               <span
+                onPointerDown={(e) => onPointerDown(e, g.key)}
                 title="Drag to reorder"
-                style={{ color: "#9ca3af", fontSize: 15, cursor: "grab", flex: "0 0 auto", lineHeight: 1 }}
+                aria-label="Drag to reorder"
+                style={{
+                  color: "#9ca3af",
+                  fontSize: 16,
+                  cursor: dragKey === g.key ? "grabbing" : "grab",
+                  flex: "0 0 auto",
+                  lineHeight: 1,
+                  padding: "6px 4px",
+                  // Without this the phone scrolls the page instead of moving the row.
+                  touchAction: "none",
+                  userSelect: "none",
+                }}
               >
                 ⋮⋮
               </span>
 
               <Dot colour={g.colour} size={12} />
 
-              {/* The link wraps only the TEXT. Wrapping the whole row would make every drag look
-                  like a click, and dropping a row would navigate away from the board. */}
+              {/* The link wraps the TEXT, not the row. Wrapping the row made every drag end in a
+                  navigation away from the board the moment the pointer came up. */}
               <a
                 href={`/edit/board/${g.key}`}
                 style={{ minWidth: 0, flex: 1, textDecoration: "none", color: "inherit" }}
+                draggable={false}
               >
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", overflowWrap: "anywhere" }}>
                   {g.title}
@@ -116,12 +168,11 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                 <div style={{ fontSize: 13, color: "#374151", marginTop: 6 }}>{g.summary}</div>
               </a>
 
-              {/* Touch path. Hidden on a mouse, where dragging is better. */}
-              <span className="board-nudge">
-                <button type="button" onClick={() => move(i, i - 1)} aria-label="Move up" style={nudge}>
+              <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: "0 0 auto" }}>
+                <button type="button" onClick={() => nudge(i, i - 1)} aria-label="Move up" style={nudgeBtn}>
                   ▲
                 </button>
-                <button type="button" onClick={() => move(i, i + 1)} aria-label="Move down" style={nudge}>
+                <button type="button" onClick={() => nudge(i, i + 1)} aria-label="Move down" style={nudgeBtn}>
                   ▼
                 </button>
               </span>
@@ -139,22 +190,22 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
       </div>
 
       <p style={{ color: "#9ca3af", fontSize: 12, marginTop: 12 }}>
-        Drag a row to move it. The order sticks — nothing re-sorts itself on a sweep.
+        Drag a row by its handle, or use ▲▼. The order sticks — nothing re-sorts itself on a sweep.
       </p>
     </>
   );
 }
 
-const nudge: React.CSSProperties = {
+const nudgeBtn: React.CSSProperties = {
   display: "block",
-  width: 30,
-  height: 26,
+  width: 28,
+  height: 22,
   border: "1px solid #d1d5db",
   background: "#fff",
-  borderRadius: 6,
-  color: "#4b5563",
-  fontSize: 10,
+  borderRadius: 5,
+  color: "#6b7280",
+  fontSize: 9,
   lineHeight: 1,
   cursor: "pointer",
-  marginBottom: 2,
+  padding: 0,
 };
