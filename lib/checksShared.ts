@@ -85,12 +85,30 @@ export type Board = {
 export function colourFor(def: CheckDef, state: CheckState | undefined, now = Date.now()): Colour {
   if (!state?.lastRunAt) return "grey";
 
+  // ⚠️ SKIPPED IS NOT A FAILURE, AND MUST NEVER RENDER AS ONE.
+  //
+  // "This site has no domain yet, so there is nothing to expire" is the correct answer, not a
+  // broken one. The first version had no branch for it, so a skip fell through to the staleness
+  // rule below, found no prior pass, and went red — a demo site reported as an emergency on the
+  // very first sweep. A board that cries about things that are fine is a board he stops opening,
+  // which costs more than having no board at all.
+  //
+  // Grey rather than green, because it is still an unverified square: nothing was proven here.
+  if (state.lastStatus === "skipped") return "grey";
+
+  // The live verdict wins while it is fresh. Checked BEFORE staleness so a check that has genuinely
+  // never passed reports what it actually found — the staleness rule below reasons about the age of
+  // a pass, and on a first run there is no pass to be old.
+  if (state.lastStatus === "fail") return "red";
+  if (state.lastStatus === "warn") return "yellow";
+
+  // Passing — but a pass is only worth something while it is recent. This is the half that makes
+  // silence decay: stop running and the tile walks green -> yellow -> red on its own, so a dead
+  // cron takes the board down with it rather than freezing every tile on its last good answer.
   const passAge = state.lastPassAt ? now - Date.parse(state.lastPassAt) : Infinity;
   if (passAge > def.staleSeconds * 1000) return "red";
-  if (state.lastStatus === "fail") return "red";
-  if (state.lastStatus === "warn" || state.lastStatus === "skipped") return "yellow";
   if (passAge > def.freshSeconds * 1000) return "yellow";
-  return state.lastStatus === "pass" ? "green" : "yellow";
+  return "green";
 }
 
 /** "4 minutes ago" — the primary text on a tile, never a tooltip. The age IS the claim. */

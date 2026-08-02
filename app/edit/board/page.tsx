@@ -20,7 +20,10 @@ const SWATCH: Record<Colour, { dot: string; bg: string; border: string; label: s
   green: { dot: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", label: "Verified" },
   yellow: { dot: "#d97706", bg: "#fffbeb", border: "#fde68a", label: "Needs you soon" },
   red: { dot: "#dc2626", bg: "#fef2f2", border: "#fecaca", label: "Broken now" },
-  grey: { dot: "#9ca3af", bg: "#f9fafb", border: "#e5e7eb", label: "Never checked" },
+  // Grey covers two things that behave the same way: never run, and nothing to check yet (a demo
+  // with no domain). Both are unproven squares rather than problems, and both stay visible in the
+  // header count — an unmonitored joint is worse than a broken one, because it looks like nothing.
+  grey: { dot: "#9ca3af", bg: "#f9fafb", border: "#e5e7eb", label: "Nothing proven yet" },
 };
 
 export default async function BoardPage() {
