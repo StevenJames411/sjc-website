@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import type { NavDoc, NavEntry } from "@/lib/editNav";
 
 // THE BACK-OFFICE SHELL.
 //
@@ -14,9 +15,14 @@ import { usePathname } from "next/navigation";
 // collapses to hand back the whole canvas, a slide-in drawer plus bottom tabs on the phone. Same
 // breakpoint (820px), same collapse-preference trick, so the two surfaces feel like one system.
 //
+// ── THE MENU IS DATA, AND THE PENCIL IS THE POINT ─────────────────────────────────────────────
+// Every label here — the brand, the section headings, each item — is stored, renameable and
+// draggable. The hrefs are NOT: they come from lib/editNav.ts, keyed, and no amount of typing in
+// this component can move one. Rename "Invoices" to whatever you like; it still goes to
+// /edit/invoices. See the law at the top of lib/editNav.ts.
+//
 // ⛔ TWO ROUTES RENDER BARE — see BARE below. A layout under app/edit wraps EVERYTHING beneath it,
-// including places a second navigation rail would be actively wrong, so the exclusion has to live
-// here. A pathname check rather than a route-group reshuffle: one line to change, no files moved.
+// including places a second navigation rail would be actively wrong, so the exclusion lives here.
 const COLLAPSE_KEY = "sjc-edit-sidebar-collapsed";
 const THEME_KEY = "sjc-edit-theme";
 
@@ -30,45 +36,36 @@ const THEME_KEY = "sjc-edit-theme";
  */
 function isBare(pathname: string): boolean {
   if (/^\/edit\/invoices\/[^/]+\/print\/?$/.test(pathname)) return true;
-  // /edit/<site>/<page> — three segments after /edit. Deliberately NOT matching /edit/<site> or
-  // /edit/<site>/settings, which are ordinary pages and do want the rail.
   const m = pathname.match(/^\/edit\/([^/]+)\/([^/]+)\/?$/);
   if (!m) return false;
   const [, site, page] = m;
-  // These are real sections, not site ids. Everything else in that shape is the builder.
+  // ⚠️ These are real sections, not site ids. Everything else in that shape is the builder.
+  // Keys, not labels — renaming "The board" must not turn the board into the page editor.
   const SECTIONS = ["board", "forms", "invoices", "brand", "import"];
   return !SECTIONS.includes(site) && page !== "settings";
 }
 
-type Item = { href: string; label: string };
-
-const NAV: { section?: string; items: Item[] }[] = [
-  { items: [{ href: "/edit", label: "Websites" }] },
-  { section: "Watch", items: [{ href: "/edit/board", label: "The board" }] },
-  { section: "Money", items: [{ href: "/edit/invoices", label: "Invoices" }] },
-  {
-    section: "Library",
-    items: [
-      { href: "/edit/forms", label: "Forms" },
-      { href: "/edit/brand", label: "Brand" },
-      { href: "/edit/import", label: "Import a design" },
-    ],
-  },
-];
-
-// The phone's thumb row. Four, because five stops being tappable — the same four Steven opens.
-const TABS: Item[] = [
+// The phone's thumb row. Fixed and NOT renameable on purpose: four targets is all a thumb row can
+// hold, and it is the one surface where a long custom label breaks the layout outright.
+const TABS = [
   { href: "/edit", label: "Websites" },
   { href: "/edit/board", label: "Board" },
   { href: "/edit/invoices", label: "Invoices" },
   { href: "/edit/forms", label: "Forms" },
 ];
 
-export default function EditShell({ children }: { children: React.ReactNode }) {
+export default function EditShell({ nav, children }: { nav: NavDoc; children: React.ReactNode }) {
   const pathname = usePathname() || "/edit";
   const [open, setOpen] = useState(false); // mobile drawer
   const [collapsed, setCollapsed] = useState(false); // desktop rail hidden
   const [dark, setDark] = useState(false);
+
+  const [editing, setEditing] = useState(false);
+  const [doc, setDoc] = useState<NavDoc>(nav);
+  const [saveErr, setSaveErr] = useState("");
+  const dragRef = useRef<number | null>(null);
+  const liveRef = useRef<NavEntry[]>(nav.entries);
+  const listRef = useRef<HTMLDivElement>(null);
 
   // Both preferences are restored AFTER the first render, deliberately. Reading localStorage during
   // render makes the server's HTML and the browser's first pass disagree, and React throws away the
@@ -115,15 +112,71 @@ export default function EditShell({ children }: { children: React.ReactNode }) {
   const active = (href: string) =>
     href === "/edit" ? pathname === "/edit" : pathname.startsWith(href);
 
-  const link = (it: Item) => (
-    <a
-      key={it.href}
-      href={it.href}
-      className={`edit-side-link${active(it.href) ? " is-active" : ""}`}
-    >
-      {it.label}
-    </a>
-  );
+  // ── saving ──────────────────────────────────────────────────────────────────────────────────
+  function save(next: NavDoc) {
+    setSaveErr("");
+    fetch("/api/edit-nav", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify(next),
+    })
+      .then((r) => r.json())
+      .then((j) => {
+        if (!j?.ok) setSaveErr("That didn't save — a reload will put the menu back as it was.");
+      })
+      .catch(() => setSaveErr("That didn't save — a reload will put the menu back as it was."));
+  }
+
+  function setEntries(entries: NavEntry[]) {
+    liveRef.current = entries;
+    const next = { ...doc, entries };
+    setDoc(next);
+    return next;
+  }
+
+  function relabel(i: number, label: string) {
+    const entries = liveRef.current.map((e, n) => (n === i ? { ...e, label } : e));
+    setEntries(entries);
+  }
+
+  function move(from: number, to: number) {
+    if (to < 0 || to >= liveRef.current.length || from === to) return null;
+    const entries = [...liveRef.current];
+    const [row] = entries.splice(from, 1);
+    entries.splice(to, 0, row);
+    return setEntries(entries);
+  }
+
+  // ⚠️ Drag state in a ref, not state: a pointermove can land in the same task as its pointerdown
+  // (a fast flick, or a synthetic event) and a closure reading state would still see null and throw
+  // the move away. Same fix as the board roster — see the note in app/edit/board/Roster.tsx.
+  function onPointerDown(e: React.PointerEvent, i: number) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    dragRef.current = i;
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    const from = dragRef.current;
+    if (from === null || !listRef.current) return;
+    const kids = Array.from(listRef.current.children) as HTMLElement[];
+    const to = kids.findIndex((el) => {
+      const r = el.getBoundingClientRect();
+      return e.clientY >= r.top && e.clientY <= r.bottom;
+    });
+    if (to >= 0 && to !== from) {
+      move(from, to);
+      dragRef.current = to;
+    }
+  }
+
+  function onPointerUp() {
+    if (dragRef.current === null) return;
+    dragRef.current = null;
+    save({ ...doc, entries: liveRef.current });
+  }
 
   async function signOut() {
     try {
@@ -132,6 +185,17 @@ export default function EditShell({ children }: { children: React.ReactNode }) {
       /* ignore — the reload re-checks auth either way */
     }
     window.location.href = "/edit";
+  }
+
+  async function reset() {
+    if (!window.confirm("Put every name and the order back the way it shipped?")) return;
+    await fetch("/api/edit-nav", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ reset: true }),
+    });
+    window.location.reload();
   }
 
   return (
@@ -143,7 +207,7 @@ export default function EditShell({ children }: { children: React.ReactNode }) {
         <button className="edit-burger" onClick={() => setOpen((v) => !v)} aria-label="Menu">
           ☰
         </button>
-        <span className="edit-topbar-title">SJC Studio</span>
+        <span className="edit-topbar-title">{doc.brand}</span>
       </div>
 
       <button
@@ -157,8 +221,29 @@ export default function EditShell({ children }: { children: React.ReactNode }) {
 
       <aside className={`edit-sidebar${open ? " is-open" : ""}`}>
         <div className="edit-side-head">
-          <span className="edit-side-brand">SJC Studio</span>
+          {editing ? (
+            <input
+              className="edit-nav-input is-brand"
+              value={doc.brand}
+              placeholder="Name this place"
+              onChange={(e) => setDoc({ ...doc, brand: e.target.value })}
+              onBlur={() => save(doc)}
+            />
+          ) : (
+            <span className="edit-side-brand">{doc.brand}</span>
+          )}
           <div style={{ display: "flex", gap: 6 }}>
+            <button
+              className={`edit-side-collapse${editing ? " is-on" : ""}`}
+              onClick={() => {
+                if (editing) save(doc);
+                setEditing((v) => !v);
+              }}
+              aria-label={editing ? "Done renaming" : "Rename and reorder the menu"}
+              title={editing ? "Done" : "Rename and reorder the menu"}
+            >
+              {editing ? "✓" : "✎"}
+            </button>
             <button
               className="edit-theme-toggle"
               onClick={toggleTheme}
@@ -178,12 +263,79 @@ export default function EditShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {NAV.map((group, i) => (
-          <div key={group.section || `g${i}`}>
-            {group.section && <div className="edit-side-section">{group.section}</div>}
-            {group.items.map(link)}
+        {saveErr && <p className="edit-nav-error">{saveErr}</p>}
+
+        {editing && (
+          <p className="edit-nav-hint">
+            Rename anything. Drag a row — past a heading to move it into that group. Where each one
+            goes never changes.
+          </p>
+        )}
+
+        <div ref={listRef} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
+          {doc.entries.map((e, i) =>
+            editing ? (
+              <div key={`${e.type}:${e.key}`} className="edit-nav-row">
+                <span
+                  className="edit-nav-grip"
+                  onPointerDown={(ev) => onPointerDown(ev, i)}
+                  title="Drag to move"
+                  aria-label="Drag to move"
+                >
+                  ⋮⋮
+                </span>
+                <input
+                  className={`edit-nav-input${e.type === "section" ? " is-section" : ""}`}
+                  value={e.label}
+                  placeholder={e.type === "section" ? "Group heading" : "Name"}
+                  onChange={(ev) => relabel(i, ev.target.value)}
+                  onBlur={() => save({ ...doc, entries: liveRef.current })}
+                />
+                <span className="edit-nav-nudge">
+                  <button type="button" onClick={() => { const n = move(i, i - 1); if (n) save(n); }} aria-label="Move up">▲</button>
+                  <button type="button" onClick={() => { const n = move(i, i + 1); if (n) save(n); }} aria-label="Move down">▼</button>
+                </span>
+              </div>
+            ) : e.type === "section" ? (
+              // An emptied heading disappears rather than leaving a blank gap — that is how you
+              // delete a group without a delete button that could strip its items too.
+              e.label.trim() ? (
+                <div key={`s:${e.key}`} className="edit-side-section">{e.label}</div>
+              ) : null
+            ) : (
+              <a
+                key={`i:${e.key}`}
+                href={e.href}
+                className={`edit-side-link${active(e.href) ? " is-active" : ""}`}
+              >
+                {e.label}
+              </a>
+            )
+          )}
+        </div>
+
+        {editing && (
+          <div className="edit-nav-extra">
+            <div className="edit-side-section">The board&apos;s shared row</div>
+            <input
+              className="edit-nav-input"
+              value={doc.mainline.title}
+              placeholder="Title"
+              onChange={(ev) => setDoc({ ...doc, mainline: { ...doc.mainline, title: ev.target.value } })}
+              onBlur={() => save(doc)}
+            />
+            <input
+              className="edit-nav-input"
+              value={doc.mainline.subtitle}
+              placeholder="The line underneath"
+              onChange={(ev) => setDoc({ ...doc, mainline: { ...doc.mainline, subtitle: ev.target.value } })}
+              onBlur={() => save(doc)}
+            />
+            <button type="button" className="edit-side-link edit-nav-reset" onClick={reset}>
+              Put every name back
+            </button>
           </div>
-        ))}
+        )}
 
         <div className="edit-side-foot">
           <button type="button" className="edit-side-link" onClick={signOut}>

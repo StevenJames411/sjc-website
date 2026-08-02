@@ -159,6 +159,37 @@
   font-weight: 600;
 }
 
+/* ── renaming the menu ────────────────────────────────────────────────────────────────────────
+   The inputs sit exactly where the labels sit, at the same size and weight, so edit mode reads as
+   the same rail with the words unlocked rather than as a settings screen somewhere else. */
+.edit-nav-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+.edit-nav-grip {
+  color: #7d8896; font-size: 13px; cursor: grab; line-height: 1; padding: 6px 2px;
+  flex: 0 0 auto; touch-action: none; user-select: none;
+}
+.edit-nav-input {
+  flex: 1; min-width: 0; background: rgba(255,255,255,0.06);
+  border: 1px solid var(--e-rail-line); border-radius: 6px;
+  color: var(--e-rail-ink-strong); font: inherit; font-size: 14px; padding: 6px 8px;
+}
+.edit-nav-input:focus { outline: none; border-color: var(--e-accent); }
+.edit-nav-input.is-section {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9aa5b1;
+}
+.edit-nav-input.is-brand { font-size: 15px; font-weight: 700; }
+.edit-nav-nudge { display: flex; flex-direction: column; gap: 1px; flex: 0 0 auto; }
+.edit-nav-nudge button {
+  width: 20px; height: 13px; padding: 0; line-height: 1; font-size: 7px;
+  background: none; color: var(--e-rail-ink); border: 1px solid var(--e-rail-line);
+  border-radius: 3px; cursor: pointer;
+}
+.edit-nav-hint { font-size: 11.5px; color: #7d8896; padding: 0 10px 10px; line-height: 1.45; }
+.edit-nav-error { font-size: 11.5px; color: #ff9c96; padding: 0 10px 8px; line-height: 1.45; }
+.edit-nav-extra { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--e-rail-line); }
+.edit-nav-extra .edit-nav-input { margin-bottom: 6px; }
+.edit-nav-reset { color: #ff9c96; margin-top: 4px; }
+.edit-side-collapse.is-on { border-color: var(--e-accent); color: var(--e-rail-ink-strong); }
+
 .edit-side-foot {
   margin-top: 18px;
   padding-top: 14px;

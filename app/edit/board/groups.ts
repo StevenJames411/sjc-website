@@ -10,6 +10,7 @@
 //
 //   A CLIENT — the per-site checks, fanned out one row per client site.
 import { applyOrder, readBoardOrder } from "@/lib/boardOrder";
+import { readNav } from "@/lib/editNav";
 import { CHECKS, readBoard } from "@/lib/checks";
 import { colourFor, worst, ageText, type Colour } from "@/lib/checksShared";
 import { publicUrlFor } from "@/lib/hostShared";
@@ -42,7 +43,7 @@ function hostOf(site: { id: string; domain?: string }): string {
 }
 
 export async function readBoardView(): Promise<BoardView> {
-  const [board, sites] = await Promise.all([readBoard(), readSites()]);
+  const [board, sites, nav] = await Promise.all([readBoard(), readSites(), readNav()]);
   const clients = sites.filter((s) => s.kind === "client" && !s.deletedAt);
 
   const stateFor = (checkId: string, siteId?: string) =>
@@ -67,8 +68,11 @@ export async function readBoardView(): Promise<BoardView> {
       // Vercel's card, the GitHub PAT and Anthropic credits all belong in this row the day they get
       // checks: everything where ONE break hits every client at once and no client's own row will
       // ever show it. "Floor" described where it sits; "mainline" says what happens when it goes.
-      title: "The mainline",
-      subtitle: "Everything every client rides on — one break hits all of them",
+      //
+      // ⚠️ And it is now only the DEFAULT — Steven renames it in the rail's editor. The key `_sjc`
+      // above is the identity and never moves, which is what lets the words be his.
+      title: nav.mainline.title,
+      subtitle: nav.mainline.subtitle,
       rows: globalRows,
       colour: worst(globalRows.map((r) => r.colour)),
     },
