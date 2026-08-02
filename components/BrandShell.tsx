@@ -178,9 +178,11 @@ export default function BrandShell({
 // same company; whatever the page puts inside stays on white, because a document should.
 const css = (b: Brand) => `
 :root { color-scheme: dark; }
-/* overflow-x hidden on the page, not on a child: one element wider than the viewport makes the
-   whole document scroll sideways, and on a phone that reads as a page that doesn't fit. */
-html, body { overflow-x: hidden; }
+/* CLIP, NOT HIDDEN. Both stop one over-wide element making the whole page scroll sideways, but
+   `overflow: hidden` turns html/body into a scroll container — and a scroll container silently
+   kills `position: sticky` on everything inside it. That's what un-stuck the header and the Pay
+   column. `clip` does the same job without creating one. */
+html, body { overflow-x: clip; }
 .bs-wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
 @media (max-width: 640px) {
   .bs-wrap { padding: 0 14px; }
