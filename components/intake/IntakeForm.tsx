@@ -259,6 +259,16 @@ export default function IntakeForm({
   );
 }
 
+/**
+ * The column this form sits in.
+ *
+ * It renders NO page background and no <main> of its own: the page around it (BrandShell) owns
+ * the branding, so this was the grey slab that made an onboarding link look like it came from
+ * nobody. What's left is the part that has to live here — the progress bar, which moves as she
+ * answers and so can't be server-rendered up in the header.
+ *
+ * Narrow on purpose. She is filling this in on a phone, between jobs.
+ */
 function Shell({
   title,
   progress,
@@ -269,41 +279,40 @@ function Shell({
   children: React.ReactNode;
 }) {
   return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        background: "#f3f4f6",
-        fontFamily: "system-ui, -apple-system, sans-serif",
-        padding: "24px 18px 56px",
-      }}
-    >
-      <div style={{ maxWidth: 560, margin: "0 auto" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#2563eb", letterSpacing: ".08em", textTransform: "uppercase" }}>
-          {title}
-        </div>
-        {progress && (
-          <>
-            <div style={{ height: 5, background: "#e5e7eb", borderRadius: 99, marginTop: 12 }}>
-              <div
-                style={{
-                  height: 5,
-                  width: `${(progress.at / progress.of) * 100}%`,
-                  background: "#2563eb",
-                  borderRadius: 99,
-                  transition: "width .2s",
-                }}
-              />
-            </div>
-            <div style={{ fontSize: 13, color: "#6b7280", marginTop: 6 }}>
-              {progress.at} of {progress.of}
-            </div>
-          </>
-        )}
-        <div style={{ background: "#fff", borderRadius: 16, padding: 22, marginTop: 16, boxShadow: "0 1px 3px rgba(0,0,0,.06)" }}>
-          {children}
-        </div>
+    <div style={{ maxWidth: 560, margin: "0 auto", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#7fe3ff", letterSpacing: ".08em", textTransform: "uppercase" }}>
+        {title}
       </div>
-    </main>
+      {progress && (
+        <>
+          <div style={{ height: 5, background: "rgba(255,255,255,.14)", borderRadius: 99, marginTop: 12 }}>
+            <div
+              style={{
+                height: 5,
+                width: `${(progress.at / progress.of) * 100}%`,
+                background: "#4fd2f7",
+                borderRadius: 99,
+                transition: "width .2s",
+              }}
+            />
+          </div>
+          <div style={{ fontSize: 13, color: "#94a3b8", marginTop: 6 }}>
+            {progress.at} of {progress.of}
+          </div>
+        </>
+      )}
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          padding: 22,
+          marginTop: 16,
+          boxShadow: "0 18px 46px rgba(0,0,0,.34)",
+        }}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
 

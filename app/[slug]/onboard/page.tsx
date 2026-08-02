@@ -12,6 +12,7 @@ import { checkIntakeOpen, CLOSED_MESSAGE } from "@/lib/intakeLinks";
 import { findSite, sjcContact } from "@/lib/sites";
 import { readIntake } from "@/lib/intake";
 import { questionsFor } from "@/lib/intakeShared";
+import BrandShell from "@/components/BrandShell";
 import IntakeForm from "@/components/intake/IntakeForm";
 
 export const dynamic = "force-dynamic";
@@ -67,21 +68,42 @@ export default async function OnboardPage({ params }: { params: Promise<{ slug: 
   if (!open.ok) return <Blocked message={CLOSED_MESSAGE[open.reason]} contact={contact} />;
 
   const record = await readIntake(slug);
+  const business = site.business?.name || site.name || "";
 
   return (
-    <IntakeForm
-      site={slug}
-      contact={contact}
-      businessName={site.business?.name || site.name || ""}
-      // The whole prospect-vs-inbound mechanism: she is only asked what we don't already know.
-      questions={questionsFor(site)}
-      initialAnswers={record.answers}
-      initialPhotos={record.photos}
-      alreadySubmitted={Boolean(record.submittedAt)}
-    />
+    // STEVEN JAMES DESIGNS, not Consulting. She just bought a WEBSITE — his name on her setup form
+    // is who she paid, which is honest. SJC's chrome here would be an AI-employee pitch arriving
+    // in a message from someone she has only ever hired to build a site; see the warning on
+    // generateMetadata above, which exists because that already happened once.
+    <BrandShell
+      brand="designs"
+      phone={contact.display}
+      heading="Let's build your website"
+      sub={
+        business
+          ? `A few questions about ${business}. Answer them whenever you get a minute — it saves as you go, so you can stop and come back.`
+          : "A few questions about your business. It saves as you go, so you can stop and come back."
+      }
+    >
+      <IntakeForm
+        site={slug}
+        contact={contact}
+        businessName={business}
+        // The whole prospect-vs-inbound mechanism: she is only asked what we don't already know.
+        questions={questionsFor(site)}
+        initialAnswers={record.answers}
+        initialPhotos={record.photos}
+        alreadySubmitted={Boolean(record.submittedAt)}
+      />
+    </BrandShell>
   );
 }
 
+/**
+ * The link is closed, or was never opened. Same shell as the open form — a closed link that looks
+ * like a broken page reads as "this company is gone", which is the opposite of what it means. The
+ * heading no longer says Steven James Consulting; the shell says who it's from.
+ */
 function Blocked({
   message,
   contact,
@@ -90,28 +112,25 @@ function Blocked({
   contact: { display: string; dial: string };
 }) {
   return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-        background: "#f3f4f6",
-        fontFamily: "system-ui, -apple-system, sans-serif",
-      }}
-    >
-      <div style={{ maxWidth: 420, textAlign: "center" }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#111827", marginBottom: 10 }}>
-          Steven James Consulting
-        </h1>
-        <p style={{ fontSize: 17, lineHeight: 1.55, color: "#4b5563" }}>{message}</p>
-        <p style={{ marginTop: 22, fontSize: 17 }}>
-          <a href={`tel:${contact.dial}`} style={{ color: "#2563eb", fontWeight: 600 }}>
+    <BrandShell brand="designs" phone={contact.display} heading="Your website setup">
+      <div
+        style={{
+          maxWidth: 560,
+          margin: "0 auto",
+          background: "#fff",
+          borderRadius: 16,
+          padding: 26,
+          boxShadow: "0 18px 46px rgba(0,0,0,.34)",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+        }}
+      >
+        <p style={{ fontSize: 17, lineHeight: 1.55, color: "#374151", margin: 0 }}>{message}</p>
+        <p style={{ marginTop: 20, fontSize: 17, margin: "20px 0 0" }}>
+          <a href={`tel:${contact.dial}`} style={{ color: "#0369a1", fontWeight: 700 }}>
             {contact.display}
           </a>
         </p>
       </div>
-    </main>
+    </BrandShell>
   );
 }
