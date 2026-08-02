@@ -77,3 +77,17 @@ export function onboardUrlFor(site: { id: string; domain?: string }): string {
   const { origin, prefix } = publicBaseFor(site);
   return `${origin}${prefix}/onboard`;
 }
+
+/**
+ * The customer's link to an invoice.
+ *
+ * ON THE STUDIO HOST, ALWAYS. Both domains serve the same deployment, so /i/<id> answers on
+ * either — but the address is part of the document. A bill from Steven James Designs arriving at
+ * stevenjamesconsulting.com makes the person reading it check whether they've been phished, and
+ * they'd be right to. It's the same rule as the link preview: whoever the invoice says it's from
+ * is who the URL has to say it's from.
+ */
+export function invoiceUrlFor(publicId: string): string {
+  const host = normalizeHost(process.env.NEXT_PUBLIC_STUDIO_DOMAIN || STUDIO_HOST);
+  return `https://${host}/i/${publicId}`;
+}

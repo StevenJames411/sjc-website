@@ -9,7 +9,7 @@
 // and erases the zero the cursor is sitting behind, and re-formatting mid-keystroke moves the
 // caret. So every amount is a STRING in this component and becomes cents only when it's read —
 // for the preview, and for the save. The stored record never sees a float. See lib/invoicesShared.
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import InvoiceDoc from "./InvoiceDoc";
 import {
@@ -30,6 +30,7 @@ import {
   type PackageKey,
   type PaymentPackage,
 } from "@/lib/invoicesShared";
+import { invoiceUrlFor } from "@/lib/hostShared";
 import type { Site } from "@/lib/sitesShared";
 
 type EditLine = { id: string; description: string; qtyText: string; rateText: string };
@@ -84,9 +85,12 @@ export default function InvoiceEditor({
   const [paidOn, setPaidOn] = useState(invoice.paidOn || "");
   // Handed back by the save, because invoices written before public links existed get one there.
   const [publicId, setPublicId] = useState(invoice.publicId || "");
-  const [origin, setOrigin] = useState("");
   const [copied, setCopied] = useState(false);
-  useEffect(() => setOrigin(window.location.origin), []);
+  // NOT window.location.origin. Invoices are edited on stevenjamesconsulting.com, and a bill from
+  // Steven James Designs arriving at the consulting address makes the person reading it check
+  // whether they've been phished — rightly. Both domains serve this deployment, so the link works
+  // either way, which is exactly why it has to be the deliberate one.
+  const publicUrl = publicId ? invoiceUrlFor(publicId) : "";
 
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -527,7 +531,7 @@ export default function InvoiceEditor({
               <div style={{ minWidth: 0 }}>
                 <div style={lbl}>The customer&rsquo;s link</div>
                 {publicId ? (
-                  <div style={linkText}>{origin}/i/{publicId}</div>
+                  <div style={linkText}>{publicUrl}</div>
                 ) : (
                   <div style={hint}>Save this invoice once and its link appears here.</div>
                 )}
@@ -541,7 +545,7 @@ export default function InvoiceEditor({
                       // Save first: the link opens the SAVED invoice, so copying it while there
                       // are unsaved edits hands the customer a document you're not looking at.
                       if (dirty && !(await save())) return;
-                      await navigator.clipboard.writeText(`${origin}/i/${publicId}`);
+                      await navigator.clipboard.writeText(publicUrl);
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2200);
                     }}
@@ -549,7 +553,7 @@ export default function InvoiceEditor({
                     {copied ? "Copied" : "Copy link"}
                   </button>
                   <a
-                    href={`/i/${publicId}`}
+                    href={publicUrl}
                     target="_blank"
                     rel="noreferrer"
                     style={{ ...smallBtn, textDecoration: "none", display: "inline-block" }}

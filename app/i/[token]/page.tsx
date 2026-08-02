@@ -23,12 +23,47 @@ import PayButton from "@/components/PayButton";
 
 export const dynamic = "force-dynamic";
 
-// Belt and braces alongside the unguessable token: a customer forwards this to his bookkeeper,
-// and a crawler that finds it in a mailbox preview must not index someone's billing address.
-export const metadata: Metadata = {
-  title: "Invoice",
-  robots: { index: false, follow: false, nocache: true },
-};
+/**
+ * THIS PAGE MUST DECLARE ITS OWN IDENTITY.
+ *
+ * It used to export a static `metadata` carrying only a title, so openGraph fell through to
+ * app/layout.tsx — and an invoice from Steven James Designs, texted to a customer, previewed as
+ * "AI employees for your business · stevenjamesconsulting.com". SJC's pitch, on a bill for a
+ * website, in a message asking somebody for money. That is the shape of a phishing text.
+ *
+ * app/[slug]/onboard carries a written warning about this exact failure from the last time it
+ * happened. Inheriting layout metadata is only ever correct for an SJC page.
+ *
+ * `images: []` is deliberate: a plain text preview is honest, and the alternative is SJC's
+ * OpenGraph card on a Designs invoice — the same crossed wire in picture form.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}): Promise<Metadata> {
+  const { token } = await params;
+  const invoice = await findInvoiceByPublicId(token);
+  const issuer = invoice?.from;
+  const from = (issuer?.dba || issuer?.businessName || "Steven James Designs").trim();
+
+  const title = invoice ? `Invoice ${invoice.number} from ${from}` : "Invoice";
+  // No customer name and no amount. This string gets rendered by a phone on a lock screen and by
+  // whoever the mail is forwarded to — what it needs to say is who it's from and that it's real.
+  const description = invoice
+    ? `Your invoice from ${from}. Open it to review the details and pay by card.`
+    : "This invoice is no longer available.";
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, siteName: from, type: "website", images: [] },
+    twitter: { card: "summary", title, description },
+    // Belt and braces alongside the unguessable token: a customer forwards this to his
+    // bookkeeper, and a crawler that finds it must not index someone's billing address.
+    robots: { index: false, follow: false, nocache: true },
+  };
+}
 
 export default async function PublicInvoicePage({
   params,
