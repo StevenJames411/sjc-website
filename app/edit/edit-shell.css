@@ -269,6 +269,15 @@
   }
 }
 
+/* ── the roster's touch path ──────────────────────────────────────────────────────────────────
+   ⚠️ HTML5 drag-and-drop does not work on iOS Safari, and the phone is the whole reason the back
+   office got a shell. So the ▲▼ buttons appear wherever the pointer is coarse — a finger — and
+   stay out of the way on a mouse, where dragging is better. */
+.board-nudge { display: none; }
+@media (pointer: coarse) {
+  .board-nudge { display: block; flex: 0 0 auto; }
+}
+
 /* ⛔ PRINT: THE SHELL IS NEVER PART OF A CUSTOMER'S DOCUMENT.
    InvoicePrint already hides `body *` and un-hides only the sheet, which covers this by default —
    that rule exists because the floating Sign out once printed on a customer's invoice. This is the

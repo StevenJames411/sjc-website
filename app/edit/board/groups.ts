@@ -9,6 +9,7 @@
 //   broken and no per-client tile will say so.
 //
 //   A CLIENT — the per-site checks, fanned out one row per client site.
+import { applyOrder, readBoardOrder } from "@/lib/boardOrder";
 import { CHECKS, readBoard } from "@/lib/checks";
 import { colourFor, worst, ageText, type Colour } from "@/lib/checksShared";
 import { publicUrlFor } from "@/lib/hostShared";
@@ -83,16 +84,30 @@ export async function readBoardView(): Promise<BoardView> {
     }),
   ];
 
-  // Worst-first among the clients so the problem floats to the top of a long list and you never
-  // scroll to find it. SJC stays pinned at index 0 whatever colour it is — it's the floor, not a
-  // peer, and a row that moves around is a row you have to hunt for.
+  // ⛔ STEVEN'S ORDER WINS. Worst-first is only the DEFAULT, for the board he has never touched.
+  //
+  // The first version sorted worst-first on every render, permanently. That is right on day one
+  // and wrong forever after: when he is actively building for two or three clients he wants those
+  // three at the top and he wants them to stay there through every sweep, whatever colour they
+  // turn. A row that relocates itself is a row you have to hunt for — the same reasoning that
+  // pins the mainline. Broken work is surfaced by the header count instead, which never moves.
+  //
+  // Owners added since he last dragged are appended, worst-first among themselves — a new client
+  // can never be hidden by a stale order. See lib/boardOrder.ts.
   const RANK: Colour[] = ["red", "yellow", "grey", "green"];
-  const [sjc, ...rest] = groups;
-  rest.sort((a, b) => RANK.indexOf(a.colour) - RANK.indexOf(b.colour) || a.title.localeCompare(b.title));
+  const order = await readBoardOrder();
+  const ordered = applyOrder(
+    groups,
+    (g) => g.key,
+    order,
+    // -1 keeps the mainline on top of the UNTOUCHED board: it's the floor everything else stands
+    // on, so it's where you look first. Once Steven drags, his order overrides even this.
+    (g) => (g.key === SJC_KEY ? -1 : RANK.indexOf(g.colour))
+  );
 
   const all = groups.flatMap((g) => g.rows);
   return {
-    groups: [sjc, ...rest],
+    groups: ordered,
     totalChecks: all.length,
     clientCount: clients.length,
     sweptAt: board.updatedAt,

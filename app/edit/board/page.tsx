@@ -12,15 +12,20 @@
 // per owner. The tiles moved to ./[owner] — see the note at the top of ./shared.tsx for why.
 //
 // Owner-only: /edit/* is gated in middleware.ts.
-import Link from "next/link";
 import { ageText, type Colour } from "@/lib/checksShared";
 import { readBoardView, summarise } from "./groups";
+import Roster from "./Roster";
 import { Dot, FOOTNOTE, SWATCH } from "./shared";
 
 export const dynamic = "force-dynamic";
 
 export default async function BoardPage() {
   const view = await readBoardView();
+  // ⛔ THE ROWS NO LONGER RE-SORT THEMSELVES, so the count has to be the thing that finds trouble.
+  // Each pill with a non-zero count jumps to the first owner in that state. Steven's arrangement
+  // stays put and the broken row is still one click away — instead of the row coming to him and
+  // his arrangement being rearranged behind his back.
+  const firstIn = (c: Colour) => view.groups.find((g) => g.colour === c)?.key;
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
@@ -40,19 +45,28 @@ export default async function BoardPage() {
           wrong. Grey is surfaced beside the rest deliberately: an unmonitored joint is worse than
           a broken one, because it looks like nothing at all. */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
-        {(["red", "yellow", "grey", "green"] as Colour[]).map((c) => (
-          <span
-            key={c}
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: SWATCH[c].bg, border: `1px solid ${SWATCH[c].border}`,
-              borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600,
-            }}
-          >
-            <Dot colour={c} size={9} />
-            {view.tally(c)} {SWATCH[c].label.toLowerCase()}
-          </span>
-        ))}
+        {(["red", "yellow", "grey", "green"] as Colour[]).map((c) => {
+          const jump = view.tally(c) ? firstIn(c) : undefined;
+          const style = {
+            display: "inline-flex", alignItems: "center", gap: 8,
+            background: SWATCH[c].bg, border: `1px solid ${SWATCH[c].border}`,
+            borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600,
+            color: "inherit", textDecoration: "none",
+          } as const;
+          const body = (
+            <>
+              <Dot colour={c} size={9} />
+              {view.tally(c)} {SWATCH[c].label.toLowerCase()}
+            </>
+          );
+          return jump ? (
+            <a key={c} href={`#row-${jump}`} style={style} title="Jump to the first one">
+              {body}
+            </a>
+          ) : (
+            <span key={c} style={style}>{body}</span>
+          );
+        })}
       </div>
 
       <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 26px" }}>
@@ -60,35 +74,16 @@ export default async function BoardPage() {
         {ageText(view.sweptAt)} · <a href="/api/cron/checks" style={{ color: "#2563eb" }}>run one now</a>
       </p>
 
-      {/* One row per owner, worst first. Open a row for that owner's own board. */}
-      <div style={{ display: "grid", gap: 10 }}>
-        {view.groups.map((g) => {
-          const sw = SWATCH[g.colour];
-          return (
-            <Link
-              key={g.key}
-              href={`/edit/board/${g.key}`}
-              style={{
-                display: "flex", alignItems: "center", gap: 14, textDecoration: "none",
-                color: "inherit", background: sw.bg, border: `1px solid ${sw.border}`,
-                borderRadius: 12, padding: "14px 16px",
-              }}
-            >
-              <Dot colour={g.colour} size={12} />
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", overflowWrap: "anywhere" }}>
-                  {g.title}
-                </div>
-                <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 2 }}>{g.subtitle}</div>
-                <div style={{ fontSize: 13, color: "#374151", marginTop: 6 }}>{summarise(g)}</div>
-              </div>
-              <span style={{ fontSize: 20, color: "#9ca3af", flex: "0 0 auto" }} aria-hidden>
-                ›
-              </span>
-            </Link>
-          );
-        })}
-      </div>
+      {/* One row per owner, in the order Steven dragged them into. */}
+      <Roster
+        rows={view.groups.map((g) => ({
+          key: g.key,
+          title: g.title,
+          subtitle: g.subtitle,
+          summary: summarise(g),
+          colour: g.colour,
+        }))}
+      />
 
       {FOOTNOTE}
     </div>
