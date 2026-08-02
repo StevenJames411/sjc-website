@@ -129,12 +129,66 @@ export default function InvoiceDoc({
 
       {invoice.terms || issuer.payTo || invoice.notes ? (
         <footer style={foot}>
-          {invoice.terms ? <div style={{ ...footLine, fontWeight: 600 }}>{invoice.terms}</div> : null}
-          {issuer.payTo ? <div style={{ ...footLine, ...preLine }}>{issuer.payTo}</div> : null}
-          {invoice.notes ? <div style={{ ...footNote, ...preLine }}>{invoice.notes}</div> : null}
+          {invoice.terms ? (
+            <div style={{ ...footLine, fontWeight: 600 }}>
+              <Linkified text={invoice.terms} />
+            </div>
+          ) : null}
+          {issuer.payTo ? (
+            <div style={{ ...footLine, ...preLine }}>
+              <Linkified text={issuer.payTo} />
+            </div>
+          ) : null}
+          {invoice.notes ? (
+            <div style={{ ...footNote, ...preLine }}>
+              <Linkified text={invoice.notes} />
+            </div>
+          ) : null}
         </footer>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Turn URLs and email addresses in free text into real links.
+ *
+ * ── WHY THIS EXISTS ───────────────────────────────────────────────────────────────────────────
+ * A payment link is the whole point of emailing an invoice: the customer opens the PDF and pays
+ * without hunting for a card or replying to ask how. But a URL typed into a text box is just
+ * characters. Chrome's "Save as PDF" carries <a href> elements across as clickable link
+ * annotations; it does NOT auto-detect a bare string that looks like an address. So a Stripe link
+ * pasted into "How to pay" would print as unclickable grey text — visible, useless, and the
+ * failure is silent because it LOOKS right on screen.
+ *
+ * Only http, https and mailto are ever produced. The text is Steven's own, but this renders into
+ * a document that gets sent to other people, so a `javascript:` or `data:` string typed in by
+ * accident (or pasted from somewhere) must not become a live link.
+ */
+function Linkified({ text }: { text: string }) {
+  // One capture group, so String.split returns [text, match, text, match, …] and the odd indices
+  // are the matches. Trailing punctuation is excluded so "pay at example.com/x." doesn't swallow
+  // the full stop into the href.
+  const pattern = /((?:https?:\/\/|www\.)[^\s<>()]*[^\s<>().,;:!?'"]|[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+)/g;
+  const parts = String(text || "").split(pattern);
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (!part) return null;
+        if (i % 2 === 0) return <span key={i}>{part}</span>;
+
+        const isUrl = /^(https?:\/\/|www\.)/i.test(part);
+        const href = isUrl
+          ? part.replace(/^www\./i, "https://www.")
+          : `mailto:${part}`;
+        return (
+          <a key={i} href={href} rel="noreferrer" style={docLink}>
+            {part}
+          </a>
+        );
+      })}
+    </>
   );
 }
 
@@ -241,6 +295,9 @@ const grandVal: React.CSSProperties = {
   fontVariantNumeric: "tabular-nums",
 };
 
+// Underlined AND coloured. The underline is what survives a black-and-white printout, where the
+// colour is the only other signal that it's clickable and there's no cursor to reveal it.
+const docLink: React.CSSProperties = { color: "#1d4ed8", textDecoration: "underline" };
 const foot: React.CSSProperties = { marginTop: 34, paddingTop: 14, borderTop: `1px solid ${rule}`, fontSize: 12.5 };
 const footLine: React.CSSProperties = { marginBottom: 4 };
 const footNote: React.CSSProperties = { marginTop: 10, color: "#374151" };
