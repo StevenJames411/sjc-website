@@ -71,36 +71,51 @@ export type PaymentPackage = {
   hostingLabel: string;
 } & Partial<BuyButton>;
 
-/** The ladder, as locked. Prices live here; the buttons get pasted in once Stripe has them. */
+/**
+ * The ladder, as locked 2026-08-02. Prices live here; the buttons get pasted in once Stripe has them.
+ *
+ * ── ONE BUILD PRICE, THREE MONTHLIES ──────────────────────────────────────────────────────────
+ * The build fee no longer varies — it is $795 whichever monthly he lands on, because the build is
+ * the same build. What differs is how much of the machine runs afterwards. That is also why every
+ * invoice here totals $795: the monthly line is charged and credited straight back, so one buy
+ * button is correct for all three.
+ *
+ * ⛔ Only BRONZE is sold at the door. Silver and Gold are the internal upsell roadmap, opened at
+ * 30–60 days — they live here so a client who buys straight into the top gets one correct invoice,
+ * not so three columns ever get shown to a prospect. A confused mind doesn't buy.
+ *
+ * ⛔ The word "hosting" is gone on purpose. It invites a Wix comparison and it undersells the line:
+ * at $97 he is getting the CRM and the app on his phone, not disk space.
+ */
 export const DEFAULT_PACKAGES: PaymentPackage[] = [
   {
     key: "bronze",
-    label: "Bronze",
+    label: "Website + CRM — $97/mo",
     buildCents: 79500,
-    hostingCents: 3500,
+    hostingCents: 9700,
     buildLabel: "Custom Coded Lead Capture Website",
-    hostingLabel: "Monthly Web Hosting & Site Maintenance",
+    hostingLabel: "Monthly Website & Lead System Management",
   },
   {
     key: "silver",
-    label: "Silver",
-    buildCents: 119500,
-    hostingCents: 5500,
+    label: "We Run It — $297/mo",
+    buildCents: 79500,
+    hostingCents: 29700,
     buildLabel: "Custom Coded Lead Capture Website",
-    hostingLabel: "Monthly Web Hosting & Site Maintenance",
+    hostingLabel: "Monthly Website & Lead System Management",
   },
   {
     key: "gold",
-    label: "Gold",
-    buildCents: 299500,
-    hostingCents: 9500,
+    label: "AI Employee — $597/mo",
+    buildCents: 79500,
+    hostingCents: 59700,
     buildLabel: "Custom Coded Lead Capture Website",
-    hostingLabel: "Monthly Web Hosting & Site Maintenance",
+    hostingLabel: "Monthly Website & Lead System Management",
   },
 ];
 
 /** What the first-month credit is called on the invoice. */
-export const FIRST_MONTH_CREDIT = "First month hosting — credited";
+export const FIRST_MONTH_CREDIT = "First month — credited";
 
 /**
  * The whole invoice a package produces: two lines and the credit.
