@@ -65,14 +65,87 @@ export type PaymentPackage = {
   label: string;
   buildCents: number;
   hostingCents: number;
+  /** What the build line SAYS on the invoice. The customer reads this, so it's his language. */
+  buildLabel: string;
+  /** What the hosting line says. It appears twice — charged, then credited underneath. */
+  hostingLabel: string;
 } & Partial<BuyButton>;
 
 /** The ladder, as locked. Prices live here; the buttons get pasted in once Stripe has them. */
 export const DEFAULT_PACKAGES: PaymentPackage[] = [
-  { key: "bronze", label: "Bronze", buildCents: 79500, hostingCents: 3500 },
-  { key: "silver", label: "Silver", buildCents: 119500, hostingCents: 5500 },
-  { key: "gold", label: "Gold", buildCents: 299500, hostingCents: 9500 },
+  {
+    key: "bronze",
+    label: "Bronze",
+    buildCents: 79500,
+    hostingCents: 3500,
+    buildLabel: "Custom Coded Lead Capture Website",
+    hostingLabel: "Monthly Web Hosting & Site Maintenance",
+  },
+  {
+    key: "silver",
+    label: "Silver",
+    buildCents: 119500,
+    hostingCents: 5500,
+    buildLabel: "Custom Coded Lead Capture Website",
+    hostingLabel: "Monthly Web Hosting & Site Maintenance",
+  },
+  {
+    key: "gold",
+    label: "Gold",
+    buildCents: 299500,
+    hostingCents: 9500,
+    buildLabel: "Custom Coded Lead Capture Website",
+    hostingLabel: "Monthly Web Hosting & Site Maintenance",
+  },
 ];
+
+/** What the first-month credit is called on the invoice. */
+export const FIRST_MONTH_CREDIT = "First month hosting — credited";
+
+/**
+ * The whole invoice a package produces: two lines and the credit.
+ *
+ * ── WHY THE HOSTING LINE IS CHARGED AND THEN CREDITED ─────────────────────────────────────────
+ * Not "hosting: free". The line goes on at its real price and a discount takes it straight back
+ * off, because the give is the point — he says "I'm covering your first month" on the phone and
+ * the document has to show the number he just gave away. A free line shows nothing.
+ *
+ * The total lands exactly on the build price, which is also what the buy button charges. That is
+ * not a coincidence, it's the design: pick a package and the invoice and the button agree.
+ */
+export function packageLines(pkg: PaymentPackage): {
+  lines: InvoiceLine[];
+  discountCents: number;
+  discountLabel: string;
+} {
+  return {
+    lines: [
+      { id: mintLineId(), description: pkg.buildLabel, qty: 1, rateCents: pkg.buildCents },
+      { id: mintLineId(), description: pkg.hostingLabel, qty: 1, rateCents: pkg.hostingCents },
+    ],
+    discountCents: pkg.hostingCents,
+    discountLabel: FIRST_MONTH_CREDIT,
+  };
+}
+
+/** Does this invoice already say what the package would put on it? Used to offer the re-fill. */
+export function matchesPackage(
+  inv: Pick<Invoice, "lines" | "discountCents">,
+  pkg: PaymentPackage
+): boolean {
+  const want = packageLines(pkg);
+  const has = (inv.lines || []).filter((l) => l.description.trim() || l.rateCents);
+  if (has.length !== want.lines.length) return false;
+  if ((inv.discountCents || 0) !== want.discountCents) return false;
+  return want.lines.every(
+    (w, i) => has[i].description === w.description && has[i].rateCents === w.rateCents && has[i].qty === w.qty
+  );
+}
+
+/** True when nothing has been typed into the items yet, so filling them can't destroy anything. */
+export function itemsAreEmpty(lines: InvoiceLine[]): boolean {
+  return !(lines || []).some((l) => l.description.trim() || l.rateCents);
+}
 
 export const PACKAGE_KEYS: PackageKey[] = ["bronze", "silver", "gold"];
 

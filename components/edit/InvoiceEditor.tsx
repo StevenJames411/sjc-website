@@ -16,8 +16,11 @@ import {
   addDays,
   fromCents,
   isPayable,
+  itemsAreEmpty,
+  matchesPackage,
   mintLineId,
   money,
+  packageLines,
   toCents,
   today,
   toQty,
@@ -151,8 +154,31 @@ export default function InvoiceEditor({
    * would be discovered by the customer paying $795 and considering it settled.
    */
   const mismatch = Boolean(picked && t.totalCents !== picked.buildCents);
+  /** Picked a package, but the items aren't what it sells. Offer to write them. */
+  const canFill = Boolean(picked && !matchesPackage(draft, picked));
 
-  /** Pick a package: record the choice AND freeze the button it points at right now. */
+  /** Write the package's two lines and the first-month credit onto this invoice. */
+  function fillFromPackage(pkg: PaymentPackage) {
+    const p = packageLines(pkg);
+    edit(setLines)(
+      p.lines.map((l) => ({
+        id: l.id,
+        description: l.description,
+        qtyText: qtyToText(l.qty),
+        rateText: fromCents(l.rateCents),
+      }))
+    );
+    setDiscountText(fromCents(p.discountCents));
+    setDiscountLabel(p.discountLabel);
+  }
+
+  /**
+   * Pick a package: write the invoice, and freeze the button it points at right now.
+   *
+   * The items are filled automatically only when nothing has been typed into them — which is the
+   * normal case, a fresh invoice. If there's already something there it waits to be asked, because
+   * silently replacing lines somebody typed is the kind of help that loses work.
+   */
   function pickPackage(key: string) {
     const next = packages.find((p) => p.key === key);
     edit(setPackageKey)((next?.key ?? "") as PackageKey | "");
@@ -161,6 +187,7 @@ export default function InvoiceEditor({
         ? { label: next.label, buttonId: next.buttonId, publishableKey: next.publishableKey }
         : undefined
     );
+    if (next && itemsAreEmpty(draft.lines)) fillFromPackage(next);
   }
 
   function setLine(id: string, patch: Partial<EditLine>) {
@@ -557,6 +584,14 @@ export default function InvoiceEditor({
               </p>
             ) : null}
 
+            {picked && canFill ? (
+              <button type="button" style={fillBtn} onClick={() => fillFromPackage(picked)}>
+                Write the {picked.label} items onto this invoice — {picked.buildLabel}{" "}
+                {money(picked.buildCents)}, {picked.hostingLabel} {money(picked.hostingCents)}, less
+                the first month
+              </button>
+            ) : null}
+
             <div style={{ ...shareBox, marginTop: 14 }}>
               <div style={{ minWidth: 0 }}>
                 <div style={lbl}>The customer&rsquo;s link</div>
@@ -724,3 +759,4 @@ const warnBox: React.CSSProperties = { background: "#fffbeb", border: "1px solid
 const shareBox: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, border: "1px solid #e5e7eb", borderRadius: 10, padding: "12px 14px", background: "#fcfcfd", flexWrap: "wrap" };
 const linkText: React.CSSProperties = { fontSize: 12.5, fontFamily: "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace", color: "#374151", overflowWrap: "anywhere" };
 const paidRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 9, marginTop: 16, cursor: "pointer", flexWrap: "wrap" };
+const fillBtn: React.CSSProperties = { width: "100%", textAlign: "left", background: "#fff", border: "1px dashed #d1d5db", borderRadius: 8, padding: "9px 12px", fontSize: 12.5, fontWeight: 600, color: "#374151", cursor: "pointer", lineHeight: 1.5, marginBottom: 12, fontFamily: font };

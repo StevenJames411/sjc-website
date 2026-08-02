@@ -99,6 +99,8 @@ export async function readPackages(): Promise<PaymentPackage[]> {
       label: String(hit.label || base.label),
       buildCents: Math.max(0, Math.round(Number(hit.buildCents) || base.buildCents)),
       hostingCents: Math.max(0, Math.round(Number(hit.hostingCents) || base.hostingCents)),
+      buildLabel: String(hit.buildLabel || base.buildLabel),
+      hostingLabel: String(hit.hostingLabel || base.hostingLabel),
       ...(hit.buttonId && hit.publishableKey
         ? { buttonId: String(hit.buttonId), publishableKey: String(hit.publishableKey) }
         : {}),
@@ -114,7 +116,15 @@ export async function readPackages(): Promise<PaymentPackage[]> {
  * anything reaching this function has already left the page that validated it.
  */
 export async function savePackages(
-  incoming: Array<{ key: string; label?: string; buildCents?: number; hostingCents?: number; button?: string }>
+  incoming: Array<{
+    key: string;
+    label?: string;
+    buildCents?: number;
+    hostingCents?: number;
+    buildLabel?: string;
+    hostingLabel?: string;
+    button?: string;
+  }>
 ): Promise<{ ok: boolean; error?: string }> {
   const blob = await readBlob();
   const current = await readPackages();
@@ -137,6 +147,8 @@ export async function savePackages(
       label: String(hit.label ?? pkg.label),
       buildCents: Math.max(0, Math.round(Number(hit.buildCents ?? pkg.buildCents) || 0)),
       hostingCents: Math.max(0, Math.round(Number(hit.hostingCents ?? pkg.hostingCents) || 0)),
+      buildLabel: String(hit.buildLabel ?? pkg.buildLabel),
+      hostingLabel: String(hit.hostingLabel ?? pkg.hostingLabel),
       ...(parsed === undefined
         ? pkg.buttonId && pkg.publishableKey
           ? { buttonId: pkg.buttonId, publishableKey: pkg.publishableKey }

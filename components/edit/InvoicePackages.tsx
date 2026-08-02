@@ -26,6 +26,8 @@ type Draft = {
   label: string;
   buildText: string;
   hostingText: string;
+  buildLabel: string;
+  hostingLabel: string;
   /** Blank means "leave whatever is saved alone"; the Clear button is what removes a button. */
   button: string;
   /** What's already stored, so the panel can say "connected" without echoing the snippet back. */
@@ -38,6 +40,8 @@ const toDraft = (p: PaymentPackage): Draft => ({
   label: p.label,
   buildText: fromCents(p.buildCents),
   hostingText: fromCents(p.hostingCents),
+  buildLabel: p.buildLabel,
+  hostingLabel: p.hostingLabel,
   button: "",
   connectedId: p.buttonId || "",
   clear: false,
@@ -83,6 +87,8 @@ export default function InvoicePackages({ packages }: { packages: PaymentPackage
             label: r.label,
             buildCents: toCents(r.buildText),
             hostingCents: toCents(r.hostingText),
+            buildLabel: r.buildLabel,
+            hostingLabel: r.hostingLabel,
             // Only send `button` when there's something to say: an empty string CLEARS the stored
             // one, which is right for the Clear button and wrong for every other save.
             ...(r.clear ? { button: "" } : r.button.trim() ? { button: r.button } : {}),
@@ -160,6 +166,33 @@ export default function InvoicePackages({ packages }: { packages: PaymentPackage
                 </label>
               </div>
 
+              {/* The wording the CUSTOMER reads. Two lines go on every invoice from this package:
+                  the build, and hosting at full price with a credit taking it straight back off. */}
+              <div style={{ ...row2, marginTop: 4 }}>
+                <label style={{ display: "block" }}>
+                  <span style={lbl}>Build line reads</span>
+                  <input
+                    style={input}
+                    value={r.buildLabel}
+                    onChange={(e) => patch(r.key, { buildLabel: e.target.value })}
+                  />
+                </label>
+                <label style={{ display: "block" }}>
+                  <span style={lbl}>Hosting line reads</span>
+                  <input
+                    style={input}
+                    value={r.hostingLabel}
+                    onChange={(e) => patch(r.key, { hostingLabel: e.target.value })}
+                  />
+                </label>
+              </div>
+
+              <p style={preview}>
+                Picking {r.label || "this"} writes: <strong>{r.buildLabel}</strong> $
+                {r.buildText} · <strong>{r.hostingLabel}</strong> ${r.hostingText} · less $
+                {r.hostingText} first-month credit = <strong>${r.buildText} due</strong>
+              </p>
+
               <label style={{ display: "block", marginTop: 10 }}>
                 <span style={lbl}>
                   Stripe buy button{" "}
@@ -227,6 +260,7 @@ const chipBase: React.CSSProperties = { fontSize: 11, fontWeight: 700, borderRad
 const chipOn: React.CSSProperties = { ...chipBase, background: "#ecfdf5", color: "#065f46" };
 const chipOff: React.CSSProperties = { ...chipBase, background: "#f3f4f6", color: "#6b7280" };
 const idNote: React.CSSProperties = { fontWeight: 500, color: "#9ca3af", fontFamily: mono, fontSize: 11 };
+const preview: React.CSSProperties = { fontSize: 12, color: "#6b7280", lineHeight: 1.6, marginTop: 10, background: "#fff", border: "1px solid #eef2f7", borderRadius: 8, padding: "8px 10px" };
 const okNote: React.CSSProperties = { fontSize: 12, color: "#047857", fontFamily: mono };
 const badNote: React.CSSProperties = { fontSize: 12, color: "#b91c1c" };
 const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
