@@ -36,10 +36,13 @@
 
   /* Board status pairs. Named by MEANING, not by colour, so the dark block below can shift the
      surface without anyone having to remember which hex was "the yellow one". */
-  --e-ok-dot: #16a34a;   --e-ok-bg: #f0fdf4;   --e-ok-line: #bbf7d0;
-  --e-warn-dot: #d97706; --e-warn-bg: #fffbeb; --e-warn-line: #fde68a;
-  --e-bad-dot: #dc2626;  --e-bad-bg: #fef2f2;  --e-bad-line: #fecaca;
+  --e-ok-dot: #16a34a;   --e-ok-bg: #f0fdf4;   --e-ok-line: #bbf7d0;   --e-ok-ink: #166534;
+  --e-warn-dot: #d97706; --e-warn-bg: #fffbeb; --e-warn-line: #fde68a; --e-warn-ink: #92400e;
+  --e-bad-dot: #dc2626;  --e-bad-bg: #fef2f2;  --e-bad-line: #fecaca;  --e-bad-ink: #7f1d1d;
   --e-none-dot: #9ca3af; --e-none-bg: #f9fafb; --e-none-line: #e5e7eb;
+  --e-info-bg: #eef2ff;  --e-info-line: #c7d2fe; --e-info-ink: #3730a3;
+  /* Destructive text and buttons — a delete, a failed save. */
+  --e-danger: #dc2626;
 
   min-height: 100vh;
   background: var(--e-bg);
@@ -63,10 +66,12 @@
   --e-line-soft: #1b2129;
   --e-accent: #58a6ff;
 
-  --e-ok-dot: #3fb950;   --e-ok-bg: #10261a;   --e-ok-line: #1c4429;
-  --e-warn-dot: #d29922; --e-warn-bg: #2a2011; --e-warn-line: #4b3a12;
-  --e-bad-dot: #f85149;  --e-bad-bg: #2c1618;  --e-bad-line: #58252a;
+  --e-ok-dot: #3fb950;   --e-ok-bg: #10261a;   --e-ok-line: #1c4429;   --e-ok-ink: #7ee2a8;
+  --e-warn-dot: #d29922; --e-warn-bg: #2a2011; --e-warn-line: #4b3a12; --e-warn-ink: #e3b341;
+  --e-bad-dot: #f85149;  --e-bad-bg: #2c1618;  --e-bad-line: #58252a;  --e-bad-ink: #ff9c96;
   --e-none-dot: #8b949e; --e-none-bg: #171b21; --e-none-line: #262c34;
+  --e-info-bg: #171d2e;  --e-info-line: #2b3557; --e-info-ink: #a5b4fc;
+  --e-danger: #f85149;
 }
 
 /* ── the rail ─────────────────────────────────────────────────────────────────────────────── */

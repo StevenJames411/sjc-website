@@ -706,9 +706,9 @@ const head: React.CSSProperties = {
   flexWrap: "wrap",
   marginBottom: 20,
 };
-const back: React.CSSProperties = { fontSize: 13, color: "#6b7280", textDecoration: "none", fontWeight: 600 };
+const back: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", textDecoration: "none", fontWeight: 600 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", marginTop: 6 };
-const sub: React.CSSProperties = { color: "#6b7280", fontSize: 14, marginTop: 4 };
+const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
 const cols: React.CSSProperties = { display: "grid", gridTemplateColumns: "minmax(360px,1fr) minmax(380px,1fr)", gap: 28, alignItems: "start" };
 const formCol: React.CSSProperties = { display: "grid", gap: 16, minWidth: 0 };
 const previewCol: React.CSSProperties = { position: "sticky", top: 24, minWidth: 0 };
@@ -717,24 +717,24 @@ const previewLabel: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: ".1em",
   textTransform: "uppercase",
-  color: "#9ca3af",
+  color: "var(--e-muted)",
   marginBottom: 8,
 };
 const sheetWrap: React.CSSProperties = {
-  background: "#fff",
-  border: "1px solid #e5e7eb",
+  background: "var(--e-panel)",
+  border: "1px solid var(--e-line)",
   borderRadius: 4,
   padding: "34px 32px",
   boxShadow: "0 1px 3px rgba(0,0,0,.08)",
   maxHeight: "calc(100vh - 100px)",
   overflowY: "auto",
 };
-const panel: React.CSSProperties = { border: "1px solid #e5e7eb", borderRadius: 12, padding: 18, background: "#fff" };
+const panel: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 18, background: "var(--e-panel)" };
 const panelH: React.CSSProperties = { fontSize: 15, fontWeight: 700, marginBottom: 14 };
 const panelHeadRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14 };
 const row2: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 };
-const lbl: React.CSSProperties = { display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 5, color: "#374151" };
-const input: React.CSSProperties = { width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "8px 11px", fontSize: 14, outline: "none", fontFamily: font, background: "#fff" };
+const lbl: React.CSSProperties = { display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 5, color: "var(--e-ink)" };
+const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "8px 11px", fontSize: 14, outline: "none", fontFamily: font, background: "var(--e-panel)" };
 const lineHead: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr 74px 104px 96px 30px",
@@ -743,24 +743,24 @@ const lineHead: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: ".06em",
   textTransform: "uppercase",
-  color: "#9ca3af",
+  color: "var(--e-muted)",
   marginBottom: 6,
 };
 const lineRow: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 74px 104px 96px 30px", gap: 8, alignItems: "center", marginBottom: 8 };
-const amountCell: React.CSSProperties = { textAlign: "right", fontSize: 14, fontVariantNumeric: "tabular-nums", color: "#111827", paddingRight: 2 };
-const rowX: React.CSSProperties = { background: "none", border: "none", color: "#9ca3af", fontSize: 20, lineHeight: 1, cursor: "pointer", padding: 0 };
-const addBtn: React.CSSProperties = { background: "#fff", border: "1px dashed #d1d5db", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 600, color: "#374151", cursor: "pointer", width: "100%", marginTop: 2 };
-const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
-const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
-const picker: React.CSSProperties = { border: "1px solid #d1d5db", borderRadius: 8, padding: "6px 9px", fontSize: 12.5, background: "#fff", fontFamily: font };
-const saveState: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", fontWeight: 600, minWidth: 96, textAlign: "right" };
-const hint: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", marginTop: 2, lineHeight: 1.5 };
-const fromSummary: React.CSSProperties = { fontSize: 13, color: "#374151", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
-const smallBtn: React.CSSProperties = { background: "#fff", border: "1px solid #d1d5db", borderRadius: 7, padding: "6px 11px", fontSize: 12.5, fontWeight: 600, color: "#374151", cursor: "pointer", whiteSpace: "nowrap" };
-const errBox: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13, marginBottom: 16 };
+const amountCell: React.CSSProperties = { textAlign: "right", fontSize: 14, fontVariantNumeric: "tabular-nums", color: "var(--e-ink)", paddingRight: 2 };
+const rowX: React.CSSProperties = { background: "none", border: "none", color: "var(--e-muted)", fontSize: 20, lineHeight: 1, cursor: "pointer", padding: 0 };
+const addBtn: React.CSSProperties = { background: "var(--e-panel)", border: "1px dashed var(--e-line)", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 600, color: "var(--e-ink)", cursor: "pointer", width: "100%", marginTop: 2 };
+const primaryBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const ghostBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
+const picker: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 9px", fontSize: 12.5, background: "var(--e-panel)", fontFamily: font };
+const saveState: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)", fontWeight: 600, minWidth: 96, textAlign: "right" };
+const hint: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)", marginTop: 2, lineHeight: 1.5 };
+const fromSummary: React.CSSProperties = { fontSize: 13, color: "var(--e-ink)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
+const smallBtn: React.CSSProperties = { background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 7, padding: "6px 11px", fontSize: 12.5, fontWeight: 600, color: "var(--e-ink)", cursor: "pointer", whiteSpace: "nowrap" };
+const errBox: React.CSSProperties = { background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13, marginBottom: 16 };
 // Amber, not red: nothing is broken, but something on this invoice would go out wrong.
-const warnBox: React.CSSProperties = { background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e", borderRadius: 8, padding: "10px 12px", fontSize: 13, lineHeight: 1.55, marginBottom: 12 };
-const shareBox: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, border: "1px solid #e5e7eb", borderRadius: 10, padding: "12px 14px", background: "#fcfcfd", flexWrap: "wrap" };
-const linkText: React.CSSProperties = { fontSize: 12.5, fontFamily: "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace", color: "#374151", overflowWrap: "anywhere" };
+const warnBox: React.CSSProperties = { background: "var(--e-warn-bg)", border: "1px solid var(--e-warn-line)", color: "var(--e-warn-ink)", borderRadius: 8, padding: "10px 12px", fontSize: 13, lineHeight: 1.55, marginBottom: 12 };
+const shareBox: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, border: "1px solid var(--e-line)", borderRadius: 10, padding: "12px 14px", background: "var(--e-panel-2)", flexWrap: "wrap" };
+const linkText: React.CSSProperties = { fontSize: 12.5, fontFamily: "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace", color: "var(--e-ink)", overflowWrap: "anywhere" };
 const paidRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 9, marginTop: 16, cursor: "pointer", flexWrap: "wrap" };
-const fillBtn: React.CSSProperties = { width: "100%", textAlign: "left", background: "#fff", border: "1px dashed #d1d5db", borderRadius: 8, padding: "9px 12px", fontSize: 12.5, fontWeight: 600, color: "#374151", cursor: "pointer", lineHeight: 1.5, marginBottom: 12, fontFamily: font };
+const fillBtn: React.CSSProperties = { width: "100%", textAlign: "left", background: "var(--e-panel)", border: "1px dashed var(--e-line)", borderRadius: 8, padding: "9px 12px", fontSize: 12.5, fontWeight: 600, color: "var(--e-ink)", cursor: "pointer", lineHeight: 1.5, marginBottom: 12, fontFamily: font };

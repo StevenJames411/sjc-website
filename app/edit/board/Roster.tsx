@@ -117,7 +117,7 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
 
   return (
     <>
-      {saveErr && <p style={{ fontSize: 13, color: "#b91c1c", margin: "0 0 12px" }}>{saveErr}</p>}
+      {saveErr && <p style={{ fontSize: 13, color: "var(--e-danger)", margin: "0 0 12px" }}>{saveErr}</p>}
 
       <div
         ref={listRef}
@@ -149,7 +149,7 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                 title="Drag to reorder"
                 aria-label="Drag to reorder"
                 style={{
-                  color: "#9ca3af",
+                  color: "var(--e-muted)",
                   fontSize: 16,
                   cursor: dragKey === g.key ? "grabbing" : "grab",
                   flex: "0 0 auto",
@@ -172,11 +172,11 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                 style={{ minWidth: 0, flex: 1, textDecoration: "none", color: "inherit" }}
                 draggable={false}
               >
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#111827", overflowWrap: "anywhere" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--e-ink)", overflowWrap: "anywhere" }}>
                   {g.title}
                 </div>
-                <div style={{ fontSize: 12.5, color: "#6b7280", marginTop: 2 }}>{g.subtitle}</div>
-                <div style={{ fontSize: 13, color: "#374151", marginTop: 6 }}>{g.summary}</div>
+                <div style={{ fontSize: 12.5, color: "var(--e-muted)", marginTop: 2 }}>{g.subtitle}</div>
+                <div style={{ fontSize: 13, color: "var(--e-ink)", marginTop: 6 }}>{g.summary}</div>
               </a>
 
               <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: "0 0 auto" }}>
@@ -191,7 +191,7 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
               <a
                 href={`/edit/board/${g.key}`}
                 aria-hidden
-                style={{ fontSize: 20, color: "#9ca3af", flex: "0 0 auto", textDecoration: "none" }}
+                style={{ fontSize: 20, color: "var(--e-muted)", flex: "0 0 auto", textDecoration: "none" }}
               >
                 ›
               </a>
@@ -200,7 +200,7 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
         })}
       </div>
 
-      <p style={{ color: "#9ca3af", fontSize: 12, marginTop: 12 }}>
+      <p style={{ color: "var(--e-muted)", fontSize: 12, marginTop: 12 }}>
         Drag a row by its handle, or use ▲▼. The order sticks — nothing re-sorts itself on a sweep.
       </p>
     </>
@@ -211,10 +211,10 @@ const nudgeBtn: React.CSSProperties = {
   display: "block",
   width: 28,
   height: 22,
-  border: "1px solid #d1d5db",
-  background: "#fff",
+  border: "1px solid var(--e-line)",
+  background: "var(--e-panel)",
   borderRadius: 5,
-  color: "#6b7280",
+  color: "var(--e-muted)",
   fontSize: 9,
   lineHeight: 1,
   cursor: "pointer",

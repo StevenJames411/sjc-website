@@ -96,7 +96,7 @@ export default function FormLibrary({ forms }: { forms: FormDef[] }) {
             <span style={typeTag}>{FIELD_TYPE_LABELS[x.type] || x.type}</span>
           </li>
         ))}
-        {f.fields.length === 0 ? <li style={{ ...li, color: "#9ca3af" }}>No questions yet</li> : null}
+        {f.fields.length === 0 ? <li style={{ ...li, color: "var(--e-muted)" }}>No questions yet</li> : null}
       </ul>
 
       <p style={btnLine}>Button: “{f.buttonLabel}”</p>
@@ -209,34 +209,34 @@ export default function FormLibrary({ forms }: { forms: FormDef[] }) {
 
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 const page: React.CSSProperties = { maxWidth: 1080, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
-const back: React.CSSProperties = { border: "1px solid #d1d5db", background: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
+const back: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
 const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 };
-const sub: React.CSSProperties = { color: "#6b7280", fontSize: 14, marginTop: 4 };
-const hint: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.55, margin: "16px 0 0", maxWidth: 720 };
-const sec: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "#6b7280", margin: "34px 0 12px", borderTop: "1px solid #e5e7eb", paddingTop: 20 };
-const search: React.CSSProperties = { width: "100%", maxWidth: 340, border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, margin: "18px 0 22px" };
+const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
+const hint: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.55, margin: "16px 0 0", maxWidth: 720 };
+const sec: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-muted)", margin: "34px 0 12px", borderTop: "1px solid var(--e-line)", paddingTop: 20 };
+const search: React.CSSProperties = { width: "100%", maxWidth: 340, border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, margin: "18px 0 22px" };
 const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 };
-const card: React.CSSProperties = { border: "1px solid #e5e7eb", borderRadius: 12, padding: 18, background: "#fff", display: "flex", flexDirection: "column" };
+const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 18, background: "var(--e-panel)", display: "flex", flexDirection: "column" };
 const badgeRow: React.CSSProperties = { display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" };
-const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", background: "#f3f4f6", color: "#4b5563", borderRadius: 999, padding: "3px 9px" };
-const countChip: React.CSSProperties = { ...chip, background: "#eef2ff", color: "#4338ca" };
+const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", background: "var(--e-line-soft)", color: "var(--e-muted)", borderRadius: 999, padding: "3px 9px" };
+const countChip: React.CSSProperties = { ...chip, background: "var(--e-info-bg)", color: "var(--e-info-ink)" };
 const cardName: React.CSSProperties = { fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: "-0.01em" };
-const cardDesc: React.CSSProperties = { fontSize: 13, color: "#6b7280", margin: "6px 0 0", lineHeight: 1.5 };
-const list: React.CSSProperties = { listStyle: "none", padding: 0, margin: "14px 0 0", borderTop: "1px solid #f3f4f6" };
-const li: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "7px 0", borderBottom: "1px solid #f9fafb" };
-const typeTag: React.CSSProperties = { fontSize: 11, color: "#9ca3af", whiteSpace: "nowrap" };
-const btnLine: React.CSSProperties = { fontSize: 12, color: "#6b7280", margin: "12px 0 0" };
-const cardFoot: React.CSSProperties = { display: "flex", gap: 8, marginTop: 16, paddingTop: 14, borderTop: "1px solid #f3f4f6" };
-const smallGhost: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
+const cardDesc: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", margin: "6px 0 0", lineHeight: 1.5 };
+const list: React.CSSProperties = { listStyle: "none", padding: 0, margin: "14px 0 0", borderTop: "1px solid var(--e-line-soft)" };
+const li: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "7px 0", borderBottom: "1px solid var(--e-panel-2)" };
+const typeTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", whiteSpace: "nowrap" };
+const btnLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", margin: "12px 0 0" };
+const cardFoot: React.CSSProperties = { display: "flex", gap: 8, marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--e-line-soft)" };
+const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
 const iconBtn: React.CSSProperties = { ...smallGhost, marginLeft: "auto", padding: "6px 10px" };
-const delPanel: React.CSSProperties = { marginTop: 16, paddingTop: 14, borderTop: "1px solid #fecaca", background: "#fef2f2", borderRadius: 8, padding: 12 };
-const dangerBtn: React.CSSProperties = { background: "#b91c1c", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
-const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" };
+const delPanel: React.CSSProperties = { marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--e-bad-line)", background: "var(--e-bad-bg)", borderRadius: 8, padding: 12 };
+const dangerBtn: React.CSSProperties = { background: "var(--e-danger)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
+const primaryBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" };
 const primary: React.CSSProperties = primaryBtn;
-const ghost: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
-const input: React.CSSProperties = { width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, marginTop: 10 };
-const errBox: React.CSSProperties = { marginTop: 16, background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
-const footNote: React.CSSProperties = { fontSize: 12, color: "#9ca3af", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid #e5e7eb", paddingTop: 16, maxWidth: 720 };
+const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
+const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, marginTop: 10 };
+const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+const footNote: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid var(--e-line)", paddingTop: 16, maxWidth: 720 };
 const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
-const modal: React.CSSProperties = { background: "#fff", borderRadius: 14, padding: 24, width: "100%", maxWidth: 440, fontFamily: font };
+const modal: React.CSSProperties = { background: "var(--e-panel)", borderRadius: 14, padding: 24, width: "100%", maxWidth: 440, fontFamily: font };

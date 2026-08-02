@@ -31,11 +31,11 @@ export default async function BoardPage() {
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
       {/* "← All websites" lived here until the rail took over global navigation. */}
       <h1 style={{ fontSize: 34, fontWeight: 800, margin: "0 0 6px" }}>The board</h1>
-      <p style={{ color: "#4b5563", margin: "0 0 4px", maxWidth: 720 }}>
+      <p style={{ color: "var(--e-muted)", margin: "0 0 4px", maxWidth: 720 }}>
         Every joint between the fifteen systems that carry a client. No vendor watches a joint —
         each end reports success on its own side — so this is the only place they meet.
       </p>
-      <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 22px" }}>
+      <p style={{ color: "var(--e-muted)", fontSize: 13, margin: "0 0 22px" }}>
         Green means <strong>verified recently</strong>, not &ldquo;nothing alarmed.&rdquo; If a
         check stops running, its tile goes yellow and then red on its own.
       </p>
@@ -69,9 +69,9 @@ export default async function BoardPage() {
         })}
       </div>
 
-      <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 26px" }}>
+      <p style={{ color: "var(--e-muted)", fontSize: 13, margin: "0 0 26px" }}>
         {view.totalChecks} checks across {view.clientCount} client site(s) · last sweep{" "}
-        {ageText(view.sweptAt)} · <a href="/api/cron/checks" style={{ color: "#2563eb" }}>run one now</a>
+        {ageText(view.sweptAt)} · <a href="/api/cron/checks" style={{ color: "var(--e-accent)" }}>run one now</a>
       </p>
 
       {/* One row per owner, in the order Steven dragged them into. */}

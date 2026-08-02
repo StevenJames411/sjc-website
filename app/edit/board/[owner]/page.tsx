@@ -27,14 +27,14 @@ export default async function OwnerBoardPage({ params }: { params: Promise<{ own
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
-      <Link href="/edit/board" style={{ fontSize: 14, color: "#4b5563", textDecoration: "none" }}>
+      <Link href="/edit/board" style={{ fontSize: 14, color: "var(--e-muted)", textDecoration: "none" }}>
         ← The board
       </Link>
 
       <h1 style={{ fontSize: 32, fontWeight: 800, margin: "18px 0 4px", overflowWrap: "anywhere" }}>
         {group.title}
       </h1>
-      <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 18px" }}>{group.subtitle}</p>
+      <p style={{ color: "var(--e-muted)", fontSize: 14, margin: "0 0 18px" }}>{group.subtitle}</p>
 
       {/* This owner's one-line verdict, same sentence the roster row shows — so the page you open
           confirms what the row said instead of making you re-read eight tiles to check. */}
@@ -49,12 +49,12 @@ export default async function OwnerBoardPage({ params }: { params: Promise<{ own
         {summarise(group)}
       </div>
 
-      <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 26px" }}>
+      <p style={{ color: "var(--e-muted)", fontSize: 13, margin: "0 0 26px" }}>
         {group.rows.length} checks · last sweep {ageText(view.sweptAt)} ·{" "}
-        <a href="/api/cron/checks" style={{ color: "#2563eb" }}>run one now</a>
+        <a href="/api/cron/checks" style={{ color: "var(--e-accent)" }}>run one now</a>
         {group.key !== SJC_KEY && (
           <>
-            {" "}· <Link href={`/edit/${group.key}`} style={{ color: "#2563eb" }}>open their website</Link>
+            {" "}· <Link href={`/edit/${group.key}`} style={{ color: "var(--e-accent)" }}>open their website</Link>
           </>
         )}
       </p>

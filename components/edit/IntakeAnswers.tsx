@@ -116,7 +116,7 @@ const backdrop: React.CSSProperties = {
 };
 
 const panel: React.CSSProperties = {
-  background: "#fff",
+  background: "var(--e-panel)",
   borderRadius: 14,
   padding: 24,
   width: "100%",
@@ -134,22 +134,22 @@ const panelHead: React.CSSProperties = {
   marginBottom: 14,
 };
 
-const title: React.CSSProperties = { fontSize: 20, fontWeight: 800, color: "#0f172a" };
-const sub: React.CSSProperties = { fontSize: 13, color: "#64748b", marginTop: 2 };
+const title: React.CSSProperties = { fontSize: 20, fontWeight: 800, color: "var(--e-ink-strong)" };
+const sub: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", marginTop: 2 };
 const closeBtn: React.CSSProperties = {
   border: "none",
   background: "none",
   fontSize: 18,
   cursor: "pointer",
-  color: "#64748b",
+  color: "var(--e-muted)",
   lineHeight: 1,
 };
 
-const qa: React.CSSProperties = { padding: "10px 0", borderTop: "1px solid #f1f5f9" };
+const qa: React.CSSProperties = { padding: "10px 0", borderTop: "1px solid var(--e-line-soft)" };
 const qLabel: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
-  color: "#2563eb",
+  color: "var(--e-accent)",
   textTransform: "uppercase",
   letterSpacing: ".04em",
   marginTop: 12,
@@ -159,15 +159,15 @@ const qLabel: React.CSSProperties = {
 const aText: React.CSSProperties = {
   fontSize: 15,
   lineHeight: 1.55,
-  color: "#0f172a",
+  color: "var(--e-ink-strong)",
   marginTop: 4,
   whiteSpace: "pre-wrap",
 };
 
-const note: React.CSSProperties = { fontSize: 13, color: "#64748b" };
-const noteGood: React.CSSProperties = { ...note, color: "#16a34a", fontWeight: 600 };
-const noteWarn: React.CSSProperties = { ...note, color: "#b45309", fontWeight: 600 };
-const danger: React.CSSProperties = { ...note, color: "#dc2626" };
+const note: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)" };
+const noteGood: React.CSSProperties = { ...note, color: "var(--e-ok-dot)", fontWeight: 600 };
+const noteWarn: React.CSSProperties = { ...note, color: "var(--e-warn-ink)", fontWeight: 600 };
+const danger: React.CSSProperties = { ...note, color: "var(--e-danger)" };
 
 const photoGrid: React.CSSProperties = {
   display: "grid",
@@ -181,6 +181,6 @@ const thumb: React.CSSProperties = {
   aspectRatio: "1",
   objectFit: "cover",
   borderRadius: 8,
-  border: "1px solid #e2e8f0",
+  border: "1px solid var(--e-line)",
   display: "block",
 };

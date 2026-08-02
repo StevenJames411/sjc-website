@@ -124,7 +124,7 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
           {TOKENS.map(([t, k]) => (
             <li key={t}>
               <code style={code}>{t}</code>{" "}
-              <span style={{ color: "#6b7280" }}>→ {s.business[k] || <em>not set</em>}</span>
+              <span style={{ color: "var(--e-muted)" }}>→ {s.business[k] || <em>not set</em>}</span>
             </li>
           ))}
         </ul>
@@ -137,7 +137,7 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
             as it parses. This is the catch-up for pages built before that, or where someone typed
             a number in by hand. It lives here, beside the fields it reads, rather than in the page
             toolbar where it would be a one-off task sitting in permanent view. */}
-        <div style={{ borderTop: "1px solid #e5e7eb", marginTop: 14, paddingTop: 14 }}>
+        <div style={{ borderTop: "1px solid var(--e-line)", marginTop: 14, paddingTop: 14 }}>
           <button type="button" style={ghost} onClick={sweep} disabled={busy}>
             {busy ? "Working…" : "Apply these to existing pages"}
           </button>
@@ -145,7 +145,7 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
             Finds these values typed into the pages of this website and swaps them for the tokens
             above. New imports arrive already wired, so this is only for older pages.
           </p>
-          {sweepMsg ? <p style={{ ...hint, margin: "8px 0 0", color: "#166534" }}>{sweepMsg}</p> : null}
+          {sweepMsg ? <p style={{ ...hint, margin: "8px 0 0", color: "var(--e-ok-ink)" }}>{sweepMsg}</p> : null}
         </div>
       </div>
 
@@ -238,16 +238,16 @@ function Field({
 
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 const page: React.CSSProperties = { maxWidth: 680, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
-const back: React.CSSProperties = { border: "1px solid #d1d5db", background: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
+const back: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" };
-const sub: React.CSSProperties = { color: "#6b7280", fontSize: 14, marginTop: 4 };
-const sec: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "#6b7280", margin: "34px 0 6px", borderTop: "1px solid #e5e7eb", paddingTop: 20 };
-const hint: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.55, margin: "0 0 14px" };
+const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
+const sec: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-muted)", margin: "34px 0 6px", borderTop: "1px solid var(--e-line)", paddingTop: 20 };
+const hint: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.55, margin: "0 0 14px" };
 const lbl: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, marginBottom: 5 };
-const input: React.CSSProperties = { width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font };
-const code: React.CSSProperties = { background: "#f3f4f6", borderRadius: 4, padding: "1px 5px", fontFamily: "ui-monospace,monospace", fontSize: 12 };
-const tokenBox: React.CSSProperties = { border: "1px solid #e5e7eb", background: "#fafafa", borderRadius: 10, padding: 14, marginTop: 6 };
-const primary: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
-const ghost: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
-const errBox: React.CSSProperties = { marginTop: 16, background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
-const okBox: React.CSSProperties = { marginTop: 16, background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#166534", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font };
+const code: React.CSSProperties = { background: "var(--e-line-soft)", borderRadius: 4, padding: "1px 5px", fontFamily: "ui-monospace,monospace", fontSize: 12 };
+const tokenBox: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 10, padding: 14, marginTop: 6 };
+const primary: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
+const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+const okBox: React.CSSProperties = { marginTop: 16, background: "var(--e-ok-bg)", border: "1px solid var(--e-ok-line)", color: "var(--e-ok-ink)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
