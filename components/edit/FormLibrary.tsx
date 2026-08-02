@@ -137,9 +137,7 @@ export default function FormLibrary({ forms }: { forms: FormDef[] }) {
 
   return (
     <div style={page}>
-      <button type="button" style={back} onClick={() => router.push("/edit")}>
-        ← All websites
-      </button>
+      {/* "← All websites" lived here until the rail took over global navigation. */}
 
       <div style={head}>
         <div>

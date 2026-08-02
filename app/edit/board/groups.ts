@@ -57,11 +57,17 @@ export async function readBoardView(): Promise<BoardView> {
   const groups: Group[] = [
     {
       key: SJC_KEY,
-      // ⛔ NOT "SJC itself". Steven read that row against "Steven James Designs" one line below and
-      // had to stop and work out which initialism was which. Two brands that share initials cannot
-      // both be abbreviated on the same screen — the row that ISN'T a customer says so in words.
-      title: "The shared floor — not a customer",
-      subtitle: "The durable store and the one sending domain that sit under every website",
+      // ⛔ NOT "SJC itself" — Steven read that against "Steven James Designs" one line below and had
+      // to work out which initialism was which. Two brands sharing initials cannot both be
+      // abbreviated on the same screen.
+      //
+      // "The mainline" over "the shared floor" because the name has to survive what lands here
+      // next. Today it is two things — the durable store and the one sending domain. GoHighLevel,
+      // Vercel's card, the GitHub PAT and Anthropic credits all belong in this row the day they get
+      // checks: everything where ONE break hits every client at once and no client's own row will
+      // ever show it. "Floor" described where it sits; "mainline" says what happens when it goes.
+      title: "The mainline",
+      subtitle: "Everything every client rides on — one break hits all of them",
       rows: globalRows,
       colour: worst(globalRows.map((r) => r.colour)),
     },

@@ -17,10 +17,15 @@ const PATH_TO_SLUG: Record<string, string> = {
 export default function EditLink() {
   const [slug, setSlug] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
+  // ⚠️ NOT ON /edit. The back-office rail carries its own Sign out now, and this one is
+  // position:fixed — two sign-out buttons on the same screen, one of them floating over the page.
+  // Mounted in the ROOT layout, so it cannot be excluded by a nested layout; it has to opt out.
+  const [inBackOffice, setInBackOffice] = useState(false);
 
   useEffect(() => {
     const raw = window.location.pathname.replace(/\/+$/, "") || "/";
     setSlug(PATH_TO_SLUG[raw] ?? null);
+    setInBackOffice(raw === "/edit" || raw.startsWith("/edit/"));
     fetch("/api/auth-status")
       .then((r) => r.json())
       .then((j) => setAuthed(Boolean(j && j.authed)))
@@ -37,7 +42,7 @@ export default function EditLink() {
   }
 
   // Owner is signed in. Always offer Sign out; show Edit only on pages that map to a builder slug.
-  if (!authed) return null;
+  if (!authed || inBackOffice) return null;
 
   const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 

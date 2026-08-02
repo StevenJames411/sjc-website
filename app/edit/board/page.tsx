@@ -24,11 +24,8 @@ export default async function BoardPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
-      <Link href="/edit" style={{ fontSize: 14, color: "#4b5563", textDecoration: "none" }}>
-        ← All websites
-      </Link>
-
-      <h1 style={{ fontSize: 34, fontWeight: 800, margin: "18px 0 6px" }}>The board</h1>
+      {/* "← All websites" lived here until the rail took over global navigation. */}
+      <h1 style={{ fontSize: 34, fontWeight: 800, margin: "0 0 6px" }}>The board</h1>
       <p style={{ color: "#4b5563", margin: "0 0 4px", maxWidth: 720 }}>
         Every joint between the fifteen systems that carry a client. No vendor watches a joint —
         each end reports success on its own side — so this is the only place they meet.

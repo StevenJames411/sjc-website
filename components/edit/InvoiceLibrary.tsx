@@ -132,9 +132,7 @@ export default function InvoiceLibrary({
     <div style={page}>
       <div style={head}>
         <div>
-          <a href="/edit" style={back}>
-            ← Websites
-          </a>
+          {/* "← Websites" lived here until the rail took over global navigation. */}
           <h1 style={h1}>Invoices</h1>
           <p style={sub}>Fill one in, print it to PDF, send it.</p>
         </div>

@@ -98,10 +98,7 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
 
   return (
     <div style={page}>
-      <button type="button" style={back} onClick={() => router.push("/edit")}>
-        ← All websites
-      </button>
-
+      {/* "← All websites" lived here until the rail took over global navigation. */}
       <h1 style={h1}>{s.name}</h1>
       <p style={sub}>
         {pageCount} page{pageCount === 1 ? "" : "s"} · set once here, used across the whole website
