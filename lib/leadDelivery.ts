@@ -23,6 +23,8 @@ export type Delivery = {
   toRecord: boolean;
   /** Did the row reach the CLIENT'S OWN sheet? null = they have no sheet yet. */
   toSheet: boolean | null;
+  /** Did it reach their GoHighLevel inbox? null = no webhook set, so none was owed. */
+  toGhl: boolean | null;
   problems: string[];
 };
 
@@ -150,14 +152,57 @@ export async function deliverLead(
     }
   }
 
-  // ── 3. the owner's copy, when the site has an address ──────────────────────────────────────
-  if (!owner) return { toOwner: null, toRecord, toSheet, problems };
+  // ── 3. THEIR GOHIGHLEVEL INBOX ─────────────────────────────────────────────────────────────
+  //
+  // The $97 offer is "every lead in one place — calls, texts and website forms in a single inbox."
+  // Calls and texts arrive in GHL by themselves. Website forms are ours, and until this leg existed
+  // the one lead source we actually built was the only one missing from the inbox we sold him.
+  //
+  // ⚠️ THIS RUNS BEFORE THE `!owner` RETURN BELOW, and that ordering is load-bearing. A client on
+  // GHL may have no leadEmail at all — his inbox IS his notification. Put this after the early
+  // return and every one of those leads silently skips the CRM.
+  //
+  // ⚠️ Still not a CRM: this WRITES and forgets. Nothing reads a contact back, so GHL stays the
+  // truth and remains swappable for anything else that accepts a webhook.
+  //
+  // Fire-and-check, never fire-and-forget — a 200 is the only evidence the lead arrived, and a
+  // failure here has to surface next to the other three rather than disappear into a log.
+  let toGhl: boolean | null = null;
+  const ghl = (site?.ghlWebhookUrl || "").trim();
+  if (ghl) {
+    try {
+      const res = await fetch(ghl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submittedAt,
+          source: "website",
+          site: site?.name || siteId || "",
+          siteId: siteId || "",
+          // Flattened alongside the raw array: an inbound webhook maps fields by NAME, and every
+          // form in the library mints a stable fieldId for exactly this reason (see FormField in
+          // lib/formsShared.ts — never re-derive it from the label or the mapping breaks silently
+          // the first time a question is reworded).
+          ...Object.fromEntries(answers.map((a) => [a.key, a.value])),
+          answers,
+        }),
+      });
+      if (!res.ok) throw new Error(`http ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      toGhl = true;
+    } catch (e) {
+      toGhl = false;
+      problems.push(`GoHighLevel failed: ${(e as Error).message}`);
+    }
+  }
+
+  // ── 4. the owner's copy, when the site has an address ──────────────────────────────────────
+  if (!owner) return { toOwner: null, toRecord, toSheet, toGhl, problems };
 
   const key = process.env.RESEND_API_KEY;
   const from = process.env.LEAD_FROM || "leads@send.stevenjamesconsulting.com";
   if (!key) {
     problems.push("RESEND_API_KEY not set — the owner's copy could NOT be sent");
-    return { toOwner: false, toRecord, toSheet, problems };
+    return { toOwner: false, toRecord, toSheet, toGhl, problems };
   }
 
   try {
@@ -173,9 +218,9 @@ export async function deliverLead(
       }),
     });
     if (!res.ok) throw new Error(`resend ${res.status} ${await res.text()}`);
-    return { toOwner: true, toRecord, toSheet, problems };
+    return { toOwner: true, toRecord, toSheet, toGhl, problems };
   } catch (e) {
     problems.push(`owner copy failed: ${(e as Error).message}`);
-    return { toOwner: false, toRecord, toSheet, problems };
+    return { toOwner: false, toRecord, toSheet, toGhl, problems };
   }
 }
