@@ -150,11 +150,19 @@ export default async function PublicInvoicePage({
 }
 
 const css = `
+/* min-width:0 on the grid child is what actually lets the sheet be narrower than its contents.
+   Without it a grid item's minimum size is its content, so a wide table silently pushes the
+   whole column past the viewport and the page scrolls sideways. */
 .inv-cols { display: grid; gap: 18px; align-items: start; }
+.inv-cols > * { min-width: 0; }
 .inv-side { min-width: 0; display: grid; gap: 12px; }
 .inv-sheet {
   background: #fff; border-radius: 14px; padding: 38px 34px;
   box-shadow: 0 18px 46px rgba(0,0,0,.34);
+}
+@media (max-width: 640px) {
+  .inv-sheet { padding: 22px 16px; border-radius: 12px; }
+  .pay-card { padding: 18px 16px 16px; }
 }
 /* 348px is the width Stripe's own button card wants; below ~900 there isn't room for both, so it
    stacks — document first, then the button, which is the order a phone should read anyway. */

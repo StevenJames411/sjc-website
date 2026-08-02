@@ -178,7 +178,20 @@ export default function BrandShell({
 // same company; whatever the page puts inside stays on white, because a document should.
 const css = (b: Brand) => `
 :root { color-scheme: dark; }
+/* overflow-x hidden on the page, not on a child: one element wider than the viewport makes the
+   whole document scroll sideways, and on a phone that reads as a page that doesn't fit. */
+html, body { overflow-x: hidden; }
 .bs-wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+@media (max-width: 640px) {
+  .bs-wrap { padding: 0 14px; }
+  .bs-head-in { min-height: 60px; }
+  .bs-name { font-size: 17px; }
+  .bs-mark { width: 34px; height: 34px; border-radius: 10px; font-size: 14px; }
+  .bs-pill { font-size: 11.5px; padding: 6px 11px; }
+  .bs-main { padding: 22px 0 40px; }
+  .bs-title h1 { font-size: 24px; }
+  .bs-title p { font-size: 14px; }
+}
 
 .bs-head {
   background: ${b.headerBg};

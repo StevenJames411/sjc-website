@@ -34,7 +34,19 @@ export default function InvoiceDoc({
 
   return (
     <div style={sheet} className="invoice-sheet">
-      <header style={topRow}>
+      {/* ── THE PHONE ────────────────────────────────────────────────────────────────────────
+          Everything else here is inline styles, which is right for a document — they survive being
+          copied into a print route or an email client. What an inline style CANNOT hold is a media
+          query, and this document has a four-column table whose fixed widths add up to 300px
+          before the description gets any. On a 390px phone that leaves the description nothing and
+          pushes the sheet wider than the screen.
+
+          So the handful of rules that have to change with the viewport live here. The `!important`
+          is not laziness: an inline style beats a stylesheet on specificity, and these exist
+          precisely to override inline styles. Nothing else in the file needs it. */}
+      <style>{responsive}</style>
+
+      <header style={topRow} className="doc-top">
         <div>
           {issuer.businessName ? <div style={bizName}>{issuer.businessName}</div> : null}
           {/* The DBA prints directly under the legal name and is never a substitute for it: the
@@ -47,10 +59,10 @@ export default function InvoiceDoc({
             {issuer.phone ? <div>{issuer.phone}</div> : null}
           </div>
         </div>
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ textAlign: "right", flexShrink: 0 }} className="doc-meta">
           <div style={invWord}>Invoice</div>
           <div style={invNum}>{invoice.number}</div>
-          <table style={dateTable}>
+          <table style={dateTable} className="doc-dates">
             <tbody>
               <tr>
                 <td style={dateLbl}>Issued</td>
@@ -81,9 +93,9 @@ export default function InvoiceDoc({
         <thead>
           <tr>
             <th style={{ ...th, textAlign: "left" }}>Description</th>
-            <th style={{ ...th, ...numCol, width: 70 }}>Qty</th>
-            <th style={{ ...th, ...numCol, width: 110 }}>Rate</th>
-            <th style={{ ...th, ...numCol, width: 120 }}>Amount</th>
+            <th style={{ ...th, ...numCol, width: 70 }} className="doc-qty">Qty</th>
+            <th style={{ ...th, ...numCol, width: 110 }} className="doc-rate">Rate</th>
+            <th style={{ ...th, ...numCol, width: 120 }} className="doc-amt">Amount</th>
           </tr>
         </thead>
         <tbody>
@@ -91,9 +103,9 @@ export default function InvoiceDoc({
             lines.map((l) => (
               <tr key={l.id}>
                 <td style={{ ...td, ...preLine }}>{l.description}</td>
-                <td style={{ ...td, ...numCol }}>{formatQty(l.qty)}</td>
-                <td style={{ ...td, ...numCol }}>{fromCents(l.rateCents)}</td>
-                <td style={{ ...td, ...numCol }}>{fromCents(lineTotalCents(l))}</td>
+                <td style={{ ...td, ...numCol }} className="doc-qty">{formatQty(l.qty)}</td>
+                <td style={{ ...td, ...numCol }} className="doc-rate">{fromCents(l.rateCents)}</td>
+                <td style={{ ...td, ...numCol }} className="doc-amt">{fromCents(lineTotalCents(l))}</td>
               </tr>
             ))
           ) : (
@@ -107,7 +119,7 @@ export default function InvoiceDoc({
       </table>
 
       <div style={totalsWrap}>
-        <table style={totalsTable}>
+        <table style={totalsTable} className="doc-totals">
           <tbody>
             <tr>
               <td style={totLbl}>Subtotal</td>
@@ -201,6 +213,32 @@ function Linkified({ text }: { text: string }) {
     </>
   );
 }
+
+/**
+ * The document on a narrow screen.
+ *
+ * Scoped under `.invoice-sheet` so it can only ever touch this component, wherever it's rendered.
+ * The header stops sitting side-by-side and stacks; the number columns give back the width they
+ * were reserving; everything steps down a size. The numbers keep `tabular-nums` and stay right
+ * aligned, because a column of amounts that doesn't line up reads as arithmetic you can't trust.
+ */
+const responsive = `
+@media (max-width: 640px) {
+  .invoice-sheet { font-size: 13px !important; }
+  .invoice-sheet .doc-top { flex-direction: column !important; gap: 12px !important; padding-bottom: 14px !important; }
+  .invoice-sheet .doc-meta { text-align: left !important; }
+  .invoice-sheet .doc-dates { margin-left: 0 !important; margin-top: 6px !important; }
+  .invoice-sheet .doc-dates td { text-align: left !important; padding-right: 12px !important; }
+  .invoice-sheet table th, .invoice-sheet table td { font-size: 12px !important; }
+  .invoice-sheet .doc-qty { width: 30px !important; padding-left: 6px !important; }
+  .invoice-sheet .doc-rate { width: 62px !important; padding-left: 6px !important; }
+  .invoice-sheet .doc-amt { width: 72px !important; padding-left: 6px !important; }
+  .invoice-sheet .doc-totals { min-width: 0 !important; width: 100% !important; }
+}
+@media (max-width: 380px) {
+  .invoice-sheet .doc-rate { display: none !important; }
+}
+`;
 
 /** 1 stays "1"; 1.5 stays "1.5". Trailing zeros on a quantity read like a units mistake. */
 function formatQty(qty: number): string {
