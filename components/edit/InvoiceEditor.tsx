@@ -477,75 +477,6 @@ export default function InvoiceEditor({
             </Field>
           </section>
 
-          <section style={panel}>
-            <h2 style={panelH}>Items</h2>
-            <div style={lineHead}>
-              <span>Description</span>
-              <span style={{ textAlign: "right" }}>Qty</span>
-              <span style={{ textAlign: "right" }}>Rate</span>
-              <span style={{ textAlign: "right" }}>Amount</span>
-              <span />
-            </div>
-            {lines.map((l) => {
-              const amount = Math.round(toQty(l.qtyText) * toCents(l.rateText));
-              return (
-                <div key={l.id} style={lineRow}>
-                  <input
-                    style={input}
-                    placeholder="Website build — 5 pages"
-                    value={l.description}
-                    onChange={(e) => setLine(l.id, { description: e.target.value })}
-                  />
-                  <input
-                    style={{ ...input, textAlign: "right" }}
-                    inputMode="decimal"
-                    value={l.qtyText}
-                    onChange={(e) => setLine(l.id, { qtyText: e.target.value })}
-                  />
-                  <input
-                    style={{ ...input, textAlign: "right" }}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={l.rateText}
-                    onChange={(e) => setLine(l.id, { rateText: e.target.value })}
-                  />
-                  <div style={amountCell}>{fromCents(amount)}</div>
-                  <button
-                    type="button"
-                    style={rowX}
-                    title="Remove this line"
-                    aria-label="Remove this line"
-                    onClick={() => removeLine(l.id)}
-                  >
-                    ×
-                  </button>
-                </div>
-              );
-            })}
-            <button type="button" style={addBtn} onClick={addLine}>
-              + Add a line
-            </button>
-
-            <div style={{ ...row2, marginTop: 18 }}>
-              <Field label="Discount label">
-                <input
-                  style={input}
-                  value={discountLabel}
-                  onChange={(e) => edit(setDiscountLabel)(e.target.value)}
-                />
-              </Field>
-              <Field label="Discount amount">
-                <input
-                  style={{ ...input, textAlign: "right" }}
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  value={discountText}
-                  onChange={(e) => edit(setDiscountText)(e.target.value)}
-                />
-              </Field>
-            </div>
-          </section>
-
           {/* ── HOW IT GETS PAID ─────────────────────────────────────────────────────────────
               The package picks the button; the link is what you actually email. The printed PDF
               stays exactly as it was — a buy button is a <script> embed, which no email client
@@ -653,6 +584,75 @@ export default function InvoiceEditor({
                 page. Print it and send that as his receipt.
               </p>
             ) : null}
+          </section>
+
+          <section style={panel}>
+            <h2 style={panelH}>Items</h2>
+            <div style={lineHead}>
+              <span>Description</span>
+              <span style={{ textAlign: "right" }}>Qty</span>
+              <span style={{ textAlign: "right" }}>Rate</span>
+              <span style={{ textAlign: "right" }}>Amount</span>
+              <span />
+            </div>
+            {lines.map((l) => {
+              const amount = Math.round(toQty(l.qtyText) * toCents(l.rateText));
+              return (
+                <div key={l.id} style={lineRow}>
+                  <input
+                    style={input}
+                    placeholder="Website build — 5 pages"
+                    value={l.description}
+                    onChange={(e) => setLine(l.id, { description: e.target.value })}
+                  />
+                  <input
+                    style={{ ...input, textAlign: "right" }}
+                    inputMode="decimal"
+                    value={l.qtyText}
+                    onChange={(e) => setLine(l.id, { qtyText: e.target.value })}
+                  />
+                  <input
+                    style={{ ...input, textAlign: "right" }}
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={l.rateText}
+                    onChange={(e) => setLine(l.id, { rateText: e.target.value })}
+                  />
+                  <div style={amountCell}>{fromCents(amount)}</div>
+                  <button
+                    type="button"
+                    style={rowX}
+                    title="Remove this line"
+                    aria-label="Remove this line"
+                    onClick={() => removeLine(l.id)}
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+            <button type="button" style={addBtn} onClick={addLine}>
+              + Add a line
+            </button>
+
+            <div style={{ ...row2, marginTop: 18 }}>
+              <Field label="Discount label">
+                <input
+                  style={input}
+                  value={discountLabel}
+                  onChange={(e) => edit(setDiscountLabel)(e.target.value)}
+                />
+              </Field>
+              <Field label="Discount amount">
+                <input
+                  style={{ ...input, textAlign: "right" }}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={discountText}
+                  onChange={(e) => edit(setDiscountText)(e.target.value)}
+                />
+              </Field>
+            </div>
           </section>
 
           <section style={panel}>
