@@ -82,20 +82,57 @@ export default function BrandEditor() {
         </div>
       )}
 
+      {/* TWO FONTS, BECAUSE A WEBSITE HAS TWO.
+          One face for the headlines, one for everything you read. The site has rendered both since
+          design import landed — BrandStyle emits --font-heading and applies it to h1–h4 — but this
+          screen only ever showed the body one. So an imported design could be running Space Grotesk
+          headlines over Inter body while this page said "Lexend — current", describing half of it.
+          Not wrong behaviour: hidden behaviour, which is worse, because there was nothing to click. */}
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Font</h2>
+        <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Body text</h2>
+        <p className="mt-1 text-sm text-[color:var(--color-sjc-mute)]">
+          Paragraphs, buttons, labels — everything that isn&apos;t a headline.
+        </p>
         <div className="mt-3 grid gap-2">
           {FONTS.map((f) => (
-            <label key={f.value}
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 ${
-                brand.font === f.value ? "border-[color:var(--color-sjc-blue)] bg-blue-50" : "border-gray-200"}`}>
-              <input type="radio" name="font" checked={brand.font === f.value}
-                onChange={() => set("font", f.value as BrandFont)} />
-              <span className="flex-1">
-                <span className="block text-base font-semibold">{f.label}</span>
-                <span className="block text-sm text-[color:var(--color-sjc-mute)]">{f.note}</span>
-              </span>
-            </label>
+            <FontChoice
+              key={f.value}
+              name="font"
+              label={f.label}
+              note={f.note}
+              checked={brand.font === f.value}
+              onPick={() => set("font", f.value as BrandFont)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Headlines</h2>
+        <p className="mt-1 text-sm text-[color:var(--color-sjc-mute)]">
+          The big text at the top of each section. Bought designs usually pair a second face here.
+        </p>
+        <div className="mt-3 grid gap-2">
+          {/* ⛔ "Same as body text" is the EMPTY STRING, never a copy of the body font's value.
+              Copying it in would freeze the headlines the first time the body font changes — pick a
+              new body face and the headlines silently stay behind. Blank means FOLLOW, and blank is
+              also what every brand saved before today already holds, so nothing existing shifts. */}
+          <FontChoice
+            name="headingFont"
+            label="Same as body text"
+            note="One face for the whole site — how it worked before"
+            checked={!brand.headingFont}
+            onPick={() => set("headingFont", "")}
+          />
+          {FONTS.map((f) => (
+            <FontChoice
+              key={f.value}
+              name="headingFont"
+              label={f.label}
+              note={f.note}
+              checked={brand.headingFont === f.value}
+              onPick={() => set("headingFont", f.value as BrandFont)}
+            />
           ))}
         </div>
       </section>
@@ -151,5 +188,40 @@ export default function BrandEditor() {
         Reset is the way back — whatever you try here, one click returns the site to how it shipped.
       </p>
     </main>
+  );
+}
+
+/**
+ * One row in a font list.
+ *
+ * Lifted out of the two `FONTS.map`s so the body picker and the headline picker cannot drift apart
+ * — a difference in padding or highlight between two lists of the same eight names reads as a bug
+ * in the list rather than a style slip.
+ */
+function FontChoice({
+  name,
+  label,
+  note,
+  checked,
+  onPick,
+}: {
+  name: string;
+  label: string;
+  note: string;
+  checked: boolean;
+  onPick: () => void;
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 ${
+        checked ? "border-[color:var(--color-sjc-blue)] bg-blue-50" : "border-gray-200"
+      }`}
+    >
+      <input type="radio" name={name} checked={checked} onChange={onPick} />
+      <span className="flex-1">
+        <span className="block text-base font-semibold">{label}</span>
+        <span className="block text-sm text-[color:var(--color-sjc-mute)]">{note}</span>
+      </span>
+    </label>
   );
 }
