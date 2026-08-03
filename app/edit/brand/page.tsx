@@ -89,25 +89,6 @@ export default function BrandEditor() {
           headlines over Inter body while this page said "Lexend — current", describing half of it.
           Not wrong behaviour: hidden behaviour, which is worse, because there was nothing to click. */}
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Body text</h2>
-        <p className="mt-1 text-sm text-[color:var(--color-sjc-mute)]">
-          Paragraphs, buttons, labels — everything that isn&apos;t a headline.
-        </p>
-        <div className="mt-3 grid gap-2">
-          {FONTS.map((f) => (
-            <FontChoice
-              key={f.value}
-              name="font"
-              label={f.label}
-              note={f.note}
-              checked={brand.font === f.value}
-              onPick={() => set("font", f.value as BrandFont)}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-8">
         <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Headlines</h2>
         <p className="mt-1 text-sm text-[color:var(--color-sjc-mute)]">
           The big text at the top of each section. Bought designs usually pair a second face here.
@@ -132,6 +113,25 @@ export default function BrandEditor() {
               note={f.note}
               checked={brand.headingFont === f.value}
               onPick={() => set("headingFont", f.value as BrandFont)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Body text</h2>
+        <p className="mt-1 text-sm text-[color:var(--color-sjc-mute)]">
+          Paragraphs, buttons, labels — everything that isn&apos;t a headline.
+        </p>
+        <div className="mt-3 grid gap-2">
+          {FONTS.map((f) => (
+            <FontChoice
+              key={f.value}
+              name="font"
+              label={f.label}
+              note={f.note}
+              checked={brand.font === f.value}
+              onPick={() => set("font", f.value as BrandFont)}
             />
           ))}
         </div>
