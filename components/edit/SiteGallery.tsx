@@ -13,10 +13,10 @@ import IntakeAnswers from "./IntakeAnswers";
 // another's. Every builder that does this at scale (GoHighLevel, Landingsite, SiteDrop) opens on a
 // gallery with search and a New-website button, and the page switcher lives INSIDE a site.
 
-type Props = { sites: Site[]; intake: Record<string, IntakeSummary> };
+type Props = { sites: Site[]; intake: Record<string, IntakeSummary>; title: string };
 type Mode = "blank" | "template" | "import";
 
-export default function SiteGallery({ sites, intake }: Props) {
+export default function SiteGallery({ sites, intake, title }: Props) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
@@ -154,22 +154,16 @@ export default function SiteGallery({ sites, intake }: Props) {
       ) : null}
       <div style={head}>
         <div>
-          <h1 style={h1}>Websites</h1>
+          <h1 style={h1}>{title}</h1>
           <p style={sub}>Create and manage your websites</p>
         </div>
-        {/* The only navigation this back office has. /edit/brand and /edit/import were built and
-            then linked from nowhere — reachable only by typing the URL — so anything new gets a
-            button here or it doesn't exist. */}
+        {/* NAVIGATION LIVES IN THE RAIL NOW — components/edit/EditShell.tsx.
+            The old rule here was "anything new gets a button or it doesn't exist", written because
+            /edit/brand and /edit/import were built and then linked from nowhere, reachable only by
+            typing the URL. The rule still holds; it now points at the rail's NAV array, which
+            appears on every page instead of only this one.
+            + New website stays — it's an action on this screen, not navigation. */}
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-          <a href="/edit/forms" style={navBtn}>
-            Forms
-          </a>
-          <a href="/edit/invoices" style={navBtn}>
-            Invoices
-          </a>
-          <a href="/edit/brand" style={navBtn}>
-            Brand
-          </a>
           <button type="button" style={primaryBtn} onClick={() => setOpen(true)}>
             + New website
           </button>
@@ -374,7 +368,7 @@ export default function SiteGallery({ sites, intake }: Props) {
           </div>
         ))}
         {!shown.length ? (
-          <p style={{ color: "#6b7280", fontSize: 14 }}>
+          <p style={{ color: "var(--e-muted)", fontSize: 14 }}>
             {q ? "No websites match that." : "No websites yet."}
           </p>
         ) : null}
@@ -415,7 +409,7 @@ export default function SiteGallery({ sites, intake }: Props) {
               return (
                 <div key={s.id} style={{ ...card, opacity: 0.72 }}>
                   <div style={cardTop}>
-                    <span style={{ ...chip, background: "#fef2f2", color: "#b91c1c" }}>
+                    <span style={{ ...chip, background: "var(--e-bad-bg)", color: "var(--e-danger)" }}>
                       {left > 0 ? `${left} day${left === 1 ? "" : "s"} left` : "erasing today"}
                     </span>
                     <h2 style={cardName}>{s.name}</h2>
@@ -570,7 +564,7 @@ function NewWebsite({
               }}
             >
               <span style={{ fontWeight: 700, fontSize: 13 }}>{label}</span>
-              <span style={{ fontSize: 12, color: "#6b7280" }}>
+              <span style={{ fontSize: 12, color: "var(--e-muted)" }}>
                 {m === "template" && !templates.length ? "No templates yet" : hint}
               </span>
             </button>
@@ -596,8 +590,8 @@ function NewWebsite({
                   key={v}
                   style={{
                     ...pickBox,
-                    borderColor: importAs === v ? "#111827" : "#e5e7eb",
-                    background: importAs === v ? "#f9fafb" : "#fff",
+                    borderColor: importAs === v ? "var(--e-ink)" : "var(--e-line)",
+                    background: importAs === v ? "var(--e-panel-2)" : "var(--e-panel)",
                   }}
                 >
                   <input
@@ -609,7 +603,7 @@ function NewWebsite({
                   />
                   <span>
                     <strong style={{ display: "block", fontSize: 14 }}>{title}</strong>
-                    <span style={{ fontSize: 12, color: "#6b7280" }}>{why}</span>
+                    <span style={{ fontSize: 12, color: "var(--e-muted)" }}>{why}</span>
                   </span>
                 </label>
               ))}
@@ -660,44 +654,44 @@ const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 const page: React.CSSProperties = { maxWidth: 1100, margin: "0 auto", padding: "40px 24px 80px", fontFamily: font };
 const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 };
 const h1: React.CSSProperties = { fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em" };
-const sub: React.CSSProperties = { color: "#6b7280", fontSize: 14, marginTop: 4 };
-const sectionH: React.CSSProperties = { fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "#6b7280", margin: "36px 0 12px" };
-const search: React.CSSProperties = { width: "100%", maxWidth: 340, margin: "24px 0", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
+const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
+const sectionH: React.CSSProperties = { fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--e-muted)", margin: "36px 0 12px" };
+const search: React.CSSProperties = { width: "100%", maxWidth: 340, margin: "24px 0", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
 const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 };
-const card: React.CSSProperties = { border: "1px solid #e5e7eb", borderRadius: 12, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16, minHeight: 190, background: "#fff" };
+const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16, minHeight: 190, background: "var(--e-panel)" };
 const cardTop: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 8 };
 const badgeRow: React.CSSProperties = { display: "flex", gap: 6, flexWrap: "wrap" };
-const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "#eef2ff", color: "#3730a3", borderRadius: 999, padding: "3px 9px" };
-const chipMuted: React.CSSProperties = { ...chip, background: "#f3f4f6", color: "#6b7280" };
-const chipLive: React.CSSProperties = { ...chip, background: "#f0fdf4", color: "#166534" };
-const chipDemo: React.CSSProperties = { ...chip, background: "#fffbeb", color: "#92400e" };
+const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "var(--e-info-bg)", color: "var(--e-info-ink)", borderRadius: 999, padding: "3px 9px" };
+const chipMuted: React.CSSProperties = { ...chip, background: "var(--e-line-soft)", color: "var(--e-muted)" };
+const chipLive: React.CSSProperties = { ...chip, background: "var(--e-ok-bg)", color: "var(--e-ok-ink)" };
+const chipDemo: React.CSSProperties = { ...chip, background: "var(--e-warn-bg)", color: "var(--e-warn-ink)" };
 const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeight: 1.25 };
-const cardDesc: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.45 };
-const cardLink: React.CSSProperties = { fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 600 };
-const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
-const navBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-block", whiteSpace: "nowrap" };
-const ghostBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
+const cardDesc: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.45 };
+const cardLink: React.CSSProperties = { fontSize: 12, color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
+const primaryBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const navBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-block", whiteSpace: "nowrap" };
+const ghostBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
-const pickBox: React.CSSProperties = { display: "flex", gap: 10, alignItems: "flex-start", border: "1px solid #e5e7eb", borderRadius: 10, padding: "10px 12px", cursor: "pointer" };
+const pickBox: React.CSSProperties = { display: "flex", gap: 10, alignItems: "flex-start", border: "1px solid var(--e-line)", borderRadius: 10, padding: "10px 12px", cursor: "pointer" };
 const gearBtn: React.CSSProperties = { ...ghostBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1 };
 // Quiet by default and red only once you've committed to it — a destructive control shouldn't
 // compete with Edit for attention on a card you open twenty times a day.
-const trashBtn: React.CSSProperties = { ...gearBtn, color: "#b91c1c", borderColor: "#e5e7eb" };
-const dangerBtn: React.CSSProperties = { background: "#b91c1c", color: "#fff", border: "1px solid #b91c1c", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
-const binNote: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.55, margin: "0 0 14px", maxWidth: 640 };
-const delPanel: React.CSSProperties = { border: "1px solid #fecaca", background: "#fef2f2", borderRadius: 10, padding: 12, display: "grid", gap: 10 };
-const delWarn: React.CSSProperties = { margin: 0, fontSize: 13, lineHeight: 1.45, color: "#7f1d1d" };
-const delTypeHint: React.CSSProperties = { margin: 0, fontSize: 12, color: "#7f1d1d" };
-const delErrText: React.CSSProperties = { margin: 0, fontSize: 13, fontWeight: 600, color: "#b91c1c" };
-const delInput: React.CSSProperties = { width: "100%", border: "1px solid #fca5a5", borderRadius: 8, padding: "9px 11px", fontSize: 14 };
+const trashBtn: React.CSSProperties = { ...gearBtn, color: "var(--e-danger)", borderColor: "var(--e-line)" };
+const dangerBtn: React.CSSProperties = { background: "var(--e-danger)", color: "var(--e-panel)", border: "1px solid var(--e-danger)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const binNote: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.55, margin: "0 0 14px", maxWidth: 640 };
+const delPanel: React.CSSProperties = { border: "1px solid var(--e-bad-line)", background: "var(--e-bad-bg)", borderRadius: 10, padding: 12, display: "grid", gap: 10 };
+const delWarn: React.CSSProperties = { margin: 0, fontSize: 13, lineHeight: 1.45, color: "var(--e-bad-ink)" };
+const delTypeHint: React.CSSProperties = { margin: 0, fontSize: 12, color: "var(--e-bad-ink)" };
+const delErrText: React.CSSProperties = { margin: 0, fontSize: 13, fontWeight: 600, color: "var(--e-danger)" };
+const delInput: React.CSSProperties = { width: "100%", border: "1px solid var(--e-bad-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14 };
 const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50 };
-const modal: React.CSSProperties = { background: "#fff", borderRadius: 14, padding: 26, width: "100%", maxWidth: 520, fontFamily: font, maxHeight: "90vh", overflowY: "auto" };
+const modal: React.CSSProperties = { background: "var(--e-panel)", borderRadius: 14, padding: 26, width: "100%", maxWidth: 520, fontFamily: font, maxHeight: "90vh", overflowY: "auto" };
 const tabs: React.CSSProperties = { display: "grid", gap: 8, marginBottom: 18 };
-const tab: React.CSSProperties = { display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2, textAlign: "left", border: "1px solid #e5e7eb", borderRadius: 10, padding: "10px 12px", background: "#fff", cursor: "pointer" };
-const tabOn: React.CSSProperties = { borderColor: "#111827", boxShadow: "inset 0 0 0 1px #111827" };
+const tab: React.CSSProperties = { display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2, textAlign: "left", border: "1px solid var(--e-line)", borderRadius: 10, padding: "10px 12px", background: "var(--e-panel)", cursor: "pointer" };
+const tabOn: React.CSSProperties = { borderColor: "var(--e-ink)", boxShadow: "inset 0 0 0 1px var(--e-ink)" };
 const lbl: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, marginTop: 12 };
-const input: React.CSSProperties = { width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
-const errBox: React.CSSProperties = { marginTop: 12, background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
+const errBox: React.CSSProperties = { marginTop: 12, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
 
 // Onboarding row. Sits between the card body and the Edit button because it's status you SCAN,
 // not an action you go looking for — the eye should hit it on the way past.
@@ -707,29 +701,29 @@ const intakeRow: React.CSSProperties = {
   justifyContent: "space-between",
   gap: 8,
   padding: "8px 0 10px",
-  borderTop: "1px solid #f1f5f9",
+  borderTop: "1px solid var(--e-line-soft)",
   marginTop: 10,
 };
 
 const intakeLabel: React.CSSProperties = {
   fontSize: 12,
-  color: "#64748b",
+  color: "var(--e-muted)",
   fontWeight: 600,
 };
 
 const linkBtn: React.CSSProperties = {
   padding: "5px 9px",
   borderRadius: 6,
-  border: "1px solid #d1d5db",
-  background: "#fff",
+  border: "1px solid var(--e-line)",
+  background: "var(--e-panel)",
   fontSize: 12,
   fontWeight: 600,
-  color: "#374151",
+  color: "var(--e-ink)",
   cursor: "pointer",
 };
 
 const openBtn: React.CSSProperties = {
   ...linkBtn,
-  borderColor: "#2563eb",
-  color: "#2563eb",
+  borderColor: "var(--e-accent)",
+  color: "var(--e-accent)",
 };

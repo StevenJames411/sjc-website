@@ -99,13 +99,26 @@ function createClientSheet_(body) {
 
   // Optional, and deliberately VIEWER — one accidental sort by an owner scrambles their own lead
   // history, and then Steven is the one restoring it.
+  // ⚠️ SWALLOWING THIS FAILURE IS FINE. LYING ABOUT IT IS NOT.
+  //
+  // Catching is correct — a typo'd address must not lose the spreadsheet we just built. But the
+  // return used to report `sharedWith: share` whether or not addViewer threw, so a share that
+  // failed looked exactly like one that worked: the sheet exists, SJC's side goes green, the record
+  // gets a sheetId, and the client has never once been able to open the thing she is paying for.
+  // Nobody finds out until she asks where her leads are, months later.
+  //
+  // So: still don't throw, but say what actually happened. `sharedWith` is now only ever set when
+  // the share genuinely landed, and `shareError` carries the reason when it didn't.
   var share = String(body.shareWith || '').trim();
+  var shared = false;
+  var shareError = null;
   if (share) {
     try {
       ss.addViewer(share);
+      shared = true;
     } catch (err) {
-      // A bad address must not lose the sheet we just made.
-      console.error('addViewer failed: ' + err);
+      shareError = String(err);
+      console.error('addViewer failed for ' + share + ': ' + shareError);
     }
   }
 
@@ -113,7 +126,9 @@ function createClientSheet_(body) {
     ok: true,
     spreadsheetId: ss.getId(),
     url: ss.getUrl(),
-    sharedWith: share || null,
+    sharedWith: shared ? share : null,
+    // Present only on failure, so a caller can branch on truthiness without knowing the shape.
+    shareError: shareError,
   };
 }
 

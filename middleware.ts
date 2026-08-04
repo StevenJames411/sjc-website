@@ -31,6 +31,10 @@ function isProtected(pathname: string): boolean {
     pathname.startsWith("/api/forms") ||
     // The invoice book. Owner-only for the obvious reason: it records who was billed what.
     pathname.startsWith("/api/invoices") ||
+    // The board's row order and the back office's own menu. Nothing secret in either, but both are
+    // WRITES to stored state, and an unauthenticated write is an unauthenticated write.
+    pathname.startsWith("/api/board-order") ||
+    pathname.startsWith("/api/edit-nav") ||
     pathname.startsWith("/api/import-html") ||
     pathname.startsWith("/api/adopt-images") ||
     // One-time maintenance routes. They create and rewrite stored content, so they are owner-only

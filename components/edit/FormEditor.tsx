@@ -196,7 +196,7 @@ export default function FormEditor({ form }: { form: FormDef }) {
         </button>
         {unused.length ? (
           <>
-            <span style={{ fontSize: 12, color: "#9ca3af", alignSelf: "center" }}>or the usual ones:</span>
+            <span style={{ fontSize: 12, color: "var(--e-muted)", alignSelf: "center" }}>or the usual ones:</span>
             {unused.map((s) => (
               <button key={s.fieldId} type="button" style={smallGhost} onClick={() => addStandard(s)}>
                 + {s.label}
@@ -284,26 +284,26 @@ function Field({
 
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 const page: React.CSSProperties = { maxWidth: 720, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
-const back: React.CSSProperties = { border: "1px solid #d1d5db", background: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
+const back: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 };
-const sub: React.CSSProperties = { color: "#6b7280", fontSize: 14, marginTop: 4 };
-const sec: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "#6b7280", margin: "34px 0 6px", borderTop: "1px solid #e5e7eb", paddingTop: 20 };
-const hint: React.CSSProperties = { fontSize: 13, color: "#6b7280", lineHeight: 1.55, margin: "0 0 14px" };
+const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
+const sec: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-muted)", margin: "34px 0 6px", borderTop: "1px solid var(--e-line)", paddingTop: 20 };
+const hint: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.55, margin: "0 0 14px" };
 const lbl: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, marginBottom: 5 };
-const input: React.CSSProperties = { width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font };
-const select: React.CSSProperties = { border: "1px solid #d1d5db", borderRadius: 8, padding: "6px 9px", fontSize: 13, fontFamily: font, background: "#fff" };
-const row: React.CSSProperties = { border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, marginBottom: 10, background: "#fff" };
+const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font };
+const select: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 9px", fontSize: 13, fontFamily: font, background: "var(--e-panel)" };
+const row: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 10, padding: 14, marginBottom: 10, background: "var(--e-panel)" };
 const rowHead: React.CSSProperties = { display: "flex", gap: 8, alignItems: "center" };
 const rowMeta: React.CSSProperties = { display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginTop: 10 };
-const checkLbl: React.CSSProperties = { display: "flex", gap: 6, alignItems: "center", fontSize: 13, color: "#374151" };
-const keyTag: React.CSSProperties = { fontSize: 11, color: "#9ca3af", fontFamily: "ui-monospace,monospace", marginLeft: "auto" };
-const tiny: React.CSSProperties = { border: "1px solid #d1d5db", background: "#fff", borderRadius: 6, width: 30, height: 30, fontSize: 13, cursor: "pointer", flexShrink: 0 };
+const checkLbl: React.CSSProperties = { display: "flex", gap: 6, alignItems: "center", fontSize: 13, color: "var(--e-ink)" };
+const keyTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", fontFamily: "ui-monospace,monospace", marginLeft: "auto" };
+const tiny: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 6, width: 30, height: 30, fontSize: 13, cursor: "pointer", flexShrink: 0 };
 const addBar: React.CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 };
-const smallGhost: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
-const code: React.CSSProperties = { background: "#f3f4f6", borderRadius: 4, padding: "1px 5px", fontFamily: "ui-monospace,monospace", fontSize: 12 };
-const tokenBox: React.CSSProperties = { border: "1px solid #e5e7eb", background: "#fafafa", borderRadius: 10, padding: 14, marginTop: 6 };
-const primary: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
-const ghost: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
-const errBox: React.CSSProperties = { marginTop: 16, background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
-const okBox: React.CSSProperties = { marginTop: 16, background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#166534", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
-const footNote: React.CSSProperties = { fontSize: 12, color: "#9ca3af", lineHeight: 1.6, marginTop: 30, borderTop: "1px solid #e5e7eb", paddingTop: 16 };
+const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
+const code: React.CSSProperties = { background: "var(--e-line-soft)", borderRadius: 4, padding: "1px 5px", fontFamily: "ui-monospace,monospace", fontSize: 12 };
+const tokenBox: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 10, padding: 14, marginTop: 6 };
+const primary: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
+const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+const okBox: React.CSSProperties = { marginTop: 16, background: "var(--e-ok-bg)", border: "1px solid var(--e-ok-line)", color: "var(--e-ok-ink)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+const footNote: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 30, borderTop: "1px solid var(--e-line)", paddingTop: 16 };

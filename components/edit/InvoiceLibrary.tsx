@@ -26,10 +26,12 @@ export default function InvoiceLibrary({
   invoices,
   issuer,
   packages,
+  title,
 }: {
   invoices: Invoice[];
   issuer: IssuerDetails;
   packages: PaymentPackage[];
+  title: string;
 }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -132,10 +134,8 @@ export default function InvoiceLibrary({
     <div style={page}>
       <div style={head}>
         <div>
-          <a href="/edit" style={back}>
-            ← Websites
-          </a>
-          <h1 style={h1}>Invoices</h1>
+          {/* "← Websites" lived here until the rail took over global navigation. */}
+          <h1 style={h1}>{title}</h1>
           <p style={sub}>Fill one in, print it to PDF, send it.</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
@@ -341,34 +341,34 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 const page: React.CSSProperties = { maxWidth: 1100, margin: "0 auto", padding: "40px 24px 80px", fontFamily: font };
 const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" };
-const back: React.CSSProperties = { fontSize: 13, color: "#6b7280", textDecoration: "none", fontWeight: 600 };
+const back: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", textDecoration: "none", fontWeight: 600 };
 const h1: React.CSSProperties = { fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em", marginTop: 6 };
-const sub: React.CSSProperties = { color: "#6b7280", fontSize: 14, marginTop: 4 };
-const search: React.CSSProperties = { width: "100%", maxWidth: 340, margin: "24px 0", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
+const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
+const search: React.CSSProperties = { width: "100%", maxWidth: 340, margin: "24px 0", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
 const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16, marginTop: 24 };
-const card: React.CSSProperties = { border: "1px solid #e5e7eb", borderRadius: 12, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16, minHeight: 180, background: "#fff" };
+const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16, minHeight: 180, background: "var(--e-panel)" };
 const cardTop: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 6 };
 const badgeRow: React.CSSProperties = { display: "flex", gap: 6, flexWrap: "wrap" };
-const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "#eef2ff", color: "#3730a3", borderRadius: 999, padding: "3px 9px" };
-const chipMuted: React.CSSProperties = { ...chip, background: "#f3f4f6", color: "#6b7280" };
+const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "var(--e-info-bg)", color: "var(--e-info-ink)", borderRadius: 999, padding: "3px 9px" };
+const chipMuted: React.CSSProperties = { ...chip, background: "var(--e-line-soft)", color: "var(--e-muted)" };
 const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeight: 1.25 };
 const amount: React.CSSProperties = { fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" };
-const cardDesc: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" };
-const primaryBtn: React.CSSProperties = { background: "#111827", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
-const navBtn: React.CSSProperties = { background: "#fff", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" };
+const cardDesc: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)", lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" };
+const primaryBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const navBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" };
 const ghostBtn: React.CSSProperties = { ...navBtn };
-const iconBtn: React.CSSProperties = { ...navBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1, color: "#374151" };
-const trashBtn: React.CSSProperties = { ...iconBtn, color: "#b91c1c" };
-const dangerBtn: React.CSSProperties = { background: "#b91c1c", color: "#fff", border: "1px solid #b91c1c", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
-const detailsPanel: React.CSSProperties = { border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, background: "#fff", marginTop: 24 };
+const iconBtn: React.CSSProperties = { ...navBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1, color: "var(--e-ink)" };
+const trashBtn: React.CSSProperties = { ...iconBtn, color: "var(--e-danger)" };
+const dangerBtn: React.CSSProperties = { background: "var(--e-danger)", color: "var(--e-panel)", border: "1px solid var(--e-danger)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const detailsPanel: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 20, background: "var(--e-panel)", marginTop: 24 };
 const panelHeadRow: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16, flexWrap: "wrap" };
 const panelH: React.CSSProperties = { fontSize: 16, fontWeight: 700 };
 const row2: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 };
-const lbl: React.CSSProperties = { display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 5, color: "#374151" };
-const input: React.CSSProperties = { width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "8px 11px", fontSize: 14, outline: "none", fontFamily: font, background: "#fff" };
-const hint: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", marginTop: 3 };
-const saveState: React.CSSProperties = { fontSize: 12.5, color: "#6b7280", fontWeight: 600 };
-const delPanel: React.CSSProperties = { border: "1px solid #fecaca", background: "#fef2f2", borderRadius: 10, padding: 12, display: "grid", gap: 10 };
-const delWarn: React.CSSProperties = { margin: 0, fontSize: 13, lineHeight: 1.45, color: "#7f1d1d" };
-const errBox: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", borderRadius: 8, padding: "9px 12px", fontSize: 13, marginTop: 16 };
-const empty: React.CSSProperties = { color: "#6b7280", fontSize: 14, marginTop: 24 };
+const lbl: React.CSSProperties = { display: "block", fontSize: 12.5, fontWeight: 600, marginBottom: 5, color: "var(--e-ink)" };
+const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "8px 11px", fontSize: 14, outline: "none", fontFamily: font, background: "var(--e-panel)" };
+const hint: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)", marginTop: 3 };
+const saveState: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)", fontWeight: 600 };
+const delPanel: React.CSSProperties = { border: "1px solid var(--e-bad-line)", background: "var(--e-bad-bg)", borderRadius: 10, padding: 12, display: "grid", gap: 10 };
+const delWarn: React.CSSProperties = { margin: 0, fontSize: 13, lineHeight: 1.45, color: "var(--e-bad-ink)" };
+const errBox: React.CSSProperties = { background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13, marginTop: 16 };
+const empty: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 24 };

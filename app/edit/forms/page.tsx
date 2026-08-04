@@ -5,13 +5,20 @@
 // reason — without it a website with that id would be created happily and then be unopenable.
 //
 // Owner-only for free: middleware.ts protects everything under /edit/.
-import type { Metadata } from "next";
+//
+// The heading and the browser tab both read the name Steven gave this screen in the rail — one
+// screen, one name. See navLabel in lib/editNav.ts.
 import { readForms } from "@/lib/forms";
+import { navLabel } from "@/lib/editNav";
 import FormLibrary from "@/components/edit/FormLibrary";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Forms" };
+
+export async function generateMetadata() {
+  return { title: await navLabel("forms") };
+}
 
 export default async function FormsPage() {
-  return <FormLibrary forms={await readForms()} />;
+  const [forms, title] = await Promise.all([readForms(), navLabel("forms")]);
+  return <FormLibrary forms={forms} title={title} />;
 }

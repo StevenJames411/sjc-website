@@ -232,7 +232,13 @@ export function tokenizeSection(html: string): {
         const parent = node instanceof HTMLElement ? node : null;
         if (parent && TEXT_SKIP.has(parent.rawTagName?.toLowerCase() || "")) continue;
         const key = `t${text.length + 1}`;
-        const value = raw.trim();
+        // ⚠️ DECODED, NOT RAW. rawText keeps the design's entities as literal characters
+        // (`&amp;`, `&mdash;`, `&#39;`), and DesignSection's fillTokens() escapes every value
+        // again on the way out — correctly, that's the XSS guard. So a stored `&amp;` reached
+        // the visitor as the visible text "&amp;", and both demos shipped with a nav reading
+        // "Tile &amp; Flooring". A stored value is the words a person would type; escaping on
+        // the way out is the renderer's job, and it must not be done twice.
+        const value = child.text.trim();
         text.push({ key, label: labelFor(parent, value, text.length + 1), value });
         // Preserve the original surrounding whitespace so inline layout doesn't shift.
         const [, lead = "", , trail = ""] = raw.match(/^(\s*)([\s\S]*?)(\s*)$/) || [];

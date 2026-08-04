@@ -1,7 +1,7 @@
 import { resolveColor } from "@/lib/brandColor";
 import { telLink } from "@/lib/businessTokens";
 const LOGO_URL =
-  "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public";
+  "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png";
 
 export type FooterLink = { label: string; target: string };
 export type FooterViewProps = {

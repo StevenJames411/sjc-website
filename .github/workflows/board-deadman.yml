@@ -1,0 +1,76 @@
+# THE DEAD-MAN SWITCH.
+#
+# The board watches fifteen systems. Nothing watched the board — so if the Vercel cron stopped
+# firing, or the deployment died, or Neon suspended, every tile would age out to red on a page
+# nobody can reach. From a phone, silence and health look identical.
+#
+# ⚠️ THIS RUNS AT GITHUB ON PURPOSE. A watchdog hosted on the thing it watches is decoration: the
+# board runs on Vercel and stores its state in Neon, so it can never be the one to report that
+# Vercel or Neon is gone. GitHub shares nothing with either.
+#
+# ── HOW STEVEN HEARS ABOUT IT, WITH NO SECRET ANYWHERE ────────────────────────────────────────
+# This job FAILS when the board is stale or unreachable, and GitHub emails the repo owner when a
+# scheduled workflow fails — on by default, no bot, no token, no API key to rotate or leak. That
+# is the entire notification path. A Telegram step can be added later for a louder channel, but it
+# is an upgrade rather than a requirement, and this must keep working without it.
+#
+# ⚠️ GitHub disables scheduled workflows on a repo with 60 days of no activity. This repo is pushed
+# far more often than that, but if it ever goes quiet, check that this is still armed — a disabled
+# dead-man is the worst object in the system, because it looks exactly like everything being fine.
+
+name: board dead-man
+
+on:
+  schedule:
+    # Every 30 minutes. The board sweeps hourly, so a genuinely dead runner is noticed inside two
+    # cycles rather than one — long enough that a single slow sweep can't cry wolf.
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ask the board whether anyone is still watching
+        run: |
+          set -uo pipefail
+          URL="https://www.stevenjamesconsulting.com/api/board-status"
+
+          # ⚠️ UNREACHABLE AND STALE MUST FEEL THE SAME. "The board says nothing has been checked
+          # in nine hours" and "the board did not answer at all" both mean nobody is watching, and
+          # a watchdog that only handles the polite failure is the one that misses the real outage.
+          # curl --fail turns an HTTP error into a non-zero exit; || true keeps the shell alive so
+          # the empty body below is what fails the step, with a sentence a human can read.
+          BODY="$(curl -sS --fail --max-time 25 "$URL" || true)"
+
+          if [ -z "$BODY" ]; then
+            echo "DEAD-MAN: $URL did not answer. Vercel, the deployment, or DNS."
+            exit 1
+          fi
+
+          echo "board says: $BODY"
+
+          AGE="$(printf '%s' "$BODY" | grep -o '"sweepAgeSeconds":[0-9null]*' | cut -d: -f2)"
+
+          # null = it has never swept. A watchdog must read "unknown" as bad; treating it as
+          # not-yet-a-problem is how something stays broken from the day it shipped.
+          if [ -z "$AGE" ] || [ "$AGE" = "null" ]; then
+            echo "DEAD-MAN: the board has never completed a sweep."
+            exit 1
+          fi
+
+          # Hourly cron, so three hours is three missed sweeps — past any plausible slow run.
+          if [ "$AGE" -gt 10800 ]; then
+            echo "DEAD-MAN: last sweep was ${AGE}s ago. The checks cron has stopped."
+            exit 1
+          fi
+
+          # NOTE: a red tile does NOT fail this job. Red is the board doing its job and it is
+          # already visible on the wall; failing here on red would mean this alarm fires constantly
+          # for things Steven has already seen, and then it gets muted — taking the dead-man with
+          # it. This step answers exactly one question: is anything still looking.
+          echo "OK: swept ${AGE}s ago."
