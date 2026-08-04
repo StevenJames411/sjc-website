@@ -25,12 +25,61 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 // Anything already on one of these is ours (or a CDN we control) — leave it alone.
-const OURS = [
-  ".public.blob.vercel-storage.com",
-  "imagedelivery.net", // the existing logo CDN
-];
+//
+// ⚠️ imagedelivery.net USED TO BE ON THIS LIST, labelled "the existing logo CDN". It is not ours.
+// It's Cloudflare Images, and the account hash in those URLs (xaKlCos5cTg_1RWzIu_h-A) belongs to
+// LandingSite.ai — the design tool. An account hash is unique to one Cloudflare account, so every
+// URL on that host is served out of somebody else's account, including the SJC logo. Whitelisting
+// it told the adopter to skip exactly the photos it exists to rescue: an import from that tool
+// reported success, adopted nothing, and left the page loading off the vendor we were leaving.
+// If a host is ever added back here, prove the account is ours first.
+const OURS = [".public.blob.vercel-storage.com"];
 
 const MAX_BYTES = 12 * 1024 * 1024; // a page photo has no business being bigger
+
+// ── OPTIMISING ON THE WAY IN ──────────────────────────────────────────────────────────────────
+// Adoption is the only moment every photo on a page passes through our own code, so it's the
+// cheapest place to fix weight. A design tool hands back whatever the generator produced —
+// 3000px hero JPEGs are normal — and the visitor is on a phone on cell data.
+//
+// Re-encode to WebP at a sane ceiling. Deliberately conservative:
+//   - never enlarge: a small image stays small rather than being blown up and re-compressed
+//   - SVG is left completely alone: it's vector, rasterising it makes it worse and bigger
+//   - animated GIF is left alone: sharp would flatten it to a single frame
+//   - if the re-encode comes out heavier than the original, keep the original
+//   - if sharp throws for any reason we store the ORIGINAL bytes. A heavy photo is a slow page;
+//     a lost photo is a broken one. Never trade the second for the first.
+const MAX_EDGE = 2000; // plenty for a full-bleed hero on a retina laptop
+const WEBP_QUALITY = 82;
+
+type Encoded = { buf: Buffer; type: string; ext: string; note: string };
+
+async function optimise(input: Buffer, type: string): Promise<Encoded> {
+  const asIs = (note: string): Encoded => ({
+    buf: input,
+    type,
+    ext: (type.split("/")[1] || "png").split("+")[0].replace("jpeg", "jpg"),
+    note,
+  });
+  if (type.includes("svg")) return asIs("svg, left as-is");
+  if (type.includes("gif")) return asIs("gif, left as-is");
+  try {
+    const { default: sharp } = await import("sharp");
+    const img = sharp(input, { failOn: "none" });
+    const meta = await img.metadata();
+    const out = await img
+      .rotate() // honour EXIF orientation before the resize, or a phone photo lands sideways
+      .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: WEBP_QUALITY })
+      .toBuffer();
+    if (out.byteLength >= input.byteLength) return asIs("original was already smaller");
+    const was = `${meta.width || "?"}×${meta.height || "?"}`;
+    const pct = Math.round((1 - out.byteLength / input.byteLength) * 100);
+    return { buf: out, type: "image/webp", ext: "webp", note: `${was} → webp, ${pct}% smaller` };
+  } catch (e) {
+    return asIs(`kept original (${(e as Error).message})`);
+  }
+}
 
 type Node = { type?: string; props?: Record<string, unknown> };
 
@@ -83,6 +132,9 @@ export async function POST(req: Request) {
   // One download per distinct URL even when the draft and the published copy share it.
   const rehosted = new Map<string, string>();
   const failures: { url: string; why: string }[] = [];
+  // What the re-encode actually did, per photo — reported back so "optimised" is a number you
+  // can read rather than a claim.
+  const savings: { url: string; from: number; to: number; note: string }[] = [];
   let found = 0, adopted = 0, skipped = 0;
 
   for (const { label, store } of stores) {
@@ -106,10 +158,13 @@ export async function POST(req: Request) {
           if (buf.byteLength > MAX_BYTES) throw new Error(`${Math.round(buf.byteLength / 1e6)}MB — too big`);
           const type = res.headers.get("content-type") || "image/png";
           if (!type.startsWith("image/")) throw new Error(`not an image (${type})`);
-          const ext = (type.split("/")[1] || "png").split("+")[0].replace("jpeg", "jpg");
+          // Resize + re-encode BEFORE it lands, so the stored copy is the optimised one and
+          // there's never a second pass over the same photo.
+          const enc = await optimise(Buffer.from(buf), type);
+          savings.push({ url, from: buf.byteLength, to: enc.buf.byteLength, note: enc.note });
           // Per-SITE prefix, so handing a client their website later means copying one folder.
-          const name = `sites/${siteId}/${slug}/${Date.now()}-${rehosted.size + 1}.${ext}`;
-          const blob = await put(name, Buffer.from(buf), { access: "public", contentType: type });
+          const name = `sites/${siteId}/${slug}/${Date.now()}-${rehosted.size + 1}.${enc.ext}`;
+          const blob = await put(name, enc.buf, { access: "public", contentType: enc.type });
           rehosted.set(url, blob.url);
           adopted++;
         } catch (e) {
@@ -148,6 +203,13 @@ export async function POST(req: Request) {
     skipped,
     remainingForeign: body?.dryRun ? undefined : remaining,
     urls: [...rehosted.entries()].map(([from, to]) => ({ from, to })),
+    optimised: savings.length
+      ? {
+          bytesBefore: savings.reduce((n, s) => n + s.from, 0),
+          bytesAfter: savings.reduce((n, s) => n + s.to, 0),
+          perImage: savings.map((s) => ({ url: s.url, kbBefore: Math.round(s.from / 1024), kbAfter: Math.round(s.to / 1024), note: s.note })),
+        }
+      : undefined,
     failures,
   });
 }
