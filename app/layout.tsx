@@ -67,7 +67,7 @@ const organizationSchema = {
   name: "Steven James Consulting",
   legalName: "ARV Venture Group LLC",
   url: "https://www.stevenjamesconsulting.com",
-  logo: "https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/1afcb97f-5140-41e4-eef9-75003ad28b00/public",
+  logo: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png",
   email: "support@stevenjamesconsulting.com",
   telephone: "+1-210-851-4906",
   founder: { "@type": "Person", name: "Steven Barchetti" },
