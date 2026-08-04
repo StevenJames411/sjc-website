@@ -73,6 +73,69 @@ const TEXT_SKIP = new Set(["script", "style", "svg", "path", "noscript"]);
 
 const clean = (s: string) => String(s || "").replace(/\s+/g, " ").trim();
 
+// ── TAILWIND v3 OPACITY UTILITIES DIE SILENTLY UNDER v4 ───────────────────────────────────────
+// The design tools emit v3 syntax — `bg-white bg-opacity-10` — and lib/designCss.ts compiles with
+// v4, which replaced that whole family with a slash modifier (`bg-white/10`). v4 doesn't error on
+// an unknown utility, it just emits nothing, so the class silently renders at FULL opacity.
+//
+// That is not a subtle shift. On Pecan Ridge it turned three translucent social buttons into
+// solid white blocks with white icons on them (invisible), and four 20%-white icon tiles into
+// glaring white slabs on a blue band. 24 dead classes across the two demos, none of them
+// reported by anything, because a class that compiles to nothing looks exactly like a class the
+// designer never wrote.
+//
+// Rewritten here, BEFORE tokenizing and before compiling, so the stored markup and the compiled
+// stylesheet agree. ⚠️ It cannot retro-fix a site already imported: that stylesheet is compiled
+// and stored. Existing sites need the inline-style patch instead.
+const OPACITY_FAMILIES = "bg|text|border|divide|ring|placeholder|from|via|to";
+const OPACITY_CLASS = new RegExp(`^((?:[\\w-]+:)*)(${OPACITY_FAMILIES})-opacity-(\\d+)$`);
+
+// ⚠️ THE BASE HAS TO BE A *COLOUR*, NOT JUST THE SAME PREFIX. `border-t border-white
+// border-opacity-20` matches `border-t` first on a naive prefix test, and produced the nonsense
+// `border-t/20` while leaving `border-white` opaque. So a candidate only counts if what follows
+// the family reads like a colour: a bare keyword, an arbitrary value, or a name-shade pair.
+const COLOUR_VALUE = /^(inherit|current|transparent|black|white|\[[^\]]*\]|[a-z]+-\d{2,3})$/;
+
+/** Rewrite `X-opacity-N` pairs to v4's `X/N` slash modifier, in every class attribute. */
+export function modernizeOpacityUtilities(html: string): string {
+  return String(html || "").replace(/\bclass="([^"]*)"/g, (whole, value: string) => {
+    if (!value.includes("-opacity-")) return whole;
+    const tokens = value.split(/\s+/).filter(Boolean);
+    const drop = new Set<number>();
+    const add: string[] = [];
+
+    tokens.forEach((tok, i) => {
+      const m = tok.match(OPACITY_CLASS);
+      if (!m) return;
+      const [, variant, family, amount] = m;
+      const baseOf = (want: string) =>
+        tokens.findIndex((t, j) => {
+          if (j === i || drop.has(j) || t.includes("/")) return false;
+          const head = `${want}${family}-`;
+          return t.startsWith(head) && COLOUR_VALUE.test(t.slice(head.length));
+        });
+
+      // The utility is dead under v4 either way, so it always goes.
+      drop.add(i);
+
+      const same = baseOf(variant);
+      if (same >= 0) {
+        tokens[same] = `${tokens[same]}/${amount}`;
+        return;
+      }
+      // ⚠️ A variant-only opacity (`hover:bg-opacity-90` over a plain `bg-[var(--accent)]`) must
+      // ADD a hover token, never rewrite the base — mutating it in place deleted the normal-state
+      // background entirely and the button rendered transparent until you moused over it.
+      if (!variant) return;
+      const plain = baseOf("");
+      if (plain >= 0) add.push(`${variant}${tokens[plain]}/${amount}`);
+    });
+
+    const out = [...tokens.filter((_, i) => !drop.has(i)), ...add].join(" ");
+    return `class="${out}"`;
+  });
+}
+
 /** "PhoneCall" / "phone_call" -> "phone-call" — lucide's own per-icon module filename. */
 const kebab = (name: string) =>
   String(name || "")
@@ -232,7 +295,13 @@ export function tokenizeSection(html: string): {
         const parent = node instanceof HTMLElement ? node : null;
         if (parent && TEXT_SKIP.has(parent.rawTagName?.toLowerCase() || "")) continue;
         const key = `t${text.length + 1}`;
-        const value = raw.trim();
+        // ⚠️ DECODED, NOT RAW. rawText keeps the design's entities as literal characters
+        // (`&amp;`, `&mdash;`, `&#39;`), and DesignSection's fillTokens() escapes every value
+        // again on the way out — correctly, that's the XSS guard. So a stored `&amp;` reached
+        // the visitor as the visible text "&amp;", and both demos shipped with a nav reading
+        // "Tile &amp; Flooring". A stored value is the words a person would type; escaping on
+        // the way out is the renderer's job, and it must not be done twice.
+        const value = child.text.trim();
         text.push({ key, label: labelFor(parent, value, text.length + 1), value });
         // Preserve the original surrounding whitespace so inline layout doesn't shift.
         const [, lead = "", , trail = ""] = raw.match(/^(\s*)([\s\S]*?)(\s*)$/) || [];
