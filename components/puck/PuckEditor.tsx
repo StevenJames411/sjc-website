@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Puck, type Data } from "@measured/puck";
+import { Puck, ActionBar, usePuck, type Data } from "@measured/puck";
 import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
 import { seedFor } from "@/components/puck/seeds";
@@ -11,6 +11,66 @@ import { publicUrlFor } from "@/lib/hostShared";
 // The page list is passed in from the server route (it's Redis-backed now, so the client can't
 // read it directly). Shape mirrors lib/pageRegistry's PageEntry.
 type PageItem = { slug: string; title: string; custom?: boolean };
+
+/**
+ * MOVE UP / MOVE DOWN on the selected section's toolbar.
+ *
+ * ⚠️ BUTTONS, NOT DRAG, AND THAT WAS A DECISION. Puck ships drag-and-drop and it is the wrong tool
+ * here: an imported section is often taller than the viewport, so there is nothing on screen to
+ * aim at — you grab a section and drag into a void, guessing where it lands. Buttons move one
+ * position per press and the result is visible immediately. The cockpit already proved ▲▼ works.
+ *
+ * Puck's own actionBar gives duplicate and delete; this adds the two it doesn't, so reordering,
+ * copying and removing a section all live in the same place — on the section, in the canvas,
+ * where you are already looking. The alternative was a sidebar list, which means moving a LABEL
+ * rather than the thing you can see.
+ *
+ * Disabled rather than hidden at the ends. A control that vanishes reads as a bug; a greyed one
+ * says "this is already the top".
+ */
+function SectionActionBar({
+  label,
+  children,
+  parentAction,
+}: {
+  label?: string;
+  children?: React.ReactNode;
+  parentAction?: React.ReactNode;
+}) {
+  const { appState, dispatch, selectedItem } = usePuck();
+
+  // Only whole-page sections reorder this way. A block nested inside another (a card in a column)
+  // has its own zone, and moving it with these would silently move the wrong thing.
+  const zone = appState.ui.itemSelector?.zone;
+  const index = appState.ui.itemSelector?.index ?? -1;
+  const isRoot = !zone || zone === "default-zone";
+  const count = appState.data.content?.length ?? 0;
+
+  const move = (to: number) => {
+    if (!isRoot || index < 0 || to < 0 || to >= count) return;
+    dispatch({ type: "reorder", sourceIndex: index, destinationIndex: to, destinationZone: "default-zone" });
+    // Keep the moved section selected, so a second press keeps moving the SAME section rather
+    // than whatever slid into its old slot.
+    dispatch({ type: "setUi", ui: { itemSelector: { index: to, zone: "default-zone" } } });
+  };
+
+  return (
+    <ActionBar label={label}>
+      {parentAction}
+      {isRoot && selectedItem && count > 1 && (
+        <>
+          <ActionBar.Action label="Move up" onClick={() => move(index - 1)}>
+            <span aria-hidden style={{ opacity: index <= 0 ? 0.35 : 1, fontSize: 15, lineHeight: 1 }}>▲</span>
+          </ActionBar.Action>
+          <ActionBar.Action label="Move down" onClick={() => move(index + 1)}>
+            <span aria-hidden style={{ opacity: index >= count - 1 ? 0.35 : 1, fontSize: 15, lineHeight: 1 }}>▼</span>
+          </ActionBar.Action>
+        </>
+      )}
+      {children}
+    </ActionBar>
+  );
+}
 
 // The unified visual builder for ANY page. A thin bar on top adds the two things Puck doesn't
 // give us: a page-switcher dropdown (jump between all our pages) and auto-save (every change
@@ -496,6 +556,7 @@ export default function PuckEditor({
           config={config}
           data={data}
           iframe={{ enabled: false }}
+          overrides={{ actionBar: SectionActionBar }}
           onChange={onChange}
           onPublish={async (d) => {
             await writeDraft(d);
