@@ -18,6 +18,23 @@
 
 var EMAIL_TO = 'steven@stevenbarchetti.com';
 var FALLBACK_TAB = 'Leads';
+var TZ = 'America/Chicago';
+
+/**
+ * The timestamp as READABLE TEXT — "8/5/2026  4:47 PM" — not a date value.
+ *
+ * ⚠️ Deliberately dumb. Writing a real Date and applying a number format deployed fine, ran to
+ * "Completed", and still left raw ISO in the sheet on 2026-08-05 — the format never landed on the
+ * cell the value went into. Formatting the string here removes every moving part: no Date object,
+ * no number format, no row or column arithmetic. What is written is what is displayed.
+ *
+ * Identical to sjc-sheets.gs on purpose. Change one, change both.
+ */
+function readableTime_(iso) {
+  var d = iso ? new Date(iso) : new Date();
+  if (isNaN(d.getTime())) return String(iso || '');
+  return Utilities.formatDate(d, TZ, 'M/d/yyyy  h:mm a');
+}
 
 function doPost(e) {
   try {
@@ -27,14 +44,8 @@ function doPost(e) {
 
     // Everything to write, timestamp first. Each item carries a stable key + a display label.
     //
-    // ⚠️ WRITTEN AS A REAL DATE, NOT THE ISO STRING. The site sends "2026-08-05T19:14:21.357Z",
-    // and appending that verbatim gave a TEXT cell reading in UTC 24-hour time — unreadable at a
-    // glance and unsortable as a date. Parsed here so the cell holds an actual date value; the
-    // column is then formatted below in San Antonio local time. Falls back to the raw value if it
-    // ever arrives in a shape Date can't parse, because a lead must never be lost to formatting.
-    var when = new Date(data.submittedAt);
-    if (!data.submittedAt || isNaN(when.getTime())) when = data.submittedAt ? data.submittedAt : new Date();
-    var items = [{ key: '__time__', label: 'Time', value: when }];
+    // Readable text, not a date value — see readableTime_ for why this is deliberately dumb.
+    var items = [{ key: '__time__', label: 'Time', value: readableTime_(data.submittedAt) }];
     answers.forEach(function (a) {
       items.push({ key: String(a.key || a.label), label: String(a.label || ''), value: a.value });
     });
@@ -81,17 +92,6 @@ function doPost(e) {
 
     sheet.appendRow(row);
     if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
-
-    // Regular time, not army time — identical to sjc-sheets.gs.
-    //
-    // ⚠️ Asks `columnFor` rather than scanning headerNotes, and formats the WHOLE column rather
-    // than one cell at getLastRow(). The scan-and-single-cell version worked here by luck and
-    // silently did nothing in the client-sheets script on 2026-08-05: headerNotes is mutated while
-    // the row is built, and getLastRow() is not reliably the row just written. Column formatting
-    // needs no row arithmetic and repairs older rows on the next write.
-    var timeCol = columnFor('__time__', 'Time') + 1;
-    var lastRow = Math.max(sheet.getMaxRows(), 2);
-    sheet.getRange(2, timeCol, lastRow - 1, 1).setNumberFormat('M/d/yyyy  h:mm AM/PM');
 
     notify(sheet.getName(), items);
     return reply('ok');

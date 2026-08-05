@@ -34,6 +34,31 @@
 
 var TAB_LEADS = 'Leads';
 var TAB_ONBOARDING = 'Onboarding';
+var TZ = 'America/Chicago';
+
+/**
+ * The timestamp as READABLE TEXT — "8/5/2026  4:47 PM" — not a date value.
+ *
+ * ⚠️ TWO CLEVERER VERSIONS OF THIS FAILED SILENTLY ON 2026-08-05, WHICH IS WHY IT IS DUMB NOW.
+ *
+ * The site sends ISO ("2026-08-05T21:47:12.894Z"). Writing that verbatim gives a text cell in UTC
+ * 24-hour time — unreadable, and immune to column formatting because Sheets sees a string. The
+ * fixes attempted were: write a real Date and set a number format on the cell, then on the whole
+ * column. Both deployed, both ran to "Completed", and the sheet still showed raw ISO — the number
+ * format never landed on the cell the value went into.
+ *
+ * Formatting the string HERE removes every moving part: no Date object, no number format, no
+ * column or row arithmetic, nothing that can point at the wrong cell. What is written is exactly
+ * what is displayed. The tradeoff is that the cell sorts as text, which costs nothing — leads are
+ * appended in order, and the ISO string it replaces sorted as text too.
+ *
+ * Identical to apply-webhook.gs on purpose. Change one, change both.
+ */
+function readableTime_(iso) {
+  var d = iso ? new Date(iso) : new Date();
+  if (isNaN(d.getTime())) return String(iso || '');
+  return Utilities.formatDate(d, TZ, 'M/d/yyyy  h:mm a');
+}
 
 function secret_() {
   return PropertiesService.getScriptProperties().getProperty('SJC_SECRET') || '';
@@ -160,8 +185,7 @@ function writeRow_(body) {
   // Kept the same as the intake script deliberately. These two scripts write into different
   // spreadsheets, and every business's sheet — Steven's own included — should read the same way.
   // Change one, change both, or he opens two sheets and finds two conventions.
-  var when = new Date(body.submittedAt);
-  if (!body.submittedAt || isNaN(when.getTime())) when = body.submittedAt ? body.submittedAt : new Date();
+  var when = readableTime_(body.submittedAt);
   var items = [{ key: '__time__', label: 'Time', value: when }];
   answers.forEach(function (a) {
     items.push({ key: String(a.key || a.label), label: String(a.label || ''), value: a.value });
@@ -209,22 +233,6 @@ function writeRow_(body) {
   }
   if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
 
-  // Regular time, not army time — same format string as apply-webhook.gs.
-  //
-  // ⚠️ THE FIRST VERSION OF THIS DID NOT WORK, AND THE REASON IS WORTH KEEPING.
-  //
-  // It found the column with `headerNotes.indexOf('__time__')` and formatted the single cell at
-  // `sheet.getLastRow()`. Both are guesses: headerNotes is an array this function MUTATES while
-  // building the row, and getLastRow() is whatever the sheet says after the append — which is not
-  // the row we wrote if anything else touched the sheet, or if the write went to a different tab
-  // than the one being measured. It deployed, it ran, and it silently formatted nothing.
-  //
-  // Now it asks `columnFor` — the same function that decided where the value went — and formats
-  // the WHOLE column. Formatting a column costs the same as one cell, needs no row arithmetic,
-  // and repairs every historical row on the next write instead of leaving a mixed sheet.
-  var timeCol = columnFor('__time__', 'Time') + 1;
-  var lastRow = Math.max(sheet.getMaxRows(), 2);
-  sheet.getRange(2, timeCol, lastRow - 1, 1).setNumberFormat('M/d/yyyy  h:mm AM/PM');
 
   notify_(body, items, isOnboarding);
   return { ok: true, tab: sheet.getName(), row: sheet.getLastRow() };
