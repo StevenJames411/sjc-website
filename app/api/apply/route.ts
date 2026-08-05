@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { deliverLead } from "@/lib/leadDelivery";
+import { SJC } from "@/lib/siteKeys";
 
 // Discovery-call intake handler. Receives a dynamic ordered list of {label, value} answers
 // (whatever questions the /apply page currently has) and forwards them to a Google Apps Script
@@ -36,7 +37,20 @@ export async function POST(req: Request) {
     typeof body.submittedAt === "string" ? body.submittedAt : new Date().toISOString();
   // Sent by the form from the route it was served under — NOT from an editable field, so a lead
   // can't be routed to the wrong business by a typo. See components/blocks/SiteContext.
-  const siteId = String(body.siteId || "").trim();
+  //
+  // ⚠️ FALLS BACK TO SJC, AND THAT FIXED A SILENT FAILURE (2026-08-05).
+  //
+  // The block-based LeadForm reads its site from SiteContext and always sends one. The /apply and
+  // /guest WIZARDS (components/ApplyForm) never have — they predate websites being first-class
+  // objects and post no siteId at all. So deliverLead("") found no site, saw no owner address,
+  // and skipped the owner email entirely. The row still reached the sheet, so nothing looked
+  // broken from the outside.
+  //
+  // That was survivable only while Apps Script sent a duplicate alert. Removing that duplicate
+  // today would have left /apply and the podcast form with NO notification whatsoever — a real
+  // application arriving with nobody told. Same convention lib/puckContent already uses: a caller
+  // that predates multi-site means SJC.
+  const siteId = String(body.siteId || "").trim() || SJC;
 
   const d = await deliverLead(siteId, answers, submittedAt);
 
