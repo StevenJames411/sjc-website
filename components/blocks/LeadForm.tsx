@@ -1,8 +1,9 @@
 "use client";
-import { useSiteId } from "@/components/blocks/SiteContext";
+import { useSiteId, useBusiness, useSiteUrl } from "@/components/blocks/SiteContext";
 
 import { useState } from "react";
 import { resolveColor } from "@/lib/brandColor";
+import { fillTokens } from "@/lib/businessTokens";
 
 // A short lead-capture form, fully driven by props so it can be dropped on ANY page from the
 // builder and re-labelled without touching code. Add/remove/reorder the questions, change the
@@ -96,6 +97,19 @@ export default function LeadForm(props: LeadFormProps) {
     inColumn,
     theme = "light",
   } = props;
+
+  // ⚠️ THE THANK-YOU COPY RESOLVES ITS OWN TOKENS, AND HAS TO.
+  //
+  // `fillBusinessTokens` resolves {{business.*}} by walking SAVED PAGE DATA. The imported-design
+  // form passes this copy as a JSX LITERAL (DesignSection), and a literal is never in that data —
+  // so it was handed straight to the customer unresolved. A real visitor to stevenjamesdesigns.com
+  // submitted the form on 2026-08-05 and was told to "Call {{business.phone}}".
+  //
+  // Resolving here covers both routes: props that came from saved data are already filled and pass
+  // through untouched, and literals get filled from the site being served.
+  const business = useBusiness();
+  const siteUrl = useSiteUrl();
+  const fill = (s?: string) => (s && s.includes("{{") ? fillTokens(s, business, siteUrl) : s);
 
   const dark = theme === "dark";
   const cardCls = dark
@@ -201,14 +215,14 @@ export default function LeadForm(props: LeadFormProps) {
             dark ? "text-white" : "text-[color:var(--color-sjc-ink)]"
           }`}
         >
-          {successHeading}
+          {fill(successHeading)}
         </h3>
         <p
           className={`mt-4 text-lg leading-relaxed ${
             dark ? "text-slate-300" : "text-[color:var(--color-sjc-mute)]"
           }`}
         >
-          {successBody}
+          {fill(successBody)}
         </p>
       </div>
     );

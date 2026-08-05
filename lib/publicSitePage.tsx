@@ -245,11 +245,21 @@ export async function SitePageBody({
   //
   // Built entirely from Website settings, so it costs nothing per client: fill in her phone and
   // address at onboarding and the markup writes itself. See lib/siteSchema.
-  const site = isClientSite ? await findSite(siteId) : null;
-  const schema = site ? localBusinessSchema(site, publicUrlFor(site)) : null;
+  // ⚠️ FETCHED FOR EVERY SITE NOW, NOT ONLY CLIENTS.
+  //
+  // It used to be `isClientSite ? … : null`, which was right for the schema below but starved the
+  // provider on SJC's OWN pages — so a token in the lead form's thank-you copy had nothing to
+  // resolve against and printed raw. The schema still only ships for client sites; that behaviour
+  // is unchanged and deliberate (SJC's own Organization markup comes from the root layout).
+  const site = await findSite(siteId);
+  const schema = site && isClientSite ? localBusinessSchema(site, publicUrlFor(site)) : null;
 
   const body = (
-    <SiteProvider siteId={siteId}>
+    <SiteProvider
+      siteId={siteId}
+      business={site?.business}
+      url={site ? publicUrlFor(site) : ""}
+    >
       <Render config={config} data={data as never} />
     </SiteProvider>
   );
