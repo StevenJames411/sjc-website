@@ -39,25 +39,38 @@ function SectionActionBar({
 }) {
   const { appState, dispatch, selectedItem } = usePuck();
 
-  // Only whole-page sections reorder this way. A block nested inside another (a card in a column)
-  // has its own zone, and moving it with these would silently move the wrong thing.
-  const zone = appState.ui.itemSelector?.zone;
-  const index = appState.ui.itemSelector?.index ?? -1;
-  const isRoot = !zone || zone === "default-zone";
-  const count = appState.data.content?.length ?? 0;
+  const sel = appState.ui.itemSelector;
+  const index = sel?.index ?? -1;
+  const content = appState.data.content ?? [];
+  const count = content.length;
+
+  // ⚠️ DO NOT TEST THE ZONE BY NAME. The first version checked `zone === "default-zone"` and the
+  // arrows never appeared: Puck namespaces the root zone (root:default-zone), so the comparison
+  // was quietly false and there was no error to notice — the buttons simply weren't there.
+  //
+  // This asks the only question that actually matters: is the selected block the one sitting at
+  // that index in the PAGE's own content array? If yes it is a whole-page section and safe to
+  // reorder. If it is a card nested inside a column, the ids won't match and the arrows stay
+  // hidden rather than silently moving the wrong thing.
+  const atIndex = index >= 0 ? content[index] : undefined;
+  const isRoot =
+    !!selectedItem &&
+    !!atIndex &&
+    (atIndex.props as { id?: string })?.id === (selectedItem.props as { id?: string })?.id;
 
   const move = (to: number) => {
-    if (!isRoot || index < 0 || to < 0 || to >= count) return;
-    dispatch({ type: "reorder", sourceIndex: index, destinationIndex: to, destinationZone: "default-zone" });
+    if (!isRoot || to < 0 || to >= count) return;
+    const zone = sel?.zone ?? "default-zone";
+    dispatch({ type: "reorder", sourceIndex: index, destinationIndex: to, destinationZone: zone });
     // Keep the moved section selected, so a second press keeps moving the SAME section rather
     // than whatever slid into its old slot.
-    dispatch({ type: "setUi", ui: { itemSelector: { index: to, zone: "default-zone" } } });
+    dispatch({ type: "setUi", ui: { itemSelector: { index: to, zone } } });
   };
 
   return (
     <ActionBar label={label}>
       {parentAction}
-      {isRoot && selectedItem && count > 1 && (
+      {isRoot && count > 1 && (
         <>
           <ActionBar.Action label="Move up" onClick={() => move(index - 1)}>
             <span aria-hidden style={{ opacity: index <= 0 ? 0.35 : 1, fontSize: 15, lineHeight: 1 }}>▲</span>
