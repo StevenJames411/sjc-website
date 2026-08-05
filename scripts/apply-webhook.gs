@@ -82,12 +82,16 @@ function doPost(e) {
     sheet.appendRow(row);
     if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
 
-    // Regular time, not army time. Applied to the Time column every write, so a tab created later
-    // formats itself without anyone remembering to. Steven reads these at a glance on a phone.
-    var timeCol = headerNotes.indexOf('__time__') + 1;
-    if (timeCol > 0) {
-      sheet.getRange(sheet.getLastRow(), timeCol).setNumberFormat('M/d/yyyy  h:mm AM/PM');
-    }
+    // Regular time, not army time — identical to sjc-sheets.gs.
+    //
+    // ⚠️ Asks `columnFor` rather than scanning headerNotes, and formats the WHOLE column rather
+    // than one cell at getLastRow(). The scan-and-single-cell version worked here by luck and
+    // silently did nothing in the client-sheets script on 2026-08-05: headerNotes is mutated while
+    // the row is built, and getLastRow() is not reliably the row just written. Column formatting
+    // needs no row arithmetic and repairs older rows on the next write.
+    var timeCol = columnFor('__time__', 'Time') + 1;
+    var lastRow = Math.max(sheet.getMaxRows(), 2);
+    sheet.getRange(2, timeCol, lastRow - 1, 1).setNumberFormat('M/d/yyyy  h:mm AM/PM');
 
     notify(sheet.getName(), items);
     return reply('ok');

@@ -209,13 +209,22 @@ function writeRow_(body) {
   }
   if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
 
-  // Regular time, not army time — same format string as apply-webhook.gs. Applied on every write
-  // so a sheet created next month formats itself without anyone remembering to.
-  var timeCol = headerNotes.indexOf('__time__') + 1;
-  if (timeCol > 0) {
-    var timeRow = (isOnboarding && sheet.getLastRow() > 1) ? 2 : sheet.getLastRow();
-    sheet.getRange(timeRow, timeCol).setNumberFormat('M/d/yyyy  h:mm AM/PM');
-  }
+  // Regular time, not army time — same format string as apply-webhook.gs.
+  //
+  // ⚠️ THE FIRST VERSION OF THIS DID NOT WORK, AND THE REASON IS WORTH KEEPING.
+  //
+  // It found the column with `headerNotes.indexOf('__time__')` and formatted the single cell at
+  // `sheet.getLastRow()`. Both are guesses: headerNotes is an array this function MUTATES while
+  // building the row, and getLastRow() is whatever the sheet says after the append — which is not
+  // the row we wrote if anything else touched the sheet, or if the write went to a different tab
+  // than the one being measured. It deployed, it ran, and it silently formatted nothing.
+  //
+  // Now it asks `columnFor` — the same function that decided where the value went — and formats
+  // the WHOLE column. Formatting a column costs the same as one cell, needs no row arithmetic,
+  // and repairs every historical row on the next write instead of leaving a mixed sheet.
+  var timeCol = columnFor('__time__', 'Time') + 1;
+  var lastRow = Math.max(sheet.getMaxRows(), 2);
+  sheet.getRange(2, timeCol, lastRow - 1, 1).setNumberFormat('M/d/yyyy  h:mm AM/PM');
 
   notify_(body, items, isOnboarding);
   return { ok: true, tab: sheet.getName(), row: sheet.getLastRow() };
