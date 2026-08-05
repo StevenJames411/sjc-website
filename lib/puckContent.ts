@@ -9,6 +9,7 @@ import type { Data } from "@measured/puck";
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
 import { siteKeys, SJC } from "./siteKeys";
+import { readPages } from "./pageRegistry";
 
 /**
  * A page's storage key.
@@ -70,16 +71,39 @@ export async function readPuckDraft(page: string, siteId: string = SJC): Promise
  * stylesheet nobody approved.
  */
 export async function readDesignCss(page: string, siteId: string = SJC): Promise<string> {
-  const read = async (pub: boolean) => {
-    const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, pub));
+  const read = async (slug: string, pub: boolean) => {
+    const store = createKvStore(getClient(), siteKeys(siteId).designCss(slug, pub));
     const v = await store.read<{ css?: string }>();
     return (v && typeof v.css === "string" ? v.css : "") || "";
   };
-  if (await previewRequested()) {
-    const draft = await read(false);
-    if (draft) return draft;
+  const own = async () => {
+    if (await previewRequested()) {
+      const draft = await read(page, false);
+      if (draft) return draft;
+    }
+    return read(page, true);
+  };
+
+  const mine = await own();
+  if (mine) return mine;
+
+  // ── WHY A BOUGHT DESIGN COULD ONLY EVER BE ONE PAGE ───────────────────────────────────────
+  // The stylesheet is compiled AT IMPORT and stored per page. An import creates exactly one page,
+  // so page two has no stylesheet — and since the header and footer are sections of that design,
+  // a second page rendered with its nav and footer completely unstyled. Nobody added one twice.
+  //
+  // Every page of one bought design shares that design's CSS, so falling back to a sibling's is
+  // correct rather than a patch: the rules are all scoped under .sjc-design and keyed off classes
+  // in the markup, so a sibling's sheet styles this page's header and footer identically.
+  //
+  // Only reached when the page has none of its own, so an imported page keeps using exactly the
+  // stylesheet it was compiled with.
+  for (const p of await readPages(siteId)) {
+    if (p.slug === page) continue;
+    const sibling = await read(p.slug, true);
+    if (sibling) return sibling;
   }
-  return read(true);
+  return "";
 }
 
 /**
