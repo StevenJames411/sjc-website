@@ -26,7 +26,15 @@ function doPost(e) {
     var sheet = sheetFor(data, answers);
 
     // Everything to write, timestamp first. Each item carries a stable key + a display label.
-    var items = [{ key: '__time__', label: 'Time', value: data.submittedAt || new Date() }];
+    //
+    // ⚠️ WRITTEN AS A REAL DATE, NOT THE ISO STRING. The site sends "2026-08-05T19:14:21.357Z",
+    // and appending that verbatim gave a TEXT cell reading in UTC 24-hour time — unreadable at a
+    // glance and unsortable as a date. Parsed here so the cell holds an actual date value; the
+    // column is then formatted below in San Antonio local time. Falls back to the raw value if it
+    // ever arrives in a shape Date can't parse, because a lead must never be lost to formatting.
+    var when = new Date(data.submittedAt);
+    if (!data.submittedAt || isNaN(when.getTime())) when = data.submittedAt ? data.submittedAt : new Date();
+    var items = [{ key: '__time__', label: 'Time', value: when }];
     answers.forEach(function (a) {
       items.push({ key: String(a.key || a.label), label: String(a.label || ''), value: a.value });
     });
@@ -73,6 +81,13 @@ function doPost(e) {
 
     sheet.appendRow(row);
     if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
+
+    // Regular time, not army time. Applied to the Time column every write, so a tab created later
+    // formats itself without anyone remembering to. Steven reads these at a glance on a phone.
+    var timeCol = headerNotes.indexOf('__time__') + 1;
+    if (timeCol > 0) {
+      sheet.getRange(sheet.getLastRow(), timeCol).setNumberFormat('M/d/yyyy  h:mm AM/PM');
+    }
 
     notify(sheet.getName(), items);
     return reply('ok');
@@ -129,12 +144,27 @@ function sheetFor(data, answers) {
     if (k === 'source') { source = String(answers[i].value || ''); break; }
   }
   var s = source.toLowerCase();
-  var site = String(data.site || '');
-  var isClientSite = site && site.toLowerCase().indexOf('steven james') === -1;
 
-  var name = TAB_AI; // the default, because /apply sends no source at all
-  if (s.indexOf('website') !== -1 || isClientSite) name = TAB_WEBSITE;
+  // ⚠️ NEVER ROUTE ON THE BUSINESS NAME. THAT IS THE BUG THIS REPLACED (2026-08-05).
+  //
+  // The old test was `isClientSite = site.indexOf('steven james') === -1`, written when "Steven
+  // James" meant only Consulting. The moment stevenjamesdesigns.com existed, Steven's OWN studio
+  // site matched that string, isClientSite went false, and its source ("imported design — contact
+  // section") matched neither 'website' nor 'guest' — so every enquiry from the studio fell
+  // through to the AI Implementation default. It landed under headers it doesn't fit (First name
+  // / Last name / Cell phone) and emailed a subject line naming the wrong offer.
+  //
+  // A brand name is not an identity, and renaming a company must never re-route its leads. Route
+  // on what the FORM says about itself:
+  //   no source at all  -> /apply, the discovery intake. It has never sent one; that IS its tell.
+  //   guest / podcast   -> the podcast form.
+  //   anything else     -> a website enquiry. Website Offer is the safe catch-all: a misfiled
+  //                        website lead is obvious and recoverable, while one filed under the
+  //                        discovery headers is silently mis-columned.
+  var name;
+  if (!s) name = TAB_AI;
   else if (s.indexOf('guest') !== -1 || s.indexOf('podcast') !== -1) name = TAB_PODCAST;
+  else name = TAB_WEBSITE;
 
   var sheet = ss.getSheetByName(name);
   if (!sheet) {
