@@ -199,7 +199,19 @@ export async function deliverLead(
   if (!owner) return { toOwner: null, toRecord, toSheet, toGhl, problems };
 
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.LEAD_FROM || "leads@send.stevenjamesconsulting.com";
+  // Per-site first, then the account-wide env, then the one verified sending domain.
+  //
+  // ⚠️ THE DEFAULT IS LOAD-BEARING — LEAD_FROM is NOT set in Vercel, so this literal is what
+  // actually sends. It moved to the DESIGNS domain on 2026-08-05 when the builder became a Steven
+  // James Designs product; the consulting domain it named before was deleted from Resend the same
+  // day, and an unverified sender doesn't degrade — Resend refuses the send outright.
+  //
+  // Only the part after the @ is fixed. The name the client reads is his own business (below), so
+  // one domain serves everyone. site.leadFrom is the seam for the day a second brand needs its own.
+  const from =
+    (site?.leadFrom || "").trim() ||
+    process.env.LEAD_FROM ||
+    "leads@send.stevenjamesdesigns.com";
   if (!key) {
     problems.push("RESEND_API_KEY not set — the owner's copy could NOT be sent");
     return { toOwner: false, toRecord, toSheet, toGhl, problems };
