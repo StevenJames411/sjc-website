@@ -16,7 +16,6 @@
 // tab, created the first time one comes in. Nothing existing is moved or
 // touched — "New-Client" keeps its history exactly as it stands.
 
-var EMAIL_TO = 'steven@stevenbarchetti.com';
 var FALLBACK_TAB = 'Leads';
 var TZ = 'America/Chicago';
 
@@ -93,7 +92,16 @@ function doPost(e) {
     sheet.appendRow(row);
     if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
 
-    notify(sheet.getName(), items);
+    // ⚠️ NO EMAIL FROM HERE. Resend owns the alert — see lib/leadDelivery.ts.
+    //
+    // This used to MailApp.sendEmail on every lead, from Steven's own Google account, subject
+    // "New lead — <tab name>". Two problems. It cannot carry reply-to, so hitting reply reached
+    // Steven rather than the person who filled the form. And its subject was named after whichever
+    // tab the routing picked, so the day the routing broke it announced the wrong offer.
+    //
+    // It stayed switched on until 2026-08-05 only because SJC's own /apply and podcast forms had
+    // no Resend address; deleting it sooner would have made those two forms silent. The Consulting
+    // site now has leadEmail set, so Resend covers all three and this is pure duplication.
     return reply('ok');
   } catch (err) {
     // Returned in the BODY on purpose — Apps Script sends HTTP 200 even when it throws, so the
@@ -178,14 +186,4 @@ function sheetFor(data, answers) {
   return sheet;
 }
 
-function notify(tabName, items) {
-  var lines = [];
-  for (var i = 0; i < items.length; i++) {
-    if (String(items[i].value || '').trim()) lines.push(items[i].label + ': ' + items[i].value);
-  }
-  MailApp.sendEmail({
-    to: EMAIL_TO,
-    subject: 'New lead — ' + tabName,
-    body: lines.join('\n') + '\n\nTab: ' + tabName,
-  });
-}
+
