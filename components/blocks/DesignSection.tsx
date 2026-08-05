@@ -123,7 +123,26 @@ export type DesignSectionProps = {
   /** The questions the DESIGN asked, so the swap keeps its intent rather than imposing ours. */
   formFields?: LeadFormField[];
   formButton?: string;
+  /**
+   * WHAT THE CUSTOMER READS AFTER PRESSING SEND.
+   *
+   * ⚠️ These were hardcoded literals in this file until 2026-08-05, and that made them the only
+   * words on an imported design nobody could change — on a product sold as "every word is
+   * editable". Steven hit it on his own site: he wanted different wording and there was no field
+   * to type it in. The same literal is what leaked a raw {{business.phone}} to a real visitor,
+   * because a literal in JSX is never in the saved page data the token resolver walks.
+   *
+   * Blank falls back to the wording below, so nothing changes for a site that never touches them.
+   * Tokens work here — the form fills them at render (LeadForm), not the data walk.
+   */
+  successHeading?: string;
+  successBody?: string;
 };
+
+/** Used when the section leaves them blank. One place, so the fallback can't drift. */
+export const DESIGN_SUCCESS_HEADING = "Got it — thank you.";
+export const DESIGN_SUCCESS_BODY =
+  "We'll be in touch shortly. Rather talk now? Call {{business.phone}}.";
 
 export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   html: "",
@@ -137,6 +156,8 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   useRealForm: true,
   formFields: [],
   formButton: "",
+  successHeading: "",
+  successBody: "",
 };
 
 const TOKEN = /\{\{([tih]):([a-z0-9_-]+)\}\}/gi;
@@ -323,6 +344,8 @@ export default function DesignSection(props: DesignSectionProps) {
     useRealForm = true,
     formFields,
     formButton,
+    successHeading,
+    successBody,
   } = props;
   if (!html.trim()) return null;
 
@@ -397,8 +420,13 @@ export default function DesignSection(props: DesignSectionProps) {
         // 851-4906." That is Steven's phone number, on a client's website, in the message their
         // customer sees after asking that business to call them back.
         //
-        // The tokens resolve per-site at public render (lib/businessTokens), so this says the
-        // client's number on the client's site. A literal number here is the bug coming back.
+        // What changed on 2026-08-05 is that the words are now PROPS with a fallback, instead of
+        // literals typed here. A literal could not be edited from the builder, which made this the
+        // one piece of an imported design that was genuinely stuck — and it is the piece a
+        // customer reads at the moment they've just handed over their details.
+        //
+        // Tokens are resolved by LeadForm from the site's business facts, not by the saved-data
+        // walk, so {{business.phone}} works whether it arrives as a prop or as this fallback.
         <DesignFormMount
           inColumn
           theme="dark"
@@ -406,8 +434,8 @@ export default function DesignSection(props: DesignSectionProps) {
           buttonLabel={formButton || undefined}
           source="imported design — contact section"
           note=""
-          successHeading="Got it — thank you."
-          successBody="We'll be in touch shortly. Rather talk now? Call {{business.phone}}."
+          successHeading={successHeading?.trim() || DESIGN_SUCCESS_HEADING}
+          successBody={successBody?.trim() || DESIGN_SUCCESS_BODY}
         />
       ) : null}
     </div>

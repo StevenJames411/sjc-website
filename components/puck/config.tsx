@@ -46,6 +46,8 @@ type Props = {
     useRealForm: boolean;
     formFields: { label: string; inputType: string }[];
     formButton: string;
+    successHeading: string;
+    successBody: string;
   };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
   Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; surfaceOpacity: number; borderColor: string; hoverBorderColor: string; shadowColor: string; hoverLift: boolean; radius: number };
@@ -423,6 +425,26 @@ export const config: Config<Props, RootProps> = {
             { label: "Show the design's mock form", value: false },
           ],
         },
+        // ⚠️ THESE WERE THE ONLY WORDS ON AN IMPORTED DESIGN NOBODY COULD CHANGE.
+        //
+        // The button label and the thank-you copy were literals inside DesignSection, so a bought
+        // design had one paragraph that was genuinely stuck — and it is the paragraph a customer
+        // reads the instant after handing over their phone number. On a product sold as "every
+        // word is editable", that was the exception nobody could find a field for.
+        //
+        // Blank keeps the wording the design shipped with, so nothing moves on existing sites.
+        formButton: {
+          type: "text" as const,
+          label: "Button on the form",
+        },
+        successHeading: {
+          type: "text" as const,
+          label: "Thank-you heading",
+        },
+        successBody: {
+          type: "textarea" as const,
+          label: "Thank-you message",
+        },
         // Only meaningful on the header section; harmless elsewhere. A bought design ships a
         // static header, and a small business's site is expected to keep the phone number and the
         // quote button reachable once a visitor has scrolled far enough to want them.
@@ -573,7 +595,11 @@ export const config: Config<Props, RootProps> = {
         html: { type: "textarea" as const, label: "Markup (imported — leave this alone)" },
         // Carriers, set by the importer. Puck requires a field for every prop, so they are here
         // rather than hidden — but nothing above depends on anyone touching them.
-        formButton: { type: "text" as const, label: "Form button text (imported)" },
+        //
+        // ⚠️ formButton USED TO LIVE HERE, buried under "leave this alone" and labelled
+        // "(imported)". It is one of the three things Steven actually wanted to change on his own
+        // site, so it moved up beside the form settings. A control filed under carriers is a
+        // control nobody finds — the same lesson as photos-before-words above.
         formFields: {
           type: "array" as const,
           label: "Form questions (imported)",
@@ -601,7 +627,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton }) => (
+      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton, successHeading, successBody }) => (
         <DesignSection
           html={html}
           text={text}
@@ -614,6 +640,8 @@ export const config: Config<Props, RootProps> = {
           useRealForm={useRealForm}
           formFields={formFields}
           formButton={formButton}
+          successHeading={successHeading}
+          successBody={successBody}
         />
       ),
     },
