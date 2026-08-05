@@ -150,7 +150,19 @@ function writeRow_(body) {
   var sheet = ss.getSheetByName(isOnboarding ? TAB_ONBOARDING : TAB_LEADS);
   if (!sheet) sheet = ss.insertSheet(isOnboarding ? TAB_ONBOARDING : TAB_LEADS);
 
-  var items = [{ key: '__time__', label: 'Time', value: body.submittedAt || new Date() }];
+  // ⚠️ A REAL DATE, NOT THE ISO STRING — AND IDENTICAL TO apply-webhook.gs ON PURPOSE.
+  //
+  // The site sends "2026-08-05T21:01:04.680Z". Appended verbatim that is a TEXT cell reading in
+  // UTC 24-hour time: unreadable at a glance, and not a date as far as Sheets is concerned, so no
+  // amount of column formatting fixes it. Parsed here so the cell holds an actual date value,
+  // then formatted after the write.
+  //
+  // Kept the same as the intake script deliberately. These two scripts write into different
+  // spreadsheets, and every business's sheet — Steven's own included — should read the same way.
+  // Change one, change both, or he opens two sheets and finds two conventions.
+  var when = new Date(body.submittedAt);
+  if (!body.submittedAt || isNaN(when.getTime())) when = body.submittedAt ? body.submittedAt : new Date();
+  var items = [{ key: '__time__', label: 'Time', value: when }];
   answers.forEach(function (a) {
     items.push({ key: String(a.key || a.label), label: String(a.label || ''), value: a.value });
   });
@@ -196,6 +208,14 @@ function writeRow_(body) {
     sheet.appendRow(row);
   }
   if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
+
+  // Regular time, not army time — same format string as apply-webhook.gs. Applied on every write
+  // so a sheet created next month formats itself without anyone remembering to.
+  var timeCol = headerNotes.indexOf('__time__') + 1;
+  if (timeCol > 0) {
+    var timeRow = (isOnboarding && sheet.getLastRow() > 1) ? 2 : sheet.getLastRow();
+    sheet.getRange(timeRow, timeCol).setNumberFormat('M/d/yyyy  h:mm AM/PM');
+  }
 
   notify_(body, items, isOnboarding);
   return { ok: true, tab: sheet.getName(), row: sheet.getLastRow() };
