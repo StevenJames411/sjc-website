@@ -5,8 +5,11 @@ import { resolveColorOr } from "@/lib/brandColor";
 export type CheckListRow = { heading: string; body: string };
 export type CheckListProps = { dotColor?: string; rows?: CheckListRow[] };
 
+// ⚠️ A DEFAULT IS A HEX YOU CAN'T EDIT. Every block added from now on carries this value, and a
+// literal one would be frozen the moment it lands — the brand screen can't reach it, and neither
+// can the re-skin route unless someone remembers to add it to a map. A ROLE follows the palette.
 export const CHECKLIST_DEFAULTS: CheckListProps = {
-  dotColor: "#22c55e",
+  dotColor: "secondary",
   rows: [
     { heading: "First thing", body: "What it means for them, in a sentence." },
     { heading: "Second thing", body: "What it means for them, in a sentence." },
@@ -22,7 +25,7 @@ export default function CheckList({ dotColor, rows }: CheckListProps) {
           <span
             aria-hidden
             className="mt-1 h-6 w-6 shrink-0 rounded-full"
-            style={{ backgroundColor: resolveColorOr(dotColor, "#22c55e") }}
+            style={{ backgroundColor: resolveColorOr(dotColor, "var(--color-sjc-secondary)") }}
           />
           <div>
             {row?.heading ? (

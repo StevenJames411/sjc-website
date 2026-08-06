@@ -198,7 +198,7 @@ export const NAV_DEFAULTS = {
   brandHref: "/",
   brandSize: 16,
   tagline: "Your Native AI Implementation Partner",
-  taglineColor: "#22c55e",
+  taglineColor: "secondary",
   taglineSize: 18,
   links: [] as { label: string; target: string; fontSize: number; color: string; newTab: boolean }[],
   ctaLabel: "See How It Works",
@@ -1102,7 +1102,17 @@ export const config: Config<Props, RootProps> = {
         const list = Array.isArray(rows) ? rows : [];
         const initials = (n: string) =>
           (n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+        // The human staff keep a fixed spread of avatar colours on purpose — this block is a
+        // mock of somebody's staff list, and real staff lists don't colour-coordinate.
         const palette = ["#2563eb", "#dc2626", "#9333ea", "#0891b2", "#ca8a04"];
+        // The AI row is the opposite: it is the ONE row this block exists to point at, so it wears
+        // the site's second brand colour and re-skins with everything else.
+        //
+        // ⚠️ It used to be a hardcoded #22c55e (with a matching green tint and pill), which is how
+        // five green dots survived the 2026-08-05 re-skin on a page that had otherwise gone cyan.
+        // A colour baked into a COMPONENT is invisible to a route that rewrites saved DATA.
+        const aiColor = "var(--color-sjc-secondary)";
+        const aiTint = `color-mix(in srgb, ${aiColor} 10%, #fff)`;
         return (
           <div
             style={{
@@ -1139,7 +1149,7 @@ export const config: Config<Props, RootProps> = {
                     gap: 14,
                     padding: "14px 18px",
                     borderTop: i ? "1px solid #f1f3f5" : "none",
-                    background: r.isAI ? "#f0fdf4" : "#fff",
+                    background: r.isAI ? aiTint : "#fff",
                   }}
                 >
                   <div
@@ -1154,7 +1164,7 @@ export const config: Config<Props, RootProps> = {
                       color: "#fff",
                       fontWeight: 700,
                       fontSize: 14,
-                      background: r.isAI ? "#22c55e" : palette[i % palette.length],
+                      background: r.isAI ? aiColor : palette[i % palette.length],
                     }}
                   >
                     {initials(r.name)}
@@ -1167,9 +1177,9 @@ export const config: Config<Props, RootProps> = {
                           style={{
                             fontSize: 11,
                             fontWeight: 700,
-                            color: "#15803d",
-                            background: "#dcfce7",
-                            border: "1px solid #bbf7d0",
+                            color: `color-mix(in srgb, ${aiColor} 75%, #000)`,
+                            background: `color-mix(in srgb, ${aiColor} 18%, #fff)`,
+                            border: `1px solid color-mix(in srgb, ${aiColor} 35%, #fff)`,
                             borderRadius: 999,
                             padding: "2px 8px",
                           }}

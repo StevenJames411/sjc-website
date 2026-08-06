@@ -54,7 +54,8 @@ export default function NavView({
   brandHref = "/",
   brandSize = 16,
   tagline = "Your Native AI Implementation Partner",
-  taglineColor = "#22c55e",
+  // A role, not a hex — a hex default freezes on every nav that never touched the field.
+  taglineColor = "secondary",
   taglineSize = 18,
   links = [],
   ctaLabel = "See How It Works",
@@ -94,7 +95,7 @@ export default function NavView({
   const Tagline = tagline ? (
     <span
       className="whitespace-nowrap font-semibold tracking-tight"
-      style={{ color: resolveColorOr(taglineColor, "#22c55e"), fontSize: `${taglineSize || 18}px` }}
+      style={{ color: resolveColorOr(taglineColor, "var(--color-sjc-secondary)"), fontSize: `${taglineSize || 18}px` }}
     >
       {tagline}
     </span>

@@ -86,7 +86,11 @@ export const HEX_TO_ROLE: Record<string, BrandRole> = {
   "#f3f4f6": "bandSoft",
   "#1e3a6e": "bandDark",
   "#0f1f3d": "bandDarker",
-  "#22c55e": "cta",
+  // ⚠️ SECONDARY, NOT CTA. This green was SJC's headline/dot colour; the button was blue. Filing
+  // it under "cta" would tie every green dot to the button, so re-skinning the button would drag
+  // the dots along and the two could never be separated again. (Corrected 2026-08-05, when the
+  // palette moved to cyan and the greens had to be told apart.)
+  "#22c55e": "secondary",
   "#ffffff": "white",
 };
 
