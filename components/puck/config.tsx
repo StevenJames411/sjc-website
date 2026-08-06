@@ -135,14 +135,16 @@ const ALIGN_FIELD = {
 };
 
 
+// The band a section sits on. Roles, not hexes — and note "SJC navy" is gone: a band named after
+// one company can't be the option a client's site picks, and it stopped being true the day the
+// palette moved anyway.
 const BG_FIELD = {
   type: "select" as const,
   options: [
-    { label: "White", value: "#ffffff" },
-    { label: "Off-white", value: "#f8fafc" },
-    { label: "Light gray", value: "#f3f4f6" },
-    { label: "SJC navy", value: "#1e3a6e" },
-    { label: "Dark navy", value: "#0f1f3d" },
+    { label: "White", value: "white" },
+    { label: "Light band", value: "bandSoft" },
+    { label: "Dark band", value: "bandDark" },
+    { label: "Dark band (deeper)", value: "bandDarker" },
   ],
 };
 
@@ -1066,7 +1068,7 @@ export const config: Config<Props, RootProps> = {
           questionType === "choice" ? "Single choice" :
           questionType === "multi" ? "Multiple choice" : "Short text";
         return (
-          <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 12px", margin: "8px 0", background: "#f8fafc" }}>
+          <div style={{ border: "1px solid var(--color-sjc-line)", borderRadius: 8, padding: "10px 12px", margin: "8px 0", background: "var(--color-sjc-bg-soft)" }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-sjc-ink)" }}>
               {label || "Question"}{required ? " *" : ""}
             </div>
@@ -1126,7 +1128,7 @@ export const config: Config<Props, RootProps> = {
             style={{
               maxWidth: 720,
               margin: "0 auto",
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-sjc-line)",
               borderRadius: 14,
               overflow: "hidden",
               boxShadow: "0 10px 30px rgba(0,0,0,.08)",
@@ -2226,7 +2228,7 @@ export const config: Config<Props, RootProps> = {
                 aspectRatio: shape,
                 overflow: "hidden",
                 borderRadius: radius,
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--color-sjc-line)",
                 boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
               }}
             >
@@ -2255,7 +2257,7 @@ export const config: Config<Props, RootProps> = {
                 maxWidth: maxW,
                 borderRadius: radius,
                 display: "block",
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--color-sjc-line)",
                 boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
                 objectFit: "contain" as const,
               }}
@@ -2347,7 +2349,7 @@ export const config: Config<Props, RootProps> = {
               display: "flex",
               flexDirection: "column",
               gap: "10px",
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-sjc-line)",
             }}
           >
             {(messages || []).map((m: { from: string; text: string }, i: number) => {
@@ -2374,7 +2376,7 @@ export const config: Config<Props, RootProps> = {
                       fontSize: "15px",
                       lineHeight: 1.4,
                       whiteSpace: "pre-wrap" as const,
-                      background: isChloe ? "#2563eb" : "#e5e7eb",
+                      background: isChloe ? "var(--color-sjc-blue)" : "var(--color-sjc-line)",
                       color: isChloe ? "var(--color-sjc-white)" : "var(--color-sjc-ink)",
                       borderBottomRightRadius: isChloe ? "5px" : "20px",
                       borderBottomLeftRadius: isChloe ? "20px" : "5px",

@@ -36,11 +36,15 @@ const HEX_TO_ROLE: Record<string, string> = {
   "#1d4fd7": "accentHover",
   "#22c55e": "secondary",  // the green headlines and dots — the site's SECOND brand colour, which
   "#16a34a": "secondary",  // is exactly what the brand screen's "Second accent" field now drives.
-  "#1e3a6e": "bandDark",   // the navy band behind the hero
+  "#1e3a6e": "bandDark",   // the navy band behind the hero, the header and the footer
+  "#0f1f3d": "bandDarker",
   "#111827": "ink",
   "#4b5563": "mute",
+  "#6b7280": "mute",
   "#e5e7eb": "line",
   "#f3f4f6": "bandSoft",
+  "#f8fafc": "bandSoft",   // the old "Off-white" band — same role, one shade apart
+  "#ffffff": "white",
 };
 
 // The same roles as the CSS variables BrandStyle actually emits.

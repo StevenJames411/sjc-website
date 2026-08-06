@@ -71,9 +71,14 @@ export default function NavView({
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
 
-  // Existing nav documents have none of these saved → undefined → the old hardcoded values.
-  const bg = background || "#1e3a6e";
-  const fg = foreground || "#ffffff";
+  // Existing nav documents have none of these saved → undefined → these defaults.
+  //
+  // ⚠️ ROLES. #1e3a6e was the last thing on the page a palette change couldn't reach: the site
+  // went near-black cyan on 2026-08-05 and the header stayed royal navy, sitting on top of every
+  // page announcing the old brand. bandDark is the same band the hero and footer use, which is
+  // the point — one screen moves all three together.
+  const bg = background || "bandDark";
+  const fg = foreground || "white";
   const logoOn = showLogo !== false;
 
   const Brand = (
