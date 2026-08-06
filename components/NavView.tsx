@@ -75,9 +75,14 @@ export default function NavView({
   //
   // ⚠️ ROLES. #1e3a6e was the last thing on the page a palette change couldn't reach: the site
   // went near-black cyan on 2026-08-05 and the header stayed royal navy, sitting on top of every
-  // page announcing the old brand. bandDark is the same band the hero and footer use, which is
-  // the point — one screen moves all three together.
-  const bg = background || "bandDark";
+  // page announcing the old brand.
+  //
+  // bandDARKER, not bandDark, and the distinction is the useful part. The header sits ON the
+  // page's dark bands, so it should be made of the same thing they are — that's what lets it
+  // disappear into the hero instead of stacking a second shade on top of it. It also leaves
+  // bandDark free as the FOOTER's dial, so the two can be tuned apart from one screen. Sharing
+  // one role meant every attempt to lighten the footer dragged the header with it.
+  const bg = background || "bandDarker";
   const fg = foreground || "white";
   const logoOn = showLogo !== false;
 
