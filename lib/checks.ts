@@ -234,8 +234,15 @@ async function checkResendDomain(): Promise<CheckRun> {
   //
   // ⚠️ THIS IS AN ADDITIONAL KEY, NOT A ROTATION. Do not touch RESEND_API_KEY — replacing it
   // silently breaks every lead email, and there is a standing note about exactly that.
-  // RESEND_READ_KEY is read-only and is used here and nowhere else.
-  const key = process.env.RESEND_READ_KEY || process.env.RESEND_API_KEY;
+  //
+  // ⚠️ TWO ACCEPTED NAMES, AND THE SECOND ONE IS THE LESSON. I told Steven to add
+  // RESEND_READ_KEY, then described the rule as "letters and underscores only" instead of just
+  // saying the name — so the variable got created as `sjc_checks_read`, after the key's name in
+  // Resend. Vercel wouldn't let him rename it. Making him delete and redo a working variable to
+  // satisfy my preferred spelling would be the code bossing the operator around over nothing.
+  // The variable is correct, sensitive, and already deployed; the code reads it.
+  const key =
+    process.env.RESEND_READ_KEY || process.env.sjc_checks_read || process.env.RESEND_API_KEY;
   if (!key) {
     // ⚠️ skipped, never pass. An unset key must not render as a healthy sending domain.
     return {
