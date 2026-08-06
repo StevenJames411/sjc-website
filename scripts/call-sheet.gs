@@ -26,6 +26,7 @@
 //
 // Then: tick the box.
 
+var SCRIPT_VERSION = 'c2124a24d7fa';
 var COL_SOLD = 'sold';
 var COL_LINK = 'Onboarding Link';
 

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "stamp:gs": "node scripts/stamp-gs.mjs",
+    "check:gs": "node scripts/stamp-gs.mjs --check"
   },
   "dependencies": {
     "@measured/puck": "^0.20.2",

@@ -16,6 +16,7 @@
 // tab, created the first time one comes in. Nothing existing is moved or
 // touched — "New-Client" keeps its history exactly as it stands.
 
+var SCRIPT_VERSION = '135e84b24148';
 var FALLBACK_TAB = 'Leads';
 var TZ = 'America/Chicago';
 
@@ -111,9 +112,15 @@ function doPost(e) {
   }
 }
 
-/** Health check — open the web-app URL in a browser and it should say ok. */
+/**
+ * Health check — open the web-app URL in a browser and it should say ok.
+ *
+ * Reports SCRIPT_VERSION so /api/admin/check-scripts can tell whether the LIVE script matches the
+ * file in this repo. Nothing else connects the two: a paste that never happened looks exactly like
+ * one that did, which cost most of 2026-08-05 twice over.
+ */
 function doGet() {
-  return reply('ok — apply-webhook is deployed');
+  return reply('ok — apply-webhook is deployed — version ' + SCRIPT_VERSION);
 }
 
 function reply(text) {

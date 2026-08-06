@@ -32,6 +32,7 @@
 //
 // After that, never again.
 
+var SCRIPT_VERSION = '5d941f781b8d';
 var TAB_LEADS = 'Leads';
 var TAB_ONBOARDING = 'Onboarding';
 var TZ = 'America/Chicago';
@@ -92,9 +93,15 @@ function doPost(e) {
   }
 }
 
-/** Health check — open the /exec URL in a browser. */
+/**
+ * Health check — open the /exec URL in a browser.
+ *
+ * Reports SCRIPT_VERSION so /api/admin/check-scripts can tell whether the LIVE script matches the
+ * file in this repo. Nothing else connects the two: a paste that never happened looks exactly like
+ * one that did, which is how a timestamp fix "deployed" twice and changed nothing.
+ */
 function doGet() {
-  return reply({ ok: true, service: 'sjc-sheets', configured: Boolean(secret_()) });
+  return reply({ ok: true, service: 'sjc-sheets', version: SCRIPT_VERSION, configured: Boolean(secret_()) });
 }
 
 function reply(obj) {
