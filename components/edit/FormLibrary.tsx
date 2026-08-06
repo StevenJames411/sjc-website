@@ -368,9 +368,12 @@ export default function FormLibrary({
                   color: open ? "#065f46" : "var(--e-muted)",
                 }}
               >
-                {open
-                  ? `open for ${onboarding!.openFor.join(", ")}`
-                  : "not open for anyone right now"}
+                {/* ⚠️ JUST THE NAME. Steven: *"if that website is Steven James Designs, then
+                    just call it Steven James Designs. Get rid of open for."* The green already
+                    says it's switched on — repeating that in words is the chip explaining its
+                    own colour. The names come from the website records and are edited there,
+                    which is the whole reason this isn't a typeable field. */}
+                {open ? onboarding!.openFor.join(", ") : "Not switched on"}
               </span>
             );
           }
