@@ -81,6 +81,30 @@ function SectionActionBar({
           </ActionBar.Action>
         </>
       )}
+      {/* KEEP THIS BAND. "Save as template" copies a whole PAGE, which is the wrong grain for the
+          thing that actually repeats — the reviews strip, the guarantee, the contact section with
+          the form already wired. Saved here, it can be dropped onto any other site's page.
+          On the section, in the canvas, beside move and delete. */}
+      {isRoot && atIndex && (
+        <ActionBar.Action
+          label="Save this section to the library"
+          onClick={async () => {
+            const name = window.prompt("Name this section (e.g. Reviews strip):");
+            if (!name || !name.trim()) return;
+            const r = await fetch("/api/sections", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "same-origin",
+              body: JSON.stringify({ name: name.trim(), block: atIndex }),
+            })
+              .then((x) => x.json())
+              .catch(() => ({ ok: false, error: "Couldn't reach the server." }));
+            window.alert(r.ok ? `Saved "${name.trim()}" to the section library.` : r.error || "Couldn't save it.");
+          }}
+        >
+          <span aria-hidden style={{ fontSize: 14, lineHeight: 1 }}>★</span>
+        </ActionBar.Action>
+      )}
       {children}
     </ActionBar>
   );
@@ -129,6 +153,8 @@ export default function PuckEditor({
   const [live, setLive] = useState<boolean | null>(null);
   const [showVersions, setShowVersions] = useState(false);
   const [versions, setVersions] = useState<{ id: number; at: string; bytes: number }[]>([]);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [library, setLibrary] = useState<{ id: string; name: string; type: string; savedAt: string }[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // WHERE THIS PAGE ACTUALLY LIVES. Every other builder shows the address under the toolbar; not
@@ -272,6 +298,59 @@ export default function PuckEditor({
       if (!r.ok) return window.alert(r.error || "Couldn't save the template.");
       window.alert(`Template saved. It's now an option under "New website".`);
       router.push("/edit");
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ── SECTION LIBRARY (insert side) ───────────────────────────────────────────────────────────
+  // Appends to the end of the page rather than guessing where you wanted it: the ▲▼ buttons on
+  // the section move it from there in one press each, and a band that lands in an unpredictable
+  // spot is worse than one that always lands somewhere known.
+  const insertSection = async (id: string, name: string) => {
+    setBusy(true);
+    try {
+      const r = await fetch(`/api/sections?id=${encodeURIComponent(id)}&full=1`, {
+        credentials: "same-origin",
+      });
+      const j = await r.json();
+      if (!j.ok || !j.block) return window.alert(j.error || "Couldn't load that section.");
+
+      // ⚠️ A FRESH ID, ALWAYS. Puck treats two blocks sharing an id as ONE node and renders the
+      // last one's content in every slot — the failure that made an imported design come back as
+      // its footer, seven times over. The library deliberately strips the id on save so this
+      // can't be forgotten here.
+      const block = {
+        ...j.block,
+        props: { ...(j.block.props || {}), id: `lib-${id}-${Date.now()}` },
+      };
+
+      setData((d) => {
+        const next = d
+          ? { ...d, content: [...(d.content || []), block] }
+          : d;
+        if (next) void writeDraft(next as Data);
+        return next;
+      });
+      window.alert(`"${name}" added to the bottom of this page. Use ▲ on the section to move it.`);
+      setShowLibrary(false);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openLibrary = async () => {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/sections", { credentials: "same-origin" });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't load the section library.");
+      setLibrary(j.sections || []);
+      setShowLibrary(true);
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -550,6 +629,10 @@ export default function PuckEditor({
         <button type="button" onClick={openVersions} disabled={busy} style={btn}>
           Versions
         </button>
+        {/* The insert half of the section library. The save half is the ★ on each section. */}
+        <button type="button" onClick={openLibrary} disabled={busy} style={btn}>
+          Add saved section
+        </button>
         {canDelete ? (
           <button type="button" onClick={onDeletePage} disabled={busy} style={btnDanger}>
             Delete Page
@@ -617,6 +700,81 @@ export default function PuckEditor({
           </span>
         )}
       </div>
+      {showLibrary && (
+        <div
+          onClick={() => setShowLibrary(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 60,
+            background: "rgba(0,0,0,.35)",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            paddingTop: 80,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 10,
+              width: 460,
+              maxWidth: "92vw",
+              maxHeight: "70vh",
+              overflow: "auto",
+              padding: 18,
+              boxShadow: "0 20px 50px rgba(0,0,0,.25)",
+            }}
+          >
+            <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 700 }}>Saved sections</h2>
+            <p style={{ margin: "0 0 14px", fontSize: 13, color: "#4b5563" }}>
+              Bands you kept from any site. They land at the bottom of this page — use ▲ on the
+              section to move it up.
+            </p>
+
+            {!library.length ? (
+              <p style={{ fontSize: 13, color: "#6b7280" }}>
+                Nothing saved yet. Select a section on any page and press ★ on its toolbar.
+              </p>
+            ) : (
+              <div style={{ display: "grid", gap: 6 }}>
+                {library.map((s) => (
+                  <div
+                    key={s.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      border: "1px solid var(--color-sjc-line)",
+                      borderRadius: 7,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{s.name}</span>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => insertSection(s.id, s.name)}
+                      style={btn}
+                    >
+                      Add
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowLibrary(false)}
+              style={{ ...btn, marginTop: 14 }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       {showVersions && (
         <div
           onClick={() => setShowVersions(false)}
