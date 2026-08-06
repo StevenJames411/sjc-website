@@ -1,16 +1,22 @@
 "use client";
 // The form library — every reusable set of questions, on cards, the way the websites are.
 //
-// A form here is a STARTING POINT, not a live link. Picking one in the builder copies its
-// questions onto that page; editing it afterwards changes the library, never a client's live
-// site. That is deliberate — see the long note in lib/formsShared.ts.
+// ⚠️ THIS FILE'S OWN HEADER USED TO SAY "there is no used-on list and no blast radius." That was
+// true under the copy model and became false the moment pages could POINT at a form (2026-08-06).
+// A stale comment at the top of a file is how the next change gets made against a world that no
+// longer exists.
 //
-// So there is no "used on" list and no blast radius, because there is no blast radius to warn
-// about. The one thing a card must never grow is a destination: where a lead goes is decided by
-// which WEBSITE it came from, and it is set once in that website's settings.
-import { useMemo, useState } from "react";
+// A form is now a LIVE source: a page links to it, and editing the questions here updates every
+// website using it. So a card DOES show what it is on, and Delete lists the pages that will lose
+// it. The builder keeps a copy option for one-off variants.
+//
+// The one thing a card must never grow is a destination: where a lead goes is decided by which
+// WEBSITE it came from, set once in that website's settings — never on the form.
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FIELD_TYPE_LABELS, type FormDef } from "@/lib/formsShared";
+
+type UsageRow = { siteId: string; siteName: string; slug: string; title: string; published: boolean };
 
 export default function FormLibrary({ forms, title }: { forms: FormDef[]; title: string }) {
   const router = useRouter();
@@ -19,6 +25,7 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
   const [err, setErr] = useState("");
   const [naming, setNaming] = useState<{ from?: string; name: string } | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [allUsage, setAllUsage] = useState<Record<string, UsageRow[] | null>>({});
   const [usage, setUsage] = useState<{
     loading: boolean;
     rows: { siteName: string; title: string; published: boolean }[] | null;
@@ -79,6 +86,37 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
     }
   }
 
+  // WHICH WEBSITES EACH FORM IS ON, loaded once for the whole screen.
+  //
+  // Steven, looking at this page: *"I don't even know what website they're attached to… when I
+  // make a new form and I label it that it was for John's website, I know who the hell it's for."*
+  // Naming the form after the client is a workaround for the screen not saying it. The screen
+  // should say it — a form's connections are a fact we can read, not something to remember in a
+  // title.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const pairs = await Promise.all(
+        forms.map(async (f) => {
+          try {
+            const r = await fetch(`/api/forms/usage?id=${encodeURIComponent(f.id)}`, {
+              credentials: "same-origin",
+            }).then((x) => x.json());
+            return [f.id, (r?.usedBy || []) as UsageRow[]] as const;
+          } catch {
+            // ⚠️ null means UNKNOWN, never "used nowhere". The card says so rather than implying
+            // the form is safe to change.
+            return [f.id, null] as const;
+          }
+        })
+      );
+      if (!cancelled) setAllUsage(Object.fromEntries(pairs));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [forms]);
+
   async function remove(id: string) {
     setBusy(true);
     setErr("");
@@ -107,6 +145,18 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
         <span style={countChip}>
           {f.fields.length} question{f.fields.length === 1 ? "" : "s"}
         </span>
+        {(() => {
+          const rows = allUsage[f.id];
+          if (rows === undefined) return null;
+          if (rows === null) return <span style={chip}>usage unknown</span>;
+          if (!rows.length) return <span style={chip}>not on any site</span>;
+          const sites = [...new Set(rows.map((r) => r.siteName))];
+          return (
+            <span style={{ ...countChip, background: "#ecfdf5", color: "#065f46" }}>
+              on {sites.join(", ")}
+            </span>
+          );
+        })()}
       </div>
 
       <h2 style={cardName}>{f.name}</h2>
@@ -201,10 +251,15 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
         </button>
       </div>
 
+      {/* ⚠️ THIS PARAGRAPH DESCRIBED THE OLD BEHAVIOUR AND SAT ON A LIVE SCREEN AFTER THE POINTER
+          CHANGE SHIPPED — it told Steven that editing a form here never touches a website, the
+          exact opposite of what now happens. Screen copy is part of the change, not a follow-up:
+          wrong instructions are worse than none, because they get believed. */}
       <p style={hint}>
-        Pick one of these in the builder and its questions are <strong>copied</strong> onto that
-        page. Editing a form here never changes a website that already has it — so you can rewrite
-        anything without wondering what else you just touched.
+        Link a form to a page in the builder and the link stays <strong>live</strong> — edit the
+        questions here and every website using it updates. Each card says which sites it is on.
+        The builder also has a &ldquo;start from a preset&rdquo; option that takes a one-off copy
+        instead, for when a single page needs its own variant.
       </p>
 
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search forms…" style={search} />
