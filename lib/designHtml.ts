@@ -516,7 +516,7 @@ const HEADING = /<h[1-4]\b/i;
  *
  * Returns null when the block should be left alone, which is the common case.
  */
-function explodeBands(block: string): string[] | null {
+export function explodeBands(block: string): string[] | null {
   const root = parse(block, { comment: false });
   const el = root.childNodes.find((n): n is HTMLElement => n instanceof HTMLElement);
   if (!el || !el.rawTagName) return null;
