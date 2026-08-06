@@ -325,7 +325,7 @@ export default function FormLibrary({
         onClick={() => setRenaming({ key: k, text: sections[k] })}
       >
         {sections[k]}
-        <span style={pencil}>✎ Rename</span>
+        <span style={pencil} title="Rename this section">✎</span>
       </h2>
     );
 
@@ -744,11 +744,19 @@ const liLabel: React.CSSProperties = { overflow: "hidden", textOverflow: "ellips
 const usedOn: React.CSSProperties = { fontSize: 13, margin: "8px 0 0", lineHeight: 1.6 };
 const cardLink: React.CSSProperties = { color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
 const secInput: React.CSSProperties = { fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 6, padding: "4px 8px", margin: "34px 0 6px", fontFamily: "inherit", background: "var(--e-panel)", minWidth: 320 };
-// ⚠️ A WORD, NOT A GLYPH, AND AT A SIZE A PERSON CAN READ. The first version was a 12px ✎ at
-// 70% opacity — Steven: *"the little pencil is so microscopic, an old man needs to get out
-// glasses… do we have to have shit so small?"* No. A control that has to be hunted for is the
-// same failure as one that doesn't look clickable, just smaller.
-const pencil: React.CSSProperties = { marginLeft: 10, fontSize: 13, fontWeight: 700, color: "var(--e-accent)", textTransform: "none", letterSpacing: 0 };
+// ⚠️ THE GLYPH IS THE CONTROL, AND IT HAS TO BE BIG.
+//
+// Attempt one was a 12px ✎ at 70% opacity — invisible. Attempt two added the word "Rename" but
+// put the size on the SPAN, so the pencil itself stayed 13px and only the word grew: I'd answered
+// "make it bigger" by writing more text.
+//
+// Steven settled it: *"if we make the pencil icon larger, we don't need a word beside it. The
+// pencil is self-explanatory… if I have a long explanation there instead of 'yours', having a
+// word next to the pencil crowds the canvas even more."* Right — these headings are his to
+// rewrite, and one of them may end up a sentence. The icon has to carry the meaning on its own.
+//
+// 20px, full-strength accent, hover title for the word.
+const pencil: React.CSSProperties = { marginLeft: 10, fontSize: 20, lineHeight: 1, color: "var(--e-accent)", cursor: "pointer", verticalAlign: "-2px" };
 const hiddenLine: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", marginTop: 26, lineHeight: 1.7 };
 const linkBtn: React.CSSProperties = { background: "none", border: "none", padding: 0, font: "inherit", color: "var(--e-accent)", fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
