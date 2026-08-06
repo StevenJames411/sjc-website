@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { findForm } from "@/lib/forms";
 import { readSites } from "@/lib/sites";
 import { intakeSummaries } from "@/lib/intake";
+import { intakeAccess } from "@/lib/intakeLinks";
 import { onboardUrlFor } from "@/lib/hostShared";
 import { ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 import FormEditor from "@/components/edit/FormEditor";
@@ -44,10 +45,19 @@ async function onboardingFacts() {
   const excluded = all.filter((s) => s.kind === "sjc").map((s) => s.name);
 
   const summaries = await intakeSummaries(sites.map((s) => ({ id: s.id })));
+
+  // ⚠️ WHY it's closed, not just THAT it's closed. Steven opened a link, went to it, and was told
+  // "This form is closed." The row still said open, and nothing anywhere said what had happened —
+  // so the only way to find out was to read the code. The record already carries the reason
+  // (`closedBecause`: submitted · not a fit · no activity · closed by Steven); it just never
+  // reached a screen.
+  const access = await Promise.all(sites.map((s) => intakeAccess(s.id)));
+
   return {
     excluded,
-    businesses: sites.map((s) => {
+    businesses: sites.map((s, i) => {
       const it = summaries[s.id];
+      const a = access[i];
       return {
         id: s.id,
         name: s.name,
@@ -56,6 +66,7 @@ async function onboardingFacts() {
         answered: it?.answered || 0,
         asked: it?.asked || 0,
         submitted: Boolean(it?.submitted),
+        closedBecause: a?.closedBecause || "",
       };
     }),
   };

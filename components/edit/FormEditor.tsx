@@ -37,6 +37,8 @@ type Business = {
   answered: number;
   asked: number;
   submitted: boolean;
+  /** "submitted" · "not a fit" · "no activity" · "closed by Steven". Shown, never swallowed. */
+  closedBecause: string;
 };
 type Onboarding = {
   businesses: Business[];
@@ -207,7 +209,10 @@ export default function FormEditor({
                     : b.submitted
                       ? "done — she's sent it in"
                       : b.status === "closed"
-                        ? "closed"
+                        ? // ⚠️ NAME THE REASON. "Closed" on its own sent Steven back to the code
+                          // to work out what had shut a link he'd just opened. The record has
+                          // carried the reason all along; it had simply never reached a screen.
+                          `closed — ${b.closedBecause || "reason not recorded"}`
                         : `open · ${b.answered} of ${b.asked} answered`}
                 </span>
                 {/* ⚠️ THE ACTUAL ADDRESS, ON THE ROW, AS SOON AS IT'S LIVE. A button that says
