@@ -1,23 +1,20 @@
-// Move a page's existing questions INTO the form library, without typing a single key by hand.
+// Read a page's existing questions so a WORKING COPY of them can sit in the form library.
 //
-// ── WHY THIS IS A TOOL AND NOT A HAND-WRITTEN LIST ───────────────────────────────────────────
-// Steven's real forms were each built their own way, and every one of them is filing answers into
-// a live spreadsheet column right now:
+// ── WHAT THIS DELIBERATELY DOES NOT DO: MIGRATE ANYTHING ─────────────────────────────────────
+// The first version of this repointed each page at the library and expected Steven to publish
+// three live pages to finish the job. Steven, 2026-08-06: *"we have a working copy on the
+// websites, so put a working copy in the library. Do you really have to migrate them?"*
 //
-//   /apply             13 FormQuestion blocks, keyed by the PUCK BLOCK ID
-//   /websites          one LeadForm block with its own copied questions
-//   Designs contact    7 formFields baked into an imported DesignSection
+// No. /apply, /websites and the Designs contact box already work. What was missing was that his
+// own forms weren't visible in his own library — he went looking and found three samples. A copy
+// in the library fixes exactly that and touches nothing that is currently collecting leads. The
+// live pages are not read from the library, are not repointed, and do not need republishing.
 //
-// Those keys live in the durable store, not in this repo. Re-typing them into a code literal
-// means reading them off a screen and copying nine-to-thirteen strings by eye, and one wrong
-// character orphans every answer already collected under it — silently, because an orphaned
-// column looks exactly like a question nobody answered. So nothing here is typed: the keys are
-// READ OFF THE PAGE and carried across verbatim.
-//
-// ⚠️ IT WRITES THE DRAFT, NEVER THE PUBLISHED PAGE. Adopting changes what the builder shows; the
-// live page keeps serving exactly what it served until Steven presses Publish. A migration that
-// went straight to production would be a change to a live funnel made by a script, decided by
-// nobody.
+// ── WHY IT'S A TOOL AND NOT A HAND-WRITTEN LIST ──────────────────────────────────────────────
+// The questions live in the durable store, not in this repo, and each carries the key its answers
+// are already filed under. Re-typing thirteen of those by eye is how one comes out wrong. Nothing
+// here is typed: the keys are READ OFF THE PAGE and carried across verbatim, so the copy in the
+// library is a true copy — same columns, same wording, same order.
 import type { FormField } from "./formsShared";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -145,46 +142,7 @@ export function findQuestions(data: any): FoundQuestions[] {
   return out;
 }
 
-/**
- * Write `formId` onto every block the questions came from, so the page now POINTS at the library.
- *
- * Returns a NEW object — the caller decides whether to save it. Nothing is mutated in place,
- * because a half-applied change to page data is the kind of thing that renders once and then
- * can't be explained.
- */
-export function pointAtForm(data: any, formId: string): { data: any; pointed: number } {
-  let pointed = 0;
-
-  const walk = (v: any): any => {
-    if (Array.isArray(v)) return v.map(walk);
-    if (!v || typeof v !== "object") return v;
-
-    const out: any = {};
-    for (const [k, val] of Object.entries(v)) out[k] = walk(val);
-
-    const type = v?.type;
-    const props = v?.props || {};
-    const hasQuestions =
-      (type === "LeadForm" && Array.isArray(props.fields) && props.fields.length) ||
-      (type === "DesignSection" && Array.isArray(props.formFields) && props.formFields.length);
-
-    if (hasQuestions) {
-      out.props = { ...(out.props || {}), formId };
-      pointed++;
-    }
-    return out;
-  };
-
-  const next = walk(data);
-
-  // ── /apply HAS NO BLOCK TO HOLD A POINTER ────────────────────────────────────────────────────
-  // Its questions are FormQuestion blocks inside FormStep blocks — thirteen of them, no single
-  // owner. So the pointer goes on the PAGE, where app/apply/page.tsx reads it before it looks at
-  // any block. One pointer for the whole wizard, which is what it is.
-  if (!pointed) {
-    next.root = { ...(next.root || {}), props: { ...(next.root?.props || {}), formId } };
-    pointed = 1;
-  }
-
-  return { data: next, pointed };
-}
+// ⚠️ THERE IS DELIBERATELY NO "point this page at the library" FUNCTION HERE. One existed and was
+// removed: repointing a page that already works buys nothing and spends a republish of a live
+// funnel. Pointing at a form is a choice made per block in the builder, when someone wants it —
+// not something a copy tool does on the way past.

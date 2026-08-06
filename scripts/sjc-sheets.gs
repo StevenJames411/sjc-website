@@ -32,10 +32,28 @@
 //
 // After that, never again.
 
-var SCRIPT_VERSION = '5d941f781b8d';
+var SCRIPT_VERSION = '6e73691dc4f3';
 var TAB_LEADS = 'Leads';
 var TAB_ONBOARDING = 'Onboarding';
+// Money events, in SJC's OWN operations sheet — never a client's. Appends like Leads (it's a log,
+// not a record that gets corrected) and never emails: Stripe already emails Steven on every one
+// of these, and a second alert saying the same thing is how a board dies of false alarms.
+var TAB_PAYMENTS = 'Payments';
 var TZ = 'America/Chicago';
+
+/**
+ * Which tab a write is for.
+ *
+ * ⚠️ AN UNKNOWN NAME BECOMES Leads. That is the behaviour this replaced and it is kept on
+ * purpose: a typo must never create a stray tab in a customer's spreadsheet that then quietly
+ * collects her enquiries somewhere nobody is looking.
+ */
+function tabFor_(name) {
+  var n = String(name || '');
+  if (n === TAB_ONBOARDING) return TAB_ONBOARDING;
+  if (n === TAB_PAYMENTS) return TAB_PAYMENTS;
+  return TAB_LEADS;
+}
 
 /**
  * The timestamp as READABLE TEXT — "8/5/2026  4:47 PM" — not a date value.
@@ -177,10 +195,11 @@ function writeRow_(body) {
   if (!id) return { ok: false, error: 'spreadsheetId required' };
 
   var answers = body.answers || [];
-  var isOnboarding = String(body.tab || '') === TAB_ONBOARDING;
+  var tab = tabFor_(body.tab);
+  var isOnboarding = tab === TAB_ONBOARDING;
   var ss = SpreadsheetApp.openById(id);
-  var sheet = ss.getSheetByName(isOnboarding ? TAB_ONBOARDING : TAB_LEADS);
-  if (!sheet) sheet = ss.insertSheet(isOnboarding ? TAB_ONBOARDING : TAB_LEADS);
+  var sheet = ss.getSheetByName(tab);
+  if (!sheet) sheet = ss.insertSheet(tab);
 
   // ⚠️ A REAL DATE, NOT THE ISO STRING — AND IDENTICAL TO apply-webhook.gs ON PURPOSE.
   //
@@ -241,7 +260,7 @@ function writeRow_(body) {
   if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
 
 
-  notify_(body, items, isOnboarding);
+  notify_(body, items, tab);
   return { ok: true, tab: sheet.getName(), row: sheet.getLastRow() };
 }
 
@@ -249,10 +268,15 @@ function writeRow_(body) {
  * Tell the owner a lead came in. A lead sitting unread in a spreadsheet is a lead lost — their
  * phone is the system, the row is the record, the email is the alert.
  * Onboarding never emails: she just filled it in, she knows what she said.
+ * Payments never emails: Stripe already told Steven, and a duplicate alert is a false alarm.
+ *
+ * ⚠️ AN ALLOW-LIST, NOT A DENY-LIST. Written as "only Leads emails" rather than "not Onboarding"
+ * so a tab added later is silent until somebody decides otherwise — the wrong default here mails
+ * a customer's business owner about something that isn't a lead.
  */
-function notify_(body, items, isOnboarding) {
+function notify_(body, items, tab) {
   var to = String(body.notifyEmail || '').trim();
-  if (!to || isOnboarding) return;
+  if (!to || tab !== TAB_LEADS) return;
 
   var lines = items.map(function (it) {
     return it.label + ': ' + (it.value == null ? '' : it.value);

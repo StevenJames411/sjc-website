@@ -140,11 +140,14 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
     };
   }, [forms]);
 
-  // ── PAGES STILL HOLDING THEIR OWN QUESTIONS ──────────────────────────────────────────────────
-  // The whole reason this library felt empty: Steven's four real forms were each built their own
-  // way, outside it, and nothing on any screen said so — he came here looking for his own intake
-  // forms and found three samples. The machine can see which pages are still on their own, so it
-  // says so, with the button to fix it right there.
+  // ── PAGES WHOSE QUESTIONS AREN'T IN HERE YET ─────────────────────────────────────────────────
+  // The whole reason this library felt empty: Steven's real forms were each built their own way,
+  // on their own pages, and nothing on any screen said so — he came here looking for his own
+  // intake forms and found three samples. The machine can see which pages those are, so it says
+  // so, with the button right there.
+  //
+  // ⚠️ THE BUTTON COPIES; IT DOES NOT MIGRATE. Those pages work. Copying puts the questions where
+  // they can be read and edited in one place and changes nothing that is currently collecting.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -152,9 +155,9 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
         const r = await fetch("/api/admin/forms/adopt?scan=1", { credentials: "same-origin" }).then(
           (x) => x.json()
         );
-        if (!cancelled) setStrays(r?.onTheirOwn || []);
+        if (!cancelled) setStrays(r?.notInTheLibrary || []);
       } catch {
-        // Unknown, not zero — say nothing rather than imply everything is consolidated.
+        // Unknown, not zero — say nothing rather than imply everything is already in here.
         if (!cancelled) setStrays(null);
       }
     })();
@@ -165,7 +168,7 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
 
   async function adopt(row: Stray) {
     const name = window.prompt(
-      `Name this form — it's the ${row.questions} questions on ${row.siteName} · ${row.title}.`,
+      `Name this copy — it's the ${row.questions} questions on ${row.siteName} · ${row.title}.`,
       `${row.title} form`
     );
     if (!name) return;
@@ -179,13 +182,13 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
         body: JSON.stringify({ site: row.siteId, page: row.page, name }),
       });
       const body = await res.json();
-      if (!body?.ok) throw new Error(body?.error || "Couldn't bring it in.");
-      // ⚠️ NEVER SILENT. If a key moved, every answer already collected under the old one is
-      // orphaned — and an orphaned column looks exactly like a question nobody answered.
-      if (body.keysThatMoved?.length) {
+      if (!body?.ok) throw new Error(body?.error || "Couldn't copy it in.");
+      // ⚠️ NEVER SILENT. If a key came out different the library copy has different spreadsheet
+      // columns from the page it was copied from — a lookalike, not a copy.
+      if (body.keysThatDiffer?.length) {
         setErr(
-          `Brought in, but these spreadsheet columns MOVED: ${body.keysThatMoved.join(", ")}. ` +
-            `Check the sheet before you publish that page.`
+          `Copied, but these columns came out different: ${body.keysThatDiffer.join(", ")}. ` +
+            `The page is unaffected — but this copy isn't an exact one.`
         );
       }
       router.refresh();
@@ -358,18 +361,19 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
 
       {strays === null ? (
         <p style={strayBox}>
-          Couldn&apos;t check which pages still have their own questions. Nothing is wrong with the
-          forms below — this one check didn&apos;t answer.
+          Couldn&apos;t check which pages have questions that aren&apos;t in here. Nothing is wrong
+          with the forms below — this one check didn&apos;t answer.
         </p>
       ) : strays.length ? (
         <div style={strayBox}>
           <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 14 }}>
-            {strays.length} page{strays.length === 1 ? "" : "s"} still keep their own questions
+            {strays.length} page{strays.length === 1 ? "" : "s"} ask questions that aren&apos;t in
+            here yet
           </p>
           <p style={{ ...hint, margin: "0 0 12px" }}>
-            Their questions live on the page instead of in here, so editing them means opening each
-            page. Bringing one in keeps every spreadsheet column exactly where it is, and changes
-            the page&apos;s draft only — the live page is untouched until you publish it.
+            Those pages work fine and nothing about them changes. This just puts a copy of their
+            questions in your library — same wording, same spreadsheet columns — so you can read
+            and edit them in one place instead of opening each page.
           </p>
           {strays.map((s) => (
             <div key={`${s.siteId}/${s.page}`} style={strayRow}>
@@ -380,7 +384,7 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
                 </span>
               </span>
               <button type="button" style={smallBtn} disabled={busy} onClick={() => adopt(s)}>
-                Bring into the library
+                Copy into the library
               </button>
             </div>
           ))}

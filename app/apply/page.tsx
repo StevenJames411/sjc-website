@@ -5,8 +5,6 @@ import { readPuckPublished } from "@/lib/puckContent";
 import { seedFor } from "@/components/puck/seeds";
 import { pageMetadata } from "@/lib/pageMeta";
 import { SJC } from "@/lib/siteKeys";
-import { findForm } from "@/lib/forms";
-import { stepsOf } from "@/lib/formsShared";
 
 // Public discovery-call intake. ALL copy comes from the Puck "apply" page (edited at
 // /edit/apply) — intro, questions, the disclaimer, and the booking-step copy are every one an
@@ -78,42 +76,14 @@ function extract(data: any): { intro: Intro; disclaimer: string; booking: Bookin
   return { intro, disclaimer, booking, steps };
 }
 
-/**
- * The wizard's steps, from the form library when this page points at a form.
- *
- * ⚠️ THE QUESTIONS MOVE; THE REST OF THE PAGE DOES NOT. Intro, disclaimer and booking copy stay
- * editable blocks on the page, because they are page furniture, not questions.
- *
- * ⚠️ AND THE BLOCKS STILL WIN IF THE FORM IS GONE. A pointer at a form that no longer exists
- * falls back to the FormStep blocks, which are left in place rather than deleted precisely so
- * this fallback has something to land on. Same rule as lib/formPointer.ts: a dangling pointer
- * degrades to stale, never to an empty page — and an empty /apply is a public funnel that
- * silently stops collecting.
- */
-async function stepsFromLibrary(formId: string): Promise<Step[] | null> {
-  const form = await findForm(formId);
-  if (!form?.fields?.length) return null;
-  return stepsOf(form.fields).map((s) => ({
-    title: s.title,
-    questions: s.fields.map((f) => ({
-      key: f.fieldId,
-      label: f.label,
-      type:
-        f.type === "email" ? "email" : f.type === "tel" ? "phone" : f.type === "choice" ? "choice" : "text",
-      options: f.options || [],
-      required: f.required !== false,
-    })),
-  })) as Step[];
-}
-
+// ⚠️ THIS PAGE READS ITS QUESTIONS FROM ITS OWN BLOCKS, ON PURPOSE. A version that read them from
+// the form library instead was built and backed out: the wizard already works, and pointing it at
+// the library would have meant republishing a live funnel to gain nothing a visitor can see. The
+// library holds a working COPY of these questions so they can be read and edited in one place;
+// this page keeps collecting exactly as it always has.
 export default async function Apply() {
   const data = (await readPuckPublished("apply", SJC)) || seedFor("apply", "Apply");
-  const { intro, disclaimer, booking, steps: blockSteps } = extract(data);
-
-  // Set by /api/admin/forms/adopt. On the PAGE rather than a block, because thirteen questions
-  // across several steps have no single block that owns them.
-  const formId = String((data as { root?: { props?: { formId?: string } } })?.root?.props?.formId || "").trim();
-  const steps = (formId ? await stepsFromLibrary(formId) : null) || blockSteps;
+  const { intro, disclaimer, booking, steps } = extract(data);
   return (
     <>
       <Nav />

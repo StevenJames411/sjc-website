@@ -1,29 +1,33 @@
-// Move one page's questions into the form library. OWNER ONLY (middleware guards /api/admin).
+// Put a WORKING COPY of a page's questions into the form library. OWNER ONLY (/api/admin).
 //
-//   GET  /api/admin/forms/adopt?site=<id>&page=<slug>            -> what's there, changes nothing
-//   POST /api/admin/forms/adopt  { site, page, name }            -> create the form + point at it
+//   GET  ?scan=1                        -> every page whose questions aren't in the library yet
+//   GET  ?site=<id>&page=<slug>         -> exactly what would be copied, changes nothing
+//   POST { site, page, name }           -> create the library copy
 //
-// ── READ IT FIRST, THEN RUN IT ───────────────────────────────────────────────────────────────
-// GET is a dry run and exists so the keys can be READ before anything is written. These are live
-// spreadsheet columns; the whole reason this is a tool rather than a hand-written list is that a
-// key must never be retyped. Look at the GET, then POST.
+// ── IT DOES NOT TOUCH THE PAGE ───────────────────────────────────────────────────────────────
+// /apply, /websites and the Designs contact box already work. Steven, 2026-08-06: *"we have a
+// working copy on the websites, so put a working copy in the library. Do you really have to
+// migrate them?"* No. Nothing here writes page data, repoints a block, or needs a republish —
+// the live pages keep collecting exactly as they do now. The only thing that changes is that his
+// own forms are finally IN his own library, where he went looking for them.
 //
-// ⚠️ IT WRITES THE DRAFT ONLY. The live page keeps serving what it serves until Steven presses
-// Publish in the builder — so the receipt below is a "look at it in the editor", never a "it's
-// live". A script must not change a live funnel on its own.
-import { readPuckDraft, puckKey } from "@/lib/puckContent";
-import { createKvStore } from "@/lib/kvStateStore";
-import { getClient } from "@/lib/store";
+// ⚠️ THE KEYS ARE COPIED, NOT INVENTED. Each question carries the spreadsheet column its answers
+// are already filed under, read off the page rather than retyped, so the library copy is a true
+// copy — and a form cloned from it later starts with the same columns.
+import { readPuckDraft } from "@/lib/puckContent";
 import { SJC } from "@/lib/siteKeys";
-import { createForm, findForm } from "@/lib/forms";
-import { findQuestions, pointAtForm } from "@/lib/formAdopt";
+import { createForm, findForm, readForms } from "@/lib/forms";
+import { findQuestions } from "@/lib/formAdopt";
 
 export const dynamic = "force-dynamic";
-// The scan reads every page of every website. Same budget as /api/forms/usage, which walks the
+// The scan reads every page of every website — same budget as /api/forms/usage, which walks the
 // same ground for the same reason.
 export const maxDuration = 120;
 
 const arg = (url: URL, k: string, dflt = "") => (url.searchParams.get(k) || dflt).trim();
+
+/** The set of question keys a form holds, as one comparable string. */
+const shapeOf = (keys: string[]) => keys.slice().sort().join("|");
 
 async function look(site: string, page: string) {
   const data = await readPuckDraft(page, site);
@@ -31,18 +35,21 @@ async function look(site: string, page: string) {
   return { data, found: findQuestions(data) };
 }
 
-const pointerOf = (data: unknown) =>
-  String((data as { root?: { props?: { formId?: string } } })?.root?.props?.formId || "").trim();
-
 /**
- * EVERY PAGE STILL HOLDING ITS OWN QUESTIONS — the consolidation list, in one call.
+ * EVERY PAGE WHOSE QUESTIONS AREN'T IN THE LIBRARY YET.
  *
- * This is the screen version of "there are four form engines". Steven should not have to know
- * which pages those are, or go looking; the machine already knows, so it says so.
+ * This is the screen version of "there are four form engines". Steven shouldn't have to know
+ * which pages those are or go looking — the machine already knows, so it says so.
+ *
+ * "Already in the library" is decided by the QUESTION KEYS matching a form that's in there, not
+ * by a pointer: these pages are never repointed, so a pointer would stay empty forever and the
+ * list would keep nagging about work that's done.
  */
 async function scan() {
   const { readSites } = await import("@/lib/sites");
   const { readPages } = await import("@/lib/pageRegistry");
+
+  const shapes = new Set((await readForms()).map((f) => shapeOf(f.fields.map((x) => x.fieldId))));
 
   const rows: {
     siteId: string;
@@ -51,7 +58,7 @@ async function scan() {
     title: string;
     questions: number;
     from: string[];
-    pointsAt: string | null;
+    inLibrary: boolean;
   }[] = [];
 
   for (const s of await readSites()) {
@@ -60,15 +67,15 @@ async function scan() {
       if (!data) continue;
       const found = findQuestions(data);
       if (!found.length) continue;
-      const pointsAt = pointerOf(data) || found.find((f) => f.existingFormId)?.existingFormId || null;
+      const keys = found.flatMap((f) => f.fields.map((x) => x.fieldId));
       rows.push({
         siteId: s.id,
         siteName: s.name,
         page: p.slug,
         title: p.title,
-        questions: found.reduce((n, f) => n + f.fields.length, 0),
+        questions: keys.length,
         from: [...new Set(found.map((f) => f.from))],
-        pointsAt,
+        inLibrary: shapes.has(shapeOf(keys)),
       });
     }
   }
@@ -82,10 +89,10 @@ export async function GET(req: Request) {
     const rows = await scan();
     return Response.json({
       ok: true,
-      // Split rather than returned as one list: "still on its own" is a to-do, "already in the
-      // library" is reassurance, and one mixed list of both reads as neither.
-      onTheirOwn: rows.filter((r) => !r.pointsAt),
-      alreadyInTheLibrary: rows.filter((r) => r.pointsAt),
+      // Split rather than one mixed list: "not in the library" is a to-do and "already there" is
+      // reassurance, and together they read as neither.
+      notInTheLibrary: rows.filter((r) => !r.inLibrary),
+      alreadyInTheLibrary: rows.filter((r) => r.inLibrary),
     });
   }
 
@@ -94,19 +101,15 @@ export async function GET(req: Request) {
   if (!page) return Response.json({ ok: false, error: "page required" }, { status: 400 });
 
   const { data, found } = await look(site, page);
-  if (!data) return Response.json({ ok: false, error: `no draft for '${page}' on '${site}'` }, { status: 404 });
+  if (!data) return Response.json({ ok: false, error: `no page '${page}' on '${site}'` }, { status: 404 });
 
   return Response.json({
     ok: true,
     site,
     page,
-    // Already pointing somewhere? Then this page is done and adopting again would mint a
-    // duplicate form nobody asked for.
-    alreadyPointsAt: String((data as { root?: { props?: { formId?: string } } })?.root?.props?.formId || "") || null,
     found: found.map((f) => ({
       from: f.from,
       where: f.where,
-      pointsAt: f.existingFormId || null,
       questions: f.fields.map((x) => ({ key: x.fieldId, label: x.label, type: x.type, step: x.step || null })),
     })),
   });
@@ -127,34 +130,29 @@ export async function POST(req: Request) {
   if (!name) return Response.json({ ok: false, error: "a form name is required" }, { status: 400 });
 
   const { data, found } = await look(site, page);
-  if (!data) return Response.json({ ok: false, error: `no draft for '${page}' on '${site}'` }, { status: 404 });
+  if (!data) return Response.json({ ok: false, error: `no page '${page}' on '${site}'` }, { status: 404 });
 
-  const alreadyRoot = String((data as { root?: { props?: { formId?: string } } })?.root?.props?.formId || "");
-  const alreadyBlock = found.find((f) => f.existingFormId)?.existingFormId || "";
-  const already = alreadyRoot || alreadyBlock;
-  if (already) {
-    // Not an error worth a 500, but definitely not a silent second copy either.
-    return Response.json(
-      { ok: false, error: `'${page}' already points at the form '${already}'. Nothing to adopt.` },
-      { status: 409 }
-    );
-  }
-
-  // Every question found on the page, in the order it appears. Flattened deliberately: a page
-  // with one lead form and a design contact box is still ONE form for that page.
+  // Every question on the page, in the order it appears. Flattened deliberately: a page with a
+  // lead form and a design contact box is still one form's worth of questions for that page.
   const fields = found.flatMap((f) => f.fields);
   if (!fields.length) {
     return Response.json({ ok: false, error: `no questions found on '${page}'` }, { status: 404 });
   }
 
-  // ⚠️ A DUPLICATE KEY WOULD BE RE-MINTED BY normalizeFields, which is exactly the silent column
-  // move this whole tool exists to prevent. Refuse instead — a page with two questions filing
-  // into one column is a problem to look at, not to paper over.
+  // ⚠️ A DUPLICATE KEY WOULD BE RE-MINTED by normalizeFields, and the copy would stop being a
+  // copy. Refuse instead — two questions filing into one column is something to look at.
   const keys = fields.map((f) => f.fieldId);
   const dupes = keys.filter((k, i) => keys.indexOf(k) !== i);
   if (dupes.length) {
     return Response.json(
-      { ok: false, error: `two questions share the key '${dupes[0]}' — fix that on the page first` },
+      { ok: false, error: `two questions on that page share the key '${dupes[0]}'` },
+      { status: 409 }
+    );
+  }
+
+  if ((await readForms()).some((f) => shapeOf(f.fields.map((x) => x.fieldId)) === shapeOf(keys))) {
+    return Response.json(
+      { ok: false, error: `those questions are already in the library — nothing to copy.` },
       { status: 409 }
     );
   }
@@ -164,32 +162,22 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: made.error || "couldn't create the form" }, { status: 400 });
   }
 
-  // Read it back rather than trusting the write: if a key WAS re-minted despite the check above,
-  // the receipt has to say so loudly, before anyone publishes a page whose columns just moved.
+  // Read it back rather than trusting the write. A key that got re-minted means the library copy
+  // has different columns from the page it was copied from — which makes it a lookalike, not a
+  // copy, and that has to be said out loud rather than discovered later.
   const saved = await findForm(made.id);
   const moved = (saved?.fields || [])
     .map((f, i) => (f.fieldId === keys[i] ? null : `${keys[i]} -> ${f.fieldId}`))
     .filter(Boolean);
-
-  const { data: next, pointed } = pointAtForm(data, made.id);
-  const store = createKvStore(getClient(), puckKey(page, false, site));
-  const write = await store.writeResult(next);
-  if (!write.ok) {
-    return Response.json(
-      { ok: false, error: `form '${made.id}' was created but the page could not be pointed at it: ${write.reason}` },
-      { status: 409 }
-    );
-  }
 
   return Response.json({
     ok: true,
     formId: made.id,
     page,
     site,
-    pointed,
     questions: keys,
-    // Empty is the only acceptable value. Anything here means a live column moved.
-    keysThatMoved: moved,
-    next: `Open /edit/${site === SJC ? "" : `${site}/`}${page} and press Publish when it looks right — the live page is unchanged until you do.`,
+    /** Empty is the only good value. */
+    keysThatDiffer: moved,
+    note: "The page is untouched and still collecting exactly as before — this is a copy in your library.",
   });
 }
