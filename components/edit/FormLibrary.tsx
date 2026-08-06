@@ -15,6 +15,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FIELD_TYPE_LABELS, type FormDef } from "@/lib/formsShared";
+import { ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 
 type UsageRow = { siteId: string; siteName: string; slug: string; title: string; published: boolean };
 
@@ -42,7 +43,17 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
     );
   }, [forms, q]);
 
-  const builtins = shown.filter((f) => f.kind === "builtin");
+  // ── THREE GROUPS, NOT TWO ────────────────────────────────────────────────────────────────────
+  // "Built in" used to hold the three sample forms and nothing else, and when onboarding moved
+  // into the library it landed in the same bucket under the same heading — the real form Steven
+  // runs on every client sitting in a row of examples, indistinguishable from them. That is the
+  // exact confusion that sent him looking for his own forms and finding samples.
+  //
+  // Steven kept the samples deliberately: *"it's okay to have some samples in there"* — they're a
+  // starting point for a new client's form. Keeping them costs nothing as long as they READ as
+  // samples, which is what the separate heading buys.
+  const working = shown.filter((f) => f.kind === "builtin" && f.id === ONBOARDING_FORM_ID);
+  const samples = shown.filter((f) => f.kind === "builtin" && f.id !== ONBOARDING_FORM_ID);
   const mine = shown.filter((f) => f.kind !== "builtin");
 
   async function create() {
@@ -146,6 +157,17 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
           {f.fields.length} question{f.fields.length === 1 ? "" : "s"}
         </span>
         {(() => {
+          // ⚠️ ONBOARDING IS USED BY EVERY CLIENT AND APPEARS ON NO PAGE. Usage is found by
+          // walking saved page data for a `formId`; this form is served by a route
+          // (/<business>/onboard) instead, so the honest-looking "not on any site" chip would be
+          // flatly false about the one form that runs on every single client.
+          if (f.id === ONBOARDING_FORM_ID) {
+            return (
+              <span style={{ ...countChip, background: "#ecfdf5", color: "#065f46" }}>
+                every client&apos;s onboarding link
+              </span>
+            );
+          }
           const rows = allUsage[f.id];
           if (rows === undefined) return null;
           if (rows === null) return <span style={chip}>usage unknown</span>;
@@ -266,10 +288,25 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
 
       {err ? <p style={errBox}>{err}</p> : null}
 
-      {mine.length ? <div style={grid}>{mine.map(Card)}</div> : null}
+      {working.length ? (
+        <>
+          <h2 style={sec}>In use</h2>
+          <div style={grid}>{working.map(Card)}</div>
+        </>
+      ) : null}
 
-      <h2 style={sec}>Built in</h2>
-      <div style={grid}>{builtins.map(Card)}</div>
+      {mine.length ? (
+        <>
+          <h2 style={sec}>Yours</h2>
+          <div style={grid}>{mine.map(Card)}</div>
+        </>
+      ) : null}
+
+      <h2 style={sec}>Samples to start from</h2>
+      <p style={{ ...hint, marginTop: -2 }}>
+        Not used by anything. Copy one when a new client needs a form, or edit it in place.
+      </p>
+      <div style={grid}>{samples.map(Card)}</div>
 
       <p style={footNote}>
         Leads land in each client&apos;s own Google Sheet and inbox. This is where the{" "}

@@ -16,6 +16,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FIELD_TYPE_LABELS,
+  FIELD_TYPE_ONBOARDING_ONLY,
+  SATISFIED_BY_CHOICES,
   STANDARD_FIELDS,
   type FormDef,
   type FormField,
@@ -76,6 +78,7 @@ export default function FormEditor({ form }: { form: FormDef }) {
           note: f.note,
           successHeading: f.successHeading,
           successBody: f.successBody,
+          oneQuestionPerScreen: !!f.oneQuestionPerScreen,
         }),
       });
       const body = await res.json();
@@ -185,6 +188,32 @@ export default function FormEditor({ form }: { form: FormDef }) {
               style={{ ...input, marginTop: 8, fontSize: 13 }}
             />
           ) : null}
+
+          {/* The trade named where the question is chosen, not just true somewhere in the code. */}
+          {FIELD_TYPE_ONBOARDING_ONLY.includes(x.type) ? (
+            <p style={warnLine}>
+              Photos only work on an onboarding form. On a website&apos;s own contact form this
+              question is skipped — there&apos;s nowhere for a stranger&apos;s pictures to go.
+            </p>
+          ) : null}
+
+          {/* SKIP-WHAT-WE-ALREADY-KNOW. A dropdown, never a typed path: a wrong path reads as an
+              empty value, which looks identical to a question that simply always gets asked. */}
+          <label style={skipRow}>
+            <span style={{ fontSize: 12, color: "var(--e-muted)" }}>Don&apos;t ask if we know</span>
+            <select
+              value={x.satisfiedBy || ""}
+              onChange={(e) => patchField(i, { satisfiedBy: e.target.value || undefined })}
+              style={select}
+            >
+              <option value="">Always ask this</option>
+              {SATISFIED_BY_CHOICES.map((c) => (
+                <option key={c.path} value={c.path}>
+                  their {c.label.toLowerCase()}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       ))}
 
@@ -205,6 +234,24 @@ export default function FormEditor({ form }: { form: FormDef }) {
           </>
         ) : null}
       </div>
+
+      <h2 style={sec}>How it&apos;s laid out</h2>
+      <label style={{ ...checkLbl, alignItems: "flex-start", gap: 9 }}>
+        <input
+          type="checkbox"
+          checked={!!f.oneQuestionPerScreen}
+          onChange={(e) => setF({ ...f, oneQuestionPerScreen: e.target.checked })}
+          style={{ marginTop: 3 }}
+        />
+        <span>
+          <strong>One question at a time</strong>
+          <span style={{ display: "block", ...hint, marginBottom: 0, marginTop: 3 }}>
+            Worth it on a long form. Fifteen boxes on a phone is a wall people close; one question
+            with a big box is a conversation, and it saves as they go so they can come back to it.
+            Leave it off for a short contact form.
+          </span>
+        </span>
+      </label>
 
       <h2 style={sec}>The button and the thank-you</h2>
       <Field label="Button text" v={f.buttonLabel} on={(v) => setF({ ...f, buttonLabel: v })} ph="Send it" />
@@ -259,9 +306,12 @@ export default function FormEditor({ form }: { form: FormDef }) {
         </button>
       </div>
 
+      {/* ⚠️ This paragraph said the exact opposite of the truth for hours after forms became live
+          pointers, and Steven read it. Screen copy is part of the change, not a follow-up. */}
       <p style={footNote}>
-        Saving changes this form in your library. Websites that already use it keep the questions
-        they were given — nothing on a live site moves until you pick this form again on that page.
+        Saving changes this form everywhere it&apos;s used. Every website pointing at it picks up
+        the new wording straight away — that&apos;s the point of keeping questions in one place.
+        Reword freely: the spreadsheet column stays with its answers.
       </p>
     </div>
   );
@@ -297,6 +347,8 @@ const rowHead: React.CSSProperties = { display: "flex", gap: 8, alignItems: "cen
 const rowMeta: React.CSSProperties = { display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginTop: 10 };
 const checkLbl: React.CSSProperties = { display: "flex", gap: 6, alignItems: "center", fontSize: 13, color: "var(--e-ink)" };
 const keyTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", fontFamily: "ui-monospace,monospace", marginLeft: "auto" };
+const skipRow: React.CSSProperties = { display: "flex", gap: 8, alignItems: "center", marginTop: 10, flexWrap: "wrap" };
+const warnLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.5, margin: "10px 0 0", borderLeft: "3px solid var(--e-line)", paddingLeft: 10 };
 const tiny: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 6, width: 30, height: 30, fontSize: 13, cursor: "pointer", flexShrink: 0 };
 const addBar: React.CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 };
 const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };

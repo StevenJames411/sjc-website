@@ -9,7 +9,7 @@
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
 import { siteKeys } from "./siteKeys";
-import type { IntakeAnswers } from "./intakeShared";
+import type { IntakeAnswers, IntakeQuestion } from "./intakeShared";
 
 export type IntakeRecord = {
   answers: IntakeAnswers;
@@ -23,6 +23,30 @@ export type IntakeRecord = {
 };
 
 const empty = (): IntakeRecord => ({ answers: {}, photos: [] });
+
+/**
+ * THE ONBOARDING QUESTIONS AS THEY ACTUALLY ARE — Steven's saved edits merged over the code copy.
+ *
+ * ⚠️ EVERYTHING THAT RENDERS OR COUNTS THE ONBOARDING FORM MUST COME THROUGH HERE. Importing
+ * INTAKE_QUESTIONS directly reads the code floor and silently ignores every edit he has made in
+ * the library — which is the entire reason the form was moved into the library. Worse, it would
+ * do it inconsistently: the form she fills in would show his new question and the "answered 4 of
+ * 9" count beside it would still be counting the old list.
+ *
+ * Falls back to the code copy if the store is unreachable. A cold store must not mean a business
+ * opens her link and is asked nothing.
+ */
+export async function onboardingQuestions(): Promise<IntakeQuestion[]> {
+  const { findForm } = await import("./forms");
+  const { toIntakeQuestions, ONBOARDING_FORM_ID, INTAKE_QUESTIONS } = await import("./intakeShared");
+  try {
+    const form = await findForm(ONBOARDING_FORM_ID);
+    if (form?.fields?.length) return toIntakeQuestions(form.fields);
+  } catch {
+    /* fall through to the code copy */
+  }
+  return INTAKE_QUESTIONS;
+}
 
 const store = (siteId: string) => createKvStore(getClient(), siteKeys(siteId).intake);
 
@@ -88,13 +112,15 @@ export async function copyIntakeToSheet(
     return `no sheet for '${siteId}' yet — answers are stored, nothing was copied`;
   }
 
-  const { INTAKE_QUESTIONS } = await import("./intakeShared");
+  // The live questions, not the code copy — otherwise a question Steven added in the library
+  // lands in her record and never reaches her sheet, which is the copy she can actually see.
+  const questions = await onboardingQuestions();
   const { writeSheetRow } = await import("./sheets");
   const record = await readIntake(siteId);
 
   const answers = [
     { key: "business", label: "Business", value: businessName || siteId },
-    ...INTAKE_QUESTIONS.filter((q) => q.type !== "photos" && record.answers[q.id]).map((q) => ({
+    ...questions.filter((q) => q.type !== "photos" && record.answers[q.id]).map((q) => ({
       key: q.id,
       label: q.label,
       value: String(record.answers[q.id]),
@@ -129,6 +155,10 @@ export async function intakeSummaries(
   const { questionsFor } = await import("./intakeShared");
   const { findSite } = await import("./sites");
 
+  // Read ONCE for the whole gallery, not once per site: the form is the same for all of them and
+  // only `satisfiedBy` differs per business.
+  const questions = await onboardingQuestions();
+
   const out: Record<string, import("./intakeShared").IntakeSummary> = {};
   await Promise.all(
     sites.map(async (s) => {
@@ -137,7 +167,7 @@ export async function intakeSummaries(
         readIntake(s.id),
         findSite(s.id),
       ]);
-      const asked = questionsFor(site || null);
+      const asked = questionsFor(site || null, questions);
       out[s.id] = {
         status: !access ? "never opened" : access.status === "open" ? "open" : "closed",
         answered: asked.filter((q) =>

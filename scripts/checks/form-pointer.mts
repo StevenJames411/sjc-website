@@ -5,13 +5,25 @@
 // typechecked, it built, the site rendered fine, and not one pointer resolved. Nothing but a
 // nested block would have caught it.
 //
-//   node --experimental-strip-types scripts/checks/form-pointer.mts
+//   npx tsx scripts/checks/form-pointer.mts
 //
-// Six assertions, all printing true when it works. The two that matter most:
+// ⚠️ IT EXITS NONZERO ON A FAILURE. It used to only print, and a check whose failure looks like
+// its success is a check nobody reads twice.
+//
+// The three assertions that matter most:
 //   SHEET COLUMN carried — fieldId must survive, or rewording a question orphans a client's data
 //   unlinked untouched   — a block with no pointer must render exactly as it always has
+//   photo question dropped — see the note in lib/formPointer.ts; a public page has nowhere to put
+//                            an uploaded file, and taking her photos to lose them is the worst
+//                            outcome of the three
 import { resolveFormPointers, formsInUse } from "../../lib/formPointer.ts";
-import { BUILTIN_FORMS } from "../../lib/formsShared.ts";
+import { BUILTIN_FORMS, type FormDef } from "../../lib/formsShared.ts";
+
+let failed = 0;
+const check = (label: string, pass: boolean, detail = "") => {
+  if (!pass) failed++;
+  console.log(`${pass ? "ok  " : "FAIL"}  ${label}${detail ? `  — ${detail}` : ""}`);
+};
 
 const page = {
   content: [
@@ -29,13 +41,39 @@ const unlinked = out.content[1].props as Record<string, unknown>;
 const quote = BUILTIN_FORMS.find((f) => f.id === "quote")!;
 
 const fields = linked.fields as { label: string; fieldId?: string }[];
-console.log("linked question count :", fields.length, "(library has", quote.fields.length + ")");
-console.log("labels came from lib  :", fields[0].label === quote.fields[0].label);
-console.log("SHEET COLUMN carried  :", fields.every((f, i) => f.fieldId === quote.fields[i].fieldId));
-console.log("blank button <- lib   :", linked.buttonLabel === quote.buttonLabel);
-console.log("page override wins    :", linked.successBody === "Page wins");
-console.log("unlinked untouched    :", (unlinked.fields as {label:string}[])[0].label === "Untouched" && unlinked.buttonLabel === "Keep me");
+check("linked question count", fields.length === quote.fields.length, `${fields.length} vs ${quote.fields.length}`);
+check("labels came from lib", fields[0].label === quote.fields[0].label);
+check("SHEET COLUMN carried", fields.every((f, i) => f.fieldId === quote.fields[i].fieldId));
+check("blank button <- lib", linked.buttonLabel === quote.buttonLabel);
+check("page override wins", linked.successBody === "Page wins");
+check(
+  "unlinked untouched",
+  (unlinked.fields as { label: string }[])[0].label === "Untouched" && unlinked.buttonLabel === "Keep me"
+);
+
+// ── A photo question must not reach a public website form ────────────────────────────────────
+const withPhotos: FormDef = {
+  ...quote,
+  id: "with-photos",
+  fields: [
+    { fieldId: "name", label: "Your name", type: "text", required: true },
+    { fieldId: "shots", label: "Photos of the job", type: "photos", required: true },
+    { fieldId: "phone", label: "Best phone number", type: "tel" },
+  ],
+};
+const photoPage = { content: [{ type: "LeadForm", props: { formId: "with-photos" } }] };
+const photoOut = resolveFormPointers(photoPage, [withPhotos]) as typeof photoPage;
+const photoFields = (photoOut.content[0].props as { fields: { fieldId?: string }[] }).fields;
+check("photo question dropped", !photoFields.some((f) => f.fieldId === "shots"));
+check(
+  "the other questions survive",
+  photoFields.length === 2 && photoFields[0].fieldId === "name" && photoFields[1].fieldId === "phone",
+  JSON.stringify(photoFields.map((f) => f.fieldId))
+);
 
 const seen: string[] = [];
 formsInUse(page, (id) => seen.push(id));
-console.log("connections found     :", JSON.stringify(seen));
+check("connections found", seen.length === 1 && seen[0] === "quote", JSON.stringify(seen));
+
+console.log(failed ? `\n${failed} FAILED` : "\nall good");
+process.exit(failed ? 1 : 0);

@@ -5,15 +5,22 @@
 // client into the browser bundle.
 //
 // ── WHAT A FORM IS HERE, AND WHAT IT DELIBERATELY IS NOT ──────────────────────────────────────
-// A Form is a REUSABLE SET OF QUESTIONS. That is all. It is a starting point you copy onto a
-// website, not a live dependency that website keeps pointing at.
+// A Form is a REUSABLE SET OF QUESTIONS, and a page POINTS AT one rather than holding a copy.
 //
-// The alternative — a website links to a form and resolves it at render — was rejected on
-// purpose. It buys "fix a typo everywhere in one click" and costs a blast radius: one careless
-// edit changes every client's contact form at once, and deleting a form leaves published pages
-// pointing at nothing. Copying means the worst a bad preset can do is put the wrong questions on
-// ONE page, where you can see it and fix it. At thirty clients, fixing a typo everywhere is
-// thirty clicks, once. That trade is worth it.
+// ⚠️ THIS NOTE USED TO SAY THE OPPOSITE, and said it for months after it stopped being true.
+// Forms were copy-on-use until 2026-08-06, when Steven asked for the live link: *"if I change a
+// question in the form library, whatever's on their website should update."* The resolver is
+// lib/formPointer.ts. Copy-on-use bought a small blast radius and cost the whole point of having
+// a library — you changed the questions in one place and got them in none.
+//
+// ── WHAT A FORM HAS TO BE ABLE TO HOLD ────────────────────────────────────────────────────────
+// Every form Steven actually uses was built its own way, outside this library, because the
+// library couldn't hold what they do. Three things closed that gap (2026-08-06):
+//   `photos`               a question that takes pictures, not words
+//   satisfiedBy            skip a question when the site record already answers it
+//   oneQuestionPerScreen   a long form is a conversation, not a wall
+// None of them are new mechanisms — they are the ones the onboarding form already ran on, moved
+// down here so a form can be edited on a screen instead of in code.
 //
 // ⚠️ THERE IS NO DESTINATION ON THIS RECORD, AND THERE MUST NEVER BE ONE.
 // No email, no spreadsheet id, no webhook, no "notify" toggle. Where a lead goes is a pure
@@ -24,7 +31,40 @@
 // one that ends a retainer and the referral behind it. It is prevented structurally, by the shape
 // of this type, not by anybody remembering to check.
 
-export type FormFieldType = "text" | "tel" | "email" | "url" | "textarea" | "choice";
+import type { Site } from "./sitesShared";
+
+/**
+ * ⚠️ `photos` IS NOT A TEXT BOX AND CANNOT GO ANYWHERE A TEXT BOX CAN.
+ *
+ * It runs the onboarding upload pipeline — HEIC→JPEG, resize, EXIF/GPS strip, hosted under a path
+ * derived from a verified site id, capped per client (lib/imagePrep.ts + app/api/intake/upload).
+ * That route is gated by an onboarding link being open, which a stranger on a client's public
+ * contact page does not have. So a photo question works on an onboarding form and is SKIPPED on a
+ * website's lead form — see FIELD_TYPE_ONBOARDING_ONLY, lib/formPointer.ts, and the warning the
+ * editor puts under the question so it is visible where it is chosen, not just true in code.
+ */
+export type FormFieldType =
+  | "text"
+  | "tel"
+  | "email"
+  | "url"
+  | "textarea"
+  | "choice"
+  | "photos";
+
+/** The single list every writer validates against. An unknown type falls back to `text`. */
+export const FORM_FIELD_TYPES: FormFieldType[] = [
+  "text",
+  "tel",
+  "email",
+  "url",
+  "textarea",
+  "choice",
+  "photos",
+];
+
+/** Types a public website form can't draw. Kept as a set so adding one is a one-line change. */
+export const FIELD_TYPE_ONBOARDING_ONLY: FormFieldType[] = ["photos"];
 
 export type FormField = {
   /**
@@ -43,7 +83,58 @@ export type FormField = {
   options?: string[];
   placeholder?: string;
   required?: boolean;
+  /**
+   * A dotted path on the Site record that ALREADY ANSWERS THIS. If that field has a value, the
+   * question never appears.
+   *
+   * This is the whole prospect-vs-inbound mechanism, and it is why there is ONE form rather than
+   * one for people we scraped and one for people who found us. Prospected off the scrape, her
+   * name, phone and address are already on the record, so she never sees them and it reads as
+   * "he's done his homework." Inbound, the record is empty and those same questions surface. No
+   * branching, no second form, no flag to keep in sync.
+   *
+   * ⚠️ ONLY MEANINGFUL WHERE A SITE RECORD EXISTS — that's onboarding. A stranger filling in a
+   * contact form on a client's website has no record of her own, so nothing is ever skipped there
+   * and every question shows. See questionsToAsk below, which is a no-op with a null site.
+   */
+  satisfiedBy?: string;
 };
+
+/**
+ * What Steven picks from instead of typing `business.phoneDisplay`.
+ *
+ * The paths are real dotted paths into the Site record (lib/sitesShared.ts). Keeping the list here
+ * rather than letting him type one means a typo can't quietly turn "skip if known" into "never
+ * skips" — a wrong path reads as an empty value, which looks exactly like a question that simply
+ * always gets asked. That failure is invisible; a dropdown makes it impossible.
+ */
+export const SATISFIED_BY_CHOICES: { path: string; label: string }[] = [
+  { path: "business.name", label: "Business name" },
+  { path: "business.phoneDisplay", label: "Phone number" },
+  { path: "business.email", label: "Email address" },
+  { path: "business.address", label: "Address" },
+  { path: "business.hours", label: "Opening hours" },
+];
+
+/** Read "business.phoneDisplay" off a Site record. */
+export function valueAtPath(site: Site | null | undefined, path?: string): string {
+  if (!site || !path) return "";
+  const found = path.split(".").reduce<unknown>((acc, k) => {
+    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[k];
+    return undefined;
+  }, site);
+  return typeof found === "string" ? found : "";
+}
+
+/**
+ * The questions this particular business still has to answer.
+ *
+ * Pass `null` for the site and you get every question back — which is the correct answer for a
+ * public form, where there is no record to check against.
+ */
+export function questionsToAsk(fields: FormField[], site: Site | null | undefined): FormField[] {
+  return (fields || []).filter((f) => !valueAtPath(site, f.satisfiedBy));
+}
 
 /** `builtin` records live in code and always exist; `preset` ones are Steven's own. */
 export type FormKind = "builtin" | "preset";
@@ -59,6 +150,18 @@ export type FormDef = {
   note: string;
   successHeading: string;
   successBody: string;
+  /**
+   * ONE QUESTION AT A TIME instead of one long list.
+   *
+   * Fifteen fields on a phone is a wall; one question with a big box is a conversation, and it
+   * makes "where was I" trivial to answer when she comes back to a half-finished form. It earns
+   * its keep on a long form and costs nothing but clicks on a four-question contact form, so it's
+   * off by default and turned on per form.
+   *
+   * ⚠️ A LONG FORM ON ONE SCREEN IS THE VERSION THAT DOESN'T GET FINISHED, and an unfinished
+   * onboarding form is Steven chasing somebody by text. That is what this exists to prevent.
+   */
+  oneQuestionPerScreen?: boolean;
 };
 
 /**
@@ -192,4 +295,5 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   url: "Web address",
   textarea: "Long text",
   choice: "Pick one",
+  photos: "Photos",
 };

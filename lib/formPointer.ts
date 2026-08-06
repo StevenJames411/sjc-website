@@ -69,19 +69,27 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
     const props = (out.props || {}) as Record<string, unknown>;
 
     if (form) {
-      props.fields = form.fields.map((f) => ({
-        label: f.label,
-        // ⚠️ `fieldId` IS THE SPREADSHEET COLUMN and must be carried across verbatim. Drop it and
-        // LeadForm falls back to slugifying the label — so rewording a question starts filing
-        // answers in a NEW column and orphans everything collected under the old one. Carrying it
-        // is precisely what lets Steven reword a question in the library without breaking a
-        // client's sheet, which is half the point of pointing at the form at all.
-        fieldId: f.fieldId,
-        // `choice` has no LeadForm equivalent yet, so it degrades to a text box rather than
-        // rendering nothing. Named here so it's a known gap, not a silent one.
-        inputType: f.type === "choice" ? "text" : f.type,
-        required: f.required,
-      }));
+      props.fields = form.fields
+        // ⚠️ PHOTO QUESTIONS ARE DROPPED HERE, ON PURPOSE. The upload route is gated by an
+        // onboarding link being open (app/api/intake/upload), which a stranger on a client's
+        // public contact page does not have — so there is nowhere for the file to go. Rendering
+        // the picker anyway would take her photos and lose them, which is worse than not asking.
+        // Not silent: the form editor warns under any photo question that a website form skips
+        // it, so the trade is visible where the question is chosen.
+        .filter((f) => f.type !== "photos")
+        .map((f) => ({
+          label: f.label,
+          // ⚠️ `fieldId` IS THE SPREADSHEET COLUMN and must be carried across verbatim. Drop it
+          // and LeadForm falls back to slugifying the label — so rewording a question starts
+          // filing answers in a NEW column and orphans everything collected under the old one.
+          // Carrying it is precisely what lets Steven reword a question in the library without
+          // breaking a client's sheet, which is half the point of pointing at the form at all.
+          fieldId: f.fieldId,
+          // `choice` has no LeadForm equivalent yet, so it degrades to a text box rather than
+          // rendering nothing. Named here so it's a known gap, not a silent one.
+          inputType: f.type === "choice" ? "text" : f.type,
+          required: f.required,
+        }));
       props.buttonLabel = prefer(n.props?.buttonLabel, form.buttonLabel);
       props.note = prefer(n.props?.note, form.note);
       props.successHeading = prefer(n.props?.successHeading, form.successHeading);

@@ -24,6 +24,10 @@ export default function IntakeForm({
   initialAnswers,
   initialPhotos,
   alreadySubmitted,
+  oneQuestionPerScreen = true,
+  buttonLabel,
+  successHeading,
+  successBody,
 }: {
   /** Which business this form belongs to. The server checks it's open on every call. */
   site: string;
@@ -34,6 +38,22 @@ export default function IntakeForm({
   initialAnswers: IntakeAnswers;
   initialPhotos: string[];
   alreadySubmitted: boolean;
+  /**
+   * The library's layout switch (FormDef.oneQuestionPerScreen).
+   *
+   * ⚠️ DEFAULTS TO TRUE, and the default is the one that matters: this component is the reason
+   * the setting exists, and a missing prop must not quietly turn a nine-question phone form back
+   * into the wall it was designed not to be.
+   *
+   * All-on-one-screen keeps the save-as-you-go behaviour — it saves on leaving each box instead
+   * of on pressing Next. Losing that with the layout would trade a real protection for a
+   * cosmetic choice.
+   */
+  oneQuestionPerScreen?: boolean;
+  /** From the library form; each falls back to the wording this component always used. */
+  buttonLabel?: string;
+  successHeading?: string;
+  successBody?: string;
 }) {
   const [answers, setAnswers] = useState<IntakeAnswers>(initialAnswers || {});
   const [photos, setPhotos] = useState<string[]>(initialPhotos || []);
@@ -135,12 +155,31 @@ export default function IntakeForm({
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  /** Everything answered that has to be. Used by the all-on-one-screen submit. */
+  function unanswered(): IntakeQuestion[] {
+    return questions.filter((x) => {
+      if (!x.required) return false;
+      if (x.type === "photos") return photos.length === 0;
+      return !String(answers[x.id] || "").trim();
+    });
+  }
+
+  async function submitAll() {
+    if (unanswered().length) {
+      setSaveError("Fill in the ones marked required and try again.");
+      setSaveState("failed");
+      return;
+    }
+    const when = new Date().toISOString();
+    if (await save({ answers, submittedAt: when })) setDone(true);
+  }
+
   if (done) {
     return (
-      <Shell title="Got it — thank you.">
+      <Shell title={successHeading || "Got it — thank you."}>
         <P>
-          That&apos;s everything we need. We&apos;ll put it together and send you the site to look
-          at before anyone else sees it.
+          {successBody ||
+            "That's everything we need. We'll put it together and send you the site to look at before anyone else sees it."}
         </P>
         <P>If you think of something you forgot, just text me.</P>
         <Phone contact={contact} />
@@ -148,6 +187,57 @@ export default function IntakeForm({
     );
   }
 
+  if (!questions.length) {
+    return <Shell title="All done."><P>Nothing left to answer.</P><Phone contact={contact} /></Shell>;
+  }
+
+  const sendLabel = buttonLabel || "Send it in";
+
+  // ── ALL ON ONE SCREEN ────────────────────────────────────────────────────────────────────────
+  // Correct for a short form. Still saves per answer (onBlur) rather than only at the end, so the
+  // resumability that makes this form finishable doesn't depend on which layout is chosen.
+  if (!oneQuestionPerScreen) {
+    return (
+      <Shell title={businessName || "Tell us about your business"}>
+        {questions.map((qq) => (
+          <div key={qq.id} style={{ marginBottom: 26 }}>
+            <label style={QLABEL}>
+              {qq.label}
+              {qq.required ? null : <span style={{ fontWeight: 400, color: "#6b7280" }}> (optional)</span>}
+            </label>
+            {qq.help && <P small>{qq.help}</P>}
+            <div style={{ marginTop: 12 }} onBlur={() => save({ answers })}>
+              <QuestionInput
+                q={qq}
+                value={String(answers[qq.id] || "")}
+                onChange={(v) => setAnswers((a) => ({ ...a, [qq.id]: v }))}
+                photos={photos}
+                fileRef={fileRef}
+                onFiles={onFiles}
+                busy={busy}
+              />
+            </div>
+          </div>
+        ))}
+
+        {saveState === "failed" && (
+          <P small danger>{saveError || "Didn't save."} Check your signal and try again.</P>
+        )}
+
+        <button
+          type="button"
+          onClick={submitAll}
+          disabled={saveState === "saving" || !!busy}
+          style={{ ...BTN, ...PRIMARY, marginTop: 8 }}
+        >
+          {saveState === "saving" ? "Saving…" : sendLabel}
+        </button>
+        <P small>Your answers save as you go — you can close this and come back to the same link.</P>
+      </Shell>
+    );
+  }
+
+  // ── ONE QUESTION AT A TIME ───────────────────────────────────────────────────────────────────
   if (!q) return <Shell title="All done."><P>Nothing left to answer.</P><Phone contact={contact} /></Shell>;
 
   const canAdvance = q.type === "photos" ? !q.required || photos.length > 0 : !q.required || !!answer.trim();
@@ -157,75 +247,19 @@ export default function IntakeForm({
       title={businessName ? `${businessName}` : "Tell us about your business"}
       progress={{ at: i + 1, of: questions.length }}
     >
-      <label style={{ display: "block", fontSize: 21, fontWeight: 700, color: "#111827", lineHeight: 1.3 }}>
-        {q.label}
-      </label>
+      <label style={QLABEL}>{q.label}</label>
       {q.help && <P small>{q.help}</P>}
 
       <div style={{ marginTop: 16 }}>
-        {q.type === "choice" ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {(q.options || []).map((opt) => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                style={{
-                  ...INPUT,
-                  textAlign: "left",
-                  cursor: "pointer",
-                  borderColor: answer === opt ? "#2563eb" : "#d1d5db",
-                  borderWidth: answer === opt ? 2 : 1,
-                  fontWeight: answer === opt ? 600 : 400,
-                }}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        ) : q.type === "photos" ? (
-          <div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              multiple
-              style={{ display: "none" }}
-              onChange={onFiles}
-            />
-            <button type="button" onClick={() => fileRef.current?.click()} disabled={!!busy} style={BTN}>
-              {busy || (photos.length ? "Add more photos" : "Choose photos")}
-            </button>
-            {photos.length > 0 && (
-              <>
-                <P small>{photos.length} sent</P>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 8 }}>
-                  {photos.map((u) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={u} src={u} alt="" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 8 }} />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        ) : q.type === "textarea" ? (
-          <textarea
-            value={answer}
-            onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-            placeholder={q.placeholder}
-            rows={5}
-            style={{ ...INPUT, resize: "vertical" }}
-          />
-        ) : (
-          <input
-            type={q.type === "tel" ? "tel" : q.type === "url" ? "url" : "text"}
-            inputMode={q.type === "tel" ? "tel" : undefined}
-            value={answer}
-            onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-            placeholder={q.placeholder}
-            style={INPUT}
-          />
-        )}
+        <QuestionInput
+          q={q}
+          value={answer}
+          onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))}
+          photos={photos}
+          fileRef={fileRef}
+          onFiles={onFiles}
+          busy={busy}
+        />
       </div>
 
       {saveState === "failed" && (
@@ -244,7 +278,7 @@ export default function IntakeForm({
           disabled={!canAdvance || saveState === "saving" || !!busy}
           style={{ ...BTN, ...PRIMARY, opacity: canAdvance && !busy ? 1 : 0.5, flex: 1 }}
         >
-          {saveState === "saving" ? "Saving…" : i + 1 >= questions.length ? "Send it in" : "Next"}
+          {saveState === "saving" ? "Saving…" : i + 1 >= questions.length ? sendLabel : "Next"}
         </button>
       </div>
 
@@ -256,6 +290,100 @@ export default function IntakeForm({
 
       <P small>Your answers save as you go — you can close this and come back to the same link.</P>
     </Shell>
+  );
+}
+
+/**
+ * ONE renderer per question type, shared by both layouts.
+ *
+ * ⚠️ SHARED ON PURPOSE. Two copies is how a `choice` question ends up drawn as buttons on one
+ * layout and as a text box on the other, and how a question type added later gets wired into one
+ * of them and silently renders nothing on the other.
+ */
+function QuestionInput({
+  q,
+  value,
+  onChange,
+  photos,
+  fileRef,
+  onFiles,
+  busy,
+}: {
+  q: IntakeQuestion;
+  value: string;
+  onChange: (v: string) => void;
+  photos: string[];
+  fileRef: React.RefObject<HTMLInputElement | null>;
+  onFiles: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  busy: string;
+}) {
+  if (q.type === "choice") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {(q.options || []).map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onChange(opt)}
+            style={{
+              ...INPUT,
+              textAlign: "left",
+              cursor: "pointer",
+              borderColor: value === opt ? "#2563eb" : "#d1d5db",
+              borderWidth: value === opt ? 2 : 1,
+              fontWeight: value === opt ? 600 : 400,
+            }}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  if (q.type === "photos") {
+    return (
+      <div>
+        <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={onFiles} />
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={!!busy} style={BTN}>
+          {busy || (photos.length ? "Add more photos" : "Choose photos")}
+        </button>
+        {photos.length > 0 && (
+          <>
+            <P small>{photos.length} sent</P>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 8 }}>
+              {photos.map((u) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={u} src={u} alt="" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 8 }} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  if (q.type === "textarea") {
+    return (
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={q.placeholder}
+        rows={5}
+        style={{ ...INPUT, resize: "vertical" }}
+      />
+    );
+  }
+
+  return (
+    <input
+      type={q.type === "tel" ? "tel" : q.type === "url" ? "url" : q.type === "email" ? "email" : "text"}
+      inputMode={q.type === "tel" ? "tel" : undefined}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={q.placeholder}
+      style={INPUT}
+    />
   );
 }
 
@@ -336,6 +464,14 @@ const Phone = ({ contact }: { contact: { display: string; dial: string } }) => (
     </a>
   </p>
 );
+
+const QLABEL: React.CSSProperties = {
+  display: "block",
+  fontSize: 21,
+  fontWeight: 700,
+  color: "#111827",
+  lineHeight: 1.3,
+};
 
 // 17px minimum on inputs: anything smaller makes iOS Safari zoom the whole page on focus, and she
 // then has to pinch back out for every single question.

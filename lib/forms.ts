@@ -1,4 +1,4 @@
-// The form library — reusable sets of questions you copy onto a website.
+// The form library — reusable sets of questions a website POINTS AT (lib/formPointer.ts).
 //
 // Server-only (pulls in the store). Types that the browser needs live in ./formsShared, along
 // with the long note on what a Form is and why it carries no destination. Read that first.
@@ -12,11 +12,15 @@ import { getClient } from "./store";
 import { FORMS_KEY } from "./siteKeys";
 import {
   BUILTIN_FORMS,
+  FORM_FIELD_TYPES,
+  SATISFIED_BY_CHOICES,
   mintFieldId,
   type FormDef,
   type FormField,
+  type FormFieldType,
   type FormKind,
 } from "./formsShared";
+import { ONBOARDING_FORM } from "./intakeShared";
 
 export * from "./formsShared";
 
@@ -43,7 +47,12 @@ export async function readForms(): Promise<FormDef[]> {
   const blob = (await store().read<FormsBlob>()) || {};
   const saved = (blob.forms || []).filter((f) => f && f.id);
 
-  const builtins = BUILTIN_FORMS.map((b) => {
+  // ⚠️ ONBOARDING IS A BUILT-IN LIKE ANY OTHER, and being in this list is the whole point: it is
+  // the form Steven runs on every client, and until 2026-08-06 it was the one form that could
+  // only be changed by editing code. He went looking for it in his own library and it wasn't
+  // there. Its floor lives in lib/intakeShared.ts with the questions and the reasoning behind
+  // them; it is merged here rather than defined in formsShared so the prose stays with the form.
+  const builtins = [...BUILTIN_FORMS, ONBOARDING_FORM].map((b) => {
     const override = saved.find((s) => s.id === b.id);
     return {
       ...b,
@@ -54,7 +63,10 @@ export async function readForms(): Promise<FormDef[]> {
     };
   });
 
-  const builtinIds = new Set(BUILTIN_FORMS.map((b) => b.id));
+  // ⚠️ DERIVED FROM `builtins`, NOT FROM BUILTIN_FORMS. Built from the narrower list, a saved
+  // onboarding override would pass this filter and the library would show the form TWICE — once
+  // merged, once raw — with edits landing on whichever copy was clicked.
+  const builtinIds = new Set(builtins.map((b) => b.id));
   return [...builtins, ...saved.filter((s) => !builtinIds.has(s.id))];
 }
 
@@ -94,16 +106,27 @@ function normalizeFields(incoming: FormField[], previous: FormField[] = []): For
       fieldId = mintFieldId(label, taken);
     }
     taken.push(fieldId);
+    // A type that isn't in the vocabulary becomes a text box rather than being stored as-is.
+    // Whatever arrives here ends up in a `type ===` comparison in three renderers; an unknown
+    // string matches none of them and draws nothing at all, which is a question that silently
+    // isn't asked. Falling back to text asks it badly, which is recoverable.
+    const type: FormField["type"] = FORM_FIELD_TYPES.includes(f?.type as FormFieldType)
+      ? (f.type as FormFieldType)
+      : "text";
+    // Only a path we published is honoured. A typo'd path reads as an empty value, which looks
+    // exactly like a question that just always gets asked — a silent failure, so it's refused.
+    const satisfiedBy = String(f?.satisfiedBy || "").trim();
     out.push({
       fieldId,
       label,
-      type: f?.type || "text",
+      type,
       ...(f?.help ? { help: String(f.help) } : {}),
       ...(f?.placeholder ? { placeholder: String(f.placeholder) } : {}),
       ...(f?.required ? { required: true } : {}),
-      ...(f?.type === "choice" && Array.isArray(f?.options)
+      ...(type === "choice" && Array.isArray(f?.options)
         ? { options: f.options.map((o) => String(o)).filter(Boolean) }
         : {}),
+      ...(SATISFIED_BY_CHOICES.some((c) => c.path === satisfiedBy) ? { satisfiedBy } : {}),
     });
   }
   return out;
@@ -148,6 +171,9 @@ export async function createForm(opts: {
     note: source?.note || "",
     successHeading: source?.successHeading || "Got it — thank you.",
     successBody: source?.successBody || "We'll be in touch shortly.",
+    // Carried like the questions are: copying a long one-question-per-screen form and getting
+    // back a fifteen-field wall is not what "make a copy" means.
+    ...(source?.oneQuestionPerScreen ? { oneQuestionPerScreen: true } : {}),
   };
 
   // Saved presets only. A built-in is implicit and must never be written as a plain row, or
@@ -177,6 +203,12 @@ export async function updateForm(
     id: current.id,
     kind: current.kind,
     fields: patch.fields ? normalizeFields(patch.fields, current.fields) : current.fields,
+    // The route hands this through from raw JSON, so coerce rather than trust. A stored
+    // "false"/"" would be truthy everywhere it's read and the toggle would look broken.
+    oneQuestionPerScreen:
+      "oneQuestionPerScreen" in patch
+        ? patch.oneQuestionPerScreen === true
+        : !!current.oneQuestionPerScreen,
   };
 
   // Built-ins are persisted as an override row the first time one is edited, then merged back
@@ -193,9 +225,14 @@ export async function updateForm(
  * Delete a preset.
  *
  * Built-ins refuse — they live in code, so "deleting" one would only drop the override and it
- * would reappear on the next read, which reads as a bug. Nothing else needs guarding: a form is
- * COPIED onto a page, never referenced by it, so deleting one cannot leave a published page
- * pointing at nothing. That is the payoff for copy-on-use.
+ * would reappear on the next read, which reads as a bug.
+ *
+ * ⚠️ A DELETED FORM CAN LEAVE PUBLISHED PAGES POINTING AT NOTHING. That is the price of the
+ * pointer architecture, and it is paid in two places rather than by forbidding deletion:
+ * lib/formPointer.ts LEAVES a dangling block's last-known questions alone instead of blanking it,
+ * so the worst case is a stale form on a live site and never an empty box; and the delete screen
+ * shows every website and page connected to this form BEFORE the button — Steven asked for that
+ * by name. Show the connections, then let the human decide.
  */
 export async function deleteForm(id: string): Promise<{ ok: boolean; error?: string }> {
   const key = String(id || "").trim();
