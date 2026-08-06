@@ -178,9 +178,11 @@ export default function FormLibrary({
   }, [forms]);
 
   async function adopt(row: Stray) {
+    // The page title as-is. Appending " form" produced "Apply (SJC) (intake form) form", because
+    // a page called "…(intake form)" already says what it is.
     const name = window.prompt(
       `Name this copy — it's the ${row.questions} questions on ${row.siteName} · ${row.title}.`,
-      `${row.title} form`
+      row.title
     );
     if (!name) return;
     setBusy(true);
@@ -201,8 +203,16 @@ export default function FormLibrary({
           `Copied, but these columns came out different: ${body.keysThatDiffer.join(", ")}. ` +
             `The page is unaffected — but this copy isn't an exact one.`
         );
+        router.refresh();
+        return;
       }
-      router.refresh();
+      // ⚠️ LAND ON THE THING YOU JUST MADE. Refreshing in place left Steven staring at the same
+      // screen: the count went 5 → 4, and his new form was real but sitting below the fold under
+      // a heading he had to scroll to find — so "it worked" and "I can't see it" were both true.
+      // "+ New form" has always opened the form it created; a copy is the same act and now does
+      // the same thing.
+      if (body.formId) router.push(`/edit/forms/${body.formId}`);
+      else router.refresh();
     } catch (e) {
       setErr((e as Error).message);
     } finally {
@@ -438,17 +448,22 @@ export default function FormLibrary({
         </div>
       ) : null}
 
-      {working.length ? (
-        <>
-          <h2 style={sec}>In use — running right now</h2>
-          <div style={grid}>{working.map(Card)}</div>
-        </>
-      ) : null}
-
+      {/* ⚠️ YOURS COMES FIRST, DIRECTLY UNDER THE PANEL THAT MAKES THEM. The panel above says
+          "copy these in"; the copies then appeared two sections down, below the fold, under a
+          heading you had to go looking for — so Steven copied one, watched the count drop 5 → 4,
+          and reported that it hadn't arrived. It had. The result of an action belongs next to the
+          action. */}
       {mine.length ? (
         <>
           <h2 style={sec}>Yours</h2>
           <div style={grid}>{mine.map(Card)}</div>
+        </>
+      ) : null}
+
+      {working.length ? (
+        <>
+          <h2 style={sec}>In use — running right now</h2>
+          <div style={grid}>{working.map(Card)}</div>
         </>
       ) : null}
 
