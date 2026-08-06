@@ -41,8 +41,11 @@ export default function FooterView({
   brandName,
   showLogo,
 }: FooterViewProps) {
-  const bg = background || "#111827";
-  const fg = foreground || "#ffffff";
+  // ROLES, not hexes. #111827 here meant the footer sat one shade off every dark band above it and
+  // never moved when the palette did — on 2026-08-05 the whole site went near-black cyan and the
+  // footer stayed the old charcoal, which is what read as "the footer doesn't match".
+  const bg = background || "bandDark";
+  const fg = foreground || "white";
   const name = brandName || "Steven James Consulting";
   const logoOn = showLogo !== false;
   const year = new Date().getFullYear();
