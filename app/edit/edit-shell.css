@@ -51,26 +51,41 @@
 
 /* DARK. Surfaces lift instead of the text dimming, and every status hue keeps its identity —
    green/amber/red have to read at a glance in either theme or the board stops being a board. */
+/* ── DARK MODE IS STEVEN JAMES DESIGNS NAVY, NOT GITHUB BLACK ─────────────────────────────────
+   Steven, 2026-08-06: *"since I'm the only one in the back office, I thought it might look nice
+   with our blue, like we use in the hero section."* He's right that it's his call — nobody else
+   ever sees this, and it makes the tool feel like the same product as the site it builds.
+
+   The values below are the hero's navy family, kept a step darker than the marketing page: a hero
+   is looked at for four seconds, this is looked at for four hours, so the saturation is pulled
+   back and the panels are separated by lightness rather than by hue.
+
+   ⚠️ ONE THING TO KNOW RATHER THAN FIX: a navy surround does tint how a colour next to it reads,
+   and this back office is where CLIENT brand colours get chosen (/edit/brand is a page of
+   swatches). If a client's teal ever looks off, flip to light mode to judge it — that's what the
+   toggle is for. Not worth giving up the navy over; worth knowing. */
 .edit-shell[data-theme="dark"] {
-  --e-bg: #0d1117;
-  --e-panel: #161b22;
-  --e-panel-2: #1c222b;
-  --e-rail: #0b0f14;
-  --e-rail-ink: #c9d1d9;
-  --e-rail-ink-strong: #f9fafb;
-  --e-rail-line: #21262d;
-  --e-ink: #e5e7eb;
-  --e-ink-strong: #f9fafb;
-  --e-muted: #8b949e;
-  --e-line: #21262d;
-  --e-line-soft: #1b2129;
-  --e-accent: #58a6ff;
+  --e-bg: #0e1a2f;
+  --e-panel: #142440;
+  --e-panel-2: #1a2d4e;
+  --e-rail: #0a1526;
+  --e-rail-ink: #c3d3e8;
+  --e-rail-ink-strong: #ffffff;
+  --e-rail-line: #1d3357;
+  --e-ink: #e8eef7;
+  --e-ink-strong: #ffffff;
+  --e-muted: #8ea3c0;
+  --e-line: #22375a;
+  --e-line-soft: #1a2b49;
+  --e-accent: #4fd2f7;
 
   --e-ok-dot: #3fb950;   --e-ok-bg: #10261a;   --e-ok-line: #1c4429;   --e-ok-ink: #7ee2a8;
   --e-warn-dot: #d29922; --e-warn-bg: #2a2011; --e-warn-line: #4b3a12; --e-warn-ink: #e3b341;
   --e-bad-dot: #f85149;  --e-bad-bg: #2c1618;  --e-bad-line: #58252a;  --e-bad-ink: #ff9c96;
-  --e-none-dot: #8b949e; --e-none-bg: #171b21; --e-none-line: #262c34;
-  --e-info-bg: #171d2e;  --e-info-line: #2b3557; --e-info-ink: #a5b4fc;
+  /* The neutral "nothing proven yet" tile was a grey-black island on a navy page — the one status
+     that isn't a status has to look like the page it sits on, not like a hole in it. */
+  --e-none-dot: #8ea3c0; --e-none-bg: #16273f; --e-none-line: #263d5e;
+  --e-info-bg: #16294a;  --e-info-line: #2b4574; --e-info-ink: #a5c8fc;
   --e-danger: #f85149;
 }
 
