@@ -115,20 +115,32 @@ f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
 }
 
 /**
- * ONBOARDING LINKS BELONG TO THE STUDIO — see onboardUrlFor in lib/hostShared.
+ * THE STUDIO'S SURFACES BELONG ON THE STUDIO'S DOMAIN.
  *
- * Links already texted to a client point at stevenjamesconsulting.com/<id>/onboard, and both
- * domains serve this same deployment, so that address answers. It must keep answering — a link
- * in someone's message thread is not ours to break. But it must not keep that ADDRESS: the page
- * says it's from Steven James Designs, and where a document lives is part of the document. The
- * link preview arriving under the wrong brand is the exact failure this whole split exists to
- * stop, so the fix is a redirect, not a second correct-looking home.
+ * Two things live here, for the same reason:
  *
- * Narrow on purpose: only the SJC host, only `/<something>/onboard`. Demo subdomains, custom
- * domains, *.vercel.app, and localhost all fall through untouched.
+ *   /<id>/onboard   Links already texted to a client point at stevenjamesconsulting.com. Both
+ *                   domains serve this deployment so the address answers, and it must keep
+ *                   answering — a link in someone's message thread is not ours to break. But it
+ *                   must not keep that ADDRESS: the page says it's from Steven James Designs, and
+ *                   where a document lives is part of the document.
+ *
+ *   /edit/*         The website builder. It is a Steven James DESIGNS product; Consulting is one
+ *                   row in its library, no different from a client. Serving the builder from the
+ *                   consulting domain made the consultancy look like the landlord of a tool it is
+ *                   merely a tenant of — and every screenshot, every pasted link and every browser
+ *                   history entry repeated it.
+ *
+ * A redirect, not a second correct-looking home: two addresses that both work is how the wrong one
+ * ends up in a screenshot.
+ *
+ * Narrow on purpose: only the SJC host. Demo subdomains, custom domains, *.vercel.app and
+ * localhost all fall through untouched, so a client's own site is never redirected anywhere.
  */
-function onboardingRedirect(req: NextRequest, pathname: string): URL | null {
-  if (!/^\/[^/]+\/onboard\/?$/.test(pathname)) return null;
+const STUDIO_PATHS = [/^\/[^/]+\/onboard\/?$/, /^\/edit(\/.*)?$/];
+
+function studioRedirect(req: NextRequest, pathname: string): URL | null {
+  if (!STUDIO_PATHS.some((re) => re.test(pathname))) return null;
 
   const here = normalizeHost(
     req.headers.get("x-forwarded-host") || req.headers.get("host") || ""
@@ -145,9 +157,9 @@ function onboardingRedirect(req: NextRequest, pathname: string): URL | null {
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Before anything else: this one is public, and it's a change of address, not a decision
-  // about who's allowed in.
-  const moved = onboardingRedirect(req, pathname);
+  // Before anything else — a change of address, not a decision about who's allowed in. The
+  // builder is still gated once it lands on the studio host; this only decides WHICH host.
+  const moved = studioRedirect(req, pathname);
   if (moved) return NextResponse.redirect(moved, 308);
 
   const authed = isOwner(req, pathname);

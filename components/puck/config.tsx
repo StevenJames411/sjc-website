@@ -361,9 +361,13 @@ export const config: Config<Props, RootProps> = {
         type: "textarea" as const,
         label: "Preview text — the sentence under the title in a text message or Google result",
       },
+      // ⚠️ The label used to read "(leave blank on SJC's own pages)". The builder is a Steven
+      // James Designs product and Consulting is one tenant in it — naming a specific tenant in a
+      // field every other business also fills in is the landlord-vs-tenant confusion made visible,
+      // and it read as an instruction to anyone who wasn't SJC. Says what the blank DOES instead.
       businessName: {
         type: "text" as const,
-        label: "Business name — the source line on the preview card (leave blank on SJC's own pages)",
+        label: "Business name — the source line on the preview card (blank uses the website's own name)",
       },
       shareImage: {
         type: "custom" as const,
