@@ -52,9 +52,42 @@ export default function FooterView({
   const linkEls = (links || []).filter((l) => l && l.label);
   const btn =
     "inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)]";
+  // WHY A FLAT FILL READS AS CHEAP, AND WHAT THE BOUGHT DESIGNS DO INSTEAD.
+  //
+  // Steven put it exactly right on 2026-08-05: the SiteDrop footer "looks richer, deeper blue,"
+  // ours "looks flatter." He guessed it was the font. It isn't — it's two layers, and neither one
+  // is a colour:
+  //
+  //   1. a 1px hairline across the top, fading to nothing at both ends. That is the SEAM. Without
+  //      it the footer is just where the page changes colour; with it, it's an edge someone drew.
+  //   2. a huge, heavily blurred, very faint circle tucked off one corner. It makes the fill
+  //      UNEVEN, and unevenness is the whole trick — a single flat hex has no light in it, so it
+  //      reads as a slab no matter which hex you pick.
+  //
+  // Both paint from brand roles, so they re-skin with everything else and every client site gets
+  // them. Both are decoration: `pointer-events-none` and aria-hidden by omission, so nothing here
+  // can intercept a click meant for a footer link.
   return (
-    <footer style={{ backgroundColor: resolveColor(bg), color: resolveColor(fg) }}>
-      <div className="mx-auto max-w-6xl px-6 py-14">
+    <footer
+      className="relative overflow-hidden"
+      style={{ backgroundColor: resolveColor(bg), color: resolveColor(fg) }}
+    >
+      {/* The seam. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{
+          backgroundImage: `linear-gradient(to right, transparent, color-mix(in srgb, var(--color-sjc-blue) 55%, transparent), transparent)`,
+        }}
+      />
+      {/* The glow. Sized and blurred hard enough that no edge of the circle is ever visible —
+          if you can see it as a shape, it's too small or not blurred enough. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full opacity-[0.14]"
+        style={{ backgroundColor: "var(--color-sjc-blue)", filter: "blur(120px)" }}
+      />
+      <div className="relative mx-auto max-w-6xl px-6 py-14">
         <div className="grid gap-10 md:grid-cols-3">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
