@@ -285,6 +285,22 @@ export default function FormLibrary({
       <h2 style={cardName}>{f.name}</h2>
       {f.description ? <p style={cardDesc}>{f.description}</p> : null}
 
+      {/* ── WHERE IT RUNS, AS LINKS YOU CAN FOLLOW ────────────────────────────────────────────
+          The badge already says WHICH sites; a name you can't click is a name you then go
+          hunting for in another screen. Straight to that page in the builder. */}
+      {f.id !== ONBOARDING_FORM_ID && allUsage[f.id]?.length ? (
+        <p style={usedOn}>
+          {allUsage[f.id]!.map((u, i) => (
+            <span key={`${u.siteId}-${u.slug}`}>
+              {i ? " · " : ""}
+              <a href={`/edit/${u.siteId}/${u.slug}`} style={cardLink}>
+                {u.siteName} — {u.title} ↗
+              </a>
+            </span>
+          ))}
+        </p>
+      ) : null}
+
       {/* ⚠️ THE ADDRESS, ON THE CARD. Onboarding is the one form that isn't on a page — it's a
           link per business — so "which website is this on?" has no answer anywhere else on this
           screen. Without it, this nine-question intake and Consulting's thirteen-question /apply
@@ -296,30 +312,39 @@ export default function FormLibrary({
           block placed on it. This one already HAS a page: a generated route, one per business,
           that exists from the moment the site record does. Nothing is created, nothing is
           published. Switching it on unlocks a door that was always there. */}
+      {/* ⚠️ ONE LINE, NOT A PARAGRAPH. This card used to carry three sentences explaining that
+          onboarding is a link rather than a page — true, and it made the card twice the height of
+          every other one on a screen whose whole job is comparing them at a glance. The full
+          explanation lives on the form's own screen, where you are when you need it. */}
       {f.id === ONBOARDING_FORM_ID && onboarding ? (
-        <p style={whereBox}>
-          {"Every business already has its own onboarding page, at its own address:"}
-          <br />
-          <code style={addr}>{onboarding.example}</code>
-          <br />
-          {"Nothing to build and nothing to publish — switching it on unlocks it, and you text them the link. Open or close one per business on the Websites screen."}
-          {onboarding.total
-            ? ` ${onboarding.openFor.length} of ${onboarding.total} open now.`
-            : null}
+        <p style={cardDesc}>
+          A link per client, not a page — {onboarding.openFor.length} of {onboarding.total} open
+          now.{" "}
+          <a href="/edit" style={cardLink}>
+            Open or close one ↗
+          </a>
         </p>
       ) : null}
 
+      {/* ── THE FIRST FEW QUESTIONS, NOT ALL THIRTEEN ─────────────────────────────────────────
+          Steven, looking at the finished screen: *"the two that I brought in are tall… they
+          don't use the canvas real estate very well."* Right — a card listed EVERY question, so a
+          13-question form was a wall and you could see two forms at a time. A card is for
+          recognising a form, not reading it; the full list is one click away on Edit. */}
       <ul style={list}>
-        {f.fields.map((x) => (
+        {f.fields.slice(0, PREVIEW).map((x) => (
           <li key={x.fieldId} style={li}>
-            <span>{x.label}</span>
+            <span style={liLabel}>{x.label}</span>
             <span style={typeTag}>{FIELD_TYPE_LABELS[x.type] || x.type}</span>
           </li>
         ))}
         {f.fields.length === 0 ? <li style={{ ...li, color: "var(--e-muted)" }}>No questions yet</li> : null}
+        {f.fields.length > PREVIEW ? (
+          <li style={{ ...li, borderBottom: "none", color: "var(--e-muted)" }}>
+            <span>+{f.fields.length - PREVIEW} more</span>
+          </li>
+        ) : null}
       </ul>
-
-      <p style={btnLine}>Button: “{f.buttonLabel}”</p>
 
       {confirming === f.id ? (
         <div style={delPanel}>
@@ -364,7 +389,9 @@ export default function FormLibrary({
         </div>
       ) : (
         <div style={cardFoot}>
-          <button type="button" style={smallGhost} onClick={() => router.push(`/edit/forms/${f.id}`)}>
+          {/* Edit is the dark one, matching the website cards — it's what you came here to do,
+              and every other action on this screen is secondary to it. */}
+          <button type="button" style={editBtn} onClick={() => router.push(`/edit/forms/${f.id}`)}>
             Edit
           </button>
           <button
@@ -402,11 +429,13 @@ export default function FormLibrary({
           CHANGE SHIPPED — it told Steven that editing a form here never touches a website, the
           exact opposite of what now happens. Screen copy is part of the change, not a follow-up:
           wrong instructions are worse than none, because they get believed. */}
+      {/* ⚠️ ONE LINE. This was a four-line paragraph, and on a screen whose job is showing you
+          your forms, four lines of instructions push the forms themselves off the canvas. The
+          detail hasn't gone anywhere — it's on the form editor, which is where you are when it
+          matters. */}
       <p style={hint}>
         Link a form to a page in the builder and the link stays <strong>live</strong> — edit the
-        questions here and every website using it updates. Each card says which sites it is on.
-        The builder also has a &ldquo;start from a preset&rdquo; option that takes a one-off copy
-        instead, for when a single page needs its own variant.
+        questions here and every website using it updates.
       </p>
 
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search forms…" style={search} />
@@ -536,7 +565,16 @@ const list: React.CSSProperties = { listStyle: "none", padding: 0, margin: "14px
 const li: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "7px 0", borderBottom: "1px solid var(--e-panel-2)" };
 const typeTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", whiteSpace: "nowrap" };
 const btnLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", margin: "12px 0 0" };
-const cardFoot: React.CSSProperties = { display: "flex", gap: 8, marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--e-line-soft)" };
+// ⚠️ `marginTop: "auto"` IS WHAT MAKES A ROW OF CARDS LOOK LIKE A ROW. Without it every card's
+// buttons sit wherever its own question list happens to end, so three cards side by side have
+// three different button heights and the grid reads as unfinished.
+const cardFoot: React.CSSProperties = { display: "flex", gap: 8, marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--e-line-soft)" };
+/** How many questions a card shows before "+N more". Enough to recognise it, not to read it. */
+const PREVIEW = 4;
+const liLabel: React.CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
+const usedOn: React.CSSProperties = { fontSize: 12, margin: "8px 0 0", lineHeight: 1.6 };
+const cardLink: React.CSSProperties = { color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
+const editBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
 const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
 const iconBtn: React.CSSProperties = { ...smallGhost, marginLeft: "auto", padding: "6px 10px" };
 const delPanel: React.CSSProperties = { marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--e-bad-line)", background: "var(--e-bad-bg)", borderRadius: 8, padding: 12 };
@@ -547,8 +585,6 @@ const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(-
 const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, marginTop: 10 };
 const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
 const strayBox: React.CSSProperties = { marginTop: 18, border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 12, padding: "14px 16px", fontSize: 13 };
-const whereBox: React.CSSProperties = { margin: "10px 0 0", fontSize: 12, lineHeight: 1.7, color: "var(--e-muted)", borderLeft: "3px solid var(--e-line)", paddingLeft: 10 };
-const addr: React.CSSProperties = { fontFamily: "ui-monospace,monospace", fontSize: 11, background: "var(--e-line-soft)", borderRadius: 4, padding: "2px 5px", wordBreak: "break-all" };
 const strayRow: React.CSSProperties = { display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "8px 0", borderTop: "1px solid var(--e-line)" };
 const smallBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "7px 13px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" };
 const footNote: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid var(--e-line)", paddingTop: 16, maxWidth: 720 };
