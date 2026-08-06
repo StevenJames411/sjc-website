@@ -27,6 +27,8 @@ type Stray = {
   title: string;
   questions: number;
   from: string[];
+  /** Set when this page's questions already have a copy in the library. */
+  matchedFormId?: string | null;
 };
 
 /** Where the onboarding form runs and who has it open — read live, see app/edit/forms/page.tsx. */
@@ -59,6 +61,15 @@ export default function FormLibrary({
   }>({ loading: false, rows: [] });
   /** null = couldn't check. Never render that as "all consolidated". */
   const [strays, setStrays] = useState<Stray[] | null>([]);
+  /**
+   * formId -> the page its questions were copied from.
+   *
+   * ⚠️ "NOT ON ANY SITE" WAS TECHNICALLY TRUE AND PRACTICALLY A LIE. Steven copied five live
+   * pages in and every card claimed it wasn't used anywhere. Correct — no page POINTS at them
+   * (they're copies, that was the whole decision) — and useless, because these are the questions
+   * a real page is asking right now. The card should say where they came from.
+   */
+  const [copiedFrom, setCopiedFrom] = useState<Record<string, Stray>>({});
 
   const shown = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -177,7 +188,14 @@ export default function FormLibrary({
         const r = await fetch("/api/admin/forms/adopt?scan=1", { credentials: "same-origin" }).then(
           (x) => x.json()
         );
-        if (!cancelled) setStrays(r?.notInTheLibrary || []);
+        if (cancelled) return;
+        setStrays(r?.notInTheLibrary || []);
+        const already: Stray[] = r?.alreadyInTheLibrary || [];
+        setCopiedFrom(
+          Object.fromEntries(
+            already.filter((x) => x.matchedFormId).map((x) => [x.matchedFormId as string, x])
+          )
+        );
       } catch {
         // Unknown, not zero — say nothing rather than imply everything is already in here.
         if (!cancelled) setStrays(null);
@@ -359,7 +377,19 @@ export default function FormLibrary({
           const rows = allUsage[f.id];
           if (rows === undefined) return null;
           if (rows === null) return <span style={chip}>usage unknown</span>;
-          if (!rows.length) return <span style={chip}>not on any site</span>;
+          if (!rows.length) {
+            // ⚠️ "not on any site" IS TRUE AND READS AS "nothing uses this". These are the
+            // questions a live page is asking right now — it just isn't POINTING at the library
+            // copy, which was the whole decision not to migrate. Say the useful thing.
+            const src = copiedFrom[f.id];
+            return src ? (
+              <span style={{ ...countChip, background: "#eef2ff", color: "#3730a3" }}>
+                same questions as {src.siteName} · {src.title}
+              </span>
+            ) : (
+              <span style={chip}>not linked to a page</span>
+            );
+          }
           const sites = [...new Set(rows.map((r) => r.siteName))];
           return (
             <span style={{ ...countChip, background: "#ecfdf5", color: "#065f46" }}>
@@ -403,13 +433,15 @@ export default function FormLibrary({
           onboarding is a link rather than a page — true, and it made the card twice the height of
           every other one on a screen whose whole job is comparing them at a glance. The full
           explanation lives on the form's own screen, where you are when you need it. */}
+      {/* ⚠️ THE "Open or close one ↗" LINK IS GONE. Steven: *"I tried that hyperlink, it just
+          opens my form library again, which is confusing. I have a make a copy button, so what's
+          the hyperlink for?"* Nothing — the switches moved onto this form's own editor, which is
+          exactly where Edit already goes. A second route to the same place, pointing at a screen
+          that isn't obviously it, is worse than no link at all. */}
       {f.id === ONBOARDING_FORM_ID && onboarding ? (
         <p style={cardDesc}>
           A link per client, not a page — {onboarding.openFor.length} of {onboarding.total} open
-          now.{" "}
-          <a href="/edit" style={cardLink}>
-            Open or close one ↗
-          </a>
+          now. Press Edit to switch one on.
         </p>
       ) : null}
 
