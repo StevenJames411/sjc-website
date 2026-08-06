@@ -7,12 +7,47 @@
 //
 // The PUBLIC site never calls this. A form's questions are copied into the page when you pick a
 // preset, so a visitor's browser has no reason to know the library exists.
-import { readForms, createForm, updateForm, deleteForm } from "@/lib/forms";
+import {
+  readForms,
+  createForm,
+  updateForm,
+  deleteForm,
+  readSections,
+  writeSections,
+  unhideForm,
+} from "@/lib/forms";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return Response.json({ forms: await readForms() });
+  const [forms, sections] = await Promise.all([readForms(), readSections()]);
+  return Response.json({ forms, sections });
+}
+
+/**
+ * Housekeeping that isn't about one form's questions:
+ *   PUT { sections: { mine, inUse, samples } }  -> rename the groups
+ *   PUT { unhide: "<id>" }                      -> put a hidden built-in back
+ *
+ * Separate from PATCH on purpose. PATCH edits ONE form by id; these change the screen around
+ * them, and sharing a verb would mean one careless body could do either.
+ */
+export async function PUT(req: Request) {
+  let body: { sections?: Record<string, string>; unhide?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return Response.json({ ok: false, error: "bad json" }, { status: 400 });
+  }
+  if (body?.unhide) {
+    const res = await unhideForm(body.unhide);
+    return Response.json(res, { status: res.ok ? 200 : 400 });
+  }
+  if (body?.sections) {
+    const res = await writeSections(body.sections);
+    return Response.json(res, { status: res.ok ? 200 : 400 });
+  }
+  return Response.json({ ok: false, error: "nothing to do" }, { status: 400 });
 }
 
 export async function POST(req: Request) {

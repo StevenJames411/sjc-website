@@ -14,7 +14,7 @@
 // WEBSITE it came from, set once in that website's settings — never on the form.
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FIELD_TYPE_LABELS, type FormDef } from "@/lib/formsShared";
+import { FIELD_TYPE_LABELS, type FormDef, type SectionKey } from "@/lib/formsShared";
 import { ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 
 type UsageRow = { siteId: string; siteName: string; slug: string; title: string; published: boolean };
@@ -36,12 +36,17 @@ export default function FormLibrary({
   forms,
   title,
   onboarding,
+  sections,
 }: {
   forms: FormDef[];
   title: string;
   onboarding?: Onboarding;
+  /** What the three groups are called. Steven's words, not mine — see SECTION_DEFAULTS. */
+  sections: Record<SectionKey, string>;
 }) {
   const router = useRouter();
+  /** Which heading is being renamed, and the text so far. */
+  const [renaming, setRenaming] = useState<{ key: SectionKey; text: string } | null>(null);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -75,9 +80,15 @@ export default function FormLibrary({
   // Steven kept the samples deliberately: *"it's okay to have some samples in there"* — they're a
   // starting point for a new client's form. Keeping them costs nothing as long as they READ as
   // samples, which is what the separate heading buys.
-  const working = shown.filter((f) => f.kind === "builtin" && f.id === ONBOARDING_FORM_ID);
-  const samples = shown.filter((f) => f.kind === "builtin" && f.id !== ONBOARDING_FORM_ID);
-  const mine = shown.filter((f) => f.kind !== "builtin");
+  //
+  // ⚠️ HIDDEN ONES COME OUT HERE AND NOWHERE ELSE. A built-in can't really be deleted (its
+  // questions are in code), so the trash can hides it. That has to be a SCREEN filter — findForm
+  // still resolves a hidden form, so a page pointing at one you tidied away keeps working.
+  const live = shown.filter((f) => !f.hidden);
+  const hidden = forms.filter((f) => f.hidden);
+  const working = live.filter((f) => f.kind === "builtin" && f.id === ONBOARDING_FORM_ID);
+  const samples = live.filter((f) => f.kind === "builtin" && f.id !== ONBOARDING_FORM_ID);
+  const mine = live.filter((f) => f.kind !== "builtin");
 
   async function create() {
     if (!naming) return;
@@ -220,6 +231,82 @@ export default function FormLibrary({
     }
   }
 
+  /**
+   * Rename a group heading.
+   *
+   * ⚠️ SAVED ON BLUR, NOT BEHIND A SAVE BUTTON. Same as the back-office menu: this is one word on
+   * a heading, and a modal to change one word is the reason nobody changes it. A blank goes back
+   * to the code default rather than leaving a nameless section.
+   */
+  async function renameSection(key: SectionKey, text: string) {
+    setRenaming(null);
+    if (text.trim() === sections[key]) return;
+    setErr("");
+    try {
+      const res = await fetch("/api/forms", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ sections: { [key]: text.trim() } }),
+      });
+      const body = await res.json();
+      if (!body?.ok) throw new Error(body?.error || "Couldn't rename it.");
+      router.refresh();
+    } catch (e) {
+      setErr((e as Error).message);
+    }
+  }
+
+  /** Put a hidden built-in back. */
+  async function unhide(id: string) {
+    setBusy(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/forms", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ unhide: id }),
+      });
+      const body = await res.json();
+      if (!body?.ok) throw new Error(body?.error || "Couldn't bring it back.");
+      router.refresh();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /**
+   * A heading you can rename by clicking it.
+   *
+   * ⚠️ THE KEY IS THE IDENTITY, THE LABEL IS DECORATION — the same law the back-office menu runs
+   * on. Nothing looks a section up by what it says, so it can be called anything.
+   */
+  const Heading = ({ k }: { k: SectionKey }) =>
+    renaming?.key === k ? (
+      <input
+        autoFocus
+        value={renaming.text}
+        onChange={(e) => setRenaming({ key: k, text: e.target.value })}
+        onBlur={() => renameSection(k, renaming.text)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") renameSection(k, renaming.text);
+          if (e.key === "Escape") setRenaming(null);
+        }}
+        style={secInput}
+      />
+    ) : (
+      <h2
+        style={{ ...sec, cursor: "text" }}
+        title="Click to rename this section"
+        onClick={() => setRenaming({ key: k, text: sections[k] })}
+      >
+        {sections[k]}
+      </h2>
+    );
+
   async function remove(id: string) {
     setBusy(true);
     setErr("");
@@ -348,7 +435,18 @@ export default function FormLibrary({
 
       {confirming === f.id ? (
         <div style={delPanel}>
-          <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>Delete “{f.name}”?</p>
+          <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>
+            {f.kind === "builtin" ? `Hide “${f.name}”?` : `Delete “${f.name}”?`}
+          </p>
+          {/* Say what actually happens. A built-in's questions live in code, so this puts it away
+              rather than destroying it — and it comes straight back from the line at the bottom
+              of this screen. A button that overstates what it did is worse than no button. */}
+          {f.kind === "builtin" ? (
+            <p style={{ margin: "0 0 10px", fontSize: 13 }}>
+              It comes off this screen but isn&apos;t destroyed — you can bring it back any time,
+              and any page using it keeps working.
+            </p>
+          ) : null}
           {usage.loading ? (
             <p style={{ margin: "0 0 10px", fontSize: 13 }}>Checking what uses it…</p>
           ) : usage.rows === null ? (
@@ -380,7 +478,7 @@ export default function FormLibrary({
           )}
           <div style={{ display: "flex", gap: 8 }}>
             <button type="button" style={dangerBtn} onClick={() => remove(f.id)} disabled={busy}>
-              {busy ? "Deleting…" : "Delete it"}
+              {busy ? "Working…" : f.kind === "builtin" ? "Hide it" : "Delete it"}
             </button>
             <button type="button" style={smallGhost} onClick={() => setConfirming(null)}>
               Keep it
@@ -401,8 +499,18 @@ export default function FormLibrary({
           >
             Make a copy
           </button>
-          {f.kind !== "builtin" ? (
-            <button type="button" style={iconBtn} title="Delete" onClick={() => { setConfirming(f.id); void loadUsage(f.id); }}>
+          {/* ⚠️ ON EVERY CARD NOW. It used to appear only on presets, so half the library had a
+              delete button and half didn't with nothing saying why. A built-in can't truly be
+              deleted — its questions are in code — so on those it HIDES, and the confirm says
+              so. Onboarding is the one exception: it's the live client intake, and a trash can
+              on it would only ever be a mistake waiting to be made. */}
+          {f.id !== ONBOARDING_FORM_ID ? (
+            <button
+              type="button"
+              style={iconBtn}
+              title={f.kind === "builtin" ? "Hide this one" : "Delete"}
+              onClick={() => { setConfirming(f.id); void loadUsage(f.id); }}
+            >
               🗑
             </button>
           ) : null}
@@ -484,23 +592,39 @@ export default function FormLibrary({
           action. */}
       {mine.length ? (
         <>
-          <h2 style={sec}>Yours</h2>
+          <Heading k="mine" />
           <div style={grid}>{mine.map(Card)}</div>
         </>
       ) : null}
 
       {working.length ? (
         <>
-          <h2 style={sec}>In use — running right now</h2>
+          <Heading k="inUse" />
           <div style={grid}>{working.map(Card)}</div>
         </>
       ) : null}
 
-      <h2 style={sec}>Samples to start from</h2>
+      <Heading k="samples" />
       <p style={{ ...hint, marginTop: -2 }}>
         Not used by anything. Copy one when a new client needs a form, or edit it in place.
       </p>
       <div style={grid}>{samples.map(Card)}</div>
+
+      {/* ⚠️ HIDING MUST BE VISIBLY UNDOABLE, or it's just a delete that lied. One line, always
+          present when there's anything behind it. */}
+      {hidden.length ? (
+        <p style={hiddenLine}>
+          {`${hidden.length} hidden: `}
+          {hidden.map((f, i) => (
+            <span key={f.id}>
+              {i ? " · " : ""}
+              <button type="button" style={linkBtn} disabled={busy} onClick={() => unhide(f.id)}>
+                {f.name} — bring it back
+              </button>
+            </span>
+          ))}
+        </p>
+      ) : null}
 
       <p style={footNote}>
         Leads land in each client&apos;s own Google Sheet and inbox. This is where the{" "}
@@ -574,6 +698,9 @@ const PREVIEW = 4;
 const liLabel: React.CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
 const usedOn: React.CSSProperties = { fontSize: 12, margin: "8px 0 0", lineHeight: 1.6 };
 const cardLink: React.CSSProperties = { color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
+const secInput: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 6, padding: "4px 8px", margin: "34px 0 6px", fontFamily: "inherit", background: "var(--e-panel)", minWidth: 320 };
+const hiddenLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", marginTop: 26, lineHeight: 1.7 };
+const linkBtn: React.CSSProperties = { background: "none", border: "none", padding: 0, font: "inherit", color: "var(--e-accent)", fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
 const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
 const iconBtn: React.CSSProperties = { ...smallGhost, marginLeft: "auto", padding: "6px 10px" };
