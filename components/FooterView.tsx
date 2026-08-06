@@ -4,9 +4,23 @@ const LOGO_URL =
   "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png";
 
 export type FooterLink = { label: string; target: string };
+/**
+ * A titled column of links — "SERVICES", "COMPANY".
+ *
+ * ⚠️ WHY GROUPS AND NOT ONE LONGER LIST. Every bought design's footer is three or four titled
+ * columns, and this footer had exactly one, headed "More". Reproducing a design meant either
+ * dumping fifteen links into a single column nobody reads, or leaving the footer visibly cheaper
+ * than the page above it — which is the half of the page a visitor scrolls to when they are
+ * deciding whether a business is real.
+ *
+ * Empty by default, and when it IS empty the footer renders exactly as it did before, so no site
+ * already built moves.
+ */
+export type FooterGroup = { heading: string; links?: FooterLink[] };
 export type FooterViewProps = {
   blurb?: string;
   links?: FooterLink[];
+  groups?: FooterGroup[];
   phone?: string;
   phoneDisplay?: string;
   email?: string;
@@ -30,6 +44,7 @@ export type FooterViewProps = {
 export default function FooterView({
   blurb = "",
   links = [],
+  groups = [],
   phone = "+12108514906",
   phoneDisplay = "(210) 851-4906",
   email = "support@stevenjamesconsulting.com",
@@ -50,6 +65,13 @@ export default function FooterView({
   const logoOn = showLogo !== false;
   const year = new Date().getFullYear();
   const linkEls = (links || []).filter((l) => l && l.label);
+  const groupEls = (groups || [])
+    .map((g) => ({ heading: g?.heading || "", links: (g?.links || []).filter((l) => l && l.label) }))
+    .filter((g) => g.links.length);
+  // The "More" column only appears when it has something in it. Without this, adding groups left
+  // an empty titled column sitting between them — a heading with nothing under it, which reads as
+  // a bug rather than as a design.
+  const showMore = linkEls.length > 0 || !!email || !!phoneDisplay;
   const btn =
     "inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)]";
   // WHY A FLAT FILL READS AS CHEAP, AND WHAT THE BOUGHT DESIGNS DO INSTEAD.
@@ -88,8 +110,17 @@ export default function FooterView({
         style={{ backgroundColor: "var(--color-sjc-blue)", filter: "blur(120px)" }}
       />
       <div className="relative mx-auto max-w-6xl px-6 py-14">
-        <div className="grid gap-10 md:grid-cols-3">
-          <div className="md:col-span-2">
+        <div
+          className="grid gap-10"
+          style={{
+            // Auto-fit rather than a fixed three: the brand block keeps a wide column and each
+            // group takes one, so three groups and none both lay out without choosing a count.
+            gridTemplateColumns: groupEls.length
+              ? "minmax(220px, 1.6fr) repeat(auto-fit, minmax(140px, 1fr))"
+              : undefined,
+          }}
+        >
+          <div className={groupEls.length ? "" : "md:col-span-2"}>
             <div className="flex items-center gap-3">
               {logoOn ? <img src={LOGO_URL} alt="logo" className="h-12 w-12 rounded-full" /> : null}
               <span className="text-lg font-semibold">{name}</span>
@@ -111,6 +142,20 @@ export default function FooterView({
             </div>
           </div>
 
+          {groupEls.map((g, gi) => (
+            <div key={`g${gi}`}>
+              <p className="text-sm font-semibold uppercase tracking-wide text-white/90">{g.heading}</p>
+              <ul className="mt-4 space-y-3 text-sm">
+                {g.links.map((l, i) => (
+                  <li key={i}>
+                    <a href={l.target || "#"} className="text-white/80 hover:text-white">{l.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          {showMore && (
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-white/90">More</p>
             <ul className="mt-4 space-y-3 text-sm">
@@ -131,6 +176,7 @@ export default function FooterView({
               ) : null}
             </ul>
           </div>
+          )}
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">

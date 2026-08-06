@@ -15,6 +15,7 @@ import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
+import Stats, { STATS_DEFAULTS, type StatItem } from "@/components/blocks/Stats";
 import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
@@ -58,6 +59,7 @@ type Props = {
     spaceAbove: number; spaceBelow: number;
   };
   CheckList: { dotColor: string; rows: { heading: string; body: string }[] };
+  Stats: { items: StatItem[]; valueColor: string; valueSize: number; align: "left" | "center" };
   PriceBox: {
     topAmount: string;
     topNote: string;
@@ -89,7 +91,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -232,6 +234,8 @@ export const FOOTER_DEFAULTS = {
     { label: "About Steven James — who I am & why listen", target: "/about" },
     { label: "FAQs", target: "/faqs" },
   ] as { label: string; target: string }[],
+  // Blank on purpose — see the `groups` field. Nothing already published moves.
+  groups: [] as { heading: string; links: { label: string; target: string }[] }[],
   phone: "+12108514906",
   phoneDisplay: "(210) 851-4906",
   email: "support@stevenjamesconsulting.com",
@@ -884,6 +888,51 @@ export const config: Config<Props, RootProps> = {
       render: ({ dotColor, rows }) => <CheckList dotColor={dotColor} rows={rows} />,
     },
 
+    // The proof-numbers row every bought design has. Rebuilding one by hand meant a Columns block
+    // holding six alternating Headings and Texts — twelve fields, spacing tuned by eye, and a
+    // layout that broke the moment a fourth number was added.
+    Stats: {
+      label: "Numbers row (40+ · 100% · 4.9★)",
+      fields: {
+        items: {
+          type: "array" as const,
+          label: "Numbers",
+          getItemSummary: (i: { value?: string; label?: string }) => i?.value || i?.label || "number",
+          defaultItemProps: { value: "100%", label: "What it measures" },
+          arrayFields: {
+            value: { type: "text" as const, label: "The number (40+, 100%, 4.9★)" },
+            label: { type: "text" as const, label: "What it measures" },
+          },
+        },
+        valueColor: {
+          type: "custom" as const,
+          label: "Number colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        valueSize: {
+          type: "custom" as const,
+          label: "Number size (0 = fits the screen automatically)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+          ),
+        },
+        align: {
+          type: "radio" as const,
+          label: "Align",
+          options: [
+            { label: "Centre", value: "center" },
+            { label: "Left", value: "left" },
+          ],
+        },
+      },
+      defaultProps: STATS_DEFAULTS as Props["Stats"],
+      render: ({ items, valueColor, valueSize, align }) => (
+        <Stats items={items} valueColor={valueColor} valueSize={valueSize} align={align} />
+      ),
+    },
+
     PriceBox: {
       label: "Price box",
       fields: {
@@ -1216,6 +1265,29 @@ export const config: Config<Props, RootProps> = {
           getItemSummary: (i: { label?: string }) => i?.label || "link",
           defaultItemProps: { label: "New link", target: "/" },
         },
+        // Titled columns — "Services", "Company". Every bought design's footer has three or four
+        // and this one had exactly one, headed "More", so reproducing a design meant dumping
+        // fifteen links into a column nobody reads. Empty by default: with no groups the footer
+        // renders exactly as before.
+        groups: {
+          type: "array" as const,
+          label: "Link columns (blank = just the one 'More' list)",
+          getItemSummary: (i: { heading?: string }) => i?.heading || "column",
+          defaultItemProps: { heading: "Services", links: [{ label: "New link", target: "/" }] },
+          arrayFields: {
+            heading: { type: "text" as const, label: "Column heading" },
+            links: {
+              type: "array" as const,
+              label: "Links in this column",
+              getItemSummary: (i: { label?: string }) => i?.label || "link",
+              defaultItemProps: { label: "New link", target: "/" },
+              arrayFields: {
+                label: { type: "text" as const, label: "Label" },
+                target: { type: "text" as const, label: "Links to (page or /#section)" },
+              },
+            },
+          },
+        },
         phone: { type: "text" as const, label: "Phone — raw for Call/Text (e.g. +12108514906)" },
         phoneDisplay: { type: "text" as const, label: "Phone — display (e.g. (210) 851-4906)" },
         email: { type: "text" as const, label: "Email" },
@@ -1248,10 +1320,11 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo }) => (
         <FooterView
           blurb={blurb}
           links={links}
+          groups={groups}
           phone={phone}
           phoneDisplay={phoneDisplay}
           email={email}
