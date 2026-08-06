@@ -215,15 +215,17 @@ export default function FormEditor({
                           `closed — ${b.closedBecause || "reason not recorded"}`
                         : `open · ${b.answered} of ${b.asked} answered`}
                 </span>
-                {/* ⚠️ THE ACTUAL ADDRESS, ON THE ROW, AS SOON AS IT'S LIVE. A button that says
-                    "copy" without showing WHAT gets copied is a button you have to click to find
-                    out — and this one sits under a panel whose buttons copy questions into the
-                    library, so the guess was reasonable and wrong. Shown, it's unambiguous, and
-                    it's clickable so the form can just be looked at. */}
+                {/* ⚠️ IT HAS TO LOOK LIKE A LINK, NOT JUST BE ONE. The first version was a real
+                    <a href> styled as grey monospace, so Steven — looking straight at it — asked
+                    again for a clickable link: *"I don't want to copy and paste the URL into a
+                    browser. I just want to click a link and have it open in another tab."*
+                    A control nobody can recognise is the same as a control that isn't there.
+                    Same style as the website cards on the Websites screen, arrow included,
+                    because that is the thing he pointed at and said "like that". */}
                 {b.status === "open" ? (
                   <span style={{ display: "block", marginTop: 3 }}>
-                    <a href={b.url} target="_blank" rel="noopener noreferrer" style={addr}>
-                      {b.url.replace(/^https:\/\//, "")}
+                    <a href={b.url} target="_blank" rel="noopener noreferrer" style={cardLink}>
+                      {`${b.url.replace(/^https:\/\//, "")} ↗`}
                     </a>
                   </span>
                 ) : null}
@@ -633,6 +635,10 @@ const keyTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", fon
 const skipRow: React.CSSProperties = { display: "flex", gap: 8, alignItems: "center", marginTop: 10, flexWrap: "wrap" };
 const whereBox: React.CSSProperties = { marginTop: 16, border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 10, padding: "12px 14px", fontSize: 13, lineHeight: 1.65, color: "var(--e-muted)" };
 const addr: React.CSSProperties = { fontFamily: "ui-monospace,monospace", fontSize: 11, background: "var(--e-line-soft)", borderRadius: 4, padding: "2px 5px", wordBreak: "break-all" };
+// ⚠️ COPIED FROM components/edit/SiteGallery.tsx ON PURPOSE. A link that opens a page in a new
+// tab should look identical everywhere in the back office — the website cards taught Steven what
+// a clickable address looks like here, so anything else reads as text.
+const cardLink: React.CSSProperties = { fontSize: 12, color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
 const bizRow: React.CSSProperties = { display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "9px 0", borderTop: "1px solid var(--e-line)" };
 const warnLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.5, margin: "10px 0 0", borderLeft: "3px solid var(--e-line)", paddingLeft: 10 };
 const tiny: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 6, width: 30, height: 30, fontSize: 13, cursor: "pointer", flexShrink: 0 };
