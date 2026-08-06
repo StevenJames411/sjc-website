@@ -4,7 +4,6 @@ import { findForm } from "@/lib/forms";
 import { readSites } from "@/lib/sites";
 import { intakeSummaries } from "@/lib/intake";
 import { onboardUrlFor } from "@/lib/hostShared";
-import { SJC } from "@/lib/siteKeys";
 import { ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 import FormEditor from "@/components/edit/FormEditor";
 
@@ -30,9 +29,23 @@ export const metadata: Metadata = { title: "Edit form" };
  * on belongs beside the form. Both are the same one call to /api/admin/intake.
  */
 async function onboardingFacts() {
-  const sites = (await readSites()).filter((s) => s.id !== SJC && !s.deletedAt);
+  const all = (await readSites()).filter((s) => !s.deletedAt);
+
+  // ⚠️ FILTER ON `kind`, NOT ON THE ID — the same rule components/edit/SiteGallery.tsx uses to
+  // hide its onboarding row. My first version tested `id !== SJC`, which happens to agree today
+  // and is a different question: two screens deciding "can this be onboarded?" by two different
+  // rules is two screens that will eventually disagree about the same business.
+  const sites = all.filter((s) => s.kind !== "sjc");
+
+  // ⚠️ AND NAME WHAT WAS LEFT OUT. Steven counted five websites, saw four rows, and reasonably
+  // read it as a bug: *"we have a mismatch… we're missing one."* Nothing was missing — SJC's own
+  // site has nobody to onboard — but a list that quietly drops a row teaches you not to trust the
+  // list. An omission you can see is fine; a silent one is not.
+  const excluded = all.filter((s) => s.kind === "sjc").map((s) => s.name);
+
   const summaries = await intakeSummaries(sites.map((s) => ({ id: s.id })));
   return {
+    excluded,
     businesses: sites.map((s) => {
       const it = summaries[s.id];
       return {

@@ -38,7 +38,11 @@ type Business = {
   asked: number;
   submitted: boolean;
 };
-type Onboarding = { businesses: Business[] };
+type Onboarding = {
+  businesses: Business[];
+  /** Websites deliberately left off the list — SJC's own. Named, never silently dropped. */
+  excluded: string[];
+};
 
 export default function FormEditor({
   form,
@@ -246,9 +250,21 @@ export default function FormEditor({
             </div>
           ))}
 
+          {/* ⚠️ SAY WHAT ISN'T ON THE LIST. Steven counted five websites, saw four rows, and read
+              it as a bug — reasonably, because a list that quietly drops a row teaches you not to
+              trust the list. Nothing was missing; you don't onboard yourself. An omission you can
+              see is fine, a silent one isn't. */}
+          {onboarding.excluded.length ? (
+            <p style={{ margin: "10px 0 0", fontSize: 12 }}>
+              {`${onboarding.excluded.join(" and ")} ${
+                onboarding.excluded.length === 1 ? "isn't" : "aren't"
+              } listed — that's your own business, with nobody to onboard. To ask these questions on one of your own pages, copy this form and link the copy to a form on that page.`}
+            </p>
+          ) : null}
+
           {/* Same lesson as the library heading: one string, no JSX seams to lose a space in.
               It rendered as "Websitesscreen" on the live page. */}
-          <p style={{ margin: "10px 0 0", fontSize: 12 }}>
+          <p style={{ margin: "6px 0 0", fontSize: 12 }}>
             {"Same switches as the Websites screen — whichever one you're standing on."}
           </p>
         </div>
