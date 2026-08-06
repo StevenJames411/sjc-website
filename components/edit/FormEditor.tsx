@@ -210,6 +210,18 @@ export default function FormEditor({
                         ? "closed"
                         : `open · ${b.answered} of ${b.asked} answered`}
                 </span>
+                {/* ⚠️ THE ACTUAL ADDRESS, ON THE ROW, AS SOON AS IT'S LIVE. A button that says
+                    "copy" without showing WHAT gets copied is a button you have to click to find
+                    out — and this one sits under a panel whose buttons copy questions into the
+                    library, so the guess was reasonable and wrong. Shown, it's unambiguous, and
+                    it's clickable so the form can just be looked at. */}
+                {b.status === "open" ? (
+                  <span style={{ display: "block", marginTop: 3 }}>
+                    <a href={b.url} target="_blank" rel="noopener noreferrer" style={addr}>
+                      {b.url.replace(/^https:\/\//, "")}
+                    </a>
+                  </span>
+                ) : null}
               </span>
               <span style={{ display: "flex", gap: 6 }}>
                 {b.status === "open" ? (
@@ -224,7 +236,11 @@ export default function FormEditor({
                       }}
                       title="Copy her link, ready to text"
                     >
-                      {copied === b.id ? "Copied" : "Copy link"}
+                      {/* ⚠️ "Copy link" ON A FORMS SCREEN READS AS "copy into the library",
+                          which is a button in the panel above doing something completely
+                          different. Steven read it exactly that way. Say what lands on the
+                          clipboard: a web address to text her. */}
+                      {copied === b.id ? "Address copied" : "Copy her web address"}
                     </button>
                     <button
                       type="button"
