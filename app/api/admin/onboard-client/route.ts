@@ -124,7 +124,30 @@ export async function POST(req: Request) {
   const patch: Record<string, string> = {};
   if (sheetId && sheetId !== site?.sheetId) patch.sheetId = sheetId;
   if (str("email") && !site?.leadEmail) patch.leadEmail = str("email");
-  if (Object.keys(patch).length) await updateSite(siteId, patch);
+
+  // ⚠️ THE RESULT OF THIS WRITE WAS DISCARDED, AND IT IS THE MOST IMPORTANT WRITE ON THE ROUTE.
+  //
+  // `updateSite` returns {ok, error}. Thrown away, a failed write — storage down, or the save
+  // guard refusing — still answered ok:true with a sheet link and an onboard link. Steven reads
+  // the sheet URL to a client on the phone and believes she's wired up. She isn't: no sheetId and
+  // no leadEmail, so every lead from that day forward takes the silent path — into SJC's intake,
+  // no owner email, nobody told. The one step that exists to prevent a silent lead was able to
+  // fail silently itself.
+  //
+  // Now it rides back as a warning on the response, the same shape as the share failure above:
+  // not fatal (the site works, the sheet is real), but it needs a human, and the human is on the
+  // phone right now.
+  let wiringWarning = "";
+  if (Object.keys(patch).length) {
+    const wrote = await updateSite(siteId, patch);
+    if (!wrote.ok) {
+      wiringWarning =
+        `LEAD WIRING NOT SAVED (${Object.keys(patch).join(", ")})` +
+        `${wrote.error ? ` — ${wrote.error}` : ""}. Her leads will not reach her until this is ` +
+        `set in Website settings.`;
+      console.error(`[onboard] ${siteId}: ${wiringWarning}`);
+    }
+  }
 
   // Everything the call sheet knew, kept verbatim — see the note at the top of this file.
   const extra = (body.extra && typeof body.extra === "object" ? body.extra : {}) as Record<string, unknown>;
@@ -146,6 +169,10 @@ export async function POST(req: Request) {
     editUrl: `${origin}/edit/${siteId}/home`,
     reused: Boolean(already),
     // Present only when something needs a human. Everything else here is a success field.
-    ...(shareWarning ? { warning: shareWarning } : {}),
+    // Both are collected — a call can fail the share AND the wiring, and reporting one would
+    // make the other look fine.
+    ...(shareWarning || wiringWarning
+      ? { warning: [shareWarning, wiringWarning].filter(Boolean).join(" · ") }
+      : {}),
   });
 }

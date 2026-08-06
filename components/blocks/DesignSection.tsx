@@ -399,6 +399,23 @@ export default function DesignSection(props: DesignSectionProps) {
   // in preview and on the live page — see lib/designShared.
   const swapForm = !!hasForm && useRealForm !== false;
 
+  // ⚠️ "SHOW THE DESIGN'S MOCK FORM" USED TO SHIP A TYPABLE FORM THAT WENT NOWHERE.
+  //
+  // Turning "Use my real form" off did two things at once: it stopped mounting the working form,
+  // AND it stopped hiding the design's fake inputs — because both were gated on the same flag. The
+  // result was precisely what sanitizeDesignHtml exists to prevent: real-looking boxes on a live
+  // page, accepting typing, with a dead button and not even a failed POST to find in a log. One
+  // checkbox, no warning, visible only in front of a customer.
+  //
+  // Hiding them outright isn't the answer either — that option exists so a prospect can be shown
+  // the UNTOUCHED design, and an invisible hole where the contact box should be is not that.
+  //
+  // So the mock is kept LOOKING exactly as the designer drew it and made physically inert:
+  // pointer-events off, nothing focusable, nothing typable. The demo still demos; the trap is
+  // gone. `inert`-style CSS rather than a `disabled` attribute because the markup is the design's
+  // and must not be rewritten.
+  const mockOnly = !!hasForm && !swapForm;
+
   // The markup is rendered WHOLE either way — the real form is mounted into the design's own
   // box afterwards, so nothing about the surrounding layout moves. See DesignFormMount.
   //
@@ -416,6 +433,7 @@ export default function DesignSection(props: DesignSectionProps) {
     <div
       className={DESIGN_SCOPE}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
+      {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
       // STICKY BELONGS ON THIS ELEMENT, not on the design's header inside it.
       //
       // `position: sticky` sticks within its parent's box and no further. The header's parent is
@@ -430,6 +448,18 @@ export default function DesignSection(props: DesignSectionProps) {
         <style
           dangerouslySetInnerHTML={{
             __html: "[data-sjc-form-pending] [data-sjc-form]{visibility:hidden}",
+          }}
+        />
+      ) : null}
+      {mockOnly ? (
+        <style
+          dangerouslySetInnerHTML={{
+            __html:
+              "[data-sjc-form-mock] [data-sjc-form]{pointer-events:none}" +
+              "[data-sjc-form-mock] [data-sjc-form] input," +
+              "[data-sjc-form-mock] [data-sjc-form] textarea," +
+              "[data-sjc-form-mock] [data-sjc-form] select," +
+              "[data-sjc-form-mock] [data-sjc-form] button{pointer-events:none;user-select:none}",
           }}
         />
       ) : null}

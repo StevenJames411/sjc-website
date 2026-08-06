@@ -188,7 +188,20 @@ export async function updateSite(
   patch: Partial<Omit<Site, "id">>
 ): Promise<{ ok: boolean; error?: string }> {
   const s = String(id || "").trim();
-  const sites = await readSites();
+
+  // ⚠️ RAW, NOT readSites(). This read used to be the filtered one, which drops every site sitting
+  // in the 30-day bin — so writing the array back ERASED THEM ALL. Saving Website settings on any
+  // one site quietly destroyed every deleted site's row: its leadEmail, sheetId, GHL webhook and
+  // domain, and with them the re-sign window that deletion is supposed to preserve. Restore then
+  // failed with "No such website."
+  //
+  // The write guard would not have caught it either: it only refuses an array that loses more
+  // than three entries AND more than half its length (lib/pgClient.ts), so one or two binned
+  // sites disappear inside the tolerance.
+  //
+  // deleteSite, restoreSite and purgeSiteForever all read raw already. This was the one that
+  // didn't, and it is the one that runs on an ordinary save.
+  const sites = await readSitesRaw();
   const i = sites.findIndex((x) => x.id === s);
   if (i < 0) return { ok: false, error: "No such website." };
 
