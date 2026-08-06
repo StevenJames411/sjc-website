@@ -51,6 +51,10 @@ const prefer = (pageValue: unknown, formValue: string) => {
 export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
   const byId = new Map(forms.map((f) => [f.id, f]));
 
+  // ⚠️ WALK EVERY KEY, NOT JUST `props`. The first version recursed only into `props`, which meant
+  // the page object itself — whose blocks live under `content`, with no `props` of its own — was
+  // never entered, so NOTHING resolved. It typechecked, it built, and it silently did nothing; a
+  // unit test against a nested block is the only reason it didn't ship that way.
   const walk = (v: unknown): unknown => {
     if (Array.isArray(v)) return v.map(walk);
     if (!v || typeof v !== "object") return v;
@@ -59,10 +63,10 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
     const id = typeof n.props?.formId === "string" ? n.props.formId.trim() : "";
     const form = id ? byId.get(id) : undefined;
 
-    const props: Record<string, unknown> = {};
-    for (const [k, val] of Object.entries((n.props || {}) as Record<string, unknown>)) {
-      props[k] = walk(val);
-    }
+    const out: Record<string, unknown> = {};
+    for (const [k, val] of Object.entries(v as Record<string, unknown>)) out[k] = walk(val);
+
+    const props = (out.props || {}) as Record<string, unknown>;
 
     if (form) {
       props.fields = form.fields.map((f) => ({
@@ -82,9 +86,10 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
       props.note = prefer(n.props?.note, form.note);
       props.successHeading = prefer(n.props?.successHeading, form.successHeading);
       props.successBody = prefer(n.props?.successBody, form.successBody);
+      out.props = props;
     }
 
-    return { ...(v as object), props } as unknown;
+    return out as unknown;
   };
 
   return walk(data) as T;
@@ -103,13 +108,15 @@ export function formsInUse(
   data: unknown,
   onFound: (formId: string) => void
 ): void {
+  // Same "walk every key" rule as above, and for the same reason: blocks sit under `content` on
+  // the page and under `props.content` inside a Section, so a props-only walk misses both.
   const walk = (v: unknown): void => {
     if (Array.isArray(v)) return v.forEach(walk);
     if (!v || typeof v !== "object") return;
     const n = v as Node;
     const id = typeof n.props?.formId === "string" ? n.props.formId.trim() : "";
     if (id) onFound(id);
-    if (n.props) Object.values(n.props).forEach(walk);
+    Object.values(v as Record<string, unknown>).forEach(walk);
   };
   walk(data);
 }
