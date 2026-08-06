@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { deliverLead } from "@/lib/leadDelivery";
+import { recordLead, attachDelivery } from "@/lib/leadStore";
 import { SJC } from "@/lib/siteKeys";
 
 // Discovery-call intake handler. Receives a dynamic ordered list of {label, value} answers
@@ -52,15 +53,35 @@ export async function POST(req: Request) {
   // that predates multi-site means SJC.
   const siteId = String(body.siteId || "").trim() || SJC;
 
+  // ── WRITTEN DOWN FIRST, DELIVERED SECOND ────────────────────────────────────────────────────
+  //
+  // ⚠️ THE ORDER IS THE WHOLE POINT. Until 2026-08-06 a lead was delivery-only: if every leg
+  // failed, the answers existed nowhere but the visitor's browser and were gone the moment she
+  // closed the tab. Storing before attempting turns that from LOST into UNDELIVERED.
+  //
+  // A null id means the store itself is down — the delivery below is then the only copy this
+  // lead will ever have, which is worth saying out loud at the time rather than discovering later.
+  const leadId = await recordLead(siteId, answers, submittedAt);
+
   const d = await deliverLead(siteId, answers, submittedAt);
 
   // Loud on every problem. A lead that vanishes while the visitor is told "thanks!" is the worst
   // outcome this route has, and it is silent by nature — so it gets shouted into the log.
-  for (const p of d.problems) console.error(`[apply] site=${siteId || "-"} ${p}`);
+  for (const p of d.problems) console.error(`[apply] site=${siteId || "-"} lead=${leadId || "UNSTORED"} ${p}`);
 
-  // The visitor still sees success as long as SOMEBODY has it. Failing the form in front of a
-  // real customer because our second copy bounced would lose the lead outright.
-  const landed = d.toRecord || d.toOwner === true || d.toSheet === true;
+  // Best-effort annotation. The lead is already safe; failing to record what happened to it must
+  // never turn a delivered lead into an error the visitor sees.
+  if (leadId) await attachDelivery(siteId, leadId, d);
+
+  // ⚠️ `toGhl` COUNTS. It was missing from this list, so a lead that reached GoHighLevel cleanly
+  // but missed the sheet and the email answered 502 — the visitor saw "that didn't go through"
+  // and resubmitted, giving the client duplicate contacts, or gave up on a lead that had actually
+  // arrived. For a $97 client the GHL inbox IS the notification.
+  //
+  // And a STORED lead is no longer nothing: if it's written down, Steven can still get it out, so
+  // failing the form in front of a real customer would throw away a recoverable enquiry.
+  const landed =
+    d.toRecord || d.toOwner === true || d.toSheet === true || d.toGhl === true || Boolean(leadId);
   if (!landed) {
     return NextResponse.json({ ok: false, error: "forward failed", problems: d.problems }, { status: 502 });
   }
@@ -72,6 +93,9 @@ export async function POST(req: Request) {
     toOwner: d.toOwner,
     toRecord: d.toRecord,
     toSheet: d.toSheet,
+    // Reported so a test submission can read the GHL leg directly instead of inferring it.
+    toGhl: d.toGhl,
+    stored: Boolean(leadId),
     ...(d.problems.length ? { problems: d.problems } : {}),
   });
 }
