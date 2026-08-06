@@ -19,6 +19,16 @@ import { ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 
 type UsageRow = { siteId: string; siteName: string; slug: string; title: string; published: boolean };
 
+/** A page whose questions are still its own — not in this library. */
+type Stray = {
+  siteId: string;
+  siteName: string;
+  page: string;
+  title: string;
+  questions: number;
+  from: string[];
+};
+
 export default function FormLibrary({ forms, title }: { forms: FormDef[]; title: string }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -31,6 +41,8 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
     loading: boolean;
     rows: { siteName: string; title: string; published: boolean }[] | null;
   }>({ loading: false, rows: [] });
+  /** null = couldn't check. Never render that as "all consolidated". */
+  const [strays, setStrays] = useState<Stray[] | null>([]);
 
   const shown = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -127,6 +139,62 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
       cancelled = true;
     };
   }, [forms]);
+
+  // ── PAGES STILL HOLDING THEIR OWN QUESTIONS ──────────────────────────────────────────────────
+  // The whole reason this library felt empty: Steven's four real forms were each built their own
+  // way, outside it, and nothing on any screen said so — he came here looking for his own intake
+  // forms and found three samples. The machine can see which pages are still on their own, so it
+  // says so, with the button to fix it right there.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/admin/forms/adopt?scan=1", { credentials: "same-origin" }).then(
+          (x) => x.json()
+        );
+        if (!cancelled) setStrays(r?.onTheirOwn || []);
+      } catch {
+        // Unknown, not zero — say nothing rather than imply everything is consolidated.
+        if (!cancelled) setStrays(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [forms]);
+
+  async function adopt(row: Stray) {
+    const name = window.prompt(
+      `Name this form — it's the ${row.questions} questions on ${row.siteName} · ${row.title}.`,
+      `${row.title} form`
+    );
+    if (!name) return;
+    setBusy(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/admin/forms/adopt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ site: row.siteId, page: row.page, name }),
+      });
+      const body = await res.json();
+      if (!body?.ok) throw new Error(body?.error || "Couldn't bring it in.");
+      // ⚠️ NEVER SILENT. If a key moved, every answer already collected under the old one is
+      // orphaned — and an orphaned column looks exactly like a question nobody answered.
+      if (body.keysThatMoved?.length) {
+        setErr(
+          `Brought in, but these spreadsheet columns MOVED: ${body.keysThatMoved.join(", ")}. ` +
+            `Check the sheet before you publish that page.`
+        );
+      }
+      router.refresh();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function remove(id: string) {
     setBusy(true);
@@ -288,6 +356,37 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
 
       {err ? <p style={errBox}>{err}</p> : null}
 
+      {strays === null ? (
+        <p style={strayBox}>
+          Couldn&apos;t check which pages still have their own questions. Nothing is wrong with the
+          forms below — this one check didn&apos;t answer.
+        </p>
+      ) : strays.length ? (
+        <div style={strayBox}>
+          <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 14 }}>
+            {strays.length} page{strays.length === 1 ? "" : "s"} still keep their own questions
+          </p>
+          <p style={{ ...hint, margin: "0 0 12px" }}>
+            Their questions live on the page instead of in here, so editing them means opening each
+            page. Bringing one in keeps every spreadsheet column exactly where it is, and changes
+            the page&apos;s draft only — the live page is untouched until you publish it.
+          </p>
+          {strays.map((s) => (
+            <div key={`${s.siteId}/${s.page}`} style={strayRow}>
+              <span>
+                <strong>{s.siteName}</strong> · {s.title}{" "}
+                <span style={{ color: "var(--e-muted)" }}>
+                  — {s.questions} question{s.questions === 1 ? "" : "s"}
+                </span>
+              </span>
+              <button type="button" style={smallBtn} disabled={busy} onClick={() => adopt(s)}>
+                Bring into the library
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       {working.length ? (
         <>
           <h2 style={sec}>In use</h2>
@@ -381,6 +480,9 @@ const primary: React.CSSProperties = primaryBtn;
 const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, marginTop: 10 };
 const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+const strayBox: React.CSSProperties = { marginTop: 18, border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 12, padding: "14px 16px", fontSize: 13 };
+const strayRow: React.CSSProperties = { display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "8px 0", borderTop: "1px solid var(--e-line)" };
+const smallBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "7px 13px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" };
 const footNote: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid var(--e-line)", paddingTop: 16, maxWidth: 720 };
 const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
 const modal: React.CSSProperties = { background: "var(--e-panel)", borderRadius: 14, padding: 24, width: "100%", maxWidth: 440, fontFamily: font };

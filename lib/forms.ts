@@ -127,6 +127,7 @@ function normalizeFields(incoming: FormField[], previous: FormField[] = []): For
         ? { options: f.options.map((o) => String(o)).filter(Boolean) }
         : {}),
       ...(SATISFIED_BY_CHOICES.some((c) => c.path === satisfiedBy) ? { satisfiedBy } : {}),
+      ...(f?.step ? { step: String(f.step) } : {}),
     });
   }
   return out;

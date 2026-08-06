@@ -71,6 +71,22 @@ check(
   JSON.stringify(photoFields.map((f) => f.fieldId))
 );
 
+// ── An imported design's contact box keeps its questions under `formFields` ───────────────────
+// Filling in `fields` here is a perfect silent no-op: the block reads `formFields`, finds what it
+// always had, and renders identically. The pointer looks set and does nothing.
+const designPage = {
+  content: [
+    { type: "DesignSection", props: { formId: "quote", formFields: [{ label: "OLD", inputType: "text" }] } },
+  ],
+};
+const designOut = resolveFormPointers(designPage, BUILTIN_FORMS) as typeof designPage;
+const designProps = designOut.content[0].props as { formFields: { label: string }[] };
+check(
+  "DesignSection filled via formFields",
+  designProps.formFields.length === quote.fields.length && designProps.formFields[0].label === quote.fields[0].label,
+  designProps.formFields[0].label
+);
+
 const seen: string[] = [];
 formsInUse(page, (id) => seen.push(id));
 check("connections found", seen.length === 1 && seen[0] === "quote", JSON.stringify(seen));

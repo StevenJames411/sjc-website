@@ -26,6 +26,8 @@ import type { FormDef } from "./formsShared";
 type LeadFormProps = {
   formId?: string;
   fields?: unknown;
+  /** An imported design's contact box keeps its questions under a different name. */
+  formFields?: unknown;
   buttonLabel?: string;
   note?: string;
   successHeading?: string;
@@ -33,6 +35,16 @@ type LeadFormProps = {
 };
 
 type Node = { type?: string; props?: LeadFormProps & Record<string, unknown> };
+
+/**
+ * WHICH PROP HOLDS THIS BLOCK'S QUESTIONS.
+ *
+ * ⚠️ A DesignSection CALLS THEM `formFields`, NOT `fields`, and filling in the wrong one is a
+ * silent no-op: the block reads `formFields`, finds the questions it always had, and renders
+ * exactly as before. The pointer would appear to be set and change nothing — the same shape of
+ * failure as the props-only walk below, which is the reason this file has a test at all.
+ */
+const questionsProp = (type: unknown) => (type === "DesignSection" ? "formFields" : "fields");
 
 /** Page value if it has one, otherwise the library's. Blank means "follow the form". */
 const prefer = (pageValue: unknown, formValue: string) => {
@@ -69,7 +81,7 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
     const props = (out.props || {}) as Record<string, unknown>;
 
     if (form) {
-      props.fields = form.fields
+      props[questionsProp(n.type)] = form.fields
         // ⚠️ PHOTO QUESTIONS ARE DROPPED HERE, ON PURPOSE. The upload route is gated by an
         // onboarding link being open (app/api/intake/upload), which a stranger on a client's
         // public contact page does not have — so there is nowhere for the file to go. Rendering

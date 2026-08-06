@@ -98,7 +98,35 @@ export type FormField = {
    * and every question shows. See questionsToAsk below, which is a no-op with a null site.
    */
   satisfiedBy?: string;
+  /**
+   * THE SCREEN THIS QUESTION SITS ON, by its heading. Blank = the first/only screen.
+   *
+   * /apply groups thirteen questions into titled steps ("About your business", "What you've
+   * tried") and moves a step at a time. That is a third layout, not a variant of the other two:
+   * `oneQuestionPerScreen` is one question at a time with no headings, and a flat form is all of
+   * them at once. Consecutive questions sharing a step string are one screen.
+   *
+   * ⚠️ ADDED SO A MIGRATION DOESN'T HAVE TO CHANGE A LIVE FUNNEL'S SHAPE. Moving /apply into the
+   * library was supposed to change WHERE its questions live, nothing else — flattening its steps
+   * on the way past would have been a redesign smuggled in as a refactor.
+   */
+  step?: string;
 };
+
+/** The questions of a form, grouped into screens by `step`, in order. */
+export function stepsOf(fields: FormField[]): { title: string; fields: FormField[] }[] {
+  const out: { title: string; fields: FormField[] }[] = [];
+  for (const f of fields || []) {
+    const title = (f.step || "").trim();
+    const last = out[out.length - 1];
+    // Grouped by ADJACENCY, not by collecting every field with the same title. Two separated runs
+    // of "About you" stay two screens — reordering questions in the editor must not silently
+    // teleport one to the other end of the form.
+    if (last && last.title === title) last.fields.push(f);
+    else out.push({ title, fields: [f] });
+  }
+  return out;
+}
 
 /**
  * What Steven picks from instead of typing `business.phoneDisplay`.

@@ -19,6 +19,7 @@ import {
   FIELD_TYPE_ONBOARDING_ONLY,
   SATISFIED_BY_CHOICES,
   STANDARD_FIELDS,
+  stepsOf,
   type FormDef,
   type FormField,
   type FormFieldType,
@@ -93,6 +94,9 @@ export default function FormEditor({ form }: { form: FormDef }) {
   }
 
   const unused = STANDARD_FIELDS.filter((s) => !f.fields.some((x) => x.fieldId === s.fieldId));
+  // A form built out of titled screens — /apply is the one that is. Everything else is a flat
+  // list and shouldn't grow a heading box on every row it will never use.
+  const usesSteps = f.fields.some((x) => !!x.step);
 
   return (
     <div style={page}>
@@ -197,6 +201,21 @@ export default function FormEditor({ form }: { form: FormDef }) {
             </p>
           ) : null}
 
+          {/* WHICH SCREEN THIS QUESTION IS ON. Only shown once a form actually uses screens —
+              a heading box on every question of a four-box contact form is clutter that invites
+              somebody to fill it in and accidentally split the form in two. */}
+          {usesSteps ? (
+            <label style={skipRow}>
+              <span style={{ fontSize: 12, color: "var(--e-muted)" }}>Screen heading</span>
+              <input
+                value={x.step || ""}
+                onChange={(e) => patchField(i, { step: e.target.value || undefined })}
+                placeholder="Same as the one above"
+                style={{ ...input, width: 260, fontSize: 13, padding: "6px 9px" }}
+              />
+            </label>
+          ) : null}
+
           {/* SKIP-WHAT-WE-ALREADY-KNOW. A dropdown, never a typed path: a wrong path reads as an
               empty value, which looks identical to a question that simply always gets asked. */}
           <label style={skipRow}>
@@ -236,6 +255,16 @@ export default function FormEditor({ form }: { form: FormDef }) {
       </div>
 
       <h2 style={sec}>How it&apos;s laid out</h2>
+      {usesSteps ? (
+        <p style={hint}>
+          This form moves a <strong>screen</strong> at a time. Its screens, in order:{" "}
+          {stepsOf(f.fields)
+            .map((s) => `${s.title || "(untitled)"} (${s.fields.length})`)
+            .join(" → ")}
+          . Change a question&apos;s screen heading above to move it; questions next to each other
+          with the same heading share a screen.
+        </p>
+      ) : null}
       <label style={{ ...checkLbl, alignItems: "flex-start", gap: 9 }}>
         <input
           type="checkbox"
