@@ -86,7 +86,8 @@ export async function listRevisions(
   if (!cols.size) return []; // no such table on this database
 
   const idCol = pick(cols, "id", "rev", "revision");
-  const timeCol = pick(cols, "created_at", "inserted_at", "at", "ts", "created");
+  // `saved_at` is the real one — confirmed against the live database via ?columns=1, not guessed.
+  const timeCol = pick(cols, "saved_at", "created_at", "inserted_at", "at", "ts", "created");
   if (!idCol) return []; // nothing stable to identify or order by
 
   const { rows } = await p.query(
