@@ -80,6 +80,7 @@ export default function FormEditor({ form }: { form: FormDef }) {
           successHeading: f.successHeading,
           successBody: f.successBody,
           oneQuestionPerScreen: !!f.oneQuestionPerScreen,
+          altSuccess: f.altSuccess,
         }),
       });
       const body = await res.json();
@@ -304,6 +305,50 @@ export default function FormEditor({ form }: { form: FormDef }) {
         ph="We'll be in touch shortly."
         area
       />
+
+      {/* ── THE FIVE-STAR FUNNEL, WHERE IT'S USED ────────────────────────────────────────────
+          Only shown on a form that has one, so a plain contact form doesn't grow a panel about
+          Google reviews. It's set in code on the Review survey and travels with a copy of it. */}
+      {f.altSuccess ? (
+        <>
+          <h2 style={sec}>When they&apos;re happy</h2>
+          <p style={hint}>
+            Answer <strong>{f.altSuccess.values.join("</strong> or <strong>")}</strong> to
+            &ldquo;{f.fields.find((x) => x.fieldId === f.altSuccess?.fieldId)?.label || f.altSuccess.fieldId}
+            &rdquo; and they get this ending instead, with the review button. Everyone else gets the
+            one above — and every answer reaches the sheet either way.
+          </p>
+          <Field
+            label="Heading"
+            v={f.altSuccess.heading}
+            on={(v) => setF({ ...f, altSuccess: { ...f.altSuccess!, heading: v } })}
+          />
+          <Field
+            label="Body"
+            v={f.altSuccess.body}
+            on={(v) => setF({ ...f, altSuccess: { ...f.altSuccess!, body: v } })}
+            area
+          />
+          <Field
+            label="Button text"
+            v={f.altSuccess.buttonLabel || ""}
+            on={(v) => setF({ ...f, altSuccess: { ...f.altSuccess!, buttonLabel: v } })}
+            ph="Leave a Google review"
+          />
+          <Field
+            label="Where the button goes — THIS CLIENT'S Google review link"
+            v={f.altSuccess.buttonUrl || ""}
+            on={(v) => setF({ ...f, altSuccess: { ...f.altSuccess!, buttonUrl: v } })}
+            ph="https://g.page/r/…/review"
+          />
+          {!f.altSuccess.buttonUrl?.trim() ? (
+            <p style={warnLine}>
+              No link yet, so no button shows — they just get the thank-you. Paste this
+              client&apos;s own review link before you send the form out.
+            </p>
+          ) : null}
+        </>
+      ) : null}
 
       <div style={tokenBox}>
         <p style={{ ...hint, margin: 0 }}>

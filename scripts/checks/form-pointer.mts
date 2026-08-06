@@ -87,6 +87,43 @@ check(
   designProps.formFields[0].label
 );
 
+// ── The review survey: the five-star split ───────────────────────────────────────────────────
+// Its whole product is the ending, and the ending depends on the rating being a real CHOICE the
+// customer taps. Left as a text box (the old behaviour) she would have to type "★★★★★ Great"
+// exactly, so the rule would essentially never match and nobody would ever be sent to Google.
+const review = BUILTIN_FORMS.find((f) => f.id === "review")!;
+const reviewPage = { content: [{ type: "LeadForm", props: { formId: "review" } }] };
+const reviewOut = resolveFormPointers(reviewPage, BUILTIN_FORMS) as typeof reviewPage;
+const reviewProps = reviewOut.content[0].props as {
+  fields: { fieldId?: string; options?: string[] }[];
+  altSuccess?: { fieldId: string; values: string[]; buttonUrl?: string };
+};
+const rating = reviewProps.fields.find((f) => f.fieldId === "rating");
+
+check("the rating keeps its options", (rating?.options || []).length === 5, JSON.stringify(rating?.options));
+check("the split rule reaches the page", reviewProps.altSuccess?.fieldId === "rating");
+check(
+  "only the happy answers trigger it",
+  reviewProps.altSuccess?.values.length === 2 &&
+    reviewProps.altSuccess.values.every((v) => (rating?.options || []).includes(v)),
+  JSON.stringify(reviewProps.altSuccess?.values)
+);
+check(
+  "a value that isn't an option would never fire",
+  (review.altSuccess?.values || []).every((v) => (review.fields.find((f) => f.fieldId === "rating")?.options || []).includes(v)),
+  "a typo in the rule sends nobody to Google — which is the safe direction, but still a dead product"
+);
+check(
+  "the shipped review link is EMPTY",
+  !review.altSuccess?.buttonUrl,
+  "a real link in code sends every client's customers to whoever was typed in first"
+);
+check(
+  "the default ending is the careful one",
+  /call/i.test(review.successBody),
+  "an unconfigured copy must not ask an unhappy customer for a public review"
+);
+
 const seen: string[] = [];
 formsInUse(page, (id) => seen.push(id));
 check("connections found", seen.length === 1 && seen[0] === "quote", JSON.stringify(seen));

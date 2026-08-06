@@ -97,15 +97,24 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
           // Carrying it is precisely what lets Steven reword a question in the library without
           // breaking a client's sheet, which is half the point of pointing at the form at all.
           fieldId: f.fieldId,
-          // `choice` has no LeadForm equivalent yet, so it degrades to a text box rather than
-          // rendering nothing. Named here so it's a known gap, not a silent one.
+          // `choice` used to degrade to a text box here — a named gap that became a real one the
+          // moment a form's ENDING started depending on the answer. A review form's rating is a
+          // choice, and a free-text box means "★★★★★ Great" is typed by hand or not at all, so
+          // the rule that decides who gets sent to Google would essentially never match. The
+          // options travel and LeadForm draws them.
           inputType: f.type === "choice" ? "text" : f.type,
+          ...(f.type === "choice" && f.options?.length ? { options: f.options } : {}),
           required: f.required,
         }));
       props.buttonLabel = prefer(n.props?.buttonLabel, form.buttonLabel);
       props.note = prefer(n.props?.note, form.note);
       props.successHeading = prefer(n.props?.successHeading, form.successHeading);
       props.successBody = prefer(n.props?.successBody, form.successBody);
+      // ⚠️ THE FORM ALWAYS WINS ON THIS ONE — no page override. The other four are wording, which
+      // a page is entitled to phrase its own way. This decides WHO GETS SENT TO GOOGLE, and a
+      // page quietly holding a stale copy of that rule is a client's customers being sent to the
+      // wrong review page. It belongs to the form or nowhere.
+      if (form.altSuccess) props.altSuccess = form.altSuccess;
       out.props = props;
     }
 

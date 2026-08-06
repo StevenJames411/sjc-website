@@ -29,6 +29,8 @@ export type LeadFormField = {
   fieldId?: string;
   /** Library questions can be optional. A block without this stays all-or-nothing, as before. */
   required?: boolean;
+  /** Present on a `choice` question. Drawn as buttons — see the note where they're rendered. */
+  options?: string[];
 };
 export type LeadFormProps = {
   source?: string;
@@ -56,6 +58,18 @@ export type LeadFormProps = {
   // delivery path. Added for /websites, whose contact band is near-black — a white card sat on it
   // like a patch. Everything else keeps "light", so no existing page changes.
   theme?: "light" | "dark";
+  /**
+   * A different thank-you for certain answers — the five-star funnel. Set by the library form
+   * this block points at, never editable per page (see lib/formPointer.ts for why).
+   */
+  altSuccess?: {
+    fieldId: string;
+    values: string[];
+    heading: string;
+    body: string;
+    buttonLabel?: string;
+    buttonUrl?: string;
+  };
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
@@ -109,6 +123,7 @@ export default function LeadForm(props: LeadFormProps) {
     buttonColor,
     inColumn,
     theme = "light",
+    altSuccess,
   } = props;
 
   // ⚠️ THE THANK-YOU COPY RESOLVES ITS OWN TOKENS, AND HAS TO.
@@ -244,6 +259,17 @@ export default function LeadForm(props: LeadFormProps) {
   }
 
   if (state === "done") {
+    // ⚠️ READ OFF THE SUBMITTED ANSWER, not off anything the visitor could set. The rule names a
+    // fieldId and the values that trigger it; everything else falls to the ordinary thank-you.
+    // Defaulting to the ORDINARY one matters: a review form whose rule is mistyped must send
+    // nobody to Google rather than everybody, including the person who just gave it one star.
+    const alt =
+      altSuccess?.fieldId &&
+      Array.isArray(altSuccess.values) &&
+      altSuccess.values.includes((values[altSuccess.fieldId] || "").trim())
+        ? altSuccess
+        : null;
+
     return (
       <div className={`${cardCls} text-center${inColumn ? "" : " mx-auto max-w-xl"}`}>
         <h3
@@ -251,15 +277,32 @@ export default function LeadForm(props: LeadFormProps) {
             dark ? "text-white" : "text-[color:var(--color-sjc-ink)]"
           }`}
         >
-          {fill(successHeading)}
+          {fill(alt ? alt.heading : successHeading)}
         </h3>
         <p
           className={`mt-4 text-lg leading-relaxed ${
             dark ? "text-slate-300" : "text-[color:var(--color-sjc-mute)]"
           }`}
         >
-          {fill(successBody)}
+          {fill(alt ? alt.body : successBody)}
         </p>
+        {/* No link, no button. An empty href on a review form is a dead end that reads as broken;
+            saying nothing reads as a thank-you, which it still is. */}
+        {alt?.buttonUrl && alt.buttonLabel ? (
+          <a
+            href={alt.buttonUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={
+              dark
+                ? "mt-6 inline-block rounded-xl bg-[#00D9FF] px-6 py-4 text-lg font-bold text-[#0A0E27] shadow-lg"
+                : "mt-6 inline-block rounded-lg bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-white shadow-sm hover:bg-[color:var(--color-sjc-green)]"
+            }
+            style={!dark && buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
+          >
+            {alt.buttonLabel}
+          </a>
+        ) : null}
       </div>
     );
   }
@@ -281,13 +324,39 @@ export default function LeadForm(props: LeadFormProps) {
                   <span className="ml-1 font-normal opacity-60">(optional)</span>
                 )}
               </label>
-              <input
-                id={`lf-${k}`}
-                type={f?.inputType || "text"}
-                value={values[k] || ""}
-                onChange={(e) => setValues((prev) => ({ ...prev, [k]: e.target.value }))}
-                className={inputCls}
-              />
+              {/* BUTTONS, NOT A DROPDOWN. This is answered on a phone, and a five-option rating
+                  behind a tap-and-scroll picker is the difference between a review and a closed
+                  tab. It also puts the whole scale on screen, which is the question. */}
+              {f?.options?.length ? (
+                <div className="flex flex-col gap-2">
+                  {f.options.map((opt) => {
+                    const on = (values[k] || "") === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setValues((prev) => ({ ...prev, [k]: opt }))}
+                        aria-pressed={on}
+                        className={`${inputCls} text-left ${
+                          on
+                            ? "font-semibold ring-2 ring-[color:var(--color-sjc-blue)]"
+                            : "hover:opacity-90"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <input
+                  id={`lf-${k}`}
+                  type={f?.inputType || "text"}
+                  value={values[k] || ""}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [k]: e.target.value }))}
+                  className={inputCls}
+                />
+              )}
             </div>
           );
         })}

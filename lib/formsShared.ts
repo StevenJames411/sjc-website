@@ -190,6 +190,30 @@ export type FormDef = {
    * onboarding form is Steven chasing somebody by text. That is what this exists to prevent.
    */
   oneQuestionPerScreen?: boolean;
+  /**
+   * A DIFFERENT THANK-YOU FOR CERTAIN ANSWERS — and the whole five-star funnel in one field.
+   *
+   * A review form asks how it went. A happy customer should be sent straight to Google while she
+   * is still holding her phone and still pleased; an unhappy one should not, and telling her
+   * "leave us a review!" is how a bad afternoon becomes a public one-star. Same form, same
+   * questions, two endings.
+   *
+   * ⚠️ IT IS NOT A FILTER ON WHAT GETS COLLECTED. Every answer lands in the client's sheet
+   * whichever ending is shown, including the bad ones — especially the bad ones, which are the
+   * ones an owner needs to see. What changes is only the last screen. Suppressing a review is a
+   * different thing from choosing who gets ASKED for one, and this does the second.
+   */
+  altSuccess?: {
+    /** Which question decides. */
+    fieldId: string;
+    /** The answers that trigger it. Matched exactly, against the stored value. */
+    values: string[];
+    heading: string;
+    body: string;
+    /** Optional button on the thank-you screen — for a review form, the Google review link. */
+    buttonLabel?: string;
+    buttonUrl?: string;
+  };
 };
 
 /**
@@ -298,6 +322,65 @@ export const BUILTIN_FORMS: FormDef[] = [
     note: "No obligation. We'll call you back to talk it through.",
     successHeading: "Got it — thank you.",
     successBody: "We'll call you back shortly. Rather talk now? Call {{business.phone}}.",
+  },
+  {
+    // ── THE REVIEW SURVEY (the five-star funnel) ─────────────────────────────────────────────
+    // A product, not a sample. Copy it per client, paste their Google review link into the
+    // thank-you button, and send the link out after a finished job.
+    //
+    // ⚠️ THE POINT IS THE SPLIT, NOT THE QUESTIONS. Four and five stars land on a thank-you that
+    // sends her to Google while she is still holding her phone and still pleased. One to three
+    // land on a thank-you that says a human will call — because "leave us a review!" to somebody
+    // who just had a bad afternoon is how it becomes a public bad afternoon.
+    //
+    // ⚠️ EVERY ANSWER REACHES THE OWNER'S SHEET EITHER WAY, one-star answers included. Those are
+    // the ones he most needs to read. This chooses who gets ASKED for a public review; it does
+    // not choose what gets collected, and it must never become that.
+    //
+    // ⚠️ NO LIST AND NO SCHEDULE LIVES HERE. Sending the link out is the drip, and a drip holds a
+    // list plus state, which is the never-a-CRM line. This is a form. It is asked, answered and
+    // forgotten, exactly like every other one.
+    id: "review",
+    name: "Review survey",
+    kind: "builtin",
+    description: "After a finished job. Happy customers get sent to Google; unhappy ones get a call.",
+    fields: [
+      {
+        fieldId: "rating",
+        label: "How did we do?",
+        type: "choice",
+        required: true,
+        options: [
+          "★★★★★ Great",
+          "★★★★ Good",
+          "★★★ OK",
+          "★★ Not great",
+          "★ Bad",
+        ],
+      },
+      { fieldId: "message", label: "Anything you'd like to tell us?", type: "textarea" },
+      { fieldId: "name", label: "Your name", type: "text" },
+      { fieldId: "phone", label: "Best phone number", type: "tel" },
+    ],
+    buttonLabel: "Send it",
+    note: "",
+    // The DEFAULT ending is the careful one, so a form copied and never configured does the safe
+    // thing. Being sent to Google is the exception you opt into by being pleased.
+    successHeading: "Thank you — that's really helpful.",
+    successBody:
+      "Someone will give you a call to put it right. If it's urgent, ring {{business.phone}}.",
+    altSuccess: {
+      fieldId: "rating",
+      values: ["★★★★★ Great", "★★★★ Good"],
+      heading: "That's great to hear — thank you.",
+      body:
+        "Would you mind saying that on Google? It takes a minute and it's the single biggest " +
+        "thing that helps people find us.",
+      buttonLabel: "Leave a Google review",
+      // ⚠️ BLANK, AND IT HAS TO BE. A real link here would send every client's customers to
+      // whoever's review page got typed in first. Filled in per client, on the copy.
+      buttonUrl: "",
+    },
   },
   {
     id: "callback",

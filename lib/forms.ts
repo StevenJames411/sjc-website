@@ -134,6 +134,35 @@ function normalizeFields(incoming: FormField[], previous: FormField[] = []): For
 }
 
 /**
+ * Clean an alternate thank-you rule before it's stored.
+ *
+ * ⚠️ THE RULE IS NOT FREELY EDITABLE — only its WORDS AND ITS LINK are. `fieldId` and `values`
+ * are taken from what's already saved, never from the request. They decide who gets sent to
+ * Google, and a rule that can be retargeted from a JSON body is a rule that can be pointed at the
+ * wrong question by anything that PATCHes this form. The editor only ever offers the wording and
+ * the client's review link, which is the whole of what changes per client.
+ */
+function normalizeAltSuccess(
+  incoming: FormDef["altSuccess"],
+  current: FormDef
+): FormDef["altSuccess"] {
+  const base = current.altSuccess;
+  if (!base) return undefined; // A form without a rule can't grow one from a request.
+  if (!incoming) return base;
+  const url = String(incoming.buttonUrl || "").trim();
+  return {
+    fieldId: base.fieldId,
+    values: base.values,
+    heading: String(incoming.heading ?? base.heading),
+    body: String(incoming.body ?? base.body),
+    buttonLabel: String(incoming.buttonLabel ?? base.buttonLabel ?? ""),
+    // ⚠️ http(s) ONLY. This becomes an href on a page a client's customer opens; a `javascript:`
+    // or `data:` URL pasted in here would run in their browser under the client's own domain.
+    buttonUrl: /^https?:\/\//i.test(url) ? url : "",
+  };
+}
+
+/**
  * Make a new form, optionally starting from an existing one.
  *
  * A clone KEEPS every fieldId. That is what makes a preset a preset: use "Quote request" on ten
@@ -175,6 +204,13 @@ export async function createForm(opts: {
     // Carried like the questions are: copying a long one-question-per-screen form and getting
     // back a fifteen-field wall is not what "make a copy" means.
     ...(source?.oneQuestionPerScreen ? { oneQuestionPerScreen: true } : {}),
+    // ⚠️ THE RULE IS COPIED; THE LINK IS NOT. Copying the Review survey for a second client and
+    // inheriting the first client's Google review link would send her customers to somebody
+    // else's review page — the same failure as a phone number baked into a template, and just as
+    // invisible. The copy asks for its own link.
+    ...(source?.altSuccess
+      ? { altSuccess: { ...source.altSuccess, buttonUrl: "" } }
+      : {}),
   };
 
   // Saved presets only. A built-in is implicit and must never be written as a plain row, or
@@ -210,6 +246,7 @@ export async function updateForm(
       "oneQuestionPerScreen" in patch
         ? patch.oneQuestionPerScreen === true
         : !!current.oneQuestionPerScreen,
+    altSuccess: "altSuccess" in patch ? normalizeAltSuccess(patch.altSuccess, current) : current.altSuccess,
   };
 
   // Built-ins are persisted as an override row the first time one is edited, then merged back
