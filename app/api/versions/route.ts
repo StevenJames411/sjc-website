@@ -21,7 +21,7 @@
 //
 //   GET  ?page=&site=            -> { ok, versions: [{ id, at, bytes }] }
 //   POST { page, site, id }      -> { ok, restoredTo: "draft" }
-import { listRevisions, readRevision } from "@/lib/pgClient";
+import { listRevisions, readRevision, revisionColumns } from "@/lib/pgClient";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient, backend } from "@/lib/store";
 import { puckKey } from "@/lib/puckContent";
@@ -46,6 +46,12 @@ export async function GET(req: Request) {
       versions: [],
       unavailable: `Version history needs the database. This site is running on ${backend()}, which keeps none.`,
     });
+  }
+
+  // Diagnostic: the revisions table belongs to another repository, so what it looks like can't be
+  // read out of this codebase. ?columns=1 answers that without a database console.
+  if (url.searchParams.get("columns")) {
+    return Response.json({ ok: true, columns: await revisionColumns() });
   }
 
   // ⚠️ THE REASON COMES BACK, it doesn't just go to a log. The first version of this route threw a

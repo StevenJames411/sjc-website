@@ -64,6 +64,17 @@ async function revColumns(p: pg.Pool): Promise<Set<string>> {
 /** First name that exists, so a differently-named column degrades instead of throwing. */
 const pick = (cols: Set<string>, ...names: string[]) => names.find((n) => cols.has(n));
 
+/**
+ * What `state_rev` actually looks like. Exposed because this table is defined in another
+ * repository, so "which columns does it have" cannot be answered by reading this codebase — and
+ * that question already cost one wrong guess and one silent blank column.
+ */
+export async function revisionColumns(): Promise<string[]> {
+  const p = pool();
+  if (!p) return [];
+  return [...(await revColumns(p))];
+}
+
 export async function listRevisions(
   key: string,
   limit = 40
