@@ -186,9 +186,7 @@ export default function FormEditor({
             Who this form is switched on for
           </p>
           <p style={{ margin: "4px 0 12px" }}>
-            One form, every client — switch it on for a business and text them the link. The
-            questions below are the same for all of them, and changing one shows up in every open
-            link straight away.
+            {"One form, every client. Each business already has its own onboarding page waiting at its own address — there's no page to build and nothing to publish. Switching it on unlocks it, then you text them the link. The questions below are the same for everyone, and changing one shows up in every open link straight away."}
           </p>
 
           {onboarding.businesses.length === 0 ? (
@@ -248,9 +246,10 @@ export default function FormEditor({
             </div>
           ))}
 
+          {/* Same lesson as the library heading: one string, no JSX seams to lose a space in.
+              It rendered as "Websitesscreen" on the live page. */}
           <p style={{ margin: "10px 0 0", fontSize: 12 }}>
-            Same switches as the <strong>Websites</strong> screen — whichever one you&apos;re
-            standing on.
+            {"Same switches as the Websites screen — whichever one you're standing on."}
           </p>
         </div>
       ) : usage === undefined ? null : usage === null ? (

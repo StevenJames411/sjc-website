@@ -279,16 +279,22 @@ export default function FormLibrary({
           link per business — so "which website is this on?" has no answer anywhere else on this
           screen. Without it, this nine-question intake and Consulting's thirteen-question /apply
           survey are two similar forms with no way to tell which is which, which is exactly the
-          mix-up that sent Steven looking for the wrong one. */}
+          mix-up that sent Steven looking for the wrong one.
+
+          ⚠️ AND "DOES IT CREATE A PAGE?" — his next question, which deserves a direct answer on
+          the card rather than a conversation. Every other form needs a page built and a form
+          block placed on it. This one already HAS a page: a generated route, one per business,
+          that exists from the moment the site record does. Nothing is created, nothing is
+          published. Switching it on unlocks a door that was always there. */}
       {f.id === ONBOARDING_FORM_ID && onboarding ? (
         <p style={whereBox}>
-          Not on a page — it&apos;s a link you send, one per client:
+          {"Every business already has its own onboarding page, at its own address:"}
           <br />
           <code style={addr}>{onboarding.example}</code>
           <br />
-          Open or close it per business on the <strong>Websites</strong> screen.{" "}
+          {"Nothing to build and nothing to publish — switching it on unlocks it, and you text them the link. Open or close one per business on the Websites screen."}
           {onboarding.total
-            ? `${onboarding.openFor.length} of ${onboarding.total} open now.`
+            ? ` ${onboarding.openFor.length} of ${onboarding.total} open now.`
             : null}
         </p>
       ) : null}
@@ -404,9 +410,12 @@ export default function FormLibrary({
         </p>
       ) : strays.length ? (
         <div style={strayBox}>
+          {/* ⚠️ BUILT AS ONE STRING, NOT AS JSX AROUND AN EXPRESSION. Written inline it rendered
+              as "5 pagesask questions" on the live screen — the space between the expression and
+              the next word was lost. A heading that reads as a typo makes the whole panel look
+              unfinished, and it's the first thing on the screen. */}
           <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 14 }}>
-            {strays.length} page{strays.length === 1 ? "" : "s"} ask questions that aren&apos;t in
-            here yet
+            {`${strays.length} ${strays.length === 1 ? "page asks" : "pages ask"} questions that aren't in here yet`}
           </p>
           <p style={{ ...hint, margin: "0 0 12px" }}>
             Those pages work fine and nothing about them changes. This just puts a copy of their
