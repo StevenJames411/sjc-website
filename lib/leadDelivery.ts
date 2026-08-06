@@ -1,4 +1,5 @@
 import { findSite } from "./sites";
+import { SJC } from "./siteKeys";
 
 // Deliver a lead to whoever owns the website it came from.
 //
@@ -34,6 +35,39 @@ export type Delivery = {
 const RESEND = "https://api.resend.com/emails";
 
 /**
+ * The no-destination alarm's send. Throws rather than returning a flag, so a rejection can never
+ * be mistaken for a send.
+ *
+ * ⚠️ THE OWNER'S COPY DELIBERATELY DOES NOT USE THIS. It has its own inline call further down,
+ * because that path is the one verified working end-to-end and it was not worth re-plumbing on
+ * the afternoon before real prospects start filling these forms in. Two call sites, one of which
+ * is proven. Consolidate when there's a reason to touch it anyway.
+ */
+async function sendAlert(opts: {
+  to: string;
+  from: string;
+  fromName: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+}): Promise<void> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY not set");
+  const res = await fetch(RESEND, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: `${opts.fromName} <${opts.from}>`,
+      to: [opts.to],
+      subject: opts.subject,
+      html: opts.html,
+      ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
+    }),
+  });
+  if (!res.ok) throw new Error(`resend ${res.status} ${await res.text()}`);
+}
+
+/**
  * The reply-to is the LEAD, so hitting reply on a phone goes straight back to the customer.
  *
  * This is the whole reason the alert goes out through Resend rather than through the sheet
@@ -52,21 +86,54 @@ function guessReplyTo(answers: Answer[]): string | undefined {
   return byLabel?.value.trim();
 }
 
+/** A submitted value is a stranger's text going into an HTML email. Escape it. */
+const esc = (s: string) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+/**
+ * WHO THIS LEAD IS, for the subject line.
+ *
+ * ⚠️ EVERY LEAD USED TO SHARE ONE SUBJECT — "New enquiry from your website" — from one sender, so
+ * Gmail threaded them ALL into a single conversation. Verified live on 2026-08-06: a Steven James
+ * Designs enquiry and a Consulting application landed in the same thread, minutes apart. At five
+ * clients that is every business's leads stacked in one place with the newest hidden behind "show
+ * trimmed content". The business name separates the clients; the person's name separates the
+ * leads within a client.
+ */
+function leadName(answers: Answer[]): string {
+  const byKey = answers.find((a) => a.key === "name" && a.value.trim());
+  if (byKey) return byKey.value.trim();
+  const byLabel = answers.find((a) => /(^|\b)(your |first |full )?name\b/i.test(a.label) && a.value.trim());
+  if (byLabel) return byLabel.value.trim();
+  const firstReal = answers.find((a) => a.key !== "source" && a.value.trim());
+  return firstReal?.value.trim() || "";
+}
+
 function asHtml(businessName: string, answers: Answer[]): string {
   const rows = answers
     .filter((a) => a.value && a.key !== "source")
     .map(
       (a) =>
-        `<tr><td style="padding:6px 14px 6px 0;color:#6b7280;white-space:nowrap">${a.label}</td>` +
-        `<td style="padding:6px 0;font-weight:600">${a.value}</td></tr>`
+        `<tr><td style="padding:6px 14px 6px 0;color:#6b7280;white-space:nowrap">${esc(a.label)}</td>` +
+        `<td style="padding:6px 0;font-weight:600">${esc(a.value)}</td></tr>`
     )
     .join("");
   return (
     `<div style="font-family:-apple-system,Segoe UI,sans-serif;font-size:15px;color:#111827">` +
     `<p style="margin:0 0 14px">New enquiry from your website.</p>` +
     `<table style="border-collapse:collapse">${rows}</table>` +
-    `<p style="margin:18px 0 0;color:#6b7280;font-size:13px">Reply to this email and it goes straight to them.</p>` +
-    `<p style="margin:4px 0 0;color:#9ca3af;font-size:12px">${businessName}</p></div>`
+    // ⚠️ ONLY PROMISED WHEN IT'S TRUE. reply_to is set from a recognisable email field; a
+    // phone-only form, or an imported design whose email input has just a placeholder, doesn't
+    // get one — and the from-address is a SEND-ONLY domain, so hitting reply there goes nowhere.
+    // Telling an owner "reply and it reaches them" when it doesn't is worse than saying nothing.
+    (guessReplyTo(answers)
+      ? `<p style="margin:18px 0 0;color:#6b7280;font-size:13px">Reply to this email and it goes straight to them.</p>`
+      : `<p style="margin:18px 0 0;color:#6b7280;font-size:13px">Their details are above — call or text them back.</p>`) +
+    `<p style="margin:4px 0 0;color:#9ca3af;font-size:12px">${esc(businessName)}</p></div>`
   );
 }
 
@@ -78,6 +145,29 @@ export async function deliverLead(
   const problems: string[] = [];
   const site = siteId ? await findSite(siteId) : undefined;
   const owner = (site?.leadEmail || "").trim();
+
+  // ── THE SITE LOOKUP FAILED, AND THAT IS NOT THE SAME AS "no destinations set" ────────────────
+  //
+  // ⚠️ THE WORST BUG IN THIS FILE, AND IT WAS SILENT. `findSite` swallows a storage error and
+  // returns undefined (lib/kvStateStore.ts catches and returns null). A transient database blip,
+  // a cold client, or a site sitting in the 30-day bin all produce the same `undefined` — and the
+  // code below then read that as "a site with no email, no sheet and no webhook" and posted the
+  // lead into SJC'S OWN INTAKE. A client's enquiry, in Steven's pile, reported as a clean success
+  // with an empty `problems` array and a green thank-you on screen.
+  //
+  // That is precisely the failure the note at the top of this file says the whole module exists
+  // to prevent, arrived at through the back door.
+  //
+  // A named site that cannot be resolved is an INCIDENT, not a configuration. It still gets
+  // written somewhere — losing the lead would be worse — but it is loudly flagged, so the row is
+  // findable and re-deliverable instead of quietly filed under the wrong business.
+  if (siteId && siteId !== SJC && !site) {
+    problems.push(
+      `UNKNOWN SITE '${siteId}' — could not read the website registry. This lead was filed in ` +
+        `SJC's intake because there was nowhere else to put it. It has NOT reached the client.`
+    );
+    console.error(`[lead] UNRESOLVED SITE '${siteId}' — lead filed to SJC intake as a last resort`);
+  }
 
   // ── 1. SJC's intake — ONLY for websites that have no sheet of their own ────────────────────
   //
@@ -195,6 +285,10 @@ export async function deliverLead(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          // ⚠️ THE ANSWERS GO FIRST. Spread last, a question keyed `source` overwrote ours — and
+          // every LeadForm sends exactly that as its first answer, so `source: "website"` was
+          // ALWAYS clobbered by the human label. A GHL workflow filtering on it never fired.
+          ...Object.fromEntries(answers.map((a) => [a.key, a.value])),
           submittedAt,
           source: "website",
           site: site?.name || siteId || "",
@@ -203,7 +297,6 @@ export async function deliverLead(
           // form in the library mints a stable fieldId for exactly this reason (see FormField in
           // lib/formsShared.ts — never re-derive it from the label or the mapping breaks silently
           // the first time a question is reworded).
-          ...Object.fromEntries(answers.map((a) => [a.key, a.value])),
           answers,
         }),
       });
@@ -216,6 +309,55 @@ export async function deliverLead(
   }
 
   // ── 4. the owner's copy, when the site has an address ──────────────────────────────────────
+  //
+  // ⚠️ A LEAD THAT NOTIFIES NOBODY IS THE ONE THAT ENDS A RETAINER, and until now it was the
+  // QUIET path: no leadEmail meant `toOwner: null`, no problem raised, row filed, everyone moves
+  // on. Verified live on 2026-08-06 — a Marbleford enquiry landed in the sheet and not one person
+  // was told. No bug required; that was the designed behaviour of a blank field.
+  //
+  // It matters most in the exact window where it's most likely: a site just sold, `leadEmail` not
+  // filled in yet (and app/api/admin/onboard-client can report success without saving it). Her
+  // customers' enquiries pile up invisibly while she waits for a callback.
+  //
+  // So: if nothing else would have told a human — no owner address AND no GHL inbox — the alert
+  // goes to SJC instead, clearly marked. Steven is not the intended recipient; he's the smoke
+  // alarm. GHL counts as notified, because for a $97 client that inbox IS the notification.
+  const notifiedSomeone = Boolean(owner) || toGhl === true;
+  if (!notifiedSomeone) {
+    const business = site?.business?.name || site?.name || siteId || "an unknown website";
+    problems.push(
+      `NOBODY WAS NOTIFIED — '${business}' has no lead email and no GoHighLevel inbox. ` +
+        `The lead is stored, but no alert was owed to anyone.`
+    );
+    console.error(`[lead] NO DESTINATION for '${siteId}' — alerting SJC as a fallback`);
+    const fallbackTo = (await findSite(SJC))?.leadEmail?.trim();
+    if (fallbackTo) {
+      await sendAlert({
+        to: fallbackTo,
+        from: process.env.LEAD_FROM || "leads@send.stevenjamesdesigns.com",
+        fromName: "SJC lead alarm",
+        subject: `⚠ Lead with nowhere to go — ${business}`,
+        html:
+          `<div style="font-family:-apple-system,Segoe UI,sans-serif;font-size:15px;color:#111827">` +
+          `<p style="margin:0 0 14px"><strong>${esc(business)}</strong> received an enquiry and has ` +
+          `no lead email and no GoHighLevel inbox set, so nobody was told.</p>` +
+          `<p style="margin:0 0 14px">Set the lead destination on that website\u2019s settings, then ` +
+          `forward this on.</p>` +
+          `<table style="border-collapse:collapse">` +
+          answers
+            .filter((a) => a.value && a.key !== "source")
+            .map(
+              (a) =>
+                `<tr><td style="padding:6px 14px 6px 0;color:#6b7280;white-space:nowrap">${esc(a.label)}</td>` +
+                `<td style="padding:6px 0;font-weight:600">${esc(a.value)}</td></tr>`
+            )
+            .join("") +
+          `</table></div>`,
+        replyTo: guessReplyTo(answers),
+      }).catch((e) => problems.push(`fallback alarm failed: ${(e as Error).message}`));
+    }
+  }
+
   if (!owner) return { toOwner: null, toRecord, toSheet, toGhl, problems };
 
   const key = process.env.RESEND_API_KEY;
@@ -244,7 +386,15 @@ export async function deliverLead(
       body: JSON.stringify({
         from: `${site?.business?.name || site?.name || "Your website"} <${from}>`,
         to: [owner],
-        subject: `New enquiry from your website`,
+        // ⚠️ THE BUSINESS AND THE PERSON, BOTH. One shared subject threaded every client's leads
+        // into a single Gmail conversation — see leadName() above for the live proof.
+        subject: [
+          "New enquiry",
+          site?.business?.name || site?.name || "",
+          leadName(answers),
+        ]
+          .filter(Boolean)
+          .join(" — "),
         html: asHtml(site?.business?.name || site?.name || "", answers),
         ...(guessReplyTo(answers) ? { reply_to: guessReplyTo(answers) } : {}),
       }),
