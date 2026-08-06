@@ -3,6 +3,7 @@ import PuckEditor from "@/components/puck/PuckEditor";
 import { readPages, findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { readDesignCssDraft, readDesignCss } from "@/lib/puckContent";
+import { SiteProvider } from "@/components/blocks/SiteContext";
 
 // The builder for one page of one website: /edit/<site>/<page>.
 //
@@ -59,16 +60,24 @@ export default async function EditPage({
       {designCss ? (
         <style id="design-css" dangerouslySetInnerHTML={{ __html: designCss }} />
       ) : null}
-    <PuckEditor
-      siteId={siteId}
-      siteName={site.name}
-      page={entry.slug}
-      title={entry.title}
-      pages={pages}
-      // Decides whether the toolbar's live link points at the studio's demo address or at the
-      // client's own domain. Same input the server uses to decide what to serve.
-      siteDomain={site.domain}
-    />
+      {/* ⚠️ THE BUILDER GETS THE SAME BUSINESS FACTS THE PUBLIC PAGE DOES.
+          Without this the canvas rendered a literal `{{business.phone}}` in the nav — the public
+          page wraps in SiteProvider and resolves it, the builder never did. Harmless on the live
+          site and alarming in the one place Steven actually looks at the page, which is the worst
+          combination: it reads as a leak that isn't there, and it hides a real one if it ever is.
+          Same provider, same props as lib/publicSitePage, so the two can't drift. */}
+      <SiteProvider siteId={siteId} business={site.business}>
+        <PuckEditor
+          siteId={siteId}
+          siteName={site.name}
+          page={entry.slug}
+          title={entry.title}
+          pages={pages}
+          // Decides whether the toolbar's live link points at the studio's demo address or at the
+          // client's own domain. Same input the server uses to decide what to serve.
+          siteDomain={site.domain}
+        />
+      </SiteProvider>
     </>
   );
 }
