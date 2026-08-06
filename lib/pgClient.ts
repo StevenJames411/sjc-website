@@ -27,6 +27,46 @@ function pool(): pg.Pool | null {
   return _pool;
 }
 
+/**
+ * The saved versions of one key, newest first.
+ *
+ * ⚠️ ASK FOR THE `-pub` KEY, NOT THE DRAFT. Autosave writes a revision on every pause in typing,
+ * so a draft's history is thousands of rows seconds apart — unreadable, and useless for the only
+ * question anyone actually asks: "put the page back to how it was on Monday." Publishing writes
+ * the `-pub` key exactly once, so ITS revisions are the publish history: one row per time Steven
+ * decided a page was ready. No extra bookkeeping and no note column to trust.
+ *
+ * Values are deliberately not returned — fifty page snapshots is megabytes, and a list only needs
+ * to say when and how big.
+ */
+export async function listRevisions(
+  key: string,
+  limit = 40
+): Promise<{ id: number; at: string; bytes: number }[]> {
+  const p = pool();
+  if (!p) return [];
+  const { rows } = await p.query(
+    `select id, created_at, octet_length(value::text) as bytes
+       from state_rev where key = $1 order by id desc limit $2`,
+    [key, limit]
+  );
+  return rows.map((r) => ({
+    id: Number(r.id),
+    at: new Date(r.created_at).toISOString(),
+    bytes: Number(r.bytes),
+  }));
+}
+
+/** One saved version's full content, or null if that id doesn't belong to this key. */
+export async function readRevision(key: string, id: number): Promise<unknown> {
+  const p = pool();
+  if (!p) return null;
+  // Keyed AND id-matched on purpose: an id belonging to another page must never be restorable
+  // onto this one.
+  const { rows } = await p.query("select value from state_rev where key = $1 and id = $2", [key, id]);
+  return rows.length ? rows[0].value : null;
+}
+
 // The write guard, same rules as the cockpit's. A published page losing most of its content
 // is the failure that matters here — a bad Publish would otherwise be permanent.
 export function guardReason(prev: unknown, next: unknown): string | null {

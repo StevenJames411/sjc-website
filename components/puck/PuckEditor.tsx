@@ -127,6 +127,8 @@ export default function PuckEditor({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState<boolean | null>(null);
+  const [showVersions, setShowVersions] = useState(false);
+  const [versions, setVersions] = useState<{ id: number; at: string; bytes: number }[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // WHERE THIS PAGE ACTUALLY LIVES. Every other builder shows the address under the toolbar; not
@@ -270,6 +272,52 @@ export default function PuckEditor({
       if (!r.ok) return window.alert(r.error || "Couldn't save the template.");
       window.alert(`Template saved. It's now an option under "New website".`);
       router.push("/edit");
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ── VERSIONS ────────────────────────────────────────────────────────────────────────────────
+  // A panel rather than a prompt(): the whole value is READING the list — which day, how big —
+  // and a native dialog can't show one. It also blocks the page for anything driving the browser.
+  //
+  // ⚠️ Restoring reloads the editor. The draft has changed underneath Puck, and Puck holds its
+  // own copy in memory; without the reload the canvas keeps showing the old version and the next
+  // autosave writes it straight back over the one just restored.
+  const openVersions = async () => {
+    setBusy(true);
+    try {
+      const r = await fetch(
+        `/api/versions?page=${encodeURIComponent(page)}&site=${encodeURIComponent(siteId)}`,
+        { credentials: "same-origin" }
+      );
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't load this page's versions.");
+      if (j.unavailable) return window.alert(j.unavailable);
+      setVersions(j.versions || []);
+      setShowVersions(true);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const restoreVersion = async (id: number) => {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/versions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ page, site: siteId, id }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't restore that version.");
+      // Straight reload — see the warning above.
+      window.location.reload();
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -497,6 +545,11 @@ export default function PuckEditor({
         <button type="button" onClick={onRenamePage} disabled={busy} style={btn}>
           Rename
         </button>
+        {/* THE WAY BACK. Revisions have been written on every save since the Postgres migration
+            and nothing ever read them — the safety net existed and was unreachable. */}
+        <button type="button" onClick={openVersions} disabled={busy} style={btn}>
+          Versions
+        </button>
         {canDelete ? (
           <button type="button" onClick={onDeletePage} disabled={busy} style={btnDanger}>
             Delete Page
@@ -564,6 +617,100 @@ export default function PuckEditor({
           </span>
         )}
       </div>
+      {showVersions && (
+        <div
+          onClick={() => setShowVersions(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 60,
+            background: "rgba(0,0,0,.35)",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            paddingTop: 80,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 10,
+              width: 460,
+              maxWidth: "92vw",
+              maxHeight: "70vh",
+              overflow: "auto",
+              padding: 18,
+              boxShadow: "0 20px 50px rgba(0,0,0,.25)",
+            }}
+          >
+            <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 700 }}>Earlier versions</h2>
+            {/* The wording carries the two facts that stop this being frightening: it lists
+                PUBLISHES, and restoring does not touch the live site. */}
+            <p style={{ margin: "0 0 14px", fontSize: 13, color: "#4b5563" }}>
+              Every time you pressed Publish. Restoring loads that version back into the builder so
+              you can look at it — <strong>your live site doesn&apos;t change</strong> until you
+              press Publish again.
+            </p>
+
+            {!versions.length ? (
+              <p style={{ fontSize: 13, color: "#6b7280" }}>
+                This page hasn&apos;t been published yet, so there&apos;s nothing to go back to.
+              </p>
+            ) : (
+              <div style={{ display: "grid", gap: 6 }}>
+                {versions.map((v, i) => (
+                  <div
+                    key={v.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      border: "1px solid var(--color-sjc-line)",
+                      borderRadius: 7,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <span style={{ flex: 1, fontSize: 13 }}>
+                      {new Date(v.at).toLocaleString(undefined, {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                      {i === 0 && (
+                        <span style={{ marginLeft: 8, fontSize: 11, color: "#6b7280" }}>
+                          current
+                        </span>
+                      )}
+                    </span>
+                    <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                      {Math.round(v.bytes / 1024)} KB
+                    </span>
+                    <button
+                      type="button"
+                      disabled={busy || i === 0}
+                      onClick={() => restoreVersion(v.id)}
+                      style={{ ...btn, opacity: i === 0 ? 0.4 : 1 }}
+                    >
+                      Restore
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowVersions(false)}
+              style={{ ...btn, marginTop: 14 }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       {/* CLICK A WORD ON THE PAGE, GET THAT WORD'S ROW.
           A bought design lands as forty-odd text rows in one section, so finding the line you are
           looking straight at meant scrolling the whole list. Every filled word carries a
