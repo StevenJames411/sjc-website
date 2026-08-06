@@ -77,12 +77,11 @@ export default function NavView({
   // went near-black cyan on 2026-08-05 and the header stayed royal navy, sitting on top of every
   // page announcing the old brand.
   //
-  // bandDARKER, not bandDark, and the distinction is the useful part. The header sits ON the
-  // page's dark bands, so it should be made of the same thing they are — that's what lets it
-  // disappear into the hero instead of stacking a second shade on top of it. It also leaves
-  // bandDark free as the FOOTER's dial, so the two can be tuned apart from one screen. Sharing
-  // one role meant every attempt to lighten the footer dragged the header with it.
-  const bg = background || "bandDarker";
+  // bandHEADER — the bar's own dial, and blank on that role falls back to bandDarker, which is
+  // what the header used before the role existed. Three dark surfaces (this bar, the dark page
+  // sections, the footer) wanted three different darks; with only two roles, two of them had to
+  // share, and every attempt to tune one dragged the other.
+  const bg = background || "bandHeader";
   const fg = foreground || "white";
   const logoOn = showLogo !== false;
 
@@ -112,16 +111,18 @@ export default function NavView({
   ) : null;
 
   return (
-    // TRANSLUCENT + BLURRED, which is the whole reason a sticky bar reads as lighter than the band
-    // it's made of. The Designs site and this one are within a hair of each other in actual value
-    // (#0A0E27 vs #0b1220) and looked nothing alike, because one let the page show through and the
-    // other didn't. Colour was never the difference — opacity was.
+    // OPAQUE. It was briefly translucent + blurred, copying the Designs site's bar — and that is a
+    // DARK-PAGE trick. Designs is dark top to bottom, so its header sits on the same tone the
+    // whole scroll and never changes. This site goes white below the hero, so a translucent bar
+    // picked up the white and drifted grey halfway down: one page with two different headers,
+    // and only one of them matched anything.
     //
-    // color-mix rather than an rgba() literal: `bg` is a brand ROLE here, so there is no hex to
-    // append an alpha channel to.
+    // Steven found it by looking rather than by measuring — "against blue they look similar,
+    // against white they look more different." That IS the mechanism. A colour that depends on
+    // what happens to be behind it isn't a colour you can tune.
     <header
-      className="sticky top-0 z-20 w-full backdrop-blur-xl"
-      style={{ backgroundColor: `color-mix(in srgb, ${resolveColor(bg)} 85%, transparent)` }}
+      className="sticky top-0 z-20 w-full"
+      style={{ backgroundColor: resolveColor(bg) }}
     >
       {/* Desktop: brand left · tagline centered · links + button right */}
       <div className="mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid" style={{ color: resolveColor(fg) }}>

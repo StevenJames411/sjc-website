@@ -46,6 +46,7 @@ export default function BrandStyle({ brand, id = "sjc-brand" }: { brand: Brand; 
 --color-sjc-green:${brand.cta};
 --color-sjc-green-hover:${brand.ctaHover};
 --color-sjc-navy-deep:${brand.bandDarker};
+--color-sjc-band-header:${brand.bandHeader || brand.bandDarker};
 --color-sjc-secondary:${brand.secondary};
 --color-sjc-highlight:${brand.highlight};
 --font-sans:var(${bodyVar}), ${FALLBACK_STACK};

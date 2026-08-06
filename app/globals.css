@@ -11,6 +11,8 @@
   --color-sjc-line: #e5e7eb;
   --color-sjc-bg-soft: #f3f4f6;
   --color-sjc-navy-deep: #0f1f3d;
+  /* The sticky header's own dark. Ships equal to navy-deep so nothing moves until it's set. */
+  --color-sjc-band-header: #0f1f3d;
   --color-sjc-secondary: #22c55e;
   --color-sjc-highlight: #f59e0b;
   --color-sjc-white: #ffffff;

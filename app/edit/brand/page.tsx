@@ -27,6 +27,7 @@ const SWATCHES: { key: keyof Brand; label: string; help: string }[] = [
   { key: "bandSoft",   label: "Light band",        help: "Background of the pale sections" },
   { key: "bandDark",   label: "Dark band",         help: "Background of the dark sections" },
   { key: "bandDarker", label: "Dark band (deeper)",help: "The second, darker tone — a design usually has two, and collapsing them flattens the page" },
+  { key: "bandHeader", label: "Header bar",         help: "The bar across the top, on its own. Blank means it follows the deeper dark band." },
   { key: "cta",        label: "Button",            help: "The main call-to-action button" },
   { key: "ctaHover",   label: "Button (hover)",    help: "Button colour on hover" },
 ];
