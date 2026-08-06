@@ -126,6 +126,8 @@ async function stepsFromLibrary(formId: string, pageKeys: string[]): Promise<Ste
           ? "phone"
           : f.type === "choice"
             ? "choice"
+            : f.type === "multi"
+              ? "multi"
             : "text") as Step["questions"][number]["type"],
       options: f.options || [],
       required: f.required !== false,

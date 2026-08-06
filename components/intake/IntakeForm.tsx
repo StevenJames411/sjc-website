@@ -317,26 +317,38 @@ function QuestionInput({
   onFiles: (e: React.ChangeEvent<HTMLInputElement>) => void;
   busy: string;
 }) {
-  if (q.type === "choice") {
+  if (q.type === "choice" || q.type === "multi") {
+    // ⚠️ MULTI KEEPS ITS ANSWERS IN ONE COMMA-SEPARATED CELL, same as the website form. One
+    // question, one spreadsheet column, whether she picks one option or four.
+    const picked = value.split(", ").filter(Boolean);
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {(q.options || []).map((opt) => (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onChange(opt)}
-            style={{
-              ...INPUT,
-              textAlign: "left",
-              cursor: "pointer",
-              borderColor: value === opt ? "#2563eb" : "#d1d5db",
-              borderWidth: value === opt ? 2 : 1,
-              fontWeight: value === opt ? 600 : 400,
-            }}
-          >
-            {opt}
-          </button>
-        ))}
+        {(q.options || []).map((opt) => {
+          const on = q.type === "multi" ? picked.includes(opt) : value === opt;
+          return (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => {
+                if (q.type !== "multi") return onChange(opt);
+                const next = picked.includes(opt)
+                  ? picked.filter((x) => x !== opt)
+                  : [...picked, opt];
+                onChange(next.join(", "));
+              }}
+              style={{
+                ...INPUT,
+                textAlign: "left",
+                cursor: "pointer",
+                borderColor: on ? "#2563eb" : "#d1d5db",
+                borderWidth: on ? 2 : 1,
+                fontWeight: on ? 600 : 400,
+              }}
+            >
+              {q.type === "multi" ? `${on ? "☑" : "☐"} ${opt}` : opt}
+            </button>
+          );
+        })}
       </div>
     );
   }

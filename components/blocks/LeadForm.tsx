@@ -29,8 +29,10 @@ export type LeadFormField = {
   fieldId?: string;
   /** Library questions can be optional. A block without this stays all-or-nothing, as before. */
   required?: boolean;
-  /** Present on a `choice` question. Drawn as buttons — see the note where they're rendered. */
+  /** Present on a `choice` or `multi` question. Drawn as buttons — see where they're rendered. */
   options?: string[];
+  /** True for `multi` — more than one answer allowed. Stored comma-separated. */
+  multi?: boolean;
 };
 export type LeadFormProps = {
   source?: string;
@@ -330,12 +332,25 @@ export default function LeadForm(props: LeadFormProps) {
               {f?.options?.length ? (
                 <div className="flex flex-col gap-2">
                   {f.options.map((opt) => {
-                    const on = (values[k] || "") === opt;
+                    // ⚠️ MULTI STORES A COMMA-SEPARATED LIST IN ONE CELL, which is what a "pick
+                    // all that apply" answer has always looked like in the sheet. One column per
+                    // question stays true whether it takes one answer or four.
+                    const picked = (values[k] || "").split(", ").filter(Boolean);
+                    const on = f.multi ? picked.includes(opt) : (values[k] || "") === opt;
                     return (
                       <button
                         key={opt}
                         type="button"
-                        onClick={() => setValues((prev) => ({ ...prev, [k]: opt }))}
+                        onClick={() =>
+                          setValues((prev) => {
+                            if (!f.multi) return { ...prev, [k]: opt };
+                            const now = (prev[k] || "").split(", ").filter(Boolean);
+                            const next = now.includes(opt)
+                              ? now.filter((x) => x !== opt)
+                              : [...now, opt];
+                            return { ...prev, [k]: next.join(", ") };
+                          })
+                        }
                         aria-pressed={on}
                         className={`${inputCls} text-left ${
                           on
@@ -343,7 +358,7 @@ export default function LeadForm(props: LeadFormProps) {
                             : "hover:opacity-90"
                         }`}
                       >
-                        {opt}
+                        {f.multi ? `${on ? "☑" : "☐"} ${opt}` : opt}
                       </button>
                     );
                   })}

@@ -12,6 +12,7 @@ import { getClient } from "./store";
 import { FORMS_KEY } from "./siteKeys";
 import {
   BUILTIN_FORMS,
+  CHOICE_TYPES,
   FORM_FIELD_TYPES,
   SATISFIED_BY_CHOICES,
   mintFieldId,
@@ -123,7 +124,7 @@ function normalizeFields(incoming: FormField[], previous: FormField[] = []): For
       ...(f?.help ? { help: String(f.help) } : {}),
       ...(f?.placeholder ? { placeholder: String(f.placeholder) } : {}),
       ...(f?.required ? { required: true } : {}),
-      ...(type === "choice" && Array.isArray(f?.options)
+      ...(CHOICE_TYPES.includes(type) && Array.isArray(f?.options)
         ? { options: f.options.map((o) => String(o)).filter(Boolean) }
         : {}),
       ...(SATISFIED_BY_CHOICES.some((c) => c.path === satisfiedBy) ? { satisfiedBy } : {}),

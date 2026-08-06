@@ -57,11 +57,14 @@ const typeFromInput = (t: unknown): FormField["type"] => {
 };
 
 /** /apply's `questionType` to a library field type. `multi` has no equivalent yet. */
-const typeFromQuestion = (t: unknown): FormField["type"] => {
+export const typeFromQuestion = (t: unknown): FormField["type"] => {
   const s = String(t || "text");
   if (s === "email") return "email";
   if (s === "phone") return "tel";
-  if (s === "choice" || s === "multi") return "choice";
+  if (s === "choice") return "choice";
+  // ⚠️ NOT collapsed into "choice". Doing that is what quietly turned "pick all that apply"
+  // into "pick one" on the first copy of /apply.
+  if (s === "multi") return "multi";
   return "text";
 };
 

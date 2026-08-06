@@ -18,6 +18,7 @@
 //                            outcome of the three
 import { resolveFormPointers, formsInUse } from "../../lib/formPointer.ts";
 import { BUILTIN_FORMS, looksLikeSameForm, stepsOf, type FormDef } from "../../lib/formsShared.ts";
+import { typeFromQuestion } from "../../lib/formAdopt.ts";
 
 let failed = 0;
 const check = (label: string, pass: boolean, detail = "") => {
@@ -147,6 +148,35 @@ check(
   "a repeated heading stays a separate screen",
   grouped.length === 3 && grouped[2].fields[0].fieldId === "d",
   "grouping by collection would teleport 'd' up to screen one on reorder"
+);
+
+// ── A COPY MUST NOT DOWNGRADE A QUESTION TYPE ────────────────────────────────────────────────
+// /apply asks "Channel, pick all that apply" as a real multi-select. The library had only
+// single-choice, so the first copy of that page turned it into "pick one" — silently, and it
+// looked correct on the card. Had the page then been LINKED to that copy, a live funnel would
+// have started accepting one answer where it used to accept several.
+check(
+  "a multi-select stays multi through a copy",
+  typeFromQuestion("multi") === "multi",
+  `got "${typeFromQuestion("multi")}"`
+);
+check("single choice stays single", typeFromQuestion("choice") === "choice");
+check("phone still maps to tel", typeFromQuestion("phone") === "tel");
+
+const multiForm: FormDef = {
+  ...quote,
+  id: "multi-form",
+  fields: [{ fieldId: "channel", label: "Pick all that apply", type: "multi", options: ["A", "B"] }],
+};
+const multiOut = resolveFormPointers(
+  { content: [{ type: "LeadForm", props: { formId: "multi-form" } }] },
+  [multiForm]
+) as { content: { props: { fields: { options?: string[]; multi?: boolean }[] } }[] };
+check(
+  "the page is told it's multi, with its options",
+  multiOut.content[0].props.fields[0].multi === true &&
+    multiOut.content[0].props.fields[0].options?.length === 2,
+  "without the flag it draws as pick-one and the extra answers are unreachable"
 );
 
 const seen: string[] = [];

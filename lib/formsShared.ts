@@ -50,6 +50,7 @@ export type FormFieldType =
   | "url"
   | "textarea"
   | "choice"
+  | "multi"
   | "photos";
 
 /** The single list every writer validates against. An unknown type falls back to `text`. */
@@ -60,8 +61,12 @@ export const FORM_FIELD_TYPES: FormFieldType[] = [
   "url",
   "textarea",
   "choice",
+  "multi",
   "photos",
 ];
+
+/** Types that carry a list of options. One place, so a new one can't be half-added. */
+export const CHOICE_TYPES: FormFieldType[] = ["choice", "multi"];
 
 /** Types a public website form can't draw. Kept as a set so adding one is a one-line change. */
 export const FIELD_TYPE_ONBOARDING_ONLY: FormFieldType[] = ["photos"];
@@ -79,7 +84,15 @@ export type FormField = {
   label: string;
   help?: string;
   type: FormFieldType;
-  /** For `choice` only. */
+  /**
+   * For `choice` and `multi`.
+   *
+   * ⚠️ `multi` EXISTS BECAUSE A COPY THAT LOSES IT ISN'T A COPY. /apply asks "Channel, pick all
+   * that apply" as a genuine multi-select. The library had only single-choice, so copying that
+   * page in downgraded the question to "pick one" — silently, and it looked right. Had the page
+   * then been LINKED to that copy, a live funnel would have started accepting one answer where it
+   * used to accept several, and nobody would have seen a thing go wrong.
+   */
   options?: string[];
   placeholder?: string;
   required?: boolean;
@@ -425,5 +438,6 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   url: "Web address",
   textarea: "Long text",
   choice: "Pick one",
+  multi: "Pick any",
   photos: "Photos",
 };
