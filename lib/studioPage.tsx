@@ -11,6 +11,7 @@ import { config } from "@/components/puck/config";
 import { seedFor } from "@/components/puck/seeds";
 import { readPuckPublished } from "@/lib/puckContent";
 import { WebsitesHeader, WebsitesFooter } from "@/components/websites/WebsitesChrome";
+import { SJC } from "@/lib/siteKeys";
 
 /**
  * The content lives in SJC's builder under the `websites` page key, whichever domain serves it.
@@ -18,7 +19,7 @@ import { WebsitesHeader, WebsitesFooter } from "@/components/websites/WebsitesCh
  * must not migrate a single stored byte.
  */
 export async function StudioBody() {
-  const published = await readPuckPublished("websites");
+  const published = await readPuckPublished("websites", SJC);
   const data = published || seedFor("websites", "Websites");
 
   return (

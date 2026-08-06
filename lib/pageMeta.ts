@@ -1,4 +1,5 @@
 import { readPuckPublished } from "@/lib/puckContent";
+import { SJC } from "@/lib/siteKeys";
 
 // ── WHERE A PAGE'S LINK-PREVIEW TEXT COMES FROM ───────────────────────────────────────────────
 // One rule for the whole site: the Page Settings panel in the builder wins, and what's in this
@@ -47,7 +48,7 @@ export type PageMetaFallback = {
 export async function pageMetadata(slug: string, fb: PageMetaFallback) {
   let root: Record<string, unknown> = {};
   try {
-    const data = await readPuckPublished(slug);
+    const data = await readPuckPublished(slug, SJC);
     root = ((data as { root?: { props?: Record<string, unknown> } } | null)?.root?.props ??
       {}) as Record<string, unknown>;
   } catch {

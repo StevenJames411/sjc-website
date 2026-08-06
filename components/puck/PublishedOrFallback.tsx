@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Render } from "@measured/puck";
 import { readPuckPublished } from "@/lib/puckContent";
 import { config } from "@/components/puck/config";
+import { SJC } from "@/lib/siteKeys";
 
 // Server helper for a public page: if a Puck version of this page has been published, render
 // that; otherwise fall back to the page's committed hand-coded content (children). Lets us put
@@ -14,7 +15,7 @@ export default async function PublishedOrFallback({
   page: string;
   children: ReactNode;
 }) {
-  const puck = await readPuckPublished(page);
+  const puck = await readPuckPublished(page, SJC);
   if (puck) return <Render config={config} data={puck} />;
   return <>{children}</>;
 }

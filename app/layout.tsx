@@ -9,6 +9,7 @@ import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
 import { resolveHost } from "@/lib/host";
+import { SJC } from "@/lib/siteKeys";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -135,7 +136,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // churn on a path that already behaves.
   const h = await resolveHost();
   const isSjc = h.kind === "sjc";
-  const brand = await readBrand(true);
+  const brand = await readBrand(true, SJC);
 
   return (
     <html lang="en" className={FONT_VARS}>

@@ -4,6 +4,7 @@ import { STUDIO_HOST } from "@/lib/hostShared";
 import { NAV_DEFAULTS, FOOTER_DEFAULTS } from "@/components/puck/config";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
+import { SJC } from "@/lib/siteKeys";
 
 // The header and footer for /websites ONLY — deliberately NOT the site-wide <Nav /> / <Footer />.
 // The global nav carries a "DIY" link to the free Skool community that teaches people to build
@@ -61,7 +62,7 @@ function studioChromeLinks(onStudioDomain: boolean) {
 export async function WebsitesHeader() {
   let props = WEBSITES_NAV_FALLBACK;
   try {
-    const data = await readPuckPublished("websites-nav");
+    const data = await readPuckPublished("websites-nav", SJC);
     const block = (data?.content || []).find((b) => b?.type === "SiteHeader");
     if (block?.props) props = { ...WEBSITES_NAV_FALLBACK, ...(block.props as typeof WEBSITES_NAV_FALLBACK) };
   } catch {
@@ -83,7 +84,7 @@ export async function WebsitesHeader() {
 export async function WebsitesFooter() {
   let props = WEBSITES_FOOTER_FALLBACK;
   try {
-    const data = await readPuckPublished("websites-footer");
+    const data = await readPuckPublished("websites-footer", SJC);
     const block = (data?.content || []).find((b) => b?.type === "SiteFooter");
     if (block?.props) props = { ...WEBSITES_FOOTER_FALLBACK, ...(block.props as typeof WEBSITES_FOOTER_FALLBACK) };
   } catch {

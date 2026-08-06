@@ -17,7 +17,7 @@ import { readPages } from "./pageRegistry";
  * `siteId` defaults to SJC so the pre-existing callers that only ever knew about one website keep
  * working untouched. New code should always pass it explicitly.
  */
-export const puckKey = (page: string, pub = false, siteId: string = SJC) =>
+export const puckKey = (page: string, pub = false, siteId: string) =>
   siteKeys(siteId).puck(page, pub);
 
 /**
@@ -44,7 +44,7 @@ async function previewRequested(): Promise<boolean> {
   }
 }
 
-export async function readPuckPublished(page: string, siteId: string = SJC): Promise<Data | null> {
+export async function readPuckPublished(page: string, siteId: string): Promise<Data | null> {
   // Owner previewing: serve the working draft through the real public template. Falls back to the
   // published copy when no draft exists, so preview never renders a blank page.
   if (await previewRequested()) {
@@ -57,7 +57,7 @@ export async function readPuckPublished(page: string, siteId: string = SJC): Pro
 }
 
 /** The working draft — the editor's copy, never served to the public. */
-export async function readPuckDraft(page: string, siteId: string = SJC): Promise<Data | null> {
+export async function readPuckDraft(page: string, siteId: string): Promise<Data | null> {
   const store = createKvStore(getClient(), puckKey(page, false, siteId));
   return (await store.read<Data>()) || null;
 }
@@ -70,7 +70,7 @@ export async function readPuckDraft(page: string, siteId: string = SJC): Promise
  * has to go live with the page it belongs to, or a published page would suddenly be wearing a
  * stylesheet nobody approved.
  */
-export async function readDesignCss(page: string, siteId: string = SJC): Promise<string> {
+export async function readDesignCss(page: string, siteId: string): Promise<string> {
   const read = async (slug: string, pub: boolean) => {
     const store = createKvStore(getClient(), siteKeys(siteId).designCss(slug, pub));
     const v = await store.read<{ css?: string }>();
@@ -113,7 +113,7 @@ export async function readDesignCss(page: string, siteId: string = SJC): Promise
  * in an API request, so it would read the PUBLISHED key — the very key publish is about to write.
  * Publishing would then copy the old (usually empty) stylesheet over itself and report success.
  */
-export async function readDesignCssDraft(page: string, siteId: string = SJC): Promise<string> {
+export async function readDesignCssDraft(page: string, siteId: string): Promise<string> {
   const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, false));
   const v = await store.read<{ css?: string }>();
   return (v && typeof v.css === "string" ? v.css : "") || "";
@@ -124,7 +124,7 @@ export async function writeDesignCss(
   page: string,
   css: string,
   pub = false,
-  siteId: string = SJC
+  siteId: string
 ): Promise<boolean> {
   const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, pub));
   return store.write({ css: String(css || "") });

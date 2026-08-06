@@ -32,7 +32,10 @@ const SWATCHES: { key: keyof Brand; label: string; help: string }[] = [
   { key: "ctaHover",   label: "Button (hover)",    help: "Button colour on hover" },
 ];
 
-export default function BrandEditor() {
+export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: string; siteLabel?: string } = {}) {
+  // Blank = SJC, which is what /edit/brand has always meant. A client site passes its own id and
+  // the same screen edits that site's palette instead — the route was the only thing missing.
+  const q = siteId ? `?site=${encodeURIComponent(siteId)}` : "";
   // Whatever this screen is called in the rail — see components/edit/navContext.tsx.
   const title = useNavTitle("brand");
   const [brand, setBrand] = useState<Brand | null>(null);
@@ -43,7 +46,7 @@ export default function BrandEditor() {
   const [armed, setArmed] = useState(false);
 
   useEffect(() => {
-    fetch("/api/brand")
+    fetch(`/api/brand${q}`)
       .then((r) => r.json())
       .then((d) => setBrand(d.brand))
       .catch(() => setBrand(BRAND_DEFAULTS));
@@ -57,7 +60,7 @@ export default function BrandEditor() {
     setSaving(true); setMsg(null);
     const r = await fetch("/api/brand", {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brand }),
+      body: JSON.stringify({ brand, site: siteId || undefined }),
     }).then((x) => x.json()).catch((e) => ({ ok: false, error: String(e) }));
     setSaving(false);
     setMsg(r.ok ? { good: true, text: "Saved. Not live yet — hit Publish." } : { text: r.error || "Save failed" });
@@ -68,7 +71,7 @@ export default function BrandEditor() {
     setSaving(true); setMsg(null);
     const r = await fetch("/api/brand", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action }),
+      body: JSON.stringify({ action, site: siteId || undefined }),
     }).then((x) => x.json()).catch((e) => ({ ok: false, error: String(e) }));
     setSaving(false);
     if (r.brand) setBrand(r.brand);
@@ -82,6 +85,11 @@ export default function BrandEditor() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="text-2xl font-bold text-[color:var(--color-sjc-ink)]">{title}</h1>
+      {/* WHOSE colours these are. Without it the screen looks identical for every website and the
+          only way to know which one you are about to repaint is the address bar. */}
+      {siteLabel ? (
+        <p className="mt-1 text-sm font-semibold text-[color:var(--color-sjc-blue)]">{siteLabel}</p>
+      ) : null}
       <p className="mt-2 text-[color:var(--color-sjc-mute)]">
         Set the font and colours once. Every page on this site follows them — you never set a
         colour on an individual block again. Changes are saved as a draft; nothing reaches the

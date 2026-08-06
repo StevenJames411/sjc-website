@@ -14,7 +14,7 @@ export * from "./brandShared";
 // blocks: there was a single brand slot and SJC owned it. `siteId` defaults to SJC so existing
 // callers keep reading the exact same key they always did.
 export const BRAND_KEY = "sjc-brand";
-export const brandKey = (pub = false, siteId: string = SJC) => siteKeys(siteId).brand(pub);
+export const brandKey = (pub = false, siteId: string) => siteKeys(siteId).brand(pub);
 
 const store = (pub: boolean, siteId: string) => createKvStore(getClient(), brandKey(pub, siteId));
 
@@ -24,7 +24,7 @@ export function normalize(v: unknown): Brand {
   return { ...BRAND_DEFAULTS, ...b };
 }
 
-export async function readBrand(pub = false, siteId: string = SJC): Promise<Brand> {
+export async function readBrand(pub = false, siteId: string): Promise<Brand> {
   const v = await store(pub, siteId).read<Partial<Brand>>();
   return normalize(v);
 }
@@ -32,7 +32,7 @@ export async function readBrand(pub = false, siteId: string = SJC): Promise<Bran
 export async function writeBrand(
   b: Partial<Brand>,
   pub = false,
-  siteId: string = SJC
+  siteId: string
 ): Promise<boolean> {
   return store(pub, siteId).write(normalize(b));
 }

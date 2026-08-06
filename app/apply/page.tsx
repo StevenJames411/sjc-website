@@ -4,6 +4,7 @@ import ApplyForm, { type Step, type Intro, type Booking } from "@/components/App
 import { readPuckPublished } from "@/lib/puckContent";
 import { seedFor } from "@/components/puck/seeds";
 import { pageMetadata } from "@/lib/pageMeta";
+import { SJC } from "@/lib/siteKeys";
 
 // Public discovery-call intake. ALL copy comes from the Puck "apply" page (edited at
 // /edit/apply) — intro, questions, the disclaimer, and the booking-step copy are every one an
@@ -76,7 +77,7 @@ function extract(data: any): { intro: Intro; disclaimer: string; booking: Bookin
 }
 
 export default async function Apply() {
-  const data = (await readPuckPublished("apply")) || seedFor("apply", "Apply");
+  const data = (await readPuckPublished("apply", SJC)) || seedFor("apply", "Apply");
   const { intro, disclaimer, booking, steps } = extract(data);
   return (
     <>

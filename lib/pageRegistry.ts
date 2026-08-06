@@ -39,7 +39,7 @@ const slugify = (title: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-export async function readPages(siteId: string = SJC): Promise<PageEntry[]> {
+export async function readPages(siteId: string): Promise<PageEntry[]> {
   const blob = await readBlob(siteId);
   const hidden = new Set(blob.hidden || []);
   const titles = blob.titles || {};
@@ -56,7 +56,7 @@ export async function readPages(siteId: string = SJC): Promise<PageEntry[]> {
 
 export async function findPageMeta(
   slug: string,
-  siteId: string = SJC
+  siteId: string
 ): Promise<PageEntry | undefined> {
   return (await readPages(siteId)).find((p) => p.slug === slug);
 }
@@ -65,7 +65,7 @@ export async function findPageMeta(
 export async function renamePage(
   slug: string,
   title: string,
-  siteId: string = SJC
+  siteId: string
 ): Promise<{ ok: boolean; error?: string }> {
   const s = String(slug || "").trim();
   const t = String(title || "").trim();
@@ -86,7 +86,11 @@ const ROUTE_FOLDERS = ["about", "api", "apply", "edit", "faqs", "guest", "podcas
 
 // Static segments under /edit/<site>/ — a page with one of these slugs would be shadowed in the
 // builder by the route of the same name and become uneditable.
-const EDITOR_SEGMENTS = ["settings"];
+// ⚠️ ADD A SEGMENT HERE THE MOMENT YOU ADD ONE UNDER /edit/[site]/. A static segment WINS over
+// the dynamic [page] route, so a page slugged the same name is created happily and then can never
+// be opened in the builder — content that exists, renders publicly, and has no way back in.
+// "brand" joined the list when /edit/[site]/brand landed on 2026-08-06.
+const EDITOR_SEGMENTS = ["settings", "brand"];
 
 // Every slug already spoken for inside this site.
 //
@@ -104,7 +108,7 @@ async function reservedSlugs(siteId: string): Promise<Set<string>> {
 
 export async function createPage(
   title: string,
-  siteId: string = SJC
+  siteId: string
 ): Promise<{ ok: boolean; slug?: string; error?: string }> {
   const t = String(title || "").trim();
   if (!t) return { ok: false, error: "A page name is required." };
@@ -135,7 +139,7 @@ export async function createPage(
 export async function duplicatePage(
   fromSlug: string,
   title: string,
-  siteId: string = SJC
+  siteId: string
 ): Promise<{ ok: boolean; slug?: string; error?: string }> {
   const src = String(fromSlug || "").trim();
   if (!src) return { ok: false, error: "No page to copy from." };
@@ -166,7 +170,7 @@ export async function duplicatePage(
 
 export async function deletePage(
   slug: string,
-  siteId: string = SJC
+  siteId: string
 ): Promise<{ ok: boolean; error?: string }> {
   const s = String(slug || "").trim();
   if (SYSTEM.has(s)) {
