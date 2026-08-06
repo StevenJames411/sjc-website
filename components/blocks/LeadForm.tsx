@@ -50,7 +50,11 @@ export type LeadFormProps = {
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
-  source: "/websites — $795 website offer",
+  // ⚠️ BLANK, NOT SJC'S OWN OFFER. This used to default to "/websites — $795 website offer", so
+  // every lead form dropped onto a CLIENT's site labelled that client's enquiries as SJC's
+  // website offer until somebody remembered to retype it. Blank means the form derives the label
+  // from the business and the page it's on — correct the first time, on every build.
+  source: "",
   fields: [
     { label: "Your name", inputType: "text" },
     { label: "Business name", inputType: "text" },
@@ -128,6 +132,29 @@ export default function LeadForm(props: LeadFormProps) {
   // Comes from the route this page is served under, not from anything editable on the block.
   const siteId = useSiteId();
 
+  // ── WHAT GOES IN THE "SOURCE" COLUMN WHEN NOBODY TYPED ONE ──────────────────────────────────
+  //
+  // `source` is a per-block text field, filled in by hand, and blank is its normal state on any
+  // section cloned from a template or dropped in from the library. A blank Source column is bad
+  // enough — several sites' enquiries arriving as a column of empties, with no way to tell which
+  // build produced which. A STALE one is worse: a section copied from another client arrives
+  // still labelled with that client's offer, so the row looks authoritative and is wrong.
+  //
+  // ⚠️ THIS IS A LABEL, NOT ROUTING, and the distinction is the whole safety story. Which sheet
+  // and which inbox a lead reaches is decided server-side from `siteId` above — taken from the
+  // route the page is served under, which nobody can mistype. If this fallback is ever wrong the
+  // worst case is a confusing word in a spreadsheet cell, never a lead in the wrong pile.
+  //
+  // Derived rather than defaulted: the business's own name plus the page it was filled in on, so
+  // "Marbleford Pet Wash — /contact" reads correctly the very first time without anyone
+  // remembering to set it.
+  const derivedSource = [
+    business?.name || siteId,
+    typeof window !== "undefined" ? window.location.pathname : "",
+  ]
+    .filter(Boolean)
+    .join(" — ");
+
   const list = (Array.isArray(fields) && fields.length ? fields : LEADFORM_DEFAULTS.fields) || [];
 
   const [values, setValues] = useState<Record<string, string>>({});
@@ -157,7 +184,7 @@ export default function LeadForm(props: LeadFormProps) {
           // human label only; it must never be the thing that routes a lead.
           siteId,
           answers: [
-            { key: "source", label: "Source", value: source || "" },
+            { key: "source", label: "Source", value: (source || "").trim() || derivedSource },
             ...list.map((f, i) => ({
               key: keyFor(f, i),
               label: f?.label || `Question ${i + 1}`,
