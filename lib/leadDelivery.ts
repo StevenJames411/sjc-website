@@ -19,8 +19,11 @@ export type Answer = { key: string; label: string; value: string };
 export type Delivery = {
   /** Did the OWNER get their copy? null = they have no address set, so none was owed. */
   toOwner: boolean | null;
-  /** Did SJC's record get written? */
-  toRecord: boolean;
+  /**
+   * Did SJC's central intake get written? null = not owed, because this website has its own
+   * sheet — which Steven owns, so it already IS his copy. One business, one sheet.
+   */
+  toRecord: boolean | null;
   /** Did the row reach the CLIENT'S OWN sheet? null = they have no sheet yet. */
   toSheet: boolean | null;
   /** Did it reach their GoHighLevel inbox? null = no webhook set, so none was owed. */
@@ -76,10 +79,27 @@ export async function deliverLead(
   const site = siteId ? await findSite(siteId) : undefined;
   const owner = (site?.leadEmail || "").trim();
 
-  // ── 1. SJC's record, always ────────────────────────────────────────────────────────────────
-  let toRecord = false;
+  // ── 1. SJC's intake — ONLY for websites that have no sheet of their own ────────────────────
+  //
+  // ⚠️ THIS USED TO RUN FOR EVERY LEAD, AND THAT WAS THE DUPLICATION.
+  //
+  // The old rule was "SJC's record ALWAYS gets a copy", on the theory that Steven needs proof of
+  // delivery when a client says "I never got that lead". But the client's sheet is a spreadsheet
+  // STEVEN OWNS and shares with them — so that sheet already IS his copy, and writing a second
+  // row into a central sheet bought nothing except two records of every enquiry to keep in step.
+  //
+  // The rule now: one business, one sheet. A site with its own `sheetId` writes only there. A
+  // site WITHOUT one — a demo, or SJC's own /apply and podcast forms — still falls back to the
+  // intake sheet, so a lead is never dropped just because nobody has wired a spreadsheet up yet.
+  //
+  // Note this is also what stops the deleted "Website Offer" tab reappearing: the routing would
+  // happily recreate a tab the moment another lead arrived for it.
+  let toRecord: boolean | null = false;
+  const ownSheet = (site?.sheetId || "").trim();
   const webhook = process.env.APPLY_WEBHOOK_URL;
-  if (!webhook) {
+  if (ownSheet) {
+    toRecord = null; // not owed — leg 2 writes this business's own sheet below
+  } else if (!webhook) {
     problems.push("APPLY_WEBHOOK_URL not set — no record written");
   } else {
     try {
@@ -199,7 +219,19 @@ export async function deliverLead(
   if (!owner) return { toOwner: null, toRecord, toSheet, toGhl, problems };
 
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.LEAD_FROM || "leads@send.stevenjamesconsulting.com";
+  // Per-site first, then the account-wide env, then the one verified sending domain.
+  //
+  // ⚠️ THE DEFAULT IS LOAD-BEARING — LEAD_FROM is NOT set in Vercel, so this literal is what
+  // actually sends. It moved to the DESIGNS domain on 2026-08-05 when the builder became a Steven
+  // James Designs product; the consulting domain it named before was deleted from Resend the same
+  // day, and an unverified sender doesn't degrade — Resend refuses the send outright.
+  //
+  // Only the part after the @ is fixed. The name the client reads is his own business (below), so
+  // one domain serves everyone. site.leadFrom is the seam for the day a second brand needs its own.
+  const from =
+    (site?.leadFrom || "").trim() ||
+    process.env.LEAD_FROM ||
+    "leads@send.stevenjamesdesigns.com";
   if (!key) {
     problems.push("RESEND_API_KEY not set — the owner's copy could NOT be sent");
     return { toOwner: false, toRecord, toSheet, toGhl, problems };

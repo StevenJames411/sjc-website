@@ -25,6 +25,7 @@ import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey, writeDesignCss } from "@/lib/puckContent";
+import { siteKeys } from "@/lib/siteKeys";
 import { writeBrand } from "@/lib/brand";
 import type { BrandFont } from "@/lib/brandShared";
 import { applyTokens, tokenRules } from "@/lib/tokenizePage";
@@ -208,6 +209,22 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+  }
+
+  // ── KEEP THE SOURCE ─────────────────────────────────────────────────────────────────────────
+  // The markup exactly as it arrived, so this import can be RE-RUN later against a better
+  // pipeline. Without it "re-import" means asking someone to go find the original file again —
+  // which on 2026-08-05 is exactly what four already-imported pages needed, and nobody had them.
+  //
+  // Best-effort on purpose: a website whose source archive failed to write is still a fine
+  // website, and failing the import over it would be the tail wagging the dog. Its absence shows
+  // up later as "no stored source", not as a broken page.
+  if (mode === "design") {
+    await createKvStore(getClient(), siteKeys(siteId).designSrc(created.slug)).write({
+      html,
+      businessName,
+      importedAt: new Date().toISOString(),
+    });
   }
 
   // ── THE BRAND ───────────────────────────────────────────────────────────────────────────────

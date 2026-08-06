@@ -3,6 +3,8 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
 import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
+import { resolveFormPointers } from "@/lib/formPointer";
+import { readForms } from "@/lib/forms";
 import { findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
@@ -113,7 +115,10 @@ export async function resolvePage(
 
   // Fill {{business.*}} from the website's settings. Public render only — see lib/businessTokens
   // for why the builder deliberately keeps showing the raw token.
-  const data = fillBusinessTokens(raw, site.business, site.domain ? `https://${site.domain}` : "");
+  // POINTERS BEFORE TOKENS. A library form's questions can themselves contain {{business.*}},
+  // so they have to be in the page before the token pass runs or they ship raw to a visitor.
+  const withForms = resolveFormPointers(raw, await readForms());
+  const data = fillBusinessTokens(withForms, site.business, site.domain ? `https://${site.domain}` : "");
   return { site, slug: meta.slug, data };
 }
 
@@ -245,11 +250,21 @@ export async function SitePageBody({
   //
   // Built entirely from Website settings, so it costs nothing per client: fill in her phone and
   // address at onboarding and the markup writes itself. See lib/siteSchema.
-  const site = isClientSite ? await findSite(siteId) : null;
-  const schema = site ? localBusinessSchema(site, publicUrlFor(site)) : null;
+  // ⚠️ FETCHED FOR EVERY SITE NOW, NOT ONLY CLIENTS.
+  //
+  // It used to be `isClientSite ? … : null`, which was right for the schema below but starved the
+  // provider on SJC's OWN pages — so a token in the lead form's thank-you copy had nothing to
+  // resolve against and printed raw. The schema still only ships for client sites; that behaviour
+  // is unchanged and deliberate (SJC's own Organization markup comes from the root layout).
+  const site = await findSite(siteId);
+  const schema = site && isClientSite ? localBusinessSchema(site, publicUrlFor(site)) : null;
 
   const body = (
-    <SiteProvider siteId={siteId}>
+    <SiteProvider
+      siteId={siteId}
+      business={site?.business}
+      url={site ? publicUrlFor(site) : ""}
+    >
       <Render config={config} data={data as never} />
     </SiteProvider>
   );

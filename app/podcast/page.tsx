@@ -5,6 +5,7 @@ import { config } from "@/components/puck/config";
 import { readPuckPublished } from "@/lib/puckContent";
 import { seedFor } from "@/components/puck/seeds";
 import { pageMetadata } from "@/lib/pageMeta";
+import { SJC } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export async function generateMetadata() {
 // it renders the published version, falling back to the same seed the editor opens to, so the
 // live page and the editor can't drift apart.
 export default async function PodcastPage() {
-  const data = (await readPuckPublished("podcast")) || seedFor("podcast", "Podcast");
+  const data = (await readPuckPublished("podcast", SJC)) || seedFor("podcast", "Podcast");
   return (
     <>
       <Nav />

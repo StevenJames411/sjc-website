@@ -82,6 +82,7 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
           description: s.description || "",
           domain: (s.domain || "").trim(),
           leadEmail: (s.leadEmail || "").trim(),
+          sheetId: (s.sheetId || "").trim(),
           business: s.business,
           seo: s.seo,
         }),
@@ -191,6 +192,23 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
         on={(v) => setS({ ...s, leadEmail: v })}
         ph="the client's own inbox — leave blank while it's a demo"
       />
+      {/* Until now this could ONLY be set by the onboard-client route, which also CREATES a site
+          if the name doesn't match an existing slug — so pointing an existing website at a
+          spreadsheet meant risking a duplicate site, or an admin call with a bearer token. Every
+          business ends up wanting its own sheet eventually, including Steven's own; that makes it
+          a setting, not a one-shot side effect of onboarding. */}
+      <Field
+        label="Leads spreadsheet ID — this business's own sheet"
+        v={s.sheetId || ""}
+        on={(v) => setS({ ...s, sheetId: v })}
+        ph="the long id out of the sheet's URL — blank means it has no sheet of its own yet"
+      />
+      <p style={hint}>
+        From the spreadsheet&apos;s address:
+        docs.google.com/spreadsheets/d/<strong>THIS-PART</strong>/edit. Every lead from this
+        website also writes a row here, which is what a business looks at when it wants its own
+        record rather than an inbox.
+      </p>
 
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>

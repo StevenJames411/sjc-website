@@ -10,8 +10,9 @@
 import type { Metadata } from "next";
 import { checkIntakeOpen, CLOSED_MESSAGE } from "@/lib/intakeLinks";
 import { findSite, sjcContact } from "@/lib/sites";
-import { readIntake } from "@/lib/intake";
-import { questionsFor } from "@/lib/intakeShared";
+import { readIntake, onboardingQuestions } from "@/lib/intake";
+import { findForm } from "@/lib/forms";
+import { questionsFor, ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 import BrandShell from "@/components/BrandShell";
 import IntakeForm from "@/components/intake/IntakeForm";
 
@@ -70,6 +71,13 @@ export default async function OnboardPage({ params }: { params: Promise<{ slug: 
   const record = await readIntake(slug);
   const business = site.business?.name || site.name || "";
 
+  // The form as Steven has it in his library, not as it was written in code — this is what makes
+  // "Client onboarding" on /edit/forms the real thing rather than a description of it.
+  const [questions, form] = await Promise.all([
+    onboardingQuestions(),
+    findForm(ONBOARDING_FORM_ID),
+  ]);
+
   return (
     // STEVEN JAMES DESIGNS, not Consulting. She just bought a WEBSITE — his name on her setup form
     // is who she paid, which is honest. SJC's chrome here would be an AI-employee pitch arriving
@@ -90,10 +98,16 @@ export default async function OnboardPage({ params }: { params: Promise<{ slug: 
         contact={contact}
         businessName={business}
         // The whole prospect-vs-inbound mechanism: she is only asked what we don't already know.
-        questions={questionsFor(site)}
+        questions={questionsFor(site, questions)}
         initialAnswers={record.answers}
         initialPhotos={record.photos}
         alreadySubmitted={Boolean(record.submittedAt)}
+        // Off would put nine questions on one screen. It's on in the code floor and stays on
+        // unless Steven deliberately turns it off in the library.
+        oneQuestionPerScreen={form?.oneQuestionPerScreen !== false}
+        buttonLabel={form?.buttonLabel}
+        successHeading={form?.successHeading}
+        successBody={form?.successBody}
       />
     </BrandShell>
   );

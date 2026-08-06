@@ -1,6 +1,7 @@
 import { readPuckPublished } from "@/lib/puckContent";
 import { NAV_DEFAULTS } from "@/components/puck/config";
 import NavView from "@/components/NavView";
+import { SJC } from "@/lib/siteKeys";
 
 // The live site nav. Reads the ONE published "nav" block (edited at /edit/nav) so the whole
 // site shares it — edit once, applies everywhere. Falls back to NAV_DEFAULTS until published,
@@ -9,7 +10,7 @@ import NavView from "@/components/NavView";
 export default async function Nav() {
   let props = NAV_DEFAULTS;
   try {
-    const data = await readPuckPublished("nav");
+    const data = await readPuckPublished("nav", SJC);
     const block = (data?.content || []).find((b) => b?.type === "SiteHeader");
     if (block?.props) props = { ...NAV_DEFAULTS, ...(block.props as typeof NAV_DEFAULTS) };
   } catch {

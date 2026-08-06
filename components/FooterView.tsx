@@ -4,9 +4,23 @@ const LOGO_URL =
   "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png";
 
 export type FooterLink = { label: string; target: string };
+/**
+ * A titled column of links — "SERVICES", "COMPANY".
+ *
+ * ⚠️ WHY GROUPS AND NOT ONE LONGER LIST. Every bought design's footer is three or four titled
+ * columns, and this footer had exactly one, headed "More". Reproducing a design meant either
+ * dumping fifteen links into a single column nobody reads, or leaving the footer visibly cheaper
+ * than the page above it — which is the half of the page a visitor scrolls to when they are
+ * deciding whether a business is real.
+ *
+ * Empty by default, and when it IS empty the footer renders exactly as it did before, so no site
+ * already built moves.
+ */
+export type FooterGroup = { heading: string; links?: FooterLink[] };
 export type FooterViewProps = {
   blurb?: string;
   links?: FooterLink[];
+  groups?: FooterGroup[];
   phone?: string;
   phoneDisplay?: string;
   email?: string;
@@ -30,6 +44,7 @@ export type FooterViewProps = {
 export default function FooterView({
   blurb = "",
   links = [],
+  groups = [],
   phone = "+12108514906",
   phoneDisplay = "(210) 851-4906",
   email = "support@stevenjamesconsulting.com",
@@ -41,19 +56,71 @@ export default function FooterView({
   brandName,
   showLogo,
 }: FooterViewProps) {
-  const bg = background || "#111827";
-  const fg = foreground || "#ffffff";
+  // ROLES, not hexes. #111827 here meant the footer sat one shade off every dark band above it and
+  // never moved when the palette did — on 2026-08-05 the whole site went near-black cyan and the
+  // footer stayed the old charcoal, which is what read as "the footer doesn't match".
+  const bg = background || "bandDark";
+  const fg = foreground || "white";
   const name = brandName || "Steven James Consulting";
   const logoOn = showLogo !== false;
   const year = new Date().getFullYear();
   const linkEls = (links || []).filter((l) => l && l.label);
+  const groupEls = (groups || [])
+    .map((g) => ({ heading: g?.heading || "", links: (g?.links || []).filter((l) => l && l.label) }))
+    .filter((g) => g.links.length);
+  // The "More" column only appears when it has something in it. Without this, adding groups left
+  // an empty titled column sitting between them — a heading with nothing under it, which reads as
+  // a bug rather than as a design.
+  const showMore = linkEls.length > 0 || !!email || !!phoneDisplay;
   const btn =
     "inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)]";
+  // WHY A FLAT FILL READS AS CHEAP, AND WHAT THE BOUGHT DESIGNS DO INSTEAD.
+  //
+  // Steven put it exactly right on 2026-08-05: the SiteDrop footer "looks richer, deeper blue,"
+  // ours "looks flatter." He guessed it was the font. It isn't — it's two layers, and neither one
+  // is a colour:
+  //
+  //   1. a 1px hairline across the top, fading to nothing at both ends. That is the SEAM. Without
+  //      it the footer is just where the page changes colour; with it, it's an edge someone drew.
+  //   2. a huge, heavily blurred, very faint circle tucked off one corner. It makes the fill
+  //      UNEVEN, and unevenness is the whole trick — a single flat hex has no light in it, so it
+  //      reads as a slab no matter which hex you pick.
+  //
+  // Both paint from brand roles, so they re-skin with everything else and every client site gets
+  // them. Both are decoration: `pointer-events-none` and aria-hidden by omission, so nothing here
+  // can intercept a click meant for a footer link.
   return (
-    <footer style={{ backgroundColor: resolveColor(bg), color: resolveColor(fg) }}>
-      <div className="mx-auto max-w-6xl px-6 py-14">
-        <div className="grid gap-10 md:grid-cols-3">
-          <div className="md:col-span-2">
+    <footer
+      className="relative overflow-hidden"
+      style={{ backgroundColor: resolveColor(bg), color: resolveColor(fg) }}
+    >
+      {/* The seam. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{
+          backgroundImage: `linear-gradient(to right, transparent, color-mix(in srgb, var(--color-sjc-blue) 55%, transparent), transparent)`,
+        }}
+      />
+      {/* The glow. Sized and blurred hard enough that no edge of the circle is ever visible —
+          if you can see it as a shape, it's too small or not blurred enough. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full opacity-[0.14]"
+        style={{ backgroundColor: "var(--color-sjc-blue)", filter: "blur(120px)" }}
+      />
+      <div className="relative mx-auto max-w-6xl px-6 py-14">
+        <div
+          className="grid gap-10"
+          style={{
+            // Auto-fit rather than a fixed three: the brand block keeps a wide column and each
+            // group takes one, so three groups and none both lay out without choosing a count.
+            gridTemplateColumns: groupEls.length
+              ? "minmax(220px, 1.6fr) repeat(auto-fit, minmax(140px, 1fr))"
+              : undefined,
+          }}
+        >
+          <div className={groupEls.length ? "" : "md:col-span-2"}>
             <div className="flex items-center gap-3">
               {logoOn ? <img src={LOGO_URL} alt="logo" className="h-12 w-12 rounded-full" /> : null}
               <span className="text-lg font-semibold">{name}</span>
@@ -75,6 +142,20 @@ export default function FooterView({
             </div>
           </div>
 
+          {groupEls.map((g, gi) => (
+            <div key={`g${gi}`}>
+              <p className="text-sm font-semibold uppercase tracking-wide text-white/90">{g.heading}</p>
+              <ul className="mt-4 space-y-3 text-sm">
+                {g.links.map((l, i) => (
+                  <li key={i}>
+                    <a href={l.target || "#"} className="text-white/80 hover:text-white">{l.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          {showMore && (
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-white/90">More</p>
             <ul className="mt-4 space-y-3 text-sm">
@@ -95,6 +176,7 @@ export default function FooterView({
               ) : null}
             </ul>
           </div>
+          )}
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">

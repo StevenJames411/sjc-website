@@ -17,7 +17,7 @@ import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey } from "@/lib/puckContent";
-import { SJC } from "@/lib/siteKeys";
+import { SJC, siteKeys } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -201,5 +201,37 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "Couldn't save the template's content." }, { status: 500 });
   }
 
-  return Response.json({ ok: true, id: site.id, slug: page.slug, counts, published: okPub, leftovers: [] });
+  // ⚠️ THE STYLESHEET HAS TO COME TOO, AND IT DIDN'T UNTIL 2026-08-05.
+  //
+  // A bought design keeps its compiled Tailwind in its OWN key, per page per site (siteKeys →
+  // designCss), deliberately: a 50KB blob inside the page data would make the store's save-guard
+  // diff meaningless. This route copied the content and not the stylesheet, so a template made
+  // from an imported design carried every piece of markup and none of the CSS.
+  //
+  // It failed the worst way — silently, and later. The template gets created, the API says ok, and
+  // nothing looks wrong until somebody builds a site from it and gets unstyled HTML. The same
+  // shape as every other failure today: the receipt said done, the page said otherwise.
+  //
+  // Missing is NOT an error: a template made from a native build has no design sheet and never
+  // did. Reported as `styled` instead, so "no stylesheet" is something you can see rather than
+  // something you assume.
+  const css =
+    (await createKvStore(client, siteKeys(fromSite).designCss(from, true)).read<unknown>()) ??
+    (await createKvStore(client, siteKeys(fromSite).designCss(from, false)).read<unknown>());
+  let styled = false;
+  if (css) {
+    styled = await createKvStore(client, siteKeys(site.id).designCss(page.slug, true)).write(css);
+    // The draft too, so the builder canvas matches the published page.
+    await createKvStore(client, siteKeys(site.id).designCss(page.slug, false)).write(css);
+  }
+
+  return Response.json({
+    ok: true,
+    id: site.id,
+    slug: page.slug,
+    counts,
+    published: okPub,
+    styled,
+    leftovers: [],
+  });
 }

@@ -4,6 +4,7 @@ import ApplyForm, { type Step, type Intro, type Booking } from "@/components/App
 import { readPuckPublished } from "@/lib/puckContent";
 import { seedFor } from "@/components/puck/seeds";
 import { pageMetadata } from "@/lib/pageMeta";
+import { SJC } from "@/lib/siteKeys";
 
 // Public podcast-GUEST intake. Same wizard as /apply, but fed by the Puck "guest" page (edited at
 // /edit/guest) and its own calendar. Every piece of copy + question is editable/deletable there.
@@ -85,7 +86,7 @@ function extract(data: any): {
 }
 
 export default async function Guest() {
-  const data = (await readPuckPublished("guest")) || seedFor("guest", "Podcast Guest Intake");
+  const data = (await readPuckPublished("guest", SJC)) || seedFor("guest", "Podcast Guest Intake");
   const { intro, disclaimer, booking, steps, bookingUrl } = extract(data);
   return (
     <>

@@ -44,6 +44,21 @@ export function siteKeys(siteId: string) {
     designCss: (page: string, pub = false) =>
       `${ns}-designcss-${safe(page) || "home"}` + (pub ? "-pub" : ""),
     /**
+     * The design's ORIGINAL markup, exactly as handed to the importer.
+     *
+     * ⚠️ ADDED 2026-08-05, AFTER IT WAS FIRST NEEDED AND WASN'T THERE. The importer kept the
+     * finished page and the compiled stylesheet and threw the source away. Then the splitter and
+     * the nav pairing both improved — and there was no way to re-run them on anything already
+     * imported, because "re-import" needs a file nobody had kept. Four live pages, and the only
+     * remedy on offer was asking Steven to go find the originals again.
+     *
+     * Every future improvement to the import pipeline is worth nothing on existing sites without
+     * this. It is a few KB of text against a step that otherwise cannot be repeated.
+     *
+     * No `-pub` twin: this is never rendered, only re-read.
+     */
+    designSrc: (page: string) => `${ns}-designsrc-${safe(page) || "home"}`,
+    /**
      * What the business owner filled in on her intake link, and the photos she sent.
      * Built here like every other key, so one client's answers can never land in another's
      * record — the isolation is structural, not something the intake route has to remember.

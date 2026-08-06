@@ -27,6 +27,99 @@ function pool(): pg.Pool | null {
   return _pool;
 }
 
+/**
+ * The saved versions of one key, newest first.
+ *
+ * ⚠️ ASK FOR THE `-pub` KEY, NOT THE DRAFT. Autosave writes a revision on every pause in typing,
+ * so a draft's history is thousands of rows seconds apart — unreadable, and useless for the only
+ * question anyone actually asks: "put the page back to how it was on Monday." Publishing writes
+ * the `-pub` key exactly once, so ITS revisions are the publish history: one row per time Steven
+ * decided a page was ready. No extra bookkeeping and no note column to trust.
+ *
+ * Values are deliberately not returned — fifty page snapshots is megabytes, and a list only needs
+ * to say when and how big.
+ */
+/**
+ * Which columns `state_rev` actually has, asked once and remembered.
+ *
+ * ⚠️ ASKED, NOT ASSUMED — and the first version of this file assumed. The table is created by the
+ * COCKPIT, which lives in a different repository: nothing here defines it, nothing here migrates
+ * it, and there is no schema file to read. Guessing `id` and `created_at` produced a 500 on every
+ * request, with the reason only visible in a server log.
+ *
+ * Writing to it is safe without this because the insert names its own columns (key, value, note),
+ * which is why saving has always worked while reading back did not.
+ */
+let _revCols: Set<string> | null = null;
+async function revColumns(p: pg.Pool): Promise<Set<string>> {
+  if (_revCols) return _revCols;
+  const { rows } = await p.query(
+    `select column_name from information_schema.columns
+      where table_schema = current_schema() and table_name = 'state_rev'`
+  );
+  _revCols = new Set(rows.map((r) => String(r.column_name)));
+  return _revCols;
+}
+
+/** First name that exists, so a differently-named column degrades instead of throwing. */
+const pick = (cols: Set<string>, ...names: string[]) => names.find((n) => cols.has(n));
+
+/**
+ * What `state_rev` actually looks like. Exposed because this table is defined in another
+ * repository, so "which columns does it have" cannot be answered by reading this codebase — and
+ * that question already cost one wrong guess and one silent blank column.
+ */
+export async function revisionColumns(): Promise<string[]> {
+  const p = pool();
+  if (!p) return [];
+  return [...(await revColumns(p))];
+}
+
+export async function listRevisions(
+  key: string,
+  limit = 40
+): Promise<{ id: number; at: string; bytes: number }[]> {
+  const p = pool();
+  if (!p) return [];
+
+  const cols = await revColumns(p);
+  if (!cols.size) return []; // no such table on this database
+
+  const idCol = pick(cols, "id", "rev", "revision");
+  // `saved_at` is the real one — confirmed against the live database via ?columns=1, not guessed.
+  const timeCol = pick(cols, "saved_at", "created_at", "inserted_at", "at", "ts", "created");
+  if (!idCol) return []; // nothing stable to identify or order by
+
+  const { rows } = await p.query(
+    `select ${idCol} as id,
+            ${timeCol ? `${timeCol} as at` : "null as at"},
+            octet_length(value::text) as bytes
+       from state_rev where key = $1 order by ${idCol} desc limit $2`,
+    [key, limit]
+  );
+  return rows.map((r) => ({
+    id: Number(r.id),
+    at: r.at ? new Date(r.at).toISOString() : "",
+    bytes: Number(r.bytes || 0),
+  }));
+}
+
+/** One saved version's full content, or null if that id doesn't belong to this key. */
+export async function readRevision(key: string, id: number): Promise<unknown> {
+  const p = pool();
+  if (!p) return null;
+  const cols = await revColumns(p);
+  const idCol = pick(cols, "id", "rev", "revision");
+  if (!idCol) return null;
+  // Keyed AND id-matched on purpose: an id belonging to another page must never be restorable
+  // onto this one.
+  const { rows } = await p.query(
+    `select value from state_rev where key = $1 and ${idCol} = $2`,
+    [key, id]
+  );
+  return rows.length ? rows[0].value : null;
+}
+
 // The write guard, same rules as the cockpit's. A published page losing most of its content
 // is the failure that matters here — a bad Publish would otherwise be permanent.
 export function guardReason(prev: unknown, next: unknown): string | null {

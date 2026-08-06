@@ -9,10 +9,10 @@
 // thing deciding whether it works. If opening a form were reachable by a stranger, the open/closed
 // state would be decoration.
 import { openIntake, closeIntake, intakeAccess } from "@/lib/intakeLinks";
-import { readIntake, patchIntake, intakeSummaries } from "@/lib/intake";
+import { readIntake, patchIntake, intakeSummaries, onboardingQuestions } from "@/lib/intake";
 import { findSite } from "@/lib/sites";
 import { onboardUrlFor } from "@/lib/hostShared";
-import { questionsFor, INTAKE_QUESTIONS } from "@/lib/intakeShared";
+import { questionsFor } from "@/lib/intakeShared";
 
 export const dynamic = "force-dynamic";
 
@@ -31,14 +31,17 @@ export async function GET(req: Request) {
 
   const access = await intakeAccess(id);
   const record = await readIntake(id);
-  const asked = questionsFor(site);
+  // The LIVE questions — the same ones the form itself draws. Read the code copy here and this
+  // panel describes a form nobody is filling in.
+  const questions = await onboardingQuestions();
+  const asked = questionsFor(site, questions);
   // The SAME count the gallery card shows. Computing it separately here is how the card ended up
   // saying "5 of 9" while this said "4 of 9" for the same client at the same moment.
   const summary = (await intakeSummaries([{ id }]))[id];
 
   // Her answers with the question text beside them, so this is readable without cross-referencing
   // the code to find out what "whyYou" was asking.
-  const answers = INTAKE_QUESTIONS.filter((q) => record.answers[q.id]).map((q) => ({
+  const answers = questions.filter((q) => record.answers[q.id]).map((q) => ({
     question: q.label,
     answer: record.answers[q.id],
   }));

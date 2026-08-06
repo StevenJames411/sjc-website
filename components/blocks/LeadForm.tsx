@@ -1,8 +1,9 @@
 "use client";
-import { useSiteId } from "@/components/blocks/SiteContext";
+import { useSiteId, useBusiness, useSiteUrl } from "@/components/blocks/SiteContext";
 
 import { useState } from "react";
 import { resolveColor } from "@/lib/brandColor";
+import { fillTokens } from "@/lib/businessTokens";
 
 // A short lead-capture form, fully driven by props so it can be dropped on ANY page from the
 // builder and re-labelled without touching code. Add/remove/reorder the questions, change the
@@ -28,9 +29,20 @@ export type LeadFormField = {
   fieldId?: string;
   /** Library questions can be optional. A block without this stays all-or-nothing, as before. */
   required?: boolean;
+  /** Present on a `choice` question. Drawn as buttons — see the note where they're rendered. */
+  options?: string[];
 };
 export type LeadFormProps = {
   source?: string;
+  /**
+   * The library form this block POINTS AT. Blank = the block owns its own questions, which is how
+   * every page built before 2026-08-06 works and still works.
+   *
+   * ⚠️ Nothing on the render side reads this. lib/formPointer resolves it server-side and fills
+   * `fields` in before the page is drawn, so the form stays plain data drawn by our components —
+   * not an embed.
+   */
+  formId?: string;
   fields?: LeadFormField[];
   buttonLabel?: string;
   note?: string;
@@ -46,10 +58,26 @@ export type LeadFormProps = {
   // delivery path. Added for /websites, whose contact band is near-black — a white card sat on it
   // like a patch. Everything else keeps "light", so no existing page changes.
   theme?: "light" | "dark";
+  /**
+   * A different thank-you for certain answers — the five-star funnel. Set by the library form
+   * this block points at, never editable per page (see lib/formPointer.ts for why).
+   */
+  altSuccess?: {
+    fieldId: string;
+    values: string[];
+    heading: string;
+    body: string;
+    buttonLabel?: string;
+    buttonUrl?: string;
+  };
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
-  source: "/websites — $795 website offer",
+  // ⚠️ BLANK, NOT SJC'S OWN OFFER. This used to default to "/websites — $795 website offer", so
+  // every lead form dropped onto a CLIENT's site labelled that client's enquiries as SJC's
+  // website offer until somebody remembered to retype it. Blank means the form derives the label
+  // from the business and the page it's on — correct the first time, on every build.
+  source: "",
   fields: [
     { label: "Your name", inputType: "text" },
     { label: "Business name", inputType: "text" },
@@ -95,7 +123,21 @@ export default function LeadForm(props: LeadFormProps) {
     buttonColor,
     inColumn,
     theme = "light",
+    altSuccess,
   } = props;
+
+  // ⚠️ THE THANK-YOU COPY RESOLVES ITS OWN TOKENS, AND HAS TO.
+  //
+  // `fillBusinessTokens` resolves {{business.*}} by walking SAVED PAGE DATA. The imported-design
+  // form passes this copy as a JSX LITERAL (DesignSection), and a literal is never in that data —
+  // so it was handed straight to the customer unresolved. A real visitor to stevenjamesdesigns.com
+  // submitted the form on 2026-08-05 and was told to "Call {{business.phone}}".
+  //
+  // Resolving here covers both routes: props that came from saved data are already filled and pass
+  // through untouched, and literals get filled from the site being served.
+  const business = useBusiness();
+  const siteUrl = useSiteUrl();
+  const fill = (s?: string) => (s && s.includes("{{") ? fillTokens(s, business, siteUrl) : s);
 
   const dark = theme === "dark";
   const cardCls = dark
@@ -113,6 +155,29 @@ export default function LeadForm(props: LeadFormProps) {
 
   // Comes from the route this page is served under, not from anything editable on the block.
   const siteId = useSiteId();
+
+  // ── WHAT GOES IN THE "SOURCE" COLUMN WHEN NOBODY TYPED ONE ──────────────────────────────────
+  //
+  // `source` is a per-block text field, filled in by hand, and blank is its normal state on any
+  // section cloned from a template or dropped in from the library. A blank Source column is bad
+  // enough — several sites' enquiries arriving as a column of empties, with no way to tell which
+  // build produced which. A STALE one is worse: a section copied from another client arrives
+  // still labelled with that client's offer, so the row looks authoritative and is wrong.
+  //
+  // ⚠️ THIS IS A LABEL, NOT ROUTING, and the distinction is the whole safety story. Which sheet
+  // and which inbox a lead reaches is decided server-side from `siteId` above — taken from the
+  // route the page is served under, which nobody can mistype. If this fallback is ever wrong the
+  // worst case is a confusing word in a spreadsheet cell, never a lead in the wrong pile.
+  //
+  // Derived rather than defaulted: the business's own name plus the page it was filled in on, so
+  // "Marbleford Pet Wash — /contact" reads correctly the very first time without anyone
+  // remembering to set it.
+  const derivedSource = [
+    business?.name || siteId,
+    typeof window !== "undefined" ? window.location.pathname : "",
+  ]
+    .filter(Boolean)
+    .join(" — ");
 
   const list = (Array.isArray(fields) && fields.length ? fields : LEADFORM_DEFAULTS.fields) || [];
 
@@ -143,7 +208,7 @@ export default function LeadForm(props: LeadFormProps) {
           // human label only; it must never be the thing that routes a lead.
           siteId,
           answers: [
-            { key: "source", label: "Source", value: source || "" },
+            { key: "source", label: "Source", value: (source || "").trim() || derivedSource },
             ...list.map((f, i) => ({
               key: keyFor(f, i),
               label: f?.label || `Question ${i + 1}`,
@@ -194,6 +259,17 @@ export default function LeadForm(props: LeadFormProps) {
   }
 
   if (state === "done") {
+    // ⚠️ READ OFF THE SUBMITTED ANSWER, not off anything the visitor could set. The rule names a
+    // fieldId and the values that trigger it; everything else falls to the ordinary thank-you.
+    // Defaulting to the ORDINARY one matters: a review form whose rule is mistyped must send
+    // nobody to Google rather than everybody, including the person who just gave it one star.
+    const alt =
+      altSuccess?.fieldId &&
+      Array.isArray(altSuccess.values) &&
+      altSuccess.values.includes((values[altSuccess.fieldId] || "").trim())
+        ? altSuccess
+        : null;
+
     return (
       <div className={`${cardCls} text-center${inColumn ? "" : " mx-auto max-w-xl"}`}>
         <h3
@@ -201,15 +277,32 @@ export default function LeadForm(props: LeadFormProps) {
             dark ? "text-white" : "text-[color:var(--color-sjc-ink)]"
           }`}
         >
-          {successHeading}
+          {fill(alt ? alt.heading : successHeading)}
         </h3>
         <p
           className={`mt-4 text-lg leading-relaxed ${
             dark ? "text-slate-300" : "text-[color:var(--color-sjc-mute)]"
           }`}
         >
-          {successBody}
+          {fill(alt ? alt.body : successBody)}
         </p>
+        {/* No link, no button. An empty href on a review form is a dead end that reads as broken;
+            saying nothing reads as a thank-you, which it still is. */}
+        {alt?.buttonUrl && alt.buttonLabel ? (
+          <a
+            href={alt.buttonUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={
+              dark
+                ? "mt-6 inline-block rounded-xl bg-[#00D9FF] px-6 py-4 text-lg font-bold text-[#0A0E27] shadow-lg"
+                : "mt-6 inline-block rounded-lg bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-white shadow-sm hover:bg-[color:var(--color-sjc-green)]"
+            }
+            style={!dark && buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
+          >
+            {alt.buttonLabel}
+          </a>
+        ) : null}
       </div>
     );
   }
@@ -231,13 +324,39 @@ export default function LeadForm(props: LeadFormProps) {
                   <span className="ml-1 font-normal opacity-60">(optional)</span>
                 )}
               </label>
-              <input
-                id={`lf-${k}`}
-                type={f?.inputType || "text"}
-                value={values[k] || ""}
-                onChange={(e) => setValues((prev) => ({ ...prev, [k]: e.target.value }))}
-                className={inputCls}
-              />
+              {/* BUTTONS, NOT A DROPDOWN. This is answered on a phone, and a five-option rating
+                  behind a tap-and-scroll picker is the difference between a review and a closed
+                  tab. It also puts the whole scale on screen, which is the question. */}
+              {f?.options?.length ? (
+                <div className="flex flex-col gap-2">
+                  {f.options.map((opt) => {
+                    const on = (values[k] || "") === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setValues((prev) => ({ ...prev, [k]: opt }))}
+                        aria-pressed={on}
+                        className={`${inputCls} text-left ${
+                          on
+                            ? "font-semibold ring-2 ring-[color:var(--color-sjc-blue)]"
+                            : "hover:opacity-90"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <input
+                  id={`lf-${k}`}
+                  type={f?.inputType || "text"}
+                  value={values[k] || ""}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [k]: e.target.value }))}
+                  className={inputCls}
+                />
+              )}
             </div>
           );
         })}

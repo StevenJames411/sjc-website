@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Puck, type Data } from "@measured/puck";
+import { Puck, ActionBar, usePuck, type Data } from "@measured/puck";
+import { requestTextFocus } from "@/lib/designFocus";
 import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
 import { seedFor } from "@/components/puck/seeds";
@@ -11,6 +12,103 @@ import { publicUrlFor } from "@/lib/hostShared";
 // The page list is passed in from the server route (it's Redis-backed now, so the client can't
 // read it directly). Shape mirrors lib/pageRegistry's PageEntry.
 type PageItem = { slug: string; title: string; custom?: boolean };
+
+/**
+ * MOVE UP / MOVE DOWN on the selected section's toolbar.
+ *
+ * ⚠️ BUTTONS, NOT DRAG, AND THAT WAS A DECISION. Puck ships drag-and-drop and it is the wrong tool
+ * here: an imported section is often taller than the viewport, so there is nothing on screen to
+ * aim at — you grab a section and drag into a void, guessing where it lands. Buttons move one
+ * position per press and the result is visible immediately. The cockpit already proved ▲▼ works.
+ *
+ * Puck's own actionBar gives duplicate and delete; this adds the two it doesn't, so reordering,
+ * copying and removing a section all live in the same place — on the section, in the canvas,
+ * where you are already looking. The alternative was a sidebar list, which means moving a LABEL
+ * rather than the thing you can see.
+ *
+ * Disabled rather than hidden at the ends. A control that vanishes reads as a bug; a greyed one
+ * says "this is already the top".
+ */
+function SectionActionBar({
+  label,
+  children,
+  parentAction,
+}: {
+  label?: string;
+  children?: React.ReactNode;
+  parentAction?: React.ReactNode;
+}) {
+  const { appState, dispatch, selectedItem } = usePuck();
+
+  const sel = appState.ui.itemSelector;
+  const index = sel?.index ?? -1;
+  const content = appState.data.content ?? [];
+  const count = content.length;
+
+  // ⚠️ DO NOT TEST THE ZONE BY NAME. The first version checked `zone === "default-zone"` and the
+  // arrows never appeared: Puck namespaces the root zone (root:default-zone), so the comparison
+  // was quietly false and there was no error to notice — the buttons simply weren't there.
+  //
+  // This asks the only question that actually matters: is the selected block the one sitting at
+  // that index in the PAGE's own content array? If yes it is a whole-page section and safe to
+  // reorder. If it is a card nested inside a column, the ids won't match and the arrows stay
+  // hidden rather than silently moving the wrong thing.
+  const atIndex = index >= 0 ? content[index] : undefined;
+  const isRoot =
+    !!selectedItem &&
+    !!atIndex &&
+    (atIndex.props as { id?: string })?.id === (selectedItem.props as { id?: string })?.id;
+
+  const move = (to: number) => {
+    if (!isRoot || to < 0 || to >= count) return;
+    const zone = sel?.zone ?? "default-zone";
+    dispatch({ type: "reorder", sourceIndex: index, destinationIndex: to, destinationZone: zone });
+    // Keep the moved section selected, so a second press keeps moving the SAME section rather
+    // than whatever slid into its old slot.
+    dispatch({ type: "setUi", ui: { itemSelector: { index: to, zone } } });
+  };
+
+  return (
+    <ActionBar label={label}>
+      {parentAction}
+      {isRoot && count > 1 && (
+        <>
+          <ActionBar.Action label="Move up" onClick={() => move(index - 1)}>
+            <span aria-hidden style={{ opacity: index <= 0 ? 0.35 : 1, fontSize: 15, lineHeight: 1 }}>▲</span>
+          </ActionBar.Action>
+          <ActionBar.Action label="Move down" onClick={() => move(index + 1)}>
+            <span aria-hidden style={{ opacity: index >= count - 1 ? 0.35 : 1, fontSize: 15, lineHeight: 1 }}>▼</span>
+          </ActionBar.Action>
+        </>
+      )}
+      {/* KEEP THIS BAND. "Save as template" copies a whole PAGE, which is the wrong grain for the
+          thing that actually repeats — the reviews strip, the guarantee, the contact section with
+          the form already wired. Saved here, it can be dropped onto any other site's page.
+          On the section, in the canvas, beside move and delete. */}
+      {isRoot && atIndex && (
+        <ActionBar.Action
+          label="Save this section to the library"
+          onClick={async () => {
+            const name = window.prompt("Name this section (e.g. Reviews strip):");
+            if (!name || !name.trim()) return;
+            const r = await fetch("/api/sections", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "same-origin",
+              body: JSON.stringify({ name: name.trim(), block: atIndex }),
+            })
+              .then((x) => x.json())
+              .catch(() => ({ ok: false, error: "Couldn't reach the server." }));
+            window.alert(r.ok ? `Saved "${name.trim()}" to the section library.` : r.error || "Couldn't save it.");
+          }}
+        >
+          <span aria-hidden style={{ fontSize: 14, lineHeight: 1 }}>★</span>
+        </ActionBar.Action>
+      )}
+      {children}
+    </ActionBar>
+  );
+}
 
 // The unified visual builder for ANY page. A thin bar on top adds the two things Puck doesn't
 // give us: a page-switcher dropdown (jump between all our pages) and auto-save (every change
@@ -53,6 +151,10 @@ export default function PuckEditor({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState<boolean | null>(null);
+  const [showVersions, setShowVersions] = useState(false);
+  const [versions, setVersions] = useState<{ id: number; at: string; bytes: number }[]>([]);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [library, setLibrary] = useState<{ id: string; name: string; type: string; savedAt: string }[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // WHERE THIS PAGE ACTUALLY LIVES. Every other builder shows the address under the toolbar; not
@@ -196,6 +298,105 @@ export default function PuckEditor({
       if (!r.ok) return window.alert(r.error || "Couldn't save the template.");
       window.alert(`Template saved. It's now an option under "New website".`);
       router.push("/edit");
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ── SECTION LIBRARY (insert side) ───────────────────────────────────────────────────────────
+  // Appends to the end of the page rather than guessing where you wanted it: the ▲▼ buttons on
+  // the section move it from there in one press each, and a band that lands in an unpredictable
+  // spot is worse than one that always lands somewhere known.
+  const insertSection = async (id: string, name: string) => {
+    setBusy(true);
+    try {
+      const r = await fetch(`/api/sections?id=${encodeURIComponent(id)}&full=1`, {
+        credentials: "same-origin",
+      });
+      const j = await r.json();
+      if (!j.ok || !j.block) return window.alert(j.error || "Couldn't load that section.");
+
+      // ⚠️ A FRESH ID, ALWAYS. Puck treats two blocks sharing an id as ONE node and renders the
+      // last one's content in every slot — the failure that made an imported design come back as
+      // its footer, seven times over. The library deliberately strips the id on save so this
+      // can't be forgotten here.
+      const block = {
+        ...j.block,
+        props: { ...(j.block.props || {}), id: `lib-${id}-${Date.now()}` },
+      };
+
+      setData((d) => {
+        const next = d
+          ? { ...d, content: [...(d.content || []), block] }
+          : d;
+        if (next) void writeDraft(next as Data);
+        return next;
+      });
+      window.alert(`"${name}" added to the bottom of this page. Use ▲ on the section to move it.`);
+      setShowLibrary(false);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openLibrary = async () => {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/sections", { credentials: "same-origin" });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't load the section library.");
+      setLibrary(j.sections || []);
+      setShowLibrary(true);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ── VERSIONS ────────────────────────────────────────────────────────────────────────────────
+  // A panel rather than a prompt(): the whole value is READING the list — which day, how big —
+  // and a native dialog can't show one. It also blocks the page for anything driving the browser.
+  //
+  // ⚠️ Restoring reloads the editor. The draft has changed underneath Puck, and Puck holds its
+  // own copy in memory; without the reload the canvas keeps showing the old version and the next
+  // autosave writes it straight back over the one just restored.
+  const openVersions = async () => {
+    setBusy(true);
+    try {
+      const r = await fetch(
+        `/api/versions?page=${encodeURIComponent(page)}&site=${encodeURIComponent(siteId)}`,
+        { credentials: "same-origin" }
+      );
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't load this page's versions.");
+      if (j.unavailable) return window.alert(j.unavailable);
+      setVersions(j.versions || []);
+      setShowVersions(true);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const restoreVersion = async (id: number) => {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/versions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ page, site: siteId, id }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't restore that version.");
+      // Straight reload — see the warning above.
+      window.location.reload();
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -423,6 +624,15 @@ export default function PuckEditor({
         <button type="button" onClick={onRenamePage} disabled={busy} style={btn}>
           Rename
         </button>
+        {/* THE WAY BACK. Revisions have been written on every save since the Postgres migration
+            and nothing ever read them — the safety net existed and was unreachable. */}
+        <button type="button" onClick={openVersions} disabled={busy} style={btn}>
+          Versions
+        </button>
+        {/* The insert half of the section library. The save half is the ★ on each section. */}
+        <button type="button" onClick={openLibrary} disabled={busy} style={btn}>
+          Add saved section
+        </button>
         {canDelete ? (
           <button type="button" onClick={onDeletePage} disabled={busy} style={btnDanger}>
             Delete Page
@@ -490,12 +700,200 @@ export default function PuckEditor({
           </span>
         )}
       </div>
-      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+      {showLibrary && (
+        <div
+          onClick={() => setShowLibrary(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 60,
+            background: "rgba(0,0,0,.35)",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            paddingTop: 80,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 10,
+              width: 460,
+              maxWidth: "92vw",
+              maxHeight: "70vh",
+              overflow: "auto",
+              padding: 18,
+              boxShadow: "0 20px 50px rgba(0,0,0,.25)",
+            }}
+          >
+            <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 700 }}>Saved sections</h2>
+            <p style={{ margin: "0 0 14px", fontSize: 13, color: "#4b5563" }}>
+              Bands you kept from any site. They land at the bottom of this page — use ▲ on the
+              section to move it up.
+            </p>
+
+            {!library.length ? (
+              <p style={{ fontSize: 13, color: "#6b7280" }}>
+                Nothing saved yet. Select a section on any page and press ★ on its toolbar.
+              </p>
+            ) : (
+              <div style={{ display: "grid", gap: 6 }}>
+                {library.map((s) => (
+                  <div
+                    key={s.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      border: "1px solid var(--color-sjc-line)",
+                      borderRadius: 7,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{s.name}</span>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => insertSection(s.id, s.name)}
+                      style={btn}
+                    >
+                      Add
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowLibrary(false)}
+              style={{ ...btn, marginTop: 14 }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      {showVersions && (
+        <div
+          onClick={() => setShowVersions(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 60,
+            background: "rgba(0,0,0,.35)",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            paddingTop: 80,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 10,
+              width: 460,
+              maxWidth: "92vw",
+              maxHeight: "70vh",
+              overflow: "auto",
+              padding: 18,
+              boxShadow: "0 20px 50px rgba(0,0,0,.25)",
+            }}
+          >
+            <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 700 }}>Earlier versions</h2>
+            {/* The wording carries the two facts that stop this being frightening: it lists
+                PUBLISHES, and restoring does not touch the live site. */}
+            <p style={{ margin: "0 0 14px", fontSize: 13, color: "#4b5563" }}>
+              Every time you pressed Publish. Restoring loads that version back into the builder so
+              you can look at it — <strong>your live site doesn&apos;t change</strong> until you
+              press Publish again.
+            </p>
+
+            {!versions.length ? (
+              <p style={{ fontSize: 13, color: "#6b7280" }}>
+                This page hasn&apos;t been published yet, so there&apos;s nothing to go back to.
+              </p>
+            ) : (
+              <div style={{ display: "grid", gap: 6 }}>
+                {versions.map((v, i) => (
+                  <div
+                    key={v.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      border: "1px solid var(--color-sjc-line)",
+                      borderRadius: 7,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <span style={{ flex: 1, fontSize: 13 }}>
+                      {new Date(v.at).toLocaleString(undefined, {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                      {i === 0 && (
+                        <span style={{ marginLeft: 8, fontSize: 11, color: "#6b7280" }}>
+                          current
+                        </span>
+                      )}
+                    </span>
+                    <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                      {Math.round(v.bytes / 1024)} KB
+                    </span>
+                    <button
+                      type="button"
+                      disabled={busy || i === 0}
+                      onClick={() => restoreVersion(v.id)}
+                      style={{ ...btn, opacity: i === 0 ? 0.4 : 1 }}
+                    >
+                      Restore
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowVersions(false)}
+              style={{ ...btn, marginTop: 14 }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      {/* CLICK A WORD ON THE PAGE, GET THAT WORD'S ROW.
+          A bought design lands as forty-odd text rows in one section, so finding the line you are
+          looking straight at meant scrolling the whole list. Every filled word carries a
+          data-sjc-text marker while editing (DesignSection's `mark`), so a click can name it.
+
+          Capture phase, and it never calls preventDefault: Puck still receives the same click and
+          still does the selecting. This only answers WHICH row. Keeping the two independent is
+          the point — a Puck upgrade can't quietly disable it.
+
+          The row is LATCHED rather than shouted, because when the section wasn't already selected
+          the field doesn't exist yet at click time. See lib/designFocus.ts. */}
+      <div
+        style={{ flex: 1, minHeight: 0, position: "relative" }}
+        onClickCapture={(e) => {
+          const hit = (e.target as HTMLElement | null)?.closest?.("[data-sjc-text]");
+          const key = hit?.getAttribute("data-sjc-text");
+          if (key) requestTextFocus(key);
+        }}
+      >
         <Puck
           key={page}
           config={config}
           data={data}
           iframe={{ enabled: false }}
+          overrides={{ actionBar: SectionActionBar }}
           onChange={onChange}
           onPublish={async (d) => {
             await writeDraft(d);

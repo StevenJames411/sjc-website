@@ -8,12 +8,15 @@ import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
 import SizeStepper from "@/components/puck/SizeStepper";
 import ColorField from "@/components/puck/ColorField";
+import DesignTextField from "@/components/puck/DesignTextField";
 import FormPicker from "@/components/puck/FormPicker";
+import FormLink from "@/components/puck/FormLink";
 import ImageUpload from "@/components/puck/ImageUpload";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
+import Stats, { STATS_DEFAULTS, type StatItem } from "@/components/blocks/Stats";
 import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
@@ -45,7 +48,11 @@ type Props = {
     hasForm: boolean;
     useRealForm: boolean;
     formFields: { label: string; inputType: string }[];
+    /** A LIVE link to a library form — see the note on DesignSectionProps.formId. */
+    formId: string;
     formButton: string;
+    successHeading: string;
+    successBody: string;
   };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
   Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; surfaceOpacity: number; borderColor: string; hoverBorderColor: string; shadowColor: string; hoverLift: boolean; radius: number };
@@ -55,6 +62,7 @@ type Props = {
     spaceAbove: number; spaceBelow: number;
   };
   CheckList: { dotColor: string; rows: { heading: string; body: string }[] };
+  Stats: { items: StatItem[]; valueColor: string; valueSize: number; align: "left" | "center" };
   PriceBox: {
     topAmount: string;
     topNote: string;
@@ -67,6 +75,8 @@ type Props = {
     source: string;
     /** Write-only. Holds a form id for one beat while resolveData copies it in, then clears. */
     preset: string;
+    /** A LIVE link to a library form. Set = the library owns the questions; blank = this block does. */
+    formId: string;
     fields: { label: string; inputType: string; fieldId?: string; required?: boolean }[];
     buttonLabel: string;
     note: string;
@@ -86,7 +96,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -133,25 +143,33 @@ const ALIGN_FIELD = {
 };
 
 
+// The band a section sits on. Roles, not hexes — and note "SJC navy" is gone: a band named after
+// one company can't be the option a client's site picks, and it stopped being true the day the
+// palette moved anyway.
 const BG_FIELD = {
   type: "select" as const,
   options: [
-    { label: "White", value: "#ffffff" },
-    { label: "Off-white", value: "#f8fafc" },
-    { label: "Light gray", value: "#f3f4f6" },
-    { label: "SJC navy", value: "#1e3a6e" },
-    { label: "Dark navy", value: "#0f1f3d" },
+    { label: "White", value: "white" },
+    { label: "Light band", value: "bandSoft" },
+    { label: "Dark band", value: "bandDark" },
+    { label: "Dark band (deeper)", value: "bandDarker" },
   ],
 };
 
 // Per-block text color. Default ink; "White" is for blocks sitting on a dark Section band.
+//
+// ⚠️ ROLES, NOT HEXES. The swatch saves what a colour MEANS, so the brand screen drives it. These
+// were literal hexes, which froze every pick onto the page the moment it was made — no palette
+// change could reach it afterwards. Pages already holding the hexes still render exactly as
+// before (resolveColor passes an unrecognised value straight through) and convert via
+// /api/admin/reskin.
 const COLOR_FIELD = {
   type: "select" as const,
   options: [
-    { label: "Ink (default)", value: "#111827" },
-    { label: "White", value: "#ffffff" },
-    { label: "Blue", value: "#2563eb" },
-    { label: "Muted gray", value: "#4b5563" },
+    { label: "Ink (default)", value: "ink" },
+    { label: "White", value: "white" },
+    { label: "Blue", value: "accent" },
+    { label: "Muted gray", value: "mute" },
   ],
 };
 
@@ -196,7 +214,7 @@ export const NAV_DEFAULTS = {
   brandHref: "/",
   brandSize: 16,
   tagline: "Your Native AI Implementation Partner",
-  taglineColor: "#22c55e",
+  taglineColor: "secondary",
   taglineSize: 18,
   links: [] as { label: string; target: string; fontSize: number; color: string; newTab: boolean }[],
   ctaLabel: "See How It Works",
@@ -221,6 +239,8 @@ export const FOOTER_DEFAULTS = {
     { label: "About Steven James — who I am & why listen", target: "/about" },
     { label: "FAQs", target: "/faqs" },
   ] as { label: string; target: string }[],
+  // Blank on purpose — see the `groups` field. Nothing already published moves.
+  groups: [] as { heading: string; links: { label: string; target: string }[] }[],
   phone: "+12108514906",
   phoneDisplay: "(210) 851-4906",
   email: "support@stevenjamesconsulting.com",
@@ -277,19 +297,30 @@ export const STAFFROSTER_DEFAULTS = {
 };
 
 // ── PAGE SETTINGS (the root panel) ────────────────────────────────────────────────────────────
-// What a page IS, as opposed to what's on it. These four show in the right-hand panel the moment
-// the editor opens with no block selected — deliberately the first thing you see, because they
-// used to live in code and could only be changed by a developer.
+// What a page IS, as opposed to what's on it. These show in the right-hand panel the moment the
+// editor opens with no block selected — deliberately the first thing you see, because they used
+// to live in code and could only be changed by a developer.
 //
-// They exist because of a real failure: a demo built for a business still previewed as "Steven
-// James Consulting — AI employees for your business" when its link was texted, since a page with
-// nothing of its own inherits the SJC site defaults from app/layout.tsx. Filling these in is what
-// severs that inheritance. See generateMetadata in app/[slug]/page.tsx — it reads exactly these.
+// The first four exist because of a real failure: a demo built for a business still previewed as
+// "Steven James Consulting — AI employees for your business" when its link was texted, since a
+// page with nothing of its own inherits the SJC site defaults from app/layout.tsx. Filling these
+// in severs that inheritance. See generateMetadata in app/[slug]/page.tsx — it reads exactly these.
 type RootProps = {
   title: string;
   description: string;
   businessName: string;
   shareImage: string;
+  /**
+   * A LIVE link to a library form, for a page whose questions are a STEP-BY-STEP WIZARD (/apply).
+   *
+   * ⚠️ ON THE PAGE BECAUSE THERE IS NO BLOCK TO PUT IT ON. A wizard's questions are thirteen
+   * FormQuestion blocks spread across several FormStep blocks, and no single one of them owns the
+   * set. Everything else links per block — see LeadForm and DesignSection.
+   *
+   * ⚠️ Read only by app/apply/page.tsx. It is inert on every other page, which is the cost of
+   * having somewhere to put it at all.
+   */
+  formId: string;
 };
 
 /**
@@ -359,15 +390,39 @@ export const config: Config<Props, RootProps> = {
         type: "textarea" as const,
         label: "Preview text — the sentence under the title in a text message or Google result",
       },
+      // ⚠️ The label used to read "(leave blank on SJC's own pages)". The builder is a Steven
+      // James Designs product and Consulting is one tenant in it — naming a specific tenant in a
+      // field every other business also fills in is the landlord-vs-tenant confusion made visible,
+      // and it read as an instruction to anyone who wasn't SJC. Says what the blank DOES instead.
       businessName: {
         type: "text" as const,
-        label: "Business name — the source line on the preview card (leave blank on SJC's own pages)",
+        label: "Business name — the source line on the preview card (blank uses the website's own name)",
       },
       shareImage: {
         type: "custom" as const,
         label: "Preview image — the picture in the text-message card",
         render: ({ onChange, value }) => (
           <ImageUpload value={(value as string) || ""} onChange={onChange} />
+        ),
+      },
+      // ── THE WIZARD'S LINK, AND WHY IT LIVES ON THE PAGE ─────────────────────────────────────
+      // A step-by-step page (/apply) asks its questions through FormStep + FormQuestion blocks —
+      // thirteen of them across several screens, with no single block that owns the set. So there
+      // is nowhere to put a per-block link, and the page itself holds it.
+      //
+      // ⚠️ IT APPEARS ON EVERY PAGE'S SETTINGS AND DOES NOTHING ON MOST OF THEM. That is the
+      // honest trade: a field that shows up where it's irrelevant, rather than a wizard that
+      // can't be linked at all. The label says which pages it applies to.
+      //
+      // ⚠️ LINK IT TO THE LIBRARY COPY OF THAT PAGE'S OWN QUESTIONS, not to some other form. The
+      // copy preserves each question's key, and those keys ARE the columns in the Discovery
+      // Intake sheet — link a wizard to a form with different keys and the sheet starts a fresh
+      // set of columns, orphaning everything collected so far.
+      formId: {
+        type: "custom" as const,
+        label: "Step-by-step pages only (like /apply): link the questions to your library",
+        render: ({ onChange, value }) => (
+          <FormLink value={value as string} onChange={onChange as (v: string) => void} />
         ),
       },
     },
@@ -422,6 +477,41 @@ export const config: Config<Props, RootProps> = {
             { label: "Use my real form (it delivers)", value: true },
             { label: "Show the design's mock form", value: false },
           ],
+        },
+        // ⚠️ A DESIGN'S CONTACT BOX COULD NOT BE LINKED TO THE LIBRARY, and the reason was simply
+        // that this control didn't exist. The resolver has handled DesignSection since pointers
+        // shipped, but with no field on the block there was nothing to set — so the form whose
+        // questions are hardest to reach (baked into imported markup) was the one form that could
+        // only ever be edited inside the design.
+        //
+        // Same control as LeadForm. Blank = the section keeps the questions it was imported with,
+        // which is every existing site, so nothing moves until it's picked.
+        formId: {
+          type: "custom" as const,
+          label: "Linked to a form in your library (live — edits follow)",
+          render: ({ onChange, value }) => (
+            <FormLink value={value as string} onChange={onChange as (v: string) => void} />
+          ),
+        },
+        // ⚠️ THESE WERE THE ONLY WORDS ON AN IMPORTED DESIGN NOBODY COULD CHANGE.
+        //
+        // The button label and the thank-you copy were literals inside DesignSection, so a bought
+        // design had one paragraph that was genuinely stuck — and it is the paragraph a customer
+        // reads the instant after handing over their phone number. On a product sold as "every
+        // word is editable", that was the exception nobody could find a field for.
+        //
+        // Blank keeps the wording the design shipped with, so nothing moves on existing sites.
+        formButton: {
+          type: "text" as const,
+          label: "Button on the form",
+        },
+        successHeading: {
+          type: "text" as const,
+          label: "Thank-you heading",
+        },
+        successBody: {
+          type: "textarea" as const,
+          label: "Thank-you message",
         },
         // Only meaningful on the header section; harmless elsewhere. A bought design ships a
         // static header, and a small business's site is expected to keep the phone number and the
@@ -532,48 +622,30 @@ export const config: Config<Props, RootProps> = {
             key: { type: "text" as const, label: "Token (do not change)" },
           },
         },
+        // ⚠️ OUR OWN FIELD, not Puck's array field. A bought design lands as forty-odd rows in one
+        // section, so this needs a search box — and clicking a word on the canvas has to open
+        // that word's row, which through Puck's array field means selecting content-hashed class
+        // names that break silently on the next upgrade. See DesignTextField.
         text: {
-          type: "array" as const,
+          type: "custom" as const,
           label: "Words on this section",
-          getItemSummary: (item: DesignText, i) => item?.label || `Text ${(i ?? 0) + 1}`,
-          arrayFields: {
-            // Shown so you know which one you're editing; the value is the part you change.
-            value: { type: "textarea" as const, label: "Text" },
-            // Blank/0/"As designed" leaves the design's own styling — nothing is wrapped and the
-            // markup stays byte-identical to the import.
-            size: {
-              type: "custom" as const,
-              label: "Size (− / +, blank = as designed)",
-              render: ({ onChange, value }) => (
-                <SizeStepper label="Size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
-              ),
-            },
-            color: {
-              type: "custom" as const,
-              label: "Colour (blank = as designed)",
-              render: ({ onChange, value }) => (
-                <ColorField value={value as string} onChange={onChange} />
-              ),
-            },
-            bold: {
-              type: "radio" as const,
-              label: "Weight",
-              options: [
-                { label: "As designed", value: null },
-                { label: "Bold", value: true },
-                { label: "Normal", value: false },
-              ],
-            },
-            label: { type: "text" as const, label: "Where it appears" },
-            key: { type: "text" as const, label: "Token (do not change)" },
-          },
+          render: ({ onChange, value }) => (
+            <DesignTextField
+              value={value as DesignText[]}
+              onChange={onChange as (v: DesignText[]) => void}
+            />
+          ),
         },
         // Deliberately last and plain: this is the design itself. Editing it by hand is how you
         // break the layout you paid for.
         html: { type: "textarea" as const, label: "Markup (imported — leave this alone)" },
         // Carriers, set by the importer. Puck requires a field for every prop, so they are here
         // rather than hidden — but nothing above depends on anyone touching them.
-        formButton: { type: "text" as const, label: "Form button text (imported)" },
+        //
+        // ⚠️ formButton USED TO LIVE HERE, buried under "leave this alone" and labelled
+        // "(imported)". It is one of the three things Steven actually wanted to change on his own
+        // site, so it moved up beside the form settings. A control filed under carriers is a
+        // control nobody finds — the same lesson as photos-before-words above.
         formFields: {
           type: "array" as const,
           label: "Form questions (imported)",
@@ -601,8 +673,10 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton }) => (
+      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
+          // Marks each filled word so a click on the canvas can name its row. Editor only.
+          editing={puck?.isEditing}
           html={html}
           text={text}
           images={images}
@@ -614,6 +688,8 @@ export const config: Config<Props, RootProps> = {
           useRealForm={useRealForm}
           formFields={formFields}
           formButton={formButton}
+          successHeading={successHeading}
+          successBody={successBody}
         />
       ),
     },
@@ -840,10 +916,12 @@ export const config: Config<Props, RootProps> = {
         dotColor: {
           type: "select" as const,
           label: "Dot color",
+          // Labelled by ROLE, not by colour name — "Second accent" stays true after a re-skin;
+          // an option called "Green" is a lie the moment the palette moves.
           options: [
-            { label: "Green", value: "#22c55e" },
-            { label: "Blue", value: "#2563eb" },
-            { label: "Ink", value: "#111827" },
+            { label: "Second accent", value: "secondary" },
+            { label: "Accent", value: "accent" },
+            { label: "Ink", value: "ink" },
           ],
         },
         rows: {
@@ -859,6 +937,51 @@ export const config: Config<Props, RootProps> = {
       },
       defaultProps: CHECKLIST_DEFAULTS as CheckListBlock,
       render: ({ dotColor, rows }) => <CheckList dotColor={dotColor} rows={rows} />,
+    },
+
+    // The proof-numbers row every bought design has. Rebuilding one by hand meant a Columns block
+    // holding six alternating Headings and Texts — twelve fields, spacing tuned by eye, and a
+    // layout that broke the moment a fourth number was added.
+    Stats: {
+      label: "Numbers row (40+ · 100% · 4.9★)",
+      fields: {
+        items: {
+          type: "array" as const,
+          label: "Numbers",
+          getItemSummary: (i: { value?: string; label?: string }) => i?.value || i?.label || "number",
+          defaultItemProps: { value: "100%", label: "What it measures" },
+          arrayFields: {
+            value: { type: "text" as const, label: "The number (40+, 100%, 4.9★)" },
+            label: { type: "text" as const, label: "What it measures" },
+          },
+        },
+        valueColor: {
+          type: "custom" as const,
+          label: "Number colour",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        valueSize: {
+          type: "custom" as const,
+          label: "Number size (0 = fits the screen automatically)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+          ),
+        },
+        align: {
+          type: "radio" as const,
+          label: "Align",
+          options: [
+            { label: "Centre", value: "center" },
+            { label: "Left", value: "left" },
+          ],
+        },
+      },
+      defaultProps: STATS_DEFAULTS as Props["Stats"],
+      render: ({ items, valueColor, valueSize, align }) => (
+        <Stats items={items} valueColor={valueColor} valueSize={valueSize} align={align} />
+      ),
     },
 
     PriceBox: {
@@ -888,9 +1011,24 @@ export const config: Config<Props, RootProps> = {
       label: "Lead form (name / phone / etc.)",
       fields: {
         // First, because it's the fast path: pick a preset and the questions below fill in.
+        // TWO WAYS TO GET QUESTIONS, and they are deliberately different tools.
+        //
+        // "Linked to" is a LIVE pointer: the library owns the questions and editing the form
+        // updates every page pointing at it. That is what Steven asked for — *"if I change a
+        // question in the form library, whatever's on their website should update."*
+        //
+        // "Start from a preset" below still COPIES, and is kept for the case where a page needs a
+        // one-off variant of a standard form without dragging every other page along with it.
+        formId: {
+          type: "custom" as const,
+          label: "Linked to a form in your library (live — edits follow)",
+          render: ({ onChange, value }) => (
+            <FormLink value={value as string} onChange={onChange as (v: string) => void} />
+          ),
+        },
         preset: {
           type: "custom" as const,
-          label: "Questions",
+          label: "…or start from a preset and edit here (a one-off copy)",
           render: ({ onChange }) => <FormPicker onApply={(id) => onChange(id)} />,
         },
         source: { type: "text" as const, label: "Source tag (shows in the intake sheet)" },
@@ -940,7 +1078,7 @@ export const config: Config<Props, RootProps> = {
           ],
         },
       },
-      defaultProps: { ...LEADFORM_DEFAULTS, preset: "" } as LeadFormBlock,
+      defaultProps: { ...LEADFORM_DEFAULTS, preset: "", formId: "" } as LeadFormBlock,
       /**
        * Copy a preset's questions into THIS block, then forget the preset.
        *
@@ -980,7 +1118,7 @@ export const config: Config<Props, RootProps> = {
           <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#2563eb", marginBottom: 6 }}>
             Form step
           </div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 10 }}>{title || "Step"}</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--color-sjc-ink)", marginBottom: 10 }}>{title || "Step"}</div>
           <Content />
         </div>
       ),
@@ -1026,8 +1164,8 @@ export const config: Config<Props, RootProps> = {
           questionType === "choice" ? "Single choice" :
           questionType === "multi" ? "Multiple choice" : "Short text";
         return (
-          <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 12px", margin: "8px 0", background: "#f8fafc" }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
+          <div style={{ border: "1px solid var(--color-sjc-line)", borderRadius: 8, padding: "10px 12px", margin: "8px 0", background: "var(--color-sjc-bg-soft)" }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-sjc-ink)" }}>
               {label || "Question"}{required ? " *" : ""}
             </div>
             <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{typeLabel}</div>
@@ -1070,13 +1208,23 @@ export const config: Config<Props, RootProps> = {
         const list = Array.isArray(rows) ? rows : [];
         const initials = (n: string) =>
           (n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+        // The human staff keep a fixed spread of avatar colours on purpose — this block is a
+        // mock of somebody's staff list, and real staff lists don't colour-coordinate.
         const palette = ["#2563eb", "#dc2626", "#9333ea", "#0891b2", "#ca8a04"];
+        // The AI row is the opposite: it is the ONE row this block exists to point at, so it wears
+        // the site's second brand colour and re-skins with everything else.
+        //
+        // ⚠️ It used to be a hardcoded #22c55e (with a matching green tint and pill), which is how
+        // five green dots survived the 2026-08-05 re-skin on a page that had otherwise gone cyan.
+        // A colour baked into a COMPONENT is invisible to a route that rewrites saved DATA.
+        const aiColor = "var(--color-sjc-secondary)";
+        const aiTint = `color-mix(in srgb, ${aiColor} 10%, #fff)`;
         return (
           <div
             style={{
               maxWidth: 720,
               margin: "0 auto",
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-sjc-line)",
               borderRadius: 14,
               overflow: "hidden",
               boxShadow: "0 10px 30px rgba(0,0,0,.08)",
@@ -1094,7 +1242,7 @@ export const config: Config<Props, RootProps> = {
                 background: "#f8fafc",
               }}
             >
-              <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>{businessName || "My Staff"}</span>
+              <span style={{ fontWeight: 700, fontSize: 15, color: "var(--color-sjc-ink)" }}>{businessName || "My Staff"}</span>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>My Staff</span>
             </div>
             <div>
@@ -1107,7 +1255,7 @@ export const config: Config<Props, RootProps> = {
                     gap: 14,
                     padding: "14px 18px",
                     borderTop: i ? "1px solid #f1f3f5" : "none",
-                    background: r.isAI ? "#f0fdf4" : "#fff",
+                    background: r.isAI ? aiTint : "#fff",
                   }}
                 >
                   <div
@@ -1122,22 +1270,22 @@ export const config: Config<Props, RootProps> = {
                       color: "#fff",
                       fontWeight: 700,
                       fontSize: 14,
-                      background: r.isAI ? "#22c55e" : palette[i % palette.length],
+                      background: r.isAI ? aiColor : palette[i % palette.length],
                     }}
                   >
                     {initials(r.name)}
                   </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ fontWeight: 700, color: "#111827", fontSize: 15 }}>{r.name}</span>
+                      <span style={{ fontWeight: 700, color: "var(--color-sjc-ink)", fontSize: 15 }}>{r.name}</span>
                       {r.isAI && (
                         <span
                           style={{
                             fontSize: 11,
                             fontWeight: 700,
-                            color: "#15803d",
-                            background: "#dcfce7",
-                            border: "1px solid #bbf7d0",
+                            color: `color-mix(in srgb, ${aiColor} 75%, #000)`,
+                            background: `color-mix(in srgb, ${aiColor} 18%, #fff)`,
+                            border: `1px solid color-mix(in srgb, ${aiColor} 35%, #fff)`,
                             borderRadius: 999,
                             padding: "2px 8px",
                           }}
@@ -1183,6 +1331,29 @@ export const config: Config<Props, RootProps> = {
           getItemSummary: (i: { label?: string }) => i?.label || "link",
           defaultItemProps: { label: "New link", target: "/" },
         },
+        // Titled columns — "Services", "Company". Every bought design's footer has three or four
+        // and this one had exactly one, headed "More", so reproducing a design meant dumping
+        // fifteen links into a column nobody reads. Empty by default: with no groups the footer
+        // renders exactly as before.
+        groups: {
+          type: "array" as const,
+          label: "Link columns (blank = just the one 'More' list)",
+          getItemSummary: (i: { heading?: string }) => i?.heading || "column",
+          defaultItemProps: { heading: "Services", links: [{ label: "New link", target: "/" }] },
+          arrayFields: {
+            heading: { type: "text" as const, label: "Column heading" },
+            links: {
+              type: "array" as const,
+              label: "Links in this column",
+              getItemSummary: (i: { label?: string }) => i?.label || "link",
+              defaultItemProps: { label: "New link", target: "/" },
+              arrayFields: {
+                label: { type: "text" as const, label: "Label" },
+                target: { type: "text" as const, label: "Links to (page or /#section)" },
+              },
+            },
+          },
+        },
         phone: { type: "text" as const, label: "Phone — raw for Call/Text (e.g. +12108514906)" },
         phoneDisplay: { type: "text" as const, label: "Phone — display (e.g. (210) 851-4906)" },
         email: { type: "text" as const, label: "Email" },
@@ -1215,10 +1386,11 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo }) => (
         <FooterView
           blurb={blurb}
           links={links}
+          groups={groups}
           phone={phone}
           phoneDisplay={phoneDisplay}
           email={email}
@@ -1274,7 +1446,7 @@ export const config: Config<Props, RootProps> = {
             newTab: { ...OPENS_IN_FIELD },
           },
           getItemSummary: (i: { label?: string }) => i?.label || "link",
-          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "#ffffff", newTab: false },
+          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "white", newTab: false },
         },
         ctaLabel: { type: "text" as const, label: "Button label (leave blank to hide)" },
         ctaHref: { type: "text" as const, label: "Button links to" },
@@ -1398,7 +1570,7 @@ export const config: Config<Props, RootProps> = {
         },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", grid: "", gradientTo: "", gradientAngle: 135, content: [] },
+      defaultProps: { background: "white", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", grid: "", gradientTo: "", gradientAngle: 135, content: [] },
       render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, grid, gradientTo, gradientAngle, content: Content }) => (
         <section
           id={typeof id === "string" ? id : undefined}
@@ -1491,10 +1663,10 @@ export const config: Config<Props, RootProps> = {
           ),
         },
       },
-      defaultProps: { color: "#e5e7eb", thickness: 1, spacing: 24 },
+      defaultProps: { color: "line", thickness: 1, spacing: 24 },
       render: ({ color, thickness, spacing }) => (
         <div style={{ padding: `${typeof spacing === "number" ? spacing : 24}px 0` }}>
-          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${resolveColorOr(color, "#e5e7eb")}`, margin: 0 }} />
+          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${resolveColorOr(color, "var(--color-sjc-line)")}`, margin: 0 }} />
         </div>
       ),
     },
@@ -1624,7 +1796,7 @@ export const config: Config<Props, RootProps> = {
           ),
         },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "", highlight: "", highlightColor: "", highlightFade: "" },
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "ink", underline: "", highlight: "", highlightColor: "", highlightFade: "" },
       render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor, highlightFade }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
 
@@ -1690,7 +1862,7 @@ export const config: Config<Props, RootProps> = {
             style={{
               fontSize: `${px}px`,
               textAlign: align,
-              color: resolveColorOr(color, "#111827"),
+              color: resolveColorOr(color, "var(--color-sjc-ink)"),
               marginTop: 0,
               marginBottom: 0,
               paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 0}px`,
@@ -1769,7 +1941,7 @@ export const config: Config<Props, RootProps> = {
         spaceAbove: 16,
         spaceBelow: 0,
         align: "left" as const,
-        color: "#111827",
+        color: "ink",
         pill: "",
         pillBorder: "",
         icon: "",
@@ -1790,7 +1962,7 @@ export const config: Config<Props, RootProps> = {
           return (
             <div
               className="rt leading-relaxed"
-              style={{ textAlign: align, color: resolveColorOr(color, "#111827"), marginTop: 0, marginBottom: 0, ...pad, fontSize: size }}
+              style={{ textAlign: align, color: resolveColorOr(color, "var(--color-sjc-ink)"), marginTop: 0, marginBottom: 0, ...pad, fontSize: size }}
               dangerouslySetInnerHTML={{ __html: text }}
             />
           );
@@ -1802,7 +1974,7 @@ export const config: Config<Props, RootProps> = {
             <span
               className={`inline-flex items-center gap-2 leading-snug${pill || pillBorder ? " rounded-full px-4 py-2" : ""}`}
               style={{
-                color: resolveColorOr(color, "#111827"),
+                color: resolveColorOr(color, "var(--color-sjc-ink)"),
                 background: pill || undefined,
                 border: pillBorder ? `1px solid ${resolveColor(pillBorder)}` : undefined,
                 boxShadow: pill || pillBorder ? "0 1px 2px rgba(0,0,0,0.05)" : undefined,
@@ -1881,7 +2053,7 @@ export const config: Config<Props, RootProps> = {
             </div>
           );
         }
-        const accent = resolveColorOr(color, "#2563eb");
+        const accent = resolveColorOr(color, "var(--color-sjc-blue)");
         const outlined = variant === "outline";
         const justify = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
         return (
@@ -2176,7 +2348,7 @@ export const config: Config<Props, RootProps> = {
                 aspectRatio: shape,
                 overflow: "hidden",
                 borderRadius: radius,
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--color-sjc-line)",
                 boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
               }}
             >
@@ -2205,7 +2377,7 @@ export const config: Config<Props, RootProps> = {
                 maxWidth: maxW,
                 borderRadius: radius,
                 display: "block",
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--color-sjc-line)",
                 boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
                 objectFit: "contain" as const,
               }}
@@ -2297,7 +2469,7 @@ export const config: Config<Props, RootProps> = {
               display: "flex",
               flexDirection: "column",
               gap: "10px",
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-sjc-line)",
             }}
           >
             {(messages || []).map((m: { from: string; text: string }, i: number) => {
@@ -2324,8 +2496,8 @@ export const config: Config<Props, RootProps> = {
                       fontSize: "15px",
                       lineHeight: 1.4,
                       whiteSpace: "pre-wrap" as const,
-                      background: isChloe ? "#2563eb" : "#e5e7eb",
-                      color: isChloe ? "#ffffff" : "#111827",
+                      background: isChloe ? "var(--color-sjc-blue)" : "var(--color-sjc-line)",
+                      color: isChloe ? "var(--color-sjc-white)" : "var(--color-sjc-ink)",
                       borderBottomRightRadius: isChloe ? "5px" : "20px",
                       borderBottomLeftRadius: isChloe ? "20px" : "5px",
                     }}

@@ -40,6 +40,7 @@
 // ⚠️ Redeploying: use Deploy → Manage deployments → edit the EXISTING one. "New deployment"
 // mints a different URL and silently orphans the one stored on the record.
 
+var SCRIPT_VERSION = '9fbfa4fe6656';
 var EMAIL_TO = '';                 // the OWNER's address. Blank = no email, rows still land.
 var TAB_LEADS = 'Leads';
 var TAB_ONBOARDING = 'Onboarding';

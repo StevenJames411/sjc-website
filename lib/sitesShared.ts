@@ -77,6 +77,22 @@ export type Site = {
    */
   leadEmail?: string;
   /**
+   * WHAT ADDRESS THE OWNER'S ALERT IS SENT *FROM* — the part after the @.
+   *
+   * Almost always blank, and blank is correct: it falls back to LEAD_FROM, then to the one
+   * verified sending domain. What the client actually reads in his inbox is the DISPLAY NAME,
+   * which is already his own business name (see leadDelivery.ts) — so one domain serves every
+   * client without any of them seeing another's brand.
+   *
+   * ⚠️ THE DOMAIN HERE MUST BE VERIFIED IN RESEND OR THE SEND FAILS OUTRIGHT. This exists so a
+   * site belonging to a DIFFERENT brand (Consulting, Barchetti) can send under its own domain
+   * once that domain is verified — a field to fill instead of a code change. Resend's free plan
+   * holds exactly one domain, so today there is only one legal value and this stays empty.
+   *
+   * There is deliberately no UI field for it yet; adding one is cheap when a second brand needs it.
+   */
+  leadFrom?: string;
+  /**
    * THIS CLIENT'S OWN GOOGLE SHEET — its spreadsheet id.
    *
    * Each client gets one sheet, which Steven owns and shares with them view-only: their leads on

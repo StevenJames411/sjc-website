@@ -71,13 +71,19 @@ export function createClientSheet(businessName: string, shareWith?: string) {
   });
 }
 
-/** Write one row into a client's sheet. `tab` is "Leads" or "Onboarding". */
+/**
+ * Write one row into a sheet.
+ *
+ * ⚠️ "Payments" IS SJC'S OWN SHEET, NEVER A CLIENT'S. Leads and Onboarding belong in her
+ * spreadsheet; what Steven gets paid does not. One business = one sheet is what keeps his revenue
+ * out of a document he shares with customers. lib/payments.ts is the only caller that uses it.
+ */
 export function writeSheetRow(opts: {
   spreadsheetId: string;
-  tab: "Leads" | "Onboarding";
+  tab: "Leads" | "Onboarding" | "Payments";
   answers: { key: string; label: string; value: string }[];
   submittedAt?: string;
-  /** Who gets the "new enquiry" email. Leads only — onboarding never emails. */
+  /** Who gets the "new enquiry" email. Leads only — onboarding and payments never email. */
   notifyEmail?: string;
 }) {
   return call<{ tab: string; row: number }>("write", opts);

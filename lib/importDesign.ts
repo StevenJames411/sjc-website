@@ -16,7 +16,13 @@
 // by hand.
 
 import type { Data } from "@measured/puck";
-import { splitSections, tokenizeSection, inlineLucideIcons, paddingOf } from "./designHtml";
+import {
+  splitSections,
+  tokenizeSection,
+  inlineLucideIcons,
+  paddingOf,
+  modernizeOpacityUtilities,
+} from "./designHtml";
 import { compileDesignCss } from "./designCss";
 import { nearestFont, type BrandFont } from "./brandShared";
 
@@ -109,8 +115,12 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
   // Icons first. A generated page ships empty <i data-lucide="…"> tags that a CDN script fills in
   // at runtime; we strip that script, so without this every icon in the design just never appears.
   const icons = await inlineLucideIcons(html);
-  const withIcons = icons.html;
+  const withIcons = modernizeOpacityUtilities(icons.html);
   report.push(`${icons.inlined} icons inlined`);
+  // Count what got rewritten so a design full of v3 opacity classes says so out loud rather than
+  // shipping a page whose translucent panels are all solid. See modernizeOpacityUtilities().
+  const deadOpacity = (icons.html.match(/-opacity-\d+/g) || []).length;
+  if (deadOpacity) report.push(`${deadOpacity} Tailwind v3 opacity classes rewritten for v4`);
   // Named out loud: a page missing a few icons still looks finished, so silence here reads as
   // success. Brand marks (github, twitter…) are the usual cause — lucide dropped them.
   if (icons.missing.length) report.push(`⚠️ icons not found: ${icons.missing.join(", ")}`);

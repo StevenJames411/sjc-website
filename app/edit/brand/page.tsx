@@ -6,19 +6,36 @@ import { useNavTitle } from "@/components/edit/navContext";
 // The one screen that sets a whole site's look. Font + colors, once, and every page follows.
 // Plain English labels on purpose — this gets used per client, not per developer.
 
+// ⚠️ EVERY COLOUR IN `Brand` HAS TO APPEAR HERE, OR IT BECOMES UNCHANGEABLE.
+//
+// This list used to hold nine of the twelve. `secondary`, `highlight` and `bandDarker` existed in
+// the type, were emitted as CSS variables, and were used by real pages — with no field anywhere to
+// edit them. On 2026-08-05 that stranded SJC mid-re-skin: the palette went cyan, the buttons and
+// bands followed, and every headline stayed green because it reads --color-sjc-secondary and
+// nothing on this screen could reach it. It looked like a stuck value on the block; it was a
+// control that had never been built.
+//
+// A missing swatch is worse than an ugly one. Add a colour to `Brand`, add it here.
 const SWATCHES: { key: keyof Brand; label: string; help: string }[] = [
   { key: "accent",     label: "Accent",            help: "Links, small labels, number badges — the brand colour" },
   { key: "accentHover",label: "Accent (hover)",    help: "Slightly darker version of the accent" },
+  { key: "secondary",  label: "Second accent",     help: "The other brand colour — confirmations, 'open now', the softer button. On SJC this is the green in the headlines." },
+  { key: "highlight",  label: "Highlight",         help: "Warm third accent — star ratings, underline swipes, small emphasis" },
   { key: "ink",        label: "Headline text",     help: "Headings and dark body text" },
   { key: "mute",       label: "Body text",         help: "Paragraphs and supporting copy" },
   { key: "line",       label: "Lines & borders",   help: "Hairlines, card edges, dividers" },
   { key: "bandSoft",   label: "Light band",        help: "Background of the pale sections" },
   { key: "bandDark",   label: "Dark band",         help: "Background of the dark sections" },
+  { key: "bandDarker", label: "Dark band (deeper)",help: "The second, darker tone — a design usually has two, and collapsing them flattens the page" },
+  { key: "bandHeader", label: "Header bar",         help: "The bar across the top, on its own. Blank means it follows the deeper dark band." },
   { key: "cta",        label: "Button",            help: "The main call-to-action button" },
   { key: "ctaHover",   label: "Button (hover)",    help: "Button colour on hover" },
 ];
 
-export default function BrandEditor() {
+export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: string; siteLabel?: string } = {}) {
+  // Blank = SJC, which is what /edit/brand has always meant. A client site passes its own id and
+  // the same screen edits that site's palette instead — the route was the only thing missing.
+  const q = siteId ? `?site=${encodeURIComponent(siteId)}` : "";
   // Whatever this screen is called in the rail — see components/edit/navContext.tsx.
   const title = useNavTitle("brand");
   const [brand, setBrand] = useState<Brand | null>(null);
@@ -29,7 +46,7 @@ export default function BrandEditor() {
   const [armed, setArmed] = useState(false);
 
   useEffect(() => {
-    fetch("/api/brand")
+    fetch(`/api/brand${q}`)
       .then((r) => r.json())
       .then((d) => setBrand(d.brand))
       .catch(() => setBrand(BRAND_DEFAULTS));
@@ -43,7 +60,7 @@ export default function BrandEditor() {
     setSaving(true); setMsg(null);
     const r = await fetch("/api/brand", {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brand }),
+      body: JSON.stringify({ brand, site: siteId || undefined }),
     }).then((x) => x.json()).catch((e) => ({ ok: false, error: String(e) }));
     setSaving(false);
     setMsg(r.ok ? { good: true, text: "Saved. Not live yet — hit Publish." } : { text: r.error || "Save failed" });
@@ -54,7 +71,7 @@ export default function BrandEditor() {
     setSaving(true); setMsg(null);
     const r = await fetch("/api/brand", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action }),
+      body: JSON.stringify({ action, site: siteId || undefined }),
     }).then((x) => x.json()).catch((e) => ({ ok: false, error: String(e) }));
     setSaving(false);
     if (r.brand) setBrand(r.brand);
@@ -68,6 +85,11 @@ export default function BrandEditor() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="text-2xl font-bold text-[color:var(--color-sjc-ink)]">{title}</h1>
+      {/* WHOSE colours these are. Without it the screen looks identical for every website and the
+          only way to know which one you are about to repaint is the address bar. */}
+      {siteLabel ? (
+        <p className="mt-1 text-sm font-semibold text-[color:var(--color-sjc-blue)]">{siteLabel}</p>
+      ) : null}
       <p className="mt-2 text-[color:var(--color-sjc-mute)]">
         Set the font and colours once. Every page on this site follows them — you never set a
         colour on an individual block again. Changes are saved as a draft; nothing reaches the

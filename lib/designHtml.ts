@@ -73,6 +73,69 @@ const TEXT_SKIP = new Set(["script", "style", "svg", "path", "noscript"]);
 
 const clean = (s: string) => String(s || "").replace(/\s+/g, " ").trim();
 
+// ── TAILWIND v3 OPACITY UTILITIES DIE SILENTLY UNDER v4 ───────────────────────────────────────
+// The design tools emit v3 syntax — `bg-white bg-opacity-10` — and lib/designCss.ts compiles with
+// v4, which replaced that whole family with a slash modifier (`bg-white/10`). v4 doesn't error on
+// an unknown utility, it just emits nothing, so the class silently renders at FULL opacity.
+//
+// That is not a subtle shift. On Pecan Ridge it turned three translucent social buttons into
+// solid white blocks with white icons on them (invisible), and four 20%-white icon tiles into
+// glaring white slabs on a blue band. 24 dead classes across the two demos, none of them
+// reported by anything, because a class that compiles to nothing looks exactly like a class the
+// designer never wrote.
+//
+// Rewritten here, BEFORE tokenizing and before compiling, so the stored markup and the compiled
+// stylesheet agree. ⚠️ It cannot retro-fix a site already imported: that stylesheet is compiled
+// and stored. Existing sites need the inline-style patch instead.
+const OPACITY_FAMILIES = "bg|text|border|divide|ring|placeholder|from|via|to";
+const OPACITY_CLASS = new RegExp(`^((?:[\\w-]+:)*)(${OPACITY_FAMILIES})-opacity-(\\d+)$`);
+
+// ⚠️ THE BASE HAS TO BE A *COLOUR*, NOT JUST THE SAME PREFIX. `border-t border-white
+// border-opacity-20` matches `border-t` first on a naive prefix test, and produced the nonsense
+// `border-t/20` while leaving `border-white` opaque. So a candidate only counts if what follows
+// the family reads like a colour: a bare keyword, an arbitrary value, or a name-shade pair.
+const COLOUR_VALUE = /^(inherit|current|transparent|black|white|\[[^\]]*\]|[a-z]+-\d{2,3})$/;
+
+/** Rewrite `X-opacity-N` pairs to v4's `X/N` slash modifier, in every class attribute. */
+export function modernizeOpacityUtilities(html: string): string {
+  return String(html || "").replace(/\bclass="([^"]*)"/g, (whole, value: string) => {
+    if (!value.includes("-opacity-")) return whole;
+    const tokens = value.split(/\s+/).filter(Boolean);
+    const drop = new Set<number>();
+    const add: string[] = [];
+
+    tokens.forEach((tok, i) => {
+      const m = tok.match(OPACITY_CLASS);
+      if (!m) return;
+      const [, variant, family, amount] = m;
+      const baseOf = (want: string) =>
+        tokens.findIndex((t, j) => {
+          if (j === i || drop.has(j) || t.includes("/")) return false;
+          const head = `${want}${family}-`;
+          return t.startsWith(head) && COLOUR_VALUE.test(t.slice(head.length));
+        });
+
+      // The utility is dead under v4 either way, so it always goes.
+      drop.add(i);
+
+      const same = baseOf(variant);
+      if (same >= 0) {
+        tokens[same] = `${tokens[same]}/${amount}`;
+        return;
+      }
+      // ⚠️ A variant-only opacity (`hover:bg-opacity-90` over a plain `bg-[var(--accent)]`) must
+      // ADD a hover token, never rewrite the base — mutating it in place deleted the normal-state
+      // background entirely and the button rendered transparent until you moused over it.
+      if (!variant) return;
+      const plain = baseOf("");
+      if (plain >= 0) add.push(`${variant}${tokens[plain]}/${amount}`);
+    });
+
+    const out = [...tokens.filter((_, i) => !drop.has(i)), ...add].join(" ");
+    return `class="${out}"`;
+  });
+}
+
 /** "PhoneCall" / "phone_call" -> "phone-call" — lucide's own per-icon module filename. */
 const kebab = (name: string) =>
   String(name || "")
@@ -224,11 +287,46 @@ export function tokenizeSection(html: string): {
   const images: DesignImage[] = [];
   const links: DesignLink[] = [];
 
-  const walk = (node: Node) => {
+  // ── A NAV EXISTS TWICE, AND USED TO EDIT ONCE ────────────────────────────────────────────────
+  //
+  // Every responsive design ships its menu twice: the row across the top, and the stack that
+  // opens behind the burger on a phone. Same links, different markup. Tokenising walked them as
+  // two unrelated sets, so "Services" appeared as two rows in the editor with nothing saying
+  // which was which.
+  //
+  // The failure was one-sided and invisible on a laptop: delete the row for the desktop copy and
+  // the link disappears from the page you're looking at — and stays on every phone. You cannot
+  // see it unless you pick up a phone, which is exactly where a contractor's customers are.
+  //
+  // Identical links (same destination, same words) now share ONE key, so one row drives both
+  // copies: rename it once, both change; delete it once, both go.
+  //
+  // ⚠️ THE TEXT KEYS HAVE TO BE PAIRED TOO, not just the destination. The link's words are a
+  // separate token from its href — pairing only the href would leave the destinations in step
+  // while the two labels drifted apart, which is worse than the bug it replaced.
+  //
+  // ⚠️ Scoped to ONE section, and to links that match on BOTH destination and words. Two buttons
+  // reading "Get Free Quote" that both point at /contact genuinely are the same button, and
+  // editing them together is what anyone would expect.
+  const linkSig = new Map<string, { key: string; textKeys: string[] }>();
+
+  /**
+   * @param reuse when walking the second copy of a paired link, the text keys the FIRST copy
+   *              created, in order — popped as each text node is met so both copies point at the
+   *              same editable row instead of minting new ones.
+   */
+  const walk = (node: Node, reuse?: string[]) => {
     for (const child of [...node.childNodes]) {
       if (child.nodeType === NodeType.TEXT_NODE) {
         const raw = child.rawText;
         if (!raw || !raw.trim()) continue;
+        // Second copy of a paired link: point at the first copy's row, add no new one.
+        if (reuse && reuse.length) {
+          const shared = reuse.shift() as string;
+          const [, lead0 = "", , trail0 = ""] = raw.match(/^(\s*)([\s\S]*?)(\s*)$/) || [];
+          child.rawText = `${lead0}{{t:${shared}}}${trail0}`;
+          continue;
+        }
         const parent = node instanceof HTMLElement ? node : null;
         if (parent && TEXT_SKIP.has(parent.rawTagName?.toLowerCase() || "")) continue;
         const key = `t${text.length + 1}`;
@@ -253,6 +351,17 @@ export function tokenizeSection(html: string): {
         if (child.rawTagName?.toLowerCase() === "a") {
           const href = child.getAttribute("href") || "";
           if (href) {
+            // Same destination AND same words = the desktop and mobile copies of one link.
+            const sig = `${href.trim()}||${clean(child.text)}`;
+            const paired = linkSig.get(sig);
+            if (paired) {
+              child.setAttribute("href", `{{h:${paired.key}}}`);
+              child.setAttribute("data-sjc-link", paired.key);
+              // Walk this copy handing it the first copy's text keys, then move on — no new rows.
+              walk(child, [...paired.textKeys]);
+              continue;
+            }
+
             const key = `h${links.length + 1}`;
             // An icon-only link has no text, so the list would read "Link 1, Link 2, Link 3"
             // and you'd have to guess which social button you were editing. aria-label is what
@@ -272,6 +381,14 @@ export function tokenizeSection(html: string): {
             // marker, deleting a row only blanked the destination and the link stayed on the
             // page pointing nowhere — five dead social icons you couldn't get rid of.
             child.setAttribute("data-sjc-link", key);
+
+            // Walk it now and record which text rows it created, so the mobile copy can reuse
+            // exactly those, in order. Snapshotting around the walk handles a link that holds
+            // more than one text node — an icon plus a label is the common case.
+            const before = text.length;
+            walk(child);
+            linkSig.set(sig, { key, textKeys: text.slice(before).map((t) => t.key) });
+            continue;
           }
         }
         if (child.rawTagName?.toLowerCase() === "img") {
@@ -285,7 +402,10 @@ export function tokenizeSection(html: string): {
             child.setAttribute("data-sjc-img", key);
           }
         }
-        walk(child);
+        // `reuse` is passed down, not dropped: a nav link is usually <a><span>Services</span></a>,
+        // so the text node lives one level below the <a> that was paired. Without threading it
+        // here the mobile copy minted a fresh row and the pairing did nothing at all.
+        walk(child, reuse);
       }
     }
   };
@@ -364,6 +484,66 @@ export function paddingOf(sectionHtml: string): { top: number | null; bottom: nu
   return { top: pt ?? py, bottom: pb ?? py };
 }
 
+/** Element children, skipping text nodes and anything that can't be a band. */
+function elementKids(el: HTMLElement): HTMLElement[] {
+  return el.childNodes.filter(
+    (n): n is HTMLElement =>
+      n instanceof HTMLElement && !!n.rawTagName && n.rawTagName.toLowerCase() !== "script"
+  );
+}
+
+const HEADING = /<h[1-4]\b/i;
+
+/**
+ * Split ONE oversized block into the bands hiding inside it.
+ *
+ * ── THE CASE THIS EXISTS FOR ─────────────────────────────────────────────────────────────────
+ * The top-level pass cuts on the design's own `<section>` boundaries, which works when whoever
+ * built it used them — the studio home page splits into seven. The portfolio page didn't: hero,
+ * builds grid, banner and two more bands all shipped inside a SINGLE `<section class="pf">`.
+ * Splitting found one block, correctly, and there was nothing to reorder or delete. Nine
+ * headings, one block.
+ *
+ * ⚠️ THE WRAPPER IS CLONED ONTO EVERY PIECE, and that is the whole reason this is safe. `.pf`
+ * carries the dark background and the white text for everything inside it. Lifting the five
+ * children out and dropping the wrapper would give five correctly-separated bands of black text
+ * on white — layout intact, design destroyed. Each piece keeps the wrapper.
+ *
+ * ⚠️ ONLY ON A CLEAR MULTI-BAND BLOCK: three or more children that EACH carry a heading of their
+ * own. A services section is `[h2, p, div.grid]` — one child with a heading, two without — so it
+ * fails the test and stays whole, which is right. Cutting a section into its heading, its
+ * paragraph and its card grid is worse than not cutting it at all.
+ *
+ * Returns null when the block should be left alone, which is the common case.
+ */
+export function explodeBands(block: string): string[] | null {
+  const root = parse(block, { comment: false });
+  const el = root.childNodes.find((n): n is HTMLElement => n instanceof HTMLElement);
+  if (!el || !el.rawTagName) return null;
+
+  const kids = elementKids(el);
+  // A <style> inside the wrapper defines the classes every band below it uses, so it rides along
+  // with each piece rather than staying with whichever band happened to contain it.
+  const styles = kids.filter((k) => k.rawTagName.toLowerCase() === "style");
+  const bands = kids.filter((k) => k.rawTagName.toLowerCase() !== "style");
+
+  const withHeading = bands.filter((b) => HEADING.test(b.toString()));
+  if (bands.length < 3 || withHeading.length < 3) return null;
+
+  const tag = el.rawTagName;
+  const styleHtml = styles.map((s) => s.toString()).join("");
+  const attrs = (el.rawAttrs || "").trim();
+  // Drop `id` after the first piece. The wrapper's id would otherwise repeat on every band, and
+  // a duplicated id silently breaks in-page anchor links — the same class of failure as the bare
+  // `#anchor` hrefs that died the day a second page existed.
+  const attrsNoId = attrs.replace(/\s*\bid\s*=\s*("[^"]*"|'[^']*'|\S+)/i, "").trim();
+
+  return bands.map((b, i) => {
+    const a = i === 0 ? attrs : attrsNoId;
+    return `<${tag}${a ? " " + a : ""}>${styleHtml}${b.toString()}</${tag}>`;
+  });
+}
+
 export function splitSections(html: string): string[] {
   const root = parse(String(html || ""), { comment: false });
 
@@ -382,7 +562,12 @@ export function splitSections(html: string): string[] {
     if (!(el instanceof HTMLElement)) continue;
     const tag = el.rawTagName?.toLowerCase();
     if (!tag || tag === "script" || tag === "style") continue;
-    out.push(el.toString());
+    const block = el.toString();
+    // One extra level, and only where the block is obviously several bands in a trench coat.
+    // Deliberately not recursive: a second pass would start cutting card grids into cards.
+    const bands = explodeBands(block);
+    if (bands) out.push(...bands);
+    else out.push(block);
   }
   return out;
 }

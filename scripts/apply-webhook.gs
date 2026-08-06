@@ -16,8 +16,25 @@
 // tab, created the first time one comes in. Nothing existing is moved or
 // touched — "New-Client" keeps its history exactly as it stands.
 
-var EMAIL_TO = 'steven@stevenbarchetti.com';
+var SCRIPT_VERSION = '135e84b24148';
 var FALLBACK_TAB = 'Leads';
+var TZ = 'America/Chicago';
+
+/**
+ * The timestamp as READABLE TEXT — "8/5/2026  4:47 PM" — not a date value.
+ *
+ * ⚠️ Deliberately dumb. Writing a real Date and applying a number format deployed fine, ran to
+ * "Completed", and still left raw ISO in the sheet on 2026-08-05 — the format never landed on the
+ * cell the value went into. Formatting the string here removes every moving part: no Date object,
+ * no number format, no row or column arithmetic. What is written is what is displayed.
+ *
+ * Identical to sjc-sheets.gs on purpose. Change one, change both.
+ */
+function readableTime_(iso) {
+  var d = iso ? new Date(iso) : new Date();
+  if (isNaN(d.getTime())) return String(iso || '');
+  return Utilities.formatDate(d, TZ, 'M/d/yyyy  h:mm a');
+}
 
 function doPost(e) {
   try {
@@ -26,7 +43,9 @@ function doPost(e) {
     var sheet = sheetFor(data, answers);
 
     // Everything to write, timestamp first. Each item carries a stable key + a display label.
-    var items = [{ key: '__time__', label: 'Time', value: data.submittedAt || new Date() }];
+    //
+    // Readable text, not a date value — see readableTime_ for why this is deliberately dumb.
+    var items = [{ key: '__time__', label: 'Time', value: readableTime_(data.submittedAt) }];
     answers.forEach(function (a) {
       items.push({ key: String(a.key || a.label), label: String(a.label || ''), value: a.value });
     });
@@ -74,7 +93,16 @@ function doPost(e) {
     sheet.appendRow(row);
     if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
 
-    notify(sheet.getName(), items);
+    // ⚠️ NO EMAIL FROM HERE. Resend owns the alert — see lib/leadDelivery.ts.
+    //
+    // This used to MailApp.sendEmail on every lead, from Steven's own Google account, subject
+    // "New lead — <tab name>". Two problems. It cannot carry reply-to, so hitting reply reached
+    // Steven rather than the person who filled the form. And its subject was named after whichever
+    // tab the routing picked, so the day the routing broke it announced the wrong offer.
+    //
+    // It stayed switched on until 2026-08-05 only because SJC's own /apply and podcast forms had
+    // no Resend address; deleting it sooner would have made those two forms silent. The Consulting
+    // site now has leadEmail set, so Resend covers all three and this is pure duplication.
     return reply('ok');
   } catch (err) {
     // Returned in the BODY on purpose — Apps Script sends HTTP 200 even when it throws, so the
@@ -84,9 +112,15 @@ function doPost(e) {
   }
 }
 
-/** Health check — open the web-app URL in a browser and it should say ok. */
+/**
+ * Health check — open the web-app URL in a browser and it should say ok.
+ *
+ * Reports SCRIPT_VERSION so /api/admin/check-scripts can tell whether the LIVE script matches the
+ * file in this repo. Nothing else connects the two: a paste that never happened looks exactly like
+ * one that did, which cost most of 2026-08-05 twice over.
+ */
 function doGet() {
-  return reply('ok — apply-webhook is deployed');
+  return reply('ok — apply-webhook is deployed — version ' + SCRIPT_VERSION);
 }
 
 function reply(text) {
@@ -129,12 +163,27 @@ function sheetFor(data, answers) {
     if (k === 'source') { source = String(answers[i].value || ''); break; }
   }
   var s = source.toLowerCase();
-  var site = String(data.site || '');
-  var isClientSite = site && site.toLowerCase().indexOf('steven james') === -1;
 
-  var name = TAB_AI; // the default, because /apply sends no source at all
-  if (s.indexOf('website') !== -1 || isClientSite) name = TAB_WEBSITE;
+  // ⚠️ NEVER ROUTE ON THE BUSINESS NAME. THAT IS THE BUG THIS REPLACED (2026-08-05).
+  //
+  // The old test was `isClientSite = site.indexOf('steven james') === -1`, written when "Steven
+  // James" meant only Consulting. The moment stevenjamesdesigns.com existed, Steven's OWN studio
+  // site matched that string, isClientSite went false, and its source ("imported design — contact
+  // section") matched neither 'website' nor 'guest' — so every enquiry from the studio fell
+  // through to the AI Implementation default. It landed under headers it doesn't fit (First name
+  // / Last name / Cell phone) and emailed a subject line naming the wrong offer.
+  //
+  // A brand name is not an identity, and renaming a company must never re-route its leads. Route
+  // on what the FORM says about itself:
+  //   no source at all  -> /apply, the discovery intake. It has never sent one; that IS its tell.
+  //   guest / podcast   -> the podcast form.
+  //   anything else     -> a website enquiry. Website Offer is the safe catch-all: a misfiled
+  //                        website lead is obvious and recoverable, while one filed under the
+  //                        discovery headers is silently mis-columned.
+  var name;
+  if (!s) name = TAB_AI;
   else if (s.indexOf('guest') !== -1 || s.indexOf('podcast') !== -1) name = TAB_PODCAST;
+  else name = TAB_WEBSITE;
 
   var sheet = ss.getSheetByName(name);
   if (!sheet) {
@@ -144,14 +193,4 @@ function sheetFor(data, answers) {
   return sheet;
 }
 
-function notify(tabName, items) {
-  var lines = [];
-  for (var i = 0; i < items.length; i++) {
-    if (String(items[i].value || '').trim()) lines.push(items[i].label + ': ' + items[i].value);
-  }
-  MailApp.sendEmail({
-    to: EMAIL_TO,
-    subject: 'New lead — ' + tabName,
-    body: lines.join('\n') + '\n\nTab: ' + tabName,
-  });
-}
+

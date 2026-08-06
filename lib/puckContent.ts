@@ -9,6 +9,7 @@ import type { Data } from "@measured/puck";
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
 import { siteKeys, SJC } from "./siteKeys";
+import { readPages } from "./pageRegistry";
 
 /**
  * A page's storage key.
@@ -16,7 +17,7 @@ import { siteKeys, SJC } from "./siteKeys";
  * `siteId` defaults to SJC so the pre-existing callers that only ever knew about one website keep
  * working untouched. New code should always pass it explicitly.
  */
-export const puckKey = (page: string, pub = false, siteId: string = SJC) =>
+export const puckKey = (page: string, pub = false, siteId: string) =>
   siteKeys(siteId).puck(page, pub);
 
 /**
@@ -43,7 +44,7 @@ async function previewRequested(): Promise<boolean> {
   }
 }
 
-export async function readPuckPublished(page: string, siteId: string = SJC): Promise<Data | null> {
+export async function readPuckPublished(page: string, siteId: string): Promise<Data | null> {
   // Owner previewing: serve the working draft through the real public template. Falls back to the
   // published copy when no draft exists, so preview never renders a blank page.
   if (await previewRequested()) {
@@ -56,7 +57,7 @@ export async function readPuckPublished(page: string, siteId: string = SJC): Pro
 }
 
 /** The working draft — the editor's copy, never served to the public. */
-export async function readPuckDraft(page: string, siteId: string = SJC): Promise<Data | null> {
+export async function readPuckDraft(page: string, siteId: string): Promise<Data | null> {
   const store = createKvStore(getClient(), puckKey(page, false, siteId));
   return (await store.read<Data>()) || null;
 }
@@ -69,17 +70,40 @@ export async function readPuckDraft(page: string, siteId: string = SJC): Promise
  * has to go live with the page it belongs to, or a published page would suddenly be wearing a
  * stylesheet nobody approved.
  */
-export async function readDesignCss(page: string, siteId: string = SJC): Promise<string> {
-  const read = async (pub: boolean) => {
-    const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, pub));
+export async function readDesignCss(page: string, siteId: string): Promise<string> {
+  const read = async (slug: string, pub: boolean) => {
+    const store = createKvStore(getClient(), siteKeys(siteId).designCss(slug, pub));
     const v = await store.read<{ css?: string }>();
     return (v && typeof v.css === "string" ? v.css : "") || "";
   };
-  if (await previewRequested()) {
-    const draft = await read(false);
-    if (draft) return draft;
+  const own = async () => {
+    if (await previewRequested()) {
+      const draft = await read(page, false);
+      if (draft) return draft;
+    }
+    return read(page, true);
+  };
+
+  const mine = await own();
+  if (mine) return mine;
+
+  // ── WHY A BOUGHT DESIGN COULD ONLY EVER BE ONE PAGE ───────────────────────────────────────
+  // The stylesheet is compiled AT IMPORT and stored per page. An import creates exactly one page,
+  // so page two has no stylesheet — and since the header and footer are sections of that design,
+  // a second page rendered with its nav and footer completely unstyled. Nobody added one twice.
+  //
+  // Every page of one bought design shares that design's CSS, so falling back to a sibling's is
+  // correct rather than a patch: the rules are all scoped under .sjc-design and keyed off classes
+  // in the markup, so a sibling's sheet styles this page's header and footer identically.
+  //
+  // Only reached when the page has none of its own, so an imported page keeps using exactly the
+  // stylesheet it was compiled with.
+  for (const p of await readPages(siteId)) {
+    if (p.slug === page) continue;
+    const sibling = await read(p.slug, true);
+    if (sibling) return sibling;
   }
-  return read(true);
+  return "";
 }
 
 /**
@@ -89,7 +113,7 @@ export async function readDesignCss(page: string, siteId: string = SJC): Promise
  * in an API request, so it would read the PUBLISHED key — the very key publish is about to write.
  * Publishing would then copy the old (usually empty) stylesheet over itself and report success.
  */
-export async function readDesignCssDraft(page: string, siteId: string = SJC): Promise<string> {
+export async function readDesignCssDraft(page: string, siteId: string): Promise<string> {
   const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, false));
   const v = await store.read<{ css?: string }>();
   return (v && typeof v.css === "string" ? v.css : "") || "";
@@ -100,7 +124,7 @@ export async function writeDesignCss(
   page: string,
   css: string,
   pub = false,
-  siteId: string = SJC
+  siteId: string
 ): Promise<boolean> {
   const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, pub));
   return store.write({ css: String(css || "") });

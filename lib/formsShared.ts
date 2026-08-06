@@ -5,15 +5,22 @@
 // client into the browser bundle.
 //
 // ── WHAT A FORM IS HERE, AND WHAT IT DELIBERATELY IS NOT ──────────────────────────────────────
-// A Form is a REUSABLE SET OF QUESTIONS. That is all. It is a starting point you copy onto a
-// website, not a live dependency that website keeps pointing at.
+// A Form is a REUSABLE SET OF QUESTIONS, and a page POINTS AT one rather than holding a copy.
 //
-// The alternative — a website links to a form and resolves it at render — was rejected on
-// purpose. It buys "fix a typo everywhere in one click" and costs a blast radius: one careless
-// edit changes every client's contact form at once, and deleting a form leaves published pages
-// pointing at nothing. Copying means the worst a bad preset can do is put the wrong questions on
-// ONE page, where you can see it and fix it. At thirty clients, fixing a typo everywhere is
-// thirty clicks, once. That trade is worth it.
+// ⚠️ THIS NOTE USED TO SAY THE OPPOSITE, and said it for months after it stopped being true.
+// Forms were copy-on-use until 2026-08-06, when Steven asked for the live link: *"if I change a
+// question in the form library, whatever's on their website should update."* The resolver is
+// lib/formPointer.ts. Copy-on-use bought a small blast radius and cost the whole point of having
+// a library — you changed the questions in one place and got them in none.
+//
+// ── WHAT A FORM HAS TO BE ABLE TO HOLD ────────────────────────────────────────────────────────
+// Every form Steven actually uses was built its own way, outside this library, because the
+// library couldn't hold what they do. Three things closed that gap (2026-08-06):
+//   `photos`               a question that takes pictures, not words
+//   satisfiedBy            skip a question when the site record already answers it
+//   oneQuestionPerScreen   a long form is a conversation, not a wall
+// None of them are new mechanisms — they are the ones the onboarding form already ran on, moved
+// down here so a form can be edited on a screen instead of in code.
 //
 // ⚠️ THERE IS NO DESTINATION ON THIS RECORD, AND THERE MUST NEVER BE ONE.
 // No email, no spreadsheet id, no webhook, no "notify" toggle. Where a lead goes is a pure
@@ -24,7 +31,40 @@
 // one that ends a retainer and the referral behind it. It is prevented structurally, by the shape
 // of this type, not by anybody remembering to check.
 
-export type FormFieldType = "text" | "tel" | "email" | "url" | "textarea" | "choice";
+import type { Site } from "./sitesShared";
+
+/**
+ * ⚠️ `photos` IS NOT A TEXT BOX AND CANNOT GO ANYWHERE A TEXT BOX CAN.
+ *
+ * It runs the onboarding upload pipeline — HEIC→JPEG, resize, EXIF/GPS strip, hosted under a path
+ * derived from a verified site id, capped per client (lib/imagePrep.ts + app/api/intake/upload).
+ * That route is gated by an onboarding link being open, which a stranger on a client's public
+ * contact page does not have. So a photo question works on an onboarding form and is SKIPPED on a
+ * website's lead form — see FIELD_TYPE_ONBOARDING_ONLY, lib/formPointer.ts, and the warning the
+ * editor puts under the question so it is visible where it is chosen, not just true in code.
+ */
+export type FormFieldType =
+  | "text"
+  | "tel"
+  | "email"
+  | "url"
+  | "textarea"
+  | "choice"
+  | "photos";
+
+/** The single list every writer validates against. An unknown type falls back to `text`. */
+export const FORM_FIELD_TYPES: FormFieldType[] = [
+  "text",
+  "tel",
+  "email",
+  "url",
+  "textarea",
+  "choice",
+  "photos",
+];
+
+/** Types a public website form can't draw. Kept as a set so adding one is a one-line change. */
+export const FIELD_TYPE_ONBOARDING_ONLY: FormFieldType[] = ["photos"];
 
 export type FormField = {
   /**
@@ -43,7 +83,105 @@ export type FormField = {
   options?: string[];
   placeholder?: string;
   required?: boolean;
+  /**
+   * A dotted path on the Site record that ALREADY ANSWERS THIS. If that field has a value, the
+   * question never appears.
+   *
+   * This is the whole prospect-vs-inbound mechanism, and it is why there is ONE form rather than
+   * one for people we scraped and one for people who found us. Prospected off the scrape, her
+   * name, phone and address are already on the record, so she never sees them and it reads as
+   * "he's done his homework." Inbound, the record is empty and those same questions surface. No
+   * branching, no second form, no flag to keep in sync.
+   *
+   * ⚠️ ONLY MEANINGFUL WHERE A SITE RECORD EXISTS — that's onboarding. A stranger filling in a
+   * contact form on a client's website has no record of her own, so nothing is ever skipped there
+   * and every question shows. See questionsToAsk below, which is a no-op with a null site.
+   */
+  satisfiedBy?: string;
+  /**
+   * THE SCREEN THIS QUESTION SITS ON, by its heading. Blank = the first/only screen.
+   *
+   * /apply groups thirteen questions into titled steps ("About your business", "What you've
+   * tried") and moves a step at a time. That is a third layout, not a variant of the other two:
+   * `oneQuestionPerScreen` is one question at a time with no headings, and a flat form is all of
+   * them at once. Consecutive questions sharing a step string are one screen.
+   *
+   * ⚠️ ADDED SO A MIGRATION DOESN'T HAVE TO CHANGE A LIVE FUNNEL'S SHAPE. Moving /apply into the
+   * library was supposed to change WHERE its questions live, nothing else — flattening its steps
+   * on the way past would have been a redesign smuggled in as a refactor.
+   */
+  step?: string;
 };
+
+/**
+ * Is this form plausibly the one this page's questions came from?
+ *
+ * ⚠️ THE GUARD ON LINKING A WIZARD. /apply files each answer under its question's key, and those
+ * keys ARE the columns in the Discovery Intake sheet. Link the page to a form built from some
+ * OTHER page's questions and every column silently starts over — the form still renders, visitors
+ * still apply, and the sheet grows a second set of columns beside the orphaned first.
+ *
+ * Zero keys in common is a mis-pick, not an edit: nobody rewrites all thirteen keys at once. Some
+ * in common is ordinary editing — a question added, one removed — and is allowed through.
+ *
+ * Returns true when there is nothing to compare against, because "no opinion" must not read as
+ * "wrong".
+ */
+export function looksLikeSameForm(formKeys: string[], pageKeys: string[]): boolean {
+  if (!formKeys.length || !pageKeys.length) return true;
+  return formKeys.some((k) => pageKeys.includes(k));
+}
+
+/** The questions of a form, grouped into screens by `step`, in order. */
+export function stepsOf(fields: FormField[]): { title: string; fields: FormField[] }[] {
+  const out: { title: string; fields: FormField[] }[] = [];
+  for (const f of fields || []) {
+    const title = (f.step || "").trim();
+    const last = out[out.length - 1];
+    // Grouped by ADJACENCY, not by collecting every field with the same title. Two separated runs
+    // of "About you" stay two screens — reordering questions in the editor must not silently
+    // teleport one to the other end of the form.
+    if (last && last.title === title) last.fields.push(f);
+    else out.push({ title, fields: [f] });
+  }
+  return out;
+}
+
+/**
+ * What Steven picks from instead of typing `business.phoneDisplay`.
+ *
+ * The paths are real dotted paths into the Site record (lib/sitesShared.ts). Keeping the list here
+ * rather than letting him type one means a typo can't quietly turn "skip if known" into "never
+ * skips" — a wrong path reads as an empty value, which looks exactly like a question that simply
+ * always gets asked. That failure is invisible; a dropdown makes it impossible.
+ */
+export const SATISFIED_BY_CHOICES: { path: string; label: string }[] = [
+  { path: "business.name", label: "Business name" },
+  { path: "business.phoneDisplay", label: "Phone number" },
+  { path: "business.email", label: "Email address" },
+  { path: "business.address", label: "Address" },
+  { path: "business.hours", label: "Opening hours" },
+];
+
+/** Read "business.phoneDisplay" off a Site record. */
+export function valueAtPath(site: Site | null | undefined, path?: string): string {
+  if (!site || !path) return "";
+  const found = path.split(".").reduce<unknown>((acc, k) => {
+    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[k];
+    return undefined;
+  }, site);
+  return typeof found === "string" ? found : "";
+}
+
+/**
+ * The questions this particular business still has to answer.
+ *
+ * Pass `null` for the site and you get every question back — which is the correct answer for a
+ * public form, where there is no record to check against.
+ */
+export function questionsToAsk(fields: FormField[], site: Site | null | undefined): FormField[] {
+  return (fields || []).filter((f) => !valueAtPath(site, f.satisfiedBy));
+}
 
 /** `builtin` records live in code and always exist; `preset` ones are Steven's own. */
 export type FormKind = "builtin" | "preset";
@@ -59,6 +197,42 @@ export type FormDef = {
   note: string;
   successHeading: string;
   successBody: string;
+  /**
+   * ONE QUESTION AT A TIME instead of one long list.
+   *
+   * Fifteen fields on a phone is a wall; one question with a big box is a conversation, and it
+   * makes "where was I" trivial to answer when she comes back to a half-finished form. It earns
+   * its keep on a long form and costs nothing but clicks on a four-question contact form, so it's
+   * off by default and turned on per form.
+   *
+   * ⚠️ A LONG FORM ON ONE SCREEN IS THE VERSION THAT DOESN'T GET FINISHED, and an unfinished
+   * onboarding form is Steven chasing somebody by text. That is what this exists to prevent.
+   */
+  oneQuestionPerScreen?: boolean;
+  /**
+   * A DIFFERENT THANK-YOU FOR CERTAIN ANSWERS — and the whole five-star funnel in one field.
+   *
+   * A review form asks how it went. A happy customer should be sent straight to Google while she
+   * is still holding her phone and still pleased; an unhappy one should not, and telling her
+   * "leave us a review!" is how a bad afternoon becomes a public one-star. Same form, same
+   * questions, two endings.
+   *
+   * ⚠️ IT IS NOT A FILTER ON WHAT GETS COLLECTED. Every answer lands in the client's sheet
+   * whichever ending is shown, including the bad ones — especially the bad ones, which are the
+   * ones an owner needs to see. What changes is only the last screen. Suppressing a review is a
+   * different thing from choosing who gets ASKED for one, and this does the second.
+   */
+  altSuccess?: {
+    /** Which question decides. */
+    fieldId: string;
+    /** The answers that trigger it. Matched exactly, against the stored value. */
+    values: string[];
+    heading: string;
+    body: string;
+    /** Optional button on the thank-you screen — for a review form, the Google review link. */
+    buttonLabel?: string;
+    buttonUrl?: string;
+  };
 };
 
 /**
@@ -169,6 +343,65 @@ export const BUILTIN_FORMS: FormDef[] = [
     successBody: "We'll call you back shortly. Rather talk now? Call {{business.phone}}.",
   },
   {
+    // ── THE REVIEW SURVEY (the five-star funnel) ─────────────────────────────────────────────
+    // A product, not a sample. Copy it per client, paste their Google review link into the
+    // thank-you button, and send the link out after a finished job.
+    //
+    // ⚠️ THE POINT IS THE SPLIT, NOT THE QUESTIONS. Four and five stars land on a thank-you that
+    // sends her to Google while she is still holding her phone and still pleased. One to three
+    // land on a thank-you that says a human will call — because "leave us a review!" to somebody
+    // who just had a bad afternoon is how it becomes a public bad afternoon.
+    //
+    // ⚠️ EVERY ANSWER REACHES THE OWNER'S SHEET EITHER WAY, one-star answers included. Those are
+    // the ones he most needs to read. This chooses who gets ASKED for a public review; it does
+    // not choose what gets collected, and it must never become that.
+    //
+    // ⚠️ NO LIST AND NO SCHEDULE LIVES HERE. Sending the link out is the drip, and a drip holds a
+    // list plus state, which is the never-a-CRM line. This is a form. It is asked, answered and
+    // forgotten, exactly like every other one.
+    id: "review",
+    name: "Review survey",
+    kind: "builtin",
+    description: "After a finished job. Happy customers get sent to Google; unhappy ones get a call.",
+    fields: [
+      {
+        fieldId: "rating",
+        label: "How did we do?",
+        type: "choice",
+        required: true,
+        options: [
+          "★★★★★ Great",
+          "★★★★ Good",
+          "★★★ OK",
+          "★★ Not great",
+          "★ Bad",
+        ],
+      },
+      { fieldId: "message", label: "Anything you'd like to tell us?", type: "textarea" },
+      { fieldId: "name", label: "Your name", type: "text" },
+      { fieldId: "phone", label: "Best phone number", type: "tel" },
+    ],
+    buttonLabel: "Send it",
+    note: "",
+    // The DEFAULT ending is the careful one, so a form copied and never configured does the safe
+    // thing. Being sent to Google is the exception you opt into by being pleased.
+    successHeading: "Thank you — that's really helpful.",
+    successBody:
+      "Someone will give you a call to put it right. If it's urgent, ring {{business.phone}}.",
+    altSuccess: {
+      fieldId: "rating",
+      values: ["★★★★★ Great", "★★★★ Good"],
+      heading: "That's great to hear — thank you.",
+      body:
+        "Would you mind saying that on Google? It takes a minute and it's the single biggest " +
+        "thing that helps people find us.",
+      buttonLabel: "Leave a Google review",
+      // ⚠️ BLANK, AND IT HAS TO BE. A real link here would send every client's customers to
+      // whoever's review page got typed in first. Filled in per client, on the copy.
+      buttonUrl: "",
+    },
+  },
+  {
     id: "callback",
     name: "Call me back",
     kind: "builtin",
@@ -192,4 +425,5 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   url: "Web address",
   textarea: "Long text",
   choice: "Pick one",
+  photos: "Photos",
 };

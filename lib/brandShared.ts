@@ -41,6 +41,19 @@ export type Brand = {
   bandDark: string;    // dark section band
   bandDarker: string;  // the DEEPER dark band — a design routinely has two dark tones, and
                        // collapsing them into one visibly flattens the page
+  /**
+   * The sticky header's own band. A THIRD dark tone, because a site has three.
+   *
+   * ⚠️ THIS EXISTS BECAUSE TWO WASN'T ENOUGH, and the shortage showed up as taste rather than as
+   * a missing feature. On 2026-08-05 the header, the dark page sections and the footer each
+   * wanted a slightly different dark. With two roles, two of them had to share — so every attempt
+   * to tune one dragged the other, and it read as "the picker can't do this" instead of "the
+   * picker is missing a control."
+   *
+   * Blank = follow `bandDarker`, exactly what the header did before this field existed. That
+   * keeps it a do-nothing default, so no brand already saved moves.
+   */
+  bandHeader?: string;
   cta: string;         // button fill
   ctaHover: string;
 };
@@ -64,6 +77,8 @@ export const BRAND_DEFAULTS: Brand = {
   bandSoft: "#f3f4f6",
   bandDark: "#1e3a6e",
   bandDarker: "#0f1f3d",
+  // Blank = the header follows bandDarker, which is what it did before this field existed.
+  bandHeader: "",
   cta: "#22c55e",
   ctaHover: "#16a34a",
 };

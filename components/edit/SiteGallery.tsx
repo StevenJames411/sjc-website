@@ -229,6 +229,21 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                     if (it.status === "closed") return "Onboarding: closed";
                     return `Onboarding: open · ${it.answered} of ${it.asked}`;
                   })()}
+                  {/* ⚠️ CLICKABLE, LIKE THE WEBSITE ADDRESS ABOVE IT. Copy-and-paste-into-a-browser
+                      is a worse way to look at a page than clicking it, and this card already
+                      taught you what a clickable address looks like here — so anything else reads
+                      as plain text. Same link on the form editor, so the two screens can't drift. */}
+                  {intake[s.id]?.status === "open" ? (
+                    <a
+                      href={onboardUrlFor(s)}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ ...cardLink, display: "block", marginTop: 2 }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {`${onboardUrlFor(s).replace(/^https:\/\//, "")} ↗`}
+                    </a>
+                  ) : null}
                 </span>
                 <div style={{ display: "flex", gap: 6 }}>
                   {(intake[s.id]?.answered || 0) > 0 || intake[s.id]?.submitted ? (
@@ -249,7 +264,7 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                         title="Copy her link, ready to text or email"
                         onClick={() => copyLink(s)}
                       >
-                        {copied === s.id ? "Copied" : "Copy link"}
+                        {copied === s.id ? "Address copied" : "Copy her web address"}
                       </button>
                       <button
                         type="button"

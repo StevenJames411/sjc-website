@@ -122,8 +122,40 @@ export type DesignSectionProps = {
   useRealForm?: boolean;
   /** The questions the DESIGN asked, so the swap keeps its intent rather than imposing ours. */
   formFields?: LeadFormField[];
+  /**
+   * A LIVE link to a library form. Set = the library owns these questions and editing it there
+   * updates this section; blank = the section keeps whatever it was imported with.
+   *
+   * ⚠️ NOTHING IN THIS FILE READS IT. lib/formPointer resolves it server-side and fills
+   * `formFields` in before the section is drawn — and it has to fill `formFields`, not `fields`,
+   * which is the exact reason linking a design section was a silent no-op until 2026-08-06: the
+   * pointer was set, the block read the questions it always had, and the page rendered
+   * identically. Nothing looked broken because nothing changed.
+   */
+  formId?: string;
   formButton?: string;
+  /**
+   * WHAT THE CUSTOMER READS AFTER PRESSING SEND.
+   *
+   * ⚠️ These were hardcoded literals in this file until 2026-08-05, and that made them the only
+   * words on an imported design nobody could change — on a product sold as "every word is
+   * editable". Steven hit it on his own site: he wanted different wording and there was no field
+   * to type it in. The same literal is what leaked a raw {{business.phone}} to a real visitor,
+   * because a literal in JSX is never in the saved page data the token resolver walks.
+   *
+   * Blank falls back to the wording below, so nothing changes for a site that never touches them.
+   * Tokens work here — the form fills them at render (LeadForm), not the data walk.
+   */
+  successHeading?: string;
+  successBody?: string;
+  /** Editor only — see fillTokens's `mark`. Never set on a published page. */
+  editing?: boolean;
 };
+
+/** Used when the section leaves them blank. One place, so the fallback can't drift. */
+export const DESIGN_SUCCESS_HEADING = "Got it — thank you.";
+export const DESIGN_SUCCESS_BODY =
+  "We'll be in touch shortly. Rather talk now? Call {{business.phone}}.";
 
 export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   html: "",
@@ -136,7 +168,10 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   hasForm: false,
   useRealForm: true,
   formFields: [],
+  formId: "",
   formButton: "",
+  successHeading: "",
+  successBody: "",
 };
 
 const TOKEN = /\{\{([tih]):([a-z0-9_-]+)\}\}/gi;
@@ -163,7 +198,17 @@ export function fillTokens(
   html: string,
   text: DesignText[] = [],
   images: DesignImage[] = [],
-  links: DesignLink[] = []
+  links: DesignLink[] = [],
+  /**
+   * Editor only. Wraps every filled word in a marked span so a click on the canvas can say WHICH
+   * of forty-odd text rows it was.
+   *
+   * ⚠️ OFF on the published page, deliberately. Wrapping live output would add a span around
+   * every word on every customer's site to serve a control only Steven ever sees — and inline
+   * elements are only *usually* harmless. This way the published markup stays byte-identical to
+   * the import, which is the promise the whole sealed-design approach rests on.
+   */
+  mark = false
 ): string {
   const t = new Map(text.map((r) => [String(r?.key || "").toLowerCase(), r?.value ?? ""]));
   const i = new Map(images.map((r) => [String(r?.key || "").toLowerCase(), r?.src ?? ""]));
@@ -187,7 +232,8 @@ export function fillTokens(
         ["color", row?.color || ""],
         ["font-weight", row?.bold === true ? "700" : row?.bold === false ? "400" : ""],
       ]);
-      if (css) return `<span style="${css}">${raw}</span>`;
+      const attr = mark ? ` data-sjc-text="${id}"` : "";
+      if (css || attr) return `<span${attr}${css ? ` style="${css}"` : ""}>${raw}</span>`;
     }
     return raw;
   });
@@ -323,6 +369,9 @@ export default function DesignSection(props: DesignSectionProps) {
     useRealForm = true,
     formFields,
     formButton,
+    successHeading,
+    successBody,
+    editing,
   } = props;
   if (!html.trim()) return null;
 
@@ -341,7 +390,7 @@ export default function DesignSection(props: DesignSectionProps) {
 
   const filled = injectStyle(
     styleImages(
-      dropRemovedLinks(stripDangerous(fillTokens(html, text, images, links)), links),
+      dropRemovedLinks(stripDangerous(fillTokens(html, text, images, links, editing)), links),
       images
     ),
     decls
@@ -397,8 +446,13 @@ export default function DesignSection(props: DesignSectionProps) {
         // 851-4906." That is Steven's phone number, on a client's website, in the message their
         // customer sees after asking that business to call them back.
         //
-        // The tokens resolve per-site at public render (lib/businessTokens), so this says the
-        // client's number on the client's site. A literal number here is the bug coming back.
+        // What changed on 2026-08-05 is that the words are now PROPS with a fallback, instead of
+        // literals typed here. A literal could not be edited from the builder, which made this the
+        // one piece of an imported design that was genuinely stuck — and it is the piece a
+        // customer reads at the moment they've just handed over their details.
+        //
+        // Tokens are resolved by LeadForm from the site's business facts, not by the saved-data
+        // walk, so {{business.phone}} works whether it arrives as a prop or as this fallback.
         <DesignFormMount
           inColumn
           theme="dark"
@@ -406,8 +460,8 @@ export default function DesignSection(props: DesignSectionProps) {
           buttonLabel={formButton || undefined}
           source="imported design — contact section"
           note=""
-          successHeading="Got it — thank you."
-          successBody="We'll be in touch shortly. Rather talk now? Call {{business.phone}}."
+          successHeading={successHeading?.trim() || DESIGN_SUCCESS_HEADING}
+          successBody={successBody?.trim() || DESIGN_SUCCESS_BODY}
         />
       ) : null}
     </div>

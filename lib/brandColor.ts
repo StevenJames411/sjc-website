@@ -19,7 +19,7 @@
 
 export type BrandRole =
   | "accent" | "secondary" | "highlight" | "ink" | "mute"
-  | "line" | "bandSoft" | "bandDark" | "bandDarker" | "cta" | "white";
+  | "line" | "bandSoft" | "bandDark" | "bandDarker" | "bandHeader" | "cta" | "white";
 
 // Role → the CSS variable it paints from. These variables already exist in globals.css and are
 // overridden per-site by BrandStyle, which is why re-pointing them re-skins everything.
@@ -33,6 +33,7 @@ const ROLE_VAR: Record<BrandRole, string> = {
   bandSoft: "--color-sjc-bg-soft",
   bandDark: "--color-sjc-navy",
   bandDarker: "--color-sjc-navy-deep",
+  bandHeader: "--color-sjc-band-header",
   cta: "--color-sjc-green",
   white: "--color-sjc-white",
 };
@@ -50,6 +51,7 @@ export const ROLE_LABELS: Record<BrandRole, string> = {
   bandSoft: "Soft band",
   bandDark: "Dark band",
   bandDarker: "Darker band",
+  bandHeader: "Header band",
   cta: "Button",
   white: "White",
 };
@@ -86,7 +88,11 @@ export const HEX_TO_ROLE: Record<string, BrandRole> = {
   "#f3f4f6": "bandSoft",
   "#1e3a6e": "bandDark",
   "#0f1f3d": "bandDarker",
-  "#22c55e": "cta",
+  // ⚠️ SECONDARY, NOT CTA. This green was SJC's headline/dot colour; the button was blue. Filing
+  // it under "cta" would tie every green dot to the button, so re-skinning the button would drag
+  // the dots along and the two could never be separated again. (Corrected 2026-08-05, when the
+  // palette moved to cyan and the greens had to be told apart.)
+  "#22c55e": "secondary",
   "#ffffff": "white",
 };
 

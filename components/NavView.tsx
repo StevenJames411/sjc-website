@@ -54,7 +54,8 @@ export default function NavView({
   brandHref = "/",
   brandSize = 16,
   tagline = "Your Native AI Implementation Partner",
-  taglineColor = "#22c55e",
+  // A role, not a hex — a hex default freezes on every nav that never touched the field.
+  taglineColor = "secondary",
   taglineSize = 18,
   links = [],
   ctaLabel = "See How It Works",
@@ -70,9 +71,18 @@ export default function NavView({
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
 
-  // Existing nav documents have none of these saved → undefined → the old hardcoded values.
-  const bg = background || "#1e3a6e";
-  const fg = foreground || "#ffffff";
+  // Existing nav documents have none of these saved → undefined → these defaults.
+  //
+  // ⚠️ ROLES. #1e3a6e was the last thing on the page a palette change couldn't reach: the site
+  // went near-black cyan on 2026-08-05 and the header stayed royal navy, sitting on top of every
+  // page announcing the old brand.
+  //
+  // bandHEADER — the bar's own dial, and blank on that role falls back to bandDarker, which is
+  // what the header used before the role existed. Three dark surfaces (this bar, the dark page
+  // sections, the footer) wanted three different darks; with only two roles, two of them had to
+  // share, and every attempt to tune one dragged the other.
+  const bg = background || "bandHeader";
+  const fg = foreground || "white";
   const logoOn = showLogo !== false;
 
   const Brand = (
@@ -94,14 +104,26 @@ export default function NavView({
   const Tagline = tagline ? (
     <span
       className="whitespace-nowrap font-semibold tracking-tight"
-      style={{ color: resolveColorOr(taglineColor, "#22c55e"), fontSize: `${taglineSize || 18}px` }}
+      style={{ color: resolveColorOr(taglineColor, "var(--color-sjc-secondary)"), fontSize: `${taglineSize || 18}px` }}
     >
       {tagline}
     </span>
   ) : null;
 
   return (
-    <header className="sticky top-0 z-20 w-full" style={{ backgroundColor: resolveColor(bg) }}>
+    // OPAQUE. It was briefly translucent + blurred, copying the Designs site's bar — and that is a
+    // DARK-PAGE trick. Designs is dark top to bottom, so its header sits on the same tone the
+    // whole scroll and never changes. This site goes white below the hero, so a translucent bar
+    // picked up the white and drifted grey halfway down: one page with two different headers,
+    // and only one of them matched anything.
+    //
+    // Steven found it by looking rather than by measuring — "against blue they look similar,
+    // against white they look more different." That IS the mechanism. A colour that depends on
+    // what happens to be behind it isn't a colour you can tune.
+    <header
+      className="sticky top-0 z-20 w-full"
+      style={{ backgroundColor: resolveColor(bg) }}
+    >
       {/* Desktop: brand left · tagline centered · links + button right */}
       <div className="mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid" style={{ color: resolveColor(fg) }}>
         <div className="justify-self-start">{Brand}</div>

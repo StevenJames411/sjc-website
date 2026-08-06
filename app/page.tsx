@@ -9,6 +9,7 @@ import { pageMetadata } from "@/lib/pageMeta";
 import { resolveHost, publicUrlFor } from "@/lib/host";
 import { StudioBody } from "@/lib/studioPage";
 import { resolvePage, metadataFor, SitePageBody } from "@/lib/publicSitePage";
+import { SJC } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,7 @@ export default async function Home() {
 
   // SJC's home renders through the builder exactly like every other page: the published snapshot
   // if one exists, otherwise the committed seed. Edit at /edit/home and hit Publish.
-  const puck = await readPuckPublished("home");
+  const puck = await readPuckPublished("home", SJC);
   const data = puck || seedFor("home", "Home");
   return (
     <>
