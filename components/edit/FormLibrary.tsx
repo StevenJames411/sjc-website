@@ -29,7 +29,18 @@ type Stray = {
   from: string[];
 };
 
-export default function FormLibrary({ forms, title }: { forms: FormDef[]; title: string }) {
+/** Where the onboarding form runs and who has it open — read live, see app/edit/forms/page.tsx. */
+type Onboarding = { example: string; openFor: string[]; total: number };
+
+export default function FormLibrary({
+  forms,
+  title,
+  onboarding,
+}: {
+  forms: FormDef[];
+  title: string;
+  onboarding?: Onboarding;
+}) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
@@ -233,9 +244,18 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
           // (/<business>/onboard) instead, so the honest-looking "not on any site" chip would be
           // flatly false about the one form that runs on every single client.
           if (f.id === ONBOARDING_FORM_ID) {
+            const open = onboarding?.openFor.length || 0;
             return (
-              <span style={{ ...countChip, background: "#ecfdf5", color: "#065f46" }}>
-                every client&apos;s onboarding link
+              <span
+                style={{
+                  ...countChip,
+                  background: open ? "#ecfdf5" : "var(--e-line-soft)",
+                  color: open ? "#065f46" : "var(--e-muted)",
+                }}
+              >
+                {open
+                  ? `open for ${onboarding!.openFor.join(", ")}`
+                  : "not open for anyone right now"}
               </span>
             );
           }
@@ -254,6 +274,24 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
 
       <h2 style={cardName}>{f.name}</h2>
       {f.description ? <p style={cardDesc}>{f.description}</p> : null}
+
+      {/* ⚠️ THE ADDRESS, ON THE CARD. Onboarding is the one form that isn't on a page — it's a
+          link per business — so "which website is this on?" has no answer anywhere else on this
+          screen. Without it, this nine-question intake and Consulting's thirteen-question /apply
+          survey are two similar forms with no way to tell which is which, which is exactly the
+          mix-up that sent Steven looking for the wrong one. */}
+      {f.id === ONBOARDING_FORM_ID && onboarding ? (
+        <p style={whereBox}>
+          Not on a page — it&apos;s a link you send, one per client:
+          <br />
+          <code style={addr}>{onboarding.example}</code>
+          <br />
+          Open or close it per business on the <strong>Websites</strong> screen.{" "}
+          {onboarding.total
+            ? `${onboarding.openFor.length} of ${onboarding.total} open now.`
+            : null}
+        </p>
+      ) : null}
 
       <ul style={list}>
         {f.fields.map((x) => (
@@ -393,7 +431,7 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
 
       {working.length ? (
         <>
-          <h2 style={sec}>In use</h2>
+          <h2 style={sec}>In use — running right now</h2>
           <div style={grid}>{working.map(Card)}</div>
         </>
       ) : null}
@@ -485,6 +523,8 @@ const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(-
 const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, marginTop: 10 };
 const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
 const strayBox: React.CSSProperties = { marginTop: 18, border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 12, padding: "14px 16px", fontSize: 13 };
+const whereBox: React.CSSProperties = { margin: "10px 0 0", fontSize: 12, lineHeight: 1.7, color: "var(--e-muted)", borderLeft: "3px solid var(--e-line)", paddingLeft: 10 };
+const addr: React.CSSProperties = { fontFamily: "ui-monospace,monospace", fontSize: 11, background: "var(--e-line-soft)", borderRadius: 4, padding: "2px 5px", wordBreak: "break-all" };
 const strayRow: React.CSSProperties = { display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "8px 0", borderTop: "1px solid var(--e-line)" };
 const smallBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "7px 13px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" };
 const footNote: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid var(--e-line)", paddingTop: 16, maxWidth: 720 };

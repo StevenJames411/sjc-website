@@ -185,7 +185,12 @@ export const ONBOARDING_FORM: FormDef = {
   id: ONBOARDING_FORM_ID,
   name: "Client onboarding",
   kind: "builtin",
-  description: "What a new client tells us so their website can be built. Sent as a link, filled in on a phone.",
+  // ⚠️ "AFTER THEY'VE PAID" IS THE LOAD-BEARING WORD. Consulting's /apply survey asks thirteen
+  // questions and reads almost exactly like this one asking nine — and it runs BEFORE you'd ever
+  // speak to someone, to decide whether to. Two intake forms with no stated moment is how Steven
+  // came to believe the /apply survey was this form.
+  description:
+    "AFTER they've paid — what a new client tells us so their website can be built. Sent as a link, filled in on a phone.",
   fields: ONBOARDING_FIELDS,
   buttonLabel: "Send it in",
   note: "",
