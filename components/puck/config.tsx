@@ -10,6 +10,7 @@ import SizeStepper from "@/components/puck/SizeStepper";
 import ColorField from "@/components/puck/ColorField";
 import DesignTextField from "@/components/puck/DesignTextField";
 import FormPicker from "@/components/puck/FormPicker";
+import FormLink from "@/components/puck/FormLink";
 import ImageUpload from "@/components/puck/ImageUpload";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
@@ -72,6 +73,8 @@ type Props = {
     source: string;
     /** Write-only. Holds a form id for one beat while resolveData copies it in, then clears. */
     preset: string;
+    /** A LIVE link to a library form. Set = the library owns the questions; blank = this block does. */
+    formId: string;
     fields: { label: string; inputType: string; fieldId?: string; required?: boolean }[];
     buttonLabel: string;
     note: string;
@@ -960,9 +963,24 @@ export const config: Config<Props, RootProps> = {
       label: "Lead form (name / phone / etc.)",
       fields: {
         // First, because it's the fast path: pick a preset and the questions below fill in.
+        // TWO WAYS TO GET QUESTIONS, and they are deliberately different tools.
+        //
+        // "Linked to" is a LIVE pointer: the library owns the questions and editing the form
+        // updates every page pointing at it. That is what Steven asked for — *"if I change a
+        // question in the form library, whatever's on their website should update."*
+        //
+        // "Start from a preset" below still COPIES, and is kept for the case where a page needs a
+        // one-off variant of a standard form without dragging every other page along with it.
+        formId: {
+          type: "custom" as const,
+          label: "Linked to a form in your library (live — edits follow)",
+          render: ({ onChange, value }) => (
+            <FormLink value={value as string} onChange={onChange as (v: string) => void} />
+          ),
+        },
         preset: {
           type: "custom" as const,
-          label: "Questions",
+          label: "…or start from a preset and edit here (a one-off copy)",
           render: ({ onChange }) => <FormPicker onApply={(id) => onChange(id)} />,
         },
         source: { type: "text" as const, label: "Source tag (shows in the intake sheet)" },
@@ -1012,7 +1030,7 @@ export const config: Config<Props, RootProps> = {
           ],
         },
       },
-      defaultProps: { ...LEADFORM_DEFAULTS, preset: "" } as LeadFormBlock,
+      defaultProps: { ...LEADFORM_DEFAULTS, preset: "", formId: "" } as LeadFormBlock,
       /**
        * Copy a preset's questions into THIS block, then forget the preset.
        *

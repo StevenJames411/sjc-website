@@ -3,6 +3,8 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
 import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
+import { resolveFormPointers } from "@/lib/formPointer";
+import { readForms } from "@/lib/forms";
 import { findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
@@ -113,7 +115,10 @@ export async function resolvePage(
 
   // Fill {{business.*}} from the website's settings. Public render only — see lib/businessTokens
   // for why the builder deliberately keeps showing the raw token.
-  const data = fillBusinessTokens(raw, site.business, site.domain ? `https://${site.domain}` : "");
+  // POINTERS BEFORE TOKENS. A library form's questions can themselves contain {{business.*}},
+  // so they have to be in the page before the token pass runs or they ship raw to a visitor.
+  const withForms = resolveFormPointers(raw, await readForms());
+  const data = fillBusinessTokens(withForms, site.business, site.domain ? `https://${site.domain}` : "");
   return { site, slug: meta.slug, data };
 }
 

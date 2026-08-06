@@ -32,6 +32,15 @@ export type LeadFormField = {
 };
 export type LeadFormProps = {
   source?: string;
+  /**
+   * The library form this block POINTS AT. Blank = the block owns its own questions, which is how
+   * every page built before 2026-08-06 works and still works.
+   *
+   * ⚠️ Nothing on the render side reads this. lib/formPointer resolves it server-side and fills
+   * `fields` in before the page is drawn, so the form stays plain data drawn by our components —
+   * not an embed.
+   */
+  formId?: string;
   fields?: LeadFormField[];
   buttonLabel?: string;
   note?: string;

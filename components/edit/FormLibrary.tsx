@@ -19,6 +19,10 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
   const [err, setErr] = useState("");
   const [naming, setNaming] = useState<{ from?: string; name: string } | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [usage, setUsage] = useState<{
+    loading: boolean;
+    rows: { siteName: string; title: string; published: boolean }[] | null;
+  }>({ loading: false, rows: [] });
 
   const shown = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -53,6 +57,25 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
       setErr((e as Error).message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  // ── WHAT IS CONNECTED TO THIS FORM ──────────────────────────────────────────────────────────
+  // Loaded the moment Delete is pressed, not after. Steven asked for exactly this: *"when you try
+  // to delete something, you see all the dots that are connected to it… so a human sees what's
+  // connected before they delete things."* A confirmation box teaches you to click through; a
+  // list of the four client pages that are about to lose their form does not.
+  async function loadUsage(id: string) {
+    setUsage({ loading: true, rows: [] });
+    try {
+      const r = await fetch(`/api/forms/usage?id=${encodeURIComponent(id)}`, {
+        credentials: "same-origin",
+      }).then((x) => x.json());
+      setUsage({ loading: false, rows: r?.usedBy || [] });
+    } catch {
+      // ⚠️ UNKNOWN IS NOT ZERO. Failing to load the list must never read as "nothing uses it" —
+      // that is the one wrong answer that costs a live customer their form.
+      setUsage({ loading: false, rows: null });
     }
   }
 
@@ -103,7 +126,36 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
 
       {confirming === f.id ? (
         <div style={delPanel}>
-          <p style={{ margin: "0 0 10px", fontSize: 13 }}>Delete “{f.name}”? Pages already using it keep their questions.</p>
+          <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>Delete “{f.name}”?</p>
+          {usage.loading ? (
+            <p style={{ margin: "0 0 10px", fontSize: 13 }}>Checking what uses it…</p>
+          ) : usage.rows === null ? (
+            <p style={{ margin: "0 0 10px", fontSize: 13 }}>
+              Couldn&apos;t check what uses this form. Don&apos;t delete it until you can.
+            </p>
+          ) : usage.rows.length === 0 ? (
+            <p style={{ margin: "0 0 10px", fontSize: 13 }}>Nothing is linked to it.</p>
+          ) : (
+            <div style={{ margin: "0 0 10px", fontSize: 13 }}>
+              <p style={{ margin: "0 0 6px" }}>
+                <strong>{usage.rows.length}</strong>{" "}
+                {usage.rows.length === 1 ? "page is" : "pages are"} linked to it and will lose their
+                questions:
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {usage.rows.map((u, i) => (
+                  <li key={i}>
+                    {u.siteName} — {u.title}
+                    {u.published ? (
+                      <strong style={{ color: "#b91c1c" }}> · live</strong>
+                    ) : (
+                      <span style={{ color: "#6b7280" }}> · draft</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div style={{ display: "flex", gap: 8 }}>
             <button type="button" style={dangerBtn} onClick={() => remove(f.id)} disabled={busy}>
               {busy ? "Deleting…" : "Delete it"}
@@ -126,7 +178,7 @@ export default function FormLibrary({ forms, title }: { forms: FormDef[]; title:
             Make a copy
           </button>
           {f.kind !== "builtin" ? (
-            <button type="button" style={iconBtn} title="Delete" onClick={() => setConfirming(f.id)}>
+            <button type="button" style={iconBtn} title="Delete" onClick={() => { setConfirming(f.id); void loadUsage(f.id); }}>
               🗑
             </button>
           ) : null}
