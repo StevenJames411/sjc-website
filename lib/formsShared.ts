@@ -113,6 +113,25 @@ export type FormField = {
   step?: string;
 };
 
+/**
+ * Is this form plausibly the one this page's questions came from?
+ *
+ * ⚠️ THE GUARD ON LINKING A WIZARD. /apply files each answer under its question's key, and those
+ * keys ARE the columns in the Discovery Intake sheet. Link the page to a form built from some
+ * OTHER page's questions and every column silently starts over — the form still renders, visitors
+ * still apply, and the sheet grows a second set of columns beside the orphaned first.
+ *
+ * Zero keys in common is a mis-pick, not an edit: nobody rewrites all thirteen keys at once. Some
+ * in common is ordinary editing — a question added, one removed — and is allowed through.
+ *
+ * Returns true when there is nothing to compare against, because "no opinion" must not read as
+ * "wrong".
+ */
+export function looksLikeSameForm(formKeys: string[], pageKeys: string[]): boolean {
+  if (!formKeys.length || !pageKeys.length) return true;
+  return formKeys.some((k) => pageKeys.includes(k));
+}
+
 /** The questions of a form, grouped into screens by `step`, in order. */
 export function stepsOf(fields: FormField[]): { title: string; fields: FormField[] }[] {
   const out: { title: string; fields: FormField[] }[] = [];

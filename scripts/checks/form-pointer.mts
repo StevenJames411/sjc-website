@@ -17,7 +17,7 @@
 //                            an uploaded file, and taking her photos to lose them is the worst
 //                            outcome of the three
 import { resolveFormPointers, formsInUse } from "../../lib/formPointer.ts";
-import { BUILTIN_FORMS, type FormDef } from "../../lib/formsShared.ts";
+import { BUILTIN_FORMS, looksLikeSameForm, stepsOf, type FormDef } from "../../lib/formsShared.ts";
 
 let failed = 0;
 const check = (label: string, pass: boolean, detail = "") => {
@@ -122,6 +122,31 @@ check(
   "the default ending is the careful one",
   /call/i.test(review.successBody),
   "an unconfigured copy must not ask an unhappy customer for a public review"
+);
+
+// ── Linking the /apply wizard to the wrong form ──────────────────────────────────────────────
+// The wrong form here doesn't look broken. It renders, visitors apply, and the Discovery Intake
+// sheet quietly grows a second set of columns beside the orphaned first.
+const APPLY_KEYS = ["q0-0", "q0-1", "q1-0"];
+check(
+  "a form sharing no keys is refused",
+  !looksLikeSameForm(["name", "phone"], APPLY_KEYS),
+  "nobody rewrites every key at once — zero overlap is a mis-pick"
+);
+check("an edited form still passes", looksLikeSameForm(["q0-0", "q0-1", "q-new-1a2b"], APPLY_KEYS));
+check("nothing to compare against is not 'wrong'", looksLikeSameForm([], APPLY_KEYS) && looksLikeSameForm(APPLY_KEYS, []));
+
+// ── stepsOf: adjacency, not collection ───────────────────────────────────────────────────────
+const grouped = stepsOf([
+  { fieldId: "a", label: "A", type: "text", step: "One" },
+  { fieldId: "b", label: "B", type: "text", step: "One" },
+  { fieldId: "c", label: "C", type: "text", step: "Two" },
+  { fieldId: "d", label: "D", type: "text", step: "One" },
+]);
+check(
+  "a repeated heading stays a separate screen",
+  grouped.length === 3 && grouped[2].fields[0].fieldId === "d",
+  "grouping by collection would teleport 'd' up to screen one on reorder"
 );
 
 const seen: string[] = [];

@@ -48,6 +48,8 @@ type Props = {
     hasForm: boolean;
     useRealForm: boolean;
     formFields: { label: string; inputType: string }[];
+    /** A LIVE link to a library form — see the note on DesignSectionProps.formId. */
+    formId: string;
     formButton: string;
     successHeading: string;
     successBody: string;
@@ -295,19 +297,30 @@ export const STAFFROSTER_DEFAULTS = {
 };
 
 // ── PAGE SETTINGS (the root panel) ────────────────────────────────────────────────────────────
-// What a page IS, as opposed to what's on it. These four show in the right-hand panel the moment
-// the editor opens with no block selected — deliberately the first thing you see, because they
-// used to live in code and could only be changed by a developer.
+// What a page IS, as opposed to what's on it. These show in the right-hand panel the moment the
+// editor opens with no block selected — deliberately the first thing you see, because they used
+// to live in code and could only be changed by a developer.
 //
-// They exist because of a real failure: a demo built for a business still previewed as "Steven
-// James Consulting — AI employees for your business" when its link was texted, since a page with
-// nothing of its own inherits the SJC site defaults from app/layout.tsx. Filling these in is what
-// severs that inheritance. See generateMetadata in app/[slug]/page.tsx — it reads exactly these.
+// The first four exist because of a real failure: a demo built for a business still previewed as
+// "Steven James Consulting — AI employees for your business" when its link was texted, since a
+// page with nothing of its own inherits the SJC site defaults from app/layout.tsx. Filling these
+// in severs that inheritance. See generateMetadata in app/[slug]/page.tsx — it reads exactly these.
 type RootProps = {
   title: string;
   description: string;
   businessName: string;
   shareImage: string;
+  /**
+   * A LIVE link to a library form, for a page whose questions are a STEP-BY-STEP WIZARD (/apply).
+   *
+   * ⚠️ ON THE PAGE BECAUSE THERE IS NO BLOCK TO PUT IT ON. A wizard's questions are thirteen
+   * FormQuestion blocks spread across several FormStep blocks, and no single one of them owns the
+   * set. Everything else links per block — see LeadForm and DesignSection.
+   *
+   * ⚠️ Read only by app/apply/page.tsx. It is inert on every other page, which is the cost of
+   * having somewhere to put it at all.
+   */
+  formId: string;
 };
 
 /**
@@ -392,6 +405,26 @@ export const config: Config<Props, RootProps> = {
           <ImageUpload value={(value as string) || ""} onChange={onChange} />
         ),
       },
+      // ── THE WIZARD'S LINK, AND WHY IT LIVES ON THE PAGE ─────────────────────────────────────
+      // A step-by-step page (/apply) asks its questions through FormStep + FormQuestion blocks —
+      // thirteen of them across several screens, with no single block that owns the set. So there
+      // is nowhere to put a per-block link, and the page itself holds it.
+      //
+      // ⚠️ IT APPEARS ON EVERY PAGE'S SETTINGS AND DOES NOTHING ON MOST OF THEM. That is the
+      // honest trade: a field that shows up where it's irrelevant, rather than a wizard that
+      // can't be linked at all. The label says which pages it applies to.
+      //
+      // ⚠️ LINK IT TO THE LIBRARY COPY OF THAT PAGE'S OWN QUESTIONS, not to some other form. The
+      // copy preserves each question's key, and those keys ARE the columns in the Discovery
+      // Intake sheet — link a wizard to a form with different keys and the sheet starts a fresh
+      // set of columns, orphaning everything collected so far.
+      formId: {
+        type: "custom" as const,
+        label: "Step-by-step pages only (like /apply): link the questions to your library",
+        render: ({ onChange, value }) => (
+          <FormLink value={value as string} onChange={onChange as (v: string) => void} />
+        ),
+      },
     },
   },
   // The parts bin, grouped so the everyday kit is on top and the one-off legacy sections
@@ -444,6 +477,21 @@ export const config: Config<Props, RootProps> = {
             { label: "Use my real form (it delivers)", value: true },
             { label: "Show the design's mock form", value: false },
           ],
+        },
+        // ⚠️ A DESIGN'S CONTACT BOX COULD NOT BE LINKED TO THE LIBRARY, and the reason was simply
+        // that this control didn't exist. The resolver has handled DesignSection since pointers
+        // shipped, but with no field on the block there was nothing to set — so the form whose
+        // questions are hardest to reach (baked into imported markup) was the one form that could
+        // only ever be edited inside the design.
+        //
+        // Same control as LeadForm. Blank = the section keeps the questions it was imported with,
+        // which is every existing site, so nothing moves until it's picked.
+        formId: {
+          type: "custom" as const,
+          label: "Linked to a form in your library (live — edits follow)",
+          render: ({ onChange, value }) => (
+            <FormLink value={value as string} onChange={onChange as (v: string) => void} />
+          ),
         },
         // ⚠️ THESE WERE THE ONLY WORDS ON AN IMPORTED DESIGN NOBODY COULD CHANGE.
         //

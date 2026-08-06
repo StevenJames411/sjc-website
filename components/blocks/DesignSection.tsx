@@ -122,6 +122,17 @@ export type DesignSectionProps = {
   useRealForm?: boolean;
   /** The questions the DESIGN asked, so the swap keeps its intent rather than imposing ours. */
   formFields?: LeadFormField[];
+  /**
+   * A LIVE link to a library form. Set = the library owns these questions and editing it there
+   * updates this section; blank = the section keeps whatever it was imported with.
+   *
+   * ⚠️ NOTHING IN THIS FILE READS IT. lib/formPointer resolves it server-side and fills
+   * `formFields` in before the section is drawn — and it has to fill `formFields`, not `fields`,
+   * which is the exact reason linking a design section was a silent no-op until 2026-08-06: the
+   * pointer was set, the block read the questions it always had, and the page rendered
+   * identically. Nothing looked broken because nothing changed.
+   */
+  formId?: string;
   formButton?: string;
   /**
    * WHAT THE CUSTOMER READS AFTER PRESSING SEND.
@@ -157,6 +168,7 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   hasForm: false,
   useRealForm: true,
   formFields: [],
+  formId: "",
   formButton: "",
   successHeading: "",
   successBody: "",
