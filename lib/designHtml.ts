@@ -427,6 +427,66 @@ export function paddingOf(sectionHtml: string): { top: number | null; bottom: nu
   return { top: pt ?? py, bottom: pb ?? py };
 }
 
+/** Element children, skipping text nodes and anything that can't be a band. */
+function elementKids(el: HTMLElement): HTMLElement[] {
+  return el.childNodes.filter(
+    (n): n is HTMLElement =>
+      n instanceof HTMLElement && !!n.rawTagName && n.rawTagName.toLowerCase() !== "script"
+  );
+}
+
+const HEADING = /<h[1-4]\b/i;
+
+/**
+ * Split ONE oversized block into the bands hiding inside it.
+ *
+ * ── THE CASE THIS EXISTS FOR ─────────────────────────────────────────────────────────────────
+ * The top-level pass cuts on the design's own `<section>` boundaries, which works when whoever
+ * built it used them — the studio home page splits into seven. The portfolio page didn't: hero,
+ * builds grid, banner and two more bands all shipped inside a SINGLE `<section class="pf">`.
+ * Splitting found one block, correctly, and there was nothing to reorder or delete. Nine
+ * headings, one block.
+ *
+ * ⚠️ THE WRAPPER IS CLONED ONTO EVERY PIECE, and that is the whole reason this is safe. `.pf`
+ * carries the dark background and the white text for everything inside it. Lifting the five
+ * children out and dropping the wrapper would give five correctly-separated bands of black text
+ * on white — layout intact, design destroyed. Each piece keeps the wrapper.
+ *
+ * ⚠️ ONLY ON A CLEAR MULTI-BAND BLOCK: three or more children that EACH carry a heading of their
+ * own. A services section is `[h2, p, div.grid]` — one child with a heading, two without — so it
+ * fails the test and stays whole, which is right. Cutting a section into its heading, its
+ * paragraph and its card grid is worse than not cutting it at all.
+ *
+ * Returns null when the block should be left alone, which is the common case.
+ */
+function explodeBands(block: string): string[] | null {
+  const root = parse(block, { comment: false });
+  const el = root.childNodes.find((n): n is HTMLElement => n instanceof HTMLElement);
+  if (!el || !el.rawTagName) return null;
+
+  const kids = elementKids(el);
+  // A <style> inside the wrapper defines the classes every band below it uses, so it rides along
+  // with each piece rather than staying with whichever band happened to contain it.
+  const styles = kids.filter((k) => k.rawTagName.toLowerCase() === "style");
+  const bands = kids.filter((k) => k.rawTagName.toLowerCase() !== "style");
+
+  const withHeading = bands.filter((b) => HEADING.test(b.toString()));
+  if (bands.length < 3 || withHeading.length < 3) return null;
+
+  const tag = el.rawTagName;
+  const styleHtml = styles.map((s) => s.toString()).join("");
+  const attrs = (el.rawAttrs || "").trim();
+  // Drop `id` after the first piece. The wrapper's id would otherwise repeat on every band, and
+  // a duplicated id silently breaks in-page anchor links — the same class of failure as the bare
+  // `#anchor` hrefs that died the day a second page existed.
+  const attrsNoId = attrs.replace(/\s*\bid\s*=\s*("[^"]*"|'[^']*'|\S+)/i, "").trim();
+
+  return bands.map((b, i) => {
+    const a = i === 0 ? attrs : attrsNoId;
+    return `<${tag}${a ? " " + a : ""}>${styleHtml}${b.toString()}</${tag}>`;
+  });
+}
+
 export function splitSections(html: string): string[] {
   const root = parse(String(html || ""), { comment: false });
 
@@ -445,7 +505,12 @@ export function splitSections(html: string): string[] {
     if (!(el instanceof HTMLElement)) continue;
     const tag = el.rawTagName?.toLowerCase();
     if (!tag || tag === "script" || tag === "style") continue;
-    out.push(el.toString());
+    const block = el.toString();
+    // One extra level, and only where the block is obviously several bands in a trench coat.
+    // Deliberately not recursive: a second pass would start cutting card grids into cards.
+    const bands = explodeBands(block);
+    if (bands) out.push(...bands);
+    else out.push(block);
   }
   return out;
 }
