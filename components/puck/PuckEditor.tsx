@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Puck, ActionBar, usePuck, type Data } from "@measured/puck";
+import { requestTextFocus } from "@/lib/designFocus";
 import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
 import { seedFor } from "@/components/puck/seeds";
@@ -563,7 +564,25 @@ export default function PuckEditor({
           </span>
         )}
       </div>
-      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+      {/* CLICK A WORD ON THE PAGE, GET THAT WORD'S ROW.
+          A bought design lands as forty-odd text rows in one section, so finding the line you are
+          looking straight at meant scrolling the whole list. Every filled word carries a
+          data-sjc-text marker while editing (DesignSection's `mark`), so a click can name it.
+
+          Capture phase, and it never calls preventDefault: Puck still receives the same click and
+          still does the selecting. This only answers WHICH row. Keeping the two independent is
+          the point — a Puck upgrade can't quietly disable it.
+
+          The row is LATCHED rather than shouted, because when the section wasn't already selected
+          the field doesn't exist yet at click time. See lib/designFocus.ts. */}
+      <div
+        style={{ flex: 1, minHeight: 0, position: "relative" }}
+        onClickCapture={(e) => {
+          const hit = (e.target as HTMLElement | null)?.closest?.("[data-sjc-text]");
+          const key = hit?.getAttribute("data-sjc-text");
+          if (key) requestTextFocus(key);
+        }}
+      >
         <Puck
           key={page}
           config={config}

@@ -8,6 +8,7 @@ import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
 import SizeStepper from "@/components/puck/SizeStepper";
 import ColorField from "@/components/puck/ColorField";
+import DesignTextField from "@/components/puck/DesignTextField";
 import FormPicker from "@/components/puck/FormPicker";
 import ImageUpload from "@/components/puck/ImageUpload";
 import NavView from "@/components/NavView";
@@ -566,41 +567,19 @@ export const config: Config<Props, RootProps> = {
             key: { type: "text" as const, label: "Token (do not change)" },
           },
         },
+        // ⚠️ OUR OWN FIELD, not Puck's array field. A bought design lands as forty-odd rows in one
+        // section, so this needs a search box — and clicking a word on the canvas has to open
+        // that word's row, which through Puck's array field means selecting content-hashed class
+        // names that break silently on the next upgrade. See DesignTextField.
         text: {
-          type: "array" as const,
+          type: "custom" as const,
           label: "Words on this section",
-          getItemSummary: (item: DesignText, i) => item?.label || `Text ${(i ?? 0) + 1}`,
-          arrayFields: {
-            // Shown so you know which one you're editing; the value is the part you change.
-            value: { type: "textarea" as const, label: "Text" },
-            // Blank/0/"As designed" leaves the design's own styling — nothing is wrapped and the
-            // markup stays byte-identical to the import.
-            size: {
-              type: "custom" as const,
-              label: "Size (− / +, blank = as designed)",
-              render: ({ onChange, value }) => (
-                <SizeStepper label="Size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
-              ),
-            },
-            color: {
-              type: "custom" as const,
-              label: "Colour (blank = as designed)",
-              render: ({ onChange, value }) => (
-                <ColorField value={value as string} onChange={onChange} />
-              ),
-            },
-            bold: {
-              type: "radio" as const,
-              label: "Weight",
-              options: [
-                { label: "As designed", value: null },
-                { label: "Bold", value: true },
-                { label: "Normal", value: false },
-              ],
-            },
-            label: { type: "text" as const, label: "Where it appears" },
-            key: { type: "text" as const, label: "Token (do not change)" },
-          },
+          render: ({ onChange, value }) => (
+            <DesignTextField
+              value={value as DesignText[]}
+              onChange={onChange as (v: DesignText[]) => void}
+            />
+          ),
         },
         // Deliberately last and plain: this is the design itself. Editing it by hand is how you
         // break the layout you paid for.
@@ -639,8 +618,10 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton, successHeading, successBody }) => (
+      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
+          // Marks each filled word so a click on the canvas can name its row. Editor only.
+          editing={puck?.isEditing}
           html={html}
           text={text}
           images={images}

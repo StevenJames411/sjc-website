@@ -137,6 +137,8 @@ export type DesignSectionProps = {
    */
   successHeading?: string;
   successBody?: string;
+  /** Editor only — see fillTokens's `mark`. Never set on a published page. */
+  editing?: boolean;
 };
 
 /** Used when the section leaves them blank. One place, so the fallback can't drift. */
@@ -184,7 +186,17 @@ export function fillTokens(
   html: string,
   text: DesignText[] = [],
   images: DesignImage[] = [],
-  links: DesignLink[] = []
+  links: DesignLink[] = [],
+  /**
+   * Editor only. Wraps every filled word in a marked span so a click on the canvas can say WHICH
+   * of forty-odd text rows it was.
+   *
+   * ⚠️ OFF on the published page, deliberately. Wrapping live output would add a span around
+   * every word on every customer's site to serve a control only Steven ever sees — and inline
+   * elements are only *usually* harmless. This way the published markup stays byte-identical to
+   * the import, which is the promise the whole sealed-design approach rests on.
+   */
+  mark = false
 ): string {
   const t = new Map(text.map((r) => [String(r?.key || "").toLowerCase(), r?.value ?? ""]));
   const i = new Map(images.map((r) => [String(r?.key || "").toLowerCase(), r?.src ?? ""]));
@@ -208,7 +220,8 @@ export function fillTokens(
         ["color", row?.color || ""],
         ["font-weight", row?.bold === true ? "700" : row?.bold === false ? "400" : ""],
       ]);
-      if (css) return `<span style="${css}">${raw}</span>`;
+      const attr = mark ? ` data-sjc-text="${id}"` : "";
+      if (css || attr) return `<span${attr}${css ? ` style="${css}"` : ""}>${raw}</span>`;
     }
     return raw;
   });
@@ -346,6 +359,7 @@ export default function DesignSection(props: DesignSectionProps) {
     formButton,
     successHeading,
     successBody,
+    editing,
   } = props;
   if (!html.trim()) return null;
 
@@ -364,7 +378,7 @@ export default function DesignSection(props: DesignSectionProps) {
 
   const filled = injectStyle(
     styleImages(
-      dropRemovedLinks(stripDangerous(fillTokens(html, text, images, links)), links),
+      dropRemovedLinks(stripDangerous(fillTokens(html, text, images, links, editing)), links),
       images
     ),
     decls
