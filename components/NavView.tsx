@@ -107,7 +107,17 @@ export default function NavView({
   ) : null;
 
   return (
-    <header className="sticky top-0 z-20 w-full" style={{ backgroundColor: resolveColor(bg) }}>
+    // TRANSLUCENT + BLURRED, which is the whole reason a sticky bar reads as lighter than the band
+    // it's made of. The Designs site and this one are within a hair of each other in actual value
+    // (#0A0E27 vs #0b1220) and looked nothing alike, because one let the page show through and the
+    // other didn't. Colour was never the difference — opacity was.
+    //
+    // color-mix rather than an rgba() literal: `bg` is a brand ROLE here, so there is no hex to
+    // append an alpha channel to.
+    <header
+      className="sticky top-0 z-20 w-full backdrop-blur-xl"
+      style={{ backgroundColor: `color-mix(in srgb, ${resolveColor(bg)} 85%, transparent)` }}
+    >
       {/* Desktop: brand left · tagline centered · links + button right */}
       <div className="mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid" style={{ color: resolveColor(fg) }}>
         <div className="justify-self-start">{Brand}</div>
