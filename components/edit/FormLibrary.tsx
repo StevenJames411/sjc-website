@@ -325,7 +325,7 @@ export default function FormLibrary({
         onClick={() => setRenaming({ key: k, text: sections[k] })}
       >
         {sections[k]}
-        <span style={pencil} aria-hidden="true">✎</span>
+        <span style={pencil}>✎ Rename</span>
       </h2>
     );
 
@@ -720,19 +720,19 @@ const back: React.CSSProperties = { border: "1px solid var(--e-line)", backgroun
 const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 };
 const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
-const hint: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.55, margin: "16px 0 0", maxWidth: 720 };
-const sec: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-muted)", margin: "34px 0 12px", borderTop: "1px solid var(--e-line)", paddingTop: 20 };
+const hint: React.CSSProperties = { fontSize: 14, color: "var(--e-muted)", lineHeight: 1.55, margin: "16px 0 0", maxWidth: 720 };
+const sec: React.CSSProperties = { fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-muted)", margin: "34px 0 12px", borderTop: "1px solid var(--e-line)", paddingTop: 20 };
 const search: React.CSSProperties = { width: "100%", maxWidth: 340, border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, margin: "18px 0 22px" };
 const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 };
 const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 18, background: "var(--e-panel)", display: "flex", flexDirection: "column" };
 const badgeRow: React.CSSProperties = { display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" };
-const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", background: "var(--e-line-soft)", color: "var(--e-muted)", borderRadius: 999, padding: "3px 9px" };
+const chip: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", background: "var(--e-line-soft)", color: "var(--e-muted)", borderRadius: 999, padding: "4px 10px" };
 const countChip: React.CSSProperties = { ...chip, background: "var(--e-info-bg)", color: "var(--e-info-ink)" };
 const cardName: React.CSSProperties = { fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: "-0.01em" };
-const cardDesc: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", margin: "6px 0 0", lineHeight: 1.5 };
+const cardDesc: React.CSSProperties = { fontSize: 14, color: "var(--e-muted)", margin: "6px 0 0", lineHeight: 1.5 };
 const list: React.CSSProperties = { listStyle: "none", padding: 0, margin: "14px 0 0", borderTop: "1px solid var(--e-line-soft)" };
-const li: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "7px 0", borderBottom: "1px solid var(--e-panel-2)" };
-const typeTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", whiteSpace: "nowrap" };
+const li: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 14, padding: "7px 0", borderBottom: "1px solid var(--e-panel-2)" };
+const typeTag: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", whiteSpace: "nowrap" };
 const btnLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", margin: "12px 0 0" };
 // ⚠️ `marginTop: "auto"` IS WHAT MAKES A ROW OF CARDS LOOK LIKE A ROW. Without it every card's
 // buttons sit wherever its own question list happens to end, so three cards side by side have
@@ -741,14 +741,18 @@ const cardFoot: React.CSSProperties = { display: "flex", gap: 8, marginTop: "aut
 /** How many questions a card shows before "+N more". Enough to recognise it, not to read it. */
 const PREVIEW = 4;
 const liLabel: React.CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
-const usedOn: React.CSSProperties = { fontSize: 12, margin: "8px 0 0", lineHeight: 1.6 };
+const usedOn: React.CSSProperties = { fontSize: 13, margin: "8px 0 0", lineHeight: 1.6 };
 const cardLink: React.CSSProperties = { color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
-const secInput: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 6, padding: "4px 8px", margin: "34px 0 6px", fontFamily: "inherit", background: "var(--e-panel)", minWidth: 320 };
-const pencil: React.CSSProperties = { marginLeft: 8, fontSize: 12, color: "var(--e-muted)", opacity: 0.7 };
-const hiddenLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", marginTop: 26, lineHeight: 1.7 };
+const secInput: React.CSSProperties = { fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 6, padding: "4px 8px", margin: "34px 0 6px", fontFamily: "inherit", background: "var(--e-panel)", minWidth: 320 };
+// ⚠️ A WORD, NOT A GLYPH, AND AT A SIZE A PERSON CAN READ. The first version was a 12px ✎ at
+// 70% opacity — Steven: *"the little pencil is so microscopic, an old man needs to get out
+// glasses… do we have to have shit so small?"* No. A control that has to be hunted for is the
+// same failure as one that doesn't look clickable, just smaller.
+const pencil: React.CSSProperties = { marginLeft: 10, fontSize: 13, fontWeight: 700, color: "var(--e-accent)", textTransform: "none", letterSpacing: 0 };
+const hiddenLine: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", marginTop: 26, lineHeight: 1.7 };
 const linkBtn: React.CSSProperties = { background: "none", border: "none", padding: 0, font: "inherit", color: "var(--e-accent)", fontWeight: 600, cursor: "pointer" };
-const editBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
-const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
+const editBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "8px 14px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const iconBtn: React.CSSProperties = { ...smallGhost, marginLeft: "auto", padding: "6px 10px" };
 const delPanel: React.CSSProperties = { marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--e-bad-line)", background: "var(--e-bad-bg)", borderRadius: 8, padding: 12 };
 const dangerBtn: React.CSSProperties = { background: "var(--e-danger)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
@@ -760,6 +764,6 @@ const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg
 const strayBox: React.CSSProperties = { marginTop: 18, border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 12, padding: "14px 16px", fontSize: 13 };
 const strayRow: React.CSSProperties = { display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "8px 0", borderTop: "1px solid var(--e-line)" };
 const smallBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "7px 13px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" };
-const footNote: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid var(--e-line)", paddingTop: 16, maxWidth: 720 };
+const footNote: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid var(--e-line)", paddingTop: 16, maxWidth: 720 };
 const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
 const modal: React.CSSProperties = { background: "var(--e-panel)", borderRadius: 14, padding: 24, width: "100%", maxWidth: 440, fontFamily: font };
