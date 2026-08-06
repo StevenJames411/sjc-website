@@ -287,11 +287,46 @@ export function tokenizeSection(html: string): {
   const images: DesignImage[] = [];
   const links: DesignLink[] = [];
 
-  const walk = (node: Node) => {
+  // ── A NAV EXISTS TWICE, AND USED TO EDIT ONCE ────────────────────────────────────────────────
+  //
+  // Every responsive design ships its menu twice: the row across the top, and the stack that
+  // opens behind the burger on a phone. Same links, different markup. Tokenising walked them as
+  // two unrelated sets, so "Services" appeared as two rows in the editor with nothing saying
+  // which was which.
+  //
+  // The failure was one-sided and invisible on a laptop: delete the row for the desktop copy and
+  // the link disappears from the page you're looking at — and stays on every phone. You cannot
+  // see it unless you pick up a phone, which is exactly where a contractor's customers are.
+  //
+  // Identical links (same destination, same words) now share ONE key, so one row drives both
+  // copies: rename it once, both change; delete it once, both go.
+  //
+  // ⚠️ THE TEXT KEYS HAVE TO BE PAIRED TOO, not just the destination. The link's words are a
+  // separate token from its href — pairing only the href would leave the destinations in step
+  // while the two labels drifted apart, which is worse than the bug it replaced.
+  //
+  // ⚠️ Scoped to ONE section, and to links that match on BOTH destination and words. Two buttons
+  // reading "Get Free Quote" that both point at /contact genuinely are the same button, and
+  // editing them together is what anyone would expect.
+  const linkSig = new Map<string, { key: string; textKeys: string[] }>();
+
+  /**
+   * @param reuse when walking the second copy of a paired link, the text keys the FIRST copy
+   *              created, in order — popped as each text node is met so both copies point at the
+   *              same editable row instead of minting new ones.
+   */
+  const walk = (node: Node, reuse?: string[]) => {
     for (const child of [...node.childNodes]) {
       if (child.nodeType === NodeType.TEXT_NODE) {
         const raw = child.rawText;
         if (!raw || !raw.trim()) continue;
+        // Second copy of a paired link: point at the first copy's row, add no new one.
+        if (reuse && reuse.length) {
+          const shared = reuse.shift() as string;
+          const [, lead0 = "", , trail0 = ""] = raw.match(/^(\s*)([\s\S]*?)(\s*)$/) || [];
+          child.rawText = `${lead0}{{t:${shared}}}${trail0}`;
+          continue;
+        }
         const parent = node instanceof HTMLElement ? node : null;
         if (parent && TEXT_SKIP.has(parent.rawTagName?.toLowerCase() || "")) continue;
         const key = `t${text.length + 1}`;
@@ -316,6 +351,17 @@ export function tokenizeSection(html: string): {
         if (child.rawTagName?.toLowerCase() === "a") {
           const href = child.getAttribute("href") || "";
           if (href) {
+            // Same destination AND same words = the desktop and mobile copies of one link.
+            const sig = `${href.trim()}||${clean(child.text)}`;
+            const paired = linkSig.get(sig);
+            if (paired) {
+              child.setAttribute("href", `{{h:${paired.key}}}`);
+              child.setAttribute("data-sjc-link", paired.key);
+              // Walk this copy handing it the first copy's text keys, then move on — no new rows.
+              walk(child, [...paired.textKeys]);
+              continue;
+            }
+
             const key = `h${links.length + 1}`;
             // An icon-only link has no text, so the list would read "Link 1, Link 2, Link 3"
             // and you'd have to guess which social button you were editing. aria-label is what
@@ -335,6 +381,14 @@ export function tokenizeSection(html: string): {
             // marker, deleting a row only blanked the destination and the link stayed on the
             // page pointing nowhere — five dead social icons you couldn't get rid of.
             child.setAttribute("data-sjc-link", key);
+
+            // Walk it now and record which text rows it created, so the mobile copy can reuse
+            // exactly those, in order. Snapshotting around the walk handles a link that holds
+            // more than one text node — an icon plus a label is the common case.
+            const before = text.length;
+            walk(child);
+            linkSig.set(sig, { key, textKeys: text.slice(before).map((t) => t.key) });
+            continue;
           }
         }
         if (child.rawTagName?.toLowerCase() === "img") {
@@ -348,7 +402,10 @@ export function tokenizeSection(html: string): {
             child.setAttribute("data-sjc-img", key);
           }
         }
-        walk(child);
+        // `reuse` is passed down, not dropped: a nav link is usually <a><span>Services</span></a>,
+        // so the text node lives one level below the <a> that was paired. Without threading it
+        // here the mobile copy minted a fresh row and the pairing did nothing at all.
+        walk(child, reuse);
       }
     }
   };
