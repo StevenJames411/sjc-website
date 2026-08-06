@@ -12,8 +12,9 @@
 // The key is shown, greyed, under each question. It is shown rather than hidden so that when
 // Steven is looking at a spreadsheet header note trying to work out which column is which, the
 // answer is on this screen. It is not editable, and the server refuses to change it either way.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 import {
   FIELD_TYPE_LABELS,
   FIELD_TYPE_ONBOARDING_ONLY,
@@ -27,12 +28,38 @@ import {
 
 const TYPES = Object.keys(FIELD_TYPE_LABELS) as FormFieldType[];
 
-export default function FormEditor({ form }: { form: FormDef }) {
+type UsageRow = { siteName: string; title: string; published: boolean };
+type Onboarding = { example: string; openFor: string[]; total: number };
+
+export default function FormEditor({
+  form,
+  onboarding,
+}: {
+  form: FormDef;
+  /** Present only on the onboarding form — see app/edit/forms/[form]/page.tsx. */
+  onboarding?: Onboarding;
+}) {
   const router = useRouter();
   const [f, setF] = useState<FormDef>(form);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
+  /** null = couldn't check. ⚠️ Never render unknown as "used nowhere". */
+  const [usage, setUsage] = useState<UsageRow[] | null | undefined>(undefined);
+
+  // WHERE THIS FORM RUNS. The library cards say it; this screen didn't, and this is the screen
+  // you're on when you're about to change a question — the exact moment the blast radius matters.
+  useEffect(() => {
+    if (form.id === ONBOARDING_FORM_ID) return; // its "where" is a link, handed in as a prop
+    let cancelled = false;
+    fetch(`/api/forms/usage?id=${encodeURIComponent(form.id)}`, { credentials: "same-origin" })
+      .then((r) => r.json())
+      .then((d) => !cancelled && setUsage(d?.usedBy || []))
+      .catch(() => !cancelled && setUsage(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [form.id]);
 
   const dirty = JSON.stringify(f) !== JSON.stringify(form);
 
@@ -109,6 +136,61 @@ export default function FormEditor({ form }: { form: FormDef }) {
       <p style={sub}>
         {f.kind === "builtin" ? "Built in — your edits are kept on top of it." : "Your form."}
       </p>
+
+      {/* ── WHERE THIS RUNS ────────────────────────────────────────────────────────────────────
+          ⚠️ Steven, on this screen: *"I don't see anywhere to attach it to a business."* For
+          onboarding there is nothing to attach — one form serves every client and the LINK picks
+          the client. A screen that just omits the control he's hunting for teaches him it's
+          hidden, so it says so out loud instead. For every other form, "where" is a page, and a
+          question is about to be changed on all of them at once. */}
+      {onboarding ? (
+        <div style={whereBox}>
+          <p style={{ margin: 0, fontWeight: 600, color: "var(--e-ink)" }}>
+            You don&apos;t attach this to a business — the link does that.
+          </p>
+          <p style={{ margin: "6px 0 0" }}>
+            One form, every client. Each business gets its own address:
+            <br />
+            <code style={addr}>{onboarding.example}</code>
+            <br />
+            Open or close one per business on the <strong>Websites</strong> screen. Whatever you
+            change here shows up in every one of those links straight away.
+          </p>
+          <p style={{ margin: "6px 0 0", fontWeight: 600, color: "var(--e-ink)" }}>
+            {onboarding.openFor.length
+              ? `Open right now for ${onboarding.openFor.join(", ")}.`
+              : "Nobody has an open link right now, so nothing is being filled in."}
+          </p>
+        </div>
+      ) : usage === undefined ? null : usage === null ? (
+        <div style={whereBox}>
+          Couldn&apos;t check which pages use this form. Worth knowing before you reword a
+          question — an edit here changes every page linked to it.
+        </div>
+      ) : usage.length ? (
+        <div style={whereBox}>
+          <p style={{ margin: 0, fontWeight: 600, color: "var(--e-ink)" }}>
+            Editing this changes {usage.length} live {usage.length === 1 ? "page" : "pages"}:
+          </p>
+          <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+            {usage.map((u, i) => (
+              <li key={i}>
+                {u.siteName} — {u.title}
+                {u.published ? (
+                  <strong style={{ color: "var(--e-danger)" }}> · live</strong>
+                ) : (
+                  <span> · draft</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div style={whereBox}>
+          Not linked to any page yet. To use it, open a page in the builder, click its form, and
+          pick this one under <strong>&ldquo;Linked to a form in your library&rdquo;</strong>.
+        </div>
+      )}
 
       <h2 style={sec}>Questions</h2>
       <p style={hint}>
@@ -422,6 +504,8 @@ const rowMeta: React.CSSProperties = { display: "flex", gap: 12, alignItems: "ce
 const checkLbl: React.CSSProperties = { display: "flex", gap: 6, alignItems: "center", fontSize: 13, color: "var(--e-ink)" };
 const keyTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", fontFamily: "ui-monospace,monospace", marginLeft: "auto" };
 const skipRow: React.CSSProperties = { display: "flex", gap: 8, alignItems: "center", marginTop: 10, flexWrap: "wrap" };
+const whereBox: React.CSSProperties = { marginTop: 16, border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 10, padding: "12px 14px", fontSize: 13, lineHeight: 1.65, color: "var(--e-muted)" };
+const addr: React.CSSProperties = { fontFamily: "ui-monospace,monospace", fontSize: 11, background: "var(--e-line-soft)", borderRadius: 4, padding: "2px 5px", wordBreak: "break-all" };
 const warnLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.5, margin: "10px 0 0", borderLeft: "3px solid var(--e-line)", paddingLeft: 10 };
 const tiny: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 6, width: 30, height: 30, fontSize: 13, cursor: "pointer", flexShrink: 0 };
 const addBar: React.CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 };
