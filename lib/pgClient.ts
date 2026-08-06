@@ -39,21 +39,56 @@ function pool(): pg.Pool | null {
  * Values are deliberately not returned — fifty page snapshots is megabytes, and a list only needs
  * to say when and how big.
  */
+/**
+ * Which columns `state_rev` actually has, asked once and remembered.
+ *
+ * ⚠️ ASKED, NOT ASSUMED — and the first version of this file assumed. The table is created by the
+ * COCKPIT, which lives in a different repository: nothing here defines it, nothing here migrates
+ * it, and there is no schema file to read. Guessing `id` and `created_at` produced a 500 on every
+ * request, with the reason only visible in a server log.
+ *
+ * Writing to it is safe without this because the insert names its own columns (key, value, note),
+ * which is why saving has always worked while reading back did not.
+ */
+let _revCols: Set<string> | null = null;
+async function revColumns(p: pg.Pool): Promise<Set<string>> {
+  if (_revCols) return _revCols;
+  const { rows } = await p.query(
+    `select column_name from information_schema.columns
+      where table_schema = current_schema() and table_name = 'state_rev'`
+  );
+  _revCols = new Set(rows.map((r) => String(r.column_name)));
+  return _revCols;
+}
+
+/** First name that exists, so a differently-named column degrades instead of throwing. */
+const pick = (cols: Set<string>, ...names: string[]) => names.find((n) => cols.has(n));
+
 export async function listRevisions(
   key: string,
   limit = 40
 ): Promise<{ id: number; at: string; bytes: number }[]> {
   const p = pool();
   if (!p) return [];
+
+  const cols = await revColumns(p);
+  if (!cols.size) return []; // no such table on this database
+
+  const idCol = pick(cols, "id", "rev", "revision");
+  const timeCol = pick(cols, "created_at", "inserted_at", "at", "ts", "created");
+  if (!idCol) return []; // nothing stable to identify or order by
+
   const { rows } = await p.query(
-    `select id, created_at, octet_length(value::text) as bytes
-       from state_rev where key = $1 order by id desc limit $2`,
+    `select ${idCol} as id,
+            ${timeCol ? `${timeCol} as at` : "null as at"},
+            octet_length(value::text) as bytes
+       from state_rev where key = $1 order by ${idCol} desc limit $2`,
     [key, limit]
   );
   return rows.map((r) => ({
     id: Number(r.id),
-    at: new Date(r.created_at).toISOString(),
-    bytes: Number(r.bytes),
+    at: r.at ? new Date(r.at).toISOString() : "",
+    bytes: Number(r.bytes || 0),
   }));
 }
 
@@ -61,9 +96,15 @@ export async function listRevisions(
 export async function readRevision(key: string, id: number): Promise<unknown> {
   const p = pool();
   if (!p) return null;
+  const cols = await revColumns(p);
+  const idCol = pick(cols, "id", "rev", "revision");
+  if (!idCol) return null;
   // Keyed AND id-matched on purpose: an id belonging to another page must never be restorable
   // onto this one.
-  const { rows } = await p.query("select value from state_rev where key = $1 and id = $2", [key, id]);
+  const { rows } = await p.query(
+    `select value from state_rev where key = $1 and ${idCol} = $2`,
+    [key, id]
+  );
   return rows.length ? rows[0].value : null;
 }
 

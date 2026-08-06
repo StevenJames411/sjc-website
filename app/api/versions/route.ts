@@ -48,7 +48,17 @@ export async function GET(req: Request) {
     });
   }
 
-  return Response.json({ ok: true, versions: await listRevisions(pubKeyFor(page, site)) });
+  // ⚠️ THE REASON COMES BACK, it doesn't just go to a log. The first version of this route threw a
+  // bare 500 because it guessed at column names in a table another repository owns — and from the
+  // browser that is indistinguishable from "the feature is broken", with nothing to act on.
+  try {
+    return Response.json({ ok: true, versions: await listRevisions(pubKeyFor(page, site)) });
+  } catch (e) {
+    return Response.json(
+      { ok: false, error: `Couldn't read this page's history: ${(e as Error).message}` },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
