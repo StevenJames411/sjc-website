@@ -316,12 +316,16 @@ export default function FormLibrary({
         style={secInput}
       />
     ) : (
+      // ⚠️ THE PENCIL IS THE POINT. Steven: *"I'd love to have a little pencil there so a person
+      // would know that's editable. Right now I have to click there just to see that it is."* An
+      // affordance you discover by clicking is not an affordance — it's a secret.
       <h2
         style={{ ...sec, cursor: "text" }}
         title="Click to rename this section"
         onClick={() => setRenaming({ key: k, text: sections[k] })}
       >
         {sections[k]}
+        <span style={pencil} aria-hidden="true">✎</span>
       </h2>
     );
 
@@ -384,10 +388,16 @@ export default function FormLibrary({
             // ⚠️ "not on any site" IS TRUE AND READS AS "nothing uses this". These are the
             // questions a live page is asking right now — it just isn't POINTING at the library
             // copy, which was the whole decision not to migrate. Say the useful thing.
+            // ⚠️ JUST THE SITE. Steven: *"it says same questions as Steven James Consulting,
+            // Apply intake form. It's repetitive."* It was — the form is NAMED after the page it
+            // came from, so the badge repeated the card's own title back at it and wrapped to
+            // three lines doing it. The only fact the title doesn't already carry is WHOSE page,
+            // and that survives a rename: copy this for another client and "from Steven James
+            // Consulting" still says where the questions started.
             const src = copiedFrom[f.id];
             return src ? (
               <span style={{ ...countChip, background: "#eef2ff", color: "#3730a3" }}>
-                same questions as {src.siteName} · {src.title}
+                from {src.siteName}
               </span>
             ) : (
               <span style={chip}>not linked to a page</span>
@@ -734,6 +744,7 @@ const liLabel: React.CSSProperties = { overflow: "hidden", textOverflow: "ellips
 const usedOn: React.CSSProperties = { fontSize: 12, margin: "8px 0 0", lineHeight: 1.6 };
 const cardLink: React.CSSProperties = { color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
 const secInput: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 6, padding: "4px 8px", margin: "34px 0 6px", fontFamily: "inherit", background: "var(--e-panel)", minWidth: 320 };
+const pencil: React.CSSProperties = { marginLeft: 8, fontSize: 12, color: "var(--e-muted)", opacity: 0.7 };
 const hiddenLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", marginTop: 26, lineHeight: 1.7 };
 const linkBtn: React.CSSProperties = { background: "none", border: "none", padding: 0, font: "inherit", color: "var(--e-accent)", fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
