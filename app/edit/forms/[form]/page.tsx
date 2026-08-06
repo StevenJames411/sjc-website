@@ -12,21 +12,39 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Edit form" };
 
 /**
- * WHERE THIS FORM RUNS — answered on the screen where you edit it.
+ * WHO THIS FORM IS SWITCHED ON FOR — and the switches themselves, on this screen.
  *
- * ⚠️ Steven, editing the onboarding form: *"I don't see anywhere to attach it to a business."*
- * There is nowhere, and there shouldn't be — one form serves every client, and WHICH client is
- * decided by which link you open. But a screen that simply omits the control someone is looking
- * for teaches them it's hidden, not that it doesn't exist. So the editor states where the form
- * runs rather than leaving him hunting for a field that was never going to be there.
+ * ── THE MISTAKE THIS FIXES ───────────────────────────────────────────────────────────────────
+ * Steven, editing the onboarding form: *"I don't see anywhere to attach it to a business."* My
+ * first two answers explained that the switch lives on the Websites screen. Both were correct and
+ * both were wrong, because his actual reply was the real finding: *"this is turning into a hot
+ * mess. I need to go to the websites to mess with the forms instead of being in the forms
+ * library. Is that step one?"*
+ *
+ * No. Explaining a split is not the same as justifying it. A form's questions were here and the
+ * one control that makes the form REACH anybody was two screens away, so the answer to "how do I
+ * use this form" was never on the page where you use it. The controls come here.
+ *
+ * ⚠️ THE WEBSITES SCREEN KEEPS ITS COPY. Not a move — the same switches in both places, because
+ * the chase list ("open · 4 of 9 for four days") belongs beside the business, and turning a form
+ * on belongs beside the form. Both are the same one call to /api/admin/intake.
  */
 async function onboardingFacts() {
   const sites = (await readSites()).filter((s) => s.id !== SJC && !s.deletedAt);
   const summaries = await intakeSummaries(sites.map((s) => ({ id: s.id })));
   return {
-    example: onboardUrlFor({ id: sites[0]?.id || "<business>", domain: sites[0]?.domain }),
-    openFor: sites.filter((s) => summaries[s.id]?.status === "open").map((s) => s.name),
-    total: sites.length,
+    businesses: sites.map((s) => {
+      const it = summaries[s.id];
+      return {
+        id: s.id,
+        name: s.name,
+        url: onboardUrlFor({ id: s.id, domain: s.domain }),
+        status: it?.status || "never opened",
+        answered: it?.answered || 0,
+        asked: it?.asked || 0,
+        submitted: Boolean(it?.submitted),
+      };
+    }),
   };
 }
 

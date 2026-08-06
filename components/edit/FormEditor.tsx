@@ -29,7 +29,16 @@ import {
 const TYPES = Object.keys(FIELD_TYPE_LABELS) as FormFieldType[];
 
 type UsageRow = { siteName: string; title: string; published: boolean };
-type Onboarding = { example: string; openFor: string[]; total: number };
+type Business = {
+  id: string;
+  name: string;
+  url: string;
+  status: "open" | "closed" | "never opened";
+  answered: number;
+  asked: number;
+  submitted: boolean;
+};
+type Onboarding = { businesses: Business[] };
 
 export default function FormEditor({
   form,
@@ -46,6 +55,34 @@ export default function FormEditor({
   const [msg, setMsg] = useState("");
   /** null = couldn't check. ⚠️ Never render unknown as "used nowhere". */
   const [usage, setUsage] = useState<UsageRow[] | null | undefined>(undefined);
+  /** Which business's switch is mid-flight, so it can't be double-clicked. */
+  const [flip, setFlip] = useState("");
+  const [copied, setCopied] = useState("");
+
+  /**
+   * Switch one business's onboarding link on or off, from here.
+   *
+   * ⚠️ THE SAME ONE CALL THE WEBSITES SCREEN MAKES. Two screens, one endpoint — a second way to
+   * change this state would be a second thing that can disagree with the first, and "her form
+   * says open here and closed there" is unanswerable.
+   */
+  async function setIntake(siteId: string, action: "open" | "close") {
+    setFlip(siteId);
+    setErr("");
+    try {
+      const res = await fetch(
+        `/api/admin/intake?site=${encodeURIComponent(siteId)}&action=${action}`,
+        { method: "POST", credentials: "same-origin" }
+      );
+      const body = await res.json().catch(() => ({}));
+      if (!body?.ok) throw new Error(body?.error || "Couldn't change it.");
+      router.refresh();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setFlip("");
+    }
+  }
 
   // WHERE THIS FORM RUNS. The library cards say it; this screen didn't, and this is the screen
   // you're on when you're about to change a question — the exact moment the blast radius matters.
@@ -145,21 +182,75 @@ export default function FormEditor({
           question is about to be changed on all of them at once. */}
       {onboarding ? (
         <div style={whereBox}>
-          <p style={{ margin: 0, fontWeight: 600, color: "var(--e-ink)" }}>
-            You don&apos;t attach this to a business — the link does that.
+          <p style={{ margin: 0, fontWeight: 600, color: "var(--e-ink)", fontSize: 14 }}>
+            Who this form is switched on for
           </p>
-          <p style={{ margin: "6px 0 0" }}>
-            One form, every client. Each business gets its own address:
-            <br />
-            <code style={addr}>{onboarding.example}</code>
-            <br />
-            Open or close one per business on the <strong>Websites</strong> screen. Whatever you
-            change here shows up in every one of those links straight away.
+          <p style={{ margin: "4px 0 12px" }}>
+            One form, every client — switch it on for a business and text them the link. The
+            questions below are the same for all of them, and changing one shows up in every open
+            link straight away.
           </p>
-          <p style={{ margin: "6px 0 0", fontWeight: 600, color: "var(--e-ink)" }}>
-            {onboarding.openFor.length
-              ? `Open right now for ${onboarding.openFor.join(", ")}.`
-              : "Nobody has an open link right now, so nothing is being filled in."}
+
+          {onboarding.businesses.length === 0 ? (
+            <p style={{ margin: 0 }}>No client websites yet.</p>
+          ) : null}
+
+          {onboarding.businesses.map((b) => (
+            <div key={b.id} style={bizRow}>
+              <span>
+                <strong style={{ color: "var(--e-ink)" }}>{b.name}</strong>
+                <span style={{ marginLeft: 8 }}>
+                  {b.status === "never opened"
+                    ? "not started"
+                    : b.submitted
+                      ? "done — she's sent it in"
+                      : b.status === "closed"
+                        ? "closed"
+                        : `open · ${b.answered} of ${b.asked} answered`}
+                </span>
+              </span>
+              <span style={{ display: "flex", gap: 6 }}>
+                {b.status === "open" ? (
+                  <>
+                    <button
+                      type="button"
+                      style={smallGhost}
+                      onClick={() => {
+                        navigator.clipboard?.writeText(b.url);
+                        setCopied(b.id);
+                        setTimeout(() => setCopied(""), 1800);
+                      }}
+                      title="Copy her link, ready to text"
+                    >
+                      {copied === b.id ? "Copied" : "Copy link"}
+                    </button>
+                    <button
+                      type="button"
+                      style={smallGhost}
+                      disabled={flip === b.id}
+                      onClick={() => setIntake(b.id, "close")}
+                    >
+                      Close
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    style={primary}
+                    disabled={flip === b.id}
+                    title="Switch her form on so she can fill it in"
+                    onClick={() => setIntake(b.id, "open")}
+                  >
+                    {flip === b.id ? "…" : b.submitted ? "Reopen" : "Open it"}
+                  </button>
+                )}
+              </span>
+            </div>
+          ))}
+
+          <p style={{ margin: "10px 0 0", fontSize: 12 }}>
+            Same switches as the <strong>Websites</strong> screen — whichever one you&apos;re
+            standing on.
           </p>
         </div>
       ) : usage === undefined ? null : usage === null ? (
@@ -506,6 +597,7 @@ const keyTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", fon
 const skipRow: React.CSSProperties = { display: "flex", gap: 8, alignItems: "center", marginTop: 10, flexWrap: "wrap" };
 const whereBox: React.CSSProperties = { marginTop: 16, border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 10, padding: "12px 14px", fontSize: 13, lineHeight: 1.65, color: "var(--e-muted)" };
 const addr: React.CSSProperties = { fontFamily: "ui-monospace,monospace", fontSize: 11, background: "var(--e-line-soft)", borderRadius: 4, padding: "2px 5px", wordBreak: "break-all" };
+const bizRow: React.CSSProperties = { display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "9px 0", borderTop: "1px solid var(--e-line)" };
 const warnLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.5, margin: "10px 0 0", borderLeft: "3px solid var(--e-line)", paddingLeft: 10 };
 const tiny: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 6, width: 30, height: 30, fontSize: 13, cursor: "pointer", flexShrink: 0 };
 const addBar: React.CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 };
