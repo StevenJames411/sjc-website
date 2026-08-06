@@ -176,9 +176,9 @@ export default function Card({
   // Three looks off one switch. Blank is the original white box, so a card saved before any of
   // this existed renders byte-identical.
   const glassy = surface === "glass" || surface === "outline";
-  const tone = resolveColorOr(surfaceColor, "#ffffff");
+  const tone = resolveColorOr(surfaceColor, "var(--color-sjc-white)");
   const fillPct = typeof surfaceOpacity === "number" && surfaceOpacity > 0 ? surfaceOpacity : 7;
-  const edge = resolveColorOr(borderColor, "#ffffff");
+  const edge = resolveColorOr(borderColor, "var(--color-sjc-white)");
 
   const shell = bare
     ? "h-full"
@@ -221,7 +221,7 @@ export default function Card({
         {icon ? (
           <span
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
-            style={{ background: tint(iconColor, 12), color: resolveColorOr(iconColor, "#2563eb") }}
+            style={{ background: tint(iconColor, 12), color: resolveColorOr(iconColor, "var(--color-sjc-blue)") }}
           >
             <Icon name={icon} size={20} />
           </span>
@@ -282,7 +282,7 @@ export default function Card({
             className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
             style={{
               background: tint(iconColor, glassy ? 10 : 8),
-              color: resolveColorOr(iconColor, "#2563eb"),
+              color: resolveColorOr(iconColor, "var(--color-sjc-blue)"),
               // The tile's own hairline. A bought design draws it in the accent
               // (`bg-[#00D9FF]/10 border border-[#00D9FF]/20`) and it is a surprising amount of
               // what reads as "expensive" — without it the icon floats on a flat patch.

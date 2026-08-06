@@ -147,13 +147,19 @@ const BG_FIELD = {
 };
 
 // Per-block text color. Default ink; "White" is for blocks sitting on a dark Section band.
+//
+// ⚠️ ROLES, NOT HEXES. The swatch saves what a colour MEANS, so the brand screen drives it. These
+// were literal hexes, which froze every pick onto the page the moment it was made — no palette
+// change could reach it afterwards. Pages already holding the hexes still render exactly as
+// before (resolveColor passes an unrecognised value straight through) and convert via
+// /api/admin/reskin.
 const COLOR_FIELD = {
   type: "select" as const,
   options: [
-    { label: "Ink (default)", value: "#111827" },
-    { label: "White", value: "#ffffff" },
-    { label: "Blue", value: "#2563eb" },
-    { label: "Muted gray", value: "#4b5563" },
+    { label: "Ink (default)", value: "ink" },
+    { label: "White", value: "white" },
+    { label: "Blue", value: "accent" },
+    { label: "Muted gray", value: "mute" },
   ],
 };
 
@@ -872,10 +878,12 @@ export const config: Config<Props, RootProps> = {
         dotColor: {
           type: "select" as const,
           label: "Dot color",
+          // Labelled by ROLE, not by colour name — "Second accent" stays true after a re-skin;
+          // an option called "Green" is a lie the moment the palette moves.
           options: [
-            { label: "Green", value: "#22c55e" },
-            { label: "Blue", value: "#2563eb" },
-            { label: "Ink", value: "#111827" },
+            { label: "Second accent", value: "secondary" },
+            { label: "Accent", value: "accent" },
+            { label: "Ink", value: "ink" },
           ],
         },
         rows: {
@@ -1012,7 +1020,7 @@ export const config: Config<Props, RootProps> = {
           <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#2563eb", marginBottom: 6 }}>
             Form step
           </div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 10 }}>{title || "Step"}</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--color-sjc-ink)", marginBottom: 10 }}>{title || "Step"}</div>
           <Content />
         </div>
       ),
@@ -1059,7 +1067,7 @@ export const config: Config<Props, RootProps> = {
           questionType === "multi" ? "Multiple choice" : "Short text";
         return (
           <div style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 12px", margin: "8px 0", background: "#f8fafc" }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-sjc-ink)" }}>
               {label || "Question"}{required ? " *" : ""}
             </div>
             <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{typeLabel}</div>
@@ -1136,7 +1144,7 @@ export const config: Config<Props, RootProps> = {
                 background: "#f8fafc",
               }}
             >
-              <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>{businessName || "My Staff"}</span>
+              <span style={{ fontWeight: 700, fontSize: 15, color: "var(--color-sjc-ink)" }}>{businessName || "My Staff"}</span>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>My Staff</span>
             </div>
             <div>
@@ -1171,7 +1179,7 @@ export const config: Config<Props, RootProps> = {
                   </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ fontWeight: 700, color: "#111827", fontSize: 15 }}>{r.name}</span>
+                      <span style={{ fontWeight: 700, color: "var(--color-sjc-ink)", fontSize: 15 }}>{r.name}</span>
                       {r.isAI && (
                         <span
                           style={{
@@ -1316,7 +1324,7 @@ export const config: Config<Props, RootProps> = {
             newTab: { ...OPENS_IN_FIELD },
           },
           getItemSummary: (i: { label?: string }) => i?.label || "link",
-          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "#ffffff", newTab: false },
+          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "white", newTab: false },
         },
         ctaLabel: { type: "text" as const, label: "Button label (leave blank to hide)" },
         ctaHref: { type: "text" as const, label: "Button links to" },
@@ -1440,7 +1448,7 @@ export const config: Config<Props, RootProps> = {
         },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "#ffffff", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", grid: "", gradientTo: "", gradientAngle: 135, content: [] },
+      defaultProps: { background: "white", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", grid: "", gradientTo: "", gradientAngle: 135, content: [] },
       render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, grid, gradientTo, gradientAngle, content: Content }) => (
         <section
           id={typeof id === "string" ? id : undefined}
@@ -1533,10 +1541,10 @@ export const config: Config<Props, RootProps> = {
           ),
         },
       },
-      defaultProps: { color: "#e5e7eb", thickness: 1, spacing: 24 },
+      defaultProps: { color: "line", thickness: 1, spacing: 24 },
       render: ({ color, thickness, spacing }) => (
         <div style={{ padding: `${typeof spacing === "number" ? spacing : 24}px 0` }}>
-          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${resolveColorOr(color, "#e5e7eb")}`, margin: 0 }} />
+          <hr style={{ border: "none", borderTop: `${typeof thickness === "number" ? thickness : 1}px solid ${resolveColorOr(color, "var(--color-sjc-line)")}`, margin: 0 }} />
         </div>
       ),
     },
@@ -1666,7 +1674,7 @@ export const config: Config<Props, RootProps> = {
           ),
         },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "#111827", underline: "", highlight: "", highlightColor: "", highlightFade: "" },
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "ink", underline: "", highlight: "", highlightColor: "", highlightFade: "" },
       render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor, highlightFade }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
 
@@ -1732,7 +1740,7 @@ export const config: Config<Props, RootProps> = {
             style={{
               fontSize: `${px}px`,
               textAlign: align,
-              color: resolveColorOr(color, "#111827"),
+              color: resolveColorOr(color, "var(--color-sjc-ink)"),
               marginTop: 0,
               marginBottom: 0,
               paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 0}px`,
@@ -1811,7 +1819,7 @@ export const config: Config<Props, RootProps> = {
         spaceAbove: 16,
         spaceBelow: 0,
         align: "left" as const,
-        color: "#111827",
+        color: "ink",
         pill: "",
         pillBorder: "",
         icon: "",
@@ -1832,7 +1840,7 @@ export const config: Config<Props, RootProps> = {
           return (
             <div
               className="rt leading-relaxed"
-              style={{ textAlign: align, color: resolveColorOr(color, "#111827"), marginTop: 0, marginBottom: 0, ...pad, fontSize: size }}
+              style={{ textAlign: align, color: resolveColorOr(color, "var(--color-sjc-ink)"), marginTop: 0, marginBottom: 0, ...pad, fontSize: size }}
               dangerouslySetInnerHTML={{ __html: text }}
             />
           );
@@ -1844,7 +1852,7 @@ export const config: Config<Props, RootProps> = {
             <span
               className={`inline-flex items-center gap-2 leading-snug${pill || pillBorder ? " rounded-full px-4 py-2" : ""}`}
               style={{
-                color: resolveColorOr(color, "#111827"),
+                color: resolveColorOr(color, "var(--color-sjc-ink)"),
                 background: pill || undefined,
                 border: pillBorder ? `1px solid ${resolveColor(pillBorder)}` : undefined,
                 boxShadow: pill || pillBorder ? "0 1px 2px rgba(0,0,0,0.05)" : undefined,
@@ -1923,7 +1931,7 @@ export const config: Config<Props, RootProps> = {
             </div>
           );
         }
-        const accent = resolveColorOr(color, "#2563eb");
+        const accent = resolveColorOr(color, "var(--color-sjc-blue)");
         const outlined = variant === "outline";
         const justify = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
         return (
@@ -2367,7 +2375,7 @@ export const config: Config<Props, RootProps> = {
                       lineHeight: 1.4,
                       whiteSpace: "pre-wrap" as const,
                       background: isChloe ? "#2563eb" : "#e5e7eb",
-                      color: isChloe ? "#ffffff" : "#111827",
+                      color: isChloe ? "var(--color-sjc-white)" : "var(--color-sjc-ink)",
                       borderBottomRightRadius: isChloe ? "5px" : "20px",
                       borderBottomLeftRadius: isChloe ? "20px" : "5px",
                     }}
