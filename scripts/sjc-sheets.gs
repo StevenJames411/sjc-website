@@ -32,7 +32,7 @@
 //
 // After that, never again.
 
-var SCRIPT_VERSION = '6e73691dc4f3';
+var SCRIPT_VERSION = '4ee431790243';
 var TAB_LEADS = 'Leads';
 var TAB_ONBOARDING = 'Onboarding';
 // Money events, in SJC's OWN operations sheet — never a client's. Appends like Leads (it's a log,
@@ -98,6 +98,10 @@ function doPost(e) {
         return reply(createClientSheet_(body));
       case 'write':
         return reply(writeRow_(body));
+      case 'readRows':
+        return reply(readRows_(body));
+      case 'logCall':
+        return reply(logCall_(body));
       case 'ping':
         return reply({ ok: true, pong: true });
       default:
@@ -262,6 +266,177 @@ function writeRow_(body) {
 
   notify_(body, items, tab);
   return { ok: true, tab: sheet.getName(), row: sheet.getLastRow() };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// THE DIAL BOARD — reading a call sheet back out, and writing the result of a call into it.
+//
+// Everything above this line is the site WRITING a record and forgetting it. These two actions
+// are the one place that reads a sheet back, and they exist for a surface that is Steven's own
+// desk — his prospects, his notes, his calls. Never a client's leads. See lib/dial.ts.
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+
+/** How many rows the board will ever pull at once. A scrape of a metro is a few hundred. */
+var DIAL_MAX_ROWS = 2000;
+
+/**
+ * Read a call sheet: its tab names, its headers, and its rows.
+ *
+ * ⚠️ EVERY VALUE COMES BACK AS A STRING, formatted the way the sheet DISPLAYS it — via
+ * getDisplayValues, not getValues. A phone number stored as a number arrives as 15128464044 from
+ * getValues and "+1512-846-4044" from the display; the second is the one that can be dialled and
+ * the one Steven is looking at. Same reason ratings keep their "4.9" instead of becoming 4.9000001.
+ */
+function readRows_(body) {
+  var id = String(body.spreadsheetId || '').trim();
+  if (!id) return { ok: false, error: 'spreadsheetId required' };
+
+  var ss = SpreadsheetApp.openById(id);
+  var tabs = ss.getSheets().map(function (s) { return s.getName(); });
+
+  var wanted = String(body.tab || '').trim();
+  var sheet = wanted ? ss.getSheetByName(wanted) : ss.getSheets()[0];
+  if (!sheet) return { ok: false, error: 'no tab named "' + wanted + '" — has: ' + tabs.join(', ') };
+
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 1 || lastCol < 1) {
+    return { ok: true, title: ss.getName(), tab: sheet.getName(), tabs: tabs, headers: [], rows: [] };
+  }
+
+  var headers = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0].map(function (h) {
+    return String(h == null ? '' : h).trim();
+  });
+
+  var rows = [];
+  if (lastRow > 1) {
+    var take = Math.min(lastRow - 1, DIAL_MAX_ROWS);
+    var vals = sheet.getRange(2, 1, take, lastCol).getDisplayValues();
+    for (var i = 0; i < vals.length; i++) {
+      // The sheet's OWN row number travels with every row. It is the only handle a write has, and
+      // logCall_ re-checks the business name against it before touching anything.
+      rows.push({ row: i + 2, cells: vals[i].map(function (v) { return String(v == null ? '' : v); }) });
+    }
+  }
+
+  return {
+    ok: true,
+    title: ss.getName(),
+    tab: sheet.getName(),
+    tabs: tabs,
+    headers: headers,
+    rows: rows,
+    truncated: lastRow - 1 > DIAL_MAX_ROWS,
+  };
+}
+
+/**
+ * Write the result of one call onto one row.
+ *
+ * ── ⛔ WHY THIS VERIFIES THE ROW BEFORE IT WRITES ─────────────────────────────────────────────
+ * The board holds a list it read seconds or minutes ago, and identifies a business by its ROW
+ * NUMBER. Row numbers are not identity: sort the sheet by rating, insert a row, delete a dud, and
+ * row 34 is now a different business. The board would then stamp "not interested" onto somebody
+ * Steven never called — silently, because a write to the wrong row succeeds exactly like a write
+ * to the right one, and he would only find out weeks later when he skipped a good prospect.
+ *
+ * So the caller sends the NAME it thinks is on that row. If the name has moved, we search the
+ * name column for it and write there instead. If it isn't in the sheet at all, we refuse and say
+ * so — a refusal he can see beats a note filed against a stranger.
+ */
+function logCall_(body) {
+  var id = String(body.spreadsheetId || '').trim();
+  if (!id) return { ok: false, error: 'spreadsheetId required' };
+
+  var ss = SpreadsheetApp.openById(id);
+  var sheet = String(body.tab || '').trim()
+    ? ss.getSheetByName(String(body.tab).trim())
+    : ss.getSheets()[0];
+  if (!sheet) return { ok: false, error: 'no such tab' };
+
+  var lastCol = sheet.getLastColumn();
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return { ok: false, error: 'sheet has no rows' };
+
+  var headers = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0].map(function (h) {
+    return String(h == null ? '' : h).trim();
+  });
+
+  var nameCol = indexOfHeaderLike_(headers, ['name', 'business', 'business name', 'company']);
+  if (nameCol < 0) return { ok: false, error: 'no Name/Business/Company column to verify against' };
+
+  var expect = String(body.expectName || '').trim();
+  var row = parseInt(body.row, 10);
+  if (!expect) return { ok: false, error: 'expectName required — a write is not allowed to guess' };
+
+  var onRow = row >= 2 && row <= lastRow
+    ? String(sheet.getRange(row, nameCol + 1).getDisplayValue() || '').trim()
+    : '';
+
+  if (onRow.toLowerCase() !== expect.toLowerCase()) {
+    // The sheet moved under us. Find the business by name rather than writing where we were told.
+    var col = sheet.getRange(2, nameCol + 1, lastRow - 1, 1).getDisplayValues();
+    var found = -1;
+    for (var i = 0; i < col.length; i++) {
+      if (String(col[i][0] || '').trim().toLowerCase() === expect.toLowerCase()) { found = i + 2; break; }
+    }
+    if (found < 0) {
+      return { ok: false, error: 'row ' + row + ' is now "' + onRow + '", and "' + expect + '" is not in this sheet — nothing written' };
+    }
+    row = found;
+  }
+
+  var when = readableTime_(body.at);
+  var wrote = [];
+
+  // The outcome and the time it happened, each in their own column, created if the sheet has not
+  // got one. A scraped sheet never has them on day one.
+  if (body.outcome) {
+    setCell_(sheet, headers, row, 'Status', String(body.outcome));
+    wrote.push('Status');
+    setCell_(sheet, headers, row, 'Last called', when);
+    wrote.push('Last called');
+  }
+  if (body.callbackAt) {
+    setCell_(sheet, headers, row, 'Callback', String(body.callbackAt));
+    wrote.push('Callback');
+  }
+
+  // ⚠️ NOTES APPEND, THEY DO NOT REPLACE. What he typed on the first call is the reason the second
+  // call goes differently; overwriting it would throw away the only thing on the row worth having.
+  var note = String(body.note || '').trim();
+  if (note || body.outcome) {
+    var noteCol = indexOfHeaderLike_(headers, ['notes', 'note']);
+    var line = when + ' — ' + (body.outcome || 'note') + (note ? ': ' + note : '');
+    if (noteCol < 0) {
+      setCell_(sheet, headers, row, 'Notes', line);
+    } else {
+      var prev = String(sheet.getRange(row, noteCol + 1).getDisplayValue() || '').trim();
+      sheet.getRange(row, noteCol + 1).setValue(prev ? prev + '\n' + line : line);
+    }
+    wrote.push('Notes');
+  }
+
+  return { ok: true, row: row, wrote: wrote, at: when };
+}
+
+/** Set one cell by header name, adding the column at the end if the sheet has not got it. */
+function setCell_(sheet, headers, row, header, value) {
+  var idx = indexOfHeaderLike_(headers, [header.toLowerCase()]);
+  if (idx < 0) {
+    idx = headers.length;
+    sheet.getRange(1, idx + 1).setValue(header).setFontWeight('bold');
+    headers.push(header);
+  }
+  sheet.getRange(row, idx + 1).setValue(value);
+}
+
+/** Case-insensitive header lookup. Returns -1 when none of `names` is present. */
+function indexOfHeaderLike_(headers, names) {
+  for (var i = 0; i < headers.length; i++) {
+    if (names.indexOf(String(headers[i] || '').trim().toLowerCase()) >= 0) return i;
+  }
+  return -1;
 }
 
 /**

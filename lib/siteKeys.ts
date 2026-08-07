@@ -105,3 +105,12 @@ export const FORMS_KEY = "sjc-forms";
  * like the brand or the login. No public page ever reads this key.
  */
 export const INVOICES_KEY = "sjc-invoices";
+
+/**
+ * The dial board's list of call sheets — a name, a spreadsheet id and a tab, per list.
+ *
+ * ⚠️ WHAT MAKES THIS KEY SAFE IS HOW LITTLE IS IN IT. No prospect, no note, no call history: all of
+ * that lives in the Google Sheet and is read live on every load. Steven's own prospecting lists on
+ * his own desk — never a client's leads. See the boundary note at the top of lib/dial.ts.
+ */
+export const DIAL_KEY = "sjc-dial";
