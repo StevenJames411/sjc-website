@@ -62,9 +62,16 @@ export type Prospect = {
   notes: string;
   status: string;
   lastCalled: string;
-  /** Everything the sheet had that we have no field for, in sheet order. Shown on the card. */
-  extra: { label: string; value: string }[];
+  /** Leftover columns from the CURATED part of the sheet. Shown on the card face. */
+  extra: Cell[];
+  /**
+   * Leftover columns from past the sheet's own "— full data →" marker. Same shape, hidden behind a
+   * disclosure — see splitAtDivider below for why these are a different kind of thing.
+   */
+  raw: Cell[];
 };
+
+export type Cell = { label: string; value: string };
 
 /**
  * ⛔ SCRAPED SHEETS ARE FULL OF THE LITERAL WORD "null".
@@ -89,7 +96,7 @@ export function clean(v: unknown): string {
  * Anything unrecognised still reaches the card via `extra`, so a column added next month shows up
  * on screen without a code change instead of being silently dropped.
  */
-const FIELDS: Record<keyof Omit<Prospect, "row" | "extra">, string[]> = {
+const FIELDS: Record<keyof Omit<Prospect, "row" | "extra" | "raw">, string[]> = {
   name: ["name", "business", "business name", "company"],
   phone: ["phone", "phone number", "telephone", "tel", "mobile"],
   website: ["website", "site", "url", "web"],
@@ -103,6 +110,32 @@ const FIELDS: Record<keyof Omit<Prospect, "row" | "extra">, string[]> = {
   lastCalled: ["last called", "called", "last call", "called at"],
 };
 
+/**
+ * WHERE THE SHEET STOPS BEING A CALL SHEET AND STARTS BEING A DATA DUMP.
+ *
+ * ── ⛔ THE PROBLEM THIS SOLVES ────────────────────────────────────────────────────────────────
+ * The deck-builder sheet has **130 columns**. The groomer sheets have 12 and 14. Rendering every
+ * leftover column put a 47-row wall of `latitude`, `country_code` and
+ * `phone.whitepages_phones.phone_type` under the card — taller than the card itself — and a
+ * 394-character URL in it pushed the page sideways. On a screen whose whole job is "who am I
+ * about to talk to", that is not extra information, it is the information buried.
+ *
+ * ── THE ANSWER WAS ALREADY IN THE SHEET ───────────────────────────────────────────────────────
+ * Steven's scrape writes a literal divider column headed `— full data →` at index 22. He had
+ * already decided where the useful part ends; nobody had told the code. Columns before it are the
+ * curated view he built for himself. Columns after it are the raw scrape.
+ *
+ * So this is not a cap, a top-N, or a guess about which columns matter — it is the sheet's own
+ * boundary, honoured. A sheet with no marker (both groomer lists) is unaffected: everything stays
+ * on the card face exactly as before.
+ */
+const DIVIDER = /^[\s\-—–_|]*$|→|←|▶|»|full data|raw data|everything else/i;
+
+export function splitAtDivider(headers: string[]): number {
+  const i = headers.findIndex((h) => DIVIDER.test(String(h || "").trim()));
+  return i < 0 ? headers.length : i;
+}
+
 export function toProspects(
   headers: string[],
   rows: { row: number; cells: string[] }[]
@@ -110,21 +143,52 @@ export function toProspects(
   const lower = headers.map((h) => h.trim().toLowerCase());
   const at: Partial<Record<keyof typeof FIELDS, number>> = {};
   const claimed = new Set<number>();
+  const cut = splitAtDivider(headers);
 
   for (const field of Object.keys(FIELDS) as (keyof typeof FIELDS)[]) {
-    const i = lower.findIndex((h, idx) => !claimed.has(idx) && FIELDS[field].includes(h));
+    // ⚠️ SEARCHED BEFORE THE DIVIDER FIRST. The deck sheet has `name`, `phone`, `website` and 11
+    // other headers TWICE — once in the curated view, once again in the raw dump. Taking whichever
+    // came first in the whole row would sometimes bind the card to the scrape's copy, which is the
+    // same value today and free to drift tomorrow. The curated column always wins.
+    const find = (from: number, to: number) =>
+      lower.findIndex((h, idx) => idx >= from && idx < to && !claimed.has(idx) && FIELDS[field].includes(h));
+    const i = find(0, cut) >= 0 ? find(0, cut) : find(cut, lower.length);
     if (i >= 0) {
       at[field] = i;
       claimed.add(i);
     }
   }
 
+  /** Leftovers in one region, minus blanks, minus anything already shown under another name. */
+  const leftovers = (cells: string[], from: number, to: number, seen: Set<string>) => {
+    const out: Cell[] = [];
+    for (let i = from; i < to; i++) {
+      if (claimed.has(i)) continue;
+      const label = String(headers[i] || "").trim();
+      const value = clean(cells[i]);
+      if (!label || !value) continue;
+      // The duplicated columns carry duplicated VALUES. Printing "city  San Antonio" twice makes
+      // the reader check whether they differ; they never do.
+      const key = `${label.toLowerCase()} ${value}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ label, value });
+    }
+    return out;
+  };
+
   const pick = (cells: string[], f: keyof typeof FIELDS) => {
     const i = at[f];
     return i === undefined ? "" : clean(cells[i]);
   };
 
-  return rows.map(({ row, cells }) => ({
+  return rows.map(({ row, cells }) => {
+    // Seeded with what the card already shows, so a leftover column holding the same value as the
+    // business name or phone doesn't get printed underneath it a second time.
+    const seen = new Set<string>();
+    const extra = leftovers(cells, 0, cut, seen);
+    const raw = leftovers(cells, cut, headers.length, seen);
+    return {
     row,
     name: pick(cells, "name"),
     phone: pick(cells, "phone"),
@@ -137,10 +201,10 @@ export function toProspects(
     notes: pick(cells, "notes"),
     status: pick(cells, "status"),
     lastCalled: pick(cells, "lastCalled"),
-    extra: headers
-      .map((label, i) => ({ label: label.trim(), value: clean(cells[i]) }))
-      .filter((x, i) => !claimed.has(i) && x.label && x.value),
-  }));
+    extra,
+    raw,
+    };
+  });
 }
 
 /** Has this one been dealt with? Drives the "still to call" queue and the counters. */

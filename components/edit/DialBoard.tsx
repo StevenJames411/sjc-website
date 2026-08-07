@@ -422,21 +422,55 @@ export default function DialBoard({
                 </button>
               </div>
 
-              {current.extra.length ? (
-                <ul style={extraList}>
-                  {current.extra.map((x) => (
-                    <li key={x.label} style={extraLi}>
-                      <span style={extraLab}>{x.label}</span>
-                      <span>{x.value}</span>
-                    </li>
-                  ))}
-                </ul>
+              {current.extra.length ? <CellList rows={current.extra} /> : null}
+
+              {/* Past the sheet's own "— full data →" marker: 100+ columns of scrape. Collapsed,
+                  because it is reference material, not something you read before dialling. */}
+              {current.raw.length ? (
+                <details style={rawBox}>
+                  <summary style={rawSummary}>
+                    Everything else on this row ({current.raw.length})
+                  </summary>
+                  <CellList rows={current.raw} />
+                </details>
               ) : null}
             </div>
           )}
         </>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * A label/value table that CANNOT push the page sideways.
+ *
+ * ⚠️ THE DECK SHEET HOLDS A 394-CHARACTER URL (`location_reviews_link`). An unbroken string that
+ * long has no wrap opportunity, so the row grew until the card overflowed its container and the
+ * whole page scrolled horizontally. `minWidth: 0` on the flex child is the half everyone forgets —
+ * without it a flex item refuses to shrink below its content and `overflowWrap` never gets a say.
+ *
+ * A value that is a URL becomes a link, because the ones long enough to cause the problem are
+ * exactly the ones worth clicking (the Maps listing, the reviews page).
+ */
+function CellList({ rows }: { rows: { label: string; value: string }[] }) {
+  return (
+    <ul style={extraList}>
+      {rows.map((x, i) => (
+        <li key={`${x.label}-${i}`} style={extraLi}>
+          <span style={extraLab}>{x.label}</span>
+          <span style={extraVal}>
+            {/^https?:\/\//i.test(x.value) ? (
+              <a href={x.value} target="_blank" rel="noreferrer" style={link}>
+                {x.value}
+              </a>
+            ) : (
+              x.value
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -489,7 +523,12 @@ const bookHint: React.CSSProperties = { fontSize: 12.5, color: "var(--e-warn-ink
 const cardFoot: React.CSSProperties = { display: "flex", gap: 8, marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--e-line-soft)" };
 const extraList: React.CSSProperties = { listStyle: "none", padding: 0, margin: "16px 0 0", borderTop: "1px solid var(--e-line-soft)" };
 const extraLi: React.CSSProperties = { display: "flex", justifyContent: "space-between", gap: 12, fontSize: 13, padding: "6px 0", borderBottom: "1px solid var(--e-panel-2)", color: "var(--e-ink)" };
-const extraLab: React.CSSProperties = { color: "var(--e-muted)" };
+/* flex: 0 0 auto so a long value can never squeeze the label to nothing. */
+const extraLab: React.CSSProperties = { color: "var(--e-muted)", flex: "0 0 auto" };
+/* The two lines that stop a 394-character URL from widening the page — see CellList. */
+const extraVal: React.CSSProperties = { minWidth: 0, overflowWrap: "anywhere", textAlign: "right" };
+const rawBox: React.CSSProperties = { marginTop: 16, borderTop: "1px solid var(--e-line-soft)", paddingTop: 12 };
+const rawSummary: React.CSSProperties = { cursor: "pointer", fontSize: 13, fontWeight: 600, color: "var(--e-muted)", listStyle: "revert" };
 const muted: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 20 };
 const errBox: React.CSSProperties = { marginTop: 14, padding: "11px 14px", borderRadius: 10, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-bad-ink)", fontSize: 14, lineHeight: 1.5 };
 const okBox: React.CSSProperties = { marginTop: 14, padding: "9px 14px", borderRadius: 10, background: "var(--e-ok-bg)", border: "1px solid var(--e-ok-line)", color: "var(--e-ok-ink)", fontSize: 13.5 };

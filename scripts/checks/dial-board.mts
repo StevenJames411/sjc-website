@@ -26,6 +26,7 @@ import {
   isUntouched,
   prettyWhen,
   siteHref,
+  splitAtDivider,
   telHref,
   toProspects,
 } from "../../lib/dialShared.ts";
@@ -83,6 +84,52 @@ check("a leftover column that is empty on THIS row is not shown", !b.extra.some(
 
 check('clean() strips the junk words', clean("N/A") === "" && clean("—") === "" && clean(" none ") === "");
 check("clean() keeps a real value", clean("  Pride and Groom  ") === "Pride and Groom");
+
+// ── the 130-column sheet: the sheet's own "— full data →" marker ──────────────────────────────
+// Shaped from the real SA-Deck-Builders headers. 130 columns, a divider at index 22, and 14
+// headers that appear TWICE (once curated, once in the raw dump) carrying identical values.
+const deckHeaders = [
+  "rank", "name", "reviews", "rating", "phone", "website", "city",
+  "— full data →",
+  "query", "name", "phone", "website", "city", "location_link", "latitude", "country_code",
+];
+const deckRow = [{ row: 2, cells: [
+  "1", "American Lawn and Garden LLC", "36", "4.5", "+1 346-704-1501", "", "San Antonio",
+  "",
+  "landscape designer, 78202", "American Lawn and Garden LLC", "+1 346-704-1501", "", "San Antonio",
+  "https://www.google.com/maps/place/American+Lawn+and+Garden+LLC/@29.396733299999998,-98.47319209999999,14z/data=" + "!4m8!1m2!2m1!1s".repeat(12),
+  "29.3967333", "US",
+] }];
+
+const deck = toProspects(deckHeaders, deckRow)[0];
+
+check("the divider column is found", splitAtDivider(deckHeaders) === 7, String(splitAtDivider(deckHeaders)));
+check("a sheet with no divider is unaffected", splitAtDivider(headers) === headers.length);
+check("the card binds to the CURATED name, not the scrape's copy", deck.name === "American Lawn and Garden LLC");
+check(
+  "NOTHING past the divider lands on the card face",
+  deck.extra.every((x) => !["query", "latitude", "country_code", "location_link"].includes(x.label)),
+  JSON.stringify(deck.extra.map((x) => x.label))
+);
+check("the raw block collects what's past the divider", deck.raw.some((x) => x.label === "latitude"), JSON.stringify(deck.raw.map((x) => x.label)));
+check(
+  "a column duplicated either side of the divider is printed ONCE, on the curated side",
+  deck.extra.filter((x) => x.label === "city").length === 1 &&
+    deck.raw.filter((x) => x.label === "city").length === 0,
+  `extra:${deck.extra.filter((x) => x.label === "city").length} raw:${deck.raw.filter((x) => x.label === "city").length}`
+);
+check(
+  "a duplicated leftover with the same value is not repeated",
+  deck.raw.filter((x) => x.value === "American Lawn and Garden LLC").length <= 1,
+  JSON.stringify(deck.raw.filter((x) => x.value.startsWith("American")))
+);
+check("the 200+ char URL is kept, not dropped", deck.raw.some((x) => x.value.length > 200));
+check("a blank cell either side of the divider is skipped", !deck.raw.some((x) => x.value === ""));
+check(
+  "the divider column itself never renders as a field",
+  ![...deck.extra, ...deck.raw].some((x) => /full data/.test(x.label))
+);
+check("an empty-ish header also reads as a divider", splitAtDivider(["a", "  ", "b"]) === 1);
 
 // ── the queue ─────────────────────────────────────────────────────────────────────────────────
 const base = toProspects(headers, [{ row: 4, cells: ["X", "5125550000", "", "", "", "", "", "", "", ""] }])[0];
