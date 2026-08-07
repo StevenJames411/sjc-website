@@ -506,8 +506,11 @@ export function filterCounts(ps: Prospect[]) {
 export function pitchLine(p: Prospect): { text: string; tone: "site" | "reviews" } {
   if (!p.website) return { text: "No website — sell the site", tone: "site" };
   const v = num(p.reviews);
+  // "1 reviews" on a card whose entire job is to sound like a person reads as sloppy — and this is
+  // the exact row fewest-first puts at the top of the page, so it is the first thing he sees.
+  const word = v === 1 ? "review" : "reviews";
   return {
-    text: v === null ? "Has a website — sell the review funnel" : `${p.reviews} reviews — sell the review funnel`,
+    text: v === null ? "Has a website — sell the review funnel" : `${p.reviews} ${word} — sell the review funnel`,
     tone: "reviews",
   };
 }

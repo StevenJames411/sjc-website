@@ -271,6 +271,11 @@ check("the pitch line for no-website sells the SITE", pitchLine(pool[0]).text ==
 check("the pitch line for has-website sells the REVIEW FUNNEL", /review funnel/.test(pitchLine(pool[2]).text), pitchLine(pool[2]).text);
 check("...and it leads with their review count", pitchLine(pool[2]).text.startsWith("11 reviews"), pitchLine(pool[2]).text);
 check("a website with no review count still gets a pitch", pitchLine({ ...pool[2], reviews: "" }).text === "Has a website — sell the review funnel");
+check(
+  "one review is singular",
+  pitchLine({ ...pool[2], reviews: "1" }).text === "1 review — sell the review funnel",
+  "fewest-first puts this exact row at the top of the page"
+);
 
 // ── Maps + Reviews links promoted out of the raw dump ─────────────────────────────────────────
 const linkHeaders = ["name", "phone", "reviews", "location_link", "location_reviews_link"];
