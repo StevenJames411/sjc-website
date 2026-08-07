@@ -9,7 +9,7 @@
 //
 // ⛔ NOTHING PUBLIC READS THIS. A call sheet is Steven's own prospecting, and the only surface that
 // touches it is a page behind the app password.
-import { readLists, addList, updateList, removeList, toProspects } from "@/lib/dial";
+import { readLists, addList, updateList, removeList, toProspects, statusText } from "@/lib/dial";
 import { readSheetRows, logSheetCall, sheetsConfigured } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
@@ -93,7 +93,9 @@ export async function PATCH(req: Request) {
     tab: list.tab,
     row: Number(body.row),
     expectName,
-    outcome: body.outcome ? String(body.outcome) : undefined,
+    // ⛔ THE LABEL, NOT THE KEY. Steven reads this column in the sheet; it should say "Left
+    // voicemail", not `voicemail`. normaliseStatus reads either back, so nothing downstream cares.
+    outcome: body.outcome ? statusText(String(body.outcome)) : undefined,
     note: body.note ? String(body.note) : undefined,
     callbackAt: body.callbackAt ? String(body.callbackAt) : undefined,
     at: new Date().toISOString(),

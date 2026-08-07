@@ -207,9 +207,51 @@ export function toProspects(
   });
 }
 
-/** Has this one been dealt with? Drives the "still to call" queue and the counters. */
+/** Has this one been dealt with? Drives the counters — it no longer hides anything. */
 export function isDone(p: Prospect): boolean {
-  return CLOSED_OUTCOMES.has(p.status.trim().toLowerCase().replace(/\s+/g, "-"));
+  return CLOSED_OUTCOMES.has(normaliseStatus(p.status));
+}
+
+/**
+ * A Status cell back into one of our outcome keys.
+ *
+ * ── ⚠️ IT HAS TO SURVIVE A ROUND TRIP THROUGH A HUMAN ─────────────────────────────────────────
+ * Steven opens the sheet and types "No Answer", or "not interested" with a capital N, or pastes it
+ * with a trailing space. If a row only recolours for the exact string we wrote, then editing the
+ * sheet — the thing this whole tool insists is the record of truth — silently blanks the colour.
+ *
+ * ── ⛔ AND IT MUST ACCEPT THE LABEL, NOT JUST THE KEY ────────────────────────────────────────
+ * The key for "Left voicemail" is `voicemail`. A human copying what the BUTTON says writes "Left
+ * voicemail", which slugs to `left-voicemail` and matches nothing. He would have typed exactly
+ * what he saw on screen and watched the row stay grey. So both spellings resolve, and the sheet is
+ * written with the LABEL — his column should read "Left voicemail", not `voicemail`.
+ */
+const BY_SLUG = new Map<string, string>();
+for (const o of OUTCOMES) {
+  BY_SLUG.set(o.key, o.key);
+  BY_SLUG.set(o.label.toLowerCase().replace(/\s+/g, "-"), o.key);
+}
+
+export function normaliseStatus(status: string): string {
+  const slug = String(status || "").trim().toLowerCase().replace(/\s+/g, "-");
+  return BY_SLUG.get(slug) || slug;
+}
+
+/** What actually gets written into the Status cell — human words, because he reads that column. */
+export function statusText(outcomeKey: string): string {
+  return OUTCOME_LABELS[outcomeKey] || outcomeKey;
+}
+
+/** The colour family a row wears once it has an outcome. "" = untouched. */
+export function toneFor(status: string): string {
+  const key = normaliseStatus(status);
+  return OUTCOMES.find((o) => o.key === key)?.tone || (key ? "none" : "");
+}
+
+/** What to print on a row that already carries an outcome, whoever typed it. */
+export function labelFor(status: string): string {
+  const key = normaliseStatus(status);
+  return OUTCOME_LABELS[key] || String(status || "").trim();
 }
 
 export function isUntouched(p: Prospect): boolean {

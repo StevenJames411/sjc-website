@@ -20,11 +20,16 @@
 //                                 zone. A callback booked for 10am would land at 5am his time and
 //                                 he'd find out by missing it.
 import {
+  OUTCOMES,
   calendarHref,
   clean,
+  statusText,
   isDone,
   isUntouched,
+  labelFor,
+  normaliseStatus,
   prettyWhen,
+  toneFor,
   siteHref,
   splitAtDivider,
   telHref,
@@ -143,6 +148,29 @@ check(
   "retiring a prospect after one unanswered ring is the obvious wrong version"
 );
 check("a conversation is not done either", !isDone({ ...base, status: "conversation" }));
+
+// ── the row's colour, which has to survive Steven editing the sheet by hand ───────────────────
+check("an untouched row wears no colour", toneFor("") === "");
+check("sold is green", toneFor("sold") === "ok");
+check("not interested is red", toneFor("not-interested") === "bad");
+check("callback is amber", toneFor("callback") === "warn");
+check("a conversation is blue", toneFor("conversation") === "info");
+check(
+  "a HAND-TYPED status still colours the row",
+  toneFor(" Not Interested ") === "bad" && toneFor("NO ANSWER") === "none",
+  "he owns the sheet; typing in it must not blank the colour"
+);
+check("a status we don't recognise still reads as touched, not blank", toneFor("thinking about it") === "none");
+check("the button lights up off the sheet's own value", normaliseStatus("voicemail") === "voicemail");
+check(
+  "typing the words ON THE BUTTON works too",
+  normaliseStatus("Left Voicemail") === "voicemail" && normaliseStatus("Not Interested") === "not-interested",
+  "the key is `voicemail` but the button says `Left voicemail` — a human copies what they can see"
+);
+check("the sheet is written with words, not slugs", statusText("voicemail") === "Left voicemail" && statusText("no-answer") === "No answer");
+check("what we write reads back as what we wrote", OUTCOMES.every((o) => normaliseStatus(statusText(o.key)) === o.key));
+check("a hand-typed status prints as our label", labelFor("NOT-INTERESTED") === "Not interested", labelFor("NOT-INTERESTED"));
+check("a status we didn't write prints verbatim", labelFor("thinking about it") === "thinking about it");
 
 // ── the dialer ────────────────────────────────────────────────────────────────────────────────
 check("a formatted number becomes a clean tel:", telHref("+1512-846-4044") === "tel:+15128464044", telHref("+1512-846-4044"));
