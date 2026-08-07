@@ -27,6 +27,12 @@
   --e-rail-ink: #cbd5e1;
   --e-rail-ink-strong: #ffffff;
   --e-rail-line: rgba(255, 255, 255, 0.12);
+  /* THE DIVIDER BETWEEN NAV GROUPS — its own token, NOT --e-rail-line.
+     Steven, 2026-08-07: *"they're so damn thin I could barely see them."* He was right: the group
+     rules were borrowing the 12%-white hairline used for button borders, where being nearly
+     invisible is the point. A divider has the opposite job — it has to be found at a glance.
+     Separate token so nudging one never silently restyles the other. */
+  --e-rail-rule: rgba(255, 255, 255, 0.55);
   --e-ink: #111827;
   --e-ink-strong: #0f1f3d;
   --e-muted: #6b7280;
@@ -72,6 +78,9 @@
   --e-rail-ink: #c3d3e8;
   --e-rail-ink-strong: #ffffff;
   --e-rail-line: #1d3357;
+  /* Dark mode's rail is DARKER (#0a1526 vs #0f1f3d), so the same white reads brighter against it.
+     Pulled back a step so the divider stays a divider and does not out-shout the nav itself. */
+  --e-rail-rule: rgba(255, 255, 255, 0.42);
   --e-ink: #e8eef7;
   --e-ink-strong: #ffffff;
   --e-muted: #8ea3c0;
@@ -161,7 +170,7 @@
 /* The same hairline that sits above Sign out, now between groups. Only where there is something
    above to divide from — see rendersBefore() in EditShell. */
 .edit-side-section.has-rule {
-  border-top: 1px solid var(--e-rail-line);
+  border-top: 2px solid var(--e-rail-rule);
   margin-top: 16px;
   padding-top: 16px;
 }
@@ -248,10 +257,12 @@
 .edit-nav-add:hover { border-color: var(--e-accent); color: var(--e-rail-ink-strong); }
 .edit-side-collapse.is-on { border-color: var(--e-accent); color: var(--e-rail-ink-strong); }
 
+/* The rule above Sign out. Same token as the group dividers on purpose — two weights of divider in
+   one rail reads as a mistake, and this one separates a group from the exit exactly like the rest. */
 .edit-side-foot {
   margin-top: 18px;
   padding-top: 14px;
-  border-top: 1px solid var(--e-rail-line);
+  border-top: 2px solid var(--e-rail-rule);
 }
 
 /* ── the canvas ───────────────────────────────────────────────────────────────────────────── */
