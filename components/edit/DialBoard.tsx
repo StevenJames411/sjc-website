@@ -212,14 +212,13 @@ export default function DialBoard({
   return (
     <div style={page}>
       <div style={bar}>
+        {/* ⛔ NO SUBTITLE. It explained what the page is, once, to the only person who will ever
+            open it — and then cost a line of vertical space on every session forever. Steven:
+            *"I don't need the words explaining what the sheet is because that's taking up a line
+            item that doesn't need to be there."* The header is title + counters, one line. */}
         <div style={barTop}>
-          <div>
-            <h1 style={h1}>{title}</h1>
-            <p style={sub}>
-              Your sheet is still the boss. This just stops you keying digits and typing notes.
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: 26 }}>
+          <h1 style={h1}>{title}</h1>
+          <div style={{ display: "flex", gap: 22 }}>
             <Stat n={dials} cap="dials this session" accent />
             <Stat n={counts.done} cap="worked" />
             <Stat n={counts.todo} cap="left" />
@@ -328,6 +327,21 @@ export default function DialBoard({
                 Clear
               </button>
             ) : null}
+
+            {/* Folded up out of its own line. It belongs next to the controls that change it. */}
+            <span style={progress}>
+              <b>{shown.length}</b> of {counts.total} ·{" "}
+              <a
+                href={`https://docs.google.com/spreadsheets/d/${data.list.spreadsheetId}`}
+                target="_blank"
+                rel="noreferrer"
+                style={link}
+              >
+                {data.title}
+              </a>
+              {data.tab ? ` → ${data.tab}` : ""}
+              {data.truncated ? " · first 2,000 rows" : ""}
+            </span>
           </div>
         ) : null}
       </div>
@@ -382,20 +396,6 @@ export default function DialBoard({
 
       {data && !loading ? (
         <>
-          <p style={progress}>
-            Showing <b>{shown.length}</b> of {counts.total} · reading{" "}
-            <a
-              href={`https://docs.google.com/spreadsheets/d/${data.list.spreadsheetId}`}
-              target="_blank"
-              rel="noreferrer"
-              style={link}
-            >
-              {data.title}
-            </a>
-            {data.tab ? ` → ${data.tab}` : ""}
-            {data.truncated ? " · first 2,000 rows" : ""}
-          </p>
-
           <div style={grid}>
             {shown.map((p, i) => (
               <Card
@@ -657,6 +657,10 @@ function faint(tone: string): React.CSSProperties {
 /* ── styles ───────────────────────────────────────────────────────────────────────────────── */
 
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+/* ⚠️ `padding-top: 0` IS DELIBERATE AND IT ONLY WORKS BECAUSE THE BAR IS STICKY. The shell gives
+   the canvas no top padding of its own, so the header sits flush against the top of the viewport
+   and the first row of cards is ~150px higher than it was. Every pixel above the fold on this page
+   is a business he can see without scrolling. */
 const page: React.CSSProperties = { padding: "0 24px 120px", fontFamily: font };
 const bar: React.CSSProperties = {
   position: "sticky",
@@ -664,16 +668,15 @@ const bar: React.CSSProperties = {
   zIndex: 5,
   background: "var(--e-bg)",
   borderBottom: "1px solid var(--e-line)",
-  padding: "24px 0 12px",
-  marginBottom: 16,
+  padding: "12px 0 9px",
+  marginBottom: 12,
 };
-const barTop: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24 };
-const h1: React.CSSProperties = { fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 };
-const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 13.5, marginTop: 3 };
-const bigNum: React.CSSProperties = { fontSize: 30, fontWeight: 800, lineHeight: 1 };
-const numCap: React.CSSProperties = { fontSize: 10.5, color: "var(--e-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 3 };
-const listRow: React.CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 14 };
-const filterRow: React.CSSProperties = { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--e-line-soft)" };
+const barTop: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 };
+const h1: React.CSSProperties = { fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 };
+const bigNum: React.CSSProperties = { fontSize: 22, fontWeight: 800, lineHeight: 1 };
+const numCap: React.CSSProperties = { fontSize: 9.5, color: "var(--e-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 };
+const listRow: React.CSSProperties = { display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center", marginTop: 9 };
+const filterRow: React.CSSProperties = { display: "flex", gap: 9, flexWrap: "wrap", alignItems: "center", marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--e-line-soft)" };
 const pill: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 999, padding: "7px 14px", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font };
 const pillOn: React.CSSProperties = { borderColor: "var(--e-accent)", color: "var(--e-accent)", fontWeight: 800 };
 const dropBtn: React.CSSProperties = { ...pill, marginLeft: "auto", color: "var(--e-muted)", fontWeight: 500 };
@@ -690,7 +693,9 @@ const lab: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 7
 const input: React.CSSProperties = { display: "block", width: "100%", border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: font, outline: "none" };
 const primary: React.CSSProperties = { border: "1px solid var(--e-accent)", background: "var(--e-accent)", color: "#fff", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" };
 const ghost: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-muted)", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font };
-const progress: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", margin: "0 0 12px" };
+/* marginLeft:auto pushes it to the far right of the filter row, so it reads as a result rather
+   than as another control. */
+const progress: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", marginLeft: "auto" };
 
 /* ⛔ THE WHOLE LAYOUT DECISION, IN ONE LINE. Steven: *"when I get rid of our left sidebar on my
    laptop, that's plenty of canvas for three columns. If I want to use my iPad, it would probably
