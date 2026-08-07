@@ -358,17 +358,24 @@
 
 @media (min-width: 821px) {
   .edit-shell.is-collapsed .edit-sidebar { transform: translateX(-100%); }
-  /* Collapsed = the whole canvas. The pages inside carry their own max-width, so this only has to
-     give the margin back and clear the floating » so it never lands on a heading. */
+  /* Collapsed = the whole canvas.
+     ── ⛔ CLEAR THE FLOATING » SIDEWAYS, NOT DOWNWARDS ────────────────────────────────────────
+     This used to push every page down 52px so the » never landed on a heading. That bought safety
+     with a full empty band across the top of the widest screen, which is the opposite of what
+     collapsing the rail is FOR. Steven, on the dial board: *"let's put the collapse button on the
+     same line as the words."*
+     A left gutter does the same job and costs nothing vertically — the » sits in it, and the
+     page's first line sits beside it. */
   .edit-shell.is-collapsed .edit-content {
     margin-left: 0;
-    padding-top: 52px;
+    padding-left: 46px;
   }
   .edit-shell.is-collapsed .edit-side-reopen {
     display: block;
     position: fixed;
-    top: 14px;
-    left: 14px;
+    /* Vertically centred on a 22px heading sitting under 12px of bar padding. */
+    top: 10px;
+    left: 10px;
     z-index: 60;
     width: 32px;
     height: 32px;
