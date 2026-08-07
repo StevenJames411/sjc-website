@@ -20,10 +20,16 @@
 //                                 zone. A callback booked for 10am would land at 5am his time and
 //                                 he'd find out by missing it.
 import {
+  DEFAULT_FILTERS,
   OUTCOMES,
+  applyFilters,
   calendarHref,
   clean,
+  filterCounts,
+  isDefaultFilters,
+  pitchLine,
   statusText,
+  type Filters,
   isDone,
   isUntouched,
   labelFor,
@@ -128,7 +134,11 @@ check(
   deck.raw.filter((x) => x.value === "American Lawn and Garden LLC").length <= 1,
   JSON.stringify(deck.raw.filter((x) => x.value.startsWith("American")))
 );
-check("the 200+ char URL is kept, not dropped", deck.raw.some((x) => x.value.length > 200));
+check(
+  "the 200+ char URL is kept, and is now the Maps BUTTON rather than a raw row",
+  deck.maps.length > 200 && !deck.raw.some((x) => x.label === "location_link"),
+  `maps=${deck.maps.length} chars`
+);
 check("a blank cell either side of the divider is skipped", !deck.raw.some((x) => x.value === ""));
 check(
   "the divider column itself never renders as a field",
@@ -207,6 +217,75 @@ check("the id comes out of a pasted URL", parseSpreadsheetId(pasted) === "1aUJhA
 check("a bare id still works", parseSpreadsheetId("1aUJhAuk1qNZJFTu53Tt3T-4tN85wtQH_PhH1dzGgr38").length > 20);
 check("nonsense is refused rather than stored", parseSpreadsheetId("my sheet") === "");
 check("the gid is read when the URL carries one", parseGid(pasted) === "1445404341", parseGid(pasted));
+
+// ── ⛔ THE TWO-PITCH TOGGLE ────────────────────────────────────────────────────────────────────
+// Steven: *"I sell the people with websites my Google review funnel... The ones without a website,
+// I try to sell them both."* BOTH halves are sellable. The toggle picks the SCRIPT, and review
+// count flips meaning between the two, so the default sort has to flip with it.
+const H = ["name", "phone", "website", "reviews", "rating", "status"];
+const mk = (name: string, phone: string, web: string, rev: string, rate: string, st = "") =>
+  ({ row: 0, cells: [name, phone, web, rev, rate, st] });
+
+const pool = toProspects(H, [
+  { ...mk("NoSite Big", "5125550001", "", "89", "5"), row: 2 },
+  { ...mk("NoSite Small", "5125550002", "", "3", "4"), row: 3 },
+  { ...mk("HasSite Few", "5125550003", "acme.com", "11", "4.8"), row: 4 },
+  { ...mk("HasSite Many", "5125550004", "b.com", "240", "4.2"), row: 5 },
+  { ...mk("NoPhone", "", "", "40", "5"), row: 6 },
+  { ...mk("Unrated", "5125550006", "", "", ""), row: 7 },
+  { ...mk("Already Sold", "5125550007", "c.com", "8", "5", "SOLD"), row: 8 },
+]);
+const F = (patch: Partial<Filters>): Filters => ({ ...DEFAULT_FILTERS, ...patch });
+const names = (ps: typeof pool) => ps.map((p) => p.name);
+
+check("no filters returns everything, untouched", names(applyFilters(pool, DEFAULT_FILTERS)).join() === names(pool).join());
+check("`site` keeps only the ones with NO website", applyFilters(pool, F({ pitch: "site" })).every((p) => !p.website));
+check("`reviews` keeps only the ones WITH a website", applyFilters(pool, F({ pitch: "reviews" })).every((p) => !!p.website));
+check(
+  "⛔ nothing is thrown away — the two pitches partition the list",
+  applyFilters(pool, F({ pitch: "site" })).length + applyFilters(pool, F({ pitch: "reviews" })).length === pool.length
+);
+check(
+  "⛔ review-funnel mode sorts FEWEST reviews first",
+  names(applyFilters(pool, F({ pitch: "reviews" })))[0] === "Already Sold",
+  "8 < 11 < 240 — the smallest count is the biggest opening"
+);
+check("every other mode keeps sheet order", names(applyFilters(pool, F({ pitch: "site" }))).join() === "NoSite Big,NoSite Small,NoPhone,Unrated");
+check("an explicit sort beats the pitch default", names(applyFilters(pool, F({ pitch: "reviews", sort: "most-reviews" })))[0] === "HasSite Many");
+check("sort by rating puts the best first", names(applyFilters(pool, F({ sort: "rating" })))[0] === "NoSite Big");
+
+check("⚠️ a BLANK rating passes a rating floor", names(applyFilters(pool, F({ minRating: 4.5 }))).includes("Unrated"), "no rating ≠ a bad business");
+check("⚠️ a blank review count passes a review floor", names(applyFilters(pool, F({ minReviews: 50 }))).includes("Unrated"));
+check("a real rating below the floor is dropped", !names(applyFilters(pool, F({ minRating: 4.5 }))).includes("HasSite Many"));
+check("a business with no number sinks, it does not sort as zero", names(applyFilters(pool, F({ sort: "fewest-reviews" }))).at(-1) === "Unrated");
+check("`has a number` drops the ones we can't call", !names(applyFilters(pool, F({ phoneOnly: true }))).includes("NoPhone"));
+check("work=todo hides anything with a status", !names(applyFilters(pool, F({ work: "todo" }))).includes("Already Sold"));
+check("work=done shows only what has a status", names(applyFilters(pool, F({ work: "done" }))).join() === "Already Sold");
+check("search is case-insensitive and matches a substring", names(applyFilters(pool, F({ q: "nosite" }))).length === 2);
+
+const c = filterCounts(pool);
+check("chip counts add up", c.site + c.reviews === c.total && c.todo + c.done === c.total, JSON.stringify(c));
+check("isDefaultFilters is honest", isDefaultFilters(DEFAULT_FILTERS) && !isDefaultFilters(F({ pitch: "site" })));
+
+check("the pitch line for no-website sells the SITE", pitchLine(pool[0]).text === "No website — sell the site");
+check("the pitch line for has-website sells the REVIEW FUNNEL", /review funnel/.test(pitchLine(pool[2]).text), pitchLine(pool[2]).text);
+check("...and it leads with their review count", pitchLine(pool[2]).text.startsWith("11 reviews"), pitchLine(pool[2]).text);
+check("a website with no review count still gets a pitch", pitchLine({ ...pool[2], reviews: "" }).text === "Has a website — sell the review funnel");
+
+// ── Maps + Reviews links promoted out of the raw dump ─────────────────────────────────────────
+const linkHeaders = ["name", "phone", "reviews", "location_link", "location_reviews_link"];
+const linked = toProspects(linkHeaders, [
+  { row: 2, cells: ["American Lawn", "+1 346-704-1501", "36", "https://maps.google.com/x", "https://maps.google.com/reviews/y"] },
+])[0];
+check("the Maps link lands in its own field", linked.maps === "https://maps.google.com/x", linked.maps);
+check("the Reviews link lands in its own field", linked.reviewsUrl === "https://maps.google.com/reviews/y", linked.reviewsUrl);
+check(
+  "⚠️ the review COUNT is still a count, not the link",
+  linked.reviews === "36",
+  "`reviews` and `location_reviews_link` must never collide"
+);
+check("neither link is left in the leftovers", ![...linked.extra, ...linked.raw].some((x) => /location_/.test(x.label)));
+check("a sheet without those columns just has no buttons", pool[0].maps === "" && pool[0].reviewsUrl === "");
 
 console.log(failed ? `\n${failed} FAILED` : "\nall good");
 process.exit(failed ? 1 : 0);

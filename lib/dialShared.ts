@@ -62,6 +62,16 @@ export type Prospect = {
   notes: string;
   status: string;
   lastCalled: string;
+  /**
+   * The Google Maps listing and the Google reviews page.
+   *
+   * Steven, on how he actually works a call: *"I could click on the Google Map, so it opens in a
+   * new tab. So when I'm dialing them, I've got an idea of the reviews."* Both URLs were already in
+   * the deck sheet (`location_link`, `location_reviews_link`) and both were buried in the collapsed
+   * raw block — the 394-character URL that once pushed the page sideways IS the reviews link.
+   */
+  maps: string;
+  reviewsUrl: string;
   /** Leftover columns from the CURATED part of the sheet. Shown on the card face. */
   extra: Cell[];
   /**
@@ -100,6 +110,13 @@ const FIELDS: Record<keyof Omit<Prospect, "row" | "extra" | "raw">, string[]> = 
   name: ["name", "business", "business name", "company"],
   phone: ["phone", "phone number", "telephone", "tel", "mobile"],
   website: ["website", "site", "url", "web"],
+  // ⚠️ BOTH LINK FIELDS ARE MATCHED BEFORE `reviews`, AND THAT ORDER IS LOAD-BEARING. The deck
+  // sheet has `reviews` (a count: "36") and `location_reviews_link` (a URL). The loop below claims
+  // columns in the order of THIS object, so if `reviews` went first its ["reviews"] alias could
+  // never take the link column — but a future alias like "review_link" landing on the count would
+  // silently turn "36 reviews" into a broken button. Claim the specific URLs, then the count.
+  maps: ["location_link", "google maps", "maps link", "maps", "map"],
+  reviewsUrl: ["location_reviews_link", "reviews_link", "review_link", "reviews url"],
   reviews: ["reviews", "review count", "# reviews", "num reviews"],
   rating: ["rating", "stars", "score"],
   claimed: ["claimed", "verified"],
@@ -201,6 +218,8 @@ export function toProspects(
     notes: pick(cells, "notes"),
     status: pick(cells, "status"),
     lastCalled: pick(cells, "lastCalled"),
+    maps: pick(cells, "maps"),
+    reviewsUrl: pick(cells, "reviewsUrl"),
     extra,
     raw,
     };
@@ -342,4 +361,153 @@ export function siteHref(website: string): string {
   const s = clean(website);
   if (!s) return "";
   return /^https?:\/\//i.test(s) ? s : `https://${s}`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// FILTERING — ⛔ THE WEBSITE TOGGLE IS TWO PITCHES, NOT A QUALITY FILTER.
+//
+// The first version of this treated "no website" as the gold-ICP filter: narrow to the good ones,
+// ignore the rest. Steven, 2026-08-07:
+//
+//   *"I sell the people with websites my Google review funnel, which gets them more leads. That's
+//    all businesses want to hear about. These idiots that don't have a website don't even want to
+//    buy a website so I could work both angles. The ones without a website, I try to sell them
+//    both. If they don't want a website, I sell them whatever they'll take first and the other
+//    piece is the upsell."*
+//
+// Both halves of the list are sellable. The toggle does not answer "who is worth calling" — it
+// answers **which script am I running this hour**. Nothing is ever thrown away, which is also why
+// exporting only the website-less rows out of the scraper is a mistake: it deletes the other half
+// of the pipeline.
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+
+export type Pitch = "all" | "site" | "reviews";
+export type Work = "all" | "todo" | "done";
+export type Sort = "sheet" | "fewest-reviews" | "most-reviews" | "rating";
+
+export type Filters = {
+  pitch: Pitch;
+  work: Work;
+  minRating: number;
+  minReviews: number;
+  phoneOnly: boolean;
+  q: string;
+  /** null = follow the pitch's own default. See sortFor(). */
+  sort: Sort | null;
+};
+
+export const DEFAULT_FILTERS: Filters = {
+  pitch: "all",
+  work: "all",
+  minRating: 0,
+  minReviews: 0,
+  phoneOnly: false,
+  q: "",
+  sort: null,
+};
+
+export function isDefaultFilters(f: Filters): boolean {
+  return (
+    f.pitch === "all" && f.work === "all" && !f.minRating && !f.minReviews && !f.phoneOnly &&
+    !f.q.trim() && f.sort === null
+  );
+}
+
+/**
+ * A display-string cell as a number.
+ *
+ * ⚠️ RETURNS null FOR BLANK OR UNPARSEABLE, AND EVERY CALLER MUST TREAT THAT AS PASSING. A business
+ * with no rating yet is not a bad business — it is a new one, or one the scrape missed. Failing it
+ * against a floor would hide a live prospect behind a filter he set for a different reason, which
+ * is the same class of bug as the `null` Hours column: a confident answer that is wrong.
+ */
+export function num(v: string): number | null {
+  const n = parseFloat(String(v || "").replace(/[^\d.]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * The default order for a pitch.
+ *
+ * ⛔ REVIEW COUNT FLIPS MEANING BETWEEN THE TWO PITCHES, so the sort has to flip with it. Selling a
+ * WEBSITE, a big review count is good news — it proves he delivers, so the leads convert and he
+ * stays a customer. Selling the REVIEW FUNNEL, a big count means there is nothing to sell; the
+ * opening is a SMALL one — "you're at 11, the shop down the road is at 89." Fewest-first puts the
+ * easiest yes at the top of the page.
+ *
+ * Everything else defaults to sheet order, because his deck tab is called "San Antonio — Neediest
+ * First" and re-sorting would override a decision he already made upstream in the scrape.
+ */
+export function sortFor(f: Filters): Sort {
+  if (f.sort) return f.sort;
+  return f.pitch === "reviews" ? "fewest-reviews" : "sheet";
+}
+
+export function applyFilters(ps: Prospect[], f: Filters): Prospect[] {
+  const q = f.q.trim().toLowerCase();
+
+  const kept = ps.filter((p) => {
+    if (f.pitch === "site" && p.website) return false;
+    if (f.pitch === "reviews" && !p.website) return false;
+
+    if (f.work === "todo" && p.status.trim()) return false;
+    if (f.work === "done" && !p.status.trim()) return false;
+
+    if (f.phoneOnly && !telHref(p.phone)) return false;
+
+    // Blank passes — see num().
+    const r = num(p.rating);
+    if (f.minRating && r !== null && r < f.minRating) return false;
+    const v = num(p.reviews);
+    if (f.minReviews && v !== null && v < f.minReviews) return false;
+
+    if (q && !p.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const sort = sortFor(f);
+  // ⚠️ "sheet" MUST BE A GENUINE NO-OP. `filter` already preserves order; returning `kept` untouched
+  // is what guarantees Neediest First survives.
+  if (sort === "sheet") return kept;
+
+  // Sorted on a COPY, and businesses with no number sink rather than sorting as zero — a missing
+  // review count is not "zero reviews", and floating them to the top of fewest-first would fill the
+  // screen with rows that say nothing.
+  const rank = (p: Prospect) => (sort === "rating" ? num(p.rating) : num(p.reviews));
+  return [...kept].sort((a, b) => {
+    const x = rank(a);
+    const y = rank(b);
+    if (x === null && y === null) return 0;
+    if (x === null) return 1;
+    if (y === null) return -1;
+    return sort === "fewest-reviews" ? x - y : y - x;
+  });
+}
+
+/** The live numbers on the toggle chips. Counted off the WHOLE list, never the filtered view. */
+export function filterCounts(ps: Prospect[]) {
+  return {
+    total: ps.length,
+    site: ps.filter((p) => !p.website).length,
+    reviews: ps.filter((p) => p.website).length,
+    todo: ps.filter((p) => !p.status.trim()).length,
+    done: ps.filter((p) => p.status.trim()).length,
+    noPhone: ps.filter((p) => !telHref(p.phone)).length,
+  };
+}
+
+/**
+ * The line on the card that says what you are selling this business.
+ *
+ * ⚠️ THE OLD VERSION ONLY SPOKE TO HALF THE LIST. Every website-less row said "No website — that's
+ * the pitch" and every row WITH a website said nothing at all, which quietly framed those as the
+ * rejects. Under the two-pitch read they are the review-funnel half, and the card should say so.
+ */
+export function pitchLine(p: Prospect): { text: string; tone: "site" | "reviews" } {
+  if (!p.website) return { text: "No website — sell the site", tone: "site" };
+  const v = num(p.reviews);
+  return {
+    text: v === null ? "Has a website — sell the review funnel" : `${p.reviews} reviews — sell the review funnel`,
+    tone: "reviews",
+  };
 }

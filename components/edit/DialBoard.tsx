@@ -1,45 +1,45 @@
 "use client";
-// THE DIAL BOARD — the whole sheet on one scrolling page, dialled through his own iPhone.
+// THE DIAL BOARD — the whole sheet as a wall of cards, dialled through his own iPhone.
 //
 // ── WHAT IT REPLACES ──────────────────────────────────────────────────────────────────────────
 // Steven read a row off a Google Sheet, keyed ten digits into the Mac Phone app by hand, talked,
-// clicked back into the sheet, typed the note by hand, then scrolled to find where he was.
+// clicked back into the sheet, typed the note by hand, then scrolled to find where he was — with
+// SiteDrop's Lead Finder open in a third tab to see the business. This is all three.
 //
-// ── ⛔ WHY THIS IS A LIST AND NOT A ONE-CARD-AT-A-TIME DIALER ─────────────────────────────────
-// The first version showed one business, took an outcome, and advanced — the shape every power
-// dialer uses, including Targetley's. Steven, 2026-08-07:
+// ── ⛔ WHY EVERY BUSINESS RENDERS, NOT ONE AT A TIME ──────────────────────────────────────────
+// The first version showed one business and advanced — the shape every power dialer uses. Steven
+// killed it: *"I just want to be able to scroll the whole page. I don't want to have to toggle one
+// business at a time to look at what's on my sheet."* This is not a call-centre queue being fed to
+// an agent; it is HIS sheet, and he decides what to work next. Done cards stay visible and go
+// quiet rather than disappearing.
 //
-//   *"I just want to be able to scroll the whole page. I don't want to have to toggle one business
-//    at a time to look at what's on my sheet."*
-//
-// He is right, and the reason is that this is not a call-centre queue being fed to an agent. It is
-// HIS sheet, and he is the one who decides what to work next — he wants to see that there are
-// fourteen five-star shops below the one he is looking at. A queue takes that judgement away and
-// gives back nothing, because there is no supervisor here to enforce an order.
-//
-// So: every row rendered, nothing hidden, sheet order preserved. Rows that are already done stay
-// visible and go quiet rather than disappearing. His deck sheet's tab is literally called
-// "San Antonio — Neediest First", so the sheet is ALREADY sorted the way he wants to work it;
-// re-sorting here would override a decision he made upstream.
-//
-// ── THE TWO THINGS THAT MUST NOT BREAK ────────────────────────────────────────────────────────
+// ── THE THREE THINGS THAT MUST NOT BREAK ──────────────────────────────────────────────────────
 //  1. A note must never land on the wrong business — every write carries the name the board thinks
 //     is on that row, and the script re-finds it if the sheet was sorted underneath.
 //  2. The sheet stays the database. Nothing here caches a prospect; a reload re-reads the sheet.
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+//  3. Sheet order is the default. His deck tab is "San Antonio — Neediest First"; the only thing
+//     allowed to re-order it is a choice he makes on screen. See sortFor() in lib/dialShared.
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  DEFAULT_FILTERS,
   OUTCOMES,
+  applyFilters,
   calendarHref,
-  isDone,
+  filterCounts,
+  isDefaultFilters,
   labelFor,
   normaliseStatus,
+  pitchLine,
   prettyWhen,
   siteHref,
+  sortFor,
   telHref,
   toneFor,
   type CallList,
   type Cell,
+  type Filters,
   type Prospect,
+  type Sort,
 } from "@/lib/dialShared";
 
 type Loaded = {
@@ -66,16 +66,11 @@ export default function DialBoard({
   const [err, setErr] = useState("");
   const [adding, setAdding] = useState(false);
   const [flash, setFlash] = useState("");
-  /** Dials made since the page was opened. Not persisted — it is a session pace, not a record. */
   const [dials, setDials] = useState(0);
-  /** Per-row note text, keyed by sheet row. Cleared once the row is written. */
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [notes, setNotes] = useState<Record<number, string>>({});
-  /** Which row is mid-write, so its buttons can say so without freezing the other 499. */
   const [saving, setSaving] = useState<number | null>(null);
-  /** Which row has its callback picker open, and the value in it. */
   const [booking, setBooking] = useState<{ row: number; when: string } | null>(null);
-  /** Hide the ones already dealt with. Off by default — he asked to see the whole sheet. */
-  const [hideDone, setHideDone] = useState(false);
 
   const load = useCallback(async (id: string) => {
     if (!id) return;
@@ -90,6 +85,9 @@ export default function DialBoard({
       } else {
         setData(b);
         setNotes({});
+        // Filters belong to a list, not to the page — carrying "no website" across to a sheet with
+        // different columns shows him an empty screen he did not ask for.
+        setFilters(DEFAULT_FILTERS);
       }
     } catch {
       setErr("Couldn't reach the sheet.");
@@ -104,12 +102,9 @@ export default function DialBoard({
   }, [activeId, load]);
 
   const all = useMemo(() => data?.prospects || [], [data]);
-  const counts = useMemo(() => {
-    const done = all.filter(isDone).length;
-    const touched = all.filter((p) => p.status.trim()).length;
-    return { total: all.length, done, touched, left: all.length - done };
-  }, [all]);
-  const shown = useMemo(() => (hideDone ? all.filter((p) => !isDone(p)) : all), [all, hideDone]);
+  const counts = useMemo(() => filterCounts(all), [all]);
+  const shown = useMemo(() => applyFilters(all, filters), [all, filters]);
+  const set = (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch }));
 
   async function log(p: Prospect, outcome: string, extra?: { callbackAt?: string }) {
     if (!activeId) return;
@@ -132,13 +127,10 @@ export default function DialBoard({
       const b = await r.json();
       if (!b.ok) {
         // A refused write is the safety net doing its job. Say what happened and change NOTHING on
-        // screen, or the row goes green over a write that never landed.
+        // screen, or the card goes green over a write that never landed.
         setErr(b.error || "The sheet refused that write.");
         return;
       }
-
-      // Patched in place rather than re-reading: a re-read would rebuild the list under his cursor
-      // while he is halfway down it.
       setData((d) =>
         d
           ? {
@@ -169,7 +161,6 @@ export default function DialBoard({
     }
   }
 
-  /** Callback: book it, then log it. The calendar tab opens on the click, never after an await. */
   function bookCallback(p: Prospect) {
     if (!booking || booking.row !== p.row || !booking.when) return;
     const href = calendarHref({
@@ -179,8 +170,7 @@ export default function DialBoard({
       note: (notes[p.row] || "").trim(),
     });
     // ⚠️ OPENED SYNCHRONOUSLY, INSIDE THE CLICK. Both Safari and Chrome block a window.open that
-    // happens after an await — the popup loses its user-gesture. Booking first is the only order
-    // that works.
+    // happens after an await — the popup loses its user-gesture. Book first, log second.
     if (href) window.open(href, "_blank", "noopener");
     void log(p, "callback", { callbackAt: prettyWhen(booking.when) });
   }
@@ -221,8 +211,6 @@ export default function DialBoard({
 
   return (
     <div style={page}>
-      {/* ── the bar. Sticky, because with 500 rows the counts are the only way to know where you
-             are, and scrolling back to the top to check them is the thing this page removes. ── */}
       <div style={bar}>
         <div style={barTop}>
           <div>
@@ -231,10 +219,10 @@ export default function DialBoard({
               Your sheet is still the boss. This just stops you keying digits and typing notes.
             </p>
           </div>
-          <div style={{ display: "flex", gap: 26, alignItems: "flex-start" }}>
+          <div style={{ display: "flex", gap: 26 }}>
             <Stat n={dials} cap="dials this session" accent />
-            <Stat n={counts.touched} cap="worked" />
-            <Stat n={counts.left} cap="left" />
+            <Stat n={counts.done} cap="worked" />
+            <Stat n={counts.todo} cap="left" />
           </div>
         </div>
 
@@ -251,16 +239,6 @@ export default function DialBoard({
           <button onClick={() => setAdding((v) => !v)} style={{ ...pill, borderStyle: "dashed" }}>
             + Add a list
           </button>
-          {data ? (
-            <label style={toggle}>
-              <input
-                type="checkbox"
-                checked={hideDone}
-                onChange={(e) => setHideDone(e.target.checked)}
-              />
-              Hide the {counts.done} I&apos;m done with
-            </label>
-          ) : null}
           {activeId ? (
             <button
               onClick={() => void dropList(activeId)}
@@ -271,6 +249,87 @@ export default function DialBoard({
             </button>
           ) : null}
         </div>
+
+        {data ? (
+          <div style={filterRow}>
+            {/* ⛔ THE PITCH TOGGLE. Not "who is worth calling" — WHICH SCRIPT AM I RUNNING. */}
+            <Seg
+              value={filters.pitch}
+              onChange={(pitch) => set({ pitch: pitch as Filters["pitch"], sort: null })}
+              options={[
+                { v: "all", label: `All (${counts.total})` },
+                { v: "site", label: `No website — sell the site (${counts.site})` },
+                { v: "reviews", label: `Has a website — sell the review funnel (${counts.reviews})` },
+              ]}
+            />
+            <Seg
+              value={filters.work}
+              onChange={(work) => set({ work: work as Filters["work"] })}
+              options={[
+                { v: "all", label: "All" },
+                { v: "todo", label: `Not worked (${counts.todo})` },
+                { v: "done", label: `Worked (${counts.done})` },
+              ]}
+            />
+
+            <label style={mini}>
+              min ★
+              <select
+                value={filters.minRating}
+                onChange={(e) => set({ minRating: Number(e.target.value) })}
+                style={sel}
+              >
+                {[0, 3, 3.5, 4, 4.5, 5].map((n) => (
+                  <option key={n} value={n}>{n ? n : "any"}</option>
+                ))}
+              </select>
+            </label>
+            <label style={mini}>
+              min reviews
+              <select
+                value={filters.minReviews}
+                onChange={(e) => set({ minReviews: Number(e.target.value) })}
+                style={sel}
+              >
+                {[0, 5, 10, 25, 50, 100].map((n) => (
+                  <option key={n} value={n}>{n ? `${n}+` : "any"}</option>
+                ))}
+              </select>
+            </label>
+            <label style={mini}>
+              <input
+                type="checkbox"
+                checked={filters.phoneOnly}
+                onChange={(e) => set({ phoneOnly: e.target.checked })}
+              />
+              has a number{counts.noPhone ? ` (${counts.noPhone} without)` : ""}
+            </label>
+            <label style={mini}>
+              sort
+              <select
+                value={sortFor(filters)}
+                onChange={(e) => set({ sort: e.target.value as Sort })}
+                style={sel}
+              >
+                <option value="sheet">sheet order</option>
+                <option value="fewest-reviews">fewest reviews</option>
+                <option value="most-reviews">most reviews</option>
+                <option value="rating">highest rated</option>
+              </select>
+            </label>
+            <input
+              value={filters.q}
+              onChange={(e) => set({ q: e.target.value })}
+              placeholder="Find a business…"
+              style={search}
+            />
+            {!isDefaultFilters(filters) ? (
+              <button onClick={() => setFilters(DEFAULT_FILTERS)} style={clearBtn}>
+                Clear
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {!configured ? (
@@ -337,9 +396,9 @@ export default function DialBoard({
             {data.truncated ? " · first 2,000 rows" : ""}
           </p>
 
-          <div style={rows}>
+          <div style={grid}>
             {shown.map((p, i) => (
-              <Row
+              <Card
                 key={p.row}
                 p={p}
                 n={i + 1}
@@ -360,8 +419,8 @@ export default function DialBoard({
 
           {!shown.length ? (
             <p style={muted}>
-              Nothing left showing. Untick &quot;hide the ones I&apos;m done with&quot; to see the
-              whole sheet again.
+              Nothing matches. <button onClick={() => setFilters(DEFAULT_FILTERS)} style={linkBtn}>Clear the filters</button> to
+              see all {counts.total}.
             </p>
           ) : null}
         </>
@@ -372,7 +431,7 @@ export default function DialBoard({
 
 /* ── one business ─────────────────────────────────────────────────────────────────────────── */
 
-function Row({
+function Card({
   p,
   n,
   note,
@@ -400,88 +459,86 @@ function Row({
   const [open, setOpen] = useState(false);
   const tone = toneFor(p.status);
   const tel = telHref(p.phone);
+  const pitch = pitchLine(p);
 
   return (
-    <div style={{ ...row, ...rowTone(tone) }}>
-      {/* ── who ── */}
-      <div style={who}>
-        <div style={whoTop}>
-          <span style={num}>{n}</span>
-          <span style={name}>{p.name || "(no name on this row)"}</span>
-          {p.rating ? <span style={star}>★ {p.rating}</span> : null}
-          {p.reviews ? <span style={metaDim}>{p.reviews} reviews</span> : null}
-        </div>
-        <div style={metaLine}>
-          {[p.category, p.address].filter(Boolean).join(" · ")}
+    <div style={{ ...card, ...cardTone(tone) }}>
+      <div style={cardHead}>
+        <span style={num}>{n}</span>
+        <span style={name}>{p.name || "(no name on this row)"}</span>
+      </div>
+      <div style={metaLine}>
+        {p.rating ? <b style={star}>★ {p.rating}</b> : null}
+        {p.reviews ? <span> ({p.reviews})</span> : null}
+        {p.category ? <span> · {p.category}</span> : null}
+      </div>
+      {p.address ? <div style={metaLine}>{p.address}</div> : null}
+
+      {/* ⛔ The pitch line follows the MODE, and speaks to both halves of the list. */}
+      <div style={pitch.tone === "site" ? pitchSite : pitchReviews}>{pitch.text}</div>
+
+      {tel ? (
+        <a href={tel} onClick={onDial} style={callBtn}>
+          ☎ {p.phone}
+        </a>
+      ) : (
+        <span style={noPhone}>no number on this row</span>
+      )}
+
+      {/* The two links he opens before dialling. Both were already in the sheet. */}
+      {p.maps || p.reviewsUrl || p.website ? (
+        <div style={linkRow}>
+          {p.maps ? (
+            <a href={p.maps} target="_blank" rel="noreferrer" style={linkBtnSm}>
+              🗺 Maps
+            </a>
+          ) : null}
+          {p.reviewsUrl ? (
+            <a href={p.reviewsUrl} target="_blank" rel="noreferrer" style={linkBtnSm}>
+              ★ Reviews
+            </a>
+          ) : null}
           {p.website ? (
-            <>
-              {" · "}
-              <a href={siteHref(p.website)} target="_blank" rel="noreferrer" style={link}>
-                website
-              </a>
-            </>
-          ) : (
-            <b style={pitch}> · No website — that&apos;s the pitch</b>
-          )}
+            <a href={siteHref(p.website)} target="_blank" rel="noreferrer" style={linkBtnSm}>
+              ↗ Site
+            </a>
+          ) : null}
         </div>
-        {p.notes ? (
-          <button onClick={() => setOpen((v) => !v)} style={priorToggle}>
-            {open ? "▾" : "▸"} {p.notes.split("\n").length} note
-            {p.notes.split("\n").length === 1 ? "" : "s"} on this row
-          </button>
-        ) : null}
-        {open && p.notes ? <div style={priorBody}>{p.notes}</div> : null}
-        {open && p.raw.length ? <CellList rows={p.raw} /> : null}
+      ) : null}
+
+      <input
+        value={note}
+        onChange={(e) => onNote(e.target.value)}
+        placeholder="What was said…"
+        style={noteBox}
+      />
+
+      <div style={outGrid}>
+        {OUTCOMES.map((o) => {
+          // ⚠️ Read from the sheet's Status, so it survives a reload AND reflects a hand-edit.
+          const on = normaliseStatus(p.status) === o.key;
+          return (
+            <button
+              key={o.key}
+              onClick={() => onOutcome(o.key)}
+              disabled={saving}
+              style={{ ...outBtn, ...(on ? solid(o.tone) : faint(o.tone)) }}
+            >
+              {saving ? "…" : o.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── the dial ── */}
-      <div style={dialCol}>
-        {tel ? (
-          <a href={tel} onClick={onDial} style={callBtn}>
-            ☎ {p.phone}
-          </a>
-        ) : (
-          <span style={noPhone}>no number</span>
-        )}
-        <input
-          value={note}
-          onChange={(e) => onNote(e.target.value)}
-          placeholder="What was said…"
-          style={noteBox}
-        />
-      </div>
-
-      {/* ── the outcome ── */}
-      <div style={outCol}>
-        <div style={outGrid}>
-          {OUTCOMES.map((o) => {
-            // ⚠️ THE WHOLE POINT OF THIS BLOCK. Steven: *"when I mark the four outcomes, let's have
-            // the button change colors so I know where I'm at… I can't see any difference on the
-            // actual cards."* The marked outcome goes SOLID; the rest go quiet. Read from the
-            // sheet's Status, so it survives a reload and reflects a hand-edit too.
-            const on = normaliseStatus(p.status) === o.key;
-            return (
-              <button
-                key={o.key}
-                onClick={() => onOutcome(o.key)}
-                disabled={saving}
-                style={{ ...outBtn, ...(on ? solid(o.tone) : faint(o.tone)) }}
-                title={o.label}
-              >
-                {saving ? "…" : o.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {booking !== null ? (
-          <div style={bookBox}>
-            <input
-              type="datetime-local"
-              value={booking}
-              onChange={(e) => onBook(e.target.value)}
-              style={input}
-            />
+      {booking !== null ? (
+        <div style={bookBox}>
+          <input
+            type="datetime-local"
+            value={booking}
+            onChange={(e) => onBook(e.target.value)}
+            style={input}
+          />
+          <div style={{ display: "flex", gap: 6 }}>
             <button onClick={onConfirmBook} disabled={!booking} style={primary}>
               Add to my calendar
             </button>
@@ -489,15 +546,51 @@ function Row({
               Cancel
             </button>
           </div>
-        ) : null}
+        </div>
+      ) : null}
 
+      <div style={cardFoot}>
         {p.status ? (
-          <div style={stamp}>
+          <span style={stamp}>
             {labelFor(p.status)}
             {p.lastCalled ? ` · ${p.lastCalled}` : ""}
-          </div>
+          </span>
+        ) : (
+          <span />
+        )}
+        {p.notes || p.raw.length ? (
+          <button onClick={() => setOpen((v) => !v)} style={linkBtn}>
+            {open ? "▾ less" : `▸ ${p.notes ? "notes" : "details"}`}
+          </button>
         ) : null}
       </div>
+
+      {open && p.notes ? <div style={priorBody}>{p.notes}</div> : null}
+      {open && p.raw.length ? <CellList rows={p.raw} /> : null}
+    </div>
+  );
+}
+
+function Seg({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { v: string; label: string }[];
+}) {
+  return (
+    <div style={seg}>
+      {options.map((o) => (
+        <button
+          key={o.v}
+          onClick={() => onChange(o.v)}
+          style={o.v === value ? { ...segBtn, ...segOn } : segBtn}
+        >
+          {o.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -512,12 +605,9 @@ function Stat({ n, cap, accent }: { n: number; cap: string; accent?: boolean }) 
 }
 
 /**
- * A label/value table that CANNOT push the page sideways.
- *
- * ⚠️ THE DECK SHEET HOLDS A 394-CHARACTER URL (`location_reviews_link`). An unbroken string that
- * long has no wrap opportunity, so the row grew until the card overflowed and the whole page
- * scrolled horizontally. `minWidth: 0` on the flex child is the half everyone forgets — without it
- * a flex item refuses to shrink below its content and `overflowWrap` never gets a say.
+ * ⚠️ THE DECK SHEET HOLDS A 394-CHARACTER URL. `minWidth: 0` on the flex child is the half everyone
+ * forgets — without it a flex item refuses to shrink below its content and `overflowWrap` never
+ * gets a say, and the card pushes the whole page sideways.
  */
 function CellList({ rows }: { rows: Cell[] }) {
   return (
@@ -540,7 +630,7 @@ function CellList({ rows }: { rows: Cell[] }) {
   );
 }
 
-/* ── tone → colour. One table, so a row, a button and a stamp can never disagree. ─────────── */
+/* ── tone → colour. One table, so a card, a button and a stamp can never disagree. ─────────── */
 
 const TONE: Record<string, { bg: string; line: string; ink: string; dot: string }> = {
   ok: { bg: "var(--e-ok-bg)", line: "var(--e-ok-line)", ink: "var(--e-ok-ink)", dot: "var(--e-ok-dot)" },
@@ -550,20 +640,15 @@ const TONE: Record<string, { bg: string; line: string; ink: string; dot: string 
   none: { bg: "var(--e-none-bg)", line: "var(--e-none-line)", ink: "var(--e-muted)", dot: "var(--e-none-dot)" },
 };
 
-/** The row's own skin: a colour stripe down the left and a wash, once it has an outcome. */
-function rowTone(tone: string): React.CSSProperties {
+function cardTone(tone: string): React.CSSProperties {
   if (!tone) return {};
   const t = TONE[tone] || TONE.none;
-  return { background: t.bg, borderColor: t.line, borderLeft: `5px solid ${t.dot}` };
+  return { background: t.bg, borderColor: t.line, borderTop: `4px solid ${t.dot}` };
 }
-
-/** The outcome you picked. */
 function solid(tone: string): React.CSSProperties {
   const t = TONE[tone] || TONE.none;
   return { background: t.dot, borderColor: t.dot, color: "#fff", fontWeight: 800 };
 }
-
-/** The ones you didn't — legible, but they must not compete with the one you did. */
 function faint(tone: string): React.CSSProperties {
   const t = TONE[tone] || TONE.none;
   return { background: "var(--e-panel)", borderColor: "var(--e-line)", color: t.ink };
@@ -572,78 +657,74 @@ function faint(tone: string): React.CSSProperties {
 /* ── styles ───────────────────────────────────────────────────────────────────────────────── */
 
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-/* ⛔ NO max-width. Steven: *"let's use this real estate."* With the rail collapsed this is a
-   1,500px canvas and the row is built to spend it — name on the left, dial in the middle,
-   outcomes on the right, all on one line. The row wraps on a narrow window; it is not pretending
-   to be a phone layout, and it does not need to be. */
-const page: React.CSSProperties = { padding: "0 28px 120px", fontFamily: font };
+const page: React.CSSProperties = { padding: "0 24px 120px", fontFamily: font };
 const bar: React.CSSProperties = {
   position: "sticky",
   top: 0,
   zIndex: 5,
   background: "var(--e-bg)",
   borderBottom: "1px solid var(--e-line)",
-  padding: "26px 0 14px",
-  marginBottom: 18,
+  padding: "24px 0 12px",
+  marginBottom: 16,
 };
 const barTop: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24 };
 const h1: React.CSSProperties = { fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 };
 const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 13.5, marginTop: 3 };
 const bigNum: React.CSSProperties = { fontSize: 30, fontWeight: 800, lineHeight: 1 };
 const numCap: React.CSSProperties = { fontSize: 10.5, color: "var(--e-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 3 };
-const listRow: React.CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 16 };
+const listRow: React.CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 14 };
+const filterRow: React.CSSProperties = { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--e-line-soft)" };
 const pill: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 999, padding: "7px 14px", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font };
 const pillOn: React.CSSProperties = { borderColor: "var(--e-accent)", color: "var(--e-accent)", fontWeight: 800 };
-const toggle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--e-muted)", marginLeft: 8, cursor: "pointer" };
 const dropBtn: React.CSSProperties = { ...pill, marginLeft: "auto", color: "var(--e-muted)", fontWeight: 500 };
+const seg: React.CSSProperties = { display: "inline-flex", border: "1px solid var(--e-line)", borderRadius: 8, overflow: "hidden" };
+const segBtn: React.CSSProperties = { border: "none", borderRight: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-muted)", padding: "7px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" };
+const segOn: React.CSSProperties = { background: "var(--e-accent)", color: "#fff", fontWeight: 800 };
+const mini: React.CSSProperties = { display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "var(--e-muted)" };
+const sel: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 7, padding: "5px 7px", fontSize: 12.5, fontFamily: font };
+const search: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 8, padding: "7px 11px", fontSize: 13, fontFamily: font, outline: "none", minWidth: 170 };
+const clearBtn: React.CSSProperties = { border: "1px solid var(--e-accent)", background: "none", color: "var(--e-accent)", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font };
 const addBox: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 16, background: "var(--e-panel-2)", marginBottom: 14 };
 const addGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12, marginBottom: 12 };
 const lab: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, color: "var(--e-ink)" };
-const input: React.CSSProperties = { display: "block", width: "100%", marginTop: 5, border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 8, padding: "9px 11px", fontSize: 14, fontFamily: font, outline: "none" };
-const primary: React.CSSProperties = { border: "1px solid var(--e-accent)", background: "var(--e-accent)", color: "#fff", borderRadius: 8, padding: "9px 16px", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" };
-const ghost: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-muted)", borderRadius: 8, padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font };
+const input: React.CSSProperties = { display: "block", width: "100%", border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: font, outline: "none" };
+const primary: React.CSSProperties = { border: "1px solid var(--e-accent)", background: "var(--e-accent)", color: "#fff", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" };
+const ghost: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-muted)", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font };
 const progress: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", margin: "0 0 12px" };
 
-const rows: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 8 };
-const row: React.CSSProperties = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "flex-start",
-  gap: 18,
-  border: "1px solid var(--e-line)",
-  borderLeft: "5px solid var(--e-line)",
-  borderRadius: 10,
-  background: "var(--e-panel)",
-  padding: "12px 16px",
-};
-/* flex 1 1 320px: the name column takes the slack on a wide screen and is the first to wrap. */
-const who: React.CSSProperties = { flex: "1 1 320px", minWidth: 0 };
-const whoTop: React.CSSProperties = { display: "flex", alignItems: "baseline", gap: 9, flexWrap: "wrap" };
-const num: React.CSSProperties = { fontSize: 11.5, color: "var(--e-muted)", fontVariantNumeric: "tabular-nums", minWidth: 26 };
-const name: React.CSSProperties = { fontSize: 17, fontWeight: 800, letterSpacing: "-0.01em" };
-const star: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "var(--e-ok-ink)" };
-const metaDim: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)" };
-const metaLine: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", marginTop: 3, overflowWrap: "anywhere" };
-const pitch: React.CSSProperties = { color: "var(--e-ok-ink)" };
-const priorToggle: React.CSSProperties = { marginTop: 6, background: "none", border: "none", padding: 0, fontSize: 12.5, color: "var(--e-accent)", cursor: "pointer", fontFamily: font };
-const priorBody: React.CSSProperties = { marginTop: 6, fontSize: 12.5, whiteSpace: "pre-wrap", lineHeight: 1.5, color: "var(--e-ink)", background: "var(--e-panel-2)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "8px 10px" };
-
-const dialCol: React.CSSProperties = { flex: "0 1 300px", display: "flex", flexDirection: "column", gap: 7, minWidth: 220 };
-const callBtn: React.CSSProperties = { display: "block", textAlign: "center", background: "#16a34a", color: "#fff", borderRadius: 9, padding: "10px 14px", fontSize: 15.5, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" };
-const noPhone: React.CSSProperties = { display: "block", textAlign: "center", borderRadius: 9, padding: "10px 14px", fontSize: 13, fontWeight: 700, background: "var(--e-warn-bg)", border: "1px solid var(--e-warn-line)", color: "var(--e-warn-ink)" };
-const noteBox: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: font, outline: "none" };
-
-const outCol: React.CSSProperties = { flex: "0 0 auto", display: "flex", flexDirection: "column", gap: 7, alignItems: "flex-end" };
-const outGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, minmax(96px, 1fr))", gap: 6 };
-const outBtn: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 8, padding: "8px 10px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" };
-const bookBox: React.CSSProperties = { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" };
+/* ⛔ THE WHOLE LAYOUT DECISION, IN ONE LINE. Steven: *"when I get rid of our left sidebar on my
+   laptop, that's plenty of canvas for three columns. If I want to use my iPad, it would probably
+   just default to two columns and a phone would default to one."* auto-fill + a 400px floor does
+   exactly that with no media queries: ~1456px collapsed → 3, ~1224 with the rail → 3, iPad
+   landscape ~892 → 2, phone (rail auto-hides under 820) → 1.
+   ⚠️ THE FLOOR IS 400 AND NOT 320 ON PURPOSE. Six outcome buttons three-across need ~120px each to
+   hold "Left voicemail"; tighter and a cramped *Not interested* sits beside *Callback*, and that
+   misclick costs a real prospect. */
+const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: 12, alignItems: "start" };
+const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderTop: "4px solid var(--e-line)", borderRadius: 12, background: "var(--e-panel)", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 7 };
+const cardHead: React.CSSProperties = { display: "flex", alignItems: "baseline", gap: 8 };
+const num: React.CSSProperties = { fontSize: 11.5, color: "var(--e-muted)", fontVariantNumeric: "tabular-nums" };
+const name: React.CSSProperties = { fontSize: 17, fontWeight: 800, letterSpacing: "-0.01em", overflowWrap: "anywhere" };
+const star: React.CSSProperties = { color: "var(--e-ok-ink)" };
+const metaLine: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)", overflowWrap: "anywhere" };
+const pitchSite: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "var(--e-ok-ink)", background: "var(--e-ok-bg)", border: "1px solid var(--e-ok-line)", borderRadius: 7, padding: "6px 9px" };
+const pitchReviews: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "var(--e-info-ink)", background: "var(--e-info-bg)", border: "1px solid var(--e-info-line)", borderRadius: 7, padding: "6px 9px" };
+const callBtn: React.CSSProperties = { display: "block", textAlign: "center", background: "#16a34a", color: "#fff", borderRadius: 9, padding: "11px 14px", fontSize: 16, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" };
+const noPhone: React.CSSProperties = { display: "block", textAlign: "center", borderRadius: 9, padding: "11px 14px", fontSize: 13, fontWeight: 700, background: "var(--e-warn-bg)", border: "1px solid var(--e-warn-line)", color: "var(--e-warn-ink)" };
+const linkRow: React.CSSProperties = { display: "flex", gap: 6 };
+const linkBtnSm: React.CSSProperties = { flex: 1, textAlign: "center", border: "1px solid var(--e-line)", background: "var(--e-panel-2)", color: "var(--e-ink)", borderRadius: 7, padding: "6px 8px", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" };
+const noteBox: React.CSSProperties = { ...input };
+const outGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5 };
+const outBtn: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 7, padding: "8px 4px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
+const bookBox: React.CSSProperties = { display: "grid", gap: 6, border: "1px solid var(--e-warn-line)", background: "var(--e-warn-bg)", borderRadius: 8, padding: 8 };
+const cardFoot: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 };
 const stamp: React.CSSProperties = { fontSize: 11.5, color: "var(--e-muted)", fontWeight: 600 };
-
-const extraList: React.CSSProperties = { listStyle: "none", padding: 0, margin: "10px 0 0", borderTop: "1px solid var(--e-line-soft)" };
-const extraLi: React.CSSProperties = { display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12.5, padding: "5px 0", borderBottom: "1px solid var(--e-panel-2)", color: "var(--e-ink)" };
+const linkBtn: React.CSSProperties = { background: "none", border: "none", padding: 0, fontSize: 12, color: "var(--e-accent)", cursor: "pointer", fontFamily: font };
+const priorBody: React.CSSProperties = { fontSize: 12.5, whiteSpace: "pre-wrap", lineHeight: 1.5, color: "var(--e-ink)", background: "var(--e-panel-2)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "8px 10px" };
+const extraList: React.CSSProperties = { listStyle: "none", padding: 0, margin: 0, borderTop: "1px solid var(--e-line-soft)" };
+const extraLi: React.CSSProperties = { display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12, padding: "4px 0", borderBottom: "1px solid var(--e-panel-2)", color: "var(--e-ink)" };
 const extraLab: React.CSSProperties = { color: "var(--e-muted)", flex: "0 0 auto" };
 const extraVal: React.CSSProperties = { minWidth: 0, overflowWrap: "anywhere", textAlign: "right" };
-
 const link: React.CSSProperties = { color: "var(--e-accent)", textDecoration: "none" };
 const muted: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 20 };
 const errBox: React.CSSProperties = { marginBottom: 14, padding: "11px 14px", borderRadius: 10, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-bad-ink)", fontSize: 14, lineHeight: 1.5 };
