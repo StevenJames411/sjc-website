@@ -659,12 +659,15 @@ function Card({
       <div style={cardHead}>
         <span style={num}>{n}</span>
         <span style={name}>{p.name || "(no name on this row)"}</span>
+        {/* ⛔ NO REVIEWS LINK. Steven: *"95% of the time I open the map and the map page has the
+            reviews, so I don't need it, it doesn't need to be its own tab."* Two buttons that land
+            on the same information is one button too many.
+            ⚠️ `reviewsUrl` STAYS CLAIMED in FIELDS even though nothing renders it — unclaiming it
+            would drop `location_reviews_link` back into the leftovers, and that is the
+            394-character URL that used to push the whole page sideways. */}
         <span style={headLinks}>
           {p.maps ? (
             <a href={p.maps} target="_blank" rel="noreferrer" style={link}>Maps</a>
-          ) : null}
-          {p.reviewsUrl ? (
-            <a href={p.reviewsUrl} target="_blank" rel="noreferrer" style={link}>Reviews</a>
           ) : null}
           {p.website ? (
             <a href={siteHref(p.website)} target="_blank" rel="noreferrer" style={link}>Site</a>

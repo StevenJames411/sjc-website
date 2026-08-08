@@ -296,7 +296,11 @@ const linked = toProspects(linkHeaders, [
   { row: 2, cells: ["American Lawn", "+1 346-704-1501", "36", "https://maps.google.com/x", "https://maps.google.com/reviews/y"] },
 ])[0];
 check("the Maps link lands in its own field", linked.maps === "https://maps.google.com/x", linked.maps);
-check("the Reviews link lands in its own field", linked.reviewsUrl === "https://maps.google.com/reviews/y", linked.reviewsUrl);
+check(
+  "the Reviews link is still CLAIMED even though the card no longer shows it",
+  linked.reviewsUrl === "https://maps.google.com/reviews/y",
+  "unclaiming it drops the 394-char URL back into the leftovers"
+);
 check(
   "⚠️ the review COUNT is still a count, not the link",
   linked.reviews === "36",
