@@ -652,12 +652,27 @@ function Card({
           website. That could be a tiny little button somewhere. I'm not blind. We just use too
           much real estate for stupid information."* Three rows became one; the card lost ~90px
           and nothing left the screen. */}
+      {/* ⛔ THE CALL BUTTON DOESN'T SHOW THE NUMBER. Steven: *"I don't need to physically see their
+          phone number because I'm clicking the call. I'm not dialing a damn keyboard."* Printing a
+          number nobody reads cost ~110px of the title line — which is exactly the room the Maps
+          and Site links needed. The number is still in the link and on the tooltip. */}
       <div style={cardHead}>
         <span style={num}>{n}</span>
         <span style={name}>{p.name || "(no name on this row)"}</span>
+        <span style={headLinks}>
+          {p.maps ? (
+            <a href={p.maps} target="_blank" rel="noreferrer" style={link}>Maps</a>
+          ) : null}
+          {p.reviewsUrl ? (
+            <a href={p.reviewsUrl} target="_blank" rel="noreferrer" style={link}>Reviews</a>
+          ) : null}
+          {p.website ? (
+            <a href={siteHref(p.website)} target="_blank" rel="noreferrer" style={link}>Site</a>
+          ) : null}
+        </span>
         {tel ? (
-          <a href={tel} onClick={onDial} style={callBtn} title="Rings through your iPhone">
-            ☎ {p.phone}
+          <a href={tel} onClick={onDial} style={callBtn} title={`Call ${p.phone} — rings through your iPhone`}>
+            ☎ Call
           </a>
         ) : (
           <span style={noPhone}>no number</span>
@@ -673,24 +688,6 @@ function Card({
         {p.reviews ? <span> ({p.reviews})</span> : null}
         {p.category ? <span> · {p.category}</span> : null}
         {p.address ? <span> · {p.address}</span> : null}
-        {p.maps ? (
-          <>
-            {" · "}
-            <a href={p.maps} target="_blank" rel="noreferrer" style={link}>Maps</a>
-          </>
-        ) : null}
-        {p.reviewsUrl ? (
-          <>
-            {" · "}
-            <a href={p.reviewsUrl} target="_blank" rel="noreferrer" style={link}>Reviews</a>
-          </>
-        ) : null}
-        {p.website ? (
-          <>
-            {" · "}
-            <a href={siteHref(p.website)} target="_blank" rel="noreferrer" style={link}>Site</a>
-          </>
-        ) : null}
       </div>
 
       {/* ⛔ THE SAVE BUTTON ONLY EXISTS WHEN THERE IS SOMETHING TO SAVE, so an empty card stays as
@@ -928,7 +925,9 @@ const metaLine: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)",
 const chipBase: React.CSSProperties = { fontSize: 10.5, fontWeight: 800, letterSpacing: ".04em", borderRadius: 5, padding: "2px 6px", marginRight: 4, whiteSpace: "nowrap" };
 const pitchSite: React.CSSProperties = { ...chipBase, color: "#fff", background: "var(--e-ok-dot)" };
 const pitchReviews: React.CSSProperties = { ...chipBase, color: "#fff", background: "var(--e-accent)" };
-const callBtn: React.CSSProperties = { flex: "0 0 auto", background: "#16a34a", color: "#fff", borderRadius: 8, padding: "7px 11px", fontSize: 14, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" };
+/* The links, hard against the call button. nowrap because they are the thing that was wrapping. */
+const headLinks: React.CSSProperties = { flex: "0 0 auto", display: "flex", gap: 8, fontSize: 12.5, whiteSpace: "nowrap" };
+const callBtn: React.CSSProperties = { flex: "0 0 auto", background: "#16a34a", color: "#fff", borderRadius: 8, padding: "7px 13px", fontSize: 13.5, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" };
 const noPhone: React.CSSProperties = { flex: "0 0 auto", borderRadius: 8, padding: "7px 11px", fontSize: 12, fontWeight: 700, background: "var(--e-warn-bg)", border: "1px solid var(--e-warn-line)", color: "var(--e-warn-ink)", whiteSpace: "nowrap" };
 const noteBox: React.CSSProperties = { ...input, flex: 1, minWidth: 0 };
 /* Green, because it writes to the sheet — same promise as the Call button, not a neutral control. */
