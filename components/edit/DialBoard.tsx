@@ -19,7 +19,19 @@
 //  2. The sheet stays the database. Nothing here caches a prospect; a reload re-reads the sheet.
 //  3. Sheet order is the default. His deck tab is "San Antonio — Neediest First"; the only thing
 //     allowed to re-order it is a choice he makes on screen. See sortFor() in lib/dialShared.
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  activeMs,
+  clock,
+  count,
+  countDial,
+  isPaused,
+  pause,
+  resume,
+  startSession,
+  toRow,
+  type Session,
+} from "@/lib/dialSession";
 import {
   DEFAULT_FILTERS,
   OUTCOMES,
@@ -83,6 +95,66 @@ export default function DialBoard({
    * So the card now says so itself, and opens to show the note that just landed.
    */
   const [justSaved, setJustSaved] = useState<Record<number, boolean>>({});
+
+  /**
+   * The calling session. ⛔ PAGE STATE ON PURPOSE — closing the tab must END it, not resume it
+   * later: *"if I forget to end the session and I just close the window, I want it to end the
+   * session."* A clock that outlives the page is a clock that runs all night.
+   */
+  const [session, setSession] = useState<Session | null>(null);
+  const sessionRef = useRef<Session | null>(null);
+  sessionRef.current = session;
+
+  /**
+   * ⚠️ `tick` IS NOT DEAD CODE — it is the whole reason the clock moves. Elapsed time is DERIVED
+   * from `startedAt` on every render rather than stored, so nothing can drift; this state exists
+   * only to cause a render once a second. Deleting it freezes the display while the session keeps
+   * running, which is worse than no clock.
+   */
+  const [tick, setTick] = useState(0);
+  void tick;
+
+  // One interval for the whole page, and only while a session is actually running.
+  useEffect(() => {
+    if (!session || isPaused(session)) return;
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [session]);
+
+  const endSession = useCallback(
+    (s: Session, endedAt: number, beacon: boolean) => {
+      const payload = JSON.stringify({ session: toRow(s, endedAt) });
+      if (beacon && typeof navigator !== "undefined" && navigator.sendBeacon) {
+        // ⚠️ THE ONLY THING THAT WORKS ON THE WAY OUT. A fetch started in `beforeunload` is killed
+        // with the page; sendBeacon is handed to the browser to deliver after we are gone. It sends
+        // a Blob with no custom headers, which is why the route parses text rather than JSON.
+        navigator.sendBeacon("/api/dial/session", new Blob([payload], { type: "text/plain" }));
+        return;
+      }
+      void fetch("/api/dial/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      })
+        .then((r) => r.json())
+        .then((b) => {
+          setFlash(b?.ok ? `Session logged · ${clock(activeMs(s, endedAt))} worked` : b?.error || "Couldn't log the session.");
+          setTimeout(() => setFlash(""), 3000);
+        })
+        .catch(() => setErr("Couldn't reach the sheet — the session wasn't logged."));
+    },
+    []
+  );
+
+  /** ⛔ Closing the tab ENDS the session. Not "pauses", not "resumes later". */
+  useEffect(() => {
+    const out = () => {
+      const s = sessionRef.current;
+      if (s) endSession(s, Date.now(), true);
+    };
+    window.addEventListener("pagehide", out);
+    return () => window.removeEventListener("pagehide", out);
+  }, [endSession]);
 
   const load = useCallback(async (id: string) => {
     if (!id) return;
@@ -212,6 +284,8 @@ export default function DialBoard({
       // Tell the CARD, not just the top of the page.
       setJustSaved((s) => ({ ...s, [p.row]: true }));
       setTimeout(() => setJustSaved((s) => ({ ...s, [p.row]: false })), 4000);
+      // Outcomes feed the session row. A note-only save just keeps the session alive.
+      setSession((cur) => (cur ? (outcome ? count(cur, outcome, Date.now()) : cur) : cur));
     } catch {
       setErr("Couldn't reach the sheet — nothing was written.");
     } finally {
@@ -301,8 +375,45 @@ export default function DialBoard({
               Remove
             </button>
           ) : null}
-          <div style={{ display: "flex", gap: 18, marginLeft: "auto" }}>
-            <Stat n={dials} cap="dials" accent />
+          <div style={{ display: "flex", gap: 14, marginLeft: "auto", alignItems: "center" }}>
+            {/* ── the session clock ────────────────────────────────────────────────────────── */}
+            {session ? (
+              <>
+                <span
+                  style={{ ...clockFace, ...(isPaused(session) ? clockPaused : null) }}
+                  title={isPaused(session) ? "Paused" : "Session running"}
+                >
+                  {clock(activeMs(session, Date.now()))}
+                  {isPaused(session) ? " ⏸" : ""}
+                </span>
+                <button
+                  onClick={() =>
+                    setSession((s) => (s ? (isPaused(s) ? resume(s, Date.now()) : pause(s, Date.now())) : s))
+                  }
+                  style={ghost}
+                >
+                  {isPaused(session) ? "Resume" : "Pause"}
+                </button>
+                <button
+                  onClick={() => {
+                    endSession(session, Date.now(), false);
+                    setSession(null);
+                  }}
+                  style={endBtn}
+                >
+                  End
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setSession(startSession(Date.now(), data?.list.name || ""))}
+                style={primary}
+                title="Start the clock — it logs to your ops sheet when you end it"
+              >
+                ▶ Start session
+              </button>
+            )}
+            <Stat n={session?.dials ?? dials} cap="dials" accent />
             <Stat n={counts.done} cap="worked" />
             <Stat n={counts.todo} cap="left" />
           </div>
@@ -468,7 +579,10 @@ export default function DialBoard({
                 onBook={(when) => setBooking({ row: p.row, when })}
                 onCancelBook={() => setBooking(null)}
                 onConfirmBook={() => bookCallback(p)}
-                onDial={() => setDials((n) => n + 1)}
+                onDial={() => {
+                  setDials((n) => n + 1);
+                  setSession((s) => (s ? countDial(s, Date.now()) : s));
+                }}
                 onSaveNote={() => void log(p)}
                 onOutcome={(o) =>
                   o === "callback" ? setBooking({ row: p.row, when: "" }) : void log(p, o)
@@ -816,6 +930,10 @@ const noteBox: React.CSSProperties = { ...input, flex: 1, minWidth: 0 };
 const saveNoteBtn: React.CSSProperties = { flex: "0 0 auto", border: "1px solid #16a34a", background: "#16a34a", color: "#fff", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font };
 /* Sits where the Save button was, so the eye that just clicked lands on the confirmation. */
 const savedTick: React.CSSProperties = { flex: "0 0 auto", display: "flex", alignItems: "center", padding: "0 8px", fontSize: 12.5, fontWeight: 800, color: "var(--e-ok-ink)", whiteSpace: "nowrap" };
+/* Tabular numerals so the seconds ticking doesn't shuffle the buttons beside it every second. */
+const clockFace: React.CSSProperties = { fontSize: 19, fontWeight: 800, fontVariantNumeric: "tabular-nums", color: "var(--e-ok-ink)", minWidth: 62, textAlign: "right" };
+const clockPaused: React.CSSProperties = { color: "var(--e-warn-ink)" };
+const endBtn: React.CSSProperties = { border: "1px solid var(--e-bad-line)", background: "var(--e-bad-bg)", color: "var(--e-bad-ink)", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font };
 const priorCap: React.CSSProperties = { fontSize: 10, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--e-muted)", fontWeight: 700, marginBottom: 4 };
 const outGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5 };
 const outBtn: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 7, padding: "8px 4px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };

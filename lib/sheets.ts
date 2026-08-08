@@ -119,6 +119,31 @@ export function logSheetCall(opts: {
   return call<{ row: number; wrote: string[]; at: string }>("logCall", opts);
 }
 
+/**
+ * Log a finished call session — appends to `Sessions` and accumulates the `Days` total.
+ *
+ * ⛔ THE SPREADSHEET IS SJC'S OWN OPERATIONS SHEET, NEVER A CLIENT'S AND NEVER A PROSPECT LIST.
+ * A day's calling can span two metro sheets, so a per-list tab would fragment the
+ * Monday-to-Saturday view this exists to give. Same sheet payments already write to.
+ */
+export function logSheetSession(opts: {
+  spreadsheetId: string;
+  session: {
+    date: string;
+    who: string;
+    started: string;
+    ended: string;
+    activeMins: number;
+    dials: number;
+    convos: number;
+    callbacks: number;
+    sold: number;
+    list: string;
+  };
+}) {
+  return call<{ sessionRow: number; dayRow: number }>("logSession", opts);
+}
+
 export function writeSheetRow(opts: {
   spreadsheetId: string;
   tab: "Leads" | "Onboarding" | "Payments";

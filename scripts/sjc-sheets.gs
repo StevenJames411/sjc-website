@@ -32,7 +32,7 @@
 //
 // After that, never again.
 
-var SCRIPT_VERSION = '4ee431790243';
+var SCRIPT_VERSION = '3c19aaa1625a';
 var TAB_LEADS = 'Leads';
 var TAB_ONBOARDING = 'Onboarding';
 // Money events, in SJC's OWN operations sheet — never a client's. Appends like Leads (it's a log,
@@ -102,6 +102,8 @@ function doPost(e) {
         return reply(readRows_(body));
       case 'logCall':
         return reply(logCall_(body));
+      case 'logSession':
+        return reply(logSession_(body));
       case 'ping':
         return reply({ ok: true, pong: true });
       default:
@@ -418,6 +420,179 @@ function logCall_(body) {
   }
 
   return { ok: true, row: row, wrote: wrote, at: when };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// CALL SESSIONS — how long he actually spent on the phone, and how many dials came out of it.
+//
+// ⛔ THIS WRITES TO SJC'S OWN OPERATIONS SHEET, NEVER A PROSPECT LIST. A day's calling can span two
+// metro sheets, so a per-list tab would fragment the Monday-to-Saturday view this exists to give.
+//
+// TWO TABS, TWO DIFFERENT JOBS — the same split as Leads (append) vs Onboarding (one row):
+//   Sessions  a LOG. Morning, afternoon and evening blocks are three rows sharing one date.
+//   Days      a RUNNING TOTAL. One row per date that grows as sessions end. No sheet formulas,
+//             because a formula in a tab a script appends to is a thing that breaks quietly.
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+
+var TAB_SESSIONS = 'Sessions';
+var TAB_DAYS = 'Days';
+
+var SESSION_COLS = [
+  { key: 'date', label: 'Date' },
+  // ⚠️ WRITTEN FROM DAY ONE even though it only ever says "Steven" today. Per-rep logins are the
+  // stated endgame ("make sure they're doing their dials"); adding this column later would leave
+  // every row before it anonymous, which is exactly the history he would want.
+  { key: 'who', label: 'Who' },
+  { key: 'started', label: 'Started' },
+  { key: 'ended', label: 'Ended' },
+  { key: 'active', label: 'Active' },
+  { key: 'dials', label: 'Dials' },
+  { key: 'convos', label: 'Convos' },
+  { key: 'callbacks', label: 'Callbacks' },
+  { key: 'sold', label: 'Sold' },
+  { key: 'perHour', label: 'Dials/hr' },
+  { key: 'list', label: 'List' },
+];
+
+function logSession_(body) {
+  var id = String(body.spreadsheetId || '').trim();
+  if (!id) return { ok: false, error: 'spreadsheetId required' };
+
+  var s = body.session || {};
+  var date = String(s.date || '').trim();
+  if (!date) return { ok: false, error: 'session.date required' };
+
+  var ss = SpreadsheetApp.openById(id);
+  var mins = Number(s.activeMins) || 0;
+  var dials = Number(s.dials) || 0;
+
+  // ── the log ──────────────────────────────────────────────────────────────────────────────────
+  var log = ss.getSheetByName(TAB_SESSIONS) || ss.insertSheet(TAB_SESSIONS);
+  var vals = {
+    date: date,
+    who: String(s.who || 'Steven'),
+    started: String(s.started || ''),
+    ended: String(s.ended || ''),
+    active: hhmm_(mins),
+    dials: dials,
+    convos: Number(s.convos) || 0,
+    callbacks: Number(s.callbacks) || 0,
+    sold: Number(s.sold) || 0,
+    perHour: perHour_(dials, mins),
+    list: String(s.list || ''),
+  };
+  writeKeyed_(log, SESSION_COLS, vals, -1);
+
+  // ── the running day ──────────────────────────────────────────────────────────────────────────
+  // Read-add-write rather than overwrite: the caller only knows about ITS session, so the day's
+  // total has to be accumulated here where the previous number lives.
+  var days = ss.getSheetByName(TAB_DAYS) || ss.insertSheet(TAB_DAYS);
+  var dayCols = [
+    { key: 'date', label: 'Date' },
+    { key: 'who', label: 'Who' },
+    { key: 'sessions', label: 'Sessions' },
+    { key: 'active', label: 'Active' },
+    { key: 'dials', label: 'Dials' },
+    { key: 'convos', label: 'Convos' },
+    { key: 'callbacks', label: 'Callbacks' },
+    { key: 'sold', label: 'Sold' },
+    { key: 'perHour', label: 'Dials/hr' },
+  ];
+  // A day belongs to a PERSON, so the key is date+who — two reps calling on the same Monday must
+  // not add up into one row.
+  var prev = findKeyed_(days, ['date', 'who'], [date, String(s.who || 'Steven')]);
+  var was = prev.values || {};
+  var totalMins = (Number(was.__activeMins) || minsFrom_(was.active)) + mins;
+  var totalDials = (Number(was.dials) || 0) + dials;
+
+  writeKeyed_(days, dayCols, {
+    date: date,
+    who: String(s.who || 'Steven'),
+    sessions: (Number(was.sessions) || 0) + 1,
+    active: hhmm_(totalMins),
+    dials: totalDials,
+    convos: (Number(was.convos) || 0) + (Number(s.convos) || 0),
+    callbacks: (Number(was.callbacks) || 0) + (Number(s.callbacks) || 0),
+    sold: (Number(was.sold) || 0) + (Number(s.sold) || 0),
+    perHour: perHour_(totalDials, totalMins),
+  }, prev.row);
+
+  return { ok: true, sessionRow: log.getLastRow(), dayRow: prev.row > 0 ? prev.row : days.getLastRow() };
+}
+
+/** "2h 35m" — readable at a glance, which a raw minute count is not. */
+function hhmm_(mins) {
+  var m = Math.max(0, Math.round(Number(mins) || 0));
+  var h = Math.floor(m / 60);
+  return h ? h + 'h ' + (m % 60) + 'm' : m + 'm';
+}
+
+/** Parse "2h 35m" back to minutes, so a Day row can be added to without a hidden column. */
+function minsFrom_(text) {
+  var t = String(text || '');
+  var h = /(\d+)\s*h/.exec(t);
+  var m = /(\d+)\s*m/.exec(t);
+  return (h ? Number(h[1]) * 60 : 0) + (m ? Number(m[1]) : 0);
+}
+
+/**
+ * ⛔ THE NUMBER HE ACTUALLY MANAGES BY. Steven, on why the clock does not need policing: *"if they
+ * try to log eight hours a day and only make 20 dials, the dial volume is what I'm going to bust
+ * their balls about."* Time is a DENOMINATOR here — inflating it makes the row look worse, not
+ * better — which is why there is no idle timeout anywhere in this feature.
+ */
+function perHour_(dials, mins) {
+  if (!mins) return '';
+  return Math.round((Number(dials) || 0) / (mins / 60) * 10) / 10;
+}
+
+/** Write a keyed row: `row` < 0 appends, otherwise overwrites that row. Columns self-create. */
+function writeKeyed_(sheet, cols, values, row) {
+  var lastCol = sheet.getLastColumn();
+  var headerVals = lastCol ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];
+  var headerNotes = lastCol ? sheet.getRange(1, 1, 1, lastCol).getNotes()[0] : [];
+
+  var out = [];
+  cols.forEach(function (c) {
+    var idx = headerNotes.indexOf(c.key);
+    if (idx < 0) {
+      idx = headerVals.length;
+      sheet.getRange(1, idx + 1).setValue(c.label).setNote(c.key).setFontWeight('bold');
+      headerVals.push(c.label);
+      headerNotes.push(c.key);
+    }
+    while (out.length <= idx) out.push('');
+    out[idx] = values[c.key] == null ? '' : values[c.key];
+  });
+  while (out.length < headerVals.length) out.push('');
+
+  if (row > 1) sheet.getRange(row, 1, 1, out.length).setValues([out]);
+  else sheet.appendRow(out);
+  if (sheet.getFrozenRows() < 1) sheet.setFrozenRows(1);
+}
+
+/** Find a row by one or more keyed columns. Returns { row: -1 } when the sheet has no match. */
+function findKeyed_(sheet, keys, wants) {
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) return { row: -1, values: {} };
+
+  var notes = sheet.getRange(1, 1, 1, lastCol).getNotes()[0];
+  var idx = keys.map(function (k) { return notes.indexOf(k); });
+  if (idx.some(function (i) { return i < 0; })) return { row: -1, values: {} };
+
+  var grid = sheet.getRange(2, 1, lastRow - 1, lastCol).getDisplayValues();
+  for (var r = 0; r < grid.length; r++) {
+    var hit = true;
+    for (var k = 0; k < idx.length; k++) {
+      if (String(grid[r][idx[k]]).trim() !== String(wants[k]).trim()) { hit = false; break; }
+    }
+    if (!hit) continue;
+    var values = {};
+    for (var c = 0; c < notes.length; c++) if (notes[c]) values[notes[c]] = grid[r][c];
+    return { row: r + 2, values: values };
+  }
+  return { row: -1, values: {} };
 }
 
 /** Set one cell by header name, adding the column at the end if the sheet has not got it. */

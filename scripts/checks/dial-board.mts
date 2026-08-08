@@ -42,6 +42,18 @@ import {
   toProspects,
 } from "../../lib/dialShared.ts";
 import { parseGid, parseSpreadsheetId } from "../../lib/dial.ts";
+import {
+  activeMs,
+  clock,
+  count,
+  countDial,
+  isPaused,
+  pause,
+  resume,
+  startSession,
+  toRow,
+  touch,
+} from "../../lib/dialSession.ts";
 
 let failed = 0;
 const check = (label: string, pass: boolean, detail = "") => {
@@ -291,6 +303,60 @@ check(
 );
 check("neither link is left in the leftovers", ![...linked.extra, ...linked.raw].some((x) => /location_/.test(x.label)));
 check("a sheet without those columns just has no buttons", pool[0].maps === "" && pool[0].reviewsUrl === "");
+
+// ── the call session: pause arithmetic and the row it becomes ─────────────────────────────────
+const T0 = 1_760_000_000_000; // a fixed instant; every function takes `now`, nothing reads a clock
+const MIN = 60_000;
+
+let sess = startSession(T0, "SA deck builders");
+check("a fresh session has worked no time", activeMs(sess, T0) === 0);
+check("time accrues while running", activeMs(sess, T0 + 30 * MIN) === 30 * MIN);
+
+sess = pause(sess, T0 + 30 * MIN);
+check("⛔ a pause STOPS the clock", activeMs(sess, T0 + 45 * MIN) === 30 * MIN, "15 min of bathroom break must not be billed as work");
+sess = resume(sess, T0 + 45 * MIN);
+check("resuming picks up where it stopped", activeMs(sess, T0 + 50 * MIN) === 35 * MIN);
+
+sess = pause(sess, T0 + 50 * MIN);
+sess = resume(sess, T0 + 70 * MIN);
+check("multiple pauses all bank", activeMs(sess, T0 + 80 * MIN) === 45 * MIN, "30 + 5 + 10 worked, 35 paused");
+check("pausing twice is not double-counted", activeMs(pause(pause(sess, T0 + 80 * MIN), T0 + 85 * MIN), T0 + 90 * MIN) === 45 * MIN);
+check("resuming a running session does nothing", activeMs(resume(sess, T0 + 80 * MIN), T0 + 90 * MIN) === 55 * MIN);
+check("isPaused reports honestly", !isPaused(sess) && isPaused(pause(sess, T0)));
+
+let tally = startSession(T0, "L");
+tally = countDial(tally, T0);
+tally = countDial(tally, T0);
+tally = count(tally, "conversation", T0);
+tally = count(tally, "sold", T0);
+tally = count(tally, "callback", T0);
+tally = count(tally, "no-answer", T0);
+check("dials and outcomes tally separately", tally.dials === 2 && tally.convos === 1 && tally.sold === 1 && tally.callbacks === 1);
+check("a no-answer counts as neither a convo nor a sale", tally.convos === 1 && tally.sold === 1);
+check("any activity moves the crash-recovery marker", touch(tally, T0 + 99).lastActiveAt === T0 + 99);
+
+check("the clock reads mm:ss under an hour", clock(9 * MIN + 5000) === "9:05", clock(9 * MIN + 5000));
+check("...and h:mm:ss over one", clock(75 * MIN + 3000) === "1:15:03", clock(75 * MIN + 3000));
+check("a negative never renders", clock(-500) === "0:00");
+
+const row = toRow(sess, T0 + 80 * MIN);
+check("the row carries WHO from day one", row.who === "Steven", "per-rep logins are the endgame; a later column leaves history anonymous");
+check("active minutes are rounded from real worked time", row.activeMins === 45, String(row.activeMins));
+check("the row keeps which list was worked", row.list === "SA deck builders");
+check(
+  "⛔ a session ending after midnight belongs to the day it STARTED",
+  toRow(startSession(T0, "L"), T0 + 8 * 60 * MIN).date === new Date(T0).toLocaleDateString("en-US"),
+  "otherwise a late-night block lands on the wrong day of his Mon–Sat view"
+);
+// ⛔ THE CRASH PATH. A session found still open on the next load is closed at its LAST ACTIVITY,
+// not at "now" — otherwise a laptop shut at 5pm and reopened Monday logs a 62-hour day.
+const crashed = countDial(startSession(T0, "L"), T0 + 20 * MIN);
+check(
+  "a crashed session closes at its last activity, not at discovery",
+  toRow(crashed, crashed.lastActiveAt).activeMins === 20,
+  String(toRow(crashed, crashed.lastActiveAt).activeMins)
+);
+check("...and discovering it days later changes nothing", toRow(crashed, crashed.lastActiveAt).activeMins !== Math.round((3 * 24 * 60)));
 
 console.log(failed ? `\n${failed} FAILED` : "\nall good");
 process.exit(failed ? 1 : 0);
