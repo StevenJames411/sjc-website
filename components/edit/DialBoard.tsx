@@ -71,6 +71,18 @@ export default function DialBoard({
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState<number | null>(null);
   const [booking, setBooking] = useState<{ row: number; when: string } | null>(null);
+  /**
+   * Rows saved in the last few seconds.
+   *
+   * ⛔ THE SAVE WAS INVISIBLE, AND AN INVISIBLE SAVE READS AS A BROKEN ONE. Steven: *"I now see a
+   * save button, but it didn't save anywhere."* It had saved — the write returned
+   * `wrote: ["Notes"]` — but all three signals were wrong: the input cleared (looks like the text
+   * was thrown away), the confirmation flashed at the TOP of a page he was scrolled down inside,
+   * and the note itself landed in a COLLAPSED block. Nothing changed where he was looking.
+   *
+   * So the card now says so itself, and opens to show the note that just landed.
+   */
+  const [justSaved, setJustSaved] = useState<Record<number, boolean>>({});
 
   const load = useCallback(async (id: string) => {
     if (!id) return;
@@ -197,6 +209,9 @@ export default function DialBoard({
       setBooking(null);
       setFlash(outcome ? `${p.name} → ${labelFor(outcome)}` : `Note saved to ${p.name}`);
       setTimeout(() => setFlash(""), 2200);
+      // Tell the CARD, not just the top of the page.
+      setJustSaved((s) => ({ ...s, [p.row]: true }));
+      setTimeout(() => setJustSaved((s) => ({ ...s, [p.row]: false })), 4000);
     } catch {
       setErr("Couldn't reach the sheet — nothing was written.");
     } finally {
@@ -448,6 +463,7 @@ export default function DialBoard({
                 note={notes[p.row] || ""}
                 onNote={(v) => setNotes((s) => ({ ...s, [p.row]: v }))}
                 saving={saving === p.row}
+                justSaved={Boolean(justSaved[p.row])}
                 booking={booking?.row === p.row ? booking.when : null}
                 onBook={(when) => setBooking({ row: p.row, when })}
                 onCancelBook={() => setBooking(null)}
@@ -481,6 +497,7 @@ function Card({
   note,
   onNote,
   saving,
+  justSaved,
   booking,
   onBook,
   onCancelBook,
@@ -494,6 +511,7 @@ function Card({
   note: string;
   onNote: (v: string) => void;
   saving: boolean;
+  justSaved: boolean;
   booking: string | null;
   onBook: (when: string) => void;
   onCancelBook: () => void;
@@ -506,6 +524,12 @@ function Card({
   const tone = toneFor(p.status);
   const tel = telHref(p.phone);
   const pitch = pitchLine(p);
+
+  // Open the notes block the moment something lands in it, so the save is visible where he is
+  // looking instead of two seconds of banner at the top of the page.
+  useEffect(() => {
+    if (justSaved) setOpen(true);
+  }, [justSaved]);
 
   return (
     <div style={{ ...card, ...cardTone(tone) }}>
@@ -569,6 +593,8 @@ function Card({
           <button onClick={onSaveNote} disabled={saving} style={saveNoteBtn} title="Save to the sheet — this does not set an outcome">
             {saving ? "…" : "Save"}
           </button>
+        ) : justSaved ? (
+          <span style={savedTick}>✓ Saved</span>
         ) : null}
       </div>
 
@@ -788,6 +814,8 @@ const linkBtnSm: React.CSSProperties = { flex: 1, textAlign: "center", border: "
 const noteBox: React.CSSProperties = { ...input, flex: 1, minWidth: 0 };
 /* Green, because it writes to the sheet — same promise as the Call button, not a neutral control. */
 const saveNoteBtn: React.CSSProperties = { flex: "0 0 auto", border: "1px solid #16a34a", background: "#16a34a", color: "#fff", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font };
+/* Sits where the Save button was, so the eye that just clicked lands on the confirmation. */
+const savedTick: React.CSSProperties = { flex: "0 0 auto", display: "flex", alignItems: "center", padding: "0 8px", fontSize: 12.5, fontWeight: 800, color: "var(--e-ok-ink)", whiteSpace: "nowrap" };
 const priorCap: React.CSSProperties = { fontSize: 10, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--e-muted)", fontWeight: 700, marginBottom: 4 };
 const outGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5 };
 const outBtn: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 7, padding: "8px 4px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
