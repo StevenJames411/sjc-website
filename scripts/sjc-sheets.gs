@@ -32,7 +32,7 @@
 //
 // After that, never again.
 
-var SCRIPT_VERSION = '3c19aaa1625a';
+var SCRIPT_VERSION = 'b66cffc1a50c';
 var TAB_LEADS = 'Leads';
 var TAB_ONBOARDING = 'Onboarding';
 // Money events, in SJC's OWN operations sheet — never a client's. Appends like Leads (it's a log,
@@ -597,7 +597,8 @@ function findKeyed_(sheet, keys, wants) {
 
 /** Set one cell by header name, adding the column at the end if the sheet has not got it. */
 function setCell_(sheet, headers, row, header, value) {
-  var idx = indexOfHeaderLike_(headers, [header.toLowerCase()]);
+  // Tolerant, so a column Steven renamed is FOUND rather than duplicated. See headerKey_.
+  var idx = indexOfHeaderLike_(headers, [header]);
   if (idx < 0) {
     idx = headers.length;
     sheet.getRange(1, idx + 1).setValue(header).setFontWeight('bold');
@@ -606,10 +607,24 @@ function setCell_(sheet, headers, row, header, value) {
   sheet.getRange(row, idx + 1).setValue(value);
 }
 
-/** Case-insensitive header lookup. Returns -1 when none of `names` is present. */
+/**
+ * ⛔ STEVEN'S COLUMN NAMES WIN, NOT OURS.
+ *
+ * This used to compare lowercased text exactly. The board writes a column called `Callback`; he
+ * named his `Call-Back`. Exact matching meant the next write would miss his column, create a
+ * SECOND `Callback` next to it, and leave the one he made empty forever — while every screen
+ * looked like it was working. He owns the sheet and renames things in it, so the code adapts:
+ * case, spaces, hyphens, underscores and dots are noise. Mirrors headerKey() in lib/dialShared.ts.
+ */
+function headerKey_(h) {
+  return String(h || '').toLowerCase().replace(/[\s\-_.]+/g, '');
+}
+
+/** Tolerant header lookup. Returns -1 when none of `names` is present. */
 function indexOfHeaderLike_(headers, names) {
+  var want = names.map(headerKey_);
   for (var i = 0; i < headers.length; i++) {
-    if (names.indexOf(String(headers[i] || '').trim().toLowerCase()) >= 0) return i;
+    if (want.indexOf(headerKey_(headers[i])) >= 0) return i;
   }
   return -1;
 }

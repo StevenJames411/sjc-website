@@ -153,11 +153,26 @@ export function splitAtDivider(headers: string[]): number {
   return i < 0 ? headers.length : i;
 }
 
+/**
+ * ⛔ HIS COLUMN NAMES WIN, NOT MINE.
+ *
+ * The board writes a column called `Callback`. Steven named his `Call-Back`. Under exact matching
+ * the next write wouldn't find his, would create a SECOND `Callback` beside it, and the one he
+ * made would sit empty forever while the board looked like it was working.
+ *
+ * He owns the sheet — it is the record of truth, and he renames things in it. So the code adapts:
+ * case, spaces, hyphens, underscores and dots are all noise. `Call-Back`, `callback`, `Call Back`
+ * and `CALL_BACK` are one column.
+ */
+export function headerKey(h: string): string {
+  return String(h || "").toLowerCase().replace(/[\s\-_.]+/g, "");
+}
+
 export function toProspects(
   headers: string[],
   rows: { row: number; cells: string[] }[]
 ): Prospect[] {
-  const lower = headers.map((h) => h.trim().toLowerCase());
+  const lower = headers.map(headerKey);
   const at: Partial<Record<keyof typeof FIELDS, number>> = {};
   const claimed = new Set<number>();
   const cut = splitAtDivider(headers);
@@ -167,8 +182,9 @@ export function toProspects(
     // other headers TWICE — once in the curated view, once again in the raw dump. Taking whichever
     // came first in the whole row would sometimes bind the card to the scrape's copy, which is the
     // same value today and free to drift tomorrow. The curated column always wins.
+    const aliases = FIELDS[field].map(headerKey);
     const find = (from: number, to: number) =>
-      lower.findIndex((h, idx) => idx >= from && idx < to && !claimed.has(idx) && FIELDS[field].includes(h));
+      lower.findIndex((h, idx) => idx >= from && idx < to && !claimed.has(idx) && aliases.includes(h));
     const i = find(0, cut) >= 0 ? find(0, cut) : find(cut, lower.length);
     if (i >= 0) {
       at[field] = i;

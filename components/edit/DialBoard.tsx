@@ -647,48 +647,51 @@ function Card({
 
   return (
     <div style={{ ...card, ...cardTone(tone) }}>
+      {/* ⛔ THE CALL BUTTON RIDES THE TITLE LINE, and the pitch is a chip rather than a banner.
+          Steven: *"we're taking up an entire line with the call button… the same with the no
+          website. That could be a tiny little button somewhere. I'm not blind. We just use too
+          much real estate for stupid information."* Three rows became one; the card lost ~90px
+          and nothing left the screen. */}
       <div style={cardHead}>
         <span style={num}>{n}</span>
         <span style={name}>{p.name || "(no name on this row)"}</span>
+        {tel ? (
+          <a href={tel} onClick={onDial} style={callBtn} title="Rings through your iPhone">
+            ☎ {p.phone}
+          </a>
+        ) : (
+          <span style={noPhone}>no number</span>
+        )}
       </div>
+
       <div style={metaLine}>
-        {p.rating ? <b style={star}>★ {p.rating}</b> : null}
+        {/* The pitch, at chip size. Which script to run is a colour and two words, not a banner. */}
+        <span style={pitch.tone === "site" ? pitchSite : pitchReviews}>
+          {pitch.tone === "site" ? "SELL SITE" : "SELL REVIEWS"}
+        </span>
+        {p.rating ? <b style={star}> ★{p.rating}</b> : null}
         {p.reviews ? <span> ({p.reviews})</span> : null}
         {p.category ? <span> · {p.category}</span> : null}
+        {p.address ? <span> · {p.address}</span> : null}
+        {p.maps ? (
+          <>
+            {" · "}
+            <a href={p.maps} target="_blank" rel="noreferrer" style={link}>Maps</a>
+          </>
+        ) : null}
+        {p.reviewsUrl ? (
+          <>
+            {" · "}
+            <a href={p.reviewsUrl} target="_blank" rel="noreferrer" style={link}>Reviews</a>
+          </>
+        ) : null}
+        {p.website ? (
+          <>
+            {" · "}
+            <a href={siteHref(p.website)} target="_blank" rel="noreferrer" style={link}>Site</a>
+          </>
+        ) : null}
       </div>
-      {p.address ? <div style={metaLine}>{p.address}</div> : null}
-
-      {/* ⛔ The pitch line follows the MODE, and speaks to both halves of the list. */}
-      <div style={pitch.tone === "site" ? pitchSite : pitchReviews}>{pitch.text}</div>
-
-      {tel ? (
-        <a href={tel} onClick={onDial} style={callBtn}>
-          ☎ {p.phone}
-        </a>
-      ) : (
-        <span style={noPhone}>no number on this row</span>
-      )}
-
-      {/* The two links he opens before dialling. Both were already in the sheet. */}
-      {p.maps || p.reviewsUrl || p.website ? (
-        <div style={linkRow}>
-          {p.maps ? (
-            <a href={p.maps} target="_blank" rel="noreferrer" style={linkBtnSm}>
-              🗺 Maps
-            </a>
-          ) : null}
-          {p.reviewsUrl ? (
-            <a href={p.reviewsUrl} target="_blank" rel="noreferrer" style={linkBtnSm}>
-              ★ Reviews
-            </a>
-          ) : null}
-          {p.website ? (
-            <a href={siteHref(p.website)} target="_blank" rel="noreferrer" style={linkBtnSm}>
-              ↗ Site
-            </a>
-          ) : null}
-        </div>
-      ) : null}
 
       {/* ⛔ THE SAVE BUTTON ONLY EXISTS WHEN THERE IS SOMETHING TO SAVE, so an empty card stays as
           short as it was and a card with a typed note is visibly unfinished. Enter saves too —
@@ -914,17 +917,19 @@ const progress: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", m
    misclick costs a real prospect. */
 const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: 12, alignItems: "start" };
 const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderTop: "4px solid var(--e-line)", borderRadius: 12, background: "var(--e-panel)", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 7 };
-const cardHead: React.CSSProperties = { display: "flex", alignItems: "baseline", gap: 8 };
-const num: React.CSSProperties = { fontSize: 11.5, color: "var(--e-muted)", fontVariantNumeric: "tabular-nums" };
-const name: React.CSSProperties = { fontSize: 17, fontWeight: 800, letterSpacing: "-0.01em", overflowWrap: "anywhere" };
+/* alignItems:center so the call button and the name sit on one baseline-ish line; the name takes
+   the slack (flex:1) so the button stays hard right at a fixed size. */
+const cardHead: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8 };
+const num: React.CSSProperties = { fontSize: 11.5, color: "var(--e-muted)", fontVariantNumeric: "tabular-nums", flex: "0 0 auto" };
+const name: React.CSSProperties = { fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em", overflowWrap: "anywhere", flex: 1, minWidth: 0 };
 const star: React.CSSProperties = { color: "var(--e-ok-ink)" };
-const metaLine: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)", overflowWrap: "anywhere" };
-const pitchSite: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "var(--e-ok-ink)", background: "var(--e-ok-bg)", border: "1px solid var(--e-ok-line)", borderRadius: 7, padding: "6px 9px" };
-const pitchReviews: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "var(--e-info-ink)", background: "var(--e-info-bg)", border: "1px solid var(--e-info-line)", borderRadius: 7, padding: "6px 9px" };
-const callBtn: React.CSSProperties = { display: "block", textAlign: "center", background: "#16a34a", color: "#fff", borderRadius: 9, padding: "11px 14px", fontSize: 16, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" };
-const noPhone: React.CSSProperties = { display: "block", textAlign: "center", borderRadius: 9, padding: "11px 14px", fontSize: 13, fontWeight: 700, background: "var(--e-warn-bg)", border: "1px solid var(--e-warn-line)", color: "var(--e-warn-ink)" };
-const linkRow: React.CSSProperties = { display: "flex", gap: 6 };
-const linkBtnSm: React.CSSProperties = { flex: 1, textAlign: "center", border: "1px solid var(--e-line)", background: "var(--e-panel-2)", color: "var(--e-ink)", borderRadius: 7, padding: "6px 8px", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" };
+const metaLine: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)", overflowWrap: "anywhere", lineHeight: 1.6 };
+/* A chip, not a banner: which script to run is a colour and two words. */
+const chipBase: React.CSSProperties = { fontSize: 10.5, fontWeight: 800, letterSpacing: ".04em", borderRadius: 5, padding: "2px 6px", marginRight: 4, whiteSpace: "nowrap" };
+const pitchSite: React.CSSProperties = { ...chipBase, color: "#fff", background: "var(--e-ok-dot)" };
+const pitchReviews: React.CSSProperties = { ...chipBase, color: "#fff", background: "var(--e-accent)" };
+const callBtn: React.CSSProperties = { flex: "0 0 auto", background: "#16a34a", color: "#fff", borderRadius: 8, padding: "7px 11px", fontSize: 14, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" };
+const noPhone: React.CSSProperties = { flex: "0 0 auto", borderRadius: 8, padding: "7px 11px", fontSize: 12, fontWeight: 700, background: "var(--e-warn-bg)", border: "1px solid var(--e-warn-line)", color: "var(--e-warn-ink)", whiteSpace: "nowrap" };
 const noteBox: React.CSSProperties = { ...input, flex: 1, minWidth: 0 };
 /* Green, because it writes to the sheet — same promise as the Call button, not a neutral control. */
 const saveNoteBtn: React.CSSProperties = { flex: "0 0 auto", border: "1px solid #16a34a", background: "#16a34a", color: "#fff", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font };

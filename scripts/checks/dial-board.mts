@@ -26,6 +26,7 @@ import {
   calendarHref,
   clean,
   filterCounts,
+  headerKey,
   isDefaultFilters,
   pitchLine,
   statusText,
@@ -303,6 +304,22 @@ check(
 );
 check("neither link is left in the leftovers", ![...linked.extra, ...linked.raw].some((x) => /location_/.test(x.label)));
 check("a sheet without those columns just has no buttons", pool[0].maps === "" && pool[0].reviewsUrl === "");
+
+// ── ⛔ HIS COLUMN NAMES WIN, NOT OURS ──────────────────────────────────────────────────────────
+// The board writes `Callback`; he named his column `Call-Back`. Under exact matching the next
+// write would create a SECOND column beside his and leave the one he made empty forever, while
+// every screen looked fine.
+check("hyphens, spaces, case and underscores are all noise", ["Call-Back", "call back", "CALLBACK", "call_back"].every((h) => headerKey(h) === "callback"));
+check("dots too, for the scrape's phone.phones_enricher columns", headerKey("phone.whitepages_phones.name") === "phonewhitepagesphonesname");
+check(
+  "a renamed column still binds to the card",
+  toProspects(["Business Name", "Phone Number", "Last-Called"], [{ row: 2, cells: ["Acme Decks", "5125550000", "8/7 5pm"] }])[0].name === "Acme Decks",
+  "he renames headers in HIS sheet; the code adapts, he does not"
+);
+check(
+  "...including the write-back columns",
+  toProspects(["name", "Call-Back", "Last Called"], [{ row: 2, cells: ["X", "Tue 10am", "8/7"] }])[0].lastCalled === "8/7"
+);
 
 // ── the call session: pause arithmetic and the row it becomes ─────────────────────────────────
 const T0 = 1_760_000_000_000; // a fixed instant; every function takes `now`, nothing reads a clock
