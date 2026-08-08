@@ -101,16 +101,58 @@ export default function DialBoard({
     void load(activeId);
   }, [activeId, load]);
 
+  /** Rows with text typed and not yet written. Drives both guards below. */
+  const unsaved = useMemo(() => Object.values(notes).filter((v) => v.trim()).length, [notes]);
+
+  /**
+   * ⚠️ DON'T LET A TYPED NOTE DIE QUIETLY. He writes these mid-call, which is exactly when he is
+   * least likely to notice one vanish. The browser guard covers a closed tab or a reload; the
+   * list-switch guard below covers the click that actually loses them most often.
+   */
+  useEffect(() => {
+    if (!unsaved) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved]);
+
+  function switchList(id: string) {
+    if (id === activeId) return;
+    if (
+      unsaved &&
+      !window.confirm(
+        `You have ${unsaved} note${unsaved === 1 ? "" : "s"} typed but not saved. Switching lists will lose ${unsaved === 1 ? "it" : "them"}.`
+      )
+    ) {
+      return;
+    }
+    setActiveId(id);
+  }
+
   const all = useMemo(() => data?.prospects || [], [data]);
   const counts = useMemo(() => filterCounts(all), [all]);
   const shown = useMemo(() => applyFilters(all, filters), [all, filters]);
   const set = (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch }));
 
-  async function log(p: Prospect, outcome: string, extra?: { callbackAt?: string }) {
+  /**
+   * Write to a row.
+   *
+   * ⛔ `outcome` IS OPTIONAL, AND THAT IS THE WHOLE POINT. Steven typed "call me tomorrow" into a
+   * card and had no way to save it — the note only ever reached the sheet as a passenger on an
+   * outcome click, so a note written while a prospect was still talking could be lost by clicking
+   * anywhere else. A note-only write already worked server-side (`logCall_` writes Status only
+   * `if (body.outcome)`); nothing but the button was missing.
+   *
+   * ⚠️ A note-only save must NOT colour the card or count as worked. Writing something down is not
+   * an outcome, and a card that turns green because he took a note would be lying to him about
+   * what he has already dealt with.
+   */
+  async function log(p: Prospect, outcome?: string, extra?: { callbackAt?: string }) {
     if (!activeId) return;
     setSaving(p.row);
     setErr("");
     const note = (notes[p.row] || "").trim();
+    if (!outcome && !note) return setSaving(null);
     try {
       const r = await fetch("/api/dial", {
         method: "PATCH",
@@ -139,9 +181,10 @@ export default function DialBoard({
                 x.row === b.row
                   ? {
                       ...x,
-                      status: outcome,
-                      lastCalled: b.at,
-                      notes: [x.notes, `${b.at} — ${outcome}${note ? `: ${note}` : ""}`]
+                      // Status and lastCalled only move when there WAS an outcome.
+                      status: outcome ?? x.status,
+                      lastCalled: outcome ? b.at : x.lastCalled,
+                      notes: [x.notes, `${b.at} — ${outcome || "note"}${note ? `: ${note}` : ""}`]
                         .filter(Boolean)
                         .join("\n"),
                     }
@@ -152,7 +195,7 @@ export default function DialBoard({
       );
       setNotes((n) => ({ ...n, [p.row]: "" }));
       setBooking(null);
-      setFlash(`${p.name} → ${labelFor(outcome)}`);
+      setFlash(outcome ? `${p.name} → ${labelFor(outcome)}` : `Note saved to ${p.name}`);
       setTimeout(() => setFlash(""), 2200);
     } catch {
       setErr("Couldn't reach the sheet — nothing was written.");
@@ -216,27 +259,23 @@ export default function DialBoard({
             open it — and then cost a line of vertical space on every session forever. Steven:
             *"I don't need the words explaining what the sheet is because that's taking up a line
             item that doesn't need to be there."* The header is title + counters, one line. */}
+        {/* ⛔ TWO ROWS, NOT FOUR, AND NOTHING REMOVED. Steven, twice: *"I hate how much real estate
+            we're taking up for the data that it's giving me. I don't want less data, I just want
+            it organised better and take up less vertical height."* Title, lists and counters share
+            row one; every filter shares row two. */}
         <div style={barTop}>
           <h1 style={h1}>{title}</h1>
-          <div style={{ display: "flex", gap: 22 }}>
-            <Stat n={dials} cap="dials this session" accent />
-            <Stat n={counts.done} cap="worked" />
-            <Stat n={counts.todo} cap="left" />
-          </div>
-        </div>
-
-        <div style={listRow}>
           {lists.map((l) => (
             <button
               key={l.id}
-              onClick={() => setActiveId(l.id)}
+              onClick={() => switchList(l.id)}
               style={l.id === activeId ? { ...pill, ...pillOn } : pill}
             >
               {l.name}
             </button>
           ))}
-          <button onClick={() => setAdding((v) => !v)} style={{ ...pill, borderStyle: "dashed" }}>
-            + Add a list
+          <button onClick={() => setAdding((v) => !v)} style={{ ...pill, borderStyle: "dashed" }} title="Add a list">
+            +
           </button>
           {activeId ? (
             <button
@@ -247,18 +286,27 @@ export default function DialBoard({
               Remove
             </button>
           ) : null}
+          <div style={{ display: "flex", gap: 18, marginLeft: "auto" }}>
+            <Stat n={dials} cap="dials" accent />
+            <Stat n={counts.done} cap="worked" />
+            <Stat n={counts.todo} cap="left" />
+          </div>
         </div>
 
         {data ? (
           <div style={filterRow}>
-            {/* ⛔ THE PITCH TOGGLE. Not "who is worth calling" — WHICH SCRIPT AM I RUNNING. */}
+            {/* ⛔ THE PITCH TOGGLE. Not "who is worth calling" — WHICH SCRIPT AM I RUNNING.
+                ⚠️ The chips used to read "No website — sell the site (27)". That label is what
+                forced the whole bar onto a second and third line, and it was redundant: the pitch
+                script is printed on EVERY CARD, which is where he reads it mid-call. The chip only
+                has to name the segment. Same information, one row back. */}
             <Seg
               value={filters.pitch}
               onChange={(pitch) => set({ pitch: pitch as Filters["pitch"], sort: null })}
               options={[
                 { v: "all", label: `All (${counts.total})` },
-                { v: "site", label: `No website — sell the site (${counts.site})` },
-                { v: "reviews", label: `Has a website — sell the review funnel (${counts.reviews})` },
+                { v: "site", label: `No website (${counts.site})` },
+                { v: "reviews", label: `Has a website (${counts.reviews})` },
               ]}
             />
             <Seg
@@ -266,56 +314,51 @@ export default function DialBoard({
               onChange={(work) => set({ work: work as Filters["work"] })}
               options={[
                 { v: "all", label: "All" },
-                { v: "todo", label: `Not worked (${counts.todo})` },
+                { v: "todo", label: `To do (${counts.todo})` },
                 { v: "done", label: `Worked (${counts.done})` },
               ]}
             />
 
-            <label style={mini}>
-              min ★
-              <select
-                value={filters.minRating}
-                onChange={(e) => set({ minRating: Number(e.target.value) })}
-                style={sel}
-              >
-                {[0, 3, 3.5, 4, 4.5, 5].map((n) => (
-                  <option key={n} value={n}>{n ? n : "any"}</option>
-                ))}
-              </select>
-            </label>
-            <label style={mini}>
-              min reviews
-              <select
-                value={filters.minReviews}
-                onChange={(e) => set({ minReviews: Number(e.target.value) })}
-                style={sel}
-              >
-                {[0, 5, 10, 25, 50, 100].map((n) => (
-                  <option key={n} value={n}>{n ? `${n}+` : "any"}</option>
-                ))}
-              </select>
-            </label>
-            <label style={mini}>
+            {/* Labels folded into the options, so each control is one element wide, not two. */}
+            <select
+              value={filters.minRating}
+              onChange={(e) => set({ minRating: Number(e.target.value) })}
+              style={sel}
+              title="Minimum rating"
+            >
+              {[0, 3, 3.5, 4, 4.5, 5].map((n) => (
+                <option key={n} value={n}>{n ? `${n}★+` : "any ★"}</option>
+              ))}
+            </select>
+            <select
+              value={filters.minReviews}
+              onChange={(e) => set({ minReviews: Number(e.target.value) })}
+              style={sel}
+              title="Minimum review count"
+            >
+              {[0, 5, 10, 25, 50, 100].map((n) => (
+                <option key={n} value={n}>{n ? `${n}+ reviews` : "any reviews"}</option>
+              ))}
+            </select>
+            <label style={mini} title={counts.noPhone ? `${counts.noPhone} rows have no number` : ""}>
               <input
                 type="checkbox"
                 checked={filters.phoneOnly}
                 onChange={(e) => set({ phoneOnly: e.target.checked })}
               />
-              has a number{counts.noPhone ? ` (${counts.noPhone} without)` : ""}
+              has a number
             </label>
-            <label style={mini}>
-              sort
-              <select
-                value={sortFor(filters)}
-                onChange={(e) => set({ sort: e.target.value as Sort })}
-                style={sel}
-              >
-                <option value="sheet">sheet order</option>
-                <option value="fewest-reviews">fewest reviews</option>
-                <option value="most-reviews">most reviews</option>
-                <option value="rating">highest rated</option>
-              </select>
-            </label>
+            <select
+              value={sortFor(filters)}
+              onChange={(e) => set({ sort: e.target.value as Sort })}
+              style={sel}
+              title="Sort"
+            >
+              <option value="sheet">sheet order</option>
+              <option value="fewest-reviews">fewest reviews</option>
+              <option value="most-reviews">most reviews</option>
+              <option value="rating">highest rated</option>
+            </select>
             <input
               value={filters.q}
               onChange={(e) => set({ q: e.target.value })}
@@ -410,6 +453,7 @@ export default function DialBoard({
                 onCancelBook={() => setBooking(null)}
                 onConfirmBook={() => bookCallback(p)}
                 onDial={() => setDials((n) => n + 1)}
+                onSaveNote={() => void log(p)}
                 onOutcome={(o) =>
                   o === "callback" ? setBooking({ row: p.row, when: "" }) : void log(p, o)
                 }
@@ -442,6 +486,7 @@ function Card({
   onCancelBook,
   onConfirmBook,
   onOutcome,
+  onSaveNote,
   onDial,
 }: {
   p: Prospect;
@@ -454,6 +499,7 @@ function Card({
   onCancelBook: () => void;
   onConfirmBook: () => void;
   onOutcome: (key: string) => void;
+  onSaveNote: () => void;
   onDial: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -506,12 +552,25 @@ function Card({
         </div>
       ) : null}
 
-      <input
-        value={note}
-        onChange={(e) => onNote(e.target.value)}
-        placeholder="What was said…"
-        style={noteBox}
-      />
+      {/* ⛔ THE SAVE BUTTON ONLY EXISTS WHEN THERE IS SOMETHING TO SAVE, so an empty card stays as
+          short as it was and a card with a typed note is visibly unfinished. Enter saves too —
+          he is on the phone, not reaching for a mouse. */}
+      <div style={{ display: "flex", gap: 6 }}>
+        <input
+          value={note}
+          onChange={(e) => onNote(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && note.trim()) onSaveNote();
+          }}
+          placeholder="What was said…"
+          style={noteBox}
+        />
+        {note.trim() ? (
+          <button onClick={onSaveNote} disabled={saving} style={saveNoteBtn} title="Save to the sheet — this does not set an outcome">
+            {saving ? "…" : "Save"}
+          </button>
+        ) : null}
+      </div>
 
       <div style={outGrid}>
         {OUTCOMES.map((o) => {
@@ -560,12 +619,19 @@ function Card({
         )}
         {p.notes || p.raw.length ? (
           <button onClick={() => setOpen((v) => !v)} style={linkBtn}>
-            {open ? "▾ less" : `▸ ${p.notes ? "notes" : "details"}`}
+            {open ? "▾ less" : `▸ ${p.notes ? "on the sheet" : "details"}`}
           </button>
         ) : null}
       </div>
 
-      {open && p.notes ? <div style={priorBody}>{p.notes}</div> : null}
+      {/* ⚠️ LABELLED, because it sits inches from the box he TYPES into and the two looked like the
+          same thing. This is what is already written down; that is what he is writing now. */}
+      {open && p.notes ? (
+        <div style={priorBody}>
+          <div style={priorCap}>Already on the sheet</div>
+          {p.notes}
+        </div>
+      ) : null}
       {open && p.raw.length ? <CellList rows={p.raw} /> : null}
     </div>
   );
@@ -671,11 +737,12 @@ const bar: React.CSSProperties = {
   padding: "12px 0 9px",
   marginBottom: 12,
 };
-const barTop: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 };
+/* Wraps rather than overflows: on a narrow window the counters drop to their own line instead of
+   the list pills being pushed off the edge where he can't reach them. */
+const barTop: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" };
 const h1: React.CSSProperties = { fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 };
 const bigNum: React.CSSProperties = { fontSize: 22, fontWeight: 800, lineHeight: 1 };
 const numCap: React.CSSProperties = { fontSize: 9.5, color: "var(--e-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 };
-const listRow: React.CSSProperties = { display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center", marginTop: 9 };
 const filterRow: React.CSSProperties = { display: "flex", gap: 9, flexWrap: "wrap", alignItems: "center", marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--e-line-soft)" };
 const pill: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 999, padding: "7px 14px", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font };
 const pillOn: React.CSSProperties = { borderColor: "var(--e-accent)", color: "var(--e-accent)", fontWeight: 800 };
@@ -718,7 +785,10 @@ const callBtn: React.CSSProperties = { display: "block", textAlign: "center", ba
 const noPhone: React.CSSProperties = { display: "block", textAlign: "center", borderRadius: 9, padding: "11px 14px", fontSize: 13, fontWeight: 700, background: "var(--e-warn-bg)", border: "1px solid var(--e-warn-line)", color: "var(--e-warn-ink)" };
 const linkRow: React.CSSProperties = { display: "flex", gap: 6 };
 const linkBtnSm: React.CSSProperties = { flex: 1, textAlign: "center", border: "1px solid var(--e-line)", background: "var(--e-panel-2)", color: "var(--e-ink)", borderRadius: 7, padding: "6px 8px", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" };
-const noteBox: React.CSSProperties = { ...input };
+const noteBox: React.CSSProperties = { ...input, flex: 1, minWidth: 0 };
+/* Green, because it writes to the sheet — same promise as the Call button, not a neutral control. */
+const saveNoteBtn: React.CSSProperties = { flex: "0 0 auto", border: "1px solid #16a34a", background: "#16a34a", color: "#fff", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font };
+const priorCap: React.CSSProperties = { fontSize: 10, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--e-muted)", fontWeight: 700, marginBottom: 4 };
 const outGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5 };
 const outBtn: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 7, padding: "8px 4px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
 const bookBox: React.CSSProperties = { display: "grid", gap: 6, border: "1px solid var(--e-warn-line)", background: "var(--e-warn-bg)", borderRadius: 8, padding: 8 };
