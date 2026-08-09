@@ -85,26 +85,28 @@ export default function WorkReel() {
             color: "rgba(255,255,255,.92)", fontSize: "clamp(8.5px,.85vw,10.5px)", fontWeight: 500,
             letterSpacing: ".26em", textTransform: "uppercase", marginBottom: "clamp(20px,2.6vw,30px)",
           }}>
-            Forty years &middot; Five companies &middot; One operator
+            For contractors, builders and specialty shops
           </div>
           <h1 style={{
             fontFamily: "Georgia, serif", fontWeight: 300, margin: 0, color: "#fff",
             fontSize: "clamp(34px,4.6vw,68px)", lineHeight: 1.05, letterSpacing: ".005em",
           }}>
-            Your marketing<br />doesn&rsquo;t talk<br />to itself.
+            Your work is better<br />than your website.
           </h1>
           <p style={{
             margin: "clamp(20px,2.4vw,30px) 0 0", maxWidth: "52ch", color: "rgba(255,255,255,.7)",
             fontSize: "clamp(15px,1.2vw,18px)", lineHeight: 1.85, fontWeight: 300,
           }}>
-            The site, the reviews, the follow-up and the ads were four separate purchases from four
-            separate vendors. None of them know the others exist. That is where the work goes.
+            I build the website, the reviews and the follow-up for high-end trades &mdash; so the jobs
+            you want stop going to someone with a nicer page and half your skill.
+            <br /><br />
+            Forty years running my own businesses. You deal with me, not an account manager.
           </p>
           <a href="#diagnosis" style={{
             display: "inline-block", marginTop: "clamp(26px,3vw,38px)", padding: "16px 40px",
             border: "1px solid #c9a227", color: "#e8c65a", textDecoration: "none",
             fontSize: 11, letterSpacing: ".24em", textTransform: "uppercase",
-          }}>See where it breaks</a>
+          }}>See where yours stands</a>
         </div>
 
         {/* ---- the work, framed as work ---- */}

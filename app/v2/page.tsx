@@ -10,9 +10,9 @@ import WorkReel from "./WorkReel";
 // arrived from a Loom rather than from here.
 
 export const metadata: Metadata = {
-  title: "Steven James Consulting — your marketing doesn't talk to itself",
+  title: "Steven James Consulting — websites for high-end trades",
   description:
-    "The website, the reviews, the follow-up and the ads were four separate purchases from four separate vendors. Built as one system by someone who has run five businesses.",
+    "Websites, reviews and follow-up for contractors, builders and specialty shops. Forty years running my own businesses — you deal with me, not an account manager.",
 };
 
 export const dynamic = "force-static";
@@ -77,10 +77,11 @@ export default function V2() {
       {/* ---------- the diagnosis ---------- */}
       <Band>
         <Eyebrow>The Diagnosis</Eyebrow>
-        <H2>There is an order to this, and almost nobody is sold it.</H2>
+        <H2>Your marketing doesn&rsquo;t talk to itself.</H2>
         <Lede>
-          A customer moves through your business in a sequence. Every piece hands off to the next
-          one. Break a link and everything downstream of it is paid for and wasted.
+          There is an order to this, and almost nobody gets sold it. A customer moves through your
+          business in a sequence, and every piece hands off to the next one. Break a link and
+          everything downstream of it is paid for and wasted.
         </Lede>
 
         <div style={{ maxWidth: 900, margin: "clamp(38px,5vw,64px) auto 0" }}>
