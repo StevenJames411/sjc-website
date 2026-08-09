@@ -130,25 +130,28 @@ export default function FooterView({
         style={{ backgroundColor: "var(--color-sjc-blue)", filter: "blur(120px)" }}
       />
       <div className="relative mx-auto max-w-6xl px-6 py-14">
+        {/* ⛔ ONE COLUMN ON A PHONE, COLUMNS FROM md UP. This is the fix for the email running off
+            the right edge — and the fix has to be a BREAKPOINT, not a cleverer track definition.
+
+            Two earlier attempts were wrong and are worth naming so they aren't retried:
+            • Wrapping the text. The track FLOOR sets the column width, not the string, so a
+              140px floor stays 140px wide and still overflows.
+            • `minmax(min(140px, 100%), 1fr)`. `100%` resolves against the whole grid CONTAINER,
+              not per track — with four tracks that is still 4x140 + gaps ≈ 680px. min() only
+              rescues a grid whose SINGLE track is wider than the screen.
+
+            An auto-fit grid cannot drop below its track count on its own, so on a 390px iPhone the
+            footer stayed ~680px wide and `mx-auto` centred the overflow — which is why the first
+            column was clipped on BOTH sides, not just the right.
+
+            Tailwind's md: prefix is a real media query, so the column definition simply does not
+            exist below 768px and the grid falls back to a single stacked column. */}
         <div
-          className="grid gap-10"
-          style={{
-            // Auto-fit rather than a fixed three: the brand block keeps a wide column and each
-            // group takes one, so three groups and none both lay out without choosing a count.
-            //
-            // ⛔ min() ON BOTH FLOORS, AND IT IS THE WHOLE FIX FOR THE PHONE.
-            // A grid track will NOT shrink below its minmax floor. On a 390px iPhone there is
-            // ~342px of usable width after px-6, while these two tracks demanded 220 + 140 = 360 —
-            // so the last column hung off the right edge and took the email address with it.
-            //
-            // ⚠️ Wrapping the text does NOT fix this. The FLOOR sets the width, not the string;
-            // with a 140px floor the column stays 140px wide and still overflows. `min(220px,100%)`
-            // lets the track collapse when the viewport is narrower than the floor, which is the
-            // supported way to make an auto-fit grid genuinely responsive.
-            gridTemplateColumns: groupEls.length
-              ? "minmax(min(220px, 100%), 1.6fr) repeat(auto-fit, minmax(min(140px, 100%), 1fr))"
-              : undefined,
-          }}
+          className={`grid gap-10 ${
+            groupEls.length
+              ? "md:grid-cols-[minmax(220px,1.6fr)_repeat(auto-fit,minmax(140px,1fr))]"
+              : ""
+          }`}
         >
           <div className={groupEls.length ? "" : "md:col-span-2"}>
             {String(brandStyle) === "wordmark" ? (
