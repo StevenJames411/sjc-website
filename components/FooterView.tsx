@@ -120,28 +120,24 @@ export default function FooterView({
   // Each renders only when its value exists, so a client without an email address gets two buttons
   // rather than a dead third one.
   const contactBtn = (href: string, icon: React.ReactNode, verb: string, value: string) => (
-    <a href={href} className={`${btn} group w-fit`} title={value}>
+    <a href={href} className={`${btn} group relative w-fit`} title={value}>
       {icon}
-      {/* ⛔ A 1x1 GRID, NOT ABSOLUTE POSITIONING — AND THAT IS WHAT STOPS THE BUTTON TWITCHING.
-          Both spans occupy the SAME grid cell, so the cell sizes itself to the WIDER of the two
-          and the button's width never changes when the label swaps to the value on hover. With
-          absolute positioning the button would size to the label alone and the email address
-          would spill straight out of it.
+      {verb}
+      {/* ⛔ THE VALUE FLOATS ABOVE THE BUTTON — IT IS NOT INSIDE IT.
+          It lived in the button first, sharing a 1x1 grid cell with the label so the width would
+          not change on hover. That worked, and the cost was visible: the cell sized to the WIDER
+          of the two, so "Click to Email" inherited the width of support@stevenjamesconsulting.com
+          and the three buttons came out ragged.
 
-          Same line, not an extra one: revealing the value underneath would grow the button's
-          height and shove the two buttons below it down the page on every hover. */}
-      <span className="grid">
-        <span className="col-start-1 row-start-1 transition-opacity duration-150 group-hover:opacity-0">
-          {verb}
-        </span>
-        {/* aria-hidden: the value is decoration for sighted mouse users — the href already carries
-            it, and a screen reader announcing both would read the button twice. */}
-        <span
-          aria-hidden
-          className="col-start-1 row-start-1 whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-        >
-          {value}
-        </span>
+          Out of flow instead — absolute, pointer-events-none — so each button sizes to its own
+          label and all three end up near-identical, while the value can be as long as it likes
+          without touching the layout or shifting the buttons below it. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-normal text-white opacity-0 shadow-lg ring-1 ring-white/15 transition-opacity duration-150 group-hover:opacity-100"
+        style={{ backgroundColor: "rgba(2, 6, 23, 0.95)" }}
+      >
+        {value}
       </span>
     </a>
   );
