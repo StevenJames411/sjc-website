@@ -6,5 +6,5 @@ export const SCRIPT_VERSIONS: Record<string, string> = {
   "apply-webhook": "135e84b24148",
   "call-sheet": "c2124a24d7fa",
   "client-sheet": "9fbfa4fe6656",
-  "sjc-sheets": "6e73691dc4f3"
+  "sjc-sheets": "b66cffc1a50c"
 };

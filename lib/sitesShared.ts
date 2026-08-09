@@ -208,6 +208,8 @@ export const RESERVED_SITE_IDS = [
   "forms",
   // The invoice book lives at /edit/invoices, same static-segment reason as "forms".
   "invoices",
+  // The dial board lives at /edit/dial, same static-segment reason as "forms".
+  "dial",
   // The client intake link lives at /start/<id>.
   "start",
   // A customer's copy of an invoice lives at /i/<publicId>. Short on purpose — it gets pasted into

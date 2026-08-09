@@ -14,7 +14,7 @@
 // WEBSITE it came from, set once in that website's settings — never on the form.
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FIELD_TYPE_LABELS, type FormDef } from "@/lib/formsShared";
+import { FIELD_TYPE_LABELS, type FormDef, type SectionKey } from "@/lib/formsShared";
 import { ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 
 type UsageRow = { siteId: string; siteName: string; slug: string; title: string; published: boolean };
@@ -27,6 +27,8 @@ type Stray = {
   title: string;
   questions: number;
   from: string[];
+  /** Set when this page's questions already have a copy in the library. */
+  matchedFormId?: string | null;
 };
 
 /** Where the onboarding form runs and who has it open — read live, see app/edit/forms/page.tsx. */
@@ -36,12 +38,17 @@ export default function FormLibrary({
   forms,
   title,
   onboarding,
+  sections,
 }: {
   forms: FormDef[];
   title: string;
   onboarding?: Onboarding;
+  /** What the three groups are called. Steven's words, not mine — see SECTION_DEFAULTS. */
+  sections: Record<SectionKey, string>;
 }) {
   const router = useRouter();
+  /** Which heading is being renamed, and the text so far. */
+  const [renaming, setRenaming] = useState<{ key: SectionKey; text: string } | null>(null);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -54,6 +61,15 @@ export default function FormLibrary({
   }>({ loading: false, rows: [] });
   /** null = couldn't check. Never render that as "all consolidated". */
   const [strays, setStrays] = useState<Stray[] | null>([]);
+  /**
+   * formId -> the page its questions were copied from.
+   *
+   * ⚠️ "NOT ON ANY SITE" WAS TECHNICALLY TRUE AND PRACTICALLY A LIE. Steven copied five live
+   * pages in and every card claimed it wasn't used anywhere. Correct — no page POINTS at them
+   * (they're copies, that was the whole decision) — and useless, because these are the questions
+   * a real page is asking right now. The card should say where they came from.
+   */
+  const [copiedFrom, setCopiedFrom] = useState<Record<string, Stray>>({});
 
   const shown = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -75,9 +91,15 @@ export default function FormLibrary({
   // Steven kept the samples deliberately: *"it's okay to have some samples in there"* — they're a
   // starting point for a new client's form. Keeping them costs nothing as long as they READ as
   // samples, which is what the separate heading buys.
-  const working = shown.filter((f) => f.kind === "builtin" && f.id === ONBOARDING_FORM_ID);
-  const samples = shown.filter((f) => f.kind === "builtin" && f.id !== ONBOARDING_FORM_ID);
-  const mine = shown.filter((f) => f.kind !== "builtin");
+  //
+  // ⚠️ HIDDEN ONES COME OUT HERE AND NOWHERE ELSE. A built-in can't really be deleted (its
+  // questions are in code), so the trash can hides it. That has to be a SCREEN filter — findForm
+  // still resolves a hidden form, so a page pointing at one you tidied away keeps working.
+  const live = shown.filter((f) => !f.hidden);
+  const hidden = forms.filter((f) => f.hidden);
+  const working = live.filter((f) => f.kind === "builtin" && f.id === ONBOARDING_FORM_ID);
+  const samples = live.filter((f) => f.kind === "builtin" && f.id !== ONBOARDING_FORM_ID);
+  const mine = live.filter((f) => f.kind !== "builtin");
 
   async function create() {
     if (!naming) return;
@@ -166,7 +188,14 @@ export default function FormLibrary({
         const r = await fetch("/api/admin/forms/adopt?scan=1", { credentials: "same-origin" }).then(
           (x) => x.json()
         );
-        if (!cancelled) setStrays(r?.notInTheLibrary || []);
+        if (cancelled) return;
+        setStrays(r?.notInTheLibrary || []);
+        const already: Stray[] = r?.alreadyInTheLibrary || [];
+        setCopiedFrom(
+          Object.fromEntries(
+            already.filter((x) => x.matchedFormId).map((x) => [x.matchedFormId as string, x])
+          )
+        );
       } catch {
         // Unknown, not zero — say nothing rather than imply everything is already in here.
         if (!cancelled) setStrays(null);
@@ -178,9 +207,11 @@ export default function FormLibrary({
   }, [forms]);
 
   async function adopt(row: Stray) {
+    // The page title as-is. Appending " form" produced "Apply (SJC) (intake form) form", because
+    // a page called "…(intake form)" already says what it is.
     const name = window.prompt(
       `Name this copy — it's the ${row.questions} questions on ${row.siteName} · ${row.title}.`,
-      `${row.title} form`
+      row.title
     );
     if (!name) return;
     setBusy(true);
@@ -217,6 +248,86 @@ export default function FormLibrary({
       setBusy(false);
     }
   }
+
+  /**
+   * Rename a group heading.
+   *
+   * ⚠️ SAVED ON BLUR, NOT BEHIND A SAVE BUTTON. Same as the back-office menu: this is one word on
+   * a heading, and a modal to change one word is the reason nobody changes it. A blank goes back
+   * to the code default rather than leaving a nameless section.
+   */
+  async function renameSection(key: SectionKey, text: string) {
+    setRenaming(null);
+    if (text.trim() === sections[key]) return;
+    setErr("");
+    try {
+      const res = await fetch("/api/forms", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ sections: { [key]: text.trim() } }),
+      });
+      const body = await res.json();
+      if (!body?.ok) throw new Error(body?.error || "Couldn't rename it.");
+      router.refresh();
+    } catch (e) {
+      setErr((e as Error).message);
+    }
+  }
+
+  /** Put a hidden built-in back. */
+  async function unhide(id: string) {
+    setBusy(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/forms", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ unhide: id }),
+      });
+      const body = await res.json();
+      if (!body?.ok) throw new Error(body?.error || "Couldn't bring it back.");
+      router.refresh();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /**
+   * A heading you can rename by clicking it.
+   *
+   * ⚠️ THE KEY IS THE IDENTITY, THE LABEL IS DECORATION — the same law the back-office menu runs
+   * on. Nothing looks a section up by what it says, so it can be called anything.
+   */
+  const Heading = ({ k }: { k: SectionKey }) =>
+    renaming?.key === k ? (
+      <input
+        autoFocus
+        value={renaming.text}
+        onChange={(e) => setRenaming({ key: k, text: e.target.value })}
+        onBlur={() => renameSection(k, renaming.text)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") renameSection(k, renaming.text);
+          if (e.key === "Escape") setRenaming(null);
+        }}
+        style={secInput}
+      />
+    ) : (
+      // ⚠️ THE PENCIL IS THE POINT. Steven: *"I'd love to have a little pencil there so a person
+      // would know that's editable. Right now I have to click there just to see that it is."* An
+      // affordance you discover by clicking is not an affordance — it's a secret.
+      <h2
+        style={{ ...sec, cursor: "text" }}
+        title="Click to rename this section"
+        onClick={() => setRenaming({ key: k, text: sections[k] })}
+      >
+        {sections[k]}
+        <span style={pencil} title="Rename this section">✎</span>
+      </h2>
+    );
 
   async function remove(id: string) {
     setBusy(true);
@@ -261,16 +372,37 @@ export default function FormLibrary({
                   color: open ? "#065f46" : "var(--e-muted)",
                 }}
               >
-                {open
-                  ? `open for ${onboarding!.openFor.join(", ")}`
-                  : "not open for anyone right now"}
+                {/* ⚠️ JUST THE NAME. Steven: *"if that website is Steven James Designs, then
+                    just call it Steven James Designs. Get rid of open for."* The green already
+                    says it's switched on — repeating that in words is the chip explaining its
+                    own colour. The names come from the website records and are edited there,
+                    which is the whole reason this isn't a typeable field. */}
+                {open ? onboarding!.openFor.join(", ") : "Not switched on"}
               </span>
             );
           }
           const rows = allUsage[f.id];
           if (rows === undefined) return null;
           if (rows === null) return <span style={chip}>usage unknown</span>;
-          if (!rows.length) return <span style={chip}>not on any site</span>;
+          if (!rows.length) {
+            // ⚠️ "not on any site" IS TRUE AND READS AS "nothing uses this". These are the
+            // questions a live page is asking right now — it just isn't POINTING at the library
+            // copy, which was the whole decision not to migrate. Say the useful thing.
+            // ⚠️ JUST THE SITE. Steven: *"it says same questions as Steven James Consulting,
+            // Apply intake form. It's repetitive."* It was — the form is NAMED after the page it
+            // came from, so the badge repeated the card's own title back at it and wrapped to
+            // three lines doing it. The only fact the title doesn't already carry is WHOSE page,
+            // and that survives a rename: copy this for another client and "from Steven James
+            // Consulting" still says where the questions started.
+            const src = copiedFrom[f.id];
+            return src ? (
+              <span style={{ ...countChip, background: "#eef2ff", color: "#3730a3" }}>
+                from {src.siteName}
+              </span>
+            ) : (
+              <span style={chip}>not linked to a page</span>
+            );
+          }
           const sites = [...new Set(rows.map((r) => r.siteName))];
           return (
             <span style={{ ...countChip, background: "#ecfdf5", color: "#065f46" }}>
@@ -283,6 +415,22 @@ export default function FormLibrary({
       <h2 style={cardName}>{f.name}</h2>
       {f.description ? <p style={cardDesc}>{f.description}</p> : null}
 
+      {/* ── WHERE IT RUNS, AS LINKS YOU CAN FOLLOW ────────────────────────────────────────────
+          The badge already says WHICH sites; a name you can't click is a name you then go
+          hunting for in another screen. Straight to that page in the builder. */}
+      {f.id !== ONBOARDING_FORM_ID && allUsage[f.id]?.length ? (
+        <p style={usedOn}>
+          {allUsage[f.id]!.map((u, i) => (
+            <span key={`${u.siteId}-${u.slug}`}>
+              {i ? " · " : ""}
+              <a href={`/edit/${u.siteId}/${u.slug}`} style={cardLink}>
+                {u.siteName} — {u.title} ↗
+              </a>
+            </span>
+          ))}
+        </p>
+      ) : null}
+
       {/* ⚠️ THE ADDRESS, ON THE CARD. Onboarding is the one form that isn't on a page — it's a
           link per business — so "which website is this on?" has no answer anywhere else on this
           screen. Without it, this nine-question intake and Consulting's thirteen-question /apply
@@ -294,34 +442,56 @@ export default function FormLibrary({
           block placed on it. This one already HAS a page: a generated route, one per business,
           that exists from the moment the site record does. Nothing is created, nothing is
           published. Switching it on unlocks a door that was always there. */}
+      {/* ⚠️ ONE LINE, NOT A PARAGRAPH. This card used to carry three sentences explaining that
+          onboarding is a link rather than a page — true, and it made the card twice the height of
+          every other one on a screen whose whole job is comparing them at a glance. The full
+          explanation lives on the form's own screen, where you are when you need it. */}
+      {/* ⚠️ THE "Open or close one ↗" LINK IS GONE. Steven: *"I tried that hyperlink, it just
+          opens my form library again, which is confusing. I have a make a copy button, so what's
+          the hyperlink for?"* Nothing — the switches moved onto this form's own editor, which is
+          exactly where Edit already goes. A second route to the same place, pointing at a screen
+          that isn't obviously it, is worse than no link at all. */}
       {f.id === ONBOARDING_FORM_ID && onboarding ? (
-        <p style={whereBox}>
-          {"Every business already has its own onboarding page, at its own address:"}
-          <br />
-          <code style={addr}>{onboarding.example}</code>
-          <br />
-          {"Nothing to build and nothing to publish — switching it on unlocks it, and you text them the link. Open or close one per business on the Websites screen."}
-          {onboarding.total
-            ? ` ${onboarding.openFor.length} of ${onboarding.total} open now.`
-            : null}
+        <p style={cardDesc}>
+          A link per client, not a page — {onboarding.openFor.length} of {onboarding.total} open
+          now. Press Edit to switch one on.
         </p>
       ) : null}
 
+      {/* ── THE FIRST FEW QUESTIONS, NOT ALL THIRTEEN ─────────────────────────────────────────
+          Steven, looking at the finished screen: *"the two that I brought in are tall… they
+          don't use the canvas real estate very well."* Right — a card listed EVERY question, so a
+          13-question form was a wall and you could see two forms at a time. A card is for
+          recognising a form, not reading it; the full list is one click away on Edit. */}
       <ul style={list}>
-        {f.fields.map((x) => (
+        {f.fields.slice(0, PREVIEW).map((x) => (
           <li key={x.fieldId} style={li}>
-            <span>{x.label}</span>
+            <span style={liLabel}>{x.label}</span>
             <span style={typeTag}>{FIELD_TYPE_LABELS[x.type] || x.type}</span>
           </li>
         ))}
         {f.fields.length === 0 ? <li style={{ ...li, color: "var(--e-muted)" }}>No questions yet</li> : null}
+        {f.fields.length > PREVIEW ? (
+          <li style={{ ...li, borderBottom: "none", color: "var(--e-muted)" }}>
+            <span>+{f.fields.length - PREVIEW} more</span>
+          </li>
+        ) : null}
       </ul>
-
-      <p style={btnLine}>Button: “{f.buttonLabel}”</p>
 
       {confirming === f.id ? (
         <div style={delPanel}>
-          <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>Delete “{f.name}”?</p>
+          <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600 }}>
+            {f.kind === "builtin" ? `Hide “${f.name}”?` : `Delete “${f.name}”?`}
+          </p>
+          {/* Say what actually happens. A built-in's questions live in code, so this puts it away
+              rather than destroying it — and it comes straight back from the line at the bottom
+              of this screen. A button that overstates what it did is worse than no button. */}
+          {f.kind === "builtin" ? (
+            <p style={{ margin: "0 0 10px", fontSize: 13 }}>
+              It comes off this screen but isn&apos;t destroyed — you can bring it back any time,
+              and any page using it keeps working.
+            </p>
+          ) : null}
           {usage.loading ? (
             <p style={{ margin: "0 0 10px", fontSize: 13 }}>Checking what uses it…</p>
           ) : usage.rows === null ? (
@@ -353,7 +523,7 @@ export default function FormLibrary({
           )}
           <div style={{ display: "flex", gap: 8 }}>
             <button type="button" style={dangerBtn} onClick={() => remove(f.id)} disabled={busy}>
-              {busy ? "Deleting…" : "Delete it"}
+              {busy ? "Working…" : f.kind === "builtin" ? "Hide it" : "Delete it"}
             </button>
             <button type="button" style={smallGhost} onClick={() => setConfirming(null)}>
               Keep it
@@ -362,7 +532,9 @@ export default function FormLibrary({
         </div>
       ) : (
         <div style={cardFoot}>
-          <button type="button" style={smallGhost} onClick={() => router.push(`/edit/forms/${f.id}`)}>
+          {/* Edit is the dark one, matching the website cards — it's what you came here to do,
+              and every other action on this screen is secondary to it. */}
+          <button type="button" style={editBtn} onClick={() => router.push(`/edit/forms/${f.id}`)}>
             Edit
           </button>
           <button
@@ -372,8 +544,18 @@ export default function FormLibrary({
           >
             Make a copy
           </button>
-          {f.kind !== "builtin" ? (
-            <button type="button" style={iconBtn} title="Delete" onClick={() => { setConfirming(f.id); void loadUsage(f.id); }}>
+          {/* ⚠️ ON EVERY CARD NOW. It used to appear only on presets, so half the library had a
+              delete button and half didn't with nothing saying why. A built-in can't truly be
+              deleted — its questions are in code — so on those it HIDES, and the confirm says
+              so. Onboarding is the one exception: it's the live client intake, and a trash can
+              on it would only ever be a mistake waiting to be made. */}
+          {f.id !== ONBOARDING_FORM_ID ? (
+            <button
+              type="button"
+              style={iconBtn}
+              title={f.kind === "builtin" ? "Hide this one" : "Delete"}
+              onClick={() => { setConfirming(f.id); void loadUsage(f.id); }}
+            >
               🗑
             </button>
           ) : null}
@@ -400,11 +582,13 @@ export default function FormLibrary({
           CHANGE SHIPPED — it told Steven that editing a form here never touches a website, the
           exact opposite of what now happens. Screen copy is part of the change, not a follow-up:
           wrong instructions are worse than none, because they get believed. */}
+      {/* ⚠️ ONE LINE. This was a four-line paragraph, and on a screen whose job is showing you
+          your forms, four lines of instructions push the forms themselves off the canvas. The
+          detail hasn't gone anywhere — it's on the form editor, which is where you are when it
+          matters. */}
       <p style={hint}>
         Link a form to a page in the builder and the link stays <strong>live</strong> — edit the
-        questions here and every website using it updates. Each card says which sites it is on.
-        The builder also has a &ldquo;start from a preset&rdquo; option that takes a one-off copy
-        instead, for when a single page needs its own variant.
+        questions here and every website using it updates.
       </p>
 
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search forms…" style={search} />
@@ -453,23 +637,39 @@ export default function FormLibrary({
           action. */}
       {mine.length ? (
         <>
-          <h2 style={sec}>Yours</h2>
+          <Heading k="mine" />
           <div style={grid}>{mine.map(Card)}</div>
         </>
       ) : null}
 
       {working.length ? (
         <>
-          <h2 style={sec}>In use — running right now</h2>
+          <Heading k="inUse" />
           <div style={grid}>{working.map(Card)}</div>
         </>
       ) : null}
 
-      <h2 style={sec}>Samples to start from</h2>
+      <Heading k="samples" />
       <p style={{ ...hint, marginTop: -2 }}>
         Not used by anything. Copy one when a new client needs a form, or edit it in place.
       </p>
       <div style={grid}>{samples.map(Card)}</div>
+
+      {/* ⚠️ HIDING MUST BE VISIBLY UNDOABLE, or it's just a delete that lied. One line, always
+          present when there's anything behind it. */}
+      {hidden.length ? (
+        <p style={hiddenLine}>
+          {`${hidden.length} hidden: `}
+          {hidden.map((f, i) => (
+            <span key={f.id}>
+              {i ? " · " : ""}
+              <button type="button" style={linkBtn} disabled={busy} onClick={() => unhide(f.id)}>
+                {f.name} — bring it back
+              </button>
+            </span>
+          ))}
+        </p>
+      ) : null}
 
       <p style={footNote}>
         Leads land in each client&apos;s own Google Sheet and inbox. This is where the{" "}
@@ -520,22 +720,47 @@ const back: React.CSSProperties = { border: "1px solid var(--e-line)", backgroun
 const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 };
 const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
-const hint: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.55, margin: "16px 0 0", maxWidth: 720 };
-const sec: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-muted)", margin: "34px 0 12px", borderTop: "1px solid var(--e-line)", paddingTop: 20 };
+const hint: React.CSSProperties = { fontSize: 14, color: "var(--e-muted)", lineHeight: 1.55, margin: "16px 0 0", maxWidth: 720 };
+const sec: React.CSSProperties = { fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-muted)", margin: "34px 0 12px", borderTop: "1px solid var(--e-line)", paddingTop: 20 };
 const search: React.CSSProperties = { width: "100%", maxWidth: 340, border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, margin: "18px 0 22px" };
 const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 };
 const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 18, background: "var(--e-panel)", display: "flex", flexDirection: "column" };
 const badgeRow: React.CSSProperties = { display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" };
-const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", background: "var(--e-line-soft)", color: "var(--e-muted)", borderRadius: 999, padding: "3px 9px" };
+const chip: React.CSSProperties = { fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em", background: "var(--e-line-soft)", color: "var(--e-muted)", borderRadius: 999, padding: "4px 10px" };
 const countChip: React.CSSProperties = { ...chip, background: "var(--e-info-bg)", color: "var(--e-info-ink)" };
 const cardName: React.CSSProperties = { fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: "-0.01em" };
-const cardDesc: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", margin: "6px 0 0", lineHeight: 1.5 };
+const cardDesc: React.CSSProperties = { fontSize: 14, color: "var(--e-muted)", margin: "6px 0 0", lineHeight: 1.5 };
 const list: React.CSSProperties = { listStyle: "none", padding: 0, margin: "14px 0 0", borderTop: "1px solid var(--e-line-soft)" };
-const li: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 13, padding: "7px 0", borderBottom: "1px solid var(--e-panel-2)" };
-const typeTag: React.CSSProperties = { fontSize: 11, color: "var(--e-muted)", whiteSpace: "nowrap" };
+const li: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 14, padding: "7px 0", borderBottom: "1px solid var(--e-panel-2)" };
+const typeTag: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", whiteSpace: "nowrap" };
 const btnLine: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", margin: "12px 0 0" };
-const cardFoot: React.CSSProperties = { display: "flex", gap: 8, marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--e-line-soft)" };
-const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
+// ⚠️ `marginTop: "auto"` IS WHAT MAKES A ROW OF CARDS LOOK LIKE A ROW. Without it every card's
+// buttons sit wherever its own question list happens to end, so three cards side by side have
+// three different button heights and the grid reads as unfinished.
+const cardFoot: React.CSSProperties = { display: "flex", gap: 8, marginTop: "auto", paddingTop: 14, borderTop: "1px solid var(--e-line-soft)" };
+/** How many questions a card shows before "+N more". Enough to recognise it, not to read it. */
+const PREVIEW = 4;
+const liLabel: React.CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
+const usedOn: React.CSSProperties = { fontSize: 13, margin: "8px 0 0", lineHeight: 1.6 };
+const cardLink: React.CSSProperties = { color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
+const secInput: React.CSSProperties = { fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 6, padding: "4px 8px", margin: "34px 0 6px", fontFamily: "inherit", background: "var(--e-panel)", minWidth: 320 };
+// ⚠️ THE GLYPH IS THE CONTROL, AND IT HAS TO BE BIG.
+//
+// Attempt one was a 12px ✎ at 70% opacity — invisible. Attempt two added the word "Rename" but
+// put the size on the SPAN, so the pencil itself stayed 13px and only the word grew: I'd answered
+// "make it bigger" by writing more text.
+//
+// Steven settled it: *"if we make the pencil icon larger, we don't need a word beside it. The
+// pencil is self-explanatory… if I have a long explanation there instead of 'yours', having a
+// word next to the pencil crowds the canvas even more."* Right — these headings are his to
+// rewrite, and one of them may end up a sentence. The icon has to carry the meaning on its own.
+//
+// 20px, full-strength accent, hover title for the word.
+const pencil: React.CSSProperties = { marginLeft: 10, fontSize: 20, lineHeight: 1, color: "var(--e-accent)", cursor: "pointer", verticalAlign: "-2px" };
+const hiddenLine: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", marginTop: 26, lineHeight: 1.7 };
+const linkBtn: React.CSSProperties = { background: "none", border: "none", padding: 0, font: "inherit", color: "var(--e-accent)", fontWeight: 600, cursor: "pointer" };
+const editBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
+const smallGhost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "8px 14px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const iconBtn: React.CSSProperties = { ...smallGhost, marginLeft: "auto", padding: "6px 10px" };
 const delPanel: React.CSSProperties = { marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--e-bad-line)", background: "var(--e-bad-bg)", borderRadius: 8, padding: 12 };
 const dangerBtn: React.CSSProperties = { background: "var(--e-danger)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
@@ -545,10 +770,8 @@ const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(-
 const input: React.CSSProperties = { width: "100%", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 11px", fontSize: 14, outline: "none", fontFamily: font, marginTop: 10 };
 const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
 const strayBox: React.CSSProperties = { marginTop: 18, border: "1px solid var(--e-line)", background: "var(--e-panel-2)", borderRadius: 12, padding: "14px 16px", fontSize: 13 };
-const whereBox: React.CSSProperties = { margin: "10px 0 0", fontSize: 12, lineHeight: 1.7, color: "var(--e-muted)", borderLeft: "3px solid var(--e-line)", paddingLeft: 10 };
-const addr: React.CSSProperties = { fontFamily: "ui-monospace,monospace", fontSize: 11, background: "var(--e-line-soft)", borderRadius: 4, padding: "2px 5px", wordBreak: "break-all" };
 const strayRow: React.CSSProperties = { display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "8px 0", borderTop: "1px solid var(--e-line)" };
 const smallBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "7px 13px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" };
-const footNote: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid var(--e-line)", paddingTop: 16, maxWidth: 720 };
+const footNote: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.6, marginTop: 34, borderTop: "1px solid var(--e-line)", paddingTop: 16, maxWidth: 720 };
 const scrim: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
 const modal: React.CSSProperties = { background: "var(--e-panel)", borderRadius: 14, padding: 24, width: "100%", maxWidth: 440, fontFamily: font };

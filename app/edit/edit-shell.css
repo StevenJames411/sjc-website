@@ -27,6 +27,12 @@
   --e-rail-ink: #cbd5e1;
   --e-rail-ink-strong: #ffffff;
   --e-rail-line: rgba(255, 255, 255, 0.12);
+  /* THE DIVIDER BETWEEN NAV GROUPS — its own token, NOT --e-rail-line.
+     Steven, 2026-08-07: *"they're so damn thin I could barely see them."* He was right: the group
+     rules were borrowing the 12%-white hairline used for button borders, where being nearly
+     invisible is the point. A divider has the opposite job — it has to be found at a glance.
+     Separate token so nudging one never silently restyles the other. */
+  --e-rail-rule: rgba(255, 255, 255, 0.55);
   --e-ink: #111827;
   --e-ink-strong: #0f1f3d;
   --e-muted: #6b7280;
@@ -51,26 +57,44 @@
 
 /* DARK. Surfaces lift instead of the text dimming, and every status hue keeps its identity —
    green/amber/red have to read at a glance in either theme or the board stops being a board. */
+/* ── DARK MODE IS STEVEN JAMES DESIGNS NAVY, NOT GITHUB BLACK ─────────────────────────────────
+   Steven, 2026-08-06: *"since I'm the only one in the back office, I thought it might look nice
+   with our blue, like we use in the hero section."* He's right that it's his call — nobody else
+   ever sees this, and it makes the tool feel like the same product as the site it builds.
+
+   The values below are the hero's navy family, kept a step darker than the marketing page: a hero
+   is looked at for four seconds, this is looked at for four hours, so the saturation is pulled
+   back and the panels are separated by lightness rather than by hue.
+
+   ⚠️ ONE THING TO KNOW RATHER THAN FIX: a navy surround does tint how a colour next to it reads,
+   and this back office is where CLIENT brand colours get chosen (/edit/brand is a page of
+   swatches). If a client's teal ever looks off, flip to light mode to judge it — that's what the
+   toggle is for. Not worth giving up the navy over; worth knowing. */
 .edit-shell[data-theme="dark"] {
-  --e-bg: #0d1117;
-  --e-panel: #161b22;
-  --e-panel-2: #1c222b;
-  --e-rail: #0b0f14;
-  --e-rail-ink: #c9d1d9;
-  --e-rail-ink-strong: #f9fafb;
-  --e-rail-line: #21262d;
-  --e-ink: #e5e7eb;
-  --e-ink-strong: #f9fafb;
-  --e-muted: #8b949e;
-  --e-line: #21262d;
-  --e-line-soft: #1b2129;
-  --e-accent: #58a6ff;
+  --e-bg: #0e1a2f;
+  --e-panel: #142440;
+  --e-panel-2: #1a2d4e;
+  --e-rail: #0a1526;
+  --e-rail-ink: #c3d3e8;
+  --e-rail-ink-strong: #ffffff;
+  --e-rail-line: #1d3357;
+  /* Dark mode's rail is DARKER (#0a1526 vs #0f1f3d), so the same white reads brighter against it.
+     Pulled back a step so the divider stays a divider and does not out-shout the nav itself. */
+  --e-rail-rule: rgba(255, 255, 255, 0.42);
+  --e-ink: #e8eef7;
+  --e-ink-strong: #ffffff;
+  --e-muted: #8ea3c0;
+  --e-line: #22375a;
+  --e-line-soft: #1a2b49;
+  --e-accent: #4fd2f7;
 
   --e-ok-dot: #3fb950;   --e-ok-bg: #10261a;   --e-ok-line: #1c4429;   --e-ok-ink: #7ee2a8;
   --e-warn-dot: #d29922; --e-warn-bg: #2a2011; --e-warn-line: #4b3a12; --e-warn-ink: #e3b341;
   --e-bad-dot: #f85149;  --e-bad-bg: #2c1618;  --e-bad-line: #58252a;  --e-bad-ink: #ff9c96;
-  --e-none-dot: #8b949e; --e-none-bg: #171b21; --e-none-line: #262c34;
-  --e-info-bg: #171d2e;  --e-info-line: #2b3557; --e-info-ink: #a5b4fc;
+  /* The neutral "nothing proven yet" tile was a grey-black island on a navy page — the one status
+     that isn't a status has to look like the page it sits on, not like a hole in it. */
+  --e-none-dot: #8ea3c0; --e-none-bg: #16273f; --e-none-line: #263d5e;
+  --e-info-bg: #16294a;  --e-info-line: #2b4574; --e-info-ink: #a5c8fc;
   --e-danger: #f85149;
 }
 
@@ -126,17 +150,27 @@
 }
 .edit-side-reopen { display: none; } /* desktop-only, and only while collapsed — rule below */
 
+/* ── THE GROUP HEADINGS ───────────────────────────────────────────────────────────────────────
+   Steven types them in CAPS on purpose — they're headlines, and they were mid-grey on navy, which
+   is the lowest-contrast thing on the rail. Amber reads as a heading against the navy without
+   competing with the green "you are here"; a pure yellow (#ffff00) vibrates on a dark ground and
+   is unreadable at 11px, so this is the readable end of bright. 12px because 11 was small even
+   before he said so.
+
+   ⚠️ COLOUR ONLY — no weight or size change beyond the one step. The headings must stay quieter
+   than the item you're standing on, or the rail has two things shouting and no focal point. */
 .edit-side-section {
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #7d8896;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #fbbf24;
   margin: 18px 10px 6px;
 }
 /* The same hairline that sits above Sign out, now between groups. Only where there is something
    above to divide from — see rendersBefore() in EditShell. */
 .edit-side-section.has-rule {
-  border-top: 1px solid var(--e-rail-line);
+  border-top: 2px solid var(--e-rail-rule);
   margin-top: 16px;
   padding-top: 16px;
 }
@@ -160,10 +194,25 @@
   background: rgba(255, 255, 255, 0.06);
   text-decoration: none;
 }
+/* ── YOU ARE HERE ─────────────────────────────────────────────────────────────────────────────
+   Was a blue tint on a navy rail — barely a shade apart, so "which screen am I on" needed a
+   second look. Green against navy is unmistakable at a glance, and it's the same green the
+   Heartbeat board uses for verified, so the colour means the same thing in both places.
+
+   A ring around the WHOLE pill, not just a bar down the left edge. The bar read as a margin
+   marker; a closed outline reads as a selected object, and it survives a narrow window where a
+   fill alone can be mistaken for hover. Inset box-shadow rather than `border` so the pill's size
+   and text position don't shift by a pixel when it becomes active. */
 .edit-side-link.is-active {
-  background: rgba(59, 130, 246, 0.18);
-  color: var(--e-rail-ink-strong);
-  font-weight: 600;
+  background: rgba(34, 197, 94, 0.16);
+  color: #4ade80;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1.5px #22c55e;
+}
+/* Hover must not read as selected. Kept as the neutral wash it always was, so the only green on
+   the rail is the screen you are actually on. */
+.edit-side-link.is-active:hover {
+  background: rgba(34, 197, 94, 0.22);
 }
 
 /* ── renaming the menu ────────────────────────────────────────────────────────────────────────
@@ -208,10 +257,12 @@
 .edit-nav-add:hover { border-color: var(--e-accent); color: var(--e-rail-ink-strong); }
 .edit-side-collapse.is-on { border-color: var(--e-accent); color: var(--e-rail-ink-strong); }
 
+/* The rule above Sign out. Same token as the group dividers on purpose — two weights of divider in
+   one rail reads as a mistake, and this one separates a group from the exit exactly like the rest. */
 .edit-side-foot {
   margin-top: 18px;
   padding-top: 14px;
-  border-top: 1px solid var(--e-rail-line);
+  border-top: 2px solid var(--e-rail-rule);
 }
 
 /* ── the canvas ───────────────────────────────────────────────────────────────────────────── */
@@ -298,24 +349,33 @@
     color: var(--e-rail-ink);
     text-decoration: none;
   }
-  .edit-tabs a.is-active { color: #79b8ff; font-weight: 600; }
+  /* Same green as the rail — "you are here" must mean one colour on every screen size, or the
+     phone teaches a different rule from the desktop. */
+  .edit-tabs a.is-active { color: #4ade80; font-weight: 700; }
 
   .edit-side-collapse { display: none; } /* desktop-only affordance */
 }
 
 @media (min-width: 821px) {
   .edit-shell.is-collapsed .edit-sidebar { transform: translateX(-100%); }
-  /* Collapsed = the whole canvas. The pages inside carry their own max-width, so this only has to
-     give the margin back and clear the floating » so it never lands on a heading. */
+  /* Collapsed = the whole canvas.
+     ── ⛔ CLEAR THE FLOATING » SIDEWAYS, NOT DOWNWARDS ────────────────────────────────────────
+     This used to push every page down 52px so the » never landed on a heading. That bought safety
+     with a full empty band across the top of the widest screen, which is the opposite of what
+     collapsing the rail is FOR. Steven, on the dial board: *"let's put the collapse button on the
+     same line as the words."*
+     A left gutter does the same job and costs nothing vertically — the » sits in it, and the
+     page's first line sits beside it. */
   .edit-shell.is-collapsed .edit-content {
     margin-left: 0;
-    padding-top: 52px;
+    padding-left: 46px;
   }
   .edit-shell.is-collapsed .edit-side-reopen {
     display: block;
     position: fixed;
-    top: 14px;
-    left: 14px;
+    /* Vertically centred on a 22px heading sitting under 12px of bar padding. */
+    top: 10px;
+    left: 10px;
     z-index: 60;
     width: 32px;
     height: 32px;

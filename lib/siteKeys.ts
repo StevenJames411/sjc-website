@@ -64,6 +64,24 @@ export function siteKeys(siteId: string) {
      * record — the isolation is structural, not something the intake route has to remember.
      */
     intake: `${ns}-intake`,
+    /**
+     * EVERY LEAD THIS WEBSITE HAS RECEIVED, written BEFORE anyone tries to deliver it.
+     *
+     * ⚠️ ADDED 2026-08-06, AND ITS ABSENCE WAS THE STRUCTURAL HOLE. A lead used to be
+     * delivery-only: the answers existed in the visitor's browser, went out to an inbox, a sheet
+     * and a webhook, and were held nowhere. When every leg failed she saw "that didn't go
+     * through" and the enquiry existed nowhere on earth. Onboarding answers had always been
+     * stored-then-copied; leads — the thing the client actually pays for — had not.
+     *
+     * Storing first turns the whole class of delivery failures from LOST into UNDELIVERED, which
+     * is a support ticket instead of a lost retainer.
+     *
+     * ⚠️ THIS IS NOT A CRM, AND MUST NOT BECOME ONE. It is written and never read back by any
+     * customer-facing path — no inbox, no list, no reply, no status. GHL and the client's own
+     * sheet stay the truth. The single permitted reader is Steven, looking for a lead he can see
+     * failed. The moment anything here drives a workflow, the boundary is gone.
+     */
+    leads: `${ns}-leads`,
   };
 }
 
@@ -87,3 +105,12 @@ export const FORMS_KEY = "sjc-forms";
  * like the brand or the login. No public page ever reads this key.
  */
 export const INVOICES_KEY = "sjc-invoices";
+
+/**
+ * The dial board's list of call sheets — a name, a spreadsheet id and a tab, per list.
+ *
+ * ⚠️ WHAT MAKES THIS KEY SAFE IS HOW LITTLE IS IN IT. No prospect, no note, no call history: all of
+ * that lives in the Google Sheet and is read live on every load. Steven's own prospecting lists on
+ * his own desk — never a client's leads. See the boundary note at the top of lib/dial.ts.
+ */
+export const DIAL_KEY = "sjc-dial";

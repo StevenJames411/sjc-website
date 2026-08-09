@@ -49,7 +49,12 @@ async function scan() {
   const { readSites } = await import("@/lib/sites");
   const { readPages } = await import("@/lib/pageRegistry");
 
-  const shapes = new Set((await readForms()).map((f) => shapeOf(f.fields.map((x) => x.fieldId))));
+  // shape -> which library form has it. A Set only answered "is it in there"; the library screen
+  // also needs to know WHICH form, so a copied form can say where its questions came from instead
+  // of claiming it isn't used anywhere.
+  const byShape = new Map(
+    (await readForms()).map((f) => [shapeOf(f.fields.map((x) => x.fieldId)), f.id])
+  );
 
   const rows: {
     siteId: string;
@@ -59,6 +64,8 @@ async function scan() {
     questions: number;
     from: string[];
     inLibrary: boolean;
+    /** The library form holding a copy of these questions, when there is one. */
+    matchedFormId: string | null;
   }[] = [];
 
   for (const s of await readSites()) {
@@ -68,6 +75,7 @@ async function scan() {
       const found = findQuestions(data);
       if (!found.length) continue;
       const keys = found.flatMap((f) => f.fields.map((x) => x.fieldId));
+      const matchedFormId = byShape.get(shapeOf(keys)) || null;
       rows.push({
         siteId: s.id,
         siteName: s.name,
@@ -75,7 +83,8 @@ async function scan() {
         title: p.title,
         questions: keys.length,
         from: [...new Set(found.map((f) => f.from))],
-        inLibrary: shapes.has(shapeOf(keys)),
+        inLibrary: Boolean(matchedFormId),
+        matchedFormId,
       });
     }
   }

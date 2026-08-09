@@ -8,6 +8,12 @@
 //     Events  checkout.session.completed, invoice.paid, invoice.payment_failed,
 //             customer.subscription.deleted
 //   Copy the signing secret (whsec_…) into STRIPE_WEBHOOK_SECRET on Vercel.
+//   And set PAYMENTS_SHEET_ID to the spreadsheet id of SJC's own operations sheet — the long
+//   string in its URL between /d/ and /edit. Two env vars, one trip.
+//
+// ⚠️ PAYMENTS_SHEET_ID IS DELIBERATELY NOT THE SJC SITE'S `sheetId`. That field is what LEAD
+// routing reads, and setting it would silently move the live /apply funnel onto a different tab.
+// See the long note in lib/payments.ts.
 //
 // ⚠️ PUBLIC BY NECESSITY — Stripe has to reach it, so it cannot sit behind the owner login. The
 // signature IS the authentication. It is checked before the body is looked at, and an unset

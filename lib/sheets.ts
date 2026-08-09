@@ -78,6 +78,72 @@ export function createClientSheet(businessName: string, shareWith?: string) {
  * spreadsheet; what Steven gets paid does not. One business = one sheet is what keeps his revenue
  * out of a document he shares with customers. lib/payments.ts is the only caller that uses it.
  */
+/**
+ * Read a call sheet back — headers, rows, and the tab names. The dial board's only reader.
+ *
+ * ⚠️ Values arrive as the sheet DISPLAYS them (see readRows_ in the .gs). A phone number that is
+ * stored as a number comes back "+1512-846-4044", which is the dialable form and the one Steven is
+ * looking at on screen. Do not "fix" this into typed values.
+ */
+export function readSheetRows(opts: { spreadsheetId: string; tab?: string }) {
+  return call<{
+    title: string;
+    tab: string;
+    tabs: string[];
+    headers: string[];
+    rows: { row: number; cells: string[] }[];
+    truncated?: boolean;
+  }>("readRows", opts);
+}
+
+/**
+ * Write the outcome of one call onto one row.
+ *
+ * ⚠️ `expectName` IS NOT OPTIONAL AND IS NOT A COURTESY. The script refuses to write without it,
+ * and re-finds the business by name if the row has moved under us. A board holding a list read
+ * five minutes ago cannot trust a row number — one sort of the sheet and it would file "not
+ * interested" against somebody who was never called. See logCall_ in scripts/sjc-sheets.gs.
+ */
+export function logSheetCall(opts: {
+  spreadsheetId: string;
+  tab?: string;
+  row: number;
+  /** The business name the board believes is on that row. The write is verified against it. */
+  expectName: string;
+  outcome?: string;
+  note?: string;
+  /** Human-readable, e.g. "Tue 12 Aug, 10:00 AM" — a note to himself, not a machine date. */
+  callbackAt?: string;
+  at?: string;
+}) {
+  return call<{ row: number; wrote: string[]; at: string }>("logCall", opts);
+}
+
+/**
+ * Log a finished call session — appends to `Sessions` and accumulates the `Days` total.
+ *
+ * ⛔ THE SPREADSHEET IS SJC'S OWN OPERATIONS SHEET, NEVER A CLIENT'S AND NEVER A PROSPECT LIST.
+ * A day's calling can span two metro sheets, so a per-list tab would fragment the
+ * Monday-to-Saturday view this exists to give. Same sheet payments already write to.
+ */
+export function logSheetSession(opts: {
+  spreadsheetId: string;
+  session: {
+    date: string;
+    who: string;
+    started: string;
+    ended: string;
+    activeMins: number;
+    dials: number;
+    convos: number;
+    callbacks: number;
+    sold: number;
+    list: string;
+  };
+}) {
+  return call<{ sessionRow: number; dayRow: number }>("logSession", opts);
+}
+
 export function writeSheetRow(opts: {
   spreadsheetId: string;
   tab: "Leads" | "Onboarding" | "Payments";

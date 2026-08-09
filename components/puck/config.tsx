@@ -88,6 +88,7 @@ type Props = {
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
+  Booking: { src: string; height: number };
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
@@ -435,8 +436,8 @@ export const config: Config<Props, RootProps> = {
       title: "Building blocks",
       defaultExpanded: true,
       components: ["Section", "Columns", "Heading", "Text", "Button", "Card", "CheckList",
-                   "PriceBox", "Conversation", "Image", "HeroImage", "Video", "Spacer", "Divider",
-                   "PhoneLink"] as (keyof Props)[],
+                   "PriceBox", "Conversation", "Image", "HeroImage", "Video", "Booking", "Spacer",
+                   "Divider", "PhoneLink"] as (keyof Props)[],
     },
     forms: {
       title: "Forms",
@@ -1642,6 +1643,64 @@ export const config: Config<Props, RootProps> = {
       render: ({ height }) => (
         <div style={{ height: `${typeof height === "number" ? height : 32}px` }} aria-hidden />
       ),
+    },
+
+    /**
+     * A booking widget — a Google Calendar appointment schedule, embedded.
+     *
+     * ── WHY THIS IS NOT THE Video BLOCK ───────────────────────────────────────────────────────
+     * Video forces a 16:9 box. A booking widget is tall and narrow; squeezed into 16:9 the time
+     * slots end up behind an inner scrollbar, which on a phone reads as a broken page. And the
+     * phone is the case that matters — this link gets TEXTED.
+     *
+     * ⚠️ THE URL HAS TO CARRY `gv=true`, AND THAT IS THE ONE THING THAT GOES WRONG. Google's share
+     * dialog hands you a link WITHOUT it; that link renders a whole calendar UI instead of the
+     * booking widget, and it looks plausible enough to ship. So this appends it rather than
+     * trusting the paste.
+     */
+    Booking: {
+      label: "Booking (Google Calendar appointment schedule)",
+      fields: {
+        src: {
+          type: "text" as const,
+          label: "Schedule URL — Google Calendar ▸ your appointment schedule ▸ Share ▸ copy link",
+        },
+        height: {
+          type: "custom" as const,
+          label: "Height (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
+          ),
+        },
+      },
+      defaultProps: { src: "", height: 620 },
+      render: ({ src, height }) => {
+        const h = typeof height === "number" ? height : 620;
+        const raw = String(src || "").trim();
+        const url = !raw ? "" : /[?&]gv=true/.test(raw) ? raw : `${raw}${raw.includes("?") ? "&" : "?"}gv=true`;
+        return (
+          <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+            {url ? (
+              <iframe
+                src={url}
+                style={{ height: `${h}px` }}
+                className="w-full border-0"
+                title="Book a call"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className="flex flex-col items-center justify-center gap-2 p-8 text-center text-sm"
+                style={{ minHeight: 220, color: "var(--color-sjc-muted, #6b7280)" }}
+              >
+                <span className="text-2xl">📅</span>
+                <span>Paste your Google Calendar appointment-schedule link.</span>
+                <span className="text-xs opacity-70">Calendar → your schedule → Share → copy link</span>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
 
     Divider: {

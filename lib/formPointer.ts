@@ -20,7 +20,7 @@
 // label, the small print and the thank-you wording are page-specific (the same form on a contact
 // page and in a footer wants different words), so a non-empty value on the block wins and a blank
 // one falls back to the library's.
-import type { FormDef } from "./formsShared";
+import { CHOICE_TYPES, type FormDef } from "./formsShared";
 
 /** The props a LeadForm block carries. Only the ones this touches. */
 type LeadFormProps = {
@@ -102,8 +102,10 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
           // choice, and a free-text box means "★★★★★ Great" is typed by hand or not at all, so
           // the rule that decides who gets sent to Google would essentially never match. The
           // options travel and LeadForm draws them.
-          inputType: f.type === "choice" ? "text" : f.type,
-          ...(f.type === "choice" && f.options?.length ? { options: f.options } : {}),
+          inputType: CHOICE_TYPES.includes(f.type) ? "text" : f.type,
+          ...(CHOICE_TYPES.includes(f.type) && f.options?.length
+            ? { options: f.options, multi: f.type === "multi" }
+            : {}),
           required: f.required,
         }));
       props.buttonLabel = prefer(n.props?.buttonLabel, form.buttonLabel);

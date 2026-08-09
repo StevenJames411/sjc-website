@@ -225,7 +225,24 @@ async function checkStore(): Promise<CheckRun> {
 }
 
 async function checkResendDomain(): Promise<CheckRun> {
-  const key = process.env.RESEND_API_KEY;
+  // ── WHY THERE ARE TWO KEYS ───────────────────────────────────────────────────────────────────
+  //
+  // The sending key is scoped `Sending access` and that is CORRECT — it lives in the request path
+  // for every lead alert, and a key that can also read and delete account resources has no
+  // business there. But it cannot read /domains, so the one check watching the single point of
+  // failure for EVERY client's lead alerts has never been able to run.
+  //
+  // ⚠️ THIS IS AN ADDITIONAL KEY, NOT A ROTATION. Do not touch RESEND_API_KEY — replacing it
+  // silently breaks every lead email, and there is a standing note about exactly that.
+  //
+  // ⚠️ TWO ACCEPTED NAMES, AND THE SECOND ONE IS THE LESSON. I told Steven to add
+  // RESEND_READ_KEY, then described the rule as "letters and underscores only" instead of just
+  // saying the name — so the variable got created as `sjc_checks_read`, after the key's name in
+  // Resend. Vercel wouldn't let him rename it. Making him delete and redo a working variable to
+  // satisfy my preferred spelling would be the code bossing the operator around over nothing.
+  // The variable is correct, sensitive, and already deployed; the code reads it.
+  const key =
+    process.env.RESEND_READ_KEY || process.env.sjc_checks_read || process.env.RESEND_API_KEY;
   if (!key) {
     // ⚠️ skipped, never pass. An unset key must not render as a healthy sending domain.
     return {
@@ -256,8 +273,15 @@ async function checkResendDomain(): Promise<CheckRun> {
       status: "skipped",
       detail:
         `The Resend key is scoped for sending only, so it cannot read the domain list (${res.status}). ` +
-        `Email is unaffected — nothing here says the domain is bad, only that this key can't confirm it.`,
-      evidence: { http: res.status, reason: "key lacks domain read scope" },
+        `Email is unaffected — nothing here says the domain is bad, only that this key can't confirm it. ` +
+        `To turn this tile on: create a SECOND Resend key with read access and set it as ` +
+        `RESEND_READ_KEY. Leave RESEND_API_KEY alone.`,
+      evidence: {
+        http: res.status,
+        reason: "key lacks domain read scope",
+        fix: "set RESEND_READ_KEY to a read-scoped Resend key",
+        usingReadKey: Boolean(process.env.RESEND_READ_KEY),
+      },
       at: now(),
     };
   }

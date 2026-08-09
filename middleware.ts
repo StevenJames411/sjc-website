@@ -31,6 +31,10 @@ function isProtected(pathname: string): boolean {
     pathname.startsWith("/api/forms") ||
     // The invoice book. Owner-only for the obvious reason: it records who was billed what.
     pathname.startsWith("/api/invoices") ||
+    // The dial board. Owner-only twice over: it hands back Steven's prospecting lists, and it
+    // WRITES into his Google Sheets. Left open, a stranger could read who he is calling and stamp
+    // "not interested" on all of it.
+    pathname.startsWith("/api/dial") ||
     // The board's row order and the back office's own menu. Nothing secret in either, but both are
     // WRITES to stored state, and an unauthenticated write is an unauthenticated write.
     pathname.startsWith("/api/board-order") ||

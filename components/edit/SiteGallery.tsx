@@ -245,7 +245,7 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                     </a>
                   ) : null}
                 </span>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ display: "flex", gap: 6, flex: "0 0 auto", marginLeft: "auto" }}>
                   {(intake[s.id]?.answered || 0) > 0 || intake[s.id]?.submitted ? (
                     <button
                       type="button"
@@ -710,11 +710,23 @@ const errBox: React.CSSProperties = { marginTop: 12, background: "var(--e-bad-bg
 
 // Onboarding row. Sits between the card body and the Edit button because it's status you SCAN,
 // not an action you go looking for — the eye should hit it on the way past.
+// ⚠️ WRAPS, AND THE BUTTONS NEVER SHRINK.
+//
+// I put the clickable onboarding address inside this row on 2026-08-06, and a long one
+// (`stevenjamesdesigns.com/steven-james-designs/onboard`) then squeezed the buttons beside it
+// until "Copy her web address" wrapped to three lines and spilled off the card. A flex row shares
+// space by shrinking whatever it can, and the buttons were the easiest thing to shrink.
+//
+// So: the row wraps, the status+address block is allowed to take the full width when it needs it,
+// and the buttons are pinned at their natural size. A button that no longer looks like a button is
+// worse than a second line.
 const intakeRow: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   gap: 8,
+  rowGap: 8,
+  flexWrap: "wrap",
   padding: "8px 0 10px",
   borderTop: "1px solid var(--e-line-soft)",
   marginTop: 10,
@@ -724,9 +736,14 @@ const intakeLabel: React.CSSProperties = {
   fontSize: 12,
   color: "var(--e-muted)",
   fontWeight: 600,
+  // Takes the row when the address is long, so it wraps instead of crushing the buttons.
+  flex: "1 1 100%",
+  minWidth: 0,
+  overflowWrap: "anywhere",
 };
 
 const linkBtn: React.CSSProperties = {
+  whiteSpace: "nowrap",
   padding: "5px 9px",
   borderRadius: 6,
   border: "1px solid var(--e-line)",

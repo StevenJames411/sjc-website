@@ -50,6 +50,7 @@ export const ENTRIES: NavEntry[] = [
   { type: "section", key: "money", label: "Money" },
   { type: "item", key: "invoices", label: "Invoices", href: "/edit/invoices" },
   { type: "section", key: "library", label: "Library" },
+  { type: "item", key: "dial", label: "Dial board", href: "/edit/dial" },
   { type: "item", key: "forms", label: "Forms", href: "/edit/forms" },
   { type: "item", key: "brand", label: "Brand", href: "/edit/brand" },
   { type: "item", key: "import", label: "Import a design", href: "/edit/import" },

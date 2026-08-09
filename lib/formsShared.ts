@@ -50,6 +50,7 @@ export type FormFieldType =
   | "url"
   | "textarea"
   | "choice"
+  | "multi"
   | "photos";
 
 /** The single list every writer validates against. An unknown type falls back to `text`. */
@@ -60,8 +61,12 @@ export const FORM_FIELD_TYPES: FormFieldType[] = [
   "url",
   "textarea",
   "choice",
+  "multi",
   "photos",
 ];
+
+/** Types that carry a list of options. One place, so a new one can't be half-added. */
+export const CHOICE_TYPES: FormFieldType[] = ["choice", "multi"];
 
 /** Types a public website form can't draw. Kept as a set so adding one is a one-line change. */
 export const FIELD_TYPE_ONBOARDING_ONLY: FormFieldType[] = ["photos"];
@@ -79,7 +84,15 @@ export type FormField = {
   label: string;
   help?: string;
   type: FormFieldType;
-  /** For `choice` only. */
+  /**
+   * For `choice` and `multi`.
+   *
+   * ⚠️ `multi` EXISTS BECAUSE A COPY THAT LOSES IT ISN'T A COPY. /apply asks "Channel, pick all
+   * that apply" as a genuine multi-select. The library had only single-choice, so copying that
+   * page in downgraded the question to "pick one" — silently, and it looked right. Had the page
+   * then been LINKED to that copy, a live funnel would have started accepting one answer where it
+   * used to accept several, and nobody would have seen a thing go wrong.
+   */
   options?: string[];
   placeholder?: string;
   required?: boolean;
@@ -186,6 +199,37 @@ export function questionsToAsk(fields: FormField[], site: Site | null | undefine
 /** `builtin` records live in code and always exist; `preset` ones are Steven's own. */
 export type FormKind = "builtin" | "preset";
 
+/**
+ * WHAT THE THREE GROUPS ON THE LIBRARY SCREEN ARE CALLED.
+ *
+ * ⚠️ I NAMED THESE; THEY'RE HIS SCREEN. Steven: *"You named them, yours, samples. I want to be
+ * able to edit what we call each section."* Same reasoning as the back-office menu, which is
+ * already editable data — a label somebody else chose is a label you read past. The GROUPING is
+ * the code's job (what's in use, what's yours, what's an example); what it's CALLED is his.
+ *
+ * ⚠️ THE KEY IS THE IDENTITY, THE LABEL IS DECORATION — the same law as the nav. Rename a heading
+ * to anything you like; nothing looks up a section by what it says.
+ */
+export type SectionKey = "mine" | "inUse" | "samples";
+
+export const SECTION_DEFAULTS: Record<SectionKey, string> = {
+  mine: "Yours",
+  inUse: "In use — running right now",
+  samples: "Samples to start from",
+};
+
+export const SECTION_KEYS = Object.keys(SECTION_DEFAULTS) as SectionKey[];
+
+/** Saved labels merged over the code defaults, so a blank or missing one can't leave a heading empty. */
+export function mergeSections(saved?: Partial<Record<SectionKey, string>>): Record<SectionKey, string> {
+  const out = { ...SECTION_DEFAULTS };
+  for (const k of SECTION_KEYS) {
+    const v = String(saved?.[k] || "").trim();
+    if (v) out[k] = v;
+  }
+  return out;
+}
+
 export type FormDef = {
   id: string;
   name: string;
@@ -209,6 +253,19 @@ export type FormDef = {
    * onboarding form is Steven chasing somebody by text. That is what this exists to prevent.
    */
   oneQuestionPerScreen?: boolean;
+  /**
+   * PUT AWAY, NOT DESTROYED — how you "delete" a built-in.
+   *
+   * ⚠️ A BUILT-IN CANNOT ACTUALLY BE DELETED. Its questions live in code, so removing the saved
+   * row would only drop the override and the form would reappear on the next read — which reads
+   * as the delete button being broken. So the trash can on a built-in hides it instead, and the
+   * screen says so and offers it back.
+   *
+   * ⚠️ HIDDEN FORMS STILL RESOLVE. This filters the LIBRARY SCREEN, never findForm — a page
+   * pointing at a form you tidied away keeps working. Hiding is a housekeeping act, not a way to
+   * break somebody's live contact page from two screens away.
+   */
+  hidden?: boolean;
   /**
    * A DIFFERENT THANK-YOU FOR CERTAIN ANSWERS — and the whole five-star funnel in one field.
    *
@@ -425,5 +482,6 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   url: "Web address",
   textarea: "Long text",
   choice: "Pick one",
+  multi: "Pick any",
   photos: "Photos",
 };

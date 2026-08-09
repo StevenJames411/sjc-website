@@ -12,21 +12,49 @@ import { getClient } from "./store";
 import { FORMS_KEY } from "./siteKeys";
 import {
   BUILTIN_FORMS,
+  CHOICE_TYPES,
   FORM_FIELD_TYPES,
   SATISFIED_BY_CHOICES,
+  mergeSections,
   mintFieldId,
   type FormDef,
   type FormField,
   type FormFieldType,
   type FormKind,
+  type SectionKey,
 } from "./formsShared";
 import { ONBOARDING_FORM } from "./intakeShared";
 
 export * from "./formsShared";
 
-type FormsBlob = { forms?: FormDef[] };
+type FormsBlob = { forms?: FormDef[]; sections?: Partial<Record<SectionKey, string>> };
 
 const store = () => createKvStore(getClient(), FORMS_KEY);
+
+/** What the three groups on the library screen are called. Merged over the code defaults. */
+export async function readSections(): Promise<Record<SectionKey, string>> {
+  const blob = (await store().read<FormsBlob>()) || {};
+  return mergeSections(blob.sections);
+}
+
+/**
+ * Rename the groups.
+ *
+ * ⚠️ READ-MODIFY-WRITE ON THE WHOLE BLOB, because `forms` lives in the same document. Writing
+ * `{ sections }` on its own would hand the store a document with no forms in it — and while the
+ * write guard would refuse that, "renaming a heading emptied the library" is not a failure to
+ * leave one missing spread away.
+ */
+export async function writeSections(
+  patch: Partial<Record<SectionKey, string>>
+): Promise<{ ok: boolean; error?: string }> {
+  const blob = (await store().read<FormsBlob>()) || {};
+  const res = await store().writeResult({
+    ...blob,
+    sections: mergeSections({ ...blob.sections, ...patch }),
+  });
+  return res.ok ? { ok: true } : { ok: false, error: res.reason || "Couldn't save." };
+}
 
 const slugify = (s: string) =>
   String(s || "")
@@ -123,7 +151,7 @@ function normalizeFields(incoming: FormField[], previous: FormField[] = []): For
       ...(f?.help ? { help: String(f.help) } : {}),
       ...(f?.placeholder ? { placeholder: String(f.placeholder) } : {}),
       ...(f?.required ? { required: true } : {}),
-      ...(type === "choice" && Array.isArray(f?.options)
+      ...(CHOICE_TYPES.includes(type) && Array.isArray(f?.options)
         ? { options: f.options.map((o) => String(o)).filter(Boolean) }
         : {}),
       ...(SATISFIED_BY_CHOICES.some((c) => c.path === satisfiedBy) ? { satisfiedBy } : {}),
@@ -277,11 +305,39 @@ export async function deleteForm(id: string): Promise<{ ok: boolean; error?: str
   const all = await readForms();
   const target = all.find((f) => f.id === key);
   if (!target) return { ok: false, error: "That form no longer exists." };
+  // ── A BUILT-IN IS HIDDEN, NOT DELETED ────────────────────────────────────────────────────────
+  // Steven: *"I don't see a delete button on all of them, just some of them."* Right — built-ins
+  // had none, because their questions live in code: dropping the saved row would only remove the
+  // override and the form would be back on the next read, which reads as the button being broken.
+  //
+  // So the trash can works on all of them now, and on a built-in it puts the form AWAY. The screen
+  // says "hidden" rather than "deleted" and offers it back — a control that lies about what it did
+  // is worse than one that isn't there.
+  //
+  // ⚠️ HIDING NEVER BREAKS A PAGE. `hidden` filters the library SCREEN; findForm still resolves the
+  // form, so a page pointing at one you tidied away keeps working exactly as it did.
   if (target.kind === "builtin") {
-    return { ok: false, error: "Built-in forms can't be deleted — edit it or make a copy instead." };
+    const rows = all
+      .filter((f) => f.kind !== "builtin" || f.id === key)
+      .map((f) => (f.id === key ? { ...f, hidden: true } : f));
+    if (!rows.some((f) => f.id === key)) rows.push({ ...target, hidden: true });
+    const res = await writeForms(rows);
+    return res.ok ? { ok: true } : { ok: false, error: res.reason || "Couldn't save." };
   }
 
   const rows = all.filter((f) => f.kind !== "builtin" && f.id !== key);
+  const res = await writeForms(rows);
+  return res.ok ? { ok: true } : { ok: false, error: res.reason || "Couldn't save." };
+}
+
+/** Put a hidden built-in back on the library screen. */
+export async function unhideForm(id: string): Promise<{ ok: boolean; error?: string }> {
+  const key = String(id || "").trim();
+  const all = await readForms();
+  if (!all.some((f) => f.id === key)) return { ok: false, error: "That form no longer exists." };
+  const rows = all
+    .filter((f) => f.kind !== "builtin" || f.id === key)
+    .map((f) => (f.id === key ? { ...f, hidden: false } : f));
   const res = await writeForms(rows);
   return res.ok ? { ok: true } : { ok: false, error: res.reason || "Couldn't save." };
 }

@@ -8,7 +8,7 @@
 //
 // The heading and the browser tab both read the name Steven gave this screen in the rail — one
 // screen, one name. See navLabel in lib/editNav.ts.
-import { readForms } from "@/lib/forms";
+import { readForms, readSections } from "@/lib/forms";
 import { readSites } from "@/lib/sites";
 import { intakeSummaries } from "@/lib/intake";
 import { onboardUrlFor } from "@/lib/hostShared";
@@ -47,10 +47,13 @@ async function onboardingFacts() {
 }
 
 export default async function FormsPage() {
-  const [forms, title, onboarding] = await Promise.all([
+  const [forms, title, onboarding, sections] = await Promise.all([
     readForms(),
     navLabel("forms"),
     onboardingFacts(),
+    readSections(),
   ]);
-  return <FormLibrary forms={forms} title={title} onboarding={onboarding} />;
+  return (
+    <FormLibrary forms={forms} title={title} onboarding={onboarding} sections={sections} />
+  );
 }

@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ONBOARDING_FORM_ID } from "@/lib/intakeShared";
 import {
+  CHOICE_TYPES,
   FIELD_TYPE_LABELS,
   FIELD_TYPE_ONBOARDING_ONLY,
   SATISFIED_BY_CHOICES,
@@ -394,7 +395,7 @@ export default function FormEditor({
             style={{ ...input, marginTop: 8, fontSize: 13 }}
           />
 
-          {x.type === "choice" ? (
+          {CHOICE_TYPES.includes(x.type) ? (
             <input
               value={(x.options || []).join(", ")}
               onChange={(e) =>

@@ -32,6 +32,19 @@ const SWATCHES: { key: keyof Brand; label: string; help: string }[] = [
   { key: "ctaHover",   label: "Button (hover)",    help: "Button colour on hover" },
 ];
 
+// ⚠️ THIS SCREEN USES THE EDITOR'S PALETTE (--e-ink / --e-muted / --e-accent), NOT THE PUBLIC
+// SITE'S (--color-sjc-*), AND THE DIFFERENCE IS NOT COSMETIC.
+//
+// It shipped using --color-sjc-ink, which is a fixed dark navy chosen for a WHITE page. In the
+// back office's dark mode that put dark-navy text on a dark-navy background: the heading and the
+// whole intro paragraph were invisible. Steven found it — every other back-office screen was
+// legible and this one wasn't, because every other screen uses the --e-* variables that flip with
+// the theme.
+//
+// The trap is specific to THIS page: it is the screen for editing a client's brand colours, so
+// reaching for the brand palette feels right and is wrong. The colours being EDITED here belong
+// to the website; the colours this screen is DRAWN in belong to the editor.
+
 export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: string; siteLabel?: string } = {}) {
   // Blank = SJC, which is what /edit/brand has always meant. A client site passes its own id and
   // the same screen edits that site's palette instead — the route was the only thing missing.
@@ -84,13 +97,13 @@ export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: 
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-2xl font-bold text-[color:var(--color-sjc-ink)]">{title}</h1>
+      <h1 className="text-2xl font-bold text-[color:var(--e-ink)]">{title}</h1>
       {/* WHOSE colours these are. Without it the screen looks identical for every website and the
           only way to know which one you are about to repaint is the address bar. */}
       {siteLabel ? (
-        <p className="mt-1 text-sm font-semibold text-[color:var(--color-sjc-blue)]">{siteLabel}</p>
+        <p className="mt-1 text-sm font-semibold text-[color:var(--e-accent)]">{siteLabel}</p>
       ) : null}
-      <p className="mt-2 text-[color:var(--color-sjc-mute)]">
+      <p className="mt-2 text-[color:var(--e-muted)]">
         Set the font and colours once. Every page on this site follows them — you never set a
         colour on an individual block again. Changes are saved as a draft; nothing reaches the
         live site until you press Publish.
@@ -111,8 +124,8 @@ export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: 
           headlines over Inter body while this page said "Lexend — current", describing half of it.
           Not wrong behaviour: hidden behaviour, which is worse, because there was nothing to click. */}
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Headlines</h2>
-        <p className="mt-1 text-sm text-[color:var(--color-sjc-mute)]">
+        <h2 className="text-lg font-bold text-[color:var(--e-ink)]">Headlines</h2>
+        <p className="mt-1 text-sm text-[color:var(--e-muted)]">
           The big text at the top of each section. Bought designs usually pair a second face here.
         </p>
         <div className="mt-3 grid gap-2">
@@ -141,8 +154,8 @@ export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: 
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Body text</h2>
-        <p className="mt-1 text-sm text-[color:var(--color-sjc-mute)]">
+        <h2 className="text-lg font-bold text-[color:var(--e-ink)]">Body text</h2>
+        <p className="mt-1 text-sm text-[color:var(--e-muted)]">
           Paragraphs, buttons, labels — everything that isn&apos;t a headline.
         </p>
         <div className="mt-3 grid gap-2">
@@ -160,7 +173,7 @@ export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: 
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-bold text-[color:var(--color-sjc-ink)]">Colours</h2>
+        <h2 className="text-lg font-bold text-[color:var(--e-ink)]">Colours</h2>
         <div className="mt-3 grid gap-3">
           {SWATCHES.map((s) => (
             <div key={s.key} className="flex items-center gap-3 rounded-lg border border-gray-200 p-3">
@@ -172,7 +185,7 @@ export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: 
                 className="w-24 rounded border border-gray-300 px-2 py-1 text-center text-sm" />
               <span className="flex-1">
                 <span className="block text-sm font-semibold">{s.label}</span>
-                <span className="block text-xs text-[color:var(--color-sjc-mute)]">{s.help}</span>
+                <span className="block text-xs text-[color:var(--e-muted)]">{s.help}</span>
               </span>
             </div>
           ))}
@@ -185,28 +198,28 @@ export default function BrandEditor({ siteId = "", siteLabel = "" }: { siteId?: 
           Save draft
         </button>
         <button onClick={() => act("publish")} disabled={saving}
-          className="rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2 text-sm font-bold text-white">
+          className="rounded-lg bg-[color:var(--e-accent)] px-5 py-2 text-sm font-bold text-white">
           Publish to the live site
         </button>
         {armed ? (
           <span className="ml-auto flex items-center gap-3 text-sm">
-            <span className="text-[color:var(--color-sjc-ink)]">Put the site back to its original font and colours?</span>
+            <span className="text-[color:var(--e-ink)]">Put the site back to its original font and colours?</span>
             <button onClick={() => act("reset")} disabled={saving}
               className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 font-semibold text-red-700">
               Yes, reset
             </button>
-            <button onClick={() => setArmed(false)} className="underline text-[color:var(--color-sjc-mute)]">
+            <button onClick={() => setArmed(false)} className="underline text-[color:var(--e-muted)]">
               Cancel
             </button>
           </span>
         ) : (
           <button onClick={() => setArmed(true)} disabled={saving}
-            className="ml-auto text-sm text-[color:var(--color-sjc-mute)] underline">
+            className="ml-auto text-sm text-[color:var(--e-muted)] underline">
             Reset to original
           </button>
         )}
       </div>
-      <p className="mt-3 text-xs text-[color:var(--color-sjc-mute)]">
+      <p className="mt-3 text-xs text-[color:var(--e-muted)]">
         Reset is the way back — whatever you try here, one click returns the site to how it shipped.
       </p>
     </main>
@@ -236,13 +249,13 @@ function FontChoice({
   return (
     <label
       className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 ${
-        checked ? "border-[color:var(--color-sjc-blue)] bg-blue-50" : "border-gray-200"
+        checked ? "border-[color:var(--e-accent)] bg-[color:var(--e-info-bg)]" : "border-[color:var(--e-line)]"
       }`}
     >
       <input type="radio" name={name} checked={checked} onChange={onPick} />
       <span className="flex-1">
         <span className="block text-base font-semibold">{label}</span>
-        <span className="block text-sm text-[color:var(--color-sjc-mute)]">{note}</span>
+        <span className="block text-sm text-[color:var(--e-muted)]">{note}</span>
       </span>
     </label>
   );

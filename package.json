@@ -11,7 +11,8 @@
     "check:gs": "node scripts/stamp-gs.mjs --check",
     "check:forms": "npx tsx scripts/checks/form-pointer.mts && npx tsx scripts/checks/onboarding-keys.mts",
     "check:stripe": "npx tsx scripts/checks/stripe-webhook.mts",
-    "check": "npm run check:gs && npm run check:forms && npm run check:stripe"
+    "check:dial": "npx tsx scripts/checks/dial-board.mts",
+    "check": "npm run check:gs && npm run check:forms && npm run check:stripe && npm run check:dial"
   },
   "dependencies": {
     "@measured/puck": "^0.20.2",

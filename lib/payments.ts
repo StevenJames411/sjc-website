@@ -132,9 +132,31 @@ export async function recordPayment(
   row: PaymentRow,
   at: string
 ): Promise<{ ok: boolean; reason?: string }> {
+  // ── WHY THIS IS NOT SJC's `sheetId` ─────────────────────────────────────────────────────────
+  //
+  // It was, and that was wrong in a way only a live check caught: `sheetId` on a site record is
+  // what LEAD ROUTING reads. Setting it on SJC just so payments had somewhere to go would have
+  // silently rerouted the live /apply funnel — deliverLead stops posting through the Apps Script
+  // webhook the moment a site has its own sheet, and starts writing to a "Leads" tab instead.
+  // Steven's consulting applications would have moved tabs, away from the script that formats
+  // them, to make an unrelated feature work.
+  //
+  // Payments and leads are different concerns. This one gets its own setting, filled in at the
+  // same moment as STRIPE_WEBHOOK_SECRET — one trip to Vercel, no live funnel touched.
+  //
+  // The SJC site's own sheetId is still honoured as a fallback, so if that field is ever set for
+  // its own reasons this keeps working without a second thing to remember.
   const sjc = await findSite(SJC);
-  const spreadsheetId = String(sjc?.sheetId || "").trim();
-  if (!spreadsheetId) return { ok: false, reason: "SJC has no sheetId — nothing to write to" };
+  const spreadsheetId =
+    (process.env.PAYMENTS_SHEET_ID || "").trim() || String(sjc?.sheetId || "").trim();
+  if (!spreadsheetId) {
+    return {
+      ok: false,
+      reason:
+        "PAYMENTS_SHEET_ID is not set — no spreadsheet to write payments to. " +
+        "Set it in Vercel to the id of SJC's own operations sheet.",
+    };
+  }
 
   const res = await writeSheetRow({
     spreadsheetId,
