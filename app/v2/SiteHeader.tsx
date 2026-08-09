@@ -14,6 +14,24 @@ import { BRAND, DIVISIONS, NAV_EXTRA } from "./content";
 // It carries its own mobile menu, where the divisions are named in full — a phone has room for
 // the descriptor that the desktop bar hides.
 
+// One panel, used by the divisions and by Podcast/Careers alike — so every nav item has a
+// descriptor slot in the markup, whether or not its wording is final.
+function Panel({ d, show }: { d: { name: string; line: string }; show: boolean }) {
+  return (
+    <span style={{
+      position: "absolute", top: "calc(100% + 14px)", left: "50%", transform: "translateX(-50%)",
+      minWidth: 250, maxWidth: 300, padding: "16px 20px", textAlign: "left",
+      background: "var(--surface)", border: "1px solid rgba(var(--line),.12)",
+      boxShadow: "0 24px 60px -20px rgba(0,0,0,.9)",
+      opacity: show ? 1 : 0, visibility: show ? "visible" : "hidden",
+      transition: "opacity .25s ease, visibility .25s", pointerEvents: "none",
+    }}>
+      <span style={{ display: "block", fontFamily: "Georgia, serif", fontSize: 19, color: "#fff", whiteSpace: "nowrap" }}>{d.name}</span>
+      <span style={{ display: "block", marginTop: 6, fontSize: 13, color: "rgba(255,255,255,.55)", fontWeight: 300, lineHeight: 1.6 }}>{d.line}</span>
+    </span>
+  );
+}
+
 export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState<string | null>(null);
@@ -53,34 +71,24 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
                 transition: "border-color .25s",
               }}>{d.short}</a>
 
-              {/* the descriptor panel — this is where the depth lives */}
-              <span style={{
-                position: "absolute", top: "calc(100% + 14px)", left: "50%", transform: "translateX(-50%)",
-                minWidth: 250, padding: "16px 20px", textAlign: "left",
-                background: "var(--surface)", border: "1px solid rgba(var(--line),.12)",
-                boxShadow: "0 24px 60px -20px rgba(0,0,0,.9)",
-                opacity: hover === d.href ? 1 : 0,
-                visibility: hover === d.href ? "visible" : "hidden",
-                transition: "opacity .25s ease, visibility .25s",
-                pointerEvents: "none",
-              }}>
-                <span style={{ display: "block", fontFamily: "Georgia, serif", fontSize: 19, color: "#fff", whiteSpace: "nowrap" }}>
-                  {d.name}
-                </span>
-                <span style={{ display: "block", marginTop: 6, fontSize: 13, color: "rgba(255,255,255,.55)", fontWeight: 300, lineHeight: 1.6 }}>
-                  {d.line}
-                </span>
-              </span>
+              <Panel d={d} show={hover === d.href} />
             </span>
           ))}
 
           <span style={{ width: 1, height: 16, background: "rgba(var(--line),.18)" }} />
 
-          {NAV_EXTRA.map((n) => (
-            <a key={n.href} href={n.href} style={{
-              color: "rgba(255,255,255,.62)", textDecoration: "none", fontSize: 11,
-              letterSpacing: ".22em", textTransform: "uppercase",
-            }}>{n.label}</a>
+          {NAV_EXTRA.map((d) => (
+            <span key={d.href} style={{ position: "relative" }}
+                  onMouseEnter={() => setHover(d.href)}
+                  onMouseLeave={() => setHover(null)}>
+              <a href={d.href} style={{
+                color: "rgba(255,255,255,.62)", textDecoration: "none", fontSize: 11,
+                letterSpacing: ".22em", textTransform: "uppercase", paddingBottom: 6,
+                borderBottom: hover === d.href ? "1px solid var(--accent)" : "1px solid transparent",
+                transition: "border-color .25s",
+              }}>{d.short}</a>
+              <Panel d={d} show={hover === d.href} />
+            </span>
           ))}
         </nav>
 
@@ -123,12 +131,13 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
           </a>
         ))}
 
-        <div style={{ display: "flex", gap: 26, marginTop: 30, paddingTop: 22, borderTop: "1px solid rgba(var(--line),.1)" }}>
+        <div style={{ marginTop: 26 }}>
           {NAV_EXTRA.map((n) => (
             <a key={n.href} href={n.href}
                onClick={() => { setOpen(false); document.body.style.overflow = ""; }}
-               style={{ color: "rgba(255,255,255,.7)", textDecoration: "none", fontSize: 12, letterSpacing: ".2em", textTransform: "uppercase" }}>
-              {n.label}
+               style={{ textDecoration: "none", display: "block", padding: "14px 0", borderTop: "1px solid rgba(var(--line),.1)" }}>
+              <span style={{ display: "block", fontFamily: "Georgia, serif", fontSize: 21, color: "rgba(255,255,255,.82)", fontWeight: 300 }}>{n.name}</span>
+              <span style={{ display: "block", marginTop: 4, fontSize: 13.5, color: "rgba(255,255,255,.45)", fontWeight: 300 }}>{n.line}</span>
             </a>
           ))}
         </div>

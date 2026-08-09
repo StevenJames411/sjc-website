@@ -36,15 +36,18 @@ export const DIVISIONS = [
   },
 ];
 
+// ⛔ THE SLOT EXISTS EVEN WHERE THE WORDS ARE PLACEHOLDER. A descriptor that isn't in the
+// markup can't be edited in the studio later — you can only change what is already there.
+// So Podcast and Careers carry the same panel as the divisions, with copy to be replaced.
 export const NAV_EXTRA = [
-  { label: "Podcast", href: "/podcast" },
-  { label: "Careers", href: "/careers" },
+  { short: "Podcast", name: "The Podcast", line: "Conversations with owners who build things — placeholder copy", href: "/podcast" },
+  { short: "Careers", name: "Careers", line: "Setters and web builders — remote, paid on what you produce", href: "/careers" },
 ];
 
 // kept so anything still importing NAV keeps working
 export const NAV = [
   ...DIVISIONS.map((d) => ({ label: d.short, href: d.href })),
-  ...NAV_EXTRA,
+  ...NAV_EXTRA.map((n) => ({ label: n.short, href: n.href })),
 ];
 
 export const BRAND = {
