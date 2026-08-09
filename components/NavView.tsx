@@ -7,7 +7,10 @@ import { resolveColor, resolveColorOr, tint } from "@/lib/brandColor";
 const LOGO_URL =
   "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png";
 
-export type NavLink = { label: string; target: string; fontSize?: number; color?: string; newTab?: boolean };
+// `note` is the one-line description shown under a link in MENU mode. A horizontal bar has no
+// room for it and a hover tooltip is invisible on a phone — the overlay is the first place this
+// site has ever had space to explain a link instead of just naming it.
+export type NavLink = { label: string; target: string; fontSize?: number; color?: string; newTab?: boolean; note?: string; group?: string };
 export type NavViewProps = {
   brandName?: string;
   brandHref?: string;
@@ -36,6 +39,24 @@ export type NavViewProps = {
   // a brand rather than as text.
   brandIcon?: string;
   brandIconColor?: string;
+  // ⛔ TWO NAV SHAPES, AND THE DEFAULT NEVER MOVES.
+  //
+  // "bar"  = links across the top, collapsing to a hamburger on narrow screens. The original.
+  // "menu" = a Menu button at EVERY width, opening a full-screen overlay.
+  //
+  // A bar has a hard ceiling: its breakpoint moved three times in one evening (1000 → 1200 →
+  // 1340) purely because labels got longer, and two more links were still queued. The overlay
+  // has no ceiling, shows each link WITH its description, and leaves the full canvas to the
+  // photography.
+  //
+  // ⚠️ Default stays "bar" deliberately. This component renders the LIVE site's header on every
+  // page; flipping the default would restyle a published site as a side effect of adding an
+  // option. Steven turns it on per nav, when he's looking at it.
+  menuMode?: string;
+  // Shown inside the overlay only — never in the bar. Nobody books before they know who you are,
+  // and a phone number in the bar is the first thing to break on a narrow screen.
+  menuPhone?: string;
+  menuPhoneDisplay?: string;
 };
 
 // "Open in a new tab" is set per link in the builder. rel="noopener noreferrer" rides along
@@ -67,6 +88,9 @@ export default function NavView({
   ctaColor,
   brandIcon,
   brandIconColor,
+  menuMode,
+  menuPhone,
+  menuPhoneDisplay,
 }: NavViewProps) {
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
@@ -109,6 +133,124 @@ export default function NavView({
       {tagline}
     </span>
   ) : null;
+
+  // ── MENU MODE ────────────────────────────────────────────────────────────────────────────────
+  // Returned whole rather than woven into the bar below with conditionals. The two shapes share
+  // only the brand mark; interleaving them would mean every future change to one has to be
+  // reasoned about against the other, which is how the bar's breakpoint kept moving.
+  if (String(menuMode) === "menu") {
+    // Links can carry a `group` ("The Divisions", "The Company") to split the overlay into
+    // columns. No group at all = one column, which is what a small site wants.
+    const groups: { title: string; items: NavLink[] }[] = [];
+    for (const l of linkEls) {
+      const title = l.group || "";
+      const found = groups.find((g) => g.title === title);
+      if (found) found.items.push(l);
+      else groups.push({ title, items: [l] });
+    }
+
+    return (
+      <header className="sticky top-0 z-30 w-full" style={{ backgroundColor: resolveColor(bg) }}>
+        <div
+          className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4"
+          style={{ color: resolveColor(fg) }}
+        >
+          {Brand}
+          <button
+            type="button"
+            aria-label="Open menu"
+            aria-expanded={open}
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-3 border px-4 py-2.5 text-[10.5px] uppercase tracking-[0.22em] transition hover:opacity-80"
+            style={{ color: resolveColor(fg), borderColor: "currentColor" }}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+            Menu
+          </button>
+        </div>
+
+        {/* The overlay. Opaque, not translucent — at 98.5% the page ghosted through and the menu
+            read as unfinished rather than as a place you had arrived at. */}
+        <div
+          className="fixed inset-0 z-40 overflow-y-auto transition-opacity duration-300"
+          style={{
+            backgroundColor: resolveColor(bg),
+            opacity: open ? 1 : 0,
+            visibility: open ? "visible" : "hidden",
+            color: resolveColor(fg),
+          }}
+        >
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+            {Brand}
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+              className="border px-3.5 py-1.5 text-2xl leading-none transition hover:opacity-80"
+              style={{ borderColor: "currentColor" }}
+            >
+              &times;
+            </button>
+          </div>
+
+          <div className="mx-auto grid max-w-5xl gap-10 px-6 pb-20 pt-4 md:grid-cols-2">
+            {groups.map((g, gi) => (
+              <div key={gi}>
+                {g.title ? (
+                  <div
+                    className="mb-4 text-[10px] uppercase tracking-[0.3em]"
+                    style={{ color: resolveColorOr(taglineColor, "var(--color-sjc-secondary)") }}
+                  >
+                    {g.title}
+                  </div>
+                ) : null}
+                {g.items.map((l, i) => (
+                  <a
+                    key={i}
+                    href={l.target || "#"}
+                    {...tabAttrs(l.newTab)}
+                    onClick={() => setOpen(false)}
+                    className="block border-t py-4 transition hover:opacity-80"
+                    style={{ borderColor: "currentColor", borderTopWidth: 1, opacity: 0.95 }}
+                  >
+                    <span className="block text-xl md:text-2xl" style={{ fontSize: l.fontSize ? `${l.fontSize}px` : undefined }}>
+                      {l.label}
+                    </span>
+                    {l.note ? <span className="mt-1.5 block text-sm opacity-60">{l.note}</span> : null}
+                  </a>
+                ))}
+              </div>
+            ))}
+
+            <div className="grid gap-3 md:col-span-2">
+              {ctaLabel ? (
+                <a
+                  href={ctaHref || "#"}
+                  {...tabAttrs(ctaNewTab)}
+                  onClick={() => setOpen(false)}
+                  className="block px-8 py-4 text-center text-[10.5px] font-semibold uppercase tracking-[0.22em] text-white"
+                  style={{ backgroundColor: resolveColorOr(ctaColor, "var(--color-sjc-blue)") }}
+                >
+                  {ctaLabel}
+                </a>
+              ) : null}
+              {menuPhone ? (
+                <a
+                  href={`tel:${menuPhone}`}
+                  className="flex items-center justify-center gap-2.5 border px-8 py-3.5 text-sm tracking-[0.14em]"
+                  style={{ borderColor: "currentColor", opacity: 0.85 }}
+                >
+                  {menuPhoneDisplay || menuPhone}
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     // OPAQUE. It was briefly translucent + blurred, copying the Designs site's bar — and that is a

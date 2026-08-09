@@ -16,6 +16,8 @@ import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
+import ChainStrip, { CHAINSTRIP_DEFAULTS } from "@/components/blocks/ChainStrip";
+import SelfCheck, { SELFCHECK_DEFAULTS } from "@/components/blocks/SelfCheck";
 import Stats, { STATS_DEFAULTS, type StatItem } from "@/components/blocks/Stats";
 import PriceBox, { PRICEBOX_DEFAULTS } from "@/components/blocks/PriceBox";
 import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
@@ -61,7 +63,10 @@ type Props = {
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
     spaceAbove: number; spaceBelow: number;
   };
-  CheckList: { dotColor: string; rows: { heading: string; body: string }[] };
+  CheckList: { dotColor: string; textColor: string; rows: { heading: string; body: string }[] };
+  ChainStrip: { color: string; onDark: boolean; nodes: { k: string; note: string; mine: boolean }[] };
+  SelfCheck: { color: string; onDark: boolean; summaryNone: string; summaryOne: string; summaryMany: string; summaryTail: string;
+    questions: { q: string; verdict: string; options: { label: string; bad: boolean }[] }[] };
   Stats: { items: StatItem[]; valueColor: string; valueSize: number; align: "left" | "center" };
   PriceBox: {
     topAmount: string;
@@ -109,7 +114,7 @@ type Props = {
     tagline: string;
     taglineColor: string;
     taglineSize: number;
-    links: { label: string; target: string; fontSize: number; color: string; newTab: boolean }[];
+    links: { label: string; target: string; fontSize: number; color: string; newTab: boolean; note: string; group: string }[];
     ctaLabel: string;
     ctaHref: string;
     ctaNewTab: boolean;
@@ -119,6 +124,9 @@ type Props = {
     ctaColor: string;
     brandIcon: string;
     brandIconColor: string;
+    menuMode: string;
+    menuPhone: string;
+    menuPhoneDisplay: string;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
   // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
@@ -131,6 +139,8 @@ type Props = {
 // the builder); Puck wants them all present. These aliases keep the defaults honestly typed.
 type CardBlock = Props["Card"];
 type CheckListBlock = Props["CheckList"];
+type ChainStripBlock = Props["ChainStrip"];
+type SelfCheckBlock = Props["SelfCheck"];
 type PriceBoxBlock = Props["PriceBox"];
 type LeadFormBlock = Props["LeadForm"];
 
@@ -217,7 +227,12 @@ export const NAV_DEFAULTS = {
   tagline: "Your Native AI Implementation Partner",
   taglineColor: "secondary",
   taglineSize: 18,
-  links: [] as { label: string; target: string; fontSize: number; color: string; newTab: boolean }[],
+  links: [] as { label: string; target: string; fontSize: number; color: string; newTab: boolean; note: string; group: string }[],
+  // ⚠️ "bar" — the shape every published nav already has. A new option must never restyle a
+  // live site as a side effect of existing.
+  menuMode: "bar",
+  menuPhone: "",
+  menuPhoneDisplay: "",
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
   ctaNewTab: false,
@@ -911,6 +926,116 @@ export const config: Config<Props, RootProps> = {
       ),
     },
 
+    // The customer's path across several steps, with the ones you own lit up. See ChainStrip.tsx
+    // for why the connector is drawn on the node rather than between them.
+    ChainStrip: {
+      label: "Chain (journey strip)",
+      fields: {
+        onDark: {
+          type: "radio" as const,
+          label: "Sitting on",
+          // ⚠️ The studio is LIGHT-first: a block's text defaults to ink, which vanishes on a dark
+          // band. Every block that can sit on either ground has to be told which one it landed on.
+          options: [
+            { label: "A dark band", value: true },
+            { label: "A light band", value: false },
+          ],
+        },
+        color: {
+          type: "select" as const,
+          label: "Accent",
+          options: [
+            { label: "Accent", value: "accent" },
+            { label: "Second accent", value: "secondary" },
+            { label: "Highlight", value: "highlight" },
+          ],
+        },
+        nodes: {
+          type: "array" as const,
+          label: "Steps",
+          arrayFields: {
+            k: { type: "text" as const, label: "Step" },
+            note: { type: "text" as const, label: "Small line under it" },
+            mine: {
+              type: "radio" as const,
+              label: "Do we own this one?",
+              options: [
+                { label: "Yes — lit up", value: true },
+                { label: "No — dimmed", value: false },
+              ],
+            },
+          },
+          getItemSummary: (i: { k?: string }) => i?.k || "step",
+          defaultItemProps: { k: "New step", note: "", mine: false },
+        },
+      },
+      defaultProps: CHAINSTRIP_DEFAULTS as ChainStripBlock,
+      render: ({ nodes, color, onDark }) => <ChainStrip nodes={nodes} color={color} onDark={onDark} />,
+    },
+
+    // Questions the visitor answers to reach the diagnosis himself. ⛔ Nothing is submitted or
+    // stored — see SelfCheck.tsx. "No email, no form" is a promise the block keeps.
+    SelfCheck: {
+      label: "Self-check (questions)",
+      fields: {
+        onDark: {
+          type: "radio" as const,
+          label: "Sitting on",
+          // ⚠️ The studio is LIGHT-first: a block's text defaults to ink, which vanishes on a dark
+          // band. Every block that can sit on either ground has to be told which one it landed on.
+          options: [
+            { label: "A dark band", value: true },
+            { label: "A light band", value: false },
+          ],
+        },
+        color: {
+          type: "select" as const,
+          label: "Accent",
+          options: [
+            { label: "Accent", value: "accent" },
+            { label: "Second accent", value: "secondary" },
+            { label: "Highlight", value: "highlight" },
+          ],
+        },
+        questions: {
+          type: "array" as const,
+          label: "Questions",
+          arrayFields: {
+            q: { type: "text" as const, label: "Question" },
+            verdict: { type: "textarea" as const, label: "What you say when they pick a bad answer" },
+            options: {
+              type: "array" as const,
+              label: "Answers",
+              arrayFields: {
+                label: { type: "text" as const, label: "Answer" },
+                bad: {
+                  type: "radio" as const,
+                  label: "Is this a problem?",
+                  options: [
+                    { label: "Yes — flag it", value: true },
+                    { label: "No — fine", value: false },
+                  ],
+                },
+              },
+              getItemSummary: (i: { label?: string }) => i?.label || "answer",
+              defaultItemProps: { label: "New answer", bad: false },
+            },
+          },
+          getItemSummary: (i: { q?: string }) => i?.q || "question",
+          defaultItemProps: { q: "New question", verdict: "", options: [{ label: "Yes", bad: false }, { label: "No", bad: true }] },
+        },
+        summaryNone: { type: "textarea" as const, label: "Summary — nothing flagged" },
+        summaryOne: { type: "textarea" as const, label: "Summary — one flagged" },
+        summaryMany: { type: "textarea" as const, label: "Summary — several flagged ({n} = how many)" },
+        summaryTail: { type: "textarea" as const, label: "Line under the summary" },
+      },
+      defaultProps: SELFCHECK_DEFAULTS as SelfCheckBlock,
+      render: ({ questions, color, onDark, summaryNone, summaryOne, summaryMany, summaryTail }) => (
+        <SelfCheck questions={questions} color={color} onDark={onDark} summaryNone={summaryNone}
+          summaryOne={summaryOne} summaryMany={summaryMany} summaryTail={summaryTail} />
+      ),
+    },
+
     CheckList: {
       label: "Checklist (dot + line)",
       fields: {
@@ -925,6 +1050,7 @@ export const config: Config<Props, RootProps> = {
             { label: "Ink", value: "ink" },
           ],
         },
+        textColor: { ...COLOR_FIELD, label: "Text color" },
         rows: {
           type: "array" as const,
           label: "Items",
@@ -937,7 +1063,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: CHECKLIST_DEFAULTS as CheckListBlock,
-      render: ({ dotColor, rows }) => <CheckList dotColor={dotColor} rows={rows} />,
+      render: ({ dotColor, textColor, rows }) => <CheckList dotColor={dotColor} textColor={textColor} rows={rows} />,
     },
 
     // The proof-numbers row every bought design has. Rebuilding one by hand meant a Columns block
@@ -1409,6 +1535,17 @@ export const config: Config<Props, RootProps> = {
     SiteHeader: {
       label: "Site header / nav",
       fields: {
+        // ⛔ THE SHAPE DECISION, AND IT COMES FIRST. A link bar has a hard ceiling — its
+        // breakpoint moved three times in one evening purely because labels got longer. The menu
+        // button has none, and it is the only shape with room to show what a link MEANS.
+        menuMode: {
+          type: "radio" as const,
+          label: "Navigation style",
+          options: [
+            { label: "Links across the top", value: "bar" },
+            { label: "Menu button (every width)", value: "menu" },
+          ],
+        },
         brandName: { type: "text" as const, label: "Business name" },
         brandHref: {
           type: "text" as const,
@@ -1445,13 +1582,20 @@ export const config: Config<Props, RootProps> = {
             },
             color: { ...NAV_COLOR_FIELD, label: "Color" },
             newTab: { ...OPENS_IN_FIELD },
+            // Menu style only — a bar has nowhere to put either of these.
+            note: { type: "text" as const, label: "One line under it (menu style only)" },
+            group: { type: "text" as const, label: "Column heading it sits under (menu style only)" },
           },
           getItemSummary: (i: { label?: string }) => i?.label || "link",
-          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "white", newTab: false },
+          defaultItemProps: { label: "New link", target: "/", fontSize: 14, color: "white", newTab: false, note: "", group: "" },
         },
         ctaLabel: { type: "text" as const, label: "Button label (leave blank to hide)" },
         ctaHref: { type: "text" as const, label: "Button links to" },
         ctaNewTab: { ...OPENS_IN_FIELD },
+        // ⛔ INSIDE THE MENU, NEVER IN THE BAR. Nobody phones before they know who you are, and a
+        // number in the bar is the first thing to break on a narrow screen.
+        menuPhone: { type: "text" as const, label: "Phone in the menu (blank = hide)" },
+        menuPhoneDisplay: { type: "text" as const, label: "Phone, as written" },
         // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
         // Blank = SJC's own look. Set these on a client build so their header isn't wearing
         // our navy. Existing nav documents have none of them saved, so they render unchanged.
@@ -1494,8 +1638,11 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay }) => (
         <NavView
+          menuMode={menuMode}
+          menuPhone={menuPhone}
+          menuPhoneDisplay={menuPhoneDisplay}
           brandName={brandName}
           brandHref={brandHref}
           brandSize={brandSize}
