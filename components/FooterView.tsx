@@ -91,7 +91,9 @@ export default function FooterView({
   // The "More" column only appears when it has something in it. Without this, adding groups left
   // an empty titled column sitting between them — a heading with nothing under it, which reads as
   // a bug rather than as a design.
-  const showMore = linkEls.length > 0 || !!email || !!phoneDisplay;
+  // ⚠️ LINKS ONLY NOW. This used to be true when there was merely an email or a phone, which after
+  // moving both onto the contact buttons would render an empty column headed "More".
+  const showMore = linkEls.length > 0;
   const btn =
     "inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)]";
 
@@ -106,20 +108,62 @@ export default function FooterView({
   // CSS order only sorts siblings. Hence one const rendered at two positions with exactly one
   // visible at a time — the alternative is restructuring the grid, which would fight the
   // auto-fit track count.
+  // ⛔ THE NUMBER AND THE ADDRESS LIVE ON THE BUTTON, AND THAT IS THE WHOLE POINT.
+  // Steven: "I want it to say click to call us with the phone number visually there. So if they
+  // have to punch buttons in for some reason, they can, but most devices they will just click."
+  //
+  // A tel: link is useless to someone on a desktop with no dialer, and a bare "Call Us" gives them
+  // nothing to write down. Printing the value under the verb serves both: tap on a phone, read and
+  // key it in anywhere else. It also replaces the spelled-out email and phone that used to sit in
+  // the More column as plain text — one place for contact, not two.
+  //
+  // Each renders only when its value exists, so a client without an email address gets two buttons
+  // rather than a dead third one.
+  const contactBtn = (href: string, icon: React.ReactNode, verb: string, value: string) => (
+    <a href={href} className={btn}>
+      {icon}
+      <span className="min-w-0">
+        <span className="block">{verb}</span>
+        {/* break-all: an email address has no spaces, and inside a narrow button it would
+            otherwise push the button wider than its column. */}
+        <span className="block break-all text-xs font-normal opacity-90">{value}</span>
+      </span>
+    </a>
+  );
+
   const contactButtons = (
     <>
-      <a href={telLink(phone)} className={btn}>
-        <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-          <path fillRule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clipRule="evenodd" />
-        </svg>
-        Call Us
-      </a>
-      <a href={`sms:${phone}`} className={btn}>
-        <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-          <path fillRule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.521c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97z" clipRule="evenodd" />
-        </svg>
-        Text Us
-      </a>
+      {phone
+        ? contactBtn(
+            telLink(phone),
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
+              <path fillRule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clipRule="evenodd" />
+            </svg>,
+            "Click to Call Us",
+            phoneDisplay || phone
+          )
+        : null}
+      {phone
+        ? contactBtn(
+            `sms:${phone}`,
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
+              <path fillRule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.521c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97z" clipRule="evenodd" />
+            </svg>,
+            "Click to Text Us",
+            phoneDisplay || phone
+          )
+        : null}
+      {email
+        ? contactBtn(
+            `mailto:${email}`,
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
+              <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
+              <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
+            </svg>,
+            "Click to Email Us",
+            email
+          )
+        : null}
     </>
   );
   // WHY A FLAT FILL READS AS CHEAP, AND WHAT THE BOUGHT DESIGNS DO INSTEAD.
@@ -221,8 +265,11 @@ export default function FooterView({
               </div>
             )}
             {blurb ? <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">{blurb}</p> : null}
-            {/* Desktop only — the mobile copy is the last grid child, below every link column. */}
-            <div className="mt-6 hidden flex-col gap-3 sm:flex-row md:flex">{contactButtons}</div>
+            {/* Desktop only — the mobile copy is the last grid child, below every link column.
+                ⚠️ Stacked, not side by side: each button now carries a phone number or an email
+                address under its verb, and three of those in a row inside a ~220px column would
+                shrink each one to an unreadable sliver. */}
+            <div className="mt-6 hidden flex-col gap-3 md:flex">{contactButtons}</div>
           </div>
 
           {groupEls.map((g, gi) => (
@@ -247,25 +294,12 @@ export default function FooterView({
                   <a href={l.target || "#"} className="text-white/80 hover:text-white">{l.label}</a>
                 </li>
               ))}
-              {email ? (
-                <li>
-                  {/* break-words: an address has no spaces, so without it the string itself
-                      becomes the column's minimum width and pushes the layout wide. The grid
-                      floors above are the primary fix; this stops the text re-creating the
-                      problem from the inside. */}
-                  <a
-                    href={`mailto:${email}`}
-                    className="break-words text-white/80 hover:text-white"
-                  >
-                    {email}
-                  </a>
-                </li>
-              ) : null}
-              {phoneDisplay ? (
-                <li>
-                  <a href={telLink(phone)} className="text-white/80 hover:text-white">{phoneDisplay}</a>
-                </li>
-              ) : null}
+              {/* ⛔ THE EMAIL AND PHONE USED TO BE PRINTED HERE AS PLAIN LINES, AND THEY ARE GONE.
+                  They now live on the three contact buttons, where the value sits under the verb —
+                  so a visitor taps on a phone or reads and keys it in anywhere else. Listing them
+                  in both places meant the same two facts in two spots, drifting apart the first
+                  time one was edited, and it is what pushed the address off the right edge on a
+                  phone in the first place. */}
             </ul>
           </div>
           )}
