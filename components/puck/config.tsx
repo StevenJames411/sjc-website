@@ -127,6 +127,7 @@ type Props = {
     menuMode: string;
     menuPhone: string;
     menuPhoneDisplay: string;
+    menuEmail: string;
     brandStyle: string;
     brandLine2: string;
     brandLine2Color: string;
@@ -237,6 +238,7 @@ export const NAV_DEFAULTS = {
   menuMode: "bar",
   menuPhone: "",
   menuPhoneDisplay: "",
+  menuEmail: "",
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
   ctaNewTab: false,
@@ -1655,6 +1657,8 @@ export const config: Config<Props, RootProps> = {
         // number in the bar is the first thing to break on a narrow screen.
         menuPhone: { type: "text" as const, label: "Phone in the menu (blank = hide)" },
         menuPhoneDisplay: { type: "text" as const, label: "Phone, as written" },
+        // Feeds the menu's "Click to Email" button — the same component the footer uses.
+        menuEmail: { type: "text" as const, label: "Email in the menu (blank = hide)" },
         // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
         // Blank = SJC's own look. Set these on a client build so their header isn't wearing
         // our navy. Existing nav documents have none of them saved, so they render unchanged.
@@ -1706,7 +1710,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
         <NavView
           brandStyle={brandStyle}
           brandLine2={brandLine2}
@@ -1715,6 +1719,7 @@ export const config: Config<Props, RootProps> = {
           menuMode={menuMode}
           menuPhone={menuPhone}
           menuPhoneDisplay={menuPhoneDisplay}
+          menuEmail={menuEmail}
           brandName={brandName}
           brandHref={brandHref}
           brandSize={brandSize}

@@ -209,12 +209,20 @@ NAV_LINKS = (
 # `bandGrid` = the hero's grid colour on purpose. Header and hero then share one continuous navy
 # field; without it the bar reads as a separate rectangle laid on top of the page.
 header = blk("SiteHeader",
+    # menuEmail feeds the menu's third contact button — the overlay renders the SAME
+    # components/ContactButtons the footer does, so the two can no longer disagree.
     menuMode="menu", menuPhone=C["CONTACT"]["tel"], menuPhoneDisplay=C["CONTACT"]["phone"],
+    menuEmail="support@stevenjamesconsulting.com",
     brandName="Steven James", brandHref="/", brandSize=26,
     brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
     tagline="", taglineColor="accent", taglineSize=14,
     links=NAV_LINKS,
-    ctaLabel="Book a walkthrough", ctaHref=C["CONTACT"]["book"], ctaNewTab=False,
+    # ⛔ READ, NOT RETYPED — the rule at the top of this file, broken right here.
+    # This label was typed as "Book a walkthrough" while content.ts said something else, so the
+    # site-wide copy pass changed every CTA on the page and silently missed the one in the MENU.
+    # Steven caught it by eye. Sourced from ASK.cta now, which is the page's primary call to
+    # action, so the menu button and the page button can never say different things again.
+    ctaLabel=C["ASK"]["cta"]["label"], ctaHref=C["CONTACT"]["book"], ctaNewTab=False,
     # ⛔ bandDARK, NOT bandHeader — the hero's own ground. bandHeader is a lighter slate, and at
     # that tone the bar still read as a separate rectangle sitting on the hero even WITH the grid
     # running across the seam. A continuous grid cannot join two different colours; matching the

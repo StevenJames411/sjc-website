@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Icon from "@/components/blocks/Icon";
+// Shared with FooterView — one definition of the three contact buttons, so the menu and the
+// footer cannot drift apart again.
+import ContactButtons from "@/components/ContactButtons";
 import { resolveColor, resolveColorOr, tint } from "@/lib/brandColor";
 
 const LOGO_URL =
@@ -57,6 +60,14 @@ export type NavViewProps = {
   // and a phone number in the bar is the first thing to break on a narrow screen.
   menuPhone?: string;
   menuPhoneDisplay?: string;
+  /**
+   * The email on the menu's Click to Email button.
+   *
+   * ⛔ The overlay used to offer a phone number and nothing else — no text, no email — while the
+   * footer offered all three. Same actions, two implementations, and they drifted until Steven
+   * asked why they didn't match. Both surfaces now render components/ContactButtons.
+   */
+  menuEmail?: string;
   // ── THE BRAND MARK'S SHAPE ───────────────────────────────────────────────────────────────────
   // "" (default) = logo image or icon, then the name in the body sans. Every existing nav.
   // "wordmark"   = no image at all — the name set in the display serif as small-caps, with a
@@ -108,6 +119,7 @@ export default function NavView({
   menuMode,
   menuPhone,
   menuPhoneDisplay,
+  menuEmail,
   brandStyle,
   brandLine2,
   brandLine2Color,
@@ -313,14 +325,24 @@ export default function NavView({
                   {ctaLabel}
                 </a>
               ) : null}
-              {menuPhone ? (
-                <a
-                  href={`tel:${menuPhone}`}
-                  className="flex items-center justify-center gap-2.5 border px-8 py-3.5 text-sm tracking-[0.14em]"
-                  style={{ borderColor: "currentColor", opacity: 0.85 }}
-                >
-                  {menuPhoneDisplay || menuPhone}
-                </a>
+              {/* ⛔ THE SAME THREE BUTTONS THE FOOTER RENDERS — literally the same component.
+                  This was a single outline bar showing a bare phone number: no text option, no
+                  email, no icons, nothing like the footer's three pills. Two pieces of markup for
+                  the same three actions, which is how they drifted until Steven asked why the menu
+                  and the footer didn't match. Now neither can move without the other.
+
+                  ⚠️ The primary CTA above deliberately does NOT become a pill. It is the one thing
+                  the page is asking for; making it look like the three utility buttons beside it
+                  would flatten the difference between "book the call" and "here's how to reach
+                  us." Different job, different weight. */}
+              {menuPhone || menuEmail ? (
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <ContactButtons
+                    phone={menuPhone}
+                    phoneDisplay={menuPhoneDisplay}
+                    email={menuEmail}
+                  />
+                </div>
               ) : null}
             </div>
           </div>

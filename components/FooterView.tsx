@@ -1,5 +1,9 @@
 import { resolveColor, resolveColorOr } from "@/lib/brandColor";
 import { telLink } from "@/lib/businessTokens";
+// ⛔ SHARED WITH THE MENU OVERLAY (NavView). These three buttons used to be defined here only,
+// while the menu had its own pair of full-width bars for the same actions — which is how the two
+// drifted far enough apart for Steven to ask why they didn't match. One definition now.
+import ContactButtons from "@/components/ContactButtons";
 const LOGO_URL =
   "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png";
 
@@ -99,92 +103,7 @@ export default function FooterView({
   // ⚠️ LINKS ONLY NOW. This used to be true when there was merely an email or a phone, which after
   // moving both onto the contact buttons would render an empty column headed "More".
   const showMore = linkEls.length > 0;
-  const btn =
-    "inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)]";
 
-  // ⛔ ONE DEFINITION, TWO PLACES. Steven: "let's just move all the contact — call button, email —
-  // to the bottom of the page in the footer whenever it collapses to mobile."
-  //
-  // On desktop these sit under the blurb in the brand column, where they read as part of the
-  // identity block. Stacked on a phone that puts two big blue buttons between the visitor and
-  // every link in the footer — you scroll past a call-to-action to reach the sitemap.
-  //
-  // The buttons live INSIDE the brand column, so `order` utilities cannot lift them out of it;
-  // CSS order only sorts siblings. Hence one const rendered at two positions with exactly one
-  // visible at a time — the alternative is restructuring the grid, which would fight the
-  // auto-fit track count.
-  // ⛔ THE NUMBER AND THE ADDRESS LIVE ON THE BUTTON, AND THAT IS THE WHOLE POINT.
-  // Steven: "I want it to say click to call us with the phone number visually there. So if they
-  // have to punch buttons in for some reason, they can, but most devices they will just click."
-  //
-  // A tel: link is useless to someone on a desktop with no dialer, and a bare "Call Us" gives them
-  // nothing to write down. Printing the value under the verb serves both: tap on a phone, read and
-  // key it in anywhere else. It also replaces the spelled-out email and phone that used to sit in
-  // the More column as plain text — one place for contact, not two.
-  //
-  // Each renders only when its value exists, so a client without an email address gets two buttons
-  // rather than a dead third one.
-  const contactBtn = (href: string, icon: React.ReactNode, verb: string, value: string) => (
-    // ⚠️ w-full, was w-fit. In its own column the button fills that column at every width, which
-    // is what removes the ragged right edge on a phone. w-fit made sense when these sat centred
-    // under a wide brand block; it stops making sense the moment they have a column to fill.
-    <a href={href} className={`${btn} group relative w-full`} title={value}>
-      {icon}
-      {verb}
-      {/* ⛔ THE VALUE FLOATS ABOVE THE BUTTON — IT IS NOT INSIDE IT.
-          It lived in the button first, sharing a 1x1 grid cell with the label so the width would
-          not change on hover. That worked, and the cost was visible: the cell sized to the WIDER
-          of the two, so "Click to Email" inherited the width of support@stevenjamesconsulting.com
-          and the three buttons came out ragged.
-
-          Out of flow instead — absolute, pointer-events-none — so each button sizes to its own
-          label and all three end up near-identical, while the value can be as long as it likes
-          without touching the layout or shifting the buttons below it. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-normal text-white opacity-0 shadow-lg ring-1 ring-white/15 transition-opacity duration-150 group-hover:opacity-100"
-        style={{ backgroundColor: "rgba(2, 6, 23, 0.95)" }}
-      >
-        {value}
-      </span>
-    </a>
-  );
-
-  const contactButtons = (
-    <>
-      {phone
-        ? contactBtn(
-            telLink(phone),
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
-              <path fillRule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clipRule="evenodd" />
-            </svg>,
-            "Click to Call",
-            phoneDisplay || phone
-          )
-        : null}
-      {phone
-        ? contactBtn(
-            `sms:${phone}`,
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
-              <path fillRule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.521c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97z" clipRule="evenodd" />
-            </svg>,
-            "Click to Text",
-            phoneDisplay || phone
-          )
-        : null}
-      {email
-        ? contactBtn(
-            `mailto:${email}`,
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
-              <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
-              <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
-            </svg>,
-            "Click to Email",
-            email
-          )
-        : null}
-    </>
-  );
   // WHY A FLAT FILL READS AS CHEAP, AND WHAT THE BOUGHT DESIGNS DO INSTEAD.
   //
   // Steven put it exactly right on 2026-08-05: the SiteDrop footer "looks richer, deeper blue,"
@@ -359,7 +278,9 @@ export default function FooterView({
               edge instead of a jagged one. */}
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-white/90">Contact</p>
-            <div className="mt-4 flex flex-col items-stretch gap-3">{contactButtons}</div>
+            <div className="mt-4 flex flex-col items-stretch gap-3">
+              <ContactButtons phone={phone} phoneDisplay={phoneDisplay} email={email} />
+            </div>
           </div>
         </div>
 
