@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Buckets from "./Buckets";
-import WorkReel from "./WorkReel";
+import ChainHero from "./ChainHero";   // WorkReel is kept for /designs, where showing the work IS the job
 import SiteHeader from "./SiteHeader";
 import SiteFooter from "./SiteFooter";
 import PaletteSwitcher from "./PaletteSwitcher";   // DEMO-ONLY — remove before public
@@ -32,7 +32,7 @@ export default function V2() {
 
       <div style={{ position: "relative" }}>
         <SiteHeader />
-        <WorkReel />
+        <ChainHero />
       </div>
 
       {/* ---------- his story, not ours ---------- */}

@@ -22,13 +22,29 @@ export const BRAND = {
 };
 
 export const HERO = {
-  badge: "For contractors, builders and specialty shops",
-  h1: ["Your work is better", "than your website."],
+  badge: "Forty years · Five businesses · One operator",
+  h1: ["I run the digital side", "of your business."],
   body: [
-    "I build the website, the reviews and the follow-up for high-end trades — so the jobs you want stop going to someone with a nicer page and half your skill.",
-    "Forty years running my own businesses. You deal with me, not an account manager.",
+    "Website, reputation, follow-up, advertising — built as one system instead of four purchases that don’t know about each other.",
+    "I’ve run five companies of my own and been the one building the technology in every one. You deal with me, not an account manager.",
   ],
-  cta: { label: "See where yours stands", href: "#diagnosis" },
+  cta: { label: "Start with a walkthrough", href: "#diagnosis" },
+
+  // ⛔ THE VISUAL IS THE CHAIN, NOT A SCREENSHOT. A single browser frame says "one product",
+  // which is `/designs`' job. The parent brand's one job is to establish who he is and how far
+  // the work reaches — so the hero shows the whole sequence, with the four links he builds lit
+  // and the two he doesn't dimmed. Nobody else shows this; it's the intellectual property.
+  chain: [
+    { k: "Maps",      note: "where they start",  mine: false },
+    { k: "Reviews",   note: "the entry fee",     mine: true },
+    { k: "Website",   note: "it confirms",       mine: true },
+    { k: "Social",    note: "rented ground",     mine: false },
+    { k: "Follow-up", note: "where it leaks",    mine: true },
+    { k: "Ads",       note: "only amplify",      mine: true },
+  ],
+  chainNote: "The lit ones are what I build. The other two are yours — I just make sure they point somewhere worth arriving at.",
+
+  // kept for /designs, where showing the work IS the one job
   work: [
     { img: "/work/landscape.jpg", label: "Landscape Architecture", domain: "mwsla.com", note: "Sixteen years of awards, invisible to search" },
     { img: "/work/detail.jpg", label: "Ceramic Coating", domain: "meridiandetail.com", note: "A $1,500 service that looked like a $150 one" },
