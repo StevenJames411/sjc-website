@@ -72,7 +72,7 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
               }}>
                 {/* the numeral is the point — the nav teaches the hierarchy before anyone
                     reads a word of the page */}
-                <span style={{ opacity: .5, marginRight: 6, fontSize: 9.5 }}>{d.n}</span>{d.short}
+                <span style={{ opacity: .65, marginRight: 7, fontSize: 15, fontFamily: "Georgia, serif", letterSpacing: 0 }}>{d.n}</span>{d.short}
               </a>
 
               <Panel d={d} show={hover === d.href} />

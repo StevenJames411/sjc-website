@@ -16,10 +16,10 @@
 // obvious one. "Chloe" is real and worth keeping; an AI employee with a name is memorable in
 // a way that "AI Implementation" never will be.
 export const DIVISIONS = [
-  { n: "01", short: "Websites", name: "Steven James Designs", line: "Everything else points at it, so it goes first", href: "/designs" },
-  { n: "02", short: "Reviews",  name: "Five Star",            line: "The entry fee — placeholder name",           href: "/reviews" },
-  { n: "03", short: "Chloe",    name: "Chloe",                line: "The AI employee that answers at 6pm",        href: "/ai-implementation" },
-  { n: "04", short: "Ads",      name: "Paid Ads",             line: "Only once the first three hold",             href: "/ads" },
+  { n: "1", short: "Websites", name: "Steven James Designs", line: "Everything else points at it, so it goes first", href: "/designs" },
+  { n: "2", short: "Reviews",  name: "Five Star",            line: "The entry fee — placeholder name",           href: "/reviews" },
+  { n: "3", short: "Chloe",    name: "Chloe",                line: "The AI employee that answers at 6pm",        href: "/ai-implementation" },
+  { n: "4", short: "Ads",      name: "Paid Ads",             line: "Only once the first three hold",             href: "/ads" },
 ];
 
 export const NAV_EXTRA = [
@@ -219,10 +219,10 @@ export const FOOTER = {
     // ⛔ THE FOOTER MUST AGREE WITH THE HEADER — same four divisions, same order, same words.
     // The order IS the argument, so it cannot differ between two places on one page.
     { title: "The Divisions", links: [
-      { label: "01 · Steven James Designs", href: "/designs", line: "Everything else points at it, so it goes first" },
-      { label: "02 · Five Star", href: "/reviews", line: "The entry fee" },
-      { label: "03 · Chloe", href: "/ai-implementation", line: "The AI employee that answers at 6pm" },
-      { label: "04 · Paid Ads", href: "/ads", line: "Only once the first three hold" },
+      { label: "1 · Steven James Designs", href: "/designs", line: "Everything else points at it, so it goes first" },
+      { label: "2 · Five Star", href: "/reviews", line: "The entry fee" },
+      { label: "3 · Chloe", href: "/ai-implementation", line: "The AI employee that answers at 6pm" },
+      { label: "4 · Paid Ads", href: "/ads", line: "Only once the first three hold" },
     ]},
     { title: "The Company", links: [
       { label: "The Work", href: "#work" },
