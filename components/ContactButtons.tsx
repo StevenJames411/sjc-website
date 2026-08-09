@@ -53,8 +53,14 @@ const ICON = {
   ),
 };
 
-const PILL =
-  "group relative inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-[color:var(--color-sjc-green)]";
+// ⛔ SHAPE AND COLOUR ARE SEPARATE ON PURPOSE.
+// The menu's primary "Book a Call" has to be the SAME shape as these three — Steven: "the new
+// book a call CTA button isn't shaped the same as the other CTA buttons" — while keeping its own
+// fill. Exporting only a fully-coloured class would have forced NavView to re-type the geometry,
+// which is precisely how the two drifted apart the first time.
+const PILL_BASE =
+  "group relative inline-flex w-full items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-white shadow transition";
+const PILL = `${PILL_BASE} bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]`;
 
 export default function ContactButtons({
   phone = "",
@@ -85,6 +91,5 @@ export default function ContactButtons({
   );
 }
 
-// Kept exported so a caller can match the pill's shape on a neighbouring control without
-// re-deriving the class string (the menu's primary CTA deliberately does NOT use it — see NavView).
-export { PILL as CONTACT_PILL };
+// The menu's primary CTA imports PILL_BASE so it is the same object, not a copy that looks like it.
+export { PILL as CONTACT_PILL, PILL_BASE as CONTACT_PILL_BASE };

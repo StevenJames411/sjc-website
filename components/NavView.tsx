@@ -4,7 +4,7 @@ import { useState } from "react";
 import Icon from "@/components/blocks/Icon";
 // Shared with FooterView — one definition of the three contact buttons, so the menu and the
 // footer cannot drift apart again.
-import ContactButtons from "@/components/ContactButtons";
+import ContactButtons, { CONTACT_PILL_BASE } from "@/components/ContactButtons";
 import { resolveColor, resolveColorOr, tint } from "@/lib/brandColor";
 
 const LOGO_URL =
@@ -313,15 +313,33 @@ export default function NavView({
               </div>
             ))}
 
-            <div className="grid gap-3 md:col-span-2">
+            {/* ⛔ ONE ROW OF FOUR MATCHING PILLS. Steven: "the new book a call CTA button isn't
+                shaped the same as the other CTA buttons. It doesn't have the hover like the other
+                CTA buttons. And I'm not crazy about how it fits on the page."
+
+                All three were the same mistake: the CTA was a square-cornered, edge-to-edge,
+                uppercase letterspaced BAR sitting above three rounded sentence-case pills. Two
+                visual languages in one block, and at full width it put a slab of blue across the
+                whole overlay with three more blocks under it.
+
+                Now it uses CONTACT_PILL_BASE — the same geometry object the contact buttons use,
+                not a copy of it — with its own fill, and sits as the FIRST of four across.
+                Priority comes from position and the calendar icon rather than from being a
+                different shape. Collapses to a stack on a phone with the rest. */}
+            <div className="grid gap-3 sm:grid-cols-4 md:col-span-2">
               {ctaLabel ? (
                 <a
                   href={ctaHref || "#"}
                   {...tabAttrs(ctaNewTab)}
                   onClick={() => setOpen(false)}
-                  className="block px-8 py-4 text-center text-[10.5px] font-semibold uppercase tracking-[0.22em] text-white"
+                  className={`${CONTACT_PILL_BASE} hover:opacity-90`}
                   style={{ backgroundColor: resolveColorOr(ctaColor, "var(--color-sjc-blue)") }}
                 >
+                  {/* Calendar — says "appointment" before the label is read, and gives the button
+                      the icon+text rhythm the other three have. */}
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
+                    <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clipRule="evenodd" />
+                  </svg>
                   {ctaLabel}
                 </a>
               ) : null}
@@ -335,15 +353,13 @@ export default function NavView({
                   the page is asking for; making it look like the three utility buttons beside it
                   would flatten the difference between "book the call" and "here's how to reach
                   us." Different job, different weight. */}
-              {menuPhone || menuEmail ? (
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <ContactButtons
-                    phone={menuPhone}
-                    phoneDisplay={menuPhoneDisplay}
-                    email={menuEmail}
-                  />
-                </div>
-              ) : null}
+              {/* Direct grid children, NOT wrapped in their own row — that is what puts all four
+                  buttons on one line instead of one bar above a row of three. */}
+              <ContactButtons
+                phone={menuPhone}
+                phoneDisplay={menuPhoneDisplay}
+                email={menuEmail}
+              />
             </div>
           </div>
         </div>
