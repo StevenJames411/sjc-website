@@ -14,7 +14,7 @@ export function Section({
         ? "clamp(46px,6vw,84px) clamp(20px,5vw,60px)"
         : "clamp(64px,9vw,130px) clamp(20px,5vw,60px)",
       background: "var(--ink)",
-      scrollMarginTop: 20,
+      scrollMarginTop: 90,   // clears the fixed header
     }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>{children}</div>
     </section>

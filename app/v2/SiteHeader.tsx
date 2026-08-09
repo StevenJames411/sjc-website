@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BRAND, CONTACT, DIVISIONS, NAV_EXTRA } from "./content";
 
 // GLOBAL HEADER — a component, never part of a page.
@@ -18,7 +18,23 @@ import { BRAND, CONTACT, DIVISIONS, NAV_EXTRA } from "./content";
 
 export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [stuck, setStuck] = useState(false);
   const close = () => { setOpen(false); document.body.style.overflow = ""; };
+
+  // The header travels with the page. Transparent over the hero is right; transparent over a
+  // long scroll lets headlines run straight through it — so it takes a solid bar once the hero
+  // is behind you. Browsers restore scroll AFTER this runs, so re-check once settled or a page
+  // reopened part-way down renders with a see-through header over body copy.
+  useEffect(() => {
+    let ticking = false;
+    const apply = () => { ticking = false; setStuck(window.scrollY > window.innerHeight - 120); };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(apply); } };
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", onScroll, { passive: true });
+    const t = setTimeout(apply, 60);
+    apply();
+    return () => { removeEventListener("scroll", onScroll); removeEventListener("resize", onScroll); clearTimeout(t); };
+  }, []);
 
   const Wordmark = ({ small = false }: { small?: boolean }) => (
     <a href={BRAND.href} style={{ textDecoration: "none", color: "var(--accent-soft)", fontFamily: "Georgia, serif", lineHeight: 1.05 }}>
@@ -58,12 +74,18 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
   return (
     <>
       <header style={{
-        position: overlay ? "absolute" : "relative",
+        position: overlay ? "fixed" : "relative",
         top: 0, left: 0, right: 0, zIndex: 40,
         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
-        padding: "clamp(18px,3vw,38px) clamp(20px,4vw,60px)",
+        padding: stuck
+          ? "13px clamp(20px,4vw,60px)"
+          : "clamp(18px,3vw,38px) clamp(20px,4vw,60px)",
+        background: stuck ? "rgba(var(--inkrgb),.93)" : "transparent",
+        backdropFilter: stuck ? "blur(16px)" : "none",
+        borderBottom: stuck ? "1px solid rgba(var(--line),.09)" : "1px solid transparent",
+        transition: "padding .3s ease, background .3s ease, border-color .3s ease",
       }}>
-        <Wordmark />
+        <Wordmark small={stuck} />
 
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(12px,2vw,22px)" }}>
           <button
