@@ -39,11 +39,31 @@ export type ContactButtonsProps = {
    * were drawn to text-button proportions inherited from the footer. His own Alamo Slim blocks run
    * 64–80px icons for exactly this reason.
    *
-   * "md" — the FOOTER. It sits in a ~250px column beside three others; a large icon there would
-   *        force the column wider and break the four-column grid.
-   * "lg" — the MENU. Full canvas, so the icon can be read as an icon rather than a hint.
+   * "md"   — the FOOTER. It sits in a ~250px column beside three others; a large icon there would
+   *          force the column wider and break the four-column grid.
+   * "tile" — the MENU. ⛔ NOT A TALLER BUTTON. Steven, pointing at his Alamo Slim blocks: "those
+   *          are actually clickable photos instead of CTA buttons." He is right, and it is why
+   *          two rounds of making the button bigger still read wrong — a tile is a different
+   *          OBJECT, not a scaled pill: big icon centred on top, label stacked beneath it, the
+   *          whole block clickable.
+   *          It also retires the hover chip. A tile has room to simply PRINT the number, so the
+   *          value is visible to everyone instead of only to someone with a mouse.
    */
-  size?: "md" | "lg";
+  size?: "md" | "tile";
+  /**
+   * REAL ARTWORK INSTEAD OF THE DRAWN GLYPHS — one URL per action, blank = use the glyph.
+   *
+   * ⛔ THESE ARE ONLY WORTH USING AT TILE SIZE. Steven already owns the glossy calendar and phone
+   * icons (hosted on his Landing Site AI account, used on alamoslimclinic.com). At the ~16px a
+   * compact pill gives an icon they turn to mush — which is the whole reason the drawn glyphs
+   * exist. At the 56px a tile gives them, they are exactly what they were designed for.
+   *
+   * Rendered as <img>, so a PNG with a baked-in background will show that background. If one
+   * looks wrong on the blue fill, it needs a transparent export, not a code change.
+   */
+  iconCall?: string;
+  iconText?: string;
+  iconEmail?: string;
 };
 
 // One path per icon, sized by the caller — so a size change cannot alter the artwork.
@@ -67,15 +87,16 @@ const PATHS = {
 // book a call CTA button isn't shaped the same as the other CTA buttons" — while keeping its own
 // fill. Exporting only a fully-coloured class would have forced NavView to re-type the geometry,
 // which is precisely how the two drifted apart the first time.
-const PILL_BASE =
-  "group relative inline-flex w-full items-center justify-center rounded-lg font-semibold text-white shadow transition";
-// Padding, gap and type scale per size. The MENU gets room to breathe; the footer stays compact
-// because its column is ~250px wide and a tall button there would push the grid apart.
+// ⛔ TWO SHAPES, NOT ONE SHAPE AT TWO SCALES.
+//   md   — a row: icon beside the label, compact enough for a footer column.
+//   tile — a block: icon centred ABOVE a stacked label, the whole thing a click target.
+// Scaling the row up is what failed twice; the tile has to be built as its own arrangement.
+const PILL_BASE = "group relative w-full rounded-lg font-semibold text-white shadow transition";
 export const PILL_SIZE = {
-  md: "gap-2 px-5 py-2.5 text-sm",
-  lg: "gap-3 px-6 py-5 text-base",
+  md: "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm",
+  tile: "flex flex-col items-center justify-center gap-3 px-5 py-8 text-center text-base",
 } as const;
-export const ICON_SIZE = { md: "h-4 w-4", lg: "h-8 w-8" } as const;
+export const ICON_SIZE = { md: "h-4 w-4", tile: "h-14 w-14" } as const;
 const PILL = `${PILL_BASE} bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]`;
 
 export default function ContactButtons({
@@ -84,28 +105,56 @@ export default function ContactButtons({
   email = "",
   className = "",
   size = "md",
+  iconCall = "",
+  iconText = "",
+  iconEmail = "",
 }: ContactButtonsProps) {
-  const button = (href: string, path: React.ReactNode, verb: string, value: string) => (
+  const button = (
+    href: string,
+    path: React.ReactNode,
+    verb: string,
+    value: string,
+    src?: string
+  ) => (
     <a href={href} className={`${PILL} ${PILL_SIZE[size]} ${className}`} title={value}>
-      <svg viewBox="0 0 24 24" fill="currentColor" className={`${ICON_SIZE[size]} shrink-0`} aria-hidden>
-        {path}
-      </svg>
-      {verb}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-normal text-white opacity-0 shadow-lg ring-1 ring-white/15 transition-opacity duration-150 group-hover:opacity-100"
-        style={{ backgroundColor: "rgba(2, 6, 23, 0.95)" }}
-      >
-        {value}
-      </span>
+      {src ? (
+        // object-contain so a non-square export is letterboxed rather than squashed.
+        <img src={src} alt="" aria-hidden className={`${ICON_SIZE[size]} shrink-0 object-contain`} />
+      ) : (
+        <svg viewBox="0 0 24 24" fill="currentColor" className={`${ICON_SIZE[size]} shrink-0`} aria-hidden>
+          {path}
+        </svg>
+      )}
+      {size === "tile" ? (
+        // ⛔ THE VALUE IS PRINTED, NOT HIDDEN BEHIND HOVER. The chip existed because a compact pill
+        // had nowhere to put a phone number without stretching the button. A tile has the room, so
+        // the number is simply visible — to a phone user too, who has no hover at all. This is
+        // exactly the shape Steven's own Alamo Slim blocks use: label, value, and the block is the
+        // click target.
+        <span className="flex flex-col gap-1">
+          <span className="block">{verb}</span>
+          <span className="block break-all text-sm font-normal opacity-90">{value}</span>
+        </span>
+      ) : (
+        <>
+          {verb}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-normal text-white opacity-0 shadow-lg ring-1 ring-white/15 transition-opacity duration-150 group-hover:opacity-100"
+            style={{ backgroundColor: "rgba(2, 6, 23, 0.95)" }}
+          >
+            {value}
+          </span>
+        </>
+      )}
     </a>
   );
 
   return (
     <>
-      {phone ? button(telLink(phone), PATHS.call, "Click to Call", phoneDisplay || phone) : null}
-      {phone ? button(`sms:${phone}`, PATHS.text, "Click to Text", phoneDisplay || phone) : null}
-      {email ? button(`mailto:${email}`, PATHS.email, "Click to Email", email) : null}
+      {phone ? button(telLink(phone), PATHS.call, "Click to Call", phoneDisplay || phone, iconCall) : null}
+      {phone ? button(`sms:${phone}`, PATHS.text, "Click to Text", phoneDisplay || phone, iconText) : null}
+      {email ? button(`mailto:${email}`, PATHS.email, "Click to Email", email, iconEmail) : null}
     </>
   );
 }

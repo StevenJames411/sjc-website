@@ -68,6 +68,16 @@ export type NavViewProps = {
    * asked why they didn't match. Both surfaces now render components/ContactButtons.
    */
   menuEmail?: string;
+  /**
+   * Real artwork for the menu tiles — one URL each, blank = the drawn glyph.
+   * ⛔ Steven already owns these (the glossy calendar and phone on alamoslimclinic.com, hosted
+   * on his Landing Site AI account). They are fields rather than code so he can swap them per
+   * site without a deploy — and so a client build never inherits SJC's artwork by default.
+   */
+  ctaIcon?: string;
+  menuIconCall?: string;
+  menuIconText?: string;
+  menuIconEmail?: string;
   // ── THE BRAND MARK'S SHAPE ───────────────────────────────────────────────────────────────────
   // "" (default) = logo image or icon, then the name in the body sans. Every existing nav.
   // "wordmark"   = no image at all — the name set in the display serif as small-caps, with a
@@ -120,6 +130,10 @@ export default function NavView({
   menuPhone,
   menuPhoneDisplay,
   menuEmail,
+  ctaIcon,
+  menuIconCall,
+  menuIconText,
+  menuIconEmail,
   brandStyle,
   brandLine2,
   brandLine2Color,
@@ -332,7 +346,7 @@ export default function NavView({
                   href={ctaHref || "#"}
                   {...tabAttrs(ctaNewTab)}
                   onClick={() => setOpen(false)}
-                  className={`${CONTACT_PILL_BASE} ${PILL_SIZE.lg} hover:opacity-90`}
+                  className={`${CONTACT_PILL_BASE} ${PILL_SIZE.tile} hover:opacity-90`}
                   style={{ backgroundColor: resolveColorOr(ctaColor, "var(--color-sjc-blue)") }}
                 >
                   {/* ⛔ A COLOURED GLYPH, NOT A FLAT OUTLINE AND NOT THE RASTER ICON.
@@ -350,7 +364,15 @@ export default function NavView({
                       outline.
                       ⚠️ The band is RED, not blue like his. His sits on white; this sits on a blue
                       button, where a blue band would disappear. */}
-                  <svg viewBox="0 0 24 24" className={`${ICON_SIZE.lg} shrink-0`} aria-hidden>
+                  {ctaIcon ? (
+                    <img
+                      src={ctaIcon}
+                      alt=""
+                      aria-hidden
+                      className={`${ICON_SIZE.tile} shrink-0 object-contain`}
+                    />
+                  ) : (
+                  <svg viewBox="0 0 24 24" className={`${ICON_SIZE.tile} shrink-0`} aria-hidden>
                     {/* binding rings */}
                     <rect x="7" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
                     <rect x="15" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
@@ -367,7 +389,14 @@ export default function NavView({
                     <rect x="10.25" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
                     <rect x="16" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
                   </svg>
-                  {ctaLabel}
+                  )}
+                  {/* Stacked like the contact tiles beside it — label, then the hint. Steven's own
+                      Alamo Slim blocks read title / value / "(Click Here)", and a tile with a bare
+                      one-line label next to three two-line ones sits visibly short. */}
+                  <span className="flex flex-col gap-1">
+                    <span className="block">{ctaLabel}</span>
+                    <span className="block text-sm font-normal opacity-90">(Click Here)</span>
+                  </span>
                 </a>
               ) : null}
               {/* ⛔ THE SAME THREE BUTTONS THE FOOTER RENDERS — literally the same component.
@@ -386,7 +415,10 @@ export default function NavView({
                 phone={menuPhone}
                 phoneDisplay={menuPhoneDisplay}
                 email={menuEmail}
-                size="lg"
+                size="tile"
+                iconCall={menuIconCall}
+                iconText={menuIconText}
+                iconEmail={menuIconEmail}
               />
             </div>
           </div>
