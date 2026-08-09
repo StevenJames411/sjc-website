@@ -24,6 +24,7 @@ export const DIVISIONS = [
 
 export const NAV_EXTRA = [
   { short: "About", name: "About", line: "Forty years of running businesses, and what it taught us", href: "#about" },
+  { short: "Portfolio", name: "Portfolio", line: "Sites we have built, and what each one had to fix", href: "#work" },
   { short: "Podcast", name: "The Podcast", line: "Conversations with owners who build things — placeholder copy", href: "/podcast" },
   { short: "Careers", name: "Careers", line: "Setters and web builders — remote, paid on what you produce", href: "/careers" },
 ];
@@ -228,7 +229,7 @@ export const FOOTER = {
       label: `${d.n} · ${d.short}`, href: d.href, line: d.line,
     })) },
     { title: "The Company", links: [
-      { label: "The Work", href: "#work" },
+      { label: "Portfolio", href: "#work" },
       { label: "Podcast", href: "/podcast" },
       { label: "Careers", href: "/careers" },
       { label: "Book a Walkthrough", href: "/apply" },
