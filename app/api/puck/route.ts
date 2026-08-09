@@ -7,6 +7,7 @@ import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey, readDesignCssDraft, writeDesignCss } from "@/lib/puckContent";
 import { SJC } from "@/lib/siteKeys";
+import { CHROME, isChrome } from "@/lib/puckPages";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,27 @@ export async function POST(req: Request) {
   // the problem.
   const css = await readDesignCssDraft(page, site);
   if (css) await writeDesignCss(page, css, true, site);
+
+  // ⛔ THE CHROME GOES LIVE WITH THE PAGE. Steven: "Publishing the page is the only thing we should
+  // do. Not adding every freaking section one by one."
+  //
+  // The header and footer are site-wide documents, so they have their own draft/-pub pair — which
+  // meant editing the header and pressing Publish on the page shipped NOTHING, silently, and the
+  // header had to be published separately from its own card. Two publishes where Steven expects
+  // one, and no error to say so: the page went live looking stripped.
+  //
+  // Only promotes a chrome draft that actually EXISTS, so this can never blank a live header by
+  // stamping an empty document over it. Publishing chrome from its own card still works and is now
+  // simply unnecessary. Never runs for `unpublish` — that returns above.
+  if (!isChrome(page)) {
+    for (const part of CHROME) {
+      const chromeDraft = createKvStore(client, puckKey(part, false, site));
+      const chromeData = (await chromeDraft.read()) as Record<string, unknown> | null;
+      if (chromeData && Object.keys(chromeData).length) {
+        await createKvStore(client, puckKey(part, true, site)).write({ ...chromeData, _pub: 1 });
+      }
+    }
+  }
 
   return Response.json({ ok, published: true });
 }

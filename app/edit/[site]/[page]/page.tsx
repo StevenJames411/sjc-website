@@ -4,6 +4,9 @@ import { readPages, findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
 import { readDesignCssDraft, readDesignCss } from "@/lib/puckContent";
 import { SiteProvider } from "@/components/blocks/SiteContext";
+import { isChrome } from "@/lib/puckPages";
+import { defaultChrome } from "@/lib/siteChrome";
+import { SJC } from "@/lib/siteKeys";
 
 // The builder for one page of one website: /edit/<site>/<page>.
 //
@@ -73,6 +76,20 @@ export default async function EditPage({
           page={entry.slug}
           title={entry.title}
           pages={pages}
+          // ⛔ WHAT AN EMPTY HEADER OPENS TO, AND WHY IT CAN'T BE `seedFor`. The editor's own
+          // fallback is SJC's seed, built from NAV_DEFAULTS — brandName "Steven James Consulting",
+          // SJC's phone, SJC's logo. A client's untouched nav would open in the builder wearing
+          // Steven's brand while the live page correctly showed theirs, and the builder disagreeing
+          // with the visitor is the worst of the two failures: it reads as a leak that isn't there
+          // and hides a real one if it ever is.
+          //
+          // Same lib/siteChrome the public render uses, so "default" means one thing. Non-chrome
+          // pages pass null and keep the normal starter seed.
+          fallbackData={
+            siteId !== SJC && isChrome(entry.slug)
+              ? defaultChrome(site, pages)[entry.slug === "nav" ? "nav" : "footer"]
+              : null
+          }
           // Decides whether the toolbar's live link points at the studio's demo address or at the
           // client's own domain. Same input the server uses to decide what to serve.
           siteDomain={site.domain}

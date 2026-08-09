@@ -5,8 +5,9 @@ import { config } from "@/components/puck/config";
 import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
 import { resolveFormPointers } from "@/lib/formPointer";
 import { readForms } from "@/lib/forms";
-import { findPageMeta } from "@/lib/pageRegistry";
+import { findPageMeta, readPages } from "@/lib/pageRegistry";
 import { isChrome } from "@/lib/puckPages";
+import { defaultChrome } from "@/lib/siteChrome";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
 import { fillBusinessTokens } from "@/lib/businessTokens";
@@ -239,24 +240,6 @@ export async function SitePageBody({
   // borrows ours.
   const isClientSite = siteId !== SJC;
 
-  // ── THIS SITE'S OWN SITE-WIDE CHROME ───────────────────────────────────────────────────────
-  // The missing third option. Until now there were only two: SJC's global chrome, or chrome
-  // duplicated into every single page. The second is what a client site got, and it drifts the
-  // moment a site has two pages — the header gets edited on one and not the other.
-  //
-  // ⚠️ KEYED BY siteId, ALWAYS. There is deliberately no fallback from a missing client document
-  // to SJC's chrome; an absent doc falls back to the page's OWN blocks (the old behaviour). That
-  // is what keeps the guarantee below intact — the leak that started all of this was a client
-  // page wearing Steven's nav, linking to the free community that teaches what he charges for.
-  const chrome = isClientSite
-    ? {
-        nav: await readPuckPublished("nav", siteId),
-        footer: await readPuckPublished("footer", siteId),
-      }
-    : { nav: null, footer: null };
-
-  // ⚠️ SJC'S CHROME MUST NEVER APPEAR ON A CLIENT'S SITE — see the note above. A site-wide document
-  // of the site's OWN counts as bringing its own chrome, exactly like an in-page block does.
   const ownHeader = isClientSite || hasBlock(data, "SiteHeader");
   const ownFooter = isClientSite || hasBlock(data, "SiteFooter");
   // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
@@ -285,6 +268,36 @@ export async function SitePageBody({
   // is unchanged and deliberate (SJC's own Organization markup comes from the root layout).
   const site = await findSite(siteId);
   const schema = site && isClientSite ? localBusinessSchema(site, publicUrlFor(site)) : null;
+
+  // ── THIS SITE'S OWN SITE-WIDE CHROME ───────────────────────────────────────────────────────
+  // The missing third option. There used to be only two: SJC's global chrome, or chrome duplicated
+  // into every single page. A client site always got the second, and it drifts the moment a site
+  // has two pages — the header gets edited on one and not the other.
+  //
+  // ⚠️ KEYED BY siteId, ALWAYS. There is deliberately NO path from a missing client document to
+  // SJC's chrome. The leak that produced this whole rule was a client page wearing Steven's nav,
+  // linking to the free community that teaches what he charges for.
+  //
+  // ⛔ AND IT EXISTS BY DEFAULT. Steven: "I want a header and footer to be on every website by
+  // default. We don't need to add extra steps." A published document wins; with none, the site
+  // still renders real chrome GENERATED FROM ITS OWN BUSINESS RECORD (lib/siteChrome) instead of
+  // nothing. Falling back to nothing is exactly what left the SJC-2026 card looking stripped — the
+  // header had left the page and its new home was still an unpublished draft.
+  //
+  // ⚠️ AN IMPORTED DESIGN CARRIES ITS HEADER INSIDE ITS MARKUP, so a default above it would show
+  // TWO headers. Those pages keep the old behaviour and get no generated chrome.
+  //
+  // ⚠️ Placed AFTER findSite on purpose: the generated chrome reads site.business, so computing it
+  // any earlier is a use-before-declaration on `site`.
+  const importedDesign = hasBlock(data, "DesignSection");
+  const fallback =
+    isClientSite && site && !importedDesign ? defaultChrome(site, await readPages(siteId)) : null;
+  const chrome = isClientSite
+    ? {
+        nav: (await readPuckPublished("nav", siteId)) || fallback?.nav || null,
+        footer: (await readPuckPublished("footer", siteId)) || fallback?.footer || null,
+      }
+    : { nav: null, footer: null };
 
   const body = (
     <SiteProvider
