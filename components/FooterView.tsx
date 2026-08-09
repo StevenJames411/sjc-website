@@ -125,7 +125,10 @@ export default function FooterView({
   // Each renders only when its value exists, so a client without an email address gets two buttons
   // rather than a dead third one.
   const contactBtn = (href: string, icon: React.ReactNode, verb: string, value: string) => (
-    <a href={href} className={`${btn} group relative w-fit`} title={value}>
+    // ⚠️ w-full, was w-fit. In its own column the button fills that column at every width, which
+    // is what removes the ragged right edge on a phone. w-fit made sense when these sat centred
+    // under a wide brand block; it stops making sense the moment they have a column to fill.
+    <a href={href} className={`${btn} group relative w-full`} title={value}>
       {icon}
       {verb}
       {/* ⛔ THE VALUE FLOATS ABOVE THE BUTTON — IT IS NOT INSIDE IT.
@@ -234,17 +237,21 @@ export default function FooterView({
 
             Tailwind's md: prefix is a real media query, so the column definition simply does not
             exist below 768px and the grid falls back to a single stacked column. */}
-        <div
-          className={`grid gap-10 ${
-            groupEls.length
-              // ⚠️ 1.1fr, was 1.6fr. At 1.6 the brand column ate nearly half the footer: the blurb
-              // ran long, the buttons sat in a lake of empty space, and the two link columns were
-              // squeezed against the right edge with dead space beyond them. Barely wider than a
-              // link column now — enough for the wordmark and a two-line blurb, no more.
-              ? "md:grid-cols-[minmax(220px,1.1fr)_repeat(auto-fit,minmax(140px,1fr))]"
-              : ""
-          }`}
-        >
+        {/* ⛔ EQUAL COLUMNS THAT COLLAPSE 4 → 2 → 1. NO auto-fit.
+            `repeat(auto-fit, minmax(140px, 1fr))` asks the browser "how many 140px columns fit?"
+            and collapses the extras — so the real column count was being GUESSED from the viewport
+            rather than set from the content. With three columns in a 1152px canvas the leftovers
+            collapsed but the space did not redistribute, and everything bunched left with ~250px
+            of dead air on the right. Steven caught it against the divider line, which spans the
+            full canvas because it is a plain border and not part of the grid.
+
+            Explicit steps instead, so each column always fills its share of the row:
+              1 column  on a phone
+              2 columns from sm  (brand+divisions / company+contact)
+              4 columns from lg  (brand · divisions · company · contact)
+            ⚠️ No 3-column step: with four children, three columns strands the fourth on a row of
+            its own — the exact lopsidedness this is fixing. */}
+        <div className={`grid gap-10 ${groupEls.length ? "sm:grid-cols-2 lg:grid-cols-4" : ""}`}>
           <div className={groupEls.length ? "" : "md:col-span-2"}>
             {String(brandStyle) === "wordmark" ? (
               // Same mark as the header (NavView) — Playfair is already loaded site-wide, so this
@@ -284,23 +291,7 @@ export default function FooterView({
                 <span className="text-lg font-semibold">{name}</span>
               </div>
             )}
-            {blurb ? <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">{blurb}</p> : null}
-            {/* Desktop only — the mobile copy is the last grid child, below every link column.
-                ⚠️ Stacked, not side by side: each button now carries a phone number or an email
-                address under its verb, and three of those in a row inside a ~220px column would
-                shrink each one to an unreadable sliver. */}
-            {/* items-center + w-fit on each button: the buttons shrink to their own content and
-                sit centred as a group, instead of stretching the full column width with the icon
-                stranded in the middle of the whitespace. */}
-            {/* ⛔ items-START, NOT items-center — AT EVERY WIDTH.
-                Centred buttons under a left-aligned wordmark and blurb is the thing Steven could
-                see but not name: the eye follows a left edge down the column and then the buttons
-                jump to the middle. One alignment per column, or it reads as broken formatting
-                even when every individual piece is fine. */}
-            {/* flex-wrap, not a hard row: three buttons rarely fit across a narrowed brand column,
-                and wrapping lets them sit two-up or three-up depending on the label lengths rather
-                than forcing a tall stack that leaves the link columns floating at the top. */}
-            <div className="mt-6 hidden flex-wrap items-start gap-3 md:flex">{contactButtons}</div>
+            {blurb ? <p className="mt-6 text-sm leading-relaxed text-white/80">{blurb}</p> : null}
           </div>
 
           {groupEls.map((g, gi) => (
@@ -352,9 +343,24 @@ export default function FooterView({
               which is where a phone user expects to find them. Desktop is untouched — the copy in
               the brand column is `hidden md:flex`, this one is `md:hidden`, so exactly one renders
               at any width. */}
-          {/* Left-aligned on mobile too — the stacked footer is left-aligned all the way down, so
-              centring only these three put them out of step with everything above them. */}
-          <div className="flex flex-col items-start gap-3 md:hidden">{contactButtons}</div>
+          {/* ⛔ CONTACT IS ITS OWN COLUMN NOW, AND THAT REPLACES A HACK.
+              The buttons used to live inside the brand column, which made the left column tall
+              while the link columns sat short beside it — the footer read bottom-heavy on the left.
+              Worse, getting them below the links on a phone needed the SAME buttons rendered TWICE
+              (`hidden md:flex` in the brand block, `md:hidden` at the end), because CSS `order`
+              only sorts siblings and could not lift them out of that column.
+
+              As a column of its own they are simply the LAST grid child: fourth across on a wide
+              screen, last in the stack on a phone. One render, no duplication, and "contact at the
+              bottom on mobile" falls out of the layout instead of being arranged.
+
+              items-stretch: the buttons fill their column at every width. That is what closes the
+              ragged empty space left-alignment opened up on a phone — the block gets a hard right
+              edge instead of a jagged one. */}
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-white/90">Contact</p>
+            <div className="mt-4 flex flex-col items-stretch gap-3">{contactButtons}</div>
+          </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
