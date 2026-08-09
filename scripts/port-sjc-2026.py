@@ -195,9 +195,9 @@ ask = section(DEEP, [
 # menu mode can go straight in here: nothing on this site is live yet.
 NAV_LINKS = (
     [{"label": f"{d['n']} · {d['short']}", "target": d["href"], "fontSize": 0, "color": "white",
-      "newTab": False, "note": d["line"], "group": "The Divisions"} for d in C["DIVISIONS"]] +
+      "newTab": False, "note": d["line"], "group": "Divisions"} for d in C["DIVISIONS"]] +
     [{"label": n["short"], "target": n["href"], "fontSize": 0, "color": "white",
-      "newTab": False, "note": n["line"], "group": "The Company"} for n in C["NAV_EXTRA"]]
+      "newTab": False, "note": n["line"], "group": "Company"} for n in C["NAV_EXTRA"]]
 )
 
 # ⛔ THE MARK IS A TYPESET WORDMARK, NOT A LOGO TILE. `SJC` in a circle beside the name is a

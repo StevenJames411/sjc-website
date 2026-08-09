@@ -232,14 +232,21 @@ export const FOOTER = {
     // ⛔ DERIVED FROM DIVISIONS, NEVER RETYPED. The footer drifted the moment the header
     // labels changed — because it was a second copy of the same list. One source now, so the
     // two cannot disagree again.
-    { title: "The Divisions", links: DIVISIONS.map((d) => ({
+    // ⚠️ NO ARTICLE. "The Divisions" / "The Company" alongside "Contact" read as three headings
+    // written by two people. A column heading is a label, not a sentence — Divisions, Company,
+    // Contact. ⛔ The nav overlay types the same two strings in scripts/port-sjc-2026.py and has
+    // to move with them, or the menu and the footer label the identical links differently.
+    { title: "Divisions", links: DIVISIONS.map((d) => ({
       label: `${d.n} · ${d.short}`, href: d.href, line: d.line,
     })) },
-    { title: "The Company", links: [
+    { title: "Company", links: [
       { label: "Portfolio", href: "#work" },
       { label: "Podcast", href: "/podcast" },
       { label: "Careers", href: "/careers" },
-      { label: "Book a Walkthrough", href: "/apply" },
+      // ⚠️ LABEL ONLY — href stays /apply. The page's main CTA still says "Book the walkthrough";
+      // changing the whole site from "walkthrough" to "call" is a copy decision for the copy pass,
+      // not a rename to smuggle in here.
+      { label: "Book a Call", href: "/apply" },
     ]},
   ],
   closing: "Websites, reviews and follow-up for high-end trades. Built as one system, by one team.",
