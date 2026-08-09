@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+"""
+Port /v2 into the design studio.
+
+⛔ THE COPY IS READ OUT OF app/v2/content.ts, NEVER RETYPED HERE. Retyping it would create a
+second copy of every sentence on the page, and the two would disagree the first time either
+moved — which is exactly the bug the footer already had twice.
+
+Writes a DRAFT only. Nothing publishes; Steven presses Publish when he has looked at it.
+"""
+import json, re, subprocess, sys, urllib.request, pathlib
+
+SITE_DIR = pathlib.Path.home() / "SJC/AI-Employee-Dashboard/projects/sjc-website"
+BASE = "https://www.stevenjamesconsulting.com"
+# ⚠️ The slug is DERIVED from the title by the server (lowercase, non-alphanumerics to dashes).
+# Assuming it instead of reading it back is how you write a draft to a page that does not exist.
+# ⛔ ITS OWN WEBSITE, NOT A PAGE INSIDE THE OLD ONE. The new site REPLACES both the original SJC
+# site and Steven James Designs; parking it as a page under the thing it replaces is what turned
+# one toggle into a container for three brands. It gets its own card, and the other two get
+# retired once this is finished.
+SITE_NAME = "Steven James Consulting 2026"
+TITLE = "Home"
+SLUG = "home"
+
+TOKEN = next(l.split("=", 1)[1].strip().strip('"')
+             for l in open(SITE_DIR / ".env.local") if l.startswith("SITE_EDIT_TOKEN="))
+
+# ── pull the words out of content.ts ─────────────────────────────────────────────────────────
+# node evaluates the real module, so the copy that lands in the studio is byte-identical to what
+# is on /v2 right now. A regex parser would drift the first time a quote style changed.
+src = (SITE_DIR / "app/v2/content.ts").read_text()
+js = src.replace("export const", "const")
+js = re.sub(r"^\s*//.*$", "", js, flags=re.M)
+js = js.replace("some: (n: number) =>", "some: (n) =>")
+js += """
+console.log(JSON.stringify({DIVISIONS,NAV_EXTRA,CONTACT,BRAND,HERO,STORY,DIAGNOSIS,BUCKETS,SOLUTION,PROOF,WHO,ASK,FOOTER}));
+"""
+p = subprocess.run(["node", "--input-type=module", "-e", js], capture_output=True, text=True)
+if p.returncode:
+    sys.exit("could not read content.ts:\n" + p.stderr[-1500:])
+C = json.loads(p.stdout)
+
+# ── block helpers ────────────────────────────────────────────────────────────────────────────
+_n = [0]
+def bid(t):
+    _n[0] += 1
+    return f"{t}-v2-{_n[0]:03d}"
+
+def blk(t, **props):
+    return {"type": t, "props": {"id": bid(t), **props}}
+
+def text(html, size=17, color="white", align="center", above=0, below=0):
+    # ⚠️ The Text block stores RICH TEXT, so a bare sentence has to be wrapped in <p> or the
+    # editor opens with an empty box and the words only reappear on the public page.
+    return blk("Text", text=f"<p>{html}</p>", fontSize=size, color=color,
+               align=align, spaceAbove=above, spaceBelow=below)
+
+def heading(s, size=44, color="white", align="center", above=16, below=0):
+    return blk("Heading", text=s, fontSize=size, color=color, align=align,
+               spaceAbove=above, spaceBelow=below)
+
+def eyebrow(s, color="accent"):
+    return text(f"<strong>{s.upper()}</strong>", size=13, color=color)
+
+def section(bg, content, width="64rem", pt=88, pb=88, sid=None):
+    b = blk("Section", background=bg, maxWidth=width, paddingTop=pt, paddingBottom=pb,
+            decor="", grid="", gradientTo="", gradientAngle=135, content=content)
+    if sid:
+        b["props"]["id"] = sid
+    return b
+
+def columns(cols, gap=20):
+    props = {"columns": len(cols), "gap": gap}
+    for i, c in enumerate(cols, 1):
+        props[f"col{i}"] = c
+    for i in range(len(cols) + 1, 5):
+        props[f"col{i}"] = []
+    return blk("Columns", **props)
+
+DARK, DEEP, SOFT, WHITE = "bandDark", "bandDarker", "bandSoft", "white"
+
+# ── the page, section by section ─────────────────────────────────────────────────────────────
+H = C["HERO"]
+hero = section(DARK, [
+    text(f"<strong>{H['badge'].upper()}</strong>", size=12, color="accent"),
+    heading(" ".join(H["h1"]), size=64, above=24),
+    text(H["body"][0], size=18, color="white", above=26),
+    text(H["body"][1], size=18, color="white", above=14),
+    blk("Button", title=f"{H['video']['label']}  ({H['video']['duration']})",
+        subtitle="", href=H["video"]["href"], variant="filled", shape="",
+        color="accent", icon="play", align="center", fullWidth=False),
+    blk("Button", title=H["cta"]["label"], subtitle="", href=H["cta"]["href"],
+        variant="outline", shape="", color="white", icon="", align="center", fullWidth=False),
+    blk("Spacer", height=40),
+    text(f"<strong>{H['chainLabel'].upper()}</strong>", size=11, color="white"),
+    blk("ChainStrip", color="accent", onDark=True,
+        nodes=[{"k": n["k"], "note": n["note"], "mine": n["mine"]} for n in H["chain"]]),
+    text(H["chainNote"], size=14, color="white", above=28),
+], width="80rem", pt=110, pb=90, sid="hero")
+
+S = C["STORY"]
+story = section(WHITE, [
+    eyebrow(S["eyebrow"]),
+    heading(S["h2"], size=46, color="ink"),
+    *[text(p, size=18, color="ink", align="left", above=18) for p in S["paragraphs"]],
+    text(f"<strong>{S['closer']}</strong>", size=21, color="ink", align="left", above=30),
+], width="48rem")
+
+D = C["DIAGNOSIS"]
+diagnosis = section(DARK, [
+    eyebrow(D["eyebrow"]),
+    heading(D["h2"], size=46),
+    text(D["lede"], size=18, above=24),
+    blk("Spacer", height=36),
+    blk("CheckList", dotColor="accent", textColor="white",
+        rows=[{"heading": r["k"], "body": r["d"]} for r in D["chain"]]),
+    text(f"<strong>{D['closer']}</strong>", size=26, above=44),
+], width="56rem")
+
+B = C["BUCKETS"]
+selfcheck = section(DEEP, [
+    eyebrow(B["eyebrow"]),
+    heading(B["h2"], size=44),
+    text(B["lede"], size=17, above=22),
+    blk("Spacer", height=36),
+    blk("SelfCheck", color="accent", onDark=True,
+        summaryNone=B["results"]["none"], summaryOne=B["results"]["one"],
+        summaryMany="{n} of them. That is normal, and it is why advertising has not worked the way you were told it would.",
+        summaryTail=B["results"]["followUp"],
+        questions=[{"q": q["q"], "verdict": q["verdict"],
+                    "options": [{"label": o["label"], "bad": o["bad"]} for o in q["options"]]}
+                   for q in B["questions"]]),
+], width="56rem", sid="diagnosis")
+
+SO = C["SOLUTION"]
+solution = section(SOFT, [
+    eyebrow(SO["eyebrow"]),
+    heading(SO["h2"], size=46, color="ink"),
+    text(SO["lede"], size=17, color="ink", above=24),
+    blk("Spacer", height=40),
+    columns([[blk("Card", badge="", eyebrow=c["n"], heading=c["t"], body=c["p"],
+                  icon="", iconColor="", badgeColor="", badgePosition="top", centered=False,
+                  layout="stack", bare=False, eyebrowSize=18, eyebrowColor="accent",
+                  headingSize=27, headingColor="ink", bodySize=16, bodyColor="mute",
+                  eyebrowBold=False, headingBold=False, bodyBold=False, eyebrowCaps=False,
+                  surface="solid", surfaceColor="white", surfaceOpacity=100,
+                  borderColor="line", hoverBorderColor="accent", shadowColor="",
+                  hoverLift=True, radius=2)] for c in SO["cards"]]),
+], width="80rem")
+
+P = C["PROOF"]
+proof = section(DARK, [
+    eyebrow(P["eyebrow"]),
+    heading(P["h2"], size=46),
+    text(P["lede"], size=17, above=24),
+    blk("Spacer", height=36),
+    columns([[blk("Image", src=w["img"], alt=w["t"], caption=f"{w['t']} — {w['s']}",
+                  captionColor="white", maxWidth=0, rounded="none", align="center", spaceAbove=0, spaceBelow=0,
+                  linkUrl="", openInNewTab="false", shape="landscape", zoom=100, focus="top")]
+             for w in P["items"]]),
+    blk("Spacer", height=56),
+    text(f"<strong>{P['caseStudy']['eyebrow'].upper()}</strong>", size=12, color="accent"),
+    heading(P["caseStudy"]["h3"], size=32, above=14),
+    blk("Stats", valueColor="white", labelColor="white", valueSize=0, align="center",
+        items=[{"value": s["n"], "label": s["l"]} for s in P["caseStudy"]["stats"]]),
+    blk("Button", title=P["caseStudy"]["link"]["label"], subtitle="",
+        href=P["caseStudy"]["link"]["href"], variant="outline", shape="",
+        color="accent", icon="", align="center", fullWidth=False),
+], width="80rem", sid="work")
+
+W = C["WHO"]
+who = section(SOFT, [
+    eyebrow(W["eyebrow"]),
+    heading(W["h2"], size=44, color="ink"),
+    *[text(p, size=18, color="ink", align="left", above=18) for p in W["paragraphs"]],
+    text(f"<strong>{W['signature']['name']}</strong>", size=24, color="ink", align="left", above=28),
+    text(W["signature"]["role"].upper(), size=12, color="accent", align="left", above=6),
+], width="48rem", sid="about")
+
+A = C["ASK"]
+ask = section(DEEP, [
+    eyebrow(A["eyebrow"]),
+    heading(A["h2"], size=44),
+    text(A["lede"], size=17, above=24),
+    blk("Button", title=A["cta"]["label"], subtitle="", href=A["cta"]["href"],
+        variant="filled", shape="", color="accent", icon="", align="center", fullWidth=False),
+], width="56rem", pt=76, pb=76, sid="contact")
+
+# ⚠️ A CLIENT SITE RENDERS NO SJC NAV — `ownHeader` is true for anything that isn't the SJC site,
+# so the page must carry its OWN header and footer blocks or it ships headless. That is also why
+# menu mode can go straight in here: nothing on this site is live yet.
+NAV_LINKS = (
+    [{"label": f"{d['n']} · {d['short']}", "target": d["href"], "fontSize": 0, "color": "white",
+      "newTab": False, "note": d["line"], "group": "The Divisions"} for d in C["DIVISIONS"]] +
+    [{"label": n["short"], "target": n["href"], "fontSize": 0, "color": "white",
+      "newTab": False, "note": n["line"], "group": "The Company"} for n in C["NAV_EXTRA"]]
+)
+
+header = blk("SiteHeader",
+    menuMode="menu", menuPhone=C["CONTACT"]["tel"], menuPhoneDisplay=C["CONTACT"]["phone"],
+    brandName="Steven James Consulting", brandHref="/", brandSize=20,
+    tagline="", taglineColor="accent", taglineSize=14,
+    links=NAV_LINKS,
+    ctaLabel="Book a walkthrough", ctaHref=C["CONTACT"]["book"], ctaNewTab=False,
+    background="bandHeader", foreground="white", showLogo=True,
+    ctaColor="accent", brandIcon="", brandIconColor="")
+
+footer = blk("SiteFooter",
+    blurb=C["FOOTER"]["closing"],
+    links=[],
+    groups=[{"heading": col["title"],
+             "links": [{"label": l["label"], "target": l["href"]} for l in col["links"]]}
+            for col in C["FOOTER"]["columns"]],
+    phone=C["CONTACT"]["tel"], phoneDisplay=C["CONTACT"]["phone"],
+    email="support@stevenjamesconsulting.com",
+    privacyUrl="https://www.privacypolicies.com/live/1cbbc5dd-5b42-4b68-abdd-a279a5e3b4f7",
+    tosUrl="https://www.privacypolicies.com/live/34bb5cc7-32b9-4449-ae32-7cfe78f34e45",
+    copyright="ARV Venture Group LLC Parent Company · Steven James Consulting",
+    background="", foreground="", brandName="Steven James Consulting", showLogo=True)
+
+DATA = {
+    "root": {"props": {
+        "title": "Steven James Consulting — websites for high-end trades",
+        "description": "Websites, reviews and follow-up for contractors, builders and specialty "
+                       "shops. Forty years running our own businesses — you deal with the people "
+                       "who build it, not an account manager.",
+        "businessName": "Steven James Consulting",
+    }},
+    "content": [header, hero, story, diagnosis, selfcheck, solution, proof, who, ask, footer],
+    "zones": {},
+}
+
+def api(method, path, payload):
+    req = urllib.request.Request(
+        BASE + path, method=method, data=json.dumps(payload).encode(),
+        headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"})
+    with urllib.request.urlopen(req) as r:
+        return r.status, json.loads(r.read().decode() or "{}")
+
+if __name__ == "__main__":
+    if "--dump" in sys.argv:
+        print(json.dumps(DATA, indent=1)[:600]); sys.exit()
+
+    print("creating the website…")
+    st, res = api("POST", "/api/sites", {"name": SITE_NAME, "kind": "client",
+                                         "description": "The rebuild — replaces the original SJC site "
+                                                        "and Steven James Designs once finished."})
+    site = res.get("id")
+    print("  ", st, res)
+    if not site:
+        sys.exit("no site id — stopping rather than writing into the wrong website")
+
+    print("creating its home page…")
+    st, res = api("POST", "/api/pages", {"title": TITLE, "site": site})
+    print("  ", st, res)
+    slug = res.get("slug") or SLUG
+
+    print("writing the page…")
+    print("  ", api("PUT", "/api/puck", {"page": slug, "site": site, "data": DATA}))
+    print(f"\nsite id: {site}")
+    print(f"edit:    https://stevenjamesdesigns.com/edit/{site}/{slug}")
