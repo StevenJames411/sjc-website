@@ -283,7 +283,12 @@ export default function FooterView({
             {/* items-center + w-fit on each button: the buttons shrink to their own content and
                 sit centred as a group, instead of stretching the full column width with the icon
                 stranded in the middle of the whitespace. */}
-            <div className="mt-6 hidden flex-col items-center gap-3 md:flex">{contactButtons}</div>
+            {/* ⛔ items-START, NOT items-center — AT EVERY WIDTH.
+                Centred buttons under a left-aligned wordmark and blurb is the thing Steven could
+                see but not name: the eye follows a left edge down the column and then the buttons
+                jump to the middle. One alignment per column, or it reads as broken formatting
+                even when every individual piece is fine. */}
+            <div className="mt-6 hidden flex-col items-start gap-3 md:flex">{contactButtons}</div>
           </div>
 
           {groupEls.map((g, gi) => (
@@ -325,7 +330,9 @@ export default function FooterView({
               which is where a phone user expects to find them. Desktop is untouched — the copy in
               the brand column is `hidden md:flex`, this one is `md:hidden`, so exactly one renders
               at any width. */}
-          <div className="flex flex-col items-center gap-3 md:hidden">{contactButtons}</div>
+          {/* Left-aligned on mobile too — the stacked footer is left-aligned all the way down, so
+              centring only these three put them out of step with everything above them. */}
+          <div className="flex flex-col items-start gap-3 md:hidden">{contactButtons}</div>
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
