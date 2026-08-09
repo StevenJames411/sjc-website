@@ -4,7 +4,7 @@ import { useState } from "react";
 import Icon from "@/components/blocks/Icon";
 // Shared with FooterView — one definition of the three contact buttons, so the menu and the
 // footer cannot drift apart again.
-import ContactButtons, { CONTACT_PILL_BASE } from "@/components/ContactButtons";
+import ContactButtons, { CONTACT_PILL_BASE, PILL_SIZE, ICON_SIZE } from "@/components/ContactButtons";
 import { resolveColor, resolveColorOr, tint } from "@/lib/brandColor";
 
 const LOGO_URL =
@@ -332,7 +332,7 @@ export default function NavView({
                   href={ctaHref || "#"}
                   {...tabAttrs(ctaNewTab)}
                   onClick={() => setOpen(false)}
-                  className={`${CONTACT_PILL_BASE} hover:opacity-90`}
+                  className={`${CONTACT_PILL_BASE} ${PILL_SIZE.lg} hover:opacity-90`}
                   style={{ backgroundColor: resolveColorOr(ctaColor, "var(--color-sjc-blue)") }}
                 >
                   {/* ⛔ A COLOURED GLYPH, NOT A FLAT OUTLINE AND NOT THE RASTER ICON.
@@ -350,7 +350,7 @@ export default function NavView({
                       outline.
                       ⚠️ The band is RED, not blue like his. His sits on white; this sits on a blue
                       button, where a blue band would disappear. */}
-                  <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" aria-hidden>
+                  <svg viewBox="0 0 24 24" className={`${ICON_SIZE.lg} shrink-0`} aria-hidden>
                     {/* binding rings */}
                     <rect x="7" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
                     <rect x="15" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
@@ -386,6 +386,7 @@ export default function NavView({
                 phone={menuPhone}
                 phoneDisplay={menuPhoneDisplay}
                 email={menuEmail}
+                size="lg"
               />
             </div>
           </div>
