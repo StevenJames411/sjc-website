@@ -120,13 +120,28 @@ export default function FooterView({
   // Each renders only when its value exists, so a client without an email address gets two buttons
   // rather than a dead third one.
   const contactBtn = (href: string, icon: React.ReactNode, verb: string, value: string) => (
-    <a href={href} className={btn}>
+    <a href={href} className={`${btn} group w-fit`} title={value}>
       {icon}
-      <span className="min-w-0">
-        <span className="block">{verb}</span>
-        {/* break-all: an email address has no spaces, and inside a narrow button it would
-            otherwise push the button wider than its column. */}
-        <span className="block break-all text-xs font-normal opacity-90">{value}</span>
+      {/* ⛔ A 1x1 GRID, NOT ABSOLUTE POSITIONING — AND THAT IS WHAT STOPS THE BUTTON TWITCHING.
+          Both spans occupy the SAME grid cell, so the cell sizes itself to the WIDER of the two
+          and the button's width never changes when the label swaps to the value on hover. With
+          absolute positioning the button would size to the label alone and the email address
+          would spill straight out of it.
+
+          Same line, not an extra one: revealing the value underneath would grow the button's
+          height and shove the two buttons below it down the page on every hover. */}
+      <span className="grid">
+        <span className="col-start-1 row-start-1 transition-opacity duration-150 group-hover:opacity-0">
+          {verb}
+        </span>
+        {/* aria-hidden: the value is decoration for sighted mouse users — the href already carries
+            it, and a screen reader announcing both would read the button twice. */}
+        <span
+          aria-hidden
+          className="col-start-1 row-start-1 whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+        >
+          {value}
+        </span>
       </span>
     </a>
   );
@@ -139,7 +154,7 @@ export default function FooterView({
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
               <path fillRule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clipRule="evenodd" />
             </svg>,
-            "Click to Call Us",
+            "Click to Call",
             phoneDisplay || phone
           )
         : null}
@@ -149,7 +164,7 @@ export default function FooterView({
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
               <path fillRule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.521c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97z" clipRule="evenodd" />
             </svg>,
-            "Click to Text Us",
+            "Click to Text",
             phoneDisplay || phone
           )
         : null}
@@ -160,7 +175,7 @@ export default function FooterView({
               <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
               <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
             </svg>,
-            "Click to Email Us",
+            "Click to Email",
             email
           )
         : null}
@@ -269,7 +284,10 @@ export default function FooterView({
                 ⚠️ Stacked, not side by side: each button now carries a phone number or an email
                 address under its verb, and three of those in a row inside a ~220px column would
                 shrink each one to an unreadable sliver. */}
-            <div className="mt-6 hidden flex-col gap-3 md:flex">{contactButtons}</div>
+            {/* items-center + w-fit on each button: the buttons shrink to their own content and
+                sit centred as a group, instead of stretching the full column width with the icon
+                stranded in the middle of the whitespace. */}
+            <div className="mt-6 hidden flex-col items-center gap-3 md:flex">{contactButtons}</div>
           </div>
 
           {groupEls.map((g, gi) => (
@@ -311,7 +329,7 @@ export default function FooterView({
               which is where a phone user expects to find them. Desktop is untouched — the copy in
               the brand column is `hidden md:flex`, this one is `md:hidden`, so exactly one renders
               at any width. */}
-          <div className="flex flex-col gap-3 sm:flex-row md:hidden">{contactButtons}</div>
+          <div className="flex flex-col items-center gap-3 md:hidden">{contactButtons}</div>
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
