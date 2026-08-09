@@ -63,7 +63,7 @@ export const HERO = {
   // ⚠️ THE VSL MOUNT POINT. Wired to the diagnosis until the video exists; the slot is in the
   // markup on purpose, because you can only edit what is already there.
   video: { label: "Why ads come last", duration: "3 min", href: "#diagnosis" },
-  cta: { label: "Start with a walkthrough", href: "#contact" },
+  cta: { label: "Start with a call", href: "#contact" },
 
   chainLabel: "How a customer actually moves",
   chain: [
@@ -115,7 +115,9 @@ export const DIAGNOSIS = {
 export const BUCKETS = {
   eyebrow: "Four Questions",
   h2: "Answer these honestly. Nobody sees it but you.",
-  lede: "No email, no form. This is the same walkthrough we would do with you on a call.",
+  // ⚠️ REWRITTEN, NOT FIND-REPLACED. Swapping the noun here gives "the same call we would do with
+  // you on a call." This line describes what the four questions ARE; the others are buttons.
+  lede: "No email, no form. These are the same questions we would walk through with you on a call.",
   questions: [
     {
       id: "site",
@@ -220,7 +222,7 @@ export const ASK = {
   eyebrow: "One Conversation",
   h2: "We’ll show you your own business first.",
   lede: "Before you decide anything, we will walk you through what a customer sees when they look you up — your listing, your reviews, your site, on the phone they are actually holding. That part costs nothing and it is useful whether you hire us or not.",
-  cta: { label: "Book the walkthrough", href: "/apply" },
+  cta: { label: "Book a Call", href: "/apply" },
 };
 
 export const FOOTER = {
@@ -232,14 +234,20 @@ export const FOOTER = {
     // ⛔ DERIVED FROM DIVISIONS, NEVER RETYPED. The footer drifted the moment the header
     // labels changed — because it was a second copy of the same list. One source now, so the
     // two cannot disagree again.
-    { title: "The Divisions", links: DIVISIONS.map((d) => ({
+    // ⚠️ NO ARTICLE. "The Divisions" / "The Company" alongside "Contact" read as three headings
+    // written by two people. A column heading is a label, not a sentence — Divisions, Company,
+    // Contact. ⛔ The nav overlay types the same two strings in scripts/port-sjc-2026.py and has
+    // to move with them, or the menu and the footer label the identical links differently.
+    { title: "Divisions", links: DIVISIONS.map((d) => ({
       label: `${d.n} · ${d.short}`, href: d.href, line: d.line,
     })) },
-    { title: "The Company", links: [
+    { title: "Company", links: [
       { label: "Portfolio", href: "#work" },
       { label: "Podcast", href: "/podcast" },
       { label: "Careers", href: "/careers" },
-      { label: "Book a Walkthrough", href: "/apply" },
+      // ⚠️ Label only — href stays /apply. Every CTA on the page now says "call" too (hero, ASK,
+      // this link), so the site speaks one word for the thing it asks for.
+      { label: "Book a Call", href: "/apply" },
     ]},
   ],
   closing: "Websites, reviews and follow-up for high-end trades. Built as one system, by one team.",

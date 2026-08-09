@@ -195,9 +195,9 @@ ask = section(DEEP, [
 # menu mode can go straight in here: nothing on this site is live yet.
 NAV_LINKS = (
     [{"label": f"{d['n']} · {d['short']}", "target": d["href"], "fontSize": 0, "color": "white",
-      "newTab": False, "note": d["line"], "group": "The Divisions"} for d in C["DIVISIONS"]] +
+      "newTab": False, "note": d["line"], "group": "Divisions"} for d in C["DIVISIONS"]] +
     [{"label": n["short"], "target": n["href"], "fontSize": 0, "color": "white",
-      "newTab": False, "note": n["line"], "group": "The Company"} for n in C["NAV_EXTRA"]]
+      "newTab": False, "note": n["line"], "group": "Company"} for n in C["NAV_EXTRA"]]
 )
 
 # ⛔ THE MARK IS A TYPESET WORDMARK, NOT A LOGO TILE. `SJC` in a circle beside the name is a
@@ -209,12 +209,20 @@ NAV_LINKS = (
 # `bandGrid` = the hero's grid colour on purpose. Header and hero then share one continuous navy
 # field; without it the bar reads as a separate rectangle laid on top of the page.
 header = blk("SiteHeader",
+    # menuEmail feeds the menu's third contact button — the overlay renders the SAME
+    # components/ContactButtons the footer does, so the two can no longer disagree.
     menuMode="menu", menuPhone=C["CONTACT"]["tel"], menuPhoneDisplay=C["CONTACT"]["phone"],
+    menuEmail="support@stevenjamesconsulting.com",
     brandName="Steven James", brandHref="/", brandSize=26,
     brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
     tagline="", taglineColor="accent", taglineSize=14,
     links=NAV_LINKS,
-    ctaLabel="Book a walkthrough", ctaHref=C["CONTACT"]["book"], ctaNewTab=False,
+    # ⛔ READ, NOT RETYPED — the rule at the top of this file, broken right here.
+    # This label was typed as "Book a walkthrough" while content.ts said something else, so the
+    # site-wide copy pass changed every CTA on the page and silently missed the one in the MENU.
+    # Steven caught it by eye. Sourced from ASK.cta now, which is the page's primary call to
+    # action, so the menu button and the page button can never say different things again.
+    ctaLabel=C["ASK"]["cta"]["label"], ctaHref=C["CONTACT"]["book"], ctaNewTab=False,
     # ⛔ bandDARK, NOT bandHeader — the hero's own ground. bandHeader is a lighter slate, and at
     # that tone the bar still read as a separate rectangle sitting on the hero even WITH the grid
     # running across the seam. A continuous grid cannot join two different colours; matching the
@@ -225,16 +233,32 @@ header = blk("SiteHeader",
 footer = blk("SiteFooter",
     blurb=C["FOOTER"]["closing"],
     links=[],
+    # ⛔ CARRY `line` THROUGH AS `note`. content.ts has always put a descriptor on the footer's
+    # division links — "The divisions carry their descriptor here too — a footer has the room a nav
+    # bar doesn't" — and THIS mapping silently dropped it, keeping only label and href. So the menu
+    # taught the four divisions and the footer merely listed them. The data was never missing; it
+    # just never made the trip.
     groups=[{"heading": col["title"],
-             "links": [{"label": l["label"], "target": l["href"]} for l in col["links"]]}
+             "links": [{"label": l["label"], "target": l["href"], "note": l.get("line", "")}
+                       for l in col["links"]]}
             for col in C["FOOTER"]["columns"]],
     phone=C["CONTACT"]["tel"], phoneDisplay=C["CONTACT"]["phone"],
     email="support@stevenjamesconsulting.com",
     privacyUrl="https://www.privacypolicies.com/live/1cbbc5dd-5b42-4b68-abdd-a279a5e3b4f7",
     tosUrl="https://www.privacypolicies.com/live/34bb5cc7-32b9-4449-ae32-7cfe78f34e45",
     copyright="ARV Venture Group LLC Parent Company · Steven James Consulting",
-    background="", foreground="", brandName="Steven James Consulting", showLogo=True)
+    # ⛔ THE SAME MARK AS THE HEADER. The footer shipped the `SJC` circle while the header wore the
+    # serif wordmark — two brands on one screen, visible in the first phone screenshot Steven took.
+    background="", foreground="", brandName="Steven James", showLogo=True,
+    brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent")
 
+# ⛔ THE PAGE NO LONGER CARRIES THE CHROME. `header` and `footer` now live in the SITE's own `nav`
+# and `footer` documents (--chrome, below), which every page of this website renders inside. Leaving
+# them in `content` as well would render each one TWICE the moment the chrome docs exist.
+#
+# This is the whole reason for the change: with the chrome in the page, the five division pages
+# queued behind this one would each hold their own copy of the header, and the copies drift the
+# first time any one of them is edited.
 DATA = {
     "root": {"props": {
         "title": "Steven James Consulting — websites for high-end trades",
@@ -243,9 +267,14 @@ DATA = {
                        "who build it, not an account manager.",
         "businessName": "Steven James Consulting",
     }},
-    "content": [header, hero, story, diagnosis, selfcheck, solution, proof, who, ask, footer],
+    "content": [hero, story, diagnosis, selfcheck, solution, proof, who, ask],
     "zones": {},
 }
+
+# The two site-wide documents. Same block objects the page used to hold — same wordmark, same
+# bandGrid, same links — just stored once for the whole website instead of once per page.
+NAV_DATA = {"root": {"props": {}}, "content": [header], "zones": {}}
+FOOTER_DATA = {"root": {"props": {}}, "content": [footer], "zones": {}}
 
 def api(method, path, payload):
     req = urllib.request.Request(
@@ -263,6 +292,24 @@ SITE_ID = "steven-james-consulting-2026"
 if __name__ == "__main__":
     if "--dump" in sys.argv:
         print(json.dumps(DATA, indent=1)[:600]); sys.exit()
+
+    # --chrome writes all THREE documents: the page without its chrome, plus the site-wide nav and
+    # footer. Deliberately one flag rather than three runs — writing the chrome docs while the page
+    # still contained the same blocks would render the header twice, and that intermediate state is
+    # exactly the kind of thing that gets left behind and found later on a live site.
+    if "--chrome" in sys.argv:
+        print(f"writing chrome + page for {SITE_ID}…")
+        ok = True
+        for label, page, payload in (("page  ", SLUG, DATA),
+                                     ("nav   ", "nav", NAV_DATA),
+                                     ("footer", "footer", FOOTER_DATA)):
+            st, res = api("PUT", "/api/puck", {"page": page, "site": SITE_ID, "data": payload})
+            print(f"  {label} -> {st} {res}")
+            ok = ok and st < 300
+        print(f"\nedit page:   https://stevenjamesdesigns.com/edit/{SITE_ID}/{SLUG}")
+        print(f"edit nav:    https://stevenjamesdesigns.com/edit/{SITE_ID}/nav")
+        print(f"edit footer: https://stevenjamesdesigns.com/edit/{SITE_ID}/footer")
+        sys.exit(0 if ok else 1)
 
     if "--rewrite" in sys.argv:
         print(f"rewriting {SITE_ID}/{SLUG} (no site or page created)…")

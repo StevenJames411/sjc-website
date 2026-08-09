@@ -102,7 +102,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -127,6 +127,7 @@ type Props = {
     menuMode: string;
     menuPhone: string;
     menuPhoneDisplay: string;
+    menuEmail: string;
     brandStyle: string;
     brandLine2: string;
     brandLine2Color: string;
@@ -237,6 +238,7 @@ export const NAV_DEFAULTS = {
   menuMode: "bar",
   menuPhone: "",
   menuPhoneDisplay: "",
+  menuEmail: "",
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
   ctaNewTab: false,
@@ -277,6 +279,11 @@ export const FOOTER_DEFAULTS = {
   foreground: "",
   brandName: "",
   showLogo: true,
+  // ⚠️ Blank = the logo+name lockup every published footer already has. Same rule as the header's
+  // brandStyle: a new option must never restyle a live site as a side effect of existing.
+  brandStyle: "",
+  brandLine2: "",
+  brandLine2Color: "",
 };
 
 export const IMAGE_DEFAULTS = {
@@ -1485,10 +1492,13 @@ export const config: Config<Props, RootProps> = {
               type: "array" as const,
               label: "Links in this column",
               getItemSummary: (i: { label?: string }) => i?.label || "link",
-              defaultItemProps: { label: "New link", target: "/" },
+              defaultItemProps: { label: "New link", target: "/", note: "" },
               arrayFields: {
                 label: { type: "text" as const, label: "Label" },
                 target: { type: "text" as const, label: "Links to (page or /#section)" },
+                // Same field the nav's links carry. A footer column has room to say what a link
+                // MEANS, which is the difference between listing four divisions and teaching them.
+                note: { type: "text" as const, label: "One line under it (blank = hide)" },
               },
             },
           },
@@ -1515,6 +1525,24 @@ export const config: Config<Props, RootProps> = {
           ),
         },
         brandName: { type: "text" as const, label: "Business name (blank = Steven James Consulting)" },
+        // Same wording as the header's field on purpose — one mark, two places, and they should
+        // read identically in the builder or they get set to different things.
+        brandStyle: {
+          type: "radio" as const,
+          label: "Brand mark",
+          options: [
+            { label: "Logo / icon + name", value: "" },
+            { label: "Typeset wordmark (serif, two lines)", value: "wordmark" },
+          ],
+        },
+        brandLine2: { type: "text" as const, label: "Second line under the name (wordmark only)" },
+        brandLine2Color: {
+          type: "custom" as const,
+          label: "Second line colour (blank = matches the name)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         showLogo: {
           type: "radio" as const,
           label: "SJC logo",
@@ -1525,7 +1553,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -1540,6 +1568,9 @@ export const config: Config<Props, RootProps> = {
           foreground={foreground}
           brandName={brandName}
           showLogo={showLogo}
+          brandStyle={brandStyle}
+          brandLine2={brandLine2}
+          brandLine2Color={brandLine2Color}
         />
       ),
     },
@@ -1626,6 +1657,8 @@ export const config: Config<Props, RootProps> = {
         // number in the bar is the first thing to break on a narrow screen.
         menuPhone: { type: "text" as const, label: "Phone in the menu (blank = hide)" },
         menuPhoneDisplay: { type: "text" as const, label: "Phone, as written" },
+        // Feeds the menu's "Click to Email" button — the same component the footer uses.
+        menuEmail: { type: "text" as const, label: "Email in the menu (blank = hide)" },
         // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
         // Blank = SJC's own look. Set these on a client build so their header isn't wearing
         // our navy. Existing nav documents have none of them saved, so they render unchanged.
@@ -1677,7 +1710,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
         <NavView
           brandStyle={brandStyle}
           brandLine2={brandLine2}
@@ -1686,6 +1719,7 @@ export const config: Config<Props, RootProps> = {
           menuMode={menuMode}
           menuPhone={menuPhone}
           menuPhoneDisplay={menuPhoneDisplay}
+          menuEmail={menuEmail}
           brandName={brandName}
           brandHref={brandHref}
           brandSize={brandSize}

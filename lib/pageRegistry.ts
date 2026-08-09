@@ -16,7 +16,7 @@
 // a groomer's site would be exactly the leak this whole change exists to prevent.
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
-import { PUCK_PAGES, type PuckPage } from "./puckPages";
+import { PUCK_PAGES, isChrome, type PuckPage } from "./puckPages";
 import { siteKeys, SJC } from "./siteKeys";
 import { RESERVED_SITE_IDS } from "./sitesShared";
 
@@ -46,10 +46,19 @@ export async function readPages(siteId: string): Promise<PageEntry[]> {
   const named = (p: PuckPage) => ({ ...p, title: titles[p.slug] || p.title });
 
   // Only SJC gets the hardcoded built-ins; see the warning at the top of this file.
-  const builtins: PageEntry[] =
-    siteId === SJC
-      ? PUCK_PAGES.filter((p) => !hidden.has(p.slug)).map((p) => ({ ...named(p), custom: false }))
-      : [];
+  //
+  // ⚠️ EXCEPT THE TWO CHROME DOCUMENTS. A client site gets `nav` and `footer` — and nothing else.
+  // They are not pages, they are the wrapper every page renders inside, and without them a site's
+  // header has to be typed into each page separately and the copies drift the first time one moves
+  // (which is exactly what forced this change, with five division pages queued behind it).
+  //
+  // This is NOT the leak the warning above is about: About/Podcast/Apply stay SJC-only, and an
+  // empty chrome document falls back to the page's own blocks rather than to SJC's chrome. There
+  // is no path from here to a client wearing Steven's nav.
+  const grant = siteId === SJC ? PUCK_PAGES : PUCK_PAGES.filter((p) => isChrome(p.slug));
+  const builtins: PageEntry[] = grant
+    .filter((p) => !hidden.has(p.slug))
+    .map((p) => ({ ...named(p), custom: false }));
   const custom: PageEntry[] = (blob.custom || []).map((p) => ({ ...named(p), custom: true }));
   return [...builtins, ...custom];
 }

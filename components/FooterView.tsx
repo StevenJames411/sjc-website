@@ -1,9 +1,18 @@
-import { resolveColor } from "@/lib/brandColor";
+import { resolveColor, resolveColorOr } from "@/lib/brandColor";
 import { telLink } from "@/lib/businessTokens";
+// ⛔ SHARED WITH THE MENU OVERLAY (NavView). These three buttons used to be defined here only,
+// while the menu had its own pair of full-width bars for the same actions — which is how the two
+// drifted far enough apart for Steven to ask why they didn't match. One definition now.
+import ContactButtons from "@/components/ContactButtons";
 const LOGO_URL =
   "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png";
 
-export type FooterLink = { label: string; target: string };
+// `note` — the one-line descriptor under a link. The nav has carried this since menu mode shipped
+// ("Everything else points at it, so it goes first"), and app/v2/content.ts has always put it on
+// the footer's division links too, with the comment "a footer has the room a nav bar doesn't."
+// It was simply never rendered here, so the footer listed the four divisions where the menu
+// TEACHES them. Optional, so no existing footer changes.
+export type FooterLink = { label: string; target: string; note?: string };
 /**
  * A titled column of links — "SERVICES", "COMPANY".
  *
@@ -36,6 +45,23 @@ export type FooterViewProps = {
   // hardcoded to SJC — the single most obvious giveaway on a client build.
   brandName?: string;
   showLogo?: boolean;
+  // ── THE BRAND MARK'S SHAPE — MIRRORS NavView ────────────────────────────────────────────────
+  // "" (default) = logo image + name in the body sans. Every existing footer.
+  // "wordmark"   = the name set in the display serif as small-caps, with a letterspaced second
+  //                line beneath it, and NO image at all.
+  //
+  // ⛔ THE HEADER GOT THIS AND THE FOOTER DID NOT, so a page wore two different brands: the serif
+  // wordmark on top and the old `SJC` circle at the bottom of the same screen. A brand mark is a
+  // template-level thing — if only half the template has it, every site built from it is wrong in
+  // the same way.
+  //
+  // ⚠️ In wordmark mode the logo branch is BYPASSED, not hidden. The image is SJC's own blob
+  // asset, so on a client build it puts Steven's mark on their business — the same leak already
+  // closed in the nav.
+  brandStyle?: string;
+  /** The second line ("Consulting"). Wordmark mode only. */
+  brandLine2?: string;
+  brandLine2Color?: string;
 };
 
 // The live site footer, rendered from props. Used BOTH on the live site (via Footer.tsx, which
@@ -55,6 +81,9 @@ export default function FooterView({
   foreground,
   brandName,
   showLogo,
+  brandStyle,
+  brandLine2,
+  brandLine2Color,
 }: FooterViewProps) {
   // ROLES, not hexes. #111827 here meant the footer sat one shade off every dark band above it and
   // never moved when the palette did — on 2026-08-05 the whole site went near-black cyan and the
@@ -71,9 +100,10 @@ export default function FooterView({
   // The "More" column only appears when it has something in it. Without this, adding groups left
   // an empty titled column sitting between them — a heading with nothing under it, which reads as
   // a bug rather than as a design.
-  const showMore = linkEls.length > 0 || !!email || !!phoneDisplay;
-  const btn =
-    "inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--color-sjc-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-[color:var(--color-sjc-green)]";
+  // ⚠️ LINKS ONLY NOW. This used to be true when there was merely an email or a phone, which after
+  // moving both onto the contact buttons would render an empty column headed "More".
+  const showMore = linkEls.length > 0;
+
   // WHY A FLAT FILL READS AS CHEAP, AND WHAT THE BOUGHT DESIGNS DO INSTEAD.
   //
   // Steven put it exactly right on 2026-08-05: the SiteDrop footer "looks richer, deeper blue,"
@@ -110,36 +140,77 @@ export default function FooterView({
         style={{ backgroundColor: "var(--color-sjc-blue)", filter: "blur(120px)" }}
       />
       <div className="relative mx-auto max-w-6xl px-6 py-14">
-        <div
-          className="grid gap-10"
-          style={{
-            // Auto-fit rather than a fixed three: the brand block keeps a wide column and each
-            // group takes one, so three groups and none both lay out without choosing a count.
-            gridTemplateColumns: groupEls.length
-              ? "minmax(220px, 1.6fr) repeat(auto-fit, minmax(140px, 1fr))"
-              : undefined,
-          }}
-        >
+        {/* ⛔ ONE COLUMN ON A PHONE, COLUMNS FROM md UP. This is the fix for the email running off
+            the right edge — and the fix has to be a BREAKPOINT, not a cleverer track definition.
+
+            Two earlier attempts were wrong and are worth naming so they aren't retried:
+            • Wrapping the text. The track FLOOR sets the column width, not the string, so a
+              140px floor stays 140px wide and still overflows.
+            • `minmax(min(140px, 100%), 1fr)`. `100%` resolves against the whole grid CONTAINER,
+              not per track — with four tracks that is still 4x140 + gaps ≈ 680px. min() only
+              rescues a grid whose SINGLE track is wider than the screen.
+
+            An auto-fit grid cannot drop below its track count on its own, so on a 390px iPhone the
+            footer stayed ~680px wide and `mx-auto` centred the overflow — which is why the first
+            column was clipped on BOTH sides, not just the right.
+
+            Tailwind's md: prefix is a real media query, so the column definition simply does not
+            exist below 768px and the grid falls back to a single stacked column. */}
+        {/* ⛔ EQUAL COLUMNS THAT COLLAPSE 4 → 2 → 1. NO auto-fit.
+            `repeat(auto-fit, minmax(140px, 1fr))` asks the browser "how many 140px columns fit?"
+            and collapses the extras — so the real column count was being GUESSED from the viewport
+            rather than set from the content. With three columns in a 1152px canvas the leftovers
+            collapsed but the space did not redistribute, and everything bunched left with ~250px
+            of dead air on the right. Steven caught it against the divider line, which spans the
+            full canvas because it is a plain border and not part of the grid.
+
+            Explicit steps instead, so each column always fills its share of the row:
+              1 column  on a phone
+              2 columns from sm  (brand+divisions / company+contact)
+              4 columns from lg  (brand · divisions · company · contact)
+            ⚠️ No 3-column step: with four children, three columns strands the fourth on a row of
+            its own — the exact lopsidedness this is fixing. */}
+        <div className={`grid gap-10 ${groupEls.length ? "sm:grid-cols-2 lg:grid-cols-4" : ""}`}>
           <div className={groupEls.length ? "" : "md:col-span-2"}>
-            <div className="flex items-center gap-3">
-              {logoOn ? <img src={LOGO_URL} alt="logo" className="h-12 w-12 rounded-full" /> : null}
-              <span className="text-lg font-semibold">{name}</span>
-            </div>
-            {blurb ? <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/80">{blurb}</p> : null}
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <a href={telLink(phone)} className={btn}>
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                  <path fillRule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clipRule="evenodd" />
-                </svg>
-                Call Us
-              </a>
-              <a href={`sms:${phone}`} className={btn}>
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                  <path fillRule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.521c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97z" clipRule="evenodd" />
-                </svg>
-                Text Us
-              </a>
-            </div>
+            {String(brandStyle) === "wordmark" ? (
+              // Same mark as the header (NavView) — Playfair is already loaded site-wide, so this
+              // costs no extra font request. `font-variant: small-caps` is what produces the
+              // tall-initial / small-rest shape; uppercasing the string gives shouting instead.
+              <div className="leading-none">
+                <span
+                  className="block"
+                  style={{
+                    fontFamily: "var(--font-playfair), Georgia, serif",
+                    fontVariant: "small-caps",
+                    fontWeight: 500,
+                    letterSpacing: "0.04em",
+                    fontSize: "26px",
+                  }}
+                >
+                  {name}
+                </span>
+                {brandLine2 ? (
+                  <span
+                    className="mt-1.5 block uppercase"
+                    style={{
+                      fontFamily: "var(--font-playfair), Georgia, serif",
+                      letterSpacing: "0.34em",
+                      fontSize: "12px",
+                      color: resolveColorOr(brandLine2Color, "currentColor"),
+                      opacity: brandLine2Color ? 1 : 0.75,
+                    }}
+                  >
+                    {brandLine2}
+                  </span>
+                ) : null}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                {logoOn ? <img src={LOGO_URL} alt="logo" className="h-12 w-12 rounded-full" /> : null}
+                <span className="text-lg font-semibold">{name}</span>
+              </div>
+            )}
+            {blurb ? <p className="mt-6 text-sm leading-relaxed text-white/80">{blurb}</p> : null}
           </div>
 
           {groupEls.map((g, gi) => (
@@ -148,7 +219,17 @@ export default function FooterView({
               <ul className="mt-4 space-y-3 text-sm">
                 {g.links.map((l, i) => (
                   <li key={i}>
-                    <a href={l.target || "#"} className="text-white/80 hover:text-white">{l.label}</a>
+                    <a href={l.target || "#"} className="group block text-white/80 hover:text-white">
+                      <span className="block">{l.label}</span>
+                      {/* ⛔ UNDER THE LABEL, NOT ON HOVER. These four lines are the pitch — what
+                          each division actually does — not a detail worth hiding. Hover does not
+                          exist on a phone, which is where most of this footer gets read. */}
+                      {l.note ? (
+                        <span className="mt-0.5 block text-xs leading-snug text-white/50">
+                          {l.note}
+                        </span>
+                      ) : null}
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -164,19 +245,43 @@ export default function FooterView({
                   <a href={l.target || "#"} className="text-white/80 hover:text-white">{l.label}</a>
                 </li>
               ))}
-              {email ? (
-                <li>
-                  <a href={`mailto:${email}`} className="text-white/80 hover:text-white">{email}</a>
-                </li>
-              ) : null}
-              {phoneDisplay ? (
-                <li>
-                  <a href={telLink(phone)} className="text-white/80 hover:text-white">{phoneDisplay}</a>
-                </li>
-              ) : null}
+              {/* ⛔ THE EMAIL AND PHONE USED TO BE PRINTED HERE AS PLAIN LINES, AND THEY ARE GONE.
+                  They now live on the three contact buttons, where the value sits under the verb —
+                  so a visitor taps on a phone or reads and keys it in anywhere else. Listing them
+                  in both places meant the same two facts in two spots, drifting apart the first
+                  time one was edited, and it is what pushed the address off the right edge on a
+                  phone in the first place. */}
             </ul>
           </div>
           )}
+
+          {/* MOBILE ONLY — the contact block, last, under every link column.
+              Stacked on a phone, two full-width blue buttons sitting up in the identity block put
+              a call-to-action between the visitor and the entire sitemap: you scroll past "Call
+              Us" to reach the links. At the bottom they are the last thing before the legal line,
+              which is where a phone user expects to find them. Desktop is untouched — the copy in
+              the brand column is `hidden md:flex`, this one is `md:hidden`, so exactly one renders
+              at any width. */}
+          {/* ⛔ CONTACT IS ITS OWN COLUMN NOW, AND THAT REPLACES A HACK.
+              The buttons used to live inside the brand column, which made the left column tall
+              while the link columns sat short beside it — the footer read bottom-heavy on the left.
+              Worse, getting them below the links on a phone needed the SAME buttons rendered TWICE
+              (`hidden md:flex` in the brand block, `md:hidden` at the end), because CSS `order`
+              only sorts siblings and could not lift them out of that column.
+
+              As a column of its own they are simply the LAST grid child: fourth across on a wide
+              screen, last in the stack on a phone. One render, no duplication, and "contact at the
+              bottom on mobile" falls out of the layout instead of being arranged.
+
+              items-stretch: the buttons fill their column at every width. That is what closes the
+              ragged empty space left-alignment opened up on a phone — the block gets a hard right
+              edge instead of a jagged one. */}
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-white/90">Contact</p>
+            <div className="mt-4 flex flex-col items-stretch gap-3">
+              <ContactButtons phone={phone} phoneDisplay={phoneDisplay} email={email} />
+            </div>
+          </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">

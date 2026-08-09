@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Icon from "@/components/blocks/Icon";
+// Shared with FooterView — one definition of the three contact buttons, so the menu and the
+// footer cannot drift apart again.
+import ContactButtons, { CONTACT_PILL_BASE, PILL_SIZE, ICON_SIZE } from "@/components/ContactButtons";
 import { resolveColor, resolveColorOr, tint } from "@/lib/brandColor";
 
 const LOGO_URL =
@@ -57,6 +60,24 @@ export type NavViewProps = {
   // and a phone number in the bar is the first thing to break on a narrow screen.
   menuPhone?: string;
   menuPhoneDisplay?: string;
+  /**
+   * The email on the menu's Click to Email button.
+   *
+   * ⛔ The overlay used to offer a phone number and nothing else — no text, no email — while the
+   * footer offered all three. Same actions, two implementations, and they drifted until Steven
+   * asked why they didn't match. Both surfaces now render components/ContactButtons.
+   */
+  menuEmail?: string;
+  /**
+   * Real artwork for the menu tiles — one URL each, blank = the drawn glyph.
+   * ⛔ Steven already owns these (the glossy calendar and phone on alamoslimclinic.com, hosted
+   * on his Landing Site AI account). They are fields rather than code so he can swap them per
+   * site without a deploy — and so a client build never inherits SJC's artwork by default.
+   */
+  ctaIcon?: string;
+  menuIconCall?: string;
+  menuIconText?: string;
+  menuIconEmail?: string;
   // ── THE BRAND MARK'S SHAPE ───────────────────────────────────────────────────────────────────
   // "" (default) = logo image or icon, then the name in the body sans. Every existing nav.
   // "wordmark"   = no image at all — the name set in the display serif as small-caps, with a
@@ -108,6 +129,11 @@ export default function NavView({
   menuMode,
   menuPhone,
   menuPhoneDisplay,
+  menuEmail,
+  ctaIcon,
+  menuIconCall,
+  menuIconText,
+  menuIconEmail,
   brandStyle,
   brandLine2,
   brandLine2Color,
@@ -301,27 +327,99 @@ export default function NavView({
               </div>
             ))}
 
-            <div className="grid gap-3 md:col-span-2">
+            {/* ⛔ ONE ROW OF FOUR MATCHING PILLS. Steven: "the new book a call CTA button isn't
+                shaped the same as the other CTA buttons. It doesn't have the hover like the other
+                CTA buttons. And I'm not crazy about how it fits on the page."
+
+                All three were the same mistake: the CTA was a square-cornered, edge-to-edge,
+                uppercase letterspaced BAR sitting above three rounded sentence-case pills. Two
+                visual languages in one block, and at full width it put a slab of blue across the
+                whole overlay with three more blocks under it.
+
+                Now it uses CONTACT_PILL_BASE — the same geometry object the contact buttons use,
+                not a copy of it — with its own fill, and sits as the FIRST of four across.
+                Priority comes from position and the calendar icon rather than from being a
+                different shape. Collapses to a stack on a phone with the rest. */}
+            <div className="grid gap-3 sm:grid-cols-4 md:col-span-2">
               {ctaLabel ? (
                 <a
                   href={ctaHref || "#"}
                   {...tabAttrs(ctaNewTab)}
                   onClick={() => setOpen(false)}
-                  className="block px-8 py-4 text-center text-[10.5px] font-semibold uppercase tracking-[0.22em] text-white"
+                  className={`${CONTACT_PILL_BASE} ${PILL_SIZE.tile} hover:opacity-90`}
                   style={{ backgroundColor: resolveColorOr(ctaColor, "var(--color-sjc-blue)") }}
                 >
-                  {ctaLabel}
+                  {/* ⛔ A COLOURED GLYPH, NOT A FLAT OUTLINE AND NOT THE RASTER ICON.
+                      Steven wanted the button "dressed up" like the calendar art on Alamo Slim.
+                      That art is a 1.6MB PNG with a grey background baked in, built for ~80px —
+                      at the ~18px a text button gives it, the spiral binding and 25 numbers become
+                      about six grey pixels, and the grey square would sit on the blue fill.
+
+                      Note what Steven himself did on that site: the rich icon is a CARD graphic at
+                      80px, and the actual buttons ("Schedule Phone Consult") use a plain inline
+                      glyph. Two icons for two jobs. This is the second job.
+
+                      So: keep it inline SVG (sharp at any size, no file weight) and take what makes
+                      his read — a white body with a highlighted date square instead of a hollow
+                      outline.
+                      ⚠️ The band is RED, not blue like his. His sits on white; this sits on a blue
+                      button, where a blue band would disappear. */}
+                  {ctaIcon ? (
+                    <img
+                      src={ctaIcon}
+                      alt=""
+                      aria-hidden
+                      className={`${ICON_SIZE.tile} shrink-0 object-contain`}
+                    />
+                  ) : (
+                  <svg viewBox="0 0 24 24" className={`${ICON_SIZE.tile} shrink-0`} aria-hidden>
+                    {/* binding rings */}
+                    <rect x="7" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
+                    <rect x="15" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
+                    {/* body */}
+                    <rect x="2.5" y="3.5" width="19" height="19" rx="3" fill="#ffffff" />
+                    {/* top band */}
+                    <path d="M2.5 6.5a3 3 0 013-3h13a3 3 0 013 3V9h-19V6.5z" fill="#e2483d" />
+                    {/* the highlighted date */}
+                    <rect x="9.5" y="12" width="5" height="5" rx="1" fill="#e2483d" />
+                    {/* a couple of ruled days so it reads as a grid, not a card */}
+                    <rect x="4.5" y="12.75" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                    <rect x="16" y="12.75" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                    <rect x="4.5" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                    <rect x="10.25" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                    <rect x="16" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                  </svg>
+                  )}
+                  {/* Stacked like the contact tiles beside it — label, then the hint. Steven's own
+                      Alamo Slim blocks read title / value / "(Click Here)", and a tile with a bare
+                      one-line label next to three two-line ones sits visibly short. */}
+                  <span className="flex flex-col gap-1">
+                    <span className="block">{ctaLabel}</span>
+                    <span className="block text-sm font-normal opacity-90">(Click Here)</span>
+                  </span>
                 </a>
               ) : null}
-              {menuPhone ? (
-                <a
-                  href={`tel:${menuPhone}`}
-                  className="flex items-center justify-center gap-2.5 border px-8 py-3.5 text-sm tracking-[0.14em]"
-                  style={{ borderColor: "currentColor", opacity: 0.85 }}
-                >
-                  {menuPhoneDisplay || menuPhone}
-                </a>
-              ) : null}
+              {/* ⛔ THE SAME THREE BUTTONS THE FOOTER RENDERS — literally the same component.
+                  This was a single outline bar showing a bare phone number: no text option, no
+                  email, no icons, nothing like the footer's three pills. Two pieces of markup for
+                  the same three actions, which is how they drifted until Steven asked why the menu
+                  and the footer didn't match. Now neither can move without the other.
+
+                  ⚠️ The primary CTA above deliberately does NOT become a pill. It is the one thing
+                  the page is asking for; making it look like the three utility buttons beside it
+                  would flatten the difference between "book the call" and "here's how to reach
+                  us." Different job, different weight. */}
+              {/* Direct grid children, NOT wrapped in their own row — that is what puts all four
+                  buttons on one line instead of one bar above a row of three. */}
+              <ContactButtons
+                phone={menuPhone}
+                phoneDisplay={menuPhoneDisplay}
+                email={menuEmail}
+                size="tile"
+                iconCall={menuIconCall}
+                iconText={menuIconText}
+                iconEmail={menuIconEmail}
+              />
             </div>
           </div>
         </div>

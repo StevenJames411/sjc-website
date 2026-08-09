@@ -37,3 +37,17 @@ export const PUCK_PAGES: PuckPage[] = [
 ];
 
 export const findPage = (slug: string) => PUCK_PAGES.find((p) => p.slug === slug);
+
+// ── SITE-WIDE CHROME ─────────────────────────────────────────────────────────────────────────
+// The two documents that are NOT pages: they wrap every page of a site. Kept as one exported list
+// because three separate files have to agree about them, and they disagree the moment the list is
+// retyped:
+//   lib/pageRegistry  — grants these two built-ins to a CLIENT site (the rest stay SJC-only)
+//   lib/publicSitePage — renders them as chrome, AND refuses to serve them as pages
+//   the editor         — reaches them at /edit/<site>/nav via the generic [page] route
+//
+// ⛔ CHROME IS NOT A PAGE. `findPageMeta` searches built-ins, so a chrome slug in a site's registry
+// would otherwise resolve through the public catch-all and serve a bare header at /nav. Anything
+// added here must be excluded from public routing in the same commit.
+export const CHROME = ["nav", "footer"] as const;
+export const isChrome = (slug: string) => (CHROME as readonly string[]).includes(slug);
