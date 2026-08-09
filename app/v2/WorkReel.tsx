@@ -19,13 +19,24 @@ const WORK = [
 
 const HOLD = 5200;
 
+const FADE = 1000;
+
 export default function WorkReel() {
   const [idx, setIdx] = useState(0);
+  // The caption and the address bar lag the image by the length of the cross-fade. Without
+  // this they flip instantly and, for about a second, name a different site than the one on
+  // screen — the address bar reading meridiandetail.com over a photograph of Ardsley.
+  const [labelIdx, setLabelIdx] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     timer.current = setTimeout(() => setIdx((i) => (i + 1) % WORK.length), HOLD);
     return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [idx]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLabelIdx(idx), FADE * 0.62);
+    return () => clearTimeout(t);
   }, [idx]);
 
   return (
@@ -129,7 +140,7 @@ export default function WorkReel() {
                 display: "flex", alignItems: "center", padding: "0 10px",
                 fontSize: 10.5, color: "rgba(255,255,255,.35)", letterSpacing: ".04em",
               }}>
-                {WORK[idx].domain}
+                {WORK[labelIdx].domain}
               </span>
             </div>
 
@@ -147,9 +158,9 @@ export default function WorkReel() {
           }} className="wr-dots">
             <div>
               <div style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: "clamp(16px,1.5vw,21px)", color: "#fff" }}>
-                {WORK[idx].label}
+                {WORK[labelIdx].label}
               </div>
-              <div style={{ color: "rgba(255,255,255,.45)", fontSize: 13.5, marginTop: 4 }}>{WORK[idx].note}</div>
+              <div style={{ color: "rgba(255,255,255,.45)", fontSize: 13.5, marginTop: 4 }}>{WORK[labelIdx].note}</div>
             </div>
             <div style={{ display: "flex", gap: 7 }}>
               {WORK.map((w, i) => (
