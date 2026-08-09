@@ -102,7 +102,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -1490,10 +1490,13 @@ export const config: Config<Props, RootProps> = {
               type: "array" as const,
               label: "Links in this column",
               getItemSummary: (i: { label?: string }) => i?.label || "link",
-              defaultItemProps: { label: "New link", target: "/" },
+              defaultItemProps: { label: "New link", target: "/", note: "" },
               arrayFields: {
                 label: { type: "text" as const, label: "Label" },
                 target: { type: "text" as const, label: "Links to (page or /#section)" },
+                // Same field the nav's links carry. A footer column has room to say what a link
+                // MEANS, which is the difference between listing four divisions and teaching them.
+                note: { type: "text" as const, label: "One line under it (blank = hide)" },
               },
             },
           },

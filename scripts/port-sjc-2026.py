@@ -225,8 +225,14 @@ header = blk("SiteHeader",
 footer = blk("SiteFooter",
     blurb=C["FOOTER"]["closing"],
     links=[],
+    # ⛔ CARRY `line` THROUGH AS `note`. content.ts has always put a descriptor on the footer's
+    # division links — "The divisions carry their descriptor here too — a footer has the room a nav
+    # bar doesn't" — and THIS mapping silently dropped it, keeping only label and href. So the menu
+    # taught the four divisions and the footer merely listed them. The data was never missing; it
+    # just never made the trip.
     groups=[{"heading": col["title"],
-             "links": [{"label": l["label"], "target": l["href"]} for l in col["links"]]}
+             "links": [{"label": l["label"], "target": l["href"], "note": l.get("line", "")}
+                       for l in col["links"]]}
             for col in C["FOOTER"]["columns"]],
     phone=C["CONTACT"]["tel"], phoneDisplay=C["CONTACT"]["phone"],
     email="support@stevenjamesconsulting.com",

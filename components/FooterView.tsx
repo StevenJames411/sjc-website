@@ -3,7 +3,12 @@ import { telLink } from "@/lib/businessTokens";
 const LOGO_URL =
   "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png";
 
-export type FooterLink = { label: string; target: string };
+// `note` — the one-line descriptor under a link. The nav has carried this since menu mode shipped
+// ("Everything else points at it, so it goes first"), and app/v2/content.ts has always put it on
+// the footer's division links too, with the comment "a footer has the room a nav bar doesn't."
+// It was simply never rendered here, so the footer listed the four divisions where the menu
+// TEACHES them. Optional, so no existing footer changes.
+export type FooterLink = { label: string; target: string; note?: string };
 /**
  * A titled column of links — "SERVICES", "COMPANY".
  *
@@ -232,7 +237,11 @@ export default function FooterView({
         <div
           className={`grid gap-10 ${
             groupEls.length
-              ? "md:grid-cols-[minmax(220px,1.6fr)_repeat(auto-fit,minmax(140px,1fr))]"
+              // ⚠️ 1.1fr, was 1.6fr. At 1.6 the brand column ate nearly half the footer: the blurb
+              // ran long, the buttons sat in a lake of empty space, and the two link columns were
+              // squeezed against the right edge with dead space beyond them. Barely wider than a
+              // link column now — enough for the wordmark and a two-line blurb, no more.
+              ? "md:grid-cols-[minmax(220px,1.1fr)_repeat(auto-fit,minmax(140px,1fr))]"
               : ""
           }`}
         >
@@ -288,7 +297,10 @@ export default function FooterView({
                 see but not name: the eye follows a left edge down the column and then the buttons
                 jump to the middle. One alignment per column, or it reads as broken formatting
                 even when every individual piece is fine. */}
-            <div className="mt-6 hidden flex-col items-start gap-3 md:flex">{contactButtons}</div>
+            {/* flex-wrap, not a hard row: three buttons rarely fit across a narrowed brand column,
+                and wrapping lets them sit two-up or three-up depending on the label lengths rather
+                than forcing a tall stack that leaves the link columns floating at the top. */}
+            <div className="mt-6 hidden flex-wrap items-start gap-3 md:flex">{contactButtons}</div>
           </div>
 
           {groupEls.map((g, gi) => (
@@ -297,7 +309,17 @@ export default function FooterView({
               <ul className="mt-4 space-y-3 text-sm">
                 {g.links.map((l, i) => (
                   <li key={i}>
-                    <a href={l.target || "#"} className="text-white/80 hover:text-white">{l.label}</a>
+                    <a href={l.target || "#"} className="group block text-white/80 hover:text-white">
+                      <span className="block">{l.label}</span>
+                      {/* ⛔ UNDER THE LABEL, NOT ON HOVER. These four lines are the pitch — what
+                          each division actually does — not a detail worth hiding. Hover does not
+                          exist on a phone, which is where most of this footer gets read. */}
+                      {l.note ? (
+                        <span className="mt-0.5 block text-xs leading-snug text-white/50">
+                          {l.note}
+                        </span>
+                      ) : null}
+                    </a>
                   </li>
                 ))}
               </ul>
