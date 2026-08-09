@@ -62,9 +62,9 @@ def heading(s, size=44, color="white", align="center", above=16, below=0):
 def eyebrow(s, color="accent"):
     return text(f"<strong>{s.upper()}</strong>", size=13, color=color)
 
-def section(bg, content, width="64rem", pt=88, pb=88, sid=None):
+def section(bg, content, width="64rem", pt=88, pb=88, sid=None, decor="", grid=""):
     b = blk("Section", background=bg, maxWidth=width, paddingTop=pt, paddingBottom=pb,
-            decor="", grid="", gradientTo="", gradientAngle=135, content=content)
+            decor=decor, grid=grid, gradientTo="", gradientAngle=135, content=content)
     if sid:
         b["props"]["id"] = sid
     return b
@@ -96,7 +96,11 @@ hero = section(DARK, [
     blk("ChainStrip", color="accent", onDark=True,
         nodes=[{"k": n["k"], "note": n["note"], "mine": n["mine"]} for n in H["chain"]]),
     text(H["chainNote"], size=14, color="white", above=28),
-], width="80rem", pt=110, pb=90, sid="hero")
+# ⛔ A FLAT NAVY RECTANGLE IS NOT THE OLD HERO. The Steven James Designs hero Steven wants back
+# is the SAME navy — what makes it read is the graph-paper grid over it plus the two soft corner
+# glows. Both dials already existed on the Section block and were shipped blank, which is the
+# entire difference between the two screenshots.
+], width="80rem", pt=110, pb=90, sid="hero", grid="accent", decor="accent")
 
 S = C["STORY"]
 story = section(WHITE, [
@@ -196,13 +200,22 @@ NAV_LINKS = (
       "newTab": False, "note": n["line"], "group": "The Company"} for n in C["NAV_EXTRA"]]
 )
 
+# ⛔ THE MARK IS A TYPESET WORDMARK, NOT A LOGO TILE. `SJC` in a circle beside the name is a
+# stock-template lockup — the thing this rebuild exists to stop looking like. Two lines, display
+# serif, small-caps: STEVEN JAMES over a wide-tracked CONSULTING.
+# ⚠️ `showLogo` stays True and does nothing here — wordmark mode never reaches the image branch.
+# Left true so flipping back to the logo lockup is one field, not two.
+#
+# `bandGrid` = the hero's grid colour on purpose. Header and hero then share one continuous navy
+# field; without it the bar reads as a separate rectangle laid on top of the page.
 header = blk("SiteHeader",
     menuMode="menu", menuPhone=C["CONTACT"]["tel"], menuPhoneDisplay=C["CONTACT"]["phone"],
-    brandName="Steven James Consulting", brandHref="/", brandSize=20,
+    brandName="Steven James", brandHref="/", brandSize=26,
+    brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
     tagline="", taglineColor="accent", taglineSize=14,
     links=NAV_LINKS,
     ctaLabel="Book a walkthrough", ctaHref=C["CONTACT"]["book"], ctaNewTab=False,
-    background="bandHeader", foreground="white", showLogo=True,
+    background="bandHeader", foreground="white", showLogo=True, bandGrid="accent",
     ctaColor="accent", brandIcon="", brandIconColor="")
 
 footer = blk("SiteFooter",
@@ -237,9 +250,22 @@ def api(method, path, payload):
     with urllib.request.urlopen(req) as r:
         return r.status, json.loads(r.read().decode() or "{}")
 
+# ⛔ THE SITE ALREADY EXISTS. Run bare a second time and this script creates "Steven James
+# Consulting 2026" AGAIN — a duplicate card holding a stale copy of the page, and no way to tell
+# from the studio which of the two is the real one. Every re-port after the first is --rewrite,
+# which touches only the existing home page.
+SITE_ID = "steven-james-consulting-2026"
+
 if __name__ == "__main__":
     if "--dump" in sys.argv:
         print(json.dumps(DATA, indent=1)[:600]); sys.exit()
+
+    if "--rewrite" in sys.argv:
+        print(f"rewriting {SITE_ID}/{SLUG} (no site or page created)…")
+        st, res = api("PUT", "/api/puck", {"page": SLUG, "site": SITE_ID, "data": DATA})
+        print("  ", st, res)
+        print(f"\nedit: https://stevenjamesdesigns.com/edit/{SITE_ID}/{SLUG}")
+        sys.exit(0 if st < 300 else 1)
 
     print("creating the website…")
     st, res = api("POST", "/api/sites", {"name": SITE_NAME, "kind": "client",

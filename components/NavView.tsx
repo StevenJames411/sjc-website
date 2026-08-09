@@ -57,6 +57,23 @@ export type NavViewProps = {
   // and a phone number in the bar is the first thing to break on a narrow screen.
   menuPhone?: string;
   menuPhoneDisplay?: string;
+  // ── THE BRAND MARK'S SHAPE ───────────────────────────────────────────────────────────────────
+  // "" (default) = logo image or icon, then the name in the body sans. Every existing nav.
+  // "wordmark"   = no image at all — the name set in the display serif as small-caps, with a
+  //                second letterspaced line beneath it. A picture-plus-text lockup and a typeset
+  //                wordmark are two different marks; you cannot get the second by hiding the
+  //                first, because what makes it read is the SERIF and the tracking, not the
+  //                absence of an icon.
+  brandStyle?: string;
+  // Wordmark's second line ("CONSULTING"). Deliberately NOT `tagline` — tagline is the centered
+  // who-you-are line in bar mode, and reusing it would mean the same field renders in two
+  // unrelated places the moment anyone flips nav style.
+  brandLine2?: string;
+  brandLine2Color?: string;
+  // Faint graph-paper over the header band, same overlay the Section block draws. Blank = off.
+  // With it set to the hero's grid colour the bar and the hero read as ONE navy field instead of
+  // two stacked rectangles — which is the whole point of putting it here rather than only below.
+  bandGrid?: string;
 };
 
 // "Open in a new tab" is set per link in the builder. rel="noopener noreferrer" rides along
@@ -91,6 +108,10 @@ export default function NavView({
   menuMode,
   menuPhone,
   menuPhoneDisplay,
+  brandStyle,
+  brandLine2,
+  brandLine2Color,
+  bandGrid,
 }: NavViewProps) {
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
@@ -109,7 +130,55 @@ export default function NavView({
   const fg = foreground || "white";
   const logoOn = showLogo !== false;
 
-  const Brand = (
+  // The typeset wordmark. Playfair is already loaded site-wide (app/layout.tsx), so this costs
+  // no new font request. `font-variant: small-caps` is what produces the tall-initial / small-rest
+  // shape — uppercasing the string instead gives you shouting, not a wordmark.
+  const Wordmark = (
+    <a href={brandHref || "/"} className="block leading-none" onClick={() => setOpen(false)}>
+      <span
+        className="block"
+        style={{
+          fontFamily: "var(--font-playfair), Georgia, serif",
+          fontVariant: "small-caps",
+          fontWeight: 500,
+          letterSpacing: "0.04em",
+          fontSize: `${brandSize || 26}px`,
+        }}
+      >
+        {brandName}
+      </span>
+      {brandLine2 ? (
+        <span
+          className="mt-1.5 block uppercase"
+          style={{
+            fontFamily: "var(--font-playfair), Georgia, serif",
+            // Tracked out hard and set at roughly half the top line — the two lines have to read
+            // as one mark, and equal weight makes them read as two separate words instead.
+            letterSpacing: "0.34em",
+            fontSize: `${Math.max(9, Math.round((brandSize || 26) * 0.44))}px`,
+            color: resolveColorOr(brandLine2Color, "currentColor"),
+            opacity: brandLine2Color ? 1 : 0.75,
+          }}
+        >
+          {brandLine2}
+        </span>
+      ) : null}
+    </a>
+  );
+
+  const GridOverlay = bandGrid ? (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0"
+      style={{
+        backgroundImage: `linear-gradient(${resolveColor(bandGrid)} 1px, transparent 1px), linear-gradient(90deg, ${resolveColor(bandGrid)} 1px, transparent 1px)`,
+        backgroundSize: "60px 60px",
+        opacity: 0.07,
+      }}
+    />
+  ) : null;
+
+  const Brand = String(brandStyle) === "wordmark" ? Wordmark : (
     <a href={brandHref || "/"} className="flex items-center gap-3" onClick={() => setOpen(false)}>
       {brandIcon ? (
         <span
@@ -149,10 +218,18 @@ export default function NavView({
       else groups.push({ title, items: [l] });
     }
 
+    // ⚠️ NOT `relative` — `sticky` and `relative` are both position utilities and the CSS
+    // cascade, not the class order, decides which wins; adding it silently unsticks the header.
+    // A sticky element is already a positioned ancestor, so the absolute overlay anchors to it
+    // as-is. Only the clip is needed.
     return (
-      <header className="sticky top-0 z-30 w-full" style={{ backgroundColor: resolveColor(bg) }}>
+      <header
+        className={`sticky top-0 z-30 w-full${bandGrid ? " overflow-hidden" : ""}`}
+        style={{ backgroundColor: resolveColor(bg) }}
+      >
+        {GridOverlay}
         <div
-          className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4"
+          className={`mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4${bandGrid ? " relative z-10" : ""}`}
           style={{ color: resolveColor(fg) }}
         >
           {Brand}
@@ -263,11 +340,12 @@ export default function NavView({
     // against white they look more different." That IS the mechanism. A colour that depends on
     // what happens to be behind it isn't a colour you can tune.
     <header
-      className="sticky top-0 z-20 w-full"
+      className={`sticky top-0 z-20 w-full${bandGrid ? " overflow-hidden" : ""}`}
       style={{ backgroundColor: resolveColor(bg) }}
     >
+      {GridOverlay}
       {/* Desktop: brand left · tagline centered · links + button right */}
-      <div className="mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid" style={{ color: resolveColor(fg) }}>
+      <div className={`mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid${bandGrid ? " relative z-10" : ""}`} style={{ color: resolveColor(fg) }}>
         <div className="justify-self-start">{Brand}</div>
         <div className="justify-self-center text-center">{Tagline}</div>
         <div className="flex items-center gap-5 justify-self-end">
@@ -296,7 +374,7 @@ export default function NavView({
       </div>
 
       {/* Mobile: brand + hamburger */}
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 lg:hidden" style={{ color: resolveColor(fg) }}>
+      <div className={`mx-auto flex max-w-6xl items-center justify-between px-6 py-3 lg:hidden${bandGrid ? " relative z-10" : ""}`} style={{ color: resolveColor(fg) }}>
         {Brand}
         <button
           type="button"

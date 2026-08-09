@@ -127,6 +127,10 @@ type Props = {
     menuMode: string;
     menuPhone: string;
     menuPhoneDisplay: string;
+    brandStyle: string;
+    brandLine2: string;
+    brandLine2Color: string;
+    bandGrid: string;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
   // FormQuestion blocks). The live /apply wizard reads this data and renders itself — these
@@ -244,6 +248,12 @@ export const NAV_DEFAULTS = {
   ctaColor: "",
   brandIcon: "",
   brandIconColor: "",
+  // ⚠️ Same rule as menuMode above: blank is the shape every published nav already has. The
+  // wordmark is opt-in per nav, so adding it here cannot restyle the live site.
+  brandStyle: "",
+  brandLine2: "",
+  brandLine2Color: "",
+  bandGrid: "",
 };
 
 // Single source of truth for the footer — used by the seed (so /edit/footer opens to it) AND
@@ -1549,6 +1559,24 @@ export const config: Config<Props, RootProps> = {
           ],
         },
         brandName: { type: "text" as const, label: "Business name" },
+        // ⛔ THE MARK IS A SHAPE DECISION, LIKE menuMode — not a colour tweak. Hiding the logo
+        // does not produce a wordmark; the serif and the tracking do.
+        brandStyle: {
+          type: "radio" as const,
+          label: "Brand mark",
+          options: [
+            { label: "Logo / icon + name", value: "" },
+            { label: "Typeset wordmark (serif, two lines)", value: "wordmark" },
+          ],
+        },
+        brandLine2: { type: "text" as const, label: "Second line under the name (wordmark only)" },
+        brandLine2Color: {
+          type: "custom" as const,
+          label: "Second line colour (blank = matches the name)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         brandHref: {
           type: "text" as const,
           label: "Logo + name links to (\"/\" for home; on a sales page, that page's own URL)",
@@ -1638,10 +1666,23 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // Set it to the hero's grid colour and the bar stops reading as a separate rectangle
+        // sitting on top of the page.
+        bandGrid: {
+          type: "custom" as const,
+          label: "Grid overlay on the header band (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
         <NavView
+          brandStyle={brandStyle}
+          brandLine2={brandLine2}
+          brandLine2Color={brandLine2Color}
+          bandGrid={bandGrid}
           menuMode={menuMode}
           menuPhone={menuPhone}
           menuPhoneDisplay={menuPhoneDisplay}
