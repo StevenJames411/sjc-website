@@ -65,7 +65,9 @@ export default function ChainHero() {
           fontFamily: "Georgia, serif", fontWeight: 300, margin: 0, color: "#fff",
           fontSize: "clamp(34px,5.4vw,76px)", lineHeight: 1.05, letterSpacing: ".005em",
         }}>
-          {HERO.h1[0]}<br />{HERO.h1[1]}
+          {HERO.h1.map((l, i) => (
+            <span key={i}>{i > 0 && <br />}{l}</span>
+          ))}
         </h1>
 
         <p style={{
@@ -81,14 +83,45 @@ export default function ChainHero() {
           {HERO.body[1]}
         </p>
 
-        <a href={HERO.cta.href} style={{
-          display: "inline-block", marginTop: "clamp(28px,3.2vw,42px)", padding: "16px 42px",
-          border: "1px solid var(--accent)", color: "var(--accent-soft)", textDecoration: "none",
-          fontSize: 11, letterSpacing: ".24em", textTransform: "uppercase",
-        }}>{HERO.cta.label}</a>
+        {/* ⚠️ THE VSL MOUNT POINT. The video does the educating; the headline only has to earn
+            the press. Wired to the diagnosis until the film exists — the slot is in the markup
+            deliberately, because you can only edit what is already there. */}
+        <div style={{
+          display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center",
+          marginTop: "clamp(28px,3.2vw,42px)",
+        }}>
+          <a href={HERO.video.href} style={{
+            display: "inline-flex", alignItems: "center", gap: 13, padding: "15px 30px 15px 22px",
+            background: "var(--accent)", color: "#0b0b0b", textDecoration: "none",
+            fontSize: 11, letterSpacing: ".2em", textTransform: "uppercase", fontWeight: 600,
+          }}>
+            <span style={{
+              width: 26, height: 26, borderRadius: "50%", background: "rgba(0,0,0,.16)",
+              display: "grid", placeItems: "center",
+            }}>
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+            </span>
+            {HERO.video.label}
+            <span style={{ opacity: .55, letterSpacing: ".1em" }}>{HERO.video.duration}</span>
+          </a>
 
-        {/* ---- the chain: breadth, in one glance ---- */}
-        <div className="ch-chain">
+          <a href={HERO.cta.href} style={{
+            display: "inline-block", padding: "16px 34px",
+            border: "1px solid rgba(var(--line),.28)", color: "rgba(255,255,255,.8)", textDecoration: "none",
+            fontSize: 11, letterSpacing: ".24em", textTransform: "uppercase",
+          }}>{HERO.cta.label}</a>
+        </div>
+
+        {/* ---- the chain: breadth, in one glance ----
+             ⚠️ LABELLED, because the page carries TWO orders and both are correct. This is the
+             CUSTOMER's path (Maps first — that is where they start). The divisions run in the
+             BUILD order (website first — everything points at it). Unlabelled, side by side,
+             they read as a contradiction. */}
+        <div style={{
+          marginTop: "clamp(44px,5.5vw,76px)", fontSize: 10, letterSpacing: ".3em",
+          textTransform: "uppercase", color: "rgba(255,255,255,.4)",
+        }}>{HERO.chainLabel}</div>
+        <div className="ch-chain" style={{ marginTop: "clamp(22px,2.6vw,34px)" }}>
           {HERO.chain.map((c) => (
             <div className="ch-node" key={c.k}>
               <div className="ch-dot" style={{

@@ -15,6 +15,8 @@ export type StatsProps = {
   items?: StatItem[];
   /** Colour of the big number. A role, so it follows the brand screen. */
   valueColor?: string;
+  /** Blank = the muted grey, which is invisible on a dark band. A role follows the brand. */
+  labelColor?: string;
   /** px. 0 = the responsive default, which is what almost every page should use. */
   valueSize?: number;
   align?: "left" | "center";
@@ -27,11 +29,13 @@ export const STATS_DEFAULTS: StatsProps = {
     { value: "4.9★", label: "Customer rating" },
   ],
   valueColor: "accent",
+  labelColor: "",
   valueSize: 0,
   align: "center",
 };
 
-export default function Stats({ items, valueColor, valueSize, align = "center" }: StatsProps) {
+export default function Stats({ items, valueColor,
+  labelColor, valueSize, align = "center" }: StatsProps) {
   const list = (items || []).filter((s) => s && (s.value || s.label));
   if (!list.length) return null;
 
@@ -71,7 +75,7 @@ export default function Stats({ items, valueColor, valueSize, align = "center" }
                 fontWeight: 600,
                 letterSpacing: "0.06em",
                 textTransform: "uppercase",
-                color: "var(--color-sjc-mute)",
+                color: resolveColorOr(labelColor, "var(--color-sjc-mute)"),
               }}
             >
               {s.label}

@@ -16,30 +16,15 @@
 // obvious one. "Chloe" is real and worth keeping; an AI employee with a name is memorable in
 // a way that "AI Implementation" never will be.
 export const DIVISIONS = [
-  {
-    short: "Designs",
-    name: "Steven James Designs",
-    line: "Websites for high-end trades",
-    href: "/designs",
-  },
-  {
-    short: "Five Star",
-    name: "Five Star",
-    line: "The review engine — placeholder name",
-    href: "/reviews",
-  },
-  {
-    short: "Chloe",
-    name: "Chloe",
-    line: "The AI employee that answers at 6pm",
-    href: "/ai-implementation",
-  },
+  { n: "1", short: "Custom Websites", name: "Steven James Designs", line: "Everything else points at it, so it goes first", href: "/designs" },
+  { n: "2", short: "Five Star Reviews", name: "Five Star",            line: "The entry fee — placeholder name",           href: "/reviews" },
+  { n: "3", short: "AI Implementation", name: "Chloe",                line: "The AI employee that answers at 6pm",        href: "/ai-implementation" },
+  { n: "4", short: "Paid Ads", name: "Paid Ads",             line: "Only once the first three hold",             href: "/ads" },
 ];
 
-// ⛔ THE SLOT EXISTS EVEN WHERE THE WORDS ARE PLACEHOLDER. A descriptor that isn't in the
-// markup can't be edited in the studio later — you can only change what is already there.
-// So Podcast and Careers carry the same panel as the divisions, with copy to be replaced.
 export const NAV_EXTRA = [
+  { short: "About", name: "About", line: "Forty years of running businesses, and what it taught us", href: "#about" },
+  { short: "Portfolio", name: "Portfolio", line: "Sites we have built, and what each one had to fix", href: "#work" },
   { short: "Podcast", name: "The Podcast", line: "Conversations with owners who build things — placeholder copy", href: "/podcast" },
   { short: "Careers", name: "Careers", line: "Setters and web builders — remote, paid on what you produce", href: "/careers" },
 ];
@@ -50,6 +35,13 @@ export const NAV = [
   ...NAV_EXTRA.map((n) => ({ label: n.short, href: n.href })),
 ];
 
+// ⚠️ PHONE PULLED FROM stevenjamesdesigns.com — confirm before this goes public.
+export const CONTACT = {
+  phone: "(210) 851-4906",
+  tel: "+12108514906",
+  book: "/apply",
+};
+
 export const BRAND = {
   nameTop: "Steven James",
   nameSub: "Consulting",
@@ -57,18 +49,23 @@ export const BRAND = {
 };
 
 export const HERO = {
-  badge: "Forty years · Five businesses · One standard",
-  h1: ["We run the digital side", "of your business."],
+  // ⛔ THE HEADLINE'S JOB IS TO EARN THE PLAY BUTTON, not to explain the business — the video
+  // does the educating. Nobody knows what a "digital brand architect" is, but everybody
+  // understands REAL ESTATE: owned versus rented, an asset versus an expense. Start there and
+  // the whole ascension becomes obvious — the site, the reviews, the follow-up and the ads are
+  // improvements to the same property, and nobody has to be told they're related.
+  badge: "Your internet assets",
+  h1: ["Your digital footprint is", "the most valuable real estate", "you’ll ever own."],
   body: [
-    "Website, reputation, follow-up, advertising — built as one system instead of four purchases that don’t know about each other.",
-    "Forty years of running real businesses went into this team and the way it works. You are not hiring a freelancer with a waiting list.",
+    "Most owners are renting it. A social page on land somebody else controls, a listing they never claimed, a website built once and left. When the platform changes the rules, the business changes with it.",
+    "We design the ground you actually own — and make every place a customer finds you say the same thing about you.",
   ],
-  cta: { label: "Start with a walkthrough", href: "#diagnosis" },
+  // ⚠️ THE VSL MOUNT POINT. Wired to the diagnosis until the video exists; the slot is in the
+  // markup on purpose, because you can only edit what is already there.
+  video: { label: "Why ads come last", duration: "3 min", href: "#diagnosis" },
+  cta: { label: "Start with a walkthrough", href: "#contact" },
 
-  // ⛔ THE VISUAL IS THE CHAIN, NOT A SCREENSHOT. A single browser frame says "one product",
-  // which is `/designs`' job. The parent brand's one job is to establish who he is and how far
-  // the work reaches — so the hero shows the whole sequence, with the four links he builds lit
-  // and the two he doesn't dimmed. Nobody else shows this; it's the intellectual property.
+  chainLabel: "How a customer actually moves",
   chain: [
     { k: "Maps",      note: "where they start",  mine: false },
     { k: "Reviews",   note: "the entry fee",     mine: true },
@@ -90,12 +87,12 @@ export const HERO = {
 
 export const STORY = {
   eyebrow: "How It Usually Goes",
-  h2: "You didn’t plan any of this. It just accumulated.",
+  h2: "Nobody bought this property on purpose.",
   paragraphs: [
     "You built the business on word of mouth, and it worked. For years it was the only thing that worked.",
     "Then it got quieter. So you had a website made — by a cousin, an agency, a guy off Facebook. It was fine.",
     "Then somebody sold you ads. Then somebody called about SEO. Then you set up the Google listing yourself one evening, and a review or two showed up on their own.",
-    "Every one of those was a separate purchase from a separate vendor. Not one of them asked what the others were doing.",
+    "Every one of those was a separate purchase from a separate vendor. Not one of them asked what the others were doing — and half of it sits on land you do not own.",
   ],
   closer: "That is not a marketing problem. That is four things in a row that don’t know the others exist.",
 };
@@ -175,9 +172,9 @@ export const BUCKETS = {
 };
 
 export const SOLUTION = {
-  eyebrow: "What We Do About It",
-  h2: "Same order, rebuilt.",
-  lede: "You can start anywhere. But this is the sequence, and the sequence is the part nobody else sold you.",
+  eyebrow: "The Order It Gets Built In",
+  h2: "Four divisions, in sequence.",
+  lede: "A customer moves through your business in one order; it gets built in another. The website comes first because everything else points at it, and the ads come last because they only amplify whatever is already there. That sequence is the part nobody else sold you.",
   cards: [
     { n: "01", t: "The website", href: "/designs", p: "Everything else points at it, so it goes first. Built to look like the work you actually do — not a template with your logo dropped in the corner." },
     { n: "02", t: "The reviews", href: "/reviews", p: "A system that asks every customer at the right moment, instead of you remembering to. Three reviews after ten years is not a reputation problem, it is a process problem." },
@@ -216,7 +213,7 @@ export const WHO = {
     "So when we tell you the pieces don't talk to each other, it isn't a theory out of a book. It is the specific problem he spent four decades solving inside his own businesses, with his own money, while the phone was ringing.",
     "That experience is what the team is built on and trained to. You are not buying one person's attention — you are buying a way of working that does not depend on any one person being available.",
   ],
-  signature: { name: "Steven Barchetti", role: "Founder · Steven James Consulting" },
+  signature: { name: "Steven Barchetti", role: "Digital Brand Architect · Founder" },
 };
 
 export const ASK = {
@@ -232,14 +229,14 @@ export const FOOTER = {
     // as a fourth and it is not one: no brand of its own, and it is only sold once the other
     // three are in place. It is the last link in the chain, reachable from the solution card.
     // The divisions carry their descriptor here too — a footer has the room a nav bar doesn't.
-    { title: "The Divisions", links: [
-      { label: "Steven James Designs", href: "/designs", line: "Websites for high-end trades" },
-      { label: "Five Star", href: "/reviews", line: "The review engine" },
-      { label: "Chloe", href: "/ai-implementation", line: "The AI employee that answers at 6pm" },
-    ]},
+    // ⛔ DERIVED FROM DIVISIONS, NEVER RETYPED. The footer drifted the moment the header
+    // labels changed — because it was a second copy of the same list. One source now, so the
+    // two cannot disagree again.
+    { title: "The Divisions", links: DIVISIONS.map((d) => ({
+      label: `${d.n} · ${d.short}`, href: d.href, line: d.line,
+    })) },
     { title: "The Company", links: [
-      { label: "The Work", href: "#work" },
-      { label: "Paid Ads", href: "/ads" },
+      { label: "Portfolio", href: "#work" },
       { label: "Podcast", href: "/podcast" },
       { label: "Careers", href: "/careers" },
       { label: "Book a Walkthrough", href: "/apply" },

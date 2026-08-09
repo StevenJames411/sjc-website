@@ -11,10 +11,16 @@ export default function SiteFooter() {
       padding: "clamp(52px,7vw,90px) clamp(20px,5vw,60px) clamp(30px,4vw,44px)",
       background: "var(--ink)",
     }}>
-      <div style={{
-        maxWidth: 1280, margin: "0 auto", display: "grid", gap: "clamp(32px,5vw,64px)",
-        gridTemplateColumns: "minmax(0,1.4fr) repeat(auto-fit,minmax(160px,1fr))",
-      }}>
+      {/* ⚠️ auto-fit kept three columns alive on a phone and squeezed the first one to one
+          word per line. Below 820px it stacks outright. */}
+      <style>{`
+        .ft-grid{display:grid;gap:clamp(32px,5vw,64px);max-width:1280px;margin:0 auto;
+          grid-template-columns:minmax(0,1.4fr) repeat(auto-fit,minmax(180px,1fr))}
+        @media (max-width:820px){ .ft-grid{grid-template-columns:1fr;gap:38px} }
+        .ft-fine{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between}
+        @media (max-width:820px){ .ft-fine{flex-direction:column;gap:8px} }
+      `}</style>
+      <div className="ft-grid">
         <div>
           <a href={BRAND.href} style={{ textDecoration: "none", color: "var(--accent-soft)", fontFamily: "Georgia, serif", lineHeight: 1.05 }}>
             <span style={{ display: "block", fontSize: 24, letterSpacing: ".06em", fontWeight: 500 }}>
@@ -54,10 +60,10 @@ export default function SiteFooter() {
         ))}
       </div>
 
-      <div style={{
+      <div className="ft-fine" style={{
         maxWidth: 1280, margin: "clamp(38px,5vw,60px) auto 0", paddingTop: 22,
-        borderTop: "1px solid rgba(var(--line),.06)", display: "flex", flexWrap: "wrap",
-        gap: 14, justifyContent: "space-between", color: "rgba(255,255,255,.32)", fontSize: 12.5, fontWeight: 300,
+        borderTop: "1px solid rgba(var(--line),.06)",
+        color: "rgba(255,255,255,.32)", fontSize: 12.5, fontWeight: 300,
       }}>
         <span>{FOOTER.legalLeft}</span>
         <span>{FOOTER.legalRight}</span>
