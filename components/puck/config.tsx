@@ -67,7 +67,7 @@ type Props = {
   ChainStrip: { color: string; onDark: boolean; nodes: { k: string; note: string; mine: boolean }[] };
   SelfCheck: { color: string; onDark: boolean; summaryNone: string; summaryOne: string; summaryMany: string; summaryTail: string;
     questions: { q: string; verdict: string; options: { label: string; bad: boolean }[] }[] };
-  Stats: { items: StatItem[]; valueColor: string; valueSize: number; align: "left" | "center" };
+  Stats: { items: StatItem[]; valueColor: string; labelColor: string; valueSize: number; align: "left" | "center" };
   PriceBox: {
     topAmount: string;
     topNote: string;
@@ -99,7 +99,7 @@ type Props = {
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
   Video: { src: string; caption: string; poster: string };
-  Image: { src: string; alt: string; caption: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
+  Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
   SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
@@ -270,6 +270,7 @@ export const FOOTER_DEFAULTS = {
 };
 
 export const IMAGE_DEFAULTS = {
+  captionColor: "",
   src: "",
   alt: "",
   caption: "",
@@ -1089,6 +1090,7 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        labelColor: { ...COLOR_FIELD, label: "Label color" },
         valueSize: {
           type: "custom" as const,
           label: "Number size (0 = fits the screen automatically)",
@@ -1106,8 +1108,8 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: STATS_DEFAULTS as Props["Stats"],
-      render: ({ items, valueColor, valueSize, align }) => (
-        <Stats items={items} valueColor={valueColor} valueSize={valueSize} align={align} />
+      render: ({ items, valueColor, labelColor, valueSize, align }) => (
+        <Stats items={items} valueColor={valueColor} labelColor={labelColor} valueSize={valueSize} align={align} />
       ),
     },
 
@@ -2271,7 +2273,7 @@ export const config: Config<Props, RootProps> = {
               }${fullWidth ? " w-full" : ""}`}
               style={
                 outlined
-                  ? { border: `2px solid ${accent}`, color: accent, background: "#ffffff" }
+                  ? { border: `2px solid ${accent}`, color: accent, background: "transparent" }
                   : { background: accent, color: "#ffffff", boxShadow: accent.startsWith("var(") ? "0 8px 20px -6px rgba(0,0,0,0.25)" : `0 8px 20px -6px ${accent}80` }
               }
             >
@@ -2493,6 +2495,7 @@ export const config: Config<Props, RootProps> = {
         },
         alt: { type: "text" as const, label: "Alt text (describe the image)" },
         caption: { type: "textarea" as const, label: "Caption (optional)" },
+        captionColor: { ...COLOR_FIELD, label: "Caption color" },
         maxWidth: {
           type: "custom" as const,
           label: "Max width px (0 = full width)",
@@ -2536,7 +2539,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: IMAGE_DEFAULTS,
-      render: ({ src, alt, caption, maxWidth, rounded, align, spaceAbove, spaceBelow, linkUrl, openInNewTab, shape, zoom, focus }) => {
+      render: ({ src, alt, caption, captionColor, maxWidth, rounded, align, spaceAbove, spaceBelow, linkUrl, openInNewTab, shape, zoom, focus }) => {
         const alignItems = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
         const maxW = maxWidth && maxWidth > 0 ? `${maxWidth}px` : undefined;
         const radius = rounded || "16px";
@@ -2629,7 +2632,7 @@ export const config: Config<Props, RootProps> = {
               </div>
             )}
             {caption && (
-              <figcaption style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: "#6b7280", textAlign: "center" }}>
+              <figcaption style={{ marginTop: "0.5rem", fontSize: "0.875rem", color: resolveColorOr(captionColor, "#6b7280"), textAlign: "center" }}>
                 {caption}
               </figcaption>
             )}
