@@ -21,16 +21,12 @@ export default function Buckets() {
   });
 
   return (
-    <section id="diagnosis" style={{ padding: "clamp(64px,9vw,130px) clamp(20px,5vw,60px)", maxWidth: 1280, margin: "0 auto", scrollMarginTop: 20 }}>
-      <div style={{ fontSize: "clamp(15px,1.35vw,19px)", letterSpacing: ".3em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", fontWeight: 500 }}>
-        Four Questions
-      </div>
-      <h2 style={{ fontFamily: "Georgia, serif", fontWeight: 300, fontSize: "clamp(27px,3.8vw,52px)", textAlign: "center", margin: "24px 0 0", lineHeight: 1.15 }}>
-        Answer these honestly. Nobody sees it but you.
-      </h2>
-      <p style={{ maxWidth: "min(86ch,1180px)", margin: "26px auto 0", textAlign: "center", color: "rgba(255,255,255,.66)", fontWeight: 300, lineHeight: 1.78, fontSize: "clamp(15px,1.32vw,21px)" }}>
-        No email, no form. This is the same walkthrough I&rsquo;d do with you on a call.
-      </p>
+    // ⚠️ It rolled its own <section> and so sat OUTSIDE the tone system — every var(--text-2)
+    // in here resolved to nothing. It now goes through Section like everything else.
+    <Section id="diagnosis" tone="raised">
+      <Eyebrow>Four Questions</Eyebrow>
+      <H2>Answer these honestly. Nobody sees it but you.</H2>
+      <Lede>No email, no form. This is the same walkthrough we&rsquo;d do with you on a call.</Lede>
 
       <div style={{ maxWidth: 900, margin: "clamp(40px,5vw,64px) auto 0", display: "grid", gap: 18 }}>
         {QUESTIONS.map((q, qi) => {
@@ -38,12 +34,12 @@ export default function Buckets() {
           const isBad = chosen !== undefined && q.options[chosen].bad;
           return (
             <div key={q.id} style={{
-              border: `1px solid ${chosen === undefined ? "rgba(255,255,255,.09)" : isBad ? "rgba(var(--accent-rgb),.45)" : "rgba(255,255,255,.16)"}`,
-              background: "var(--surface)", padding: "clamp(24px,2.8vw,34px)", transition: "border-color .4s",
+              border: `1px solid ${chosen === undefined ? "rgba(var(--edge),.12)" : isBad ? "rgba(var(--accent-rgb),.45)" : "rgba(var(--edge),.2)"}`,
+              background: "var(--panel)", padding: "clamp(24px,2.8vw,34px)", transition: "border-color .4s",
             }}>
               <div style={{ display: "flex", gap: 14, alignItems: "baseline" }}>
                 <span style={{ fontFamily: "Georgia, serif", color: "var(--accent)", fontSize: 17 }}>{String(qi + 1).padStart(2, "0")}</span>
-                <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: "clamp(20px,1.9vw,27px)", margin: 0, lineHeight: 1.3 }}>{q.q}</h3>
+                <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: "clamp(20px,1.9vw,27px)", margin: 0, lineHeight: 1.3, color: "var(--text)" }}>{q.q}</h3>
               </div>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginTop: 20 }}>
@@ -55,9 +51,9 @@ export default function Buckets() {
                       onClick={() => setAnswers((a) => ({ ...a, [q.id]: oi }))}
                       style={{
                         padding: "11px 18px", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5,
-                        background: on ? "rgba(var(--accent-rgb),.12)" : "rgba(255,255,255,.03)",
-                        border: `1px solid ${on ? "var(--accent)" : "rgba(255,255,255,.14)"}`,
-                        color: on ? "var(--accent-soft)" : "rgba(255,255,255,.72)", borderRadius: 2, transition: ".25s",
+                        background: on ? "rgba(var(--accent-rgb),.12)" : "rgba(var(--edge),.04)",
+                        border: `1px solid ${on ? "var(--accent)" : "rgba(var(--edge),.18)"}`,
+                        color: on ? "var(--accent)" : "var(--text-2)", borderRadius: 2, transition: ".25s",
                       }}
                     >{o.label}</button>
                   );
@@ -65,7 +61,7 @@ export default function Buckets() {
               </div>
 
               {isBad && (
-                <p style={{ margin: "20px 0 0", color: "rgba(255,255,255,.72)", fontSize: "clamp(15px,1.1vw,17px)", lineHeight: 1.85, fontWeight: 300, borderLeft: "2px solid var(--accent)", paddingLeft: 18 }}>
+                <p style={{ margin: "20px 0 0", color: "var(--text-2)", fontSize: "clamp(15px,1.1vw,17px)", lineHeight: 1.85, fontWeight: 300, borderLeft: "2px solid var(--accent)", paddingLeft: 18 }}>
                   {q.verdict}
                 </p>
               )}
@@ -76,9 +72,9 @@ export default function Buckets() {
 
       {answered === QUESTIONS.length && (
         <div style={{ maxWidth: 900, margin: "clamp(34px,4vw,52px) auto 0", textAlign: "center" }}>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(21px,2.2vw,32px)", lineHeight: 1.5, color: "#fff", margin: 0 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(21px,2.2vw,32px)", lineHeight: 1.5, color: "var(--text)", margin: 0 }}>
             {flagged.length === 0
-              ? "Then you are in better shape than most — and you probably don't need me yet."
+              ? "Then you are in better shape than most — and you probably don't need us yet."
               : flagged.length === 1
                 ? "One weak link. That is the cheapest possible place to be, and the fastest to fix."
                 : flagged.length === QUESTIONS.length
@@ -86,12 +82,12 @@ export default function Buckets() {
                   : `${flagged.length} of the four. That is normal, and it is why advertising has not worked the way you were told it would.`}
           </p>
           {flagged.length > 0 && (
-            <p style={{ color: "rgba(255,255,255,.6)", fontSize: 16, lineHeight: 1.8, marginTop: 18, fontWeight: 300 }}>
+            <p style={{ color: "var(--text-3)", fontSize: 16, lineHeight: 1.8, marginTop: 18, fontWeight: 300 }}>
               They get fixed in order, not all at once. Keep scrolling.
             </p>
           )}
         </div>
       )}
-    </section>
+    </Section>
   );
 }
