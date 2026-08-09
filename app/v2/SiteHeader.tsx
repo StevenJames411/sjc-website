@@ -152,11 +152,11 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
       </nav>
 
       <style>{`
-        /* ⚠️ 1200, not 1000. Spelled-out labels ("1 Custom Websites · 2 Five Star Reviews ·
-           3 AI Implementation · 4 Paid Ads") fit on one line down to about 1200px and wrap
-           into a double-height bar below it. The burger has to take over BEFORE the wrap,
-           not after — a small laptop and a landscape tablet both live in that gap. */
-        @media (max-width:1200px){
+        /* ⚠️ 1340. Four spelled-out division labels plus About/Podcast/Careers only fit on one
+           line above roughly 1320px; below that the bar wraps to double height. The burger has
+           to take over BEFORE the wrap, not after. Re-measure this every time a nav label
+           changes — it moved twice already (1000 → 1200 → 1340). */
+        @media (max-width:1340px){
           .v2-desknav{display:none !important}
           .v2-burger{display:block !important}
         }

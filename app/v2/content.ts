@@ -23,6 +23,7 @@ export const DIVISIONS = [
 ];
 
 export const NAV_EXTRA = [
+  { short: "About", name: "About", line: "Forty years of running businesses, and what it taught us", href: "#about" },
   { short: "Podcast", name: "The Podcast", line: "Conversations with owners who build things — placeholder copy", href: "/podcast" },
   { short: "Careers", name: "Careers", line: "Setters and web builders — remote, paid on what you produce", href: "/careers" },
 ];
@@ -40,18 +41,23 @@ export const BRAND = {
 };
 
 export const HERO = {
-  badge: "Forty years · Five businesses · One standard",
-  h1: ["We run the digital side", "of your business."],
+  // ⛔ THE HEADLINE'S JOB IS TO EARN THE PLAY BUTTON, not to explain the business — the video
+  // does the educating. Nobody knows what a "digital brand architect" is, but everybody
+  // understands REAL ESTATE: owned versus rented, an asset versus an expense. Start there and
+  // the whole ascension becomes obvious — the site, the reviews, the follow-up and the ads are
+  // improvements to the same property, and nobody has to be told they're related.
+  badge: "Your internet assets",
+  h1: ["Your digital footprint is", "the most valuable real estate", "you’ll ever own."],
   body: [
-    "Website, reputation, follow-up, advertising — built as one system instead of four purchases that don’t know about each other.",
-    "Forty years of running real businesses went into this team and the way it works. You are not hiring a freelancer with a waiting list.",
+    "Most owners are renting it. A social page on land somebody else controls, a listing they never claimed, a website built once and left. When the platform changes the rules, the business changes with it.",
+    "We design the ground you actually own — and make every place a customer finds you say the same thing about you.",
   ],
-  cta: { label: "Start with a walkthrough", href: "#diagnosis" },
+  // ⚠️ THE VSL MOUNT POINT. Wired to the diagnosis until the video exists; the slot is in the
+  // markup on purpose, because you can only edit what is already there.
+  video: { label: "Why ads come last", duration: "3 min", href: "#diagnosis" },
+  cta: { label: "Start with a walkthrough", href: "#contact" },
 
-  // ⛔ THE VISUAL IS THE CHAIN, NOT A SCREENSHOT. A single browser frame says "one product",
-  // which is `/designs`' job. The parent brand's one job is to establish who he is and how far
-  // the work reaches — so the hero shows the whole sequence, with the four links he builds lit
-  // and the two he doesn't dimmed. Nobody else shows this; it's the intellectual property.
+  chainLabel: "How a customer actually moves",
   chain: [
     { k: "Maps",      note: "where they start",  mine: false },
     { k: "Reviews",   note: "the entry fee",     mine: true },
@@ -60,7 +66,6 @@ export const HERO = {
     { k: "Follow-up", note: "where it leaks",    mine: true },
     { k: "Ads",       note: "only amplify",      mine: true },
   ],
-  chainLabel: "How a customer actually moves",
   chainNote: "The lit ones are what we build. The other two are yours — we just make sure they point somewhere worth arriving at.",
 
   // kept for /designs, where showing the work IS the one job
@@ -74,12 +79,12 @@ export const HERO = {
 
 export const STORY = {
   eyebrow: "How It Usually Goes",
-  h2: "You didn’t plan any of this. It just accumulated.",
+  h2: "Nobody bought this property on purpose.",
   paragraphs: [
     "You built the business on word of mouth, and it worked. For years it was the only thing that worked.",
     "Then it got quieter. So you had a website made — by a cousin, an agency, a guy off Facebook. It was fine.",
     "Then somebody sold you ads. Then somebody called about SEO. Then you set up the Google listing yourself one evening, and a review or two showed up on their own.",
-    "Every one of those was a separate purchase from a separate vendor. Not one of them asked what the others were doing.",
+    "Every one of those was a separate purchase from a separate vendor. Not one of them asked what the others were doing — and half of it sits on land you do not own.",
   ],
   closer: "That is not a marketing problem. That is four things in a row that don’t know the others exist.",
 };
@@ -200,7 +205,7 @@ export const WHO = {
     "So when we tell you the pieces don't talk to each other, it isn't a theory out of a book. It is the specific problem he spent four decades solving inside his own businesses, with his own money, while the phone was ringing.",
     "That experience is what the team is built on and trained to. You are not buying one person's attention — you are buying a way of working that does not depend on any one person being available.",
   ],
-  signature: { name: "Steven Barchetti", role: "Founder · Steven James Consulting" },
+  signature: { name: "Steven Barchetti", role: "Digital Brand Architect · Founder" },
 };
 
 export const ASK = {
