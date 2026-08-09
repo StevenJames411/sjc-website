@@ -216,14 +216,12 @@ export const FOOTER = {
     // as a fourth and it is not one: no brand of its own, and it is only sold once the other
     // three are in place. It is the last link in the chain, reachable from the solution card.
     // The divisions carry their descriptor here too — a footer has the room a nav bar doesn't.
-    // ⛔ THE FOOTER MUST AGREE WITH THE HEADER — same four divisions, same order, same words.
-    // The order IS the argument, so it cannot differ between two places on one page.
-    { title: "The Divisions", links: [
-      { label: "1 · Steven James Designs", href: "/designs", line: "Everything else points at it, so it goes first" },
-      { label: "2 · Five Star", href: "/reviews", line: "The entry fee" },
-      { label: "3 · Chloe", href: "/ai-implementation", line: "The AI employee that answers at 6pm" },
-      { label: "4 · Paid Ads", href: "/ads", line: "Only once the first three hold" },
-    ]},
+    // ⛔ DERIVED FROM DIVISIONS, NEVER RETYPED. The footer drifted the moment the header
+    // labels changed — because it was a second copy of the same list. One source now, so the
+    // two cannot disagree again.
+    { title: "The Divisions", links: DIVISIONS.map((d) => ({
+      label: `${d.n} · ${d.short}`, href: d.href, line: d.line,
+    })) },
     { title: "The Company", links: [
       { label: "The Work", href: "#work" },
       { label: "Podcast", href: "/podcast" },
