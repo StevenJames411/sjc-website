@@ -102,7 +102,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -277,6 +277,11 @@ export const FOOTER_DEFAULTS = {
   foreground: "",
   brandName: "",
   showLogo: true,
+  // ⚠️ Blank = the logo+name lockup every published footer already has. Same rule as the header's
+  // brandStyle: a new option must never restyle a live site as a side effect of existing.
+  brandStyle: "",
+  brandLine2: "",
+  brandLine2Color: "",
 };
 
 export const IMAGE_DEFAULTS = {
@@ -1515,6 +1520,24 @@ export const config: Config<Props, RootProps> = {
           ),
         },
         brandName: { type: "text" as const, label: "Business name (blank = Steven James Consulting)" },
+        // Same wording as the header's field on purpose — one mark, two places, and they should
+        // read identically in the builder or they get set to different things.
+        brandStyle: {
+          type: "radio" as const,
+          label: "Brand mark",
+          options: [
+            { label: "Logo / icon + name", value: "" },
+            { label: "Typeset wordmark (serif, two lines)", value: "wordmark" },
+          ],
+        },
+        brandLine2: { type: "text" as const, label: "Second line under the name (wordmark only)" },
+        brandLine2Color: {
+          type: "custom" as const,
+          label: "Second line colour (blank = matches the name)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
         showLogo: {
           type: "radio" as const,
           label: "SJC logo",
@@ -1525,7 +1548,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -1540,6 +1563,9 @@ export const config: Config<Props, RootProps> = {
           foreground={foreground}
           brandName={brandName}
           showLogo={showLogo}
+          brandStyle={brandStyle}
+          brandLine2={brandLine2}
+          brandLine2Color={brandLine2Color}
         />
       ),
     },

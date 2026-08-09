@@ -233,7 +233,10 @@ footer = blk("SiteFooter",
     privacyUrl="https://www.privacypolicies.com/live/1cbbc5dd-5b42-4b68-abdd-a279a5e3b4f7",
     tosUrl="https://www.privacypolicies.com/live/34bb5cc7-32b9-4449-ae32-7cfe78f34e45",
     copyright="ARV Venture Group LLC Parent Company · Steven James Consulting",
-    background="", foreground="", brandName="Steven James Consulting", showLogo=True)
+    # ⛔ THE SAME MARK AS THE HEADER. The footer shipped the `SJC` circle while the header wore the
+    # serif wordmark — two brands on one screen, visible in the first phone screenshot Steven took.
+    background="", foreground="", brandName="Steven James", showLogo=True,
+    brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent")
 
 # ⛔ THE PAGE NO LONGER CARRIES THE CHROME. `header` and `footer` now live in the SITE's own `nav`
 # and `footer` documents (--chrome, below), which every page of this website renders inside. Leaving
