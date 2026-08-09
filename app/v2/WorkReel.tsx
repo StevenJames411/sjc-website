@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { HERO } from "./content";
 
 // The hero is the work — but a screenshot used as WALLPAPER fights the page it sits behind.
 // The first version put SJC's headline and nav on top of a demo's headline and nav: two of
@@ -10,12 +11,7 @@ import { useEffect, useRef, useState } from "react";
 // "sites we built" in one glance instead of asking the visitor to work out what they are
 // looking at — and the copy never fights the image for the same pixels.
 
-const WORK = [
-  { img: "/work/landscape.jpg", label: "Landscape Architecture", domain: "mwsla.com", note: "Sixteen years of awards, invisible to search" },
-  { img: "/work/detail.jpg", label: "Ceramic Coating", domain: "meridiandetail.com", note: "A $1,500 service that looked like a $150 one" },
-  { img: "/work/offgrid.jpg", label: "Off-Grid Architecture", domain: "haldenroe.com", note: "Four houses a year, chosen carefully" },
-  { img: "/work/customcar.jpg", label: "Restoration & Restomod", domain: "ardsleycoachworks.com", note: "Nine builds a year, eighteen months each" },
-];
+const WORK = HERO.work;
 
 const HOLD = 5200;
 
@@ -68,25 +64,6 @@ export default function WorkReel() {
 
       <div className="wr-grid" />
 
-      <header style={{
-        position: "absolute", top: 0, left: 0, right: 0, zIndex: 10, display: "flex",
-        alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14,
-        padding: "clamp(18px,3vw,38px) clamp(20px,4vw,60px)",
-      }}>
-        <a href="/" style={{ textDecoration: "none", color: "var(--accent-soft)", fontFamily: "Georgia, serif", lineHeight: 1.05 }}>
-          <span style={{ display: "block", fontSize: "clamp(18px,2.1vw,30px)", letterSpacing: ".06em", fontWeight: 500 }}>
-            S<span style={{ fontSize: ".78em" }}>TEVEN</span> J<span style={{ fontSize: ".78em" }}>AMES</span>
-          </span>
-          <span style={{ display: "block", fontSize: "clamp(8px,.95vw,12px)", letterSpacing: ".32em", textTransform: "uppercase", marginTop: ".5em", color: "var(--accent)" }}>
-            Consulting
-          </span>
-        </a>
-        <nav style={{ display: "flex", gap: "clamp(14px,2.2vw,32px)", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          {[["Web Design", "/designs"], ["Reviews", "/reviews"], ["AI", "/ai-implementation"], ["Podcast", "/podcast"], ["Careers", "/careers"]].map(([t, h]) => (
-            <a key={h} href={h} style={{ color: "var(--accent-soft)", textDecoration: "none", fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase" }}>{t}</a>
-          ))}
-        </nav>
-      </header>
 
       <div className="wr-hero">
         {/* ---- the argument ---- */}
@@ -96,28 +73,27 @@ export default function WorkReel() {
             color: "rgba(255,255,255,.92)", fontSize: "clamp(8.5px,.85vw,10.5px)", fontWeight: 500,
             letterSpacing: ".26em", textTransform: "uppercase", marginBottom: "clamp(20px,2.6vw,30px)",
           }}>
-            For contractors, builders and specialty shops
+            {HERO.badge}
           </div>
           <h1 style={{
             fontFamily: "Georgia, serif", fontWeight: 300, margin: 0, color: "#fff",
             fontSize: "clamp(34px,4.6vw,68px)", lineHeight: 1.05, letterSpacing: ".005em",
           }}>
-            Your work is better<br />than your website.
+            {HERO.h1[0]}<br />{HERO.h1[1]}
           </h1>
           <p style={{
             margin: "clamp(20px,2.4vw,30px) 0 0", maxWidth: "52ch", color: "rgba(255,255,255,.7)",
             fontSize: "clamp(15px,1.2vw,18px)", lineHeight: 1.85, fontWeight: 300,
           }}>
-            I build the website, the reviews and the follow-up for high-end trades &mdash; so the jobs
-            you want stop going to someone with a nicer page and half your skill.
+            {HERO.body[0]}
             <br /><br />
-            Forty years running my own businesses. You deal with me, not an account manager.
+            {HERO.body[1]}
           </p>
-          <a href="#diagnosis" style={{
+          <a href={HERO.cta.href} style={{
             display: "inline-block", marginTop: "clamp(26px,3vw,38px)", padding: "16px 40px",
             border: "1px solid var(--accent)", color: "var(--accent-soft)", textDecoration: "none",
             fontSize: 11, letterSpacing: ".24em", textTransform: "uppercase",
-          }}>See where yours stands</a>
+          }}>{HERO.cta.label}</a>
         </div>
 
         {/* ---- the work, framed as work ---- */}

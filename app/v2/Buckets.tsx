@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { BUCKETS } from "./content";
+import { Section, Eyebrow, H2, Lede } from "./Section";
 
 // The hinge of the page. Up to here he has been reading; here he answers four questions and
 // arrives at the conclusion himself. Nobody argues with a diagnosis they made.
@@ -8,63 +10,7 @@ import { useState } from "react";
 // Deliberately NOT a lead-capture form. Asking for an email in the middle of the argument
 // turns a diagnosis into a trade, and he stops being honest with the answers.
 
-type Q = {
-  id: string;
-  q: string;
-  options: { label: string; bad: boolean }[];
-  verdict: string;
-};
-
-const QUESTIONS: Q[] = [
-  {
-    id: "site",
-    q: "How old is your website?",
-    options: [
-      { label: "Under 2 years", bad: false },
-      { label: "3–5 years", bad: true },
-      { label: "Longer than that", bad: true },
-      { label: "I'd have to look", bad: true },
-    ],
-    verdict:
-      "A site more than three years old was built before most of your customers started searching on a phone. It is not that it looks dated — it is that it was designed for a different device.",
-  },
-  {
-    id: "reviews",
-    q: "How many Google reviews do you have?",
-    options: [
-      { label: "50 or more", bad: false },
-      { label: "10–50", bad: true },
-      { label: "Under 10", bad: true },
-      { label: "No idea", bad: true },
-    ],
-    verdict:
-      "Under about fifty, you are not being compared to your competitors — you are being skipped before the comparison starts. It is rarely a quality problem. It is that nobody ever asks.",
-  },
-  {
-    id: "afterhours",
-    q: "What happens to a call at six o'clock on a Friday?",
-    options: [
-      { label: "Answered or returned same day", bad: false },
-      { label: "Voicemail, called back Monday", bad: true },
-      { label: "Honestly, it depends", bad: true },
-      { label: "It's missed", bad: true },
-    ],
-    verdict:
-      "Most enquiries arrive outside the hours you work. The homeowner who called at six called two other people at six as well, and one of them answered.",
-  },
-  {
-    id: "scale",
-    q: "What breaks if you double your leads tomorrow?",
-    options: [
-      { label: "Nothing — we'd handle it", bad: false },
-      { label: "The follow-up", bad: true },
-      { label: "The scheduling", bad: true },
-      { label: "Me", bad: true },
-    ],
-    verdict:
-      "This is the one that decides whether advertising is worth doing at all. Paid traffic poured into a business that cannot absorb it just makes the leak bigger and more expensive.",
-  },
-];
+const QUESTIONS = BUCKETS.questions;
 
 export default function Buckets() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
