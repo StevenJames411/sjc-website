@@ -152,7 +152,11 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
       </nav>
 
       <style>{`
-        @media (max-width:1000px){
+        /* ⚠️ 1200, not 1000. Spelled-out labels ("1 Custom Websites · 2 Five Star Reviews ·
+           3 AI Implementation · 4 Paid Ads") fit on one line down to about 1200px and wrap
+           into a double-height bar below it. The burger has to take over BEFORE the wrap,
+           not after — a small laptop and a landscape tablet both live in that gap. */
+        @media (max-width:1200px){
           .v2-desknav{display:none !important}
           .v2-burger{display:block !important}
         }

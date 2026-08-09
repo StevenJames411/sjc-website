@@ -16,10 +16,10 @@
 // obvious one. "Chloe" is real and worth keeping; an AI employee with a name is memorable in
 // a way that "AI Implementation" never will be.
 export const DIVISIONS = [
-  { n: "1", short: "Websites", name: "Steven James Designs", line: "Everything else points at it, so it goes first", href: "/designs" },
-  { n: "2", short: "Reviews",  name: "Five Star",            line: "The entry fee — placeholder name",           href: "/reviews" },
-  { n: "3", short: "Chloe",    name: "Chloe",                line: "The AI employee that answers at 6pm",        href: "/ai-implementation" },
-  { n: "4", short: "Ads",      name: "Paid Ads",             line: "Only once the first three hold",             href: "/ads" },
+  { n: "1", short: "Custom Websites", name: "Steven James Designs", line: "Everything else points at it, so it goes first", href: "/designs" },
+  { n: "2", short: "Five Star Reviews", name: "Five Star",            line: "The entry fee — placeholder name",           href: "/reviews" },
+  { n: "3", short: "AI Implementation", name: "Chloe",                line: "The AI employee that answers at 6pm",        href: "/ai-implementation" },
+  { n: "4", short: "Paid Ads", name: "Paid Ads",             line: "Only once the first three hold",             href: "/ads" },
 ];
 
 export const NAV_EXTRA = [
