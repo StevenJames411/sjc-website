@@ -335,10 +335,37 @@ export default function NavView({
                   className={`${CONTACT_PILL_BASE} hover:opacity-90`}
                   style={{ backgroundColor: resolveColorOr(ctaColor, "var(--color-sjc-blue)") }}
                 >
-                  {/* Calendar — says "appointment" before the label is read, and gives the button
-                      the icon+text rhythm the other three have. */}
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0">
-                    <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clipRule="evenodd" />
+                  {/* ⛔ A COLOURED GLYPH, NOT A FLAT OUTLINE AND NOT THE RASTER ICON.
+                      Steven wanted the button "dressed up" like the calendar art on Alamo Slim.
+                      That art is a 1.6MB PNG with a grey background baked in, built for ~80px —
+                      at the ~18px a text button gives it, the spiral binding and 25 numbers become
+                      about six grey pixels, and the grey square would sit on the blue fill.
+
+                      Note what Steven himself did on that site: the rich icon is a CARD graphic at
+                      80px, and the actual buttons ("Schedule Phone Consult") use a plain inline
+                      glyph. Two icons for two jobs. This is the second job.
+
+                      So: keep it inline SVG (sharp at any size, no file weight) and take what makes
+                      his read — a white body with a highlighted date square instead of a hollow
+                      outline.
+                      ⚠️ The band is RED, not blue like his. His sits on white; this sits on a blue
+                      button, where a blue band would disappear. */}
+                  <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" aria-hidden>
+                    {/* binding rings */}
+                    <rect x="7" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
+                    <rect x="15" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
+                    {/* body */}
+                    <rect x="2.5" y="3.5" width="19" height="19" rx="3" fill="#ffffff" />
+                    {/* top band */}
+                    <path d="M2.5 6.5a3 3 0 013-3h13a3 3 0 013 3V9h-19V6.5z" fill="#e2483d" />
+                    {/* the highlighted date */}
+                    <rect x="9.5" y="12" width="5" height="5" rx="1" fill="#e2483d" />
+                    {/* a couple of ruled days so it reads as a grid, not a card */}
+                    <rect x="4.5" y="12.75" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                    <rect x="16" y="12.75" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                    <rect x="4.5" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                    <rect x="10.25" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
+                    <rect x="16" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
                   </svg>
                   {ctaLabel}
                 </a>
