@@ -1,19 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { BRAND, NAV } from "./content";
+import { BRAND, DIVISIONS, NAV_EXTRA } from "./content";
 
-// GLOBAL HEADER — a component, never part of a page.
+// GLOBAL HEADER — a component, never part of a page. This is the piece that becomes global on
+// import: edited once, applied to every page.
 //
-// This is the piece that becomes global on import: edited once, applied to every page. It was
-// the first thing the SiteDrop import taught us to separate, and it is why the same lesson is
-// being applied here before the page is built rather than after.
+// ⛔ IT IS ALSO THE PROOF OF THE UMBRELLA. Three companies under one roof cannot be
+// communicated by five service words in a row — that reads as a freelancer with a price list.
+// The divisions get their real names and a one-line job, revealed on hover, so the depth is
+// visible without the page ever claiming to be big.
 //
-// It carries its own mobile menu. A five-item nav that merely wraps on a phone is not a mobile
-// nav — and a burger with nothing behind it is worse than no burger at all.
+// It carries its own mobile menu, where the divisions are named in full — a phone has room for
+// the descriptor that the desktop bar hides.
 
 export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [hover, setHover] = useState<string | null>(null);
+
+  const Wordmark = ({ size = 1 }: { size?: number }) => (
+    <a href={BRAND.href} style={{ textDecoration: "none", color: "var(--accent-soft)", fontFamily: "Georgia, serif", lineHeight: 1.05 }}>
+      <span style={{ display: "block", fontSize: `clamp(${18 * size}px,${2.1 * size}vw,${30 * size}px)`, letterSpacing: ".06em", fontWeight: 500 }}>
+        {BRAND.nameTop.split(" ").map((w) => (
+          <span key={w}>{w[0]}<span style={{ fontSize: ".78em" }}>{w.slice(1).toUpperCase()}</span>{" "}</span>
+        ))}
+      </span>
+      <span style={{ display: "block", fontSize: `clamp(${8 * size}px,${0.95 * size}vw,${12 * size}px)`, letterSpacing: ".32em", textTransform: "uppercase", marginTop: ".5em", color: "var(--accent)" }}>
+        {BRAND.nameSub}
+      </span>
+    </a>
+  );
 
   return (
     <>
@@ -23,21 +39,46 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
         padding: "clamp(18px,3vw,38px) clamp(20px,4vw,60px)",
       }}>
-        <a href={BRAND.href} style={{ textDecoration: "none", color: "var(--accent-soft)", fontFamily: "Georgia, serif", lineHeight: 1.05 }}>
-          <span style={{ display: "block", fontSize: "clamp(18px,2.1vw,30px)", letterSpacing: ".06em", fontWeight: 500 }}>
-            {BRAND.nameTop.split(" ").map((w) => (
-              <span key={w}>{w[0]}<span style={{ fontSize: ".78em" }}>{w.slice(1).toUpperCase()}</span>{" "}</span>
-            ))}
-          </span>
-          <span style={{ display: "block", fontSize: "clamp(8px,.95vw,12px)", letterSpacing: ".32em", textTransform: "uppercase", marginTop: ".5em", color: "var(--accent)" }}>
-            {BRAND.nameSub}
-          </span>
-        </a>
+        <Wordmark />
 
-        <nav className="v2-desknav" style={{ display: "flex", gap: "clamp(14px,2.2vw,32px)" }}>
-          {NAV.map((n) => (
+        <nav className="v2-desknav" style={{ display: "flex", alignItems: "center", gap: "clamp(14px,2.2vw,30px)" }}>
+          {DIVISIONS.map((d) => (
+            <span key={d.href} style={{ position: "relative" }}
+                  onMouseEnter={() => setHover(d.href)}
+                  onMouseLeave={() => setHover(null)}>
+              <a href={d.href} style={{
+                color: "var(--accent-soft)", textDecoration: "none", fontSize: 11,
+                letterSpacing: ".22em", textTransform: "uppercase", paddingBottom: 6,
+                borderBottom: hover === d.href ? "1px solid var(--accent)" : "1px solid transparent",
+                transition: "border-color .25s",
+              }}>{d.short}</a>
+
+              {/* the descriptor panel — this is where the depth lives */}
+              <span style={{
+                position: "absolute", top: "calc(100% + 14px)", left: "50%", transform: "translateX(-50%)",
+                minWidth: 250, padding: "16px 20px", textAlign: "left",
+                background: "var(--surface)", border: "1px solid rgba(var(--line),.12)",
+                boxShadow: "0 24px 60px -20px rgba(0,0,0,.9)",
+                opacity: hover === d.href ? 1 : 0,
+                visibility: hover === d.href ? "visible" : "hidden",
+                transition: "opacity .25s ease, visibility .25s",
+                pointerEvents: "none",
+              }}>
+                <span style={{ display: "block", fontFamily: "Georgia, serif", fontSize: 19, color: "#fff", whiteSpace: "nowrap" }}>
+                  {d.name}
+                </span>
+                <span style={{ display: "block", marginTop: 6, fontSize: 13, color: "rgba(255,255,255,.55)", fontWeight: 300, lineHeight: 1.6 }}>
+                  {d.line}
+                </span>
+              </span>
+            </span>
+          ))}
+
+          <span style={{ width: 1, height: 16, background: "rgba(var(--line),.18)" }} />
+
+          {NAV_EXTRA.map((n) => (
             <a key={n.href} href={n.href} style={{
-              color: "var(--accent-soft)", textDecoration: "none", fontSize: 11,
+              color: "rgba(255,255,255,.62)", textDecoration: "none", fontSize: 11,
               letterSpacing: ".22em", textTransform: "uppercase",
             }}>{n.label}</a>
           ))}
@@ -56,28 +97,45 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
         </button>
       </header>
 
+      {/* ---- mobile: the divisions get their full names and descriptors, there is room ---- */}
       <nav style={{
-        position: "fixed", inset: 0, zIndex: 80, background: "rgba(var(--inkrgb),.97)",
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
+        position: "fixed", inset: 0, zIndex: 80, background: "rgba(var(--inkrgb),.98)",
+        display: "flex", flexDirection: "column", justifyContent: "center",
+        padding: "0 clamp(24px,7vw,48px)",
         opacity: open ? 1 : 0, visibility: open ? "visible" : "hidden",
-        transition: "opacity .35s ease, visibility .35s",
+        transition: "opacity .35s ease, visibility .35s", overflowY: "auto",
       }}>
         <button
           aria-label="Close menu"
           onClick={() => { setOpen(false); document.body.style.overflow = ""; }}
           style={{ position: "absolute", top: 22, right: 22, background: "none", border: 0, color: "var(--accent-soft)", fontSize: 34, lineHeight: 1, cursor: "pointer", padding: 8 }}
         >&times;</button>
-        {NAV.map((n) => (
-          <a key={n.href} href={n.href}
+
+        <div style={{ fontSize: 10, letterSpacing: ".3em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 22 }}>
+          The Divisions
+        </div>
+        {DIVISIONS.map((d) => (
+          <a key={d.href} href={d.href}
              onClick={() => { setOpen(false); document.body.style.overflow = ""; }}
-             style={{ fontFamily: "Georgia, serif", fontSize: 30, fontWeight: 300, textDecoration: "none", color: "#fff", padding: "14px 20px" }}>
-            {n.label}
+             style={{ textDecoration: "none", display: "block", padding: "16px 0", borderTop: "1px solid rgba(var(--line),.1)" }}>
+            <span style={{ display: "block", fontFamily: "Georgia, serif", fontSize: 27, color: "#fff", fontWeight: 300 }}>{d.name}</span>
+            <span style={{ display: "block", marginTop: 5, fontSize: 14, color: "rgba(255,255,255,.5)", fontWeight: 300 }}>{d.line}</span>
           </a>
         ))}
+
+        <div style={{ display: "flex", gap: 26, marginTop: 30, paddingTop: 22, borderTop: "1px solid rgba(var(--line),.1)" }}>
+          {NAV_EXTRA.map((n) => (
+            <a key={n.href} href={n.href}
+               onClick={() => { setOpen(false); document.body.style.overflow = ""; }}
+               style={{ color: "rgba(255,255,255,.7)", textDecoration: "none", fontSize: 12, letterSpacing: ".2em", textTransform: "uppercase" }}>
+              {n.label}
+            </a>
+          ))}
+        </div>
       </nav>
 
       <style>{`
-        @media (max-width:900px){
+        @media (max-width:1000px){
           .v2-desknav{display:none !important}
           .v2-burger{display:block !important}
         }

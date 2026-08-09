@@ -7,12 +7,44 @@
 // The demo kit already worked this way (config.json per vertical). This brings the SJC site
 // in line with it, which is what makes the import mechanical rather than a second build.
 
-export const NAV = [
-  { label: "Web Design", href: "/designs" },
-  { label: "Reviews", href: "/reviews" },
-  { label: "AI", href: "/ai-implementation" },
+// ⛔ THE NAV IS THE PROOF OF THE UMBRELLA. Five service words read as a freelancer with a
+// price list. Three named divisions with a one-line job each read as a company with depth —
+// which is the only thing the parent brand has to communicate. This is also where the
+// "Steven James Designs" name survives: as a DIVISION, not a domain.
+//
+// ⚠️ NAMES ARE PLACEHOLDERS. "Five Star" is a stand-in — Review Harvest already owns the
+// obvious one. "Chloe" is real and worth keeping; an AI employee with a name is memorable in
+// a way that "AI Implementation" never will be.
+export const DIVISIONS = [
+  {
+    short: "Designs",
+    name: "Steven James Designs",
+    line: "Websites for high-end trades",
+    href: "/designs",
+  },
+  {
+    short: "Five Star",
+    name: "Five Star",
+    line: "The review engine — placeholder name",
+    href: "/reviews",
+  },
+  {
+    short: "Chloe",
+    name: "Chloe",
+    line: "The AI employee that answers at 6pm",
+    href: "/ai-implementation",
+  },
+];
+
+export const NAV_EXTRA = [
   { label: "Podcast", href: "/podcast" },
   { label: "Careers", href: "/careers" },
+];
+
+// kept so anything still importing NAV keeps working
+export const NAV = [
+  ...DIVISIONS.map((d) => ({ label: d.short, href: d.href })),
+  ...NAV_EXTRA,
 ];
 
 export const BRAND = {
@@ -193,10 +225,10 @@ export const ASK = {
 
 export const FOOTER = {
   columns: [
-    { title: "What I Do", links: [
-      { label: "Web Design", href: "/designs" },
-      { label: "Reviews", href: "/reviews" },
-      { label: "AI Implementation", href: "/ai-implementation" },
+    { title: "The Divisions", links: [
+      { label: "Steven James Designs", href: "/designs" },
+      { label: "Five Star", href: "/reviews" },
+      { label: "Chloe", href: "/ai-implementation" },
       { label: "Paid Ads", href: "/ads" },
     ]},
     { title: "The Company", links: [
