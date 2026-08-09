@@ -76,7 +76,7 @@ export default function Buckets() {
 
   return (
     <section id="diagnosis" style={{ padding: "clamp(64px,9vw,130px) clamp(20px,5vw,60px)", maxWidth: 1280, margin: "0 auto", scrollMarginTop: 20 }}>
-      <div style={{ fontSize: "clamp(15px,1.35vw,19px)", letterSpacing: ".3em", textTransform: "uppercase", color: "#c9a227", textAlign: "center", fontWeight: 500 }}>
+      <div style={{ fontSize: "clamp(15px,1.35vw,19px)", letterSpacing: ".3em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", fontWeight: 500 }}>
         Four Questions
       </div>
       <h2 style={{ fontFamily: "Georgia, serif", fontWeight: 300, fontSize: "clamp(27px,3.8vw,52px)", textAlign: "center", margin: "24px 0 0", lineHeight: 1.15 }}>
@@ -92,11 +92,11 @@ export default function Buckets() {
           const isBad = chosen !== undefined && q.options[chosen].bad;
           return (
             <div key={q.id} style={{
-              border: `1px solid ${chosen === undefined ? "rgba(255,255,255,.09)" : isBad ? "rgba(201,162,39,.45)" : "rgba(255,255,255,.16)"}`,
-              background: "#101010", padding: "clamp(24px,2.8vw,34px)", transition: "border-color .4s",
+              border: `1px solid ${chosen === undefined ? "rgba(255,255,255,.09)" : isBad ? "rgba(var(--accent-rgb),.45)" : "rgba(255,255,255,.16)"}`,
+              background: "var(--surface)", padding: "clamp(24px,2.8vw,34px)", transition: "border-color .4s",
             }}>
               <div style={{ display: "flex", gap: 14, alignItems: "baseline" }}>
-                <span style={{ fontFamily: "Georgia, serif", color: "#c9a227", fontSize: 17 }}>{String(qi + 1).padStart(2, "0")}</span>
+                <span style={{ fontFamily: "Georgia, serif", color: "var(--accent)", fontSize: 17 }}>{String(qi + 1).padStart(2, "0")}</span>
                 <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: "clamp(20px,1.9vw,27px)", margin: 0, lineHeight: 1.3 }}>{q.q}</h3>
               </div>
 
@@ -109,9 +109,9 @@ export default function Buckets() {
                       onClick={() => setAnswers((a) => ({ ...a, [q.id]: oi }))}
                       style={{
                         padding: "11px 18px", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5,
-                        background: on ? "rgba(201,162,39,.12)" : "rgba(255,255,255,.03)",
-                        border: `1px solid ${on ? "#c9a227" : "rgba(255,255,255,.14)"}`,
-                        color: on ? "#e8c65a" : "rgba(255,255,255,.72)", borderRadius: 2, transition: ".25s",
+                        background: on ? "rgba(var(--accent-rgb),.12)" : "rgba(255,255,255,.03)",
+                        border: `1px solid ${on ? "var(--accent)" : "rgba(255,255,255,.14)"}`,
+                        color: on ? "var(--accent-soft)" : "rgba(255,255,255,.72)", borderRadius: 2, transition: ".25s",
                       }}
                     >{o.label}</button>
                   );
@@ -119,7 +119,7 @@ export default function Buckets() {
               </div>
 
               {isBad && (
-                <p style={{ margin: "20px 0 0", color: "rgba(255,255,255,.72)", fontSize: "clamp(15px,1.1vw,17px)", lineHeight: 1.85, fontWeight: 300, borderLeft: "2px solid #c9a227", paddingLeft: 18 }}>
+                <p style={{ margin: "20px 0 0", color: "rgba(255,255,255,.72)", fontSize: "clamp(15px,1.1vw,17px)", lineHeight: 1.85, fontWeight: 300, borderLeft: "2px solid var(--accent)", paddingLeft: 18 }}>
                   {q.verdict}
                 </p>
               )}

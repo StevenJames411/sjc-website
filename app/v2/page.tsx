@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Buckets from "./Buckets";
 import WorkReel from "./WorkReel";
+import PaletteSwitcher from "./PaletteSwitcher";   // DEMO-ONLY — remove before public
 
 // The rebuilt SJC home page, at /v2 until Steven approves the swap.
 //
@@ -47,7 +48,8 @@ const SOLUTION = [
 
 export default function V2() {
   return (
-    <main style={{ background: "#0b0b0b", color: "#fff" }}>
+    <main style={{ background: "var(--ink)", color: "#fff" }}>
+      <PaletteSwitcher />
       <WorkReel />
 
       {/* ---------- his story, not ours ---------- */}
@@ -91,7 +93,7 @@ export default function V2() {
               padding: "20px 0", borderBottom: i < CHAIN.length - 1 ? "1px solid rgba(255,255,255,.08)" : "none",
               alignItems: "baseline",
             }}>
-              <div style={{ fontFamily: "Georgia, serif", fontSize: "clamp(19px,1.7vw,25px)", color: i === CHAIN.length - 1 ? "#c9a227" : "#fff", whiteSpace: "nowrap" }}>
+              <div style={{ fontFamily: "Georgia, serif", fontSize: "clamp(19px,1.7vw,25px)", color: i === CHAIN.length - 1 ? "var(--accent)" : "#fff", whiteSpace: "nowrap" }}>
                 {c.k}
               </div>
               <div style={{ color: "rgba(255,255,255,.62)", fontSize: "clamp(15px,1.15vw,17.5px)", lineHeight: 1.8, fontWeight: 300 }}>
@@ -131,13 +133,13 @@ export default function V2() {
         }}>
           {SOLUTION.map((s) => (
             <a key={s.n} href={s.href} style={{
-              display: "block", textDecoration: "none", color: "inherit", background: "#101010",
+              display: "block", textDecoration: "none", color: "inherit", background: "var(--surface)",
               border: "1px solid rgba(255,255,255,.09)", padding: "32px 30px 34px",
             }} className="sol-card">
-              <div style={{ fontFamily: "Georgia, serif", fontSize: 19, color: "#c9a227", marginBottom: 18 }}>{s.n}</div>
+              <div style={{ fontFamily: "Georgia, serif", fontSize: 19, color: "var(--accent)", marginBottom: 18 }}>{s.n}</div>
               <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: "clamp(24px,2vw,29px)", margin: 0 }}>{s.t}</h3>
               <p style={{ margin: "14px 0 0", color: "rgba(255,255,255,.64)", fontSize: "clamp(15px,1.1vw,17px)", lineHeight: 1.8, fontWeight: 300 }}>{s.p}</p>
-              <span style={{ display: "inline-block", marginTop: 18, fontSize: 10, letterSpacing: ".24em", textTransform: "uppercase", color: "#c9a227" }}>
+              <span style={{ display: "inline-block", marginTop: 18, fontSize: 10, letterSpacing: ".24em", textTransform: "uppercase", color: "var(--accent)" }}>
                 Read more &rarr;
               </span>
             </a>
@@ -165,7 +167,7 @@ export default function V2() {
             { img: "/work/offgrid.jpg", t: "Off-Grid Architecture", s: "Four houses a year, chosen carefully" },
             { img: "/work/customcar.jpg", t: "Restoration &amp; Restomod", s: "Nine builds a year, eighteen months each" },
           ].map((w) => (
-            <figure key={w.t} style={{ margin: 0, border: "1px solid rgba(255,255,255,.09)", background: "#101010" }}>
+            <figure key={w.t} style={{ margin: 0, border: "1px solid rgba(255,255,255,.09)", background: "var(--surface)" }}>
               <div style={{ aspectRatio: "16/10", backgroundImage: `url('${w.img}')`, backgroundSize: "cover", backgroundPosition: "top center" }} />
               <figcaption style={{ padding: "20px 22px 24px" }}>
                 <div style={{ fontFamily: "Georgia, serif", fontSize: 21 }} dangerouslySetInnerHTML={{ __html: w.t }} />
@@ -176,10 +178,10 @@ export default function V2() {
         </div>
 
         <div style={{
-          maxWidth: 900, margin: "clamp(48px,6vw,80px) auto 0", border: "1px solid rgba(201,162,39,.3)",
-          background: "rgba(201,162,39,.05)", padding: "clamp(28px,3.4vw,44px)",
+          maxWidth: 900, margin: "clamp(48px,6vw,80px) auto 0", border: "1px solid rgba(var(--accent-rgb),.3)",
+          background: "rgba(var(--accent-rgb),.05)", padding: "clamp(28px,3.4vw,44px)",
         }}>
-          <div style={{ fontSize: 10, letterSpacing: ".26em", textTransform: "uppercase", color: "#c9a227" }}>Case Study &middot; Live Client</div>
+          <div style={{ fontSize: 10, letterSpacing: ".26em", textTransform: "uppercase", color: "var(--accent)" }}>Case Study &middot; Live Client</div>
           <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: "clamp(24px,2.4vw,34px)", margin: "14px 0 0" }}>
             A clinic that was losing every call after five o&rsquo;clock.
           </h3>
@@ -191,7 +193,7 @@ export default function V2() {
               </div>
             ))}
           </div>
-          <a href="/ai-implementation" style={{ display: "inline-block", marginTop: 28, fontSize: 10, letterSpacing: ".24em", textTransform: "uppercase", color: "#c9a227", textDecoration: "none" }}>
+          <a href="/ai-implementation" style={{ display: "inline-block", marginTop: 28, fontSize: 10, letterSpacing: ".24em", textTransform: "uppercase", color: "var(--accent)", textDecoration: "none" }}>
             How it was built &rarr;
           </a>
         </div>
@@ -213,7 +215,7 @@ export default function V2() {
           ))}
           <div style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 27, marginTop: 30 }}>
             Steven Barchetti
-            <small style={{ display: "block", fontStyle: "normal", fontFamily: "inherit", fontSize: 10, letterSpacing: ".26em", textTransform: "uppercase", color: "#c9a227", marginTop: 10, fontWeight: 400 }}>
+            <small style={{ display: "block", fontStyle: "normal", fontFamily: "inherit", fontSize: 10, letterSpacing: ".26em", textTransform: "uppercase", color: "var(--accent)", marginTop: 10, fontWeight: 400 }}>
               Steven James Consulting
             </small>
           </div>
@@ -230,8 +232,8 @@ export default function V2() {
           That part costs nothing and it is useful whether you hire me or not.
         </Lede>
         <a href="/apply" style={{
-          display: "inline-block", marginTop: 36, padding: "17px 46px", border: "1px solid #c9a227",
-          background: "rgba(0,0,0,.34)", color: "#e8c65a", textDecoration: "none",
+          display: "inline-block", marginTop: 36, padding: "17px 46px", border: "1px solid var(--accent)",
+          background: "rgba(0,0,0,.34)", color: "var(--accent-soft)", textDecoration: "none",
           fontSize: 11, letterSpacing: ".24em", textTransform: "uppercase",
         }}>Book the walkthrough</a>
       </section>
@@ -252,7 +254,7 @@ function Rule() {
 }
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: "clamp(15px,1.35vw,19px)", letterSpacing: ".3em", textTransform: "uppercase", color: "#c9a227", textAlign: "center", fontWeight: 500 }}>
+    <div style={{ fontSize: "clamp(15px,1.35vw,19px)", letterSpacing: ".3em", textTransform: "uppercase", color: "var(--accent)", textAlign: "center", fontWeight: 500 }}>
       {children}
     </div>
   );

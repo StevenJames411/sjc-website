@@ -30,12 +30,12 @@ export default function WorkReel() {
 
   return (
     <section style={{
-      position: "relative", minHeight: "100svh", background: "#0b0b0b", overflow: "hidden",
+      position: "relative", minHeight: "100svh", background: "var(--ink)", overflow: "hidden",
       display: "flex", flexDirection: "column",
     }}>
       <style>{`
         .sol-card{transition:transform .5s cubic-bezier(.2,.7,.3,1),border-color .5s}
-        .sol-card:hover{transform:translateY(-8px);border-color:rgba(201,162,39,.5)}
+        .sol-card:hover{transform:translateY(-8px);border-color:rgba(var(--accent-rgb),.5)}
         .wr-grid{position:absolute;inset:0;opacity:.5;pointer-events:none;
           background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
                            linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
@@ -62,17 +62,17 @@ export default function WorkReel() {
         alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14,
         padding: "clamp(18px,3vw,38px) clamp(20px,4vw,60px)",
       }}>
-        <a href="/" style={{ textDecoration: "none", color: "#e8c65a", fontFamily: "Georgia, serif", lineHeight: 1.05 }}>
+        <a href="/" style={{ textDecoration: "none", color: "var(--accent-soft)", fontFamily: "Georgia, serif", lineHeight: 1.05 }}>
           <span style={{ display: "block", fontSize: "clamp(18px,2.1vw,30px)", letterSpacing: ".06em", fontWeight: 500 }}>
             S<span style={{ fontSize: ".78em" }}>TEVEN</span> J<span style={{ fontSize: ".78em" }}>AMES</span>
           </span>
-          <span style={{ display: "block", fontSize: "clamp(8px,.95vw,12px)", letterSpacing: ".32em", textTransform: "uppercase", marginTop: ".5em", color: "#c9a227" }}>
+          <span style={{ display: "block", fontSize: "clamp(8px,.95vw,12px)", letterSpacing: ".32em", textTransform: "uppercase", marginTop: ".5em", color: "var(--accent)" }}>
             Consulting
           </span>
         </a>
         <nav style={{ display: "flex", gap: "clamp(14px,2.2vw,32px)", flexWrap: "wrap", justifyContent: "flex-end" }}>
           {[["Web Design", "/designs"], ["Reviews", "/reviews"], ["AI", "/ai-implementation"], ["Podcast", "/podcast"], ["Careers", "/careers"]].map(([t, h]) => (
-            <a key={h} href={h} style={{ color: "#e8c65a", textDecoration: "none", fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase" }}>{t}</a>
+            <a key={h} href={h} style={{ color: "var(--accent-soft)", textDecoration: "none", fontSize: 11, letterSpacing: ".22em", textTransform: "uppercase" }}>{t}</a>
           ))}
         </nav>
       </header>
@@ -81,7 +81,7 @@ export default function WorkReel() {
         {/* ---- the argument ---- */}
         <div className="wr-copy" style={{ maxWidth: 620, position: "relative", zIndex: 5 }}>
           <div style={{
-            display: "inline-block", padding: "8px 18px", border: "1px solid rgba(201,162,39,.5)",
+            display: "inline-block", padding: "8px 18px", border: "1px solid rgba(var(--accent-rgb),.5)",
             color: "rgba(255,255,255,.92)", fontSize: "clamp(8.5px,.85vw,10.5px)", fontWeight: 500,
             letterSpacing: ".26em", textTransform: "uppercase", marginBottom: "clamp(20px,2.6vw,30px)",
           }}>
@@ -104,7 +104,7 @@ export default function WorkReel() {
           </p>
           <a href="#diagnosis" style={{
             display: "inline-block", marginTop: "clamp(26px,3vw,38px)", padding: "16px 40px",
-            border: "1px solid #c9a227", color: "#e8c65a", textDecoration: "none",
+            border: "1px solid var(--accent)", color: "var(--accent-soft)", textDecoration: "none",
             fontSize: 11, letterSpacing: ".24em", textTransform: "uppercase",
           }}>See where yours stands</a>
         </div>
@@ -114,12 +114,12 @@ export default function WorkReel() {
           <div style={{
             borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,.13)",
             boxShadow: "0 50px 120px -30px rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.04)",
-            background: "#111",
+            background: "var(--surface)",
           }}>
             {/* browser chrome — this is what says "a website" without a caption */}
             <div style={{
               display: "flex", alignItems: "center", gap: 7, padding: "11px 14px",
-              background: "#1a1a1a", borderBottom: "1px solid rgba(255,255,255,.07)",
+              background: "var(--surface-2)", borderBottom: "1px solid rgba(255,255,255,.07)",
             }}>
               {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
                 <span key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c, opacity: .85 }} />
@@ -133,7 +133,7 @@ export default function WorkReel() {
               </span>
             </div>
 
-            <div style={{ position: "relative", aspectRatio: "16/10", background: "#0d0d0d" }}>
+            <div style={{ position: "relative", aspectRatio: "16/10", background: "var(--ink)" }}>
               {WORK.map((w, i) => (
                 <div key={w.img} className={"wr-shot" + (i === idx ? " on" : "")}
                      style={{ backgroundImage: `url('${w.img}')` }} />
@@ -160,7 +160,7 @@ export default function WorkReel() {
                   style={{
                     width: i === idx ? 26 : 9, height: 9, borderRadius: 20, cursor: "pointer",
                     border: "none", padding: 0, transition: ".4s",
-                    background: i === idx ? "#c9a227" : "rgba(255,255,255,.22)",
+                    background: i === idx ? "var(--accent)" : "rgba(255,255,255,.22)",
                   }}
                 />
               ))}
