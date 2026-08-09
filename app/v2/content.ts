@@ -57,11 +57,11 @@ export const BRAND = {
 };
 
 export const HERO = {
-  badge: "Forty years · Five businesses · One operator",
-  h1: ["I run the digital side", "of your business."],
+  badge: "Forty years · Five businesses · One standard",
+  h1: ["We run the digital side", "of your business."],
   body: [
     "Website, reputation, follow-up, advertising — built as one system instead of four purchases that don’t know about each other.",
-    "I’ve run five companies of my own and been the one building the technology in every one. You deal with me, not an account manager.",
+    "Forty years of running real businesses went into this team and the way it works. You are not hiring a freelancer with a waiting list.",
   ],
   cta: { label: "Start with a walkthrough", href: "#diagnosis" },
 
@@ -77,7 +77,7 @@ export const HERO = {
     { k: "Follow-up", note: "where it leaks",    mine: true },
     { k: "Ads",       note: "only amplify",      mine: true },
   ],
-  chainNote: "The lit ones are what I build. The other two are yours — I just make sure they point somewhere worth arriving at.",
+  chainNote: "The lit ones are what we build. The other two are yours — we just make sure they point somewhere worth arriving at.",
 
   // kept for /designs, where showing the work IS the one job
   work: [
@@ -118,7 +118,7 @@ export const DIAGNOSIS = {
 export const BUCKETS = {
   eyebrow: "Four Questions",
   h2: "Answer these honestly. Nobody sees it but you.",
-  lede: "No email, no form. This is the same walkthrough I’d do with you on a call.",
+  lede: "No email, no form. This is the same walkthrough we would do with you on a call.",
   questions: [
     {
       id: "site",
@@ -127,7 +127,7 @@ export const BUCKETS = {
         { label: "Under 2 years", bad: false },
         { label: "3–5 years", bad: true },
         { label: "Longer than that", bad: true },
-        { label: "I'd have to look", bad: true },
+        { label: "I'd have to look", bad: true },   // the prospect's voice — stays first person
       ],
       verdict: "A site more than three years old was built before most of your customers started searching on a phone. It is not that it looks dated — it is that it was designed for a different device.",
     },
@@ -166,7 +166,7 @@ export const BUCKETS = {
     },
   ],
   results: {
-    none: "Then you are in better shape than most — and you probably don't need me yet.",
+    none: "Then you are in better shape than most — and you probably don't need us yet.",
     one: "One weak link. That is the cheapest possible place to be, and the fastest to fix.",
     all: "All four. That is normal, and it is why advertising has never worked the way you were told it would.",
     some: (n: number) => `${n} of the four. That is normal, and it is why advertising has not worked the way you were told it would.`,
@@ -175,7 +175,7 @@ export const BUCKETS = {
 };
 
 export const SOLUTION = {
-  eyebrow: "What I Do About It",
+  eyebrow: "What We Do About It",
   h2: "Same order, rebuilt.",
   lede: "You can start anywhere. But this is the sequence, and the sequence is the part nobody else sold you.",
   cards: [
@@ -209,20 +209,20 @@ export const PROOF = {
 };
 
 export const WHO = {
-  eyebrow: "Who You’d Be Working With",
-  h2: "Forty years, five businesses, and the technology in every one of them.",
+  eyebrow: "Where This Came From",
+  h2: "Forty years of running businesses, built into a team.",
   paragraphs: [
-    "A restaurant in 1986. Then mortgage. Then roofing. Then trucking. Then this. I ran all five, and I was the one who built the systems in every one of them.",
-    "So when I tell you the pieces don't talk to each other, it isn't a theory I read. It is the specific problem I spent four decades solving inside my own businesses, with my own money, while the phone was ringing.",
-    "I work with a small number of owners at a time. You deal with me, not with an account manager who repeats what I said.",
+    "A restaurant in 1986. Then mortgage. Then roofing. Then trucking. Then this. Steven ran all five and built the systems inside every one of them.",
+    "So when we tell you the pieces don't talk to each other, it isn't a theory out of a book. It is the specific problem he spent four decades solving inside his own businesses, with his own money, while the phone was ringing.",
+    "That experience is what the team is built on and trained to. You are not buying one person's attention — you are buying a way of working that does not depend on any one person being available.",
   ],
-  signature: { name: "Steven Barchetti", role: "Steven James Consulting" },
+  signature: { name: "Steven Barchetti", role: "Founder · Steven James Consulting" },
 };
 
 export const ASK = {
   eyebrow: "One Conversation",
-  h2: "I’ll show you your own business first.",
-  lede: "Before you decide anything, I’ll walk you through what a customer sees when they look you up — your listing, your reviews, your site, on the phone they’re actually holding. That part costs nothing and it is useful whether you hire me or not.",
+  h2: "We’ll show you your own business first.",
+  lede: "Before you decide anything, we will walk you through what a customer sees when they look you up — your listing, your reviews, your site, on the phone they are actually holding. That part costs nothing and it is useful whether you hire us or not.",
   cta: { label: "Book the walkthrough", href: "/apply" },
 };
 
@@ -241,7 +241,7 @@ export const FOOTER = {
       { label: "Book a Walkthrough", href: "/apply" },
     ]},
   ],
-  closing: "Websites, reviews and follow-up for high-end trades. Built as one system, by one person.",
+  closing: "Websites, reviews and follow-up for high-end trades. Built as one system, by one team.",
   legalLeft: "Steven James Consulting",
   legalRight: "San Antonio, Texas · Working nationwide",
 };
