@@ -16,29 +16,12 @@
 // obvious one. "Chloe" is real and worth keeping; an AI employee with a name is memorable in
 // a way that "AI Implementation" never will be.
 export const DIVISIONS = [
-  {
-    short: "Designs",
-    name: "Steven James Designs",
-    line: "Websites for high-end trades",
-    href: "/designs",
-  },
-  {
-    short: "Five Star",
-    name: "Five Star",
-    line: "The review engine — placeholder name",
-    href: "/reviews",
-  },
-  {
-    short: "Chloe",
-    name: "Chloe",
-    line: "The AI employee that answers at 6pm",
-    href: "/ai-implementation",
-  },
+  { n: "01", short: "Websites", name: "Steven James Designs", line: "Everything else points at it, so it goes first", href: "/designs" },
+  { n: "02", short: "Reviews",  name: "Five Star",            line: "The entry fee — placeholder name",           href: "/reviews" },
+  { n: "03", short: "Chloe",    name: "Chloe",                line: "The AI employee that answers at 6pm",        href: "/ai-implementation" },
+  { n: "04", short: "Ads",      name: "Paid Ads",             line: "Only once the first three hold",             href: "/ads" },
 ];
 
-// ⛔ THE SLOT EXISTS EVEN WHERE THE WORDS ARE PLACEHOLDER. A descriptor that isn't in the
-// markup can't be edited in the studio later — you can only change what is already there.
-// So Podcast and Careers carry the same panel as the divisions, with copy to be replaced.
 export const NAV_EXTRA = [
   { short: "Podcast", name: "The Podcast", line: "Conversations with owners who build things — placeholder copy", href: "/podcast" },
   { short: "Careers", name: "Careers", line: "Setters and web builders — remote, paid on what you produce", href: "/careers" },
@@ -77,6 +60,7 @@ export const HERO = {
     { k: "Follow-up", note: "where it leaks",    mine: true },
     { k: "Ads",       note: "only amplify",      mine: true },
   ],
+  chainLabel: "How a customer actually moves",
   chainNote: "The lit ones are what we build. The other two are yours — we just make sure they point somewhere worth arriving at.",
 
   // kept for /designs, where showing the work IS the one job
@@ -175,9 +159,9 @@ export const BUCKETS = {
 };
 
 export const SOLUTION = {
-  eyebrow: "What We Do About It",
-  h2: "Same order, rebuilt.",
-  lede: "You can start anywhere. But this is the sequence, and the sequence is the part nobody else sold you.",
+  eyebrow: "The Order It Gets Built In",
+  h2: "Four divisions, in sequence.",
+  lede: "A customer moves through your business in one order; it gets built in another. The website comes first because everything else points at it, and the ads come last because they only amplify whatever is already there. That sequence is the part nobody else sold you.",
   cards: [
     { n: "01", t: "The website", href: "/designs", p: "Everything else points at it, so it goes first. Built to look like the work you actually do — not a template with your logo dropped in the corner." },
     { n: "02", t: "The reviews", href: "/reviews", p: "A system that asks every customer at the right moment, instead of you remembering to. Three reviews after ten years is not a reputation problem, it is a process problem." },
@@ -228,11 +212,17 @@ export const ASK = {
 
 export const FOOTER = {
   columns: [
+    // ⛔ THREE DIVISIONS, AND THE FOOTER MUST AGREE WITH THE HEADER. Paid ads was listed here
+    // as a fourth and it is not one: no brand of its own, and it is only sold once the other
+    // three are in place. It is the last link in the chain, reachable from the solution card.
+    // The divisions carry their descriptor here too — a footer has the room a nav bar doesn't.
+    // ⛔ THE FOOTER MUST AGREE WITH THE HEADER — same four divisions, same order, same words.
+    // The order IS the argument, so it cannot differ between two places on one page.
     { title: "The Divisions", links: [
-      { label: "Steven James Designs", href: "/designs" },
-      { label: "Five Star", href: "/reviews" },
-      { label: "Chloe", href: "/ai-implementation" },
-      { label: "Paid Ads", href: "/ads" },
+      { label: "01 · Steven James Designs", href: "/designs", line: "Everything else points at it, so it goes first" },
+      { label: "02 · Five Star", href: "/reviews", line: "The entry fee" },
+      { label: "03 · Chloe", href: "/ai-implementation", line: "The AI employee that answers at 6pm" },
+      { label: "04 · Paid Ads", href: "/ads", line: "Only once the first three hold" },
     ]},
     { title: "The Company", links: [
       { label: "The Work", href: "#work" },

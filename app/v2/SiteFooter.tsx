@@ -39,8 +39,13 @@ export default function SiteFooter() {
             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 11 }}>
               {col.links.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} style={{ color: "rgba(255,255,255,.62)", textDecoration: "none", fontSize: 14.5 }}>
+                  <a href={l.href} style={{ color: "rgba(255,255,255,.62)", textDecoration: "none", fontSize: 14.5, display: "block" }}>
                     {l.label}
+                    {"line" in l && (l as { line?: string }).line && (
+                      <span style={{ display: "block", marginTop: 3, fontSize: 12.5, color: "rgba(255,255,255,.36)", fontWeight: 300, lineHeight: 1.5 }}>
+                        {(l as { line?: string }).line}
+                      </span>
+                    )}
                   </a>
                 </li>
               ))}

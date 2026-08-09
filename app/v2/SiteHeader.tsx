@@ -69,7 +69,11 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
                 letterSpacing: ".22em", textTransform: "uppercase", paddingBottom: 6,
                 borderBottom: hover === d.href ? "1px solid var(--accent)" : "1px solid transparent",
                 transition: "border-color .25s",
-              }}>{d.short}</a>
+              }}>
+                {/* the numeral is the point — the nav teaches the hierarchy before anyone
+                    reads a word of the page */}
+                <span style={{ opacity: .5, marginRight: 6, fontSize: 9.5 }}>{d.n}</span>{d.short}
+              </a>
 
               <Panel d={d} show={hover === d.href} />
             </span>
@@ -81,8 +85,10 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
             <span key={d.href} style={{ position: "relative" }}
                   onMouseEnter={() => setHover(d.href)}
                   onMouseLeave={() => setHover(null)}>
+              {/* same colour as the divisions — the rule already separates the groups, and two
+                  signals for one distinction read as a mistake rather than a hierarchy */}
               <a href={d.href} style={{
-                color: "rgba(255,255,255,.62)", textDecoration: "none", fontSize: 11,
+                color: "var(--accent-soft)", textDecoration: "none", fontSize: 11,
                 letterSpacing: ".22em", textTransform: "uppercase", paddingBottom: 6,
                 borderBottom: hover === d.href ? "1px solid var(--accent)" : "1px solid transparent",
                 transition: "border-color .25s",
@@ -126,7 +132,9 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
           <a key={d.href} href={d.href}
              onClick={() => { setOpen(false); document.body.style.overflow = ""; }}
              style={{ textDecoration: "none", display: "block", padding: "16px 0", borderTop: "1px solid rgba(var(--line),.1)" }}>
-            <span style={{ display: "block", fontFamily: "Georgia, serif", fontSize: 27, color: "#fff", fontWeight: 300 }}>{d.name}</span>
+            <span style={{ display: "block", fontFamily: "Georgia, serif", fontSize: 27, color: "#fff", fontWeight: 300 }}>
+              <span style={{ fontSize: 15, color: "var(--accent)", marginRight: 10 }}>{d.n}</span>{d.name}
+            </span>
             <span style={{ display: "block", marginTop: 5, fontSize: 14, color: "rgba(255,255,255,.5)", fontWeight: 300 }}>{d.line}</span>
           </a>
         ))}

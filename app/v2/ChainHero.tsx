@@ -87,8 +87,16 @@ export default function ChainHero() {
           fontSize: 11, letterSpacing: ".24em", textTransform: "uppercase",
         }}>{HERO.cta.label}</a>
 
-        {/* ---- the chain: breadth, in one glance ---- */}
-        <div className="ch-chain">
+        {/* ---- the chain: breadth, in one glance ----
+             ⚠️ LABELLED, because the page carries TWO orders and both are correct. This is the
+             CUSTOMER's path (Maps first — that is where they start). The divisions run in the
+             BUILD order (website first — everything points at it). Unlabelled, side by side,
+             they read as a contradiction. */}
+        <div style={{
+          marginTop: "clamp(44px,5.5vw,76px)", fontSize: 10, letterSpacing: ".3em",
+          textTransform: "uppercase", color: "rgba(255,255,255,.4)",
+        }}>{HERO.chainLabel}</div>
+        <div className="ch-chain" style={{ marginTop: "clamp(22px,2.6vw,34px)" }}>
           {HERO.chain.map((c) => (
             <div className="ch-node" key={c.k}>
               <div className="ch-dot" style={{
