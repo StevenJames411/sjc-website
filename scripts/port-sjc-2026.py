@@ -215,7 +215,11 @@ header = blk("SiteHeader",
     tagline="", taglineColor="accent", taglineSize=14,
     links=NAV_LINKS,
     ctaLabel="Book a walkthrough", ctaHref=C["CONTACT"]["book"], ctaNewTab=False,
-    background="bandHeader", foreground="white", showLogo=True, bandGrid="accent",
+    # ⛔ bandDARK, NOT bandHeader — the hero's own ground. bandHeader is a lighter slate, and at
+    # that tone the bar still read as a separate rectangle sitting on the hero even WITH the grid
+    # running across the seam. A continuous grid cannot join two different colours; matching the
+    # tone is what does it, and the grid is what stops the joined field looking flat.
+    background="bandDark", foreground="white", showLogo=True, bandGrid="accent",
     ctaColor="accent", brandIcon="", brandIconColor="")
 
 footer = blk("SiteFooter",
@@ -231,6 +235,13 @@ footer = blk("SiteFooter",
     copyright="ARV Venture Group LLC Parent Company · Steven James Consulting",
     background="", foreground="", brandName="Steven James Consulting", showLogo=True)
 
+# ⛔ THE PAGE NO LONGER CARRIES THE CHROME. `header` and `footer` now live in the SITE's own `nav`
+# and `footer` documents (--chrome, below), which every page of this website renders inside. Leaving
+# them in `content` as well would render each one TWICE the moment the chrome docs exist.
+#
+# This is the whole reason for the change: with the chrome in the page, the five division pages
+# queued behind this one would each hold their own copy of the header, and the copies drift the
+# first time any one of them is edited.
 DATA = {
     "root": {"props": {
         "title": "Steven James Consulting — websites for high-end trades",
@@ -239,9 +250,14 @@ DATA = {
                        "who build it, not an account manager.",
         "businessName": "Steven James Consulting",
     }},
-    "content": [header, hero, story, diagnosis, selfcheck, solution, proof, who, ask, footer],
+    "content": [hero, story, diagnosis, selfcheck, solution, proof, who, ask],
     "zones": {},
 }
+
+# The two site-wide documents. Same block objects the page used to hold — same wordmark, same
+# bandGrid, same links — just stored once for the whole website instead of once per page.
+NAV_DATA = {"root": {"props": {}}, "content": [header], "zones": {}}
+FOOTER_DATA = {"root": {"props": {}}, "content": [footer], "zones": {}}
 
 def api(method, path, payload):
     req = urllib.request.Request(
@@ -259,6 +275,24 @@ SITE_ID = "steven-james-consulting-2026"
 if __name__ == "__main__":
     if "--dump" in sys.argv:
         print(json.dumps(DATA, indent=1)[:600]); sys.exit()
+
+    # --chrome writes all THREE documents: the page without its chrome, plus the site-wide nav and
+    # footer. Deliberately one flag rather than three runs — writing the chrome docs while the page
+    # still contained the same blocks would render the header twice, and that intermediate state is
+    # exactly the kind of thing that gets left behind and found later on a live site.
+    if "--chrome" in sys.argv:
+        print(f"writing chrome + page for {SITE_ID}…")
+        ok = True
+        for label, page, payload in (("page  ", SLUG, DATA),
+                                     ("nav   ", "nav", NAV_DATA),
+                                     ("footer", "footer", FOOTER_DATA)):
+            st, res = api("PUT", "/api/puck", {"page": page, "site": SITE_ID, "data": payload})
+            print(f"  {label} -> {st} {res}")
+            ok = ok and st < 300
+        print(f"\nedit page:   https://stevenjamesdesigns.com/edit/{SITE_ID}/{SLUG}")
+        print(f"edit nav:    https://stevenjamesdesigns.com/edit/{SITE_ID}/nav")
+        print(f"edit footer: https://stevenjamesdesigns.com/edit/{SITE_ID}/footer")
+        sys.exit(0 if ok else 1)
 
     if "--rewrite" in sys.argv:
         print(f"rewriting {SITE_ID}/{SLUG} (no site or page created)…")

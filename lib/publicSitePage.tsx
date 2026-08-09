@@ -6,6 +6,7 @@ import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
 import { resolveFormPointers } from "@/lib/formPointer";
 import { readForms } from "@/lib/forms";
 import { findPageMeta } from "@/lib/pageRegistry";
+import { isChrome } from "@/lib/puckPages";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
 import { fillBusinessTokens } from "@/lib/businessTokens";
@@ -102,6 +103,13 @@ export async function resolvePage(
 ): Promise<Resolved> {
   const site = await findSite(siteId);
   if (!site) return null;
+
+  // ⛔ CHROME IS NOT A PAGE. `findPageMeta` searches built-ins, so `nav` resolves here and the
+  // catch-all would serve a bare header at /nav — a real public URL showing a stranded navbar with
+  // no content under it. That was ALREADY true for SJC (`/nav` is not a route folder, so app/[slug]
+  // handles it); granting chrome to client sites would have multiplied it across every one of them.
+  // Refused for every site, which fixes the existing case at the same time.
+  if (isChrome(page)) return null;
 
   let meta = await findPageMeta(page, siteId);
   if (!meta && homeFallback) {
@@ -230,6 +238,25 @@ export async function SitePageBody({
   // The site's KIND is the real answer. A client site brings its own chrome or has none; it never
   // borrows ours.
   const isClientSite = siteId !== SJC;
+
+  // ── THIS SITE'S OWN SITE-WIDE CHROME ───────────────────────────────────────────────────────
+  // The missing third option. Until now there were only two: SJC's global chrome, or chrome
+  // duplicated into every single page. The second is what a client site got, and it drifts the
+  // moment a site has two pages — the header gets edited on one and not the other.
+  //
+  // ⚠️ KEYED BY siteId, ALWAYS. There is deliberately no fallback from a missing client document
+  // to SJC's chrome; an absent doc falls back to the page's OWN blocks (the old behaviour). That
+  // is what keeps the guarantee below intact — the leak that started all of this was a client
+  // page wearing Steven's nav, linking to the free community that teaches what he charges for.
+  const chrome = isClientSite
+    ? {
+        nav: await readPuckPublished("nav", siteId),
+        footer: await readPuckPublished("footer", siteId),
+      }
+    : { nav: null, footer: null };
+
+  // ⚠️ SJC'S CHROME MUST NEVER APPEAR ON A CLIENT'S SITE — see the note above. A site-wide document
+  // of the site's OWN counts as bringing its own chrome, exactly like an in-page block does.
   const ownHeader = isClientSite || hasBlock(data, "SiteHeader");
   const ownFooter = isClientSite || hasBlock(data, "SiteFooter");
   // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
@@ -281,13 +308,27 @@ export async function SitePageBody({
       {designCss ? (
         <style id="site-design" dangerouslySetInnerHTML={{ __html: designCss }} />
       ) : null}
-      {ownHeader ? null : <Nav />}
+      {chrome.nav ? (
+        <SiteProvider siteId={siteId} business={site?.business} url={site ? publicUrlFor(site) : ""}>
+          <Render config={config} data={chrome.nav as never} />
+        </SiteProvider>
+      ) : ownHeader ? null : (
+        <Nav />
+      )}
       <main>
         {/* Blocks read the site from here rather than from an editable field — the lead form's
             destination in particular must never depend on someone typing it correctly. */}
         {body}
       </main>
-      {ownFooter ? null : <Footer />}
+      {/* Wrapped in its own SiteProvider, same as the body: a footer routinely carries
+          {{business.phone}} and an unwrapped Render would ship the raw token to a visitor. */}
+      {chrome.footer ? (
+        <SiteProvider siteId={siteId} business={site?.business} url={site ? publicUrlFor(site) : ""}>
+          <Render config={config} data={chrome.footer as never} />
+        </SiteProvider>
+      ) : ownFooter ? null : (
+        <Footer />
+      )}
     </>
   );
 }
