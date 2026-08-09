@@ -35,6 +35,13 @@ export const NAV = [
   ...NAV_EXTRA.map((n) => ({ label: n.short, href: n.href })),
 ];
 
+// ⚠️ PHONE PULLED FROM stevenjamesdesigns.com — confirm before this goes public.
+export const CONTACT = {
+  phone: "(210) 851-4906",
+  tel: "+12108514906",
+  book: "/apply",
+};
+
 export const BRAND = {
   nameTop: "Steven James",
   nameSub: "Consulting",

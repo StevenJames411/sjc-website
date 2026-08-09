@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BRAND, DIVISIONS, NAV_EXTRA } from "./content";
+import { BRAND, CONTACT, DIVISIONS, NAV_EXTRA } from "./content";
 
 // GLOBAL HEADER — a component, never part of a page.
 //
@@ -33,7 +33,10 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
     </a>
   );
 
-  const Row = ({ item, big }: { item: { n?: string; name: string; line: string; href: string }; big?: boolean }) => (
+  // ⛔ RENDERS `short`, NOT `name`. The footer already used the short label; the menu used the
+  // brand name, so the two disagreed on screen. The customer-facing label wins in both — brand
+  // names (Chloe, Steven James Designs) belong on their own pages, not in navigation.
+  const Row = ({ item, big }: { item: { n?: string; short: string; line: string; href: string }; big?: boolean }) => (
     <a href={item.href} onClick={close} style={{
       textDecoration: "none", display: "block", padding: big ? "18px 0" : "14px 0",
       borderTop: "1px solid rgba(var(--line),.1)",
@@ -44,7 +47,7 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
         color: big ? "#fff" : "rgba(255,255,255,.82)",
       }}>
         {item.n && <span style={{ fontSize: ".52em", color: "var(--accent)", marginRight: 14 }}>{item.n}</span>}
-        {item.name}
+        {item.short}
       </span>
       <span style={{ display: "block", marginTop: 6, fontSize: big ? 15 : 13.5, color: "rgba(255,255,255,.45)", fontWeight: 300 }}>
         {item.line}
@@ -63,11 +66,6 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
         <Wordmark />
 
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(12px,2vw,22px)" }}>
-          <a href="/apply" className="v2-topcta" style={{
-            padding: "12px 26px", border: "1px solid var(--accent)", color: "var(--accent-soft)",
-            textDecoration: "none", fontSize: 10.5, letterSpacing: ".22em", textTransform: "uppercase",
-          }}>Book a walkthrough</a>
-
           <button
             aria-label="Open menu"
             aria-expanded={open}
@@ -120,18 +118,35 @@ export default function SiteHeader({ overlay = true }: { overlay?: boolean }) {
               The Company
             </div>
             {NAV_EXTRA.map((n) => <Row key={n.href} item={n} />)}
-            <a href="/apply" onClick={close} style={{
-              display: "inline-block", marginTop: 30, padding: "15px 32px",
-              border: "1px solid var(--accent)", color: "var(--accent-soft)", textDecoration: "none",
-              fontSize: 10.5, letterSpacing: ".22em", textTransform: "uppercase",
-            }}>Book a walkthrough</a>
+
+            {/* ⛔ THE ACTION LIVES INSIDE THE MENU, NEVER IN THE BAR. Nobody books a call before
+                they know who you are — this page has educating to do first — and a CTA in the bar
+                is the first thing to break on a narrow screen. Once someone opens the menu they
+                have gone looking, so the action belongs here. */}
+            <div style={{ display: "grid", gap: 12, marginTop: 34 }}>
+              <a href={CONTACT.book} onClick={close} style={{
+                display: "block", textAlign: "center", padding: "16px 32px",
+                background: "var(--accent)", color: "#0b0b0b", textDecoration: "none",
+                fontSize: 10.5, letterSpacing: ".22em", textTransform: "uppercase", fontWeight: 600,
+              }}>Book a walkthrough</a>
+              <a href={`tel:${CONTACT.tel}`} style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                padding: "15px 32px", border: "1px solid rgba(var(--line),.24)",
+                color: "rgba(255,255,255,.82)", textDecoration: "none",
+                fontSize: 11, letterSpacing: ".14em",
+              }}>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.6 2.8a2 2 0 0 1-.5 2.1L8.1 9.8a16 16 0 0 0 6 6l1.2-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.8.6a2 2 0 0 1 1.8 2Z"/>
+                </svg>
+                {CONTACT.phone}
+              </a>
+            </div>
           </div>
         </div>
       </nav>
 
       <style>{`
         @media (max-width:820px){
-          .v2-topcta{display:none}
           .v2-menugrid{grid-template-columns:1fr !important;gap:34px !important}
         }
         @media (max-width:420px){ .v2-menuword{display:none} }
