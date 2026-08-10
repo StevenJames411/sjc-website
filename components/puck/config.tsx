@@ -102,7 +102,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -305,6 +305,9 @@ export const FOOTER_DEFAULTS = {
   // Match what was hardcoded, so an untouched footer does not move.
   contactWidth: 300,
   buttonWidthMobile: 50,
+  // ⛔ OFF by default. A client footer usually wants to be SHORTER than the menu, and
+  // turning this on for everyone would silently rewrite every existing footer's links.
+  mirrorHeaderLinks: false,
 };
 
 export const IMAGE_DEFAULTS = {
@@ -1565,6 +1568,18 @@ export const config: Config<Props, RootProps> = {
           ),
         },
         // Same four contact controls the header block has, so the two cannot say different things.
+        // ⛔ ONE EDIT INSTEAD OF TWO. On, the footer renders the HEADER's link groups — same
+        // labels, same descriptions, same column headings — so the menu becomes the single place
+        // those links are maintained. ⚠️ The builder canvas still shows the footer's own stored
+        // groups; only the live page mirrors.
+        mirrorHeaderLinks: {
+          type: "radio" as const,
+          label: "Footer links",
+          options: [
+            { label: "Its own links (default)", value: false },
+            { label: "Mirror the header's menu", value: true },
+          ],
+        },
         bookHref: { type: "text" as const, label: "Book button links to (blank = hide the button)" },
         bookLabel: { type: "text" as const, label: "Book button label" },
         bookIcon: { type: "text" as const, label: "Book icon — image URL" },
