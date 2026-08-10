@@ -94,13 +94,15 @@ const PATHS = {
 const PILL_BASE = "group relative w-full rounded-lg font-semibold text-white shadow transition";
 export const PILL_SIZE = {
   md: "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm",
-  // ⚠️ py-8 → py-4, gap-3 → gap-2. Steven: "the blue CTA buttons are twice the size that they need
-  // to be... so the buttons don't look like boulders." The padding was set to fill the overlay's
-  // empty half rather than to fit the content — the tile should be sized by its icon and label,
-  // and the leftover canvas is allowed to just be empty.
-  tile: "flex flex-col items-center justify-center gap-2 px-4 py-4 text-center text-base",
+  // ⛔ THE ICON SETS THE HEIGHT — PADDING WAS THE WRONG DIAL, AND IT GOT PULLED TWICE BEFORE THIS.
+  // First pass: py-8 → py-4, "so the buttons don't look like boulders." They still read as "four
+  // giant blocks on the page", because at h-14 the ICON was 56px and no amount of padding trimming
+  // touches that. Cutting one while the other holds the height is the same mistake made twice more
+  // in this component's history (scaling a pill when the shape was wrong, twice).
+  // So icon and padding move TOGETHER, in one constant, and the block halves for real.
+  tile: "flex flex-col items-center justify-center gap-1.5 px-3 py-3 text-center text-sm",
 } as const;
-export const ICON_SIZE = { md: "h-4 w-4", tile: "h-14 w-14" } as const;
+export const ICON_SIZE = { md: "h-4 w-4", tile: "h-9 w-9" } as const;
 const PILL = `${PILL_BASE} bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]`;
 
 export default function ContactButtons({
