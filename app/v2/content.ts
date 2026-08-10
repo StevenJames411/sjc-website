@@ -243,11 +243,14 @@ export const FOOTER = {
     })) },
     // ⚠️ NO "Book a Call" HERE. It is the first CONTACT BUTTON a few inches to the right, and
     // listing the same destination twice in one footer reads as padding.
-    { title: "Company", links: [
-      { label: "Portfolio", href: "#work" },
-      { label: "Podcast", href: "/podcast" },
-      { label: "Careers", href: "/careers" },
-    ]},
+    // ⛔ DERIVED FROM NAV_EXTRA, NEVER RETYPED — the same rule as Divisions above, and Company
+    // drifted for the exact reason that rule exists. It was a hand-typed second copy: three links
+    // where the menu had four (About was missing entirely) and no descriptions where the menu had
+    // one under every item. Steven spotted it after five hours as "the main thing that doesn't
+    // match." One source now, so a copy rewrite lands in the menu and the footer at once.
+    { title: "Company", links: NAV_EXTRA.map((n) => ({
+      label: n.short, href: n.href, line: n.line,
+    })) },
   ],
   // ⛔ EMPTY ON PURPOSE. This was the only prose in the footer, and it forced the brand block to be
   // a wide paragraph sitting above everything — which is most of why the top half looked
