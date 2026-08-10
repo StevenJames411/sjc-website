@@ -258,7 +258,14 @@ export default function FooterView({
             sm and single-column stacking are untouched, so the phone view does not move. */}
         <div
           className={`grid gap-10 ${
-            groupEls.length ? "sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_var(--sjc-contact-w)]" : ""
+            // ⚠️ 1fr / 1fr, was 1.5fr / 1fr. The old ratio was right for a Company column of three
+            // BARE links — and wrong the moment that column started deriving from NAV_EXTRA, which
+            // gave it four links WITH descriptions. At 1fr those wrapped to two lines while
+            // Divisions' fit on one. Both columns are title + description now, so they want the
+            // same width.
+            // ⛔ Not a repeat of the equal-thirds mistake: that was equal widths over genuinely
+            // unequal content. This is the reverse — the content became equal, so the widths did.
+            groupEls.length ? "sm:grid-cols-2 lg:grid-cols-[1fr_1fr_var(--sjc-contact-w)]" : ""
           }`}
           // ⛔ A CSS VARIABLE, NOT AN INLINE WIDTH. An inline style beats a Tailwind class at
           // EVERY breakpoint, so styling the width directly would pin one value across all of
