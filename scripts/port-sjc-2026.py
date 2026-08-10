@@ -218,9 +218,17 @@ header = blk("SiteHeader",
     # of its call blocks and has no text or email icon, so those two keep the drawn glyphs.
     # ⛔ HOTLINKED FROM A THIRD PARTY. If the Landing Site account lapses, these 404 and the tiles
     # lose their icons — re-host on SJC's own blob before this site goes live on the real domain.
-    ctaIcon="https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/ee615b76-b2a7-4eca-a413-d88ebd6af800/publicContain",
-    menuIconCall="https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/073c4448-13cc-4b3b-6f22-e967b2d4d200/public",
-    menuIconText="", menuIconEmail="",
+    # ⛔ SERVED FROM SJC'S OWN DOMAIN. Built by scripts/make-contact-icons.mjs from Steven's source
+    # art: cropped to the icon's real bounds, kept transparent, 2.3MB -> ~130KB each. They live in
+    # public/icons, so they deploy with the site and are in version control — an icon cannot
+    # silently vanish, and no third-party account sits in front of the most-clicked controls.
+    ctaIcon="/icons/calendar.png",
+    menuIconText="/icons/sms.png",
+    menuIconEmail="/icons/email.png",
+    # ⚠️ STILL HOTLINKED — the only one left. The phone exists solely on Landing Site's CDN, and the
+    # AVIF export macOS produces when dragging it out is a bitstream sharp cannot decode. Re-save it
+    # as PNG (open in Preview → File → Export) and this becomes /icons/phone.png like the rest.
+    menuIconCall="https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/55a02769-6830-4e6f-998a-6c3efa7b4a00/public",
     brandName="Steven James", brandHref="/", brandSize=26,
     brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
     tagline="", taglineColor="accent", taglineSize=14,
