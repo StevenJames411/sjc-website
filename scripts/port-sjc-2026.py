@@ -218,9 +218,14 @@ header = blk("SiteHeader",
     # of its call blocks and has no text or email icon, so those two keep the drawn glyphs.
     # ⛔ HOTLINKED FROM A THIRD PARTY. If the Landing Site account lapses, these 404 and the tiles
     # lose their icons — re-host on SJC's own blob before this site goes live on the real domain.
-    ctaIcon="https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/ee615b76-b2a7-4eca-a413-d88ebd6af800/publicContain",
-    menuIconCall="https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/073c4448-13cc-4b3b-6f22-e967b2d4d200/public",
-    menuIconText="", menuIconEmail="",
+    # ⛔ SERVED FROM SJC'S OWN DOMAIN. Built by scripts/make-contact-icons.mjs from Steven's source
+    # art: cropped to the icon's real bounds, kept transparent, 2.3MB -> ~130KB each. They live in
+    # public/icons, so they deploy with the site and are in version control — an icon cannot
+    # silently vanish, and no third-party account sits in front of the most-clicked controls.
+    ctaIcon="/icons/calendar.png",
+    menuIconCall="/icons/phone.png",
+    menuIconText="/icons/sms.png",
+    menuIconEmail="/icons/email.png",
     brandName="Steven James", brandHref="/", brandSize=26,
     brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
     tagline="", taglineColor="accent", taglineSize=14,
