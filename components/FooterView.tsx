@@ -321,7 +321,14 @@ export default function FooterView({
                 flat drawn glyphs — the same block showing two different things in two places, which
                 is the exact drift the shared component was created to end. Book a Call and the icon
                 URLs are props, so a client site sets its own or gets none. */}
-            <div className="mt-4 flex flex-col items-stretch gap-3">
+            {/* ⛔ 75% WHEN STACKED, FULL COLUMN ON DESKTOP.
+                Steven: "on the mobile phone it still looks stupid because it's too wide."
+                On a phone the button was 100% of the column — the viewport minus 48px of padding,
+                so ~342px on a 390px iPhone. The desktop fix (a fixed 300px column) does nothing
+                below `lg`, because there the column IS the screen.
+                max-w-[75%] caps it while stacked; lg:max-w-none hands control back to the 300px
+                track so the two sizes can be tuned independently. */}
+            <div className="mt-4 flex max-w-[75%] flex-col items-stretch gap-3 lg:max-w-none">
               <ContactButtons
                 phone={phone}
                 phoneDisplay={phoneDisplay}
