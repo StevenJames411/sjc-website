@@ -277,9 +277,20 @@ export default function FooterView({
           {groupEls.map((g, gi) => (
             <div key={`g${gi}`} className="text-center sm:text-left">
               <p className="text-sm font-semibold uppercase tracking-wide text-white/90">{g.heading}</p>
-              <ul className="mt-4 space-y-3 text-sm">
+              {/* ⛔ PROXIMITY, NOT SIZE — space-y-3 → space-y-6 plus a hairline between items.
+                  The gap between a description and the NEXT title used to be about the same as the
+                  gap between a title and ITS OWN description (12px between, 2px within). With
+                  one-line notes that read fine; with the three-line copy Steven wrote, the four
+                  entries merged into one block of text.
+                  The divider is the menu overlay's own treatment at footer scale — the two are
+                  meant to match now, and one having lines while the other didn't was the second
+                  thing his eye caught. */}
+              <ul className="mt-4 space-y-6 text-sm">
                 {g.links.map((l, i) => (
-                  <li key={i}>
+                  <li
+                    key={i}
+                    className={i ? "border-t border-white/10 pt-6" : undefined}
+                  >
                     <a href={l.target || "#"} className="group block text-white/80 hover:text-white">
                       <span className="block">{l.label}</span>
                       {/* ⛔ UNDER THE LABEL, NOT ON HOVER. These four lines are the pitch — what
