@@ -73,6 +73,15 @@ export type FooterViewProps = {
   bookHref?: string;
   bookLabel?: string;
   bookIcon?: string;
+  /**
+   * ⛔ THE TWO GEOMETRY DIALS THAT ESCAPED CODE. Steven: "if I could click buttons... it'd be
+   * ten times quicker if those controls were at my fingertips instead of being in code."
+   * Every footer width change tonight cost a build, a push, a deploy and a publish for a number
+   * that takes five seconds to dial. These two are the ones that kept coming back.
+   * Defaults match what was hardcoded, so an untouched footer does not move.
+   */
+  contactWidth?: number;       // px, the desktop Contact column
+  buttonWidthMobile?: number;  // %, the stacked button width
 };
 
 // The live site footer, rendered from props. Used BOTH on the live site (via Footer.tsx, which
@@ -101,6 +110,8 @@ export default function FooterView({
   bookHref,
   bookLabel,
   bookIcon,
+  contactWidth,
+  buttonWidthMobile,
 }: FooterViewProps) {
   // ROLES, not hexes. #111827 here meant the footer sat one shade off every dark band above it and
   // never moved when the palette did — on 2026-08-05 the whole site went near-black cyan and the
@@ -247,8 +258,13 @@ export default function FooterView({
             sm and single-column stacking are untouched, so the phone view does not move. */}
         <div
           className={`grid gap-10 ${
-            groupEls.length ? "sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_300px]" : ""
+            groupEls.length ? "sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_var(--sjc-contact-w)]" : ""
           }`}
+          // ⛔ A CSS VARIABLE, NOT AN INLINE WIDTH. An inline style beats a Tailwind class at
+          // EVERY breakpoint, so styling the width directly would pin one value across all of
+          // them and the responsive classes would silently stop working. Feeding a variable that
+          // the class consumes keeps the breakpoints in charge.
+          style={{ "--sjc-contact-w": `${contactWidth || 300}px` } as React.CSSProperties}
         >
 
           {groupEls.map((g, gi) => (
@@ -328,7 +344,10 @@ export default function FooterView({
                 below `lg`, because there the column IS the screen.
                 max-w-[75%] caps it while stacked; lg:max-w-none hands control back to the 300px
                 track so the two sizes can be tuned independently. */}
-            <div className="mx-auto mt-4 flex max-w-[50%] flex-col items-stretch gap-3 sm:mx-0 sm:max-w-none">
+            <div
+              className="mx-auto mt-4 flex max-w-[var(--sjc-btn-w)] flex-col items-stretch gap-3 sm:mx-0 sm:max-w-none"
+              style={{ "--sjc-btn-w": `${buttonWidthMobile || 50}%` } as React.CSSProperties}
+            >
               <ContactButtons
                 phone={phone}
                 phoneDisplay={phoneDisplay}

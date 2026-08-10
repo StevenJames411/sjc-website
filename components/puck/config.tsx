@@ -102,7 +102,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -300,6 +300,9 @@ export const FOOTER_DEFAULTS = {
   bookHref: "",
   bookLabel: "Book a Call",
   bookIcon: "",
+  // Match what was hardcoded, so an untouched footer does not move.
+  contactWidth: 300,
+  buttonWidthMobile: 50,
 };
 
 export const IMAGE_DEFAULTS = {
@@ -1566,6 +1569,23 @@ export const config: Config<Props, RootProps> = {
         iconCall: { type: "text" as const, label: "Call icon — image URL" },
         iconText: { type: "text" as const, label: "Text icon — image URL" },
         iconEmail: { type: "text" as const, label: "Email icon — image URL" },
+        // ⛔ THE TWO GEOMETRY DIALS THAT ESCAPED CODE. Every footer width change cost a build, a
+        // push, a deploy and a publish for a number that takes five seconds to click. Steppers,
+        // not text boxes — Steven asked to CLICK between 50 and 70, not type it.
+        contactWidth: {
+          type: "custom" as const,
+          label: "Contact column width, desktop (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={300} step={20} min={180} />
+          ),
+        },
+        buttonWidthMobile: {
+          type: "custom" as const,
+          label: "Button width on mobile, % (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={50} step={5} min={25} />
+          ),
+        },
         showLogo: {
           type: "radio" as const,
           label: "SJC logo",
@@ -1576,7 +1596,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color, iconCall, iconText, iconEmail, bookHref, bookLabel, bookIcon }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color, iconCall, iconText, iconEmail, bookHref, bookLabel, bookIcon, contactWidth, buttonWidthMobile }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -1600,6 +1620,8 @@ export const config: Config<Props, RootProps> = {
           bookHref={bookHref}
           bookLabel={bookLabel}
           bookIcon={bookIcon}
+          contactWidth={contactWidth}
+          buttonWidthMobile={buttonWidthMobile}
         />
       ),
     },
