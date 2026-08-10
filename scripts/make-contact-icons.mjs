@@ -52,15 +52,35 @@ async function findBox(img, tol = 46, insetPct = 0.012) {
   const { width: w, height: h, channels: c } = info;
   const at = (x, y) => {
     const i = (y * w + x) * c;
-    return [data[i], data[i + 1], data[i + 2]];
+    return [data[i], data[i + 1], data[i + 2], c > 3 ? data[i + 3] : 255];
   };
-  // Average the four corners — a single corner pixel can sit inside a vignette and skew the read.
-  const corners = [at(0, 0), at(w - 1, 0), at(0, h - 1), at(w - 1, h - 1)];
-  const bg = [0, 1, 2].map((k) => corners.reduce((s, p) => s + p[k], 0) / 4);
-  const differs = (x, y) => {
-    const p = at(x, y);
-    return Math.abs(p[0] - bg[0]) + Math.abs(p[1] - bg[1]) + Math.abs(p[2] - bg[2]) > tol;
-  };
+
+  // ⛔ ALPHA FIRST, COLOUR ONLY AS A FALLBACK — AND GETTING THIS WRONG COST A ROUND.
+  // The generated art already ships with a transparent background; the dark vignette it appears to
+  // sit on is the IMAGE VIEWER's backdrop, not pixels in the file. Scanning by colour therefore
+  // compared the RGB of fully transparent pixels — which is meaningless data — decided the whole
+  // frame was content, and returned a crop the full height of the image. The icon then rendered
+  // small inside a field of empty transparency.
+  //
+  // So: if the file has an alpha channel, find the bounds of what is actually OPAQUE. Fall back to
+  // the colour scan only for a source that is genuinely flat-backed.
+  const hasAlpha = c > 3 && (() => {
+    for (let y = 0; y < h; y += 7) for (let x = 0; x < w; x += 7) if (at(x, y)[3] < 250) return true;
+    return false;
+  })();
+
+  let differs;
+  if (hasAlpha) {
+    differs = (x, y) => at(x, y)[3] > 24; // anything more than a whisper of glow counts as content
+  } else {
+    // Average the four corners — a single corner pixel can sit inside a vignette and skew the read.
+    const corners = [at(0, 0), at(w - 1, 0), at(0, h - 1), at(w - 1, h - 1)];
+    const bg = [0, 1, 2].map((k) => corners.reduce((s, p) => s + p[k], 0) / 4);
+    differs = (x, y) => {
+      const p = at(x, y);
+      return Math.abs(p[0] - bg[0]) + Math.abs(p[1] - bg[1]) + Math.abs(p[2] - bg[2]) > tol;
+    };
+  }
 
   let top = 0, bottom = h - 1, left = 0, right = w - 1;
   const rowHit = (y) => { for (let x = 0; x < w; x += 2) if (differs(x, y)) return true; return false; };
@@ -79,7 +99,7 @@ async function findBox(img, tol = 46, insetPct = 0.012) {
   const l = Math.max(0, Math.round(cx - side / 2));
   const t = Math.max(0, Math.round(cy - side / 2));
   const s = Math.min(Math.round(side), w - l, h - t);
-  return { left: l, top: t, width: s, height: s };
+  return { box: { left: l, top: t, width: s, height: s }, hasAlpha };
 }
 
 // A rounded-rect alpha mask. dest-in keeps only what the mask covers, so the corners come out
@@ -113,16 +133,23 @@ const main = async () => {
       continue;
     }
     const want = { out: `${name}.png` };
-    const box = await findBox(sharp(src));
+    const { box, hasAlpha } = await findBox(sharp(src));
+    // `contain` on a transparent source, `fill` otherwise: the box is squared already, so contain
+    // just guarantees a non-square source is letterboxed rather than stretched.
     const body = await sharp(src)
       .extract(box)
-      .resize(SIZE, SIZE, { fit: "fill" })
+      .resize(SIZE, SIZE, {
+        fit: "contain",
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
       .toBuffer();
     const out = path.join(OUT_DIR, want.out);
-    await sharp(body)
-      .composite([{ input: maskSvg(SIZE), blend: "dest-in" }])
-      .png({ compressionLevel: 9 })
-      .toFile(out);
+    // ⛔ MASK ONLY A FLAT-BACKED SOURCE. Art that already carries its own transparency also carries
+    // its own silhouette and outer glow — forcing a rounded rectangle over it would slice that glow
+    // off square, which looks worse than the background ever did.
+    const pipeline = sharp(body);
+    if (!hasAlpha) pipeline.composite([{ input: maskSvg(SIZE), blend: "dest-in" }]);
+    await pipeline.png({ compressionLevel: 9 }).toFile(out);
     const kb = Math.round((await fs.stat(out)).size / 1024);
     const srcKb = Math.round((await fs.stat(src)).size / 1024);
     console.log(`  OK    ${want.out.padEnd(13)} ${srcKb}KB -> ${kb}KB   crop ${box.width}px`);
