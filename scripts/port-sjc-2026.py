@@ -213,6 +213,14 @@ header = blk("SiteHeader",
     # components/ContactButtons the footer does, so the two can no longer disagree.
     menuMode="menu", menuPhone=C["CONTACT"]["tel"], menuPhoneDisplay=C["CONTACT"]["phone"],
     menuEmail="support@stevenjamesconsulting.com",
+    # ⚠️ STEVEN'S OWN ARTWORK, PULLED FROM alamoslimclinic.com — the same files his Landing Site AI
+    # account serves. Only the calendar and the phone exist; that site reuses the phone for both
+    # of its call blocks and has no text or email icon, so those two keep the drawn glyphs.
+    # ⛔ HOTLINKED FROM A THIRD PARTY. If the Landing Site account lapses, these 404 and the tiles
+    # lose their icons — re-host on SJC's own blob before this site goes live on the real domain.
+    ctaIcon="https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/ee615b76-b2a7-4eca-a413-d88ebd6af800/publicContain",
+    menuIconCall="https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/073c4448-13cc-4b3b-6f22-e967b2d4d200/public",
+    menuIconText="", menuIconEmail="",
     brandName="Steven James", brandHref="/", brandSize=26,
     brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
     tagline="", taglineColor="accent", taglineSize=14,

@@ -94,7 +94,11 @@ const PATHS = {
 const PILL_BASE = "group relative w-full rounded-lg font-semibold text-white shadow transition";
 export const PILL_SIZE = {
   md: "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm",
-  tile: "flex flex-col items-center justify-center gap-3 px-5 py-8 text-center text-base",
+  // ⚠️ py-8 → py-4, gap-3 → gap-2. Steven: "the blue CTA buttons are twice the size that they need
+  // to be... so the buttons don't look like boulders." The padding was set to fill the overlay's
+  // empty half rather than to fit the content — the tile should be sized by its icon and label,
+  // and the leftover canvas is allowed to just be empty.
+  tile: "flex flex-col items-center justify-center gap-2 px-4 py-4 text-center text-base",
 } as const;
 export const ICON_SIZE = { md: "h-4 w-4", tile: "h-14 w-14" } as const;
 const PILL = `${PILL_BASE} bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]`;
@@ -125,28 +129,21 @@ export default function ContactButtons({
           {path}
         </svg>
       )}
-      {size === "tile" ? (
-        // ⛔ THE VALUE IS PRINTED, NOT HIDDEN BEHIND HOVER. The chip existed because a compact pill
-        // had nowhere to put a phone number without stretching the button. A tile has the room, so
-        // the number is simply visible — to a phone user too, who has no hover at all. This is
-        // exactly the shape Steven's own Alamo Slim blocks use: label, value, and the block is the
-        // click target.
-        <span className="flex flex-col gap-1">
-          <span className="block">{verb}</span>
-          <span className="block break-all text-sm font-normal opacity-90">{value}</span>
-        </span>
-      ) : (
-        <>
-          {verb}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-normal text-white opacity-0 shadow-lg ring-1 ring-white/15 transition-opacity duration-150 group-hover:opacity-100"
-            style={{ backgroundColor: "rgba(2, 6, 23, 0.95)" }}
-          >
-            {value}
-          </span>
-        </>
-      )}
+      {verb}
+      {/* ⛔ THE VALUE IS ON HOVER AT EVERY SIZE — SETTLED, AND I BROKE IT ONCE.
+          Building the tile I printed the number under the label, reasoning that a tile has the
+          room. Steven: "take the email and phone number off of them, and when you hover it you'll
+          see the phone number and the email just like we did in the footer. I thought we already
+          settled that. The hover is what gives you the visual."
+          He is right — it was decided when the buttons first shrank to fit, and a bigger surface
+          is not a reason to re-open it. One behaviour, both sizes. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-normal text-white opacity-0 shadow-lg ring-1 ring-white/15 transition-opacity duration-150 group-hover:opacity-100"
+        style={{ backgroundColor: "rgba(2, 6, 23, 0.95)" }}
+      >
+        {value}
+      </span>
     </a>
   );
 

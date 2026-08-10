@@ -347,6 +347,7 @@ export default function NavView({
                   {...tabAttrs(ctaNewTab)}
                   onClick={() => setOpen(false)}
                   className={`${CONTACT_PILL_BASE} ${PILL_SIZE.tile} hover:opacity-90`}
+                  title={ctaLabel}
                   style={{ backgroundColor: resolveColorOr(ctaColor, "var(--color-sjc-blue)") }}
                 >
                   {/* ⛔ A COLOURED GLYPH, NOT A FLAT OUTLINE AND NOT THE RASTER ICON.
@@ -396,6 +397,17 @@ export default function NavView({
                   <span className="flex flex-col gap-1">
                     <span className="block">{ctaLabel}</span>
                     <span className="block text-sm font-normal opacity-90">(Click Here)</span>
+                  </span>
+                  {/* ⛔ ITS OWN LABEL, NOT THE IMAGE URL. Steven: "when I hover over it, I see the
+                      stupid image URL. That's not going to work." Browsers fall back to showing the
+                      src when a hovered image has nothing better to say, so the chip states the
+                      same words the tile does — and `title` below covers the touch long-press. */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-normal text-white opacity-0 shadow-lg ring-1 ring-white/15 transition-opacity duration-150 group-hover:opacity-100"
+                    style={{ backgroundColor: "rgba(2, 6, 23, 0.95)" }}
+                  >
+                    {ctaLabel} — (Click Here)
                   </span>
                 </a>
               ) : null}
