@@ -289,11 +289,14 @@ export default function FooterView({
                 {g.links.map((l, i) => (
                   <li
                     key={i}
-                    // ⚠️ white/50 — third value, and the first two were both guesses at "faint".
-                    // The MENU draws its dividers in currentColor at 0.95 opacity, i.e. effectively
-                    // white. Against that, white/10 was invisible and white/25 was still "nowhere
-                    // near." Matching a reference means measuring the reference, not nudging.
-                    className={i ? "border-t border-white/50 pt-6" : undefined}
+                    // ⛔ THE MENU'S OWN VALUE, NOT A GUESS AT ONE. Three rounds went to nudging
+                    // this — white/10, /25, /50 — each a guess at "tasteful" when the instruction
+                    // was simply "match the header". The menu draws its dividers in currentColor at
+                    // 0.95, so that is what this uses.
+                    // Steven: "why don't we go to what's in the header? What would it be too
+                    // fucking white?" Correct question. There was no reason.
+                    className={i ? "border-t pt-6" : undefined}
+                    style={i ? { borderColor: "currentColor", borderTopWidth: 1, opacity: 0.95 } : undefined}
                   >
                     <a href={l.target || "#"} className="group block text-white/80 hover:text-white">
                       <span className="block">{l.label}</span>
