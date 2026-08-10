@@ -4,7 +4,7 @@ import { useState } from "react";
 import Icon from "@/components/blocks/Icon";
 // Shared with FooterView — one definition of the three contact buttons, so the menu and the
 // footer cannot drift apart again.
-import ContactButtons, { CONTACT_PILL_BASE, PILL_SIZE, ICON_SIZE } from "@/components/ContactButtons";
+import ContactButtons from "@/components/ContactButtons";
 import { resolveColor, resolveColorOr, tint } from "@/lib/brandColor";
 
 const LOGO_URL =
@@ -305,7 +305,14 @@ export default function NavView({
               Steven kept reading it as "uncentered" and could not name why — because nothing was
               off-centre; two containers were simply different sizes. Every tile resize before this
               was being made INSIDE a misaligned box, which is why none of them fixed the feeling. */}
-          <div className="mx-auto grid max-w-6xl gap-10 px-6 pb-20 pt-4 md:grid-cols-2">
+          {/* ⛔ THREE COLUMNS: Divisions · Company · Contact — Steven's own fix, and the reason the
+              previous five adjustments never stuck. The contact buttons were a ROW sitting beneath a
+              two-column grid: an orphan, aligned to nothing, so every attempt to place it was a
+              guessed width (max-w-2xl) or a guessed padding. As a COLUMN it aligns by construction
+              and there is no number left to pick.
+              3 → 2 at sm → 1 on a phone, and the footer now uses the same three, so the two halves
+              of the site finally match. */}
+          <div className="mx-auto grid max-w-6xl gap-10 px-6 pb-20 pt-4 sm:grid-cols-2 lg:grid-cols-3">
             {groups.map((g, gi) => (
               <div key={gi}>
                 {g.title ? (
@@ -334,119 +341,34 @@ export default function NavView({
               </div>
             ))}
 
-            {/* ⛔ ONE ROW OF FOUR MATCHING PILLS. Steven: "the new book a call CTA button isn't
-                shaped the same as the other CTA buttons. It doesn't have the hover like the other
-                CTA buttons. And I'm not crazy about how it fits on the page."
-
-                All three were the same mistake: the CTA was a square-cornered, edge-to-edge,
-                uppercase letterspaced BAR sitting above three rounded sentence-case pills. Two
-                visual languages in one block, and at full width it put a slab of blue across the
-                whole overlay with three more blocks under it.
-
-                Now it uses CONTACT_PILL_BASE — the same geometry object the contact buttons use,
-                not a copy of it — with its own fill, and sits as the FIRST of four across.
-                Priority comes from position and the calendar icon rather than from being a
-                different shape. Collapses to a stack on a phone with the rest. */}
-            {/* ⛔ NO col-span, NO max-w — IT SITS IN THE FIRST COLUMN AND INHERITS ITS WIDTH.
-                Two failed attempts before this both used a magic number: span both columns (tiles
-                came out ~280px), then cap the row at max-w-2xl (tiles right, but the strip ended
-                at 1158 — lining up with nothing, because 672px is not the width of anything else
-                on the screen).
-                As a plain third grid child it lands under Divisions and takes exactly that column's
-                width, so both its edges match the column above it by construction rather than by
-                arithmetic. Nothing to re-tune when the canvas or the gap changes. */}
-            <div className="grid gap-3 sm:grid-cols-4">
-              {ctaLabel ? (
-                <a
-                  href={ctaHref || "#"}
-                  {...tabAttrs(ctaNewTab)}
-                  onClick={() => setOpen(false)}
-                  className={`${CONTACT_PILL_BASE} ${PILL_SIZE.tile} hover:opacity-90`}
-                  title={ctaLabel}
-                  style={{ backgroundColor: resolveColorOr(ctaColor, "var(--color-sjc-blue)") }}
-                >
-                  {/* ⛔ A COLOURED GLYPH, NOT A FLAT OUTLINE AND NOT THE RASTER ICON.
-                      Steven wanted the button "dressed up" like the calendar art on Alamo Slim.
-                      That art is a 1.6MB PNG with a grey background baked in, built for ~80px —
-                      at the ~18px a text button gives it, the spiral binding and 25 numbers become
-                      about six grey pixels, and the grey square would sit on the blue fill.
-
-                      Note what Steven himself did on that site: the rich icon is a CARD graphic at
-                      80px, and the actual buttons ("Schedule Phone Consult") use a plain inline
-                      glyph. Two icons for two jobs. This is the second job.
-
-                      So: keep it inline SVG (sharp at any size, no file weight) and take what makes
-                      his read — a white body with a highlighted date square instead of a hollow
-                      outline.
-                      ⚠️ The band is RED, not blue like his. His sits on white; this sits on a blue
-                      button, where a blue band would disappear. */}
-                  {ctaIcon ? (
-                    <img
-                      src={ctaIcon}
-                      alt=""
-                      aria-hidden
-                      className={`${ICON_SIZE.tile} shrink-0 object-contain`}
-                    />
-                  ) : (
-                  <svg viewBox="0 0 24 24" className={`${ICON_SIZE.tile} shrink-0`} aria-hidden>
-                    {/* binding rings */}
-                    <rect x="7" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
-                    <rect x="15" y="1.5" width="2" height="4" rx="1" fill="currentColor" opacity="0.7" />
-                    {/* body */}
-                    <rect x="2.5" y="3.5" width="19" height="19" rx="3" fill="#ffffff" />
-                    {/* top band */}
-                    <path d="M2.5 6.5a3 3 0 013-3h13a3 3 0 013 3V9h-19V6.5z" fill="#e2483d" />
-                    {/* the highlighted date */}
-                    <rect x="9.5" y="12" width="5" height="5" rx="1" fill="#e2483d" />
-                    {/* a couple of ruled days so it reads as a grid, not a card */}
-                    <rect x="4.5" y="12.75" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
-                    <rect x="16" y="12.75" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
-                    <rect x="4.5" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
-                    <rect x="10.25" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
-                    <rect x="16" y="18" width="3.5" height="1.6" rx="0.8" fill="#94a3b8" />
-                  </svg>
-                  )}
-                  {/* Stacked like the contact tiles beside it — label, then the hint. Steven's own
-                      Alamo Slim blocks read title / value / "(Click Here)", and a tile with a bare
-                      one-line label next to three two-line ones sits visibly short. */}
-                  <span className="flex flex-col gap-1">
-                    <span className="block">{ctaLabel}</span>
-                    <span className="block text-sm font-normal opacity-90">(Click Here)</span>
-                  </span>
-                  {/* ⛔ ITS OWN LABEL, NOT THE IMAGE URL. Steven: "when I hover over it, I see the
-                      stupid image URL. That's not going to work." Browsers fall back to showing the
-                      src when a hovered image has nothing better to say, so the chip states the
-                      same words the tile does — and `title` below covers the touch long-press. */}
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-normal text-white opacity-0 shadow-lg ring-1 ring-white/15 transition-opacity duration-150 group-hover:opacity-100"
-                    style={{ backgroundColor: "rgba(2, 6, 23, 0.95)" }}
-                  >
-                    {ctaLabel} — (Click Here)
-                  </span>
-                </a>
-              ) : null}
-              {/* ⛔ THE SAME THREE BUTTONS THE FOOTER RENDERS — literally the same component.
-                  This was a single outline bar showing a bare phone number: no text option, no
-                  email, no icons, nothing like the footer's three pills. Two pieces of markup for
-                  the same three actions, which is how they drifted until Steven asked why the menu
-                  and the footer didn't match. Now neither can move without the other.
-
-                  ⚠️ The primary CTA above deliberately does NOT become a pill. It is the one thing
-                  the page is asking for; making it look like the three utility buttons beside it
-                  would flatten the difference between "book the call" and "here's how to reach
-                  us." Different job, different weight. */}
-              {/* Direct grid children, NOT wrapped in their own row — that is what puts all four
-                  buttons on one line instead of one bar above a row of three. */}
-              <ContactButtons
-                phone={menuPhone}
-                phoneDisplay={menuPhoneDisplay}
-                email={menuEmail}
-                size="tile"
-                iconCall={menuIconCall}
-                iconText={menuIconText}
-                iconEmail={menuIconEmail}
-              />
+            {/* ⛔ CONTACT IS THE THIRD COLUMN, AND ContactButtons OWNS ALL FOUR BUTTONS.
+                The Book a Call CTA used to be hand-built right here with its own copy of the pill
+                classes — the same duplication that let the menu and the footer drift apart, and the
+                reason the footer had three buttons while the menu had four. It lives in the shared
+                component now, so neither surface can be missing one again.
+                Everything the last five rounds fought over is gone with it: the tile size, the
+                max-w-2xl, the col-span. A column needs no width. */}
+            <div>
+              <div
+                className="mb-4 text-[10px] uppercase tracking-[0.3em]"
+                style={{ color: resolveColorOr(taglineColor, "var(--color-sjc-secondary)") }}
+              >
+                Contact
+              </div>
+              <div className="flex flex-col gap-3">
+                <ContactButtons
+                  phone={menuPhone}
+                  phoneDisplay={menuPhoneDisplay}
+                  email={menuEmail}
+                  iconCall={menuIconCall}
+                  iconText={menuIconText}
+                  iconEmail={menuIconEmail}
+                  bookHref={ctaHref}
+                  bookLabel={ctaLabel}
+                  bookIcon={ctaIcon}
+                  bookNote="(Click Here)"
+                />
+              </div>
             </div>
           </div>
         </div>

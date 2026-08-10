@@ -102,7 +102,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -292,6 +292,14 @@ export const FOOTER_DEFAULTS = {
   brandStyle: "",
   brandLine2: "",
   brandLine2Color: "",
+  // Blank = drawn glyphs and three buttons. A client site never inherits SJC's artwork or
+  // SJC's booking link by default.
+  iconCall: "",
+  iconText: "",
+  iconEmail: "",
+  bookHref: "",
+  bookLabel: "Book a Call",
+  bookIcon: "",
 };
 
 export const IMAGE_DEFAULTS = {
@@ -1551,6 +1559,13 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // Same four contact controls the header block has, so the two cannot say different things.
+        bookHref: { type: "text" as const, label: "Book button links to (blank = hide the button)" },
+        bookLabel: { type: "text" as const, label: "Book button label" },
+        bookIcon: { type: "text" as const, label: "Book icon — image URL" },
+        iconCall: { type: "text" as const, label: "Call icon — image URL" },
+        iconText: { type: "text" as const, label: "Text icon — image URL" },
+        iconEmail: { type: "text" as const, label: "Email icon — image URL" },
         showLogo: {
           type: "radio" as const,
           label: "SJC logo",
@@ -1561,7 +1576,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color, iconCall, iconText, iconEmail, bookHref, bookLabel, bookIcon }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -1579,6 +1594,12 @@ export const config: Config<Props, RootProps> = {
           brandStyle={brandStyle}
           brandLine2={brandLine2}
           brandLine2Color={brandLine2Color}
+          iconCall={iconCall}
+          iconText={iconText}
+          iconEmail={iconEmail}
+          bookHref={bookHref}
+          bookLabel={bookLabel}
+          bookIcon={bookIcon}
         />
       ),
     },

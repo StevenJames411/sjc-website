@@ -263,7 +263,14 @@ footer = blk("SiteFooter",
     # ⛔ THE SAME MARK AS THE HEADER. The footer shipped the `SJC` circle while the header wore the
     # serif wordmark — two brands on one screen, visible in the first phone screenshot Steven took.
     background="", foreground="", brandName="Steven James", showLogo=True,
-    brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent")
+    brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
+    # ⛔ THE SAME FOUR BUTTONS AS THE MENU, FROM THE SAME SOURCES. The footer used to carry three
+    # (no Book a Call) with the drawn glyphs while the menu had four with the real artwork — one
+    # block showing two different things on one page. bookLabel reads ASK.cta so the footer button,
+    # the menu button and the page's own CTA cannot say three different things.
+    bookHref=C["CONTACT"]["book"], bookLabel=C["ASK"]["cta"]["label"],
+    bookIcon="/icons/calendar.png", iconCall="/icons/phone.png",
+    iconText="/icons/sms.png", iconEmail="/icons/email.png")
 
 # ⛔ THE PAGE NO LONGER CARRIES THE CHROME. `header` and `footer` now live in the SITE's own `nav`
 # and `footer` documents (--chrome, below), which every page of this website renders inside. Leaving

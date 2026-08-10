@@ -64,6 +64,19 @@ export type ContactButtonsProps = {
   iconCall?: string;
   iconText?: string;
   iconEmail?: string;
+  /**
+   * BOOK A CALL — the fourth button, rendered FIRST when `bookHref` is set.
+   *
+   * ⛔ IT LIVED IN NavView AS HAND-BUILT MARKUP with its own copy of the pill classes, which is the
+   * same duplication that let the menu and the footer drift apart to begin with. It also meant the
+   * footer had three buttons and the menu four — the same block, two different contents.
+   * One component owns all four now, so neither surface can be missing one again.
+   */
+  bookHref?: string;
+  bookLabel?: string;
+  bookIcon?: string;
+  /** Second line under the book label — Steven's "(Click Here)" convention. */
+  bookNote?: string;
 };
 
 // One path per icon, sized by the caller — so a size change cannot alter the artwork.
@@ -79,6 +92,9 @@ const PATHS = {
       <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
       <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
     </>
+  ),
+  book: (
+    <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clipRule="evenodd" />
   ),
 };
 
@@ -114,13 +130,18 @@ export default function ContactButtons({
   iconCall = "",
   iconText = "",
   iconEmail = "",
+  bookHref = "",
+  bookLabel = "Book a Call",
+  bookIcon = "",
+  bookNote = "",
 }: ContactButtonsProps) {
   const button = (
     href: string,
     path: React.ReactNode,
     verb: string,
     value: string,
-    src?: string
+    src?: string,
+    note?: string
   ) => (
     <a href={href} className={`${PILL} ${PILL_SIZE[size]} ${className}`} title={value}>
       {src ? (
@@ -131,7 +152,14 @@ export default function ContactButtons({
           {path}
         </svg>
       )}
-      {verb}
+      {note ? (
+        <span className="flex flex-col leading-tight">
+          <span>{verb}</span>
+          <span className="text-xs font-normal opacity-90">{note}</span>
+        </span>
+      ) : (
+        verb
+      )}
       {/* ⛔ THE VALUE IS ON HOVER AT EVERY SIZE — SETTLED, AND I BROKE IT ONCE.
           Building the tile I printed the number under the label, reasoning that a tile has the
           room. Steven: "take the email and phone number off of them, and when you hover it you'll
@@ -151,6 +179,12 @@ export default function ContactButtons({
 
   return (
     <>
+      {/* FIRST — it is the one thing the page is asking for; the other three are how to reach us.
+          Its hover value is its own label, because a booking link has no number to reveal and a
+          browser otherwise falls back to showing the image URL. */}
+      {bookHref
+        ? button(bookHref, PATHS.book, bookLabel, bookLabel, bookIcon, bookNote)
+        : null}
       {phone ? button(telLink(phone), PATHS.call, "Click to Call", phoneDisplay || phone, iconCall) : null}
       {phone ? button(`sms:${phone}`, PATHS.text, "Click to Text", phoneDisplay || phone, iconText) : null}
       {email ? button(`mailto:${email}`, PATHS.email, "Click to Email", email, iconEmail) : null}

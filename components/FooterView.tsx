@@ -62,6 +62,17 @@ export type FooterViewProps = {
   /** The second line ("Consulting"). Wordmark mode only. */
   brandLine2?: string;
   brandLine2Color?: string;
+  /**
+   * Contact-button artwork and the Book a Call target — mirrors the menu's fields exactly.
+   * ⛔ Blank on every one of them means a client site falls back to the drawn glyphs and shows
+   * three buttons, never SJC's icons or SJC's booking link.
+   */
+  iconCall?: string;
+  iconText?: string;
+  iconEmail?: string;
+  bookHref?: string;
+  bookLabel?: string;
+  bookIcon?: string;
 };
 
 // The live site footer, rendered from props. Used BOTH on the live site (via Footer.tsx, which
@@ -84,6 +95,12 @@ export default function FooterView({
   brandStyle,
   brandLine2,
   brandLine2Color,
+  iconCall,
+  iconText,
+  iconEmail,
+  bookHref,
+  bookLabel,
+  bookIcon,
 }: FooterViewProps) {
   // ROLES, not hexes. #111827 here meant the footer sat one shade off every dark band above it and
   // never moved when the palette did — on 2026-08-05 the whole site went near-black cyan and the
@@ -170,8 +187,7 @@ export default function FooterView({
               4 columns from lg  (brand · divisions · company · contact)
             ⚠️ No 3-column step: with four children, three columns strands the fourth on a row of
             its own — the exact lopsidedness this is fixing. */}
-        <div className={`grid gap-10 ${groupEls.length ? "sm:grid-cols-2 lg:grid-cols-4" : ""}`}>
-          <div className={groupEls.length ? "" : "md:col-span-2"}>
+        <div className="mb-12 max-w-xl">
             {String(brandStyle) === "wordmark" ? (
               // Same mark as the header (NavView) — Playfair is already loaded site-wide, so this
               // costs no extra font request. `font-variant: small-caps` is what produces the
@@ -212,6 +228,13 @@ export default function FooterView({
             )}
             {blurb ? <p className="mt-6 text-sm leading-relaxed text-white/80">{blurb}</p> : null}
           </div>
+        {/* ⛔ THREE COLUMNS, MATCHING THE MENU: Divisions · Company · Contact.
+            Steven: "if we do three columns in both places... then the header and the footer will
+            match, and as the screen collapses, the three columns go to two columns on a tablet,
+            and they go to one column on a phone."
+            The brand block moved ABOVE this grid rather than being a fourth column, which is what
+            makes the footer's lower half structurally identical to the menu overlay. */}
+        <div className={`grid gap-10 ${groupEls.length ? "sm:grid-cols-2 lg:grid-cols-3" : ""}`}>
 
           {groupEls.map((g, gi) => (
             <div key={`g${gi}`}>
@@ -278,8 +301,24 @@ export default function FooterView({
               edge instead of a jagged one. */}
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-white/90">Contact</p>
+            {/* ⛔ FOUR BUTTONS NOW, AND THE SAME ARTWORK THE MENU USES. The footer had Call / Text /
+                Email while the menu had those plus Book a Call, and the footer's still rendered the
+                flat drawn glyphs — the same block showing two different things in two places, which
+                is the exact drift the shared component was created to end. Book a Call and the icon
+                URLs are props, so a client site sets its own or gets none. */}
             <div className="mt-4 flex flex-col items-stretch gap-3">
-              <ContactButtons phone={phone} phoneDisplay={phoneDisplay} email={email} />
+              <ContactButtons
+                phone={phone}
+                phoneDisplay={phoneDisplay}
+                email={email}
+                iconCall={iconCall}
+                iconText={iconText}
+                iconEmail={iconEmail}
+                bookHref={bookHref}
+                bookLabel={bookLabel}
+                bookIcon={bookIcon}
+                bookNote={bookHref ? "(Click Here)" : ""}
+              />
             </div>
           </div>
         </div>
