@@ -226,6 +226,9 @@ header = blk("SiteHeader",
     menuIconCall="/icons/phone.png",
     menuIconText="/icons/sms.png",
     menuIconEmail="/icons/email.png",
+    # Stacked-phone width for the contact buttons. There is a stepper on the block, so this is only
+    # the starting value — Steven moves it in the studio without a deploy.
+    menuButtonWidthMobile=70,
     brandName="Steven James", brandHref="/", brandSize=26,
     brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
     tagline="", taglineColor="accent", taglineSize=14,

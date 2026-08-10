@@ -95,6 +95,15 @@ export type NavViewProps = {
   // With it set to the hero's grid colour the bar and the hero read as ONE navy field instead of
   // two stacked rectangles — which is the whole point of putting it here rather than only below.
   bandGrid?: string;
+  /**
+   * How wide the contact buttons are when the overlay is stacked on a phone, as a %.
+   * ⛔ A FIELD, NOT A CONSTANT — the footer's equivalent came out of code minutes before this
+   * one went in, because Steven wanted to click between 50 and 70 instead of waiting on a
+   * deploy. Hardcoding this would put the same dial straight back.
+   * ⚠️ Deliberately its own number, not shared with the footer: the footer's buttons sit under
+   * short link lists, the menu's are the only thing on the screen at that width.
+   */
+  menuButtonWidthMobile?: number;
 };
 
 // "Open in a new tab" is set per link in the builder. rel="noopener noreferrer" rides along
@@ -138,6 +147,7 @@ export default function NavView({
   brandLine2,
   brandLine2Color,
   bandGrid,
+  menuButtonWidthMobile,
 }: NavViewProps) {
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
@@ -355,7 +365,13 @@ export default function NavView({
               >
                 Contact
               </div>
-              <div className="flex flex-col gap-3">
+              {/* ⛔ A CSS VARIABLE, NOT AN INLINE WIDTH. An inline style beats a Tailwind class at
+                  EVERY breakpoint, so setting maxWidth directly would pin the phone value across
+                  desktop too and silently kill sm:max-w-none. Same trap dodged in FooterView. */}
+              <div
+                className="mx-auto flex max-w-[var(--sjc-btn-w)] flex-col gap-3 sm:mx-0 sm:max-w-none"
+                style={{ "--sjc-btn-w": `${menuButtonWidthMobile || 70}%` } as React.CSSProperties}
+              >
                 <ContactButtons
                   phone={menuPhone}
                   phoneDisplay={menuPhoneDisplay}

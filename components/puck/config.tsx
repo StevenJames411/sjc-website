@@ -132,6 +132,7 @@ type Props = {
     menuIconCall: string;
     menuIconText: string;
     menuIconEmail: string;
+    menuButtonWidthMobile: number;
     brandStyle: string;
     brandLine2: string;
     brandLine2Color: string;
@@ -247,6 +248,7 @@ export const NAV_DEFAULTS = {
   menuIconCall: "",
   menuIconText: "",
   menuIconEmail: "",
+  menuButtonWidthMobile: 70,
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
   ctaNewTab: false,
@@ -1717,6 +1719,15 @@ export const config: Config<Props, RootProps> = {
         menuIconCall: { type: "text" as const, label: "Call icon — image URL" },
         menuIconText: { type: "text" as const, label: "Text icon — image URL" },
         menuIconEmail: { type: "text" as const, label: "Email icon — image URL" },
+        // Pairs with the footer block's own width stepper. Separate numbers on purpose — the
+        // menu's buttons are alone on the screen at that width, the footer's are not.
+        menuButtonWidthMobile: {
+          type: "custom" as const,
+          label: "Button width on mobile, % (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={70} step={5} min={25} />
+          ),
+        },
         // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
         // Blank = SJC's own look. Set these on a client build so their header isn't wearing
         // our navy. Existing nav documents have none of them saved, so they render unchanged.
@@ -1768,7 +1779,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, ctaIcon, menuIconCall, menuIconText, menuIconEmail, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, ctaIcon, menuIconCall, menuIconText, menuIconEmail, menuButtonWidthMobile, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
         <NavView
           brandStyle={brandStyle}
           brandLine2={brandLine2}
@@ -1782,6 +1793,7 @@ export const config: Config<Props, RootProps> = {
           menuIconCall={menuIconCall}
           menuIconText={menuIconText}
           menuIconEmail={menuIconEmail}
+          menuButtonWidthMobile={menuButtonWidthMobile}
           brandName={brandName}
           brandHref={brandHref}
           brandSize={brandSize}
