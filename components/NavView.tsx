@@ -298,7 +298,14 @@ export default function NavView({
             </button>
           </div>
 
-          <div className="mx-auto grid max-w-5xl gap-10 px-6 pb-20 pt-4 md:grid-cols-2">
+          {/* ⛔ max-w-6xl — SAME CANVAS AS THE BAR ABOVE IT. This was max-w-5xl while the overlay's
+              own header row (line ~288) and the sticky bar both use max-w-6xl, so ONE screen had
+              three different left edges: the wordmark at one, the link columns 87px inward, and the
+              close button hard right against a wider container.
+              Steven kept reading it as "uncentered" and could not name why — because nothing was
+              off-centre; two containers were simply different sizes. Every tile resize before this
+              was being made INSIDE a misaligned box, which is why none of them fixed the feeling. */}
+          <div className="mx-auto grid max-w-6xl gap-10 px-6 pb-20 pt-4 md:grid-cols-2">
             {groups.map((g, gi) => (
               <div key={gi}>
                 {g.title ? (
