@@ -289,11 +289,11 @@ export default function FooterView({
                 {g.links.map((l, i) => (
                   <li
                     key={i}
-                    // ⚠️ white/25, not white/10. At 10% the line was technically there and
-                    // invisible — the menu's equivalent is drawn in currentColor at near-full
-                    // opacity, so the two surfaces that are supposed to mirror each other had
-                    // dividers a human could see in one and not the other.
-                    className={i ? "border-t border-white/25 pt-6" : undefined}
+                    // ⚠️ white/50 — third value, and the first two were both guesses at "faint".
+                    // The MENU draws its dividers in currentColor at 0.95 opacity, i.e. effectively
+                    // white. Against that, white/10 was invisible and white/25 was still "nowhere
+                    // near." Matching a reference means measuring the reference, not nudging.
+                    className={i ? "border-t border-white/50 pt-6" : undefined}
                   >
                     <a href={l.target || "#"} className="group block text-white/80 hover:text-white">
                       <span className="block">{l.label}</span>
