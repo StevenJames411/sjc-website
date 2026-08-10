@@ -347,12 +347,15 @@ export default function NavView({
                 not a copy of it — with its own fill, and sits as the FIRST of four across.
                 Priority comes from position and the calendar icon rather than from being a
                 different shape. Collapses to a stack on a phone with the rest. */}
-            {/* ⚠️ max-w-2xl — the WIDTH came from the row, not the tiles. This spans both columns
-                of the overlay (md:col-span-2), so four equal tracks across a 5xl canvas made each
-                tile ~280px wide no matter what padding or icon size said. Capping the row at 672px
-                puts them near 155px each, roughly half, and they sit under the Divisions column
-                rather than stretching the full screen. */}
-            <div className="grid max-w-2xl gap-3 sm:grid-cols-4 md:col-span-2">
+            {/* ⛔ NO col-span, NO max-w — IT SITS IN THE FIRST COLUMN AND INHERITS ITS WIDTH.
+                Two failed attempts before this both used a magic number: span both columns (tiles
+                came out ~280px), then cap the row at max-w-2xl (tiles right, but the strip ended
+                at 1158 — lining up with nothing, because 672px is not the width of anything else
+                on the screen).
+                As a plain third grid child it lands under Divisions and takes exactly that column's
+                width, so both its edges match the column above it by construction rather than by
+                arithmetic. Nothing to re-tune when the canvas or the gap changes. */}
+            <div className="grid gap-3 sm:grid-cols-4">
               {ctaLabel ? (
                 <a
                   href={ctaHref || "#"}
