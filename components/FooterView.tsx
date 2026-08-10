@@ -252,7 +252,7 @@ export default function FooterView({
         >
 
           {groupEls.map((g, gi) => (
-            <div key={`g${gi}`}>
+            <div key={`g${gi}`} className="text-center sm:text-left">
               <p className="text-sm font-semibold uppercase tracking-wide text-white/90">{g.heading}</p>
               <ul className="mt-4 space-y-3 text-sm">
                 {g.links.map((l, i) => (
@@ -314,7 +314,7 @@ export default function FooterView({
               items-stretch: the buttons fill their column at every width. That is what closes the
               ragged empty space left-alignment opened up on a phone — the block gets a hard right
               edge instead of a jagged one. */}
-          <div>
+          <div className="text-center sm:text-left">
             <p className="text-sm font-semibold uppercase tracking-wide text-white/90">Contact</p>
             {/* ⛔ FOUR BUTTONS NOW, AND THE SAME ARTWORK THE MENU USES. The footer had Call / Text /
                 Email while the menu had those plus Book a Call, and the footer's still rendered the
@@ -328,7 +328,7 @@ export default function FooterView({
                 below `lg`, because there the column IS the screen.
                 max-w-[75%] caps it while stacked; lg:max-w-none hands control back to the 300px
                 track so the two sizes can be tuned independently. */}
-            <div className="mt-4 flex max-w-[75%] flex-col items-stretch gap-3 lg:max-w-none">
+            <div className="mx-auto mt-4 flex max-w-[50%] flex-col items-stretch gap-3 sm:mx-0 sm:max-w-none">
               <ContactButtons
                 phone={phone}
                 phoneDisplay={phoneDisplay}
