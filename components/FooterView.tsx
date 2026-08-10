@@ -234,7 +234,22 @@ export default function FooterView({
             and they go to one column on a phone."
             The brand block moved ABOVE this grid rather than being a fourth column, which is what
             makes the footer's lower half structurally identical to the menu overlay. */}
-        <div className={`grid gap-10 ${groupEls.length ? "sm:grid-cols-2 lg:grid-cols-3" : ""}`}>
+        {/* ⛔ PROPORTIONAL, NOT EQUAL. Equal thirds held wildly unequal content: Divisions has
+            two-line entries and wants the room, Company has one-word links that floated in ~500px
+            of empty column, and Contact's buttons stretched to ~450px because the COLUMN was 450px.
+            Steven read the middle one as "too narrow" — it was not narrow, it was cavernous, so the
+            words looked stranded.
+
+            ⚠️ Contact is a FIXED 300px, and that is the piece that matters: the buttons stop
+            stretching because their column stops stretching. Every earlier attempt capped the
+            button and left the column wide, which is why they kept looking wrong.
+
+            sm and single-column stacking are untouched, so the phone view does not move. */}
+        <div
+          className={`grid gap-10 ${
+            groupEls.length ? "sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_300px]" : ""
+          }`}
+        >
 
           {groupEls.map((g, gi) => (
             <div key={`g${gi}`}>

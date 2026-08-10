@@ -241,16 +241,20 @@ export const FOOTER = {
     { title: "Divisions", links: DIVISIONS.map((d) => ({
       label: `${d.n} · ${d.short}`, href: d.href, line: d.line,
     })) },
+    // ⚠️ NO "Book a Call" HERE. It is the first CONTACT BUTTON a few inches to the right, and
+    // listing the same destination twice in one footer reads as padding.
     { title: "Company", links: [
       { label: "Portfolio", href: "#work" },
       { label: "Podcast", href: "/podcast" },
       { label: "Careers", href: "/careers" },
-      // ⚠️ Label only — href stays /apply. Every CTA on the page now says "call" too (hero, ASK,
-      // this link), so the site speaks one word for the thing it asks for.
-      { label: "Book a Call", href: "/apply" },
     ]},
   ],
-  closing: "Websites, reviews and follow-up for high-end trades. Built as one system, by one team.",
+  // ⛔ EMPTY ON PURPOSE. This was the only prose in the footer, and it forced the brand block to be
+  // a wide paragraph sitting above everything — which is most of why the top half looked
+  // unbalanced. The four division descriptions already say more than it did.
+  // ⚠️ Emptied at the SOURCE, not removed from FooterView: `blurb` stays a supported prop so a
+  // client site can still use one.
+  closing: "",
   legalLeft: "Steven James Consulting",
   legalRight: "San Antonio, Texas · Working nationwide",
 };
