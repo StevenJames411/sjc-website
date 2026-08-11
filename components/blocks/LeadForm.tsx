@@ -73,6 +73,24 @@ export type LeadFormProps = {
     buttonLabel?: string;
     buttonUrl?: string;
   };
+  /**
+   * A FULL-WIDTH BAND BEHIND THE FORM — so the white card sits ON something.
+   *
+   * Steven: *"is it possible that I could add some color to the page so that just the form, which
+   * is in the middle of the canvas, is white, and then the rest of that section I could change the
+   * background color?"* Yes — and the reason it wasn't already is structural: `Section (band)` is a
+   * flat band with no drop zone, so a form can never be placed INSIDE one. The band has to belong
+   * to the form block itself.
+   *
+   * ⚠️ BLANK = NO WRAPPER AT ALL, not a white one. Every form already on a page renders exactly as
+   * it does today, sitting straight on whatever is behind it.
+   *
+   * ⚠️ IGNORED IN COLUMN MODE. `inColumn` means the form is one half of a two-column layout; a
+   * full-width band inside a column is not a band, it is a coloured rectangle behind half a row.
+   */
+  background?: string;
+  /** Space above and below the card inside the band, in px. Only used when `background` is set. */
+  bandPadding?: number;
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
@@ -93,6 +111,9 @@ export const LEADFORM_DEFAULTS: LeadFormProps = {
   buttonColor: "",
   inColumn: false,
   theme: "light",
+  // ⚠️ BLANK, so no form already on a page grows a band it never had.
+  background: "",
+  bandPadding: 64,
   successBody:
     "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 851-4906.",
 };
@@ -127,7 +148,30 @@ export default function LeadForm(props: LeadFormProps) {
     inColumn,
     theme = "light",
     altSuccess,
+    background = "",
+    bandPadding,
   } = props;
+
+  /**
+   * Wrap the card in its band — or hand it straight back when there is no band to draw.
+   *
+   * ⚠️ APPLIED TO THE THANK-YOU TOO. Banding only the questions means the band vanishes the instant
+   * someone submits, so the page flashes from a coloured section to a white one at the exact moment
+   * you most want it to look deliberate.
+   */
+  const banded = (card: React.ReactNode) => {
+    if (!background || inColumn) return card;
+    const pad = typeof bandPadding === "number" && bandPadding >= 0 ? bandPadding : 64;
+    return (
+      <div
+        className="w-full"
+        style={{ backgroundColor: resolveColor(background), paddingTop: pad, paddingBottom: pad }}
+      >
+        {/* px-6 so the card never touches the screen edge on a phone. */}
+        <div className="mx-auto w-full px-6">{card}</div>
+      </div>
+    );
+  };
 
   // ⚠️ THE THANK-YOU COPY RESOLVES ITS OWN TOKENS, AND HAS TO.
   //
@@ -345,7 +389,7 @@ export default function LeadForm(props: LeadFormProps) {
         ? altSuccess
         : null;
 
-    return (
+    return banded(
       <div className={`${cardCls} text-center${inColumn ? "" : " mx-auto max-w-xl"}`}>
         <h3
           className={`text-2xl font-bold md:text-3xl ${
@@ -382,7 +426,7 @@ export default function LeadForm(props: LeadFormProps) {
     );
   }
 
-  return (
+  return banded(
     <form
       ref={formRef}
       onSubmit={submit}

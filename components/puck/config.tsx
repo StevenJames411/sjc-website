@@ -94,6 +94,8 @@ type Props = {
     buttonColor: string;
     inColumn: boolean;
     theme: string;
+    background: string;
+    bandPadding: number;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
@@ -1494,6 +1496,23 @@ export const config: Config<Props, RootProps> = {
             { label: "Fill the column", value: true },
           ],
         },
+        // ⛔ THE BAND BELONGS TO THIS BLOCK, BECAUSE IT CANNOT BELONG TO A SECTION.
+        // "Section (band)" has no drop zone — every block is a sibling, never a child — so a form
+        // can never be placed inside one and inherit its colour. Steven hit exactly that: he could
+        // colour the band holding the heading, and the form underneath it stayed white.
+        background: {
+          type: "custom" as const,
+          label: "Band behind the form (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        bandPadding: {
+          type: "number" as const,
+          label: "Space above and below the card, in px (band only)",
+          min: 0,
+          max: 200,
+        },
       },
       defaultProps: { ...LEADFORM_DEFAULTS, preset: "", formId: "" } as LeadFormBlock,
       /**
@@ -1508,7 +1527,7 @@ export const config: Config<Props, RootProps> = {
        * would drag the database client into the editor bundle.
        */
       resolveData: resolveLeadFormPreset,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, bandPadding }) => (
         <LeadForm
           source={source}
           fields={fields}
@@ -1519,6 +1538,8 @@ export const config: Config<Props, RootProps> = {
           buttonColor={buttonColor}
           inColumn={inColumn}
           theme={theme === "dark" ? "dark" : "light"}
+          background={background}
+          bandPadding={bandPadding}
         />
       ),
     },
