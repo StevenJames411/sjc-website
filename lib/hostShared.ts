@@ -5,8 +5,27 @@
 // actually serve. Two copies of this arithmetic is how the link Steven copies stops matching the
 // page a prospect opens.
 
-/** The web studio's domain. Demos live one segment under it. */
-export const STUDIO_HOST = "stevenjamesdesigns.com";
+/**
+ * The domain demos live one segment under.
+ *
+ * ⛔ 2026-08-11: MOVED FROM stevenjamesdesigns.com TO THE CONSULTING DOMAIN.
+ * Designs and Consulting merged into one brand, so there is no second root for client
+ * work to hang off. Every demo address in the studio is built from this one constant
+ * (see `publicBaseFor` below) — the Design Library cards, the editor toolbar, the
+ * copy-link button — so this line moves all of them at once.
+ *
+ * It is deliberately the SAME value as SJC_HOST now, and that is safe because
+ * `resolveHost` in ./host.ts checks `host === sjcHost()` BEFORE the studio branch:
+ * the apex keeps serving the SJC site, and only `<id>-demo.` subdomains take the
+ * demo path. The one thing it retires is the built-in studio sales page at the root,
+ * which the merge is retiring anyway.
+ *
+ * ⚠️ Requires a wildcard DNS record on this domain. stevenjamesconsulting.com is on
+ * GoDaddy's nameservers (its mail is Google Workspace, so they must not move), so the
+ * wildcard is a `*` CNAME -> cname.vercel-dns.com added there on 2026-08-11, plus
+ * `*.stevenjamesconsulting.com` attached to this Vercel project.
+ */
+export const STUDIO_HOST = "stevenjamesconsulting.com";
 
 /** SJC's own domain. Anything unrecognised resolves here — see lib/host.ts. */
 export const SJC_HOST = "stevenjamesconsulting.com";
