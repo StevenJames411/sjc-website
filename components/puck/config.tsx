@@ -192,6 +192,97 @@ const DESIGN_BG_FIELD = {
 
 // A glow is an ACCENT, not a page band — offering the band colours here would only ever let you
 // glow a photo the same colour as the page behind it, which is invisible.
+// ── ONE SET OF LOOKS, FOR ANY BOX ────────────────────────────────────────────────────────────
+// A photo frame, a button, a pill and a card are the same thing wearing different names: a box
+// with a fill, corners, a band, a glow, and something that happens on hover. Defining the controls
+// once and spreading them wherever they apply is what stops three near-identical panels drifting
+// apart — and it means Steven learns ONE panel, not one per element type.
+//
+// ⚠️ Every one of these is blank by default. They land on top of a design that already looks
+// finished; a default that isn't "leave it alone" repaints the page the moment the block renders.
+const SURFACE_FIELDS = {
+  fill: {
+    type: "custom" as const,
+    label: "Fill colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  fillOpacity: {
+    type: "custom" as const,
+    // Named for what it does, not for `opacity` — and it only dilutes the FILL, so the words on
+    // top stay solid instead of looking disabled.
+    label: "See-through % (100 = solid glass)",
+    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+      <SizeStepper label="See-through %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
+    ),
+  },
+  corners: {
+    type: "custom" as const,
+    label: "Corners — 0 is square, higher is rounder (px)",
+    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+      <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={12} step={2} min={0} />
+    ),
+  },
+  bandWidth: {
+    type: "custom" as const,
+    label: "Band around it — width (px)",
+    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+      <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={2} step={1} min={0} />
+    ),
+  },
+  bandColor: {
+    type: "custom" as const,
+    label: "Band colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  glowColor: {
+    type: "custom" as const,
+    label: "Glow colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  glowSize: {
+    type: "custom" as const,
+    label: "Glow size (px)",
+    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+      <SizeStepper label="Glow size" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+    ),
+  },
+  textColor: {
+    type: "custom" as const,
+    label: "Text colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  hoverFill: {
+    type: "custom" as const,
+    label: "Hover — fill colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  hoverText: {
+    type: "custom" as const,
+    label: "Hover — text colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  motion: {
+    type: "radio" as const,
+    label: "Motion",
+    options: [
+      { label: "Static", value: "" },
+      { label: "Pulsing", value: "pulse" },
+    ],
+  },
+};
+
 const DESIGN_GLOW_FIELD = {
   type: "select" as const,
   options: [
@@ -698,8 +789,8 @@ export const config: Config<Props, RootProps> = {
                 <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
               ),
             },
-            bandColor: { ...DESIGN_BG_FIELD, label: "Band colour" },
-            glowColor: { ...DESIGN_GLOW_FIELD, label: "Glow under the frame" },
+            bandColor: SURFACE_FIELDS.bandColor,
+            glowColor: { ...SURFACE_FIELDS.glowColor, label: "Glow under the frame" },
             // The SAME three controls as the Image block — a photo is reframed the one way
             // everywhere, not a different way depending on where it came from.
             shape: {
@@ -747,6 +838,10 @@ export const config: Config<Props, RootProps> = {
               label: "Goes to — a page (/about), a section (#services), tel:+12105551234 or mailto:",
             },
             label: { type: "text" as const, label: "Which link this is" },
+            // Every button and pill on the page IS a link, and the importer already stamps
+            // data-sjc-link on each one — so the list of things you can restyle already existed
+            // and needed no new detection at all.
+            ...SURFACE_FIELDS,
             key: { type: "text" as const, label: "Token (do not change)" },
           },
         },

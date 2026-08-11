@@ -25,6 +25,7 @@
 
 import { DESIGN_SCOPE } from "@/lib/designShared";
 import { resolveColor } from "@/lib/brandColor";
+import { surfaceCss, wantsPulse, PULSE_KEYFRAMES, type Surface } from "@/lib/surfaceStyle";
 import DesignFormMount from "./DesignFormMount";
 import DesignMenu from "./DesignMenu";
 import type { LeadFormField } from "./LeadForm";
@@ -102,7 +103,12 @@ export type DesignImage = {
   focus?: string;
 };
 /** One link in an imported section: what it says, and where it goes. */
-export type DesignLink = { key: string; label: string; href: string };
+/**
+ * A link, plus how its BOX looks. Every button and pill on a page is a link, and the importer
+ * already stamps `data-sjc-link` on each one — so the list of things you can restyle already
+ * exists and needed no new detection at all.
+ */
+export type DesignLink = { key: string; label: string; href: string } & Surface;
 
 export type DesignSectionProps = {
   /** The section's markup, with {{t:…}} / {{i:…}} where the editable bits were. */
@@ -509,6 +515,13 @@ export default function DesignSection(props: DesignSectionProps) {
   const fgRole = String(foreground || "").trim();
   const fgValue = resolveColor(fgRole);
   const framing = frameCss(images);
+  // Buttons and pills. `data-sjc-link` is already on the element, so this reaches it without ever
+  // guessing at the design's own class names.
+  const linkStyling = (links || [])
+    .map((l) => surfaceCss(`.${DESIGN_SCOPE} [data-sjc-link="${l?.key}"]`, l))
+    .filter(Boolean)
+    .join("");
+  const anyPulse = (links || []).some(wantsPulse);
 
   const decls = [
     // ⚠️ STICKY IS NOT IN HERE — see the wrapper below. These declarations are injected into the
@@ -584,6 +597,13 @@ export default function DesignSection(props: DesignSectionProps) {
       style={sticky ? { position: "sticky", top: 0, zIndex: 40 } : undefined}
     >
       {framing ? <style dangerouslySetInnerHTML={{ __html: framing }} /> : null}
+      {linkStyling ? (
+        <style
+          dangerouslySetInnerHTML={{
+            __html: (anyPulse ? PULSE_KEYFRAMES : "") + linkStyling,
+          }}
+        />
+      ) : null}
       {fgRole ? (
         // ⚠️ SETTING `color` ON THE SECTION IS NOT ENOUGH, AND THAT LOOKS LIKE THE FEATURE WORKING.
         //
