@@ -47,6 +47,8 @@ type Props = {
     links: DesignLink[];
     paddingTop: number | null;
     paddingBottom: number | null;
+    background: string;
+    foreground: string;
     hasForm: boolean;
     useRealForm: boolean;
     formFields: { label: string; inputType: string }[];
@@ -177,6 +179,17 @@ const BG_FIELD = {
   ],
 };
 
+// The same pickers, for an IMPORTED section — plus the one option the native block cannot need:
+// LEAVE IT ALONE.
+//
+// ⚠️ A BOUGHT DESIGN ARRIVES WITH ITS OWN PALETTE, in its own stylesheet. Without a blank default
+// every band would be repainted to a brand role the instant the block rendered, which is not an
+// edit anybody asked for. Blank means "keep the design's own", and it is the default.
+const DESIGN_BG_FIELD = {
+  type: "select" as const,
+  options: [{ label: "Keep the design's own", value: "" }, ...BG_FIELD.options],
+};
+
 // Per-block text color. Default ink; "White" is for blocks sitting on a dark Section band.
 //
 // ⚠️ ROLES, NOT HEXES. The swatch saves what a colour MEANS, so the brand screen drives it. These
@@ -192,6 +205,14 @@ const COLOR_FIELD = {
     { label: "Blue", value: "accent" },
     { label: "Muted gray", value: "mute" },
   ],
+};
+
+// Text colour for an IMPORTED section — same options, plus "keep the design's own" as default.
+// Pairs with DESIGN_BG_FIELD: changing a band's background without being able to change its text
+// is what turns a dark band flipped to White into white-on-white.
+const DESIGN_FG_FIELD = {
+  type: "select" as const,
+  options: [{ label: "Keep the design's own", value: "" }, ...COLOR_FIELD.options],
 };
 
 // Where a link opens. Same tab for anything on this site; new tab for anywhere off it, so a
@@ -582,6 +603,10 @@ export const config: Config<Props, RootProps> = {
             { label: "Sticks to the top", value: true },
           ],
         },
+        // Same pickers as the native Section block, so imported and hand-built sections are
+        // re-banded the same way. Blank = keep the design's own colours.
+        background: { ...DESIGN_BG_FIELD, label: "Background" },
+        foreground: { ...DESIGN_FG_FIELD, label: "Text colour" },
         // Same stepper as the native Section block, so imported and hand-built sections are
         // adjusted the same way. Blank = keep whatever spacing the design shipped with.
         paddingTop: {
@@ -731,7 +756,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
+      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
           // Marks each filled word so a click on the canvas can name its row. Editor only.
           editing={puck?.isEditing}
@@ -742,6 +767,8 @@ export const config: Config<Props, RootProps> = {
           sticky={sticky}
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
+          background={background}
+          foreground={foreground}
           hasForm={hasForm}
           useRealForm={useRealForm}
           formFields={formFields}

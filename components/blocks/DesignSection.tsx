@@ -24,6 +24,7 @@
 // gap in the design, never leak the machinery onto a customer's live website.
 
 import { DESIGN_SCOPE } from "@/lib/designShared";
+import { resolveColor } from "@/lib/brandColor";
 import DesignFormMount from "./DesignFormMount";
 import DesignMenu from "./DesignMenu";
 import type { LeadFormField } from "./LeadForm";
@@ -107,6 +108,19 @@ export type DesignSectionProps = {
   sticky?: boolean;
   paddingTop?: number | null;
   paddingBottom?: number | null;
+  /**
+   * Band colours for an IMPORTED section. Blank = keep whatever the design shipped with.
+   *
+   * ⚠️ THE IMPORTED SECTIONS WERE THE ONLY ONES YOU COULDN'T RECOLOUR. The native Section block
+   * has had a background picker all along, so a hand-built page could be re-banded and a bought
+   * one could not — the same click did nothing on half the site.
+   *
+   * ⚠️ FOREGROUND EXISTS BECAUSE BACKGROUND ALONE IS A TRAP. A design's dark band sets its own
+   * light text in its own CSS. Flipping that band to White without touching the text gives white
+   * on white — the copy is still there, still selectable, and completely invisible.
+   */
+  background?: string;
+  foreground?: string;
 
   // ── THE FORM ────────────────────────────────────────────────────────────────────────────────
   /** True when the imported section contained a form shell (set at import). */
@@ -165,6 +179,8 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   sticky: false,
   paddingTop: null,
   paddingBottom: null,
+  background: "",
+  foreground: "",
   hasForm: false,
   useRealForm: true,
   formFields: [],
@@ -391,6 +407,8 @@ export default function DesignSection(props: DesignSectionProps) {
     sticky,
     paddingTop,
     paddingBottom,
+    background,
+    foreground,
     hasForm,
     useRealForm = true,
     formFields,
@@ -410,6 +428,10 @@ export default function DesignSection(props: DesignSectionProps) {
     // and it fails for the same reason.
     typeof paddingTop === "number" ? `padding-top:${paddingTop}px` : "",
     typeof paddingBottom === "number" ? `padding-bottom:${paddingBottom}px` : "",
+    // `background`, not `background-color`: a generated section routinely carries an inline
+    // gradient, and picking a flat colour has to beat it rather than sit behind it.
+    resolveColor(background) ? `background:${resolveColor(background)}` : "",
+    resolveColor(foreground) ? `color:${resolveColor(foreground)}` : "",
   ]
     .filter(Boolean)
     .join(";");
