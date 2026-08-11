@@ -420,6 +420,11 @@ export default function DesignSection(props: DesignSectionProps) {
   if (!html.trim()) return null;
 
   // Only emit what was actually set, so an untouched section keeps the design's own rhythm.
+  // Keyed BY THE ROLE, not per section: the same role always means the same colour, so every
+  // section choosing it shares one rule and no unique id has to be invented.
+  const fgRole = String(foreground || "").trim();
+  const fgValue = resolveColor(fgRole);
+
   const decls = [
     // ⚠️ STICKY IS NOT IN HERE — see the wrapper below. These declarations are injected into the
     // design's own outer tag, and `position: sticky` on that element does nothing: it can only
@@ -482,6 +487,7 @@ export default function DesignSection(props: DesignSectionProps) {
       className={DESIGN_SCOPE}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
       {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
+      {...(fgRole ? { "data-sjc-fg": fgRole } : {})}
       // STICKY BELONGS ON THIS ELEMENT, not on the design's header inside it.
       //
       // `position: sticky` sticks within its parent's box and no further. The header's parent is
@@ -492,6 +498,29 @@ export default function DesignSection(props: DesignSectionProps) {
       // z-index 40 sits above page content and below the form portal.
       style={sticky ? { position: "sticky", top: 0, zIndex: 40 } : undefined}
     >
+      {fgRole ? (
+        // ⚠️ SETTING `color` ON THE SECTION IS NOT ENOUGH, AND THAT LOOKS LIKE THE FEATURE WORKING.
+        //
+        // Inheritance only reaches text that has no colour of its own. A design colours its
+        // HEADINGS directly (`.band--deep h2{color:#fff}`), so flipping a dark band to White gave
+        // a white heading on a white background — measured on sjc-2026: rgb(255,255,255) on
+        // rgb(255,255,255). The body copy changed, the headline vanished, and nothing errored.
+        //
+        // So the role is also matched by a rule that reaches the text tags directly. Specificity
+        // ties with the design's own `.band--deep h2`, and this <style> sits in the BODY while the
+        // design's sheet is in the HEAD — later wins the tie.
+        //
+        // ⚠️ `span` IS DELIBERATELY ABSENT. The accent words inside a headline are spans with their
+        // own class; sweeping them up here would flatten the design's own highlight colour, which
+        // is the thing that makes the headline look designed.
+        <style
+          dangerouslySetInnerHTML={{
+            __html:
+              `[data-sjc-fg="${fgRole}"],[data-sjc-fg="${fgRole}"] :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,dt,dd,figcaption,td,th)` +
+              `{color:${fgValue}}`,
+          }}
+        />
+      ) : null}
       {swapForm ? (
         <style
           dangerouslySetInnerHTML={{
