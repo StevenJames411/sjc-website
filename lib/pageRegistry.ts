@@ -106,9 +106,14 @@ export async function renamePage(
 // ⚠️ KEEP THIS IN STEP WITH `ls app/*/`. A folder added here without a slug reservation is a page
 // somebody can create and never see. `careers` was missing from this list while `app/careers/`
 // existed, which is how that one got through.
+// ⚠️ SHRINKING THIS LIST IS THE FIX, NOT MAINTAINING IT. Every name here is a name NO site can
+// use — including the client demos, which were serving SJC's own About page at /about because a
+// hardcoded folder wins on every hostname. `about`, `faqs` and `podcast` were pure duplicates of
+// what app/[slug] already does for SJC and were DELETED 2026-08-11, which is what frees the names.
+// The rest still hold real code (forms, custom layouts) and each one still costs every site a slug.
 const ROUTE_FOLDERS = [
-  "about", "api", "apply", "careers", "edit", "faqs", "guest",
-  "i", "llms.txt", "podcast", "share", "v2", "websites",
+  "api", "apply", "careers", "edit", "guest",
+  "i", "llms.txt", "share", "v2", "websites",
 ];
 
 // Static segments under /edit/<site>/ — a page with one of these slugs would be shadowed in the
