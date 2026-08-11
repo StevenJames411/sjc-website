@@ -1513,10 +1513,11 @@ export const config: Config<Props, RootProps> = {
           ),
         },
         bandPadding: {
-          type: "number" as const,
-          label: "Space above and below the card, in px (band only)",
-          min: 0,
-          max: 200,
+          type: "custom" as const,
+          label: "Space above and below the card (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space above and below" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+          ),
         },
       },
       defaultProps: { ...LEADFORM_DEFAULTS, preset: "", formId: "" } as LeadFormBlock,
@@ -1874,9 +1875,27 @@ export const config: Config<Props, RootProps> = {
         },
         // ⛔ THE BAND'S DEPTH, ON SCREEN. Was `py-14` in code — 56px that Steven could not reach on
         // the very footer he had just stripped to one row to make it shallow.
-        paddingTop: { type: "number" as const, label: "Space at the top of the footer (px)", min: 0, max: 200 },
-        paddingBottom: { type: "number" as const, label: "Space at the bottom (px)", min: 0, max: 200 },
-        legalGap: { type: "number" as const, label: "Gap above the copyright line (px)", min: 0, max: 200 },
+        paddingTop: {
+          type: "custom" as const,
+          label: "Space at the top (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space at the top" value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+          ),
+        },
+        paddingBottom: {
+          type: "custom" as const,
+          label: "Space at the bottom (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space at the bottom" value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+          ),
+        },
+        legalGap: {
+          type: "custom" as const,
+          label: "Gap above the copyright line (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Gap above the copyright line" value={value as number} onChange={onChange} fallback={48} step={8} min={0} />
+          ),
+        },
         // Same four contact controls the header block has, so the two cannot say different things.
         // ⛔ ONE EDIT INSTEAD OF TWO. On, the footer renders the HEADER's link groups — same
         // labels, same descriptions, same column headings — so the menu becomes the single place
