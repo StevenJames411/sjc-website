@@ -56,6 +56,21 @@ export type DesignImage = {
   alt: string;
   src: string;
   /**
+   * THE GLASS — the framed panel the photo sits in — as opposed to the photo inside it.
+   *
+   * ⚠️ THESE OVERRIDE THE RULE DIRECTLY BELOW, DELIBERATELY (2026-08-11, Steven's call). That rule
+   * says the slot is the design's decision and only the framing inside it is yours. True for
+   * swapping a photo; false for the case that actually came up. The hero is two columns — text
+   * left, glass right — and the glass takes its height from the PHOTO'S proportions, so it is
+   * always shorter than the text beside it and no amount of reframing can fix that. The glass
+   * itself has to be resizable.
+   *
+   * Blank = the design's own size. Height in px, width as a % of the column it sits in; over 100%
+   * it spills out of that column on purpose, which is sometimes exactly the look.
+   */
+  frameHeight?: number | null;
+  frameWidth?: number | null;
+  /**
    * ── SAME THREE CONTROLS AS THE IMAGE BLOCK: shape, zoom, keep-in-view. ────────────────────
    *
    * ⚠️ NOT max-width. In an imported design the SLOT is fixed — the design decided how big that
@@ -367,6 +382,49 @@ function dropRemovedLinks(html: string, links: DesignLink[]): string {
  * Targeted rather than global: `data-sjc-img="i2"` identifies one image, so resizing the founder
  * photo can't touch the phone mockup. Images with nothing set are not rewritten at all.
  */
+/**
+ * Size the GLASS, and make the photo fill it.
+ *
+ * ⚠️ THE GLASS IS THE IMG'S PARENT, AND WE NEVER PARSE THE TREE HERE — styleImages() rewrites the
+ * <img> tag with a regex and cannot reach an ancestor. `:has(> img[...])` selects that parent
+ * directly from CSS, which is why this is a stylesheet rather than another tag rewrite.
+ *
+ * Once the glass has a size of its own, the photo has to COVER it or it would letterbox inside its
+ * own frame — and covering is what finally makes zoom and keep-in-view do something on a photo
+ * with no Shape set.
+ */
+function frameCss(images: DesignImage[]): string {
+  const out: string[] = [];
+  for (const img of images || []) {
+    const key = String(img?.key || "");
+    if (!key) continue;
+    const h = typeof img?.frameHeight === "number" && img.frameHeight > 0 ? img.frameHeight : null;
+    const w = typeof img?.frameWidth === "number" && img.frameWidth > 0 ? img.frameWidth : null;
+    const z = typeof img?.zoom === "number" && img.zoom > 100 ? img.zoom : 100;
+    if (!h && !w) continue;
+
+    const sel = `.${DESIGN_SCOPE} *:has(> img[data-sjc-img="${key}"])`;
+    const box = [
+      h ? `height:${h}px` : "",
+      // max-width:none so a width over 100% can actually leave the column instead of being
+      // clamped back to it by the design's own max-width.
+      w ? `width:${w}%;max-width:none` : "",
+    ].filter(Boolean).join(";");
+    out.push(`${sel}{${box}}`);
+
+    const pos = img?.focus || "center";
+    const fill = [
+      "width:100%",
+      "height:100%",
+      "object-fit:cover",
+      `object-position:${pos}`,
+      z > 100 ? `transform:scale(${z / 100});transform-origin:${pos}` : "",
+    ].filter(Boolean).join(";");
+    out.push(`${sel} > img[data-sjc-img="${key}"]{${fill}}`);
+  }
+  return out.join("");
+}
+
 function styleImages(html: string, images: DesignImage[]): string {
   let out = html;
   for (const img of images) {
@@ -424,6 +482,7 @@ export default function DesignSection(props: DesignSectionProps) {
   // section choosing it shares one rule and no unique id has to be invented.
   const fgRole = String(foreground || "").trim();
   const fgValue = resolveColor(fgRole);
+  const framing = frameCss(images);
 
   const decls = [
     // ⚠️ STICKY IS NOT IN HERE — see the wrapper below. These declarations are injected into the
@@ -498,6 +557,7 @@ export default function DesignSection(props: DesignSectionProps) {
       // z-index 40 sits above page content and below the form portal.
       style={sticky ? { position: "sticky", top: 0, zIndex: 40 } : undefined}
     >
+      {framing ? <style dangerouslySetInnerHTML={{ __html: framing }} /> : null}
       {fgRole ? (
         // ⚠️ SETTING `color` ON THE SECTION IS NOT ENOUGH, AND THAT LOOKS LIKE THE FEATURE WORKING.
         //

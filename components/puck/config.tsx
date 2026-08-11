@@ -655,6 +655,26 @@ export const config: Config<Props, RootProps> = {
                 <ImageUpload value={value as string} onChange={onChange} />
               ),
             },
+            // ── THE FRAME, then THE PHOTO INSIDE IT. Two different things, and the order of
+            // these fields is the explanation: size the panel, then decide what shows in it.
+            //
+            // ⚠️ The frame takes its height from the PHOTO'S proportions unless you set one here,
+            // which is why a hero photo is always shorter than the text column beside it and no
+            // amount of reframing fixes it. Blank = the design's own size.
+            frameHeight: {
+              type: "custom" as const,
+              label: "Frame height — the panel the photo sits in (px)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Frame height" value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
+              ),
+            },
+            frameWidth: {
+              type: "custom" as const,
+              label: "Frame width — % of its column (over 100 spills out)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Frame width %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
+              ),
+            },
             // The SAME three controls as the Image block — a photo is reframed the one way
             // everywhere, not a different way depending on where it came from.
             shape: {
