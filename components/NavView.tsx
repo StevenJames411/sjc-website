@@ -408,7 +408,7 @@ export default function NavView({
     >
       {GridOverlay}
       {/* Desktop: brand left · tagline centered · links + button right */}
-      <div className={`mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid${bandGrid ? " relative z-10" : ""}`} style={{ color: resolveColor(fg) }}>
+      <div className={`mx-auto hidden max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3 lg:grid ${bandGrid ? " relative z-10" : ""}`} style={{ color: resolveColor(fg) }}>
         <div className="justify-self-start">{Brand}</div>
         <div className="justify-self-center text-center">{Tagline}</div>
         <div className="flex items-center gap-5 justify-self-end">

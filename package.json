@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/check-route-folders.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "stamp:gs": "node scripts/stamp-gs.mjs",

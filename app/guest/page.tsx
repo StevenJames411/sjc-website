@@ -1,4 +1,5 @@
 import Nav from "@/components/Nav";
+import { tenantPage, tenantPageMetadata } from "@/lib/sjcRoute";
 import Footer from "@/components/Footer";
 import ApplyForm, { type Step, type Intro, type Booking } from "@/components/ApplyForm";
 import { readPuckPublished } from "@/lib/puckContent";
@@ -14,6 +15,9 @@ export const dynamic = "force-dynamic";
 // Preview text too — edited at /edit/guest with no block selected (the Page Settings panel).
 // What's below is only the fallback this page shipped with, used while the panel is empty.
 export async function generateMetadata() {
+  // Not SJC's domain? This name belongs to whoever that host is. See lib/sjcRoute.
+  const tenant = await tenantPageMetadata("guest");
+  if (tenant) return tenant;
   return pageMetadata("guest", {
     path: "/guest",
     title: "Come on the show — Steven James Consulting",
@@ -86,6 +90,8 @@ function extract(data: any): {
 }
 
 export default async function Guest() {
+  const tenant = await tenantPage("guest");
+  if (tenant) return tenant;
   const data = (await readPuckPublished("guest", SJC)) || seedFor("guest", "Podcast Guest Intake");
   const { intro, disclaimer, booking, steps, bookingUrl } = extract(data);
   return (

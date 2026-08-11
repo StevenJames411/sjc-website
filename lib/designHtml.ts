@@ -5,10 +5,40 @@
 
 import { parse, HTMLElement, NodeType, type Node } from "node-html-parser";
 import type { DesignText, DesignImage, DesignLink } from "@/components/blocks/DesignSection";
+import type { Surface } from "@/lib/surfaceStyle";
 
 // Tags that can execute or phone home. A bought design has no business containing any of them,
 // and the whole point of this pipeline is that the markup reaches a customer's live website.
 const STRIP_TAGS = new Set(["script", "iframe", "object", "embed", "link", "meta", "base"]);
+
+// ── THE ONE EXCEPTION: A VIDEO EMBED WE RECOGNISE ────────────────────────────────────────────
+// `iframe` is on the strip list above and stays there, because an imported design must not be
+// able to put an arbitrary frame on a customer's live site. But a podcast page IS its videos,
+// and the embed code YouTube hands you is an iframe — so a blanket strip meant five interviews
+// imported as five empty gaps, with the import still reporting success.
+//
+// So: an iframe survives ONLY if its src host is one of these. Anything else — an ad network, a
+// tracker, a login form, a frame with no src at all — is removed exactly as before. Matched on
+// the parsed HOST, never a substring of the URL: "youtube.com.evil.tld" is not youtube.com, and
+// a `src="//..."` with no protocol resolves against https so it can't slip through as garbage.
+const EMBED_HOSTS = new Set([
+  "www.youtube.com",
+  "youtube.com",
+  "www.youtube-nocookie.com",
+  "youtube-nocookie.com",
+  "player.vimeo.com",
+]);
+
+function isAllowedEmbed(src: string | undefined): boolean {
+  const raw = String(src || "").trim();
+  if (!raw) return false;
+  try {
+    const u = new URL(raw, "https://x.invalid");
+    return u.protocol === "https:" && EMBED_HOSTS.has(u.host.toLowerCase());
+  } catch {
+    return false;
+  }
+}
 
 // ── WHY THE FORM SURVIVES, AS A <div> ────────────────────────────────────────────────────────
 // The inputs and the button are KEPT: a generated contact section is mostly form, and stripping
@@ -32,6 +62,20 @@ export function sanitizeDesignHtml(html: string): string {
   for (const el of root.querySelectorAll("*")) {
     const tag = el.rawTagName?.toLowerCase();
     if (tag && STRIP_TAGS.has(tag)) {
+      // See EMBED_HOSTS: a recognised video embed is the single allowed iframe.
+      if (tag === "iframe" && isAllowedEmbed(el.getAttribute("src"))) {
+        // Strip anything that could turn the frame into more than a player.
+        el.removeAttribute("srcdoc");
+        el.removeAttribute("onload");
+        el.removeAttribute("onerror");
+        el.setAttribute("loading", "lazy");
+        el.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        // ⚠️ DELIBERATELY NO `sandbox`. The security control here is the HOST ALLOWLIST — the frame
+        // can only ever point at YouTube or Vimeo. A sandbox on top of that adds nothing we need
+        // and is a known way to break playback and fullscreen, which would ship as "the videos are
+        // there but they don't work" — worse than the problem it pretends to solve.
+        continue;
+      }
       el.remove();
       continue;
     }
@@ -273,11 +317,144 @@ function labelFor(el: HTMLElement | null, value: string, n: number): string {
  * whitespace, and text inside script/style/svg, are left alone — turning an SVG path's contents
  * into an editable field would be noise in a list Steven has to read.
  */
-export function tokenizeSection(html: string): {
+/**
+ * Find the repeating boxes on a section — what Steven calls FEATURE CARDS — and mark them.
+ *
+ * ── WHY REPETITION IS THE SIGNAL ──────────────────────────────────────────────────────────────
+ * A card is a plain `<div>`. Nothing about it says "card", and guessing at class names means
+ * guessing at whatever the generator happened to invent. But cards never come alone: they come as
+ * three or six siblings inside one grid, all wearing the same class. That repetition is the thing
+ * a person actually sees when they look at the page and say "the feature cards", and it holds
+ * across designs that share no vocabulary at all.
+ *
+ * ⚠️ THREE IS THE FLOOR. Two matching siblings is a coincidence — a heading and its paragraph, a
+ * label and its value. Three is a set.
+ *
+ * ⚠️ ONLY BOXES WITH SUBSTANCE. A row of six icons or six nav links repeats too, and turning those
+ * into stylable cards would bury the real ones in noise. A card has to carry a heading or a real
+ * sentence of its own.
+ *
+ * Each member is stamped twice: the GROUP key, because one style covers the whole set, and its
+ * INDEX, because each card can point somewhere different.
+ */
+export type DesignBoxGroup = Surface & {
+  key: string;
+  label: string;
+  count: number;
+  /** One destination per card, index-aligned. Blank = not a link. */
+  hrefs: string[];
+  /** Each card's own heading, purely so the link fields are labelled with what you see. */
+  captions: string[];
+};
+
+const BOX_MIN = 3;
+
+function markBoxes(root: HTMLElement, prefix = ""): DesignBoxGroup[] {
+  const groups: DesignBoxGroup[] = [];
+
+  for (const parent of root.querySelectorAll("*")) {
+    const kids = parent.childNodes.filter(
+      (n): n is HTMLElement =>
+        n instanceof HTMLElement &&
+        !!n.rawTagName &&
+        !["script", "style", "br"].includes(n.rawTagName.toLowerCase())
+    );
+    if (kids.length < BOX_MIN) continue;
+
+    // Group the children by their exact class, and take the biggest matching run.
+    const byClass = new Map<string, HTMLElement[]>();
+    for (const k of kids) {
+      const cls = (k.getAttribute("class") || "").trim();
+      if (!cls) continue;
+      byClass.set(cls, [...(byClass.get(cls) || []), k]);
+    }
+
+    for (const [, members] of byClass) {
+      if (members.length < BOX_MIN) continue;
+      // ⚠️ A MENU IS NOT A SET OF CARDS, AND IT LOOKS EXACTLY LIKE ONE.
+      //
+      // The overlay menu and the footer are repeated siblings sharing a class, each with a heading
+      // and a sentence — they pass every test a feature card passes. On sjc-2026 the first run
+      // detected the nav columns as "Feature cards (4)" twice over, which would have put Steven's
+      // navigation in the panel as something to restyle.
+      //
+      // The clean separator: a menu item IS a link, a card CONTAINS content. Plus anything living
+      // inside the page's chrome is chrome by definition.
+      const isLink = (m: HTMLElement) => m.rawTagName?.toLowerCase() === "a";
+      const inChrome = (m: HTMLElement) => {
+        let p: HTMLElement | null = m.parentNode as HTMLElement | null;
+        while (p) {
+          const t = p.rawTagName?.toLowerCase();
+          if (t === "header" || t === "footer" || t === "nav") return true;
+          p = p.parentNode as HTMLElement | null;
+        }
+        return false;
+      };
+      if (members.some(isLink) || members.some(inChrome)) continue;
+
+      // ⚠️ A HEADING IS REQUIRED, NOT "A HEADING OR ENOUGH TEXT".
+      //
+      // The looser test matched any repeated block with a sentence in it, which on one page
+      // produced EIGHT groups — most of them unnameable, listed in the panel as "Card 1, Card 2,
+      // Card 3" because there was no heading to name them with. A row you cannot name is a row
+      // you cannot use, and forty of them is the unusable panel this whole design was avoiding.
+      //
+      // A feature card in the sense that matters — the thing a person points at and calls a card —
+      // always has a heading. That is what makes it nameable, and being nameable is the point.
+      const solid = members.filter((m) => /<h[1-6]\b/i.test(m.toString()));
+      if (solid.length < BOX_MIN) continue;
+      // Already claimed by an outer group — the outermost wins, because that is the box a person
+      // points at.
+      if (members.some((m) => m.getAttribute("data-sjc-box"))) continue;
+
+      // ⚠️ UNIQUE ACROSS THE PAGE, NOT THE SECTION. Detection runs per section, so without a
+      // prefix every section restarts at b1 — and the style selector is page-wide, so three
+      // different card sets all answered to `b1` and restyling one restyled all three.
+      const key = `${prefix}b${groups.length + 1}`;
+      const captions: string[] = [];
+      members.forEach((m, i) => {
+        m.setAttribute("data-sjc-box", key);
+        m.setAttribute("data-sjc-box-i", String(i));
+        const head = m.querySelector("h1,h2,h3,h4,h5,h6");
+        captions.push(clean(head?.text || "").slice(0, 40) || `Card ${i + 1}`);
+      });
+      groups.push({
+        key,
+        label: `Feature cards (${members.length})`,
+        count: members.length,
+        hrefs: members.map(() => ""),
+        captions,
+      });
+    }
+  }
+
+  return groups;
+}
+
+/**
+ * Mark the feature cards in a chunk of already-tokenised markup.
+ *
+ * Same detector the importer uses, exposed for admin/mark-boxes — a site imported before card
+ * detection existed has no markers, and re-importing to get them would discard every page built
+ * out since. ONE definition, so a repaired site and a freshly imported one detect identically.
+ */
+export function markBoxesIn(html: string, prefix = ""): { html: string; boxes: DesignBoxGroup[] } {
+  const root = parse(String(html || ""), { comment: false });
+  const boxes = markBoxes(root, prefix);
+  return { html: root.toString(), boxes };
+}
+
+/** Strip existing card markers so a section can be re-detected from scratch. */
+export function unmarkBoxes(html: string): string {
+  return String(html || "").replace(/\s+data-sjc-box(?:-i)?="[^"]*"/g, "");
+}
+
+export function tokenizeSection(html: string, prefix = ""): {
   html: string;
   text: DesignText[];
   images: DesignImage[];
   links: DesignLink[];
+  boxes: DesignBoxGroup[];
   hasForm: boolean;
   formFields: { label: string; inputType: string }[];
   formButton: string;
@@ -349,7 +526,9 @@ export function tokenizeSection(html: string): {
         // "Call" dialling a made-up number, nav items pointing at sections that don't exist.
         // Unusable on a client's site, and not fixable without a code change.
         if (child.rawTagName?.toLowerCase() === "a") {
-          const href = child.getAttribute("href") || "";
+          // Normalised BEFORE anything else reads it, so the pairing signature, the label and the
+          // stored editable value all agree on one destination.
+          const href = normalizeInternalHref(child.getAttribute("href") || "");
           if (href) {
             // Same destination AND same words = the desktop and mobile copies of one link.
             const sig = `${href.trim()}||${clean(child.text)}`;
@@ -437,11 +616,16 @@ export function tokenizeSection(html: string): {
 
   walk(root);
 
+  // AFTER the walk: tokenising rewrites the markup, and the boxes have to be marked on what
+  // actually ships, not on a version that no longer exists.
+  const boxes = markBoxes(root, prefix);
+
   return {
     html: root.toString(),
     text,
     images,
     links,
+    boxes,
     hasForm: !!formEl,
     formFields,
     formButton,
@@ -542,6 +726,46 @@ export function explodeBands(block: string): string[] | null {
     const a = i === 0 ? attrs : attrsNoId;
     return `<${tag}${a ? " " + a : ""}>${styleHtml}${b.toString()}</${tag}>`;
   });
+}
+
+/**
+ * Turn a design's page-to-page link into a route this site actually serves.
+ *
+ * ── THE FAILURE ───────────────────────────────────────────────────────────────────────────────
+ * A generated design links between its pages by FILENAME — `href="custom-websites.html"` — because
+ * it was built as a folder of files you open off a disk. We serve those same pages as ROUTES
+ * (`/custom-websites`), so every one of those links 404s the moment the site is live. On sjc-2026
+ * that was the entire nav and the entire footer: 9 destinations, every page, both menus.
+ *
+ * ⚠️ IT SURVIVES EVERY OBVIOUS CHECK. The pages import fine, publish fine, and each one loads
+ * perfectly when you type its address — the only thing broken is getting there by clicking, which
+ * is the only way a visitor ever does it.
+ *
+ * Left alone deliberately:
+ *   - absolute URLs, `tel:`, `mailto:`, `sms:` and anything else with a scheme — not ours to touch
+ *   - `/already-a-route` — already correct
+ *   - `#anchor` — an in-page target, a different problem (and one that needs a human to say where
+ *     it should point when the target doesn't exist)
+ *
+ * `index.html` becomes `/` rather than `/home`, because the root is what the site actually serves
+ * and what a person would type.
+ */
+export function normalizeInternalHref(href: string): string {
+  const raw = String(href || "").trim();
+  if (!raw) return raw;
+  // Anything with a scheme (http:, tel:, mailto:, //cdn…) or already rooted, or a bare anchor.
+  if (/^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(raw)) return raw;
+
+  // Split off ?query and #hash so they survive the rewrite.
+  const m = raw.match(/^([^?#]*)([?#][\s\S]*)?$/);
+  if (!m) return raw;
+  const path = m[1].replace(/^\.\//, "");
+  const tail = m[2] || "";
+  if (!/\.html?$/i.test(path)) return raw;
+
+  const name = path.replace(/\.html?$/i, "").replace(/^.*\//, "");
+  if (!name || /^index$/i.test(name)) return `/${tail}`;
+  return `/${name}${tail}`;
 }
 
 export function splitSections(html: string): string[] {

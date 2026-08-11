@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { tenantPage, tenantPageMetadata } from "@/lib/sjcRoute";
 import Buckets from "./Buckets";
 import ChainHero from "./ChainHero";   // WorkReel is kept for /designs, where showing the work IS the job
 import SiteHeader from "./SiteHeader";
@@ -17,15 +18,24 @@ import { STORY, DIAGNOSIS, SOLUTION, PROOF, WHO, ASK } from "./content";
 // own padding and max-width, every word lives in content.ts, and every colour is a token.
 // Porting this into the design studio is then a mapping, not a second build.
 
-export const metadata: Metadata = {
+const SJC_METADATA: Metadata = {
   title: "Steven James Consulting — websites for high-end trades",
   description:
     "Websites, reviews and follow-up for contractors, builders and specialty shops. Forty years running my own businesses — you deal with the people who build it, not an account manager.",
 };
 
-export const dynamic = "force-static";
+// ⚠️ NOT force-static: this route now has to look at the HOST to decide whose page it is.
+export const dynamic = "force-dynamic";
 
-export default function V2() {
+export async function generateMetadata(): Promise<Metadata> {
+  const tenant = await tenantPageMetadata("v2");
+  return tenant || SJC_METADATA;
+}
+
+export default async function V2() {
+  // Not SJC's domain? This name belongs to whoever that host is. See lib/sjcRoute.
+  const tenant = await tenantPage("v2");
+  if (tenant) return tenant;
   return (
     <main style={{ background: "var(--ink)", color: "var(--text)" }}>
       <PaletteSwitcher />

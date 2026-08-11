@@ -8,6 +8,7 @@ import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
 import SizeStepper from "@/components/puck/SizeStepper";
 import ColorField from "@/components/puck/ColorField";
+import type { DesignBoxGroup } from "@/lib/designHtml";
 import DesignTextField from "@/components/puck/DesignTextField";
 import FormPicker from "@/components/puck/FormPicker";
 import FormLink from "@/components/puck/FormLink";
@@ -45,8 +46,11 @@ type Props = {
     text: DesignText[];
     images: DesignImage[];
     links: DesignLink[];
+    boxes: DesignBoxGroup[];
     paddingTop: number | null;
     paddingBottom: number | null;
+    background: string;
+    foreground: string;
     hasForm: boolean;
     useRealForm: boolean;
     formFields: { label: string; inputType: string }[];
@@ -177,6 +181,122 @@ const BG_FIELD = {
   ],
 };
 
+// The same pickers, for an IMPORTED section — plus the one option the native block cannot need:
+// LEAVE IT ALONE.
+//
+// ⚠️ A BOUGHT DESIGN ARRIVES WITH ITS OWN PALETTE, in its own stylesheet. Without a blank default
+// every band would be repainted to a brand role the instant the block rendered, which is not an
+// edit anybody asked for. Blank means "keep the design's own", and it is the default.
+const DESIGN_BG_FIELD = {
+  type: "select" as const,
+  options: [{ label: "Keep the design's own", value: "" }, ...BG_FIELD.options],
+};
+
+// A glow is an ACCENT, not a page band — offering the band colours here would only ever let you
+// glow a photo the same colour as the page behind it, which is invisible.
+// ── ONE SET OF LOOKS, FOR ANY BOX ────────────────────────────────────────────────────────────
+// A photo frame, a button, a pill and a card are the same thing wearing different names: a box
+// with a fill, corners, a band, a glow, and something that happens on hover. Defining the controls
+// once and spreading them wherever they apply is what stops three near-identical panels drifting
+// apart — and it means Steven learns ONE panel, not one per element type.
+//
+// ⚠️ Every one of these is blank by default. They land on top of a design that already looks
+// finished; a default that isn't "leave it alone" repaints the page the moment the block renders.
+const SURFACE_FIELDS = {
+  fill: {
+    type: "custom" as const,
+    label: "Fill colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  fillOpacity: {
+    type: "custom" as const,
+    // Named for what it does, not for `opacity` — and it only dilutes the FILL, so the words on
+    // top stay solid instead of looking disabled.
+    label: "See-through % (100 = solid glass)",
+    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+      <SizeStepper label="See-through %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
+    ),
+  },
+  corners: {
+    type: "custom" as const,
+    label: "Corners — 0 is square, higher is rounder (px)",
+    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+      <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={12} step={2} min={0} />
+    ),
+  },
+  bandWidth: {
+    type: "custom" as const,
+    label: "Band around it — width (px)",
+    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+      <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={2} step={1} min={0} />
+    ),
+  },
+  bandColor: {
+    type: "custom" as const,
+    label: "Band colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  glowColor: {
+    type: "custom" as const,
+    label: "Glow colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  glowSize: {
+    type: "custom" as const,
+    label: "Glow size (px)",
+    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+      <SizeStepper label="Glow size" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+    ),
+  },
+  textColor: {
+    type: "custom" as const,
+    label: "Text colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  hoverFill: {
+    type: "custom" as const,
+    label: "Hover — fill colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  hoverText: {
+    type: "custom" as const,
+    label: "Hover — text colour",
+    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+      <ColorField value={value as string} onChange={onChange} />
+    ),
+  },
+  motion: {
+    type: "radio" as const,
+    label: "Motion",
+    options: [
+      { label: "Static", value: "" },
+      { label: "Lift on hover", value: "lift" },
+      { label: "Pulsing", value: "pulse" },
+    ],
+  },
+};
+
+const DESIGN_GLOW_FIELD = {
+  type: "select" as const,
+  options: [
+    { label: "None", value: "" },
+    { label: "Accent", value: "accent" },
+    { label: "Secondary", value: "secondary" },
+    { label: "Button colour", value: "cta" },
+    { label: "White", value: "white" },
+  ],
+};
+
 // Per-block text color. Default ink; "White" is for blocks sitting on a dark Section band.
 //
 // ⚠️ ROLES, NOT HEXES. The swatch saves what a colour MEANS, so the brand screen drives it. These
@@ -192,6 +312,14 @@ const COLOR_FIELD = {
     { label: "Blue", value: "accent" },
     { label: "Muted gray", value: "mute" },
   ],
+};
+
+// Text colour for an IMPORTED section — same options, plus "keep the design's own" as default.
+// Pairs with DESIGN_BG_FIELD: changing a band's background without being able to change its text
+// is what turns a dark band flipped to White into white-on-white.
+const DESIGN_FG_FIELD = {
+  type: "select" as const,
+  options: [{ label: "Keep the design's own", value: "" }, ...COLOR_FIELD.options],
 };
 
 // Where a link opens. Same tab for anything on this site; new tab for anywhere off it, so a
@@ -582,6 +710,10 @@ export const config: Config<Props, RootProps> = {
             { label: "Sticks to the top", value: true },
           ],
         },
+        // Same pickers as the native Section block, so imported and hand-built sections are
+        // re-banded the same way. Blank = keep the design's own colours.
+        background: { ...DESIGN_BG_FIELD, label: "Background" },
+        foreground: { ...DESIGN_FG_FIELD, label: "Text colour" },
         // Same stepper as the native Section block, so imported and hand-built sections are
         // adjusted the same way. Blank = keep whatever spacing the design shipped with.
         paddingTop: {
@@ -630,6 +762,56 @@ export const config: Config<Props, RootProps> = {
                 <ImageUpload value={value as string} onChange={onChange} />
               ),
             },
+            // ── THE FRAME, then THE PHOTO INSIDE IT. Two different things, and the order of
+            // these fields is the explanation: size the panel, then decide what shows in it.
+            //
+            // ⚠️ The frame takes its height from the PHOTO'S proportions unless you set one here,
+            // which is why a hero photo is always shorter than the text column beside it and no
+            // amount of reframing fixes it. Blank = the design's own size.
+            // ⚠️ SHAPE FIRST, HEIGHT SECOND — the order is the advice.
+            //
+            // A ratio is relative, so it is right at every width with no breakpoint and nothing to
+            // re-check on a phone. A pixel height says "this many pixels, everywhere, forever",
+            // which is how a 620px frame ended up swallowing a 390px phone screen.
+            frameShape: {
+              type: "select" as const,
+              label: "Frame shape — sizes itself on every screen",
+              options: [
+                { label: "As designed", value: "" },
+                { label: "Match the column beside it", value: "match" },
+                { label: "Wide 16:9", value: "16/9" },
+                { label: "Landscape 4:3", value: "4/3" },
+                { label: "Square", value: "1/1" },
+                { label: "Portrait 3:4", value: "3/4" },
+                { label: "Tall 2:3", value: "2/3" },
+              ],
+            },
+            frameHeight: {
+              type: "custom" as const,
+              label: "Frame height — exact px, desktop only (use Shape first)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Frame height" value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
+              ),
+            },
+            frameWidth: {
+              type: "custom" as const,
+              label: "Frame width — % of its column (over 100 spills out)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Frame width %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
+              ),
+            },
+            // ── THE BAND. What makes a photo read as glass rather than a rectangle pasted on
+            // the page: a visible margin of frame around it, in its own colour, with a glow under
+            // it. The Designs site has it; the ten-pager's design draws its photo edge-to-edge.
+            bandWidth: {
+              type: "custom" as const,
+              label: "Band around the photo — width (px)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
+              ),
+            },
+            bandColor: SURFACE_FIELDS.bandColor,
+            glowColor: { ...SURFACE_FIELDS.glowColor, label: "Glow under the frame" },
             // The SAME three controls as the Image block — a photo is reframed the one way
             // everywhere, not a different way depending on where it came from.
             shape: {
@@ -677,7 +859,46 @@ export const config: Config<Props, RootProps> = {
               label: "Goes to — a page (/about), a section (#services), tel:+12105551234 or mailto:",
             },
             label: { type: "text" as const, label: "Which link this is" },
+            // Every button and pill on the page IS a link, and the importer already stamps
+            // data-sjc-link on each one — so the list of things you can restyle already existed
+            // and needed no new detection at all.
+            ...SURFACE_FIELDS,
             key: { type: "text" as const, label: "Token (do not change)" },
+          },
+        },
+        // ── FEATURE CARDS. Steven's name for them, so the panel says what he'd say.
+        //
+        // ⚠️ ONE ROW FOR THE WHOLE SET, NOT ONE PER CARD. Six cards styled individually is six
+        // chances to drift apart, and it is the fastest way to a forty-entry panel nobody can
+        // read. The look is shared; only the DESTINATIONS differ, which is exactly how they are
+        // used — same card, different page behind it.
+        boxes: {
+          type: "array" as const,
+          label: "Feature cards",
+          getItemSummary: (item: DesignBoxGroup) => item?.label || "Feature cards",
+          arrayFields: {
+            ...SURFACE_FIELDS,
+            hrefs: {
+              type: "array" as const,
+              label: "Where each card goes (blank = not clickable)",
+              getItemSummary: (_: unknown, i) => `Card ${(i ?? 0) + 1}`,
+              arrayFields: {
+                href: {
+                  type: "text" as const,
+                  label: "A page (/custom-websites), a calendar link, or blank",
+                },
+              },
+            },
+            // Carriers. Puck requires a field for every prop, so they are declared rather than
+            // hidden — nothing above depends on anyone touching them.
+            key: { type: "text" as const, label: "Token (do not change)" },
+            label: { type: "text" as const, label: "Name (set at import)" },
+            count: { type: "number" as const, label: "How many (set at import)" },
+            captions: {
+              type: "array" as const,
+              label: "Card headings (set at import)",
+              arrayFields: { caption: { type: "text" as const, label: "Heading" } },
+            },
           },
         },
         // ⚠️ OUR OWN FIELD, not Puck's array field. A bought design lands as forty-odd rows in one
@@ -731,7 +952,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
+      render: ({ html, text, images, links, boxes, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
           // Marks each filled word so a click on the canvas can name its row. Editor only.
           editing={puck?.isEditing}
@@ -739,9 +960,12 @@ export const config: Config<Props, RootProps> = {
           text={text}
           images={images}
           links={links}
+          boxes={boxes}
           sticky={sticky}
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
+          background={background}
+          foreground={foreground}
           hasForm={hasForm}
           useRealForm={useRealForm}
           formFields={formFields}

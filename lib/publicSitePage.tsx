@@ -292,10 +292,27 @@ export async function SitePageBody({
   const importedDesign = hasBlock(data, "DesignSection");
   const fallback =
     isClientSite && site && !importedDesign ? defaultChrome(site, await readPages(siteId)) : null;
+
+  // ⛔ A DOCUMENT WITH NO `content` ARRAY IS NOT CHROME — IT IS A 500.
+  // `<Render>` walks `data.content`. Hand it a truthy object without one and Puck throws
+  // "Cannot use 'in' operator to search for 'props' in undefined" — the whole page, not just the
+  // header. The way in is mundane: publishing a page list that includes `nav` and `footer` on a
+  // site whose chrome drafts are still empty stamps `{_pub:1}` over nothing, and `{_pub:1}` is
+  // truthy. That took ten freshly-imported pages to a blank 500 on 2026-08-11 while the stored
+  // page data was perfect, which is the worst possible place to be looking.
+  //
+  // So presence is decided by CONTENT, not by truthiness — and an empty document now falls
+  // through to the generated fallback exactly as a missing one does.
+  const usable = (doc: unknown) =>
+    Array.isArray((doc as { content?: unknown } | null)?.content) &&
+    ((doc as { content: unknown[] }).content.length > 0)
+      ? doc
+      : null;
+
   const chrome = isClientSite
     ? {
-        nav: (await readPuckPublished("nav", siteId)) || fallback?.nav || null,
-        footer: (await readPuckPublished("footer", siteId)) || fallback?.footer || null,
+        nav: usable(await readPuckPublished("nav", siteId)) || fallback?.nav || null,
+        footer: usable(await readPuckPublished("footer", siteId)) || fallback?.footer || null,
       }
     : { nav: null, footer: null };
 

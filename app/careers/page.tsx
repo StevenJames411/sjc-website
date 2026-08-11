@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
+import { tenantPage, tenantPageMetadata } from "@/lib/sjcRoute";
 import CareersForm from "./CareersForm";
 
-export const metadata: Metadata = {
+const SJC_METADATA: Metadata = {
   title: "Careers — Steven James Consulting",
   description:
     "Open seats at Steven James Consulting: appointment setters and web builders. Remote, results-paid.",
 };
 
-export const dynamic = "force-static";
+// ⚠️ NOT force-static: this route now has to look at the HOST to decide whose page it is.
+export const dynamic = "force-dynamic";
 
-export default function CareersPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const tenant = await tenantPageMetadata("careers");
+  return tenant || SJC_METADATA;
+}
+
+export default async function CareersPage() {
+  // Not SJC's domain? This name belongs to whoever that host is. See lib/sjcRoute.
+  const tenant = await tenantPage("careers");
+  if (tenant) return tenant;
   return (
     <main style={{ background: "#0b0b0b", color: "#fff", minHeight: "100vh" }}>
       <div style={{ maxWidth: 940, margin: "0 auto", padding: "clamp(48px,7vw,96px) clamp(20px,5vw,48px)" }}>
