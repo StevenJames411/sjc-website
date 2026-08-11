@@ -89,9 +89,27 @@ export async function renamePage(
   return ok ? { ok } : { ok: false, error: "Couldn't save — storage is unavailable." };
 }
 
-// Top-level Next.js route folders. Only SJC's pages collide with these, because SJC's pages serve
-// at /<page> while a client site's serve at /<site>/<page>.
-const ROUTE_FOLDERS = ["about", "api", "apply", "edit", "faqs", "guest", "podcast", "share", "websites"];
+// Top-level Next.js route folders.
+//
+// ⛔ THESE SHADOW EVERY SITE, NOT JUST SJC — AND THE OLD COMMENT HERE SAID OTHERWISE.
+// It read: "Only SJC's pages collide with these, because SJC's pages serve at /<page> while a
+// client site's serve at /<site>/<page>." That was true when a demo lived under a path prefix.
+// It stopped being true when demos moved to their own subdomain and their pages went to the ROOT
+// of it (see `publicBaseFor` in lib/hostShared.ts) — from then on a client page slugged `about`
+// sits at /about, and a STATIC route segment always beats the catch-all that would have served it.
+//
+// The failure is silent and total: `createPage` accepts the slug, the editor opens it, publishing
+// reports success, and the public URL serves SJC's hardcoded page instead — forever, with no
+// error anywhere. Three pages of a freshly imported ten-page site landed exactly there on
+// 2026-08-11 (`about`, `podcast`, `careers`) and looked for all the world like a bad import.
+//
+// ⚠️ KEEP THIS IN STEP WITH `ls app/*/`. A folder added here without a slug reservation is a page
+// somebody can create and never see. `careers` was missing from this list while `app/careers/`
+// existed, which is how that one got through.
+const ROUTE_FOLDERS = [
+  "about", "api", "apply", "careers", "edit", "faqs", "guest",
+  "i", "llms.txt", "podcast", "share", "v2", "websites",
+];
 
 // Static segments under /edit/<site>/ — a page with one of these slugs would be shadowed in the
 // builder by the route of the same name and become uneditable.
@@ -110,7 +128,12 @@ async function reservedSlugs(siteId: string): Promise<Set<string>> {
   const pages = await readPages(siteId);
   return new Set([
     ...EDITOR_SEGMENTS,
-    ...(siteId === SJC ? [...ROUTE_FOLDERS, ...PUCK_PAGES.map((p) => p.slug)] : []),
+    // ROUTE_FOLDERS applies to EVERY site — see the note on the constant. Next.js routing has no
+    // idea which site is being served, so a static segment shadows a client's page just as surely
+    // as it shadows SJC's. PUCK_PAGES stays SJC-only: those are SJC's own built-in pages, and the
+    // ones that would actually collide (`about`, `podcast`) are route folders anyway.
+    ...ROUTE_FOLDERS,
+    ...(siteId === SJC ? PUCK_PAGES.map((p) => p.slug) : []),
     ...pages.map((p) => p.slug),
   ]);
 }
