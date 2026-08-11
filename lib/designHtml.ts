@@ -392,7 +392,9 @@ export function tokenizeSection(html: string): {
         // "Call" dialling a made-up number, nav items pointing at sections that don't exist.
         // Unusable on a client's site, and not fixable without a code change.
         if (child.rawTagName?.toLowerCase() === "a") {
-          const href = child.getAttribute("href") || "";
+          // Normalised BEFORE anything else reads it, so the pairing signature, the label and the
+          // stored editable value all agree on one destination.
+          const href = normalizeInternalHref(child.getAttribute("href") || "");
           if (href) {
             // Same destination AND same words = the desktop and mobile copies of one link.
             const sig = `${href.trim()}||${clean(child.text)}`;
@@ -585,6 +587,46 @@ export function explodeBands(block: string): string[] | null {
     const a = i === 0 ? attrs : attrsNoId;
     return `<${tag}${a ? " " + a : ""}>${styleHtml}${b.toString()}</${tag}>`;
   });
+}
+
+/**
+ * Turn a design's page-to-page link into a route this site actually serves.
+ *
+ * ── THE FAILURE ───────────────────────────────────────────────────────────────────────────────
+ * A generated design links between its pages by FILENAME — `href="custom-websites.html"` — because
+ * it was built as a folder of files you open off a disk. We serve those same pages as ROUTES
+ * (`/custom-websites`), so every one of those links 404s the moment the site is live. On sjc-2026
+ * that was the entire nav and the entire footer: 9 destinations, every page, both menus.
+ *
+ * ⚠️ IT SURVIVES EVERY OBVIOUS CHECK. The pages import fine, publish fine, and each one loads
+ * perfectly when you type its address — the only thing broken is getting there by clicking, which
+ * is the only way a visitor ever does it.
+ *
+ * Left alone deliberately:
+ *   - absolute URLs, `tel:`, `mailto:`, `sms:` and anything else with a scheme — not ours to touch
+ *   - `/already-a-route` — already correct
+ *   - `#anchor` — an in-page target, a different problem (and one that needs a human to say where
+ *     it should point when the target doesn't exist)
+ *
+ * `index.html` becomes `/` rather than `/home`, because the root is what the site actually serves
+ * and what a person would type.
+ */
+export function normalizeInternalHref(href: string): string {
+  const raw = String(href || "").trim();
+  if (!raw) return raw;
+  // Anything with a scheme (http:, tel:, mailto:, //cdn…) or already rooted, or a bare anchor.
+  if (/^([a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(raw)) return raw;
+
+  // Split off ?query and #hash so they survive the rewrite.
+  const m = raw.match(/^([^?#]*)([?#][\s\S]*)?$/);
+  if (!m) return raw;
+  const path = m[1].replace(/^\.\//, "");
+  const tail = m[2] || "";
+  if (!/\.html?$/i.test(path)) return raw;
+
+  const name = path.replace(/\.html?$/i, "").replace(/^.*\//, "");
+  if (!name || /^index$/i.test(name)) return `/${tail}`;
+  return `/${name}${tail}`;
 }
 
 export function splitSections(html: string): string[] {
