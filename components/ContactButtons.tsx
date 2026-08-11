@@ -51,6 +51,25 @@ export type ContactButtonsProps = {
    */
   size?: "md" | "tile";
   /**
+   * ⛔ SHAPE STAYS, FILL CHANGES — the same separation PILL_BASE already exists for.
+   *
+   * "solid"   — the filled brand-blue pill. Every surface that already uses this component.
+   * "outline" — a bordered pill on a dark band: near-transparent fill, hairline border, icon in
+   *             the accent colour, label left-aligned. Hover lifts the border and the fill rather
+   *             than swapping the whole background.
+   *
+   * Steven, pointing at his own footer on stevenbarchetti.com: *"you see how professional they
+   * look… on hover it gives you a different color, it looks nice and professional and clean."*
+   * Three solid blue slabs stacked full-width read as a landing page; the same three actions in
+   * bordered pills read as a footer.
+   *
+   * ⚠️ DEFAULTS TO "solid", so every footer and menu already published is untouched. A new option
+   * must never restyle a live site as a side effect of existing — same rule as menuMode.
+   */
+  variant?: "solid" | "outline";
+  /** Left-align icon + label instead of centring them. What makes a fixed-width column read as a list. */
+  align?: "center" | "left";
+  /**
    * REAL ARTWORK INSTEAD OF THE DRAWN GLYPHS — one URL per action, blank = use the glyph.
    *
    * ⛔ THESE ARE ONLY WORTH USING AT TILE SIZE. Steven already owns the glossy calendar and phone
@@ -121,6 +140,16 @@ export const PILL_SIZE = {
 export const ICON_SIZE = { md: "h-4 w-4", tile: "h-9 w-9" } as const;
 const PILL = `${PILL_BASE} bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]`;
 
+// ⛔ THE OUTLINE FILL. Deliberately built from the SAME PILL_BASE as the solid one, so the two can
+// never drift into different geometry — the drift this component was created to end.
+//
+// `shadow` is dropped: a drop shadow under a translucent pill on a dark band renders as a smudge.
+// The hover is a border and fill lift, not a colour swap — that is what reads as "clean" rather
+// than "the button changed".
+const PILL_OUTLINE =
+  `${PILL_BASE.replace(" shadow", "")} border border-white/[0.14] bg-white/[0.03] ` +
+  `hover:border-[color:var(--color-sjc-blue)] hover:bg-white/[0.06]`;
+
 export default function ContactButtons({
   phone = "",
   phoneDisplay = "",
@@ -134,7 +163,14 @@ export default function ContactButtons({
   bookLabel = "Book a Call",
   bookIcon = "",
   bookNote = "",
+  variant = "solid",
+  align = "center",
 }: ContactButtonsProps) {
+  const outline = variant === "outline";
+  const shell = outline ? PILL_OUTLINE : PILL;
+  // Only the row shape has anything to align; a tile is centred by definition.
+  const justify = align === "left" && size === "md" ? " !justify-start gap-3" : "";
+
   const button = (
     href: string,
     path: React.ReactNode,
@@ -143,12 +179,20 @@ export default function ContactButtons({
     src?: string,
     note?: string
   ) => (
-    <a href={href} className={`${PILL} ${PILL_SIZE[size]} ${className}`} title={value}>
+    <a href={href} className={`${shell} ${PILL_SIZE[size]}${justify} ${className}`} title={value}>
       {src ? (
         // object-contain so a non-square export is letterboxed rather than squashed.
         <img src={src} alt="" aria-hidden className={`${ICON_SIZE[size]} shrink-0 object-contain`} />
       ) : (
-        <svg viewBox="0 0 24 24" fill="currentColor" className={`${ICON_SIZE[size]} shrink-0`} aria-hidden>
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          // ⛔ THE ICON CARRIES THE COLOUR ON AN OUTLINE PILL. On the solid fill everything is white
+          // because the background is the brand colour; with no fill, an all-white row is flat and
+          // the accent is the only thing telling you it is a button.
+          className={`${ICON_SIZE[size]} shrink-0${outline ? " text-[color:var(--color-sjc-blue)]" : ""}`}
+          aria-hidden
+        >
           {path}
         </svg>
       )}

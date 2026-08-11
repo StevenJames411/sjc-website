@@ -1,9 +1,10 @@
 "use client";
 import { useSiteId, useBusiness, useSiteUrl } from "@/components/blocks/SiteContext";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { resolveColor } from "@/lib/brandColor";
 import { fillTokens } from "@/lib/businessTokens";
+import { surveyScreensOf } from "@/lib/formsShared";
 
 // A short lead-capture form, fully driven by props so it can be dropped on ANY page from the
 // builder and re-labelled without touching code. Add/remove/reorder the questions, change the
@@ -72,6 +73,24 @@ export type LeadFormProps = {
     buttonLabel?: string;
     buttonUrl?: string;
   };
+  /**
+   * A FULL-WIDTH BAND BEHIND THE FORM — so the white card sits ON something.
+   *
+   * Steven: *"is it possible that I could add some color to the page so that just the form, which
+   * is in the middle of the canvas, is white, and then the rest of that section I could change the
+   * background color?"* Yes — and the reason it wasn't already is structural: `Section (band)` is a
+   * flat band with no drop zone, so a form can never be placed INSIDE one. The band has to belong
+   * to the form block itself.
+   *
+   * ⚠️ BLANK = NO WRAPPER AT ALL, not a white one. Every form already on a page renders exactly as
+   * it does today, sitting straight on whatever is behind it.
+   *
+   * ⚠️ IGNORED IN COLUMN MODE. `inColumn` means the form is one half of a two-column layout; a
+   * full-width band inside a column is not a band, it is a coloured rectangle behind half a row.
+   */
+  background?: string;
+  /** Space above and below the card inside the band, in px. Only used when `background` is set. */
+  bandPadding?: number;
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
@@ -92,6 +111,9 @@ export const LEADFORM_DEFAULTS: LeadFormProps = {
   buttonColor: "",
   inColumn: false,
   theme: "light",
+  // ⚠️ BLANK, so no form already on a page grows a band it never had.
+  background: "",
+  bandPadding: 64,
   successBody:
     "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 851-4906.",
 };
@@ -126,7 +148,30 @@ export default function LeadForm(props: LeadFormProps) {
     inColumn,
     theme = "light",
     altSuccess,
+    background = "",
+    bandPadding,
   } = props;
+
+  /**
+   * Wrap the card in its band — or hand it straight back when there is no band to draw.
+   *
+   * ⚠️ APPLIED TO THE THANK-YOU TOO. Banding only the questions means the band vanishes the instant
+   * someone submits, so the page flashes from a coloured section to a white one at the exact moment
+   * you most want it to look deliberate.
+   */
+  const banded = (card: React.ReactNode) => {
+    if (!background || inColumn) return card;
+    const pad = typeof bandPadding === "number" && bandPadding >= 0 ? bandPadding : 64;
+    return (
+      <div
+        className="w-full"
+        style={{ backgroundColor: resolveColor(background), paddingTop: pad, paddingBottom: pad }}
+      >
+        {/* px-6 so the card never touches the screen edge on a phone. */}
+        <div className="mx-auto w-full px-6">{card}</div>
+      </div>
+    );
+  };
 
   // ⚠️ THE THANK-YOU COPY RESOLVES ITS OWN TOKENS, AND HAS TO.
   //
@@ -191,10 +236,82 @@ export default function LeadForm(props: LeadFormProps) {
     (f, i) => isRequired(f, list) && !(values[keyFor(f, i)] || "").trim()
   );
 
+  // ── THE SURVEY ──────────────────────────────────────────────────────────────────────────────
+  // Steven: *"nobody wants to see a wall of fifteen questions and nobody wants to do one at a
+  // time."* So a long form becomes a few screens INSIDE ITS OWN SECTION — the page never
+  // navigates, nothing reloads, the header and footer never move.
+  //
+  // ⚠️ THE SUBMITTED PAYLOAD IS UNCHANGED, AND THAT IS THE WHOLE SAFETY STORY. Every answer is
+  // still built from `list` below, in the same order, under the same keys — which ARE the columns
+  // in the client's Google Sheet. This splits which questions are ON SCREEN and nothing else. A
+  // layout change that quietly reshaped the sheet would orphan every row collected so far.
+  const screens = surveyScreensOf(list);
+  const stepped = screens.length > 1;
+  const [screen, setScreen] = useState(0);
+  const at = Math.min(screen, Math.max(0, screens.length - 1));
+  const shown = stepped ? screens[at]?.fields || [] : list;
+  const lastScreen = !stepped || at >= screens.length - 1;
+
+  // Answered-or-not for the questions ON THIS SCREEN. Checked on Next, because being told on the
+  // last screen about a blank on the first is the version people abandon.
+  const missingHere = shown.filter(
+    (f) => isRequired(f, list) && !(values[keyFor(f, list.indexOf(f))] || "").trim()
+  );
+
+  // ── THE SECTION HOLDS ITS OWN HEIGHT ────────────────────────────────────────────────────────
+  // Steven: *"the page doesn't look like it goes anywhere."* If screen 2 is shorter than screen 1
+  // the whole page — footer included — jumps up the instant you press Next, which reads as broken
+  // every single time. So the questions area never gets shorter than the tallest screen already
+  // seen. Screens are balanced by weight, so in practice they start out near-identical and this
+  // only absorbs the remainder.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [minH, setMinH] = useState(0);
+  useLayoutEffect(() => {
+    const h = bodyRef.current?.offsetHeight || 0;
+    if (h > minH) setMinH(h);
+  }, [at, minH, values]);
+
+  /**
+   * Move a screen without losing the visitor.
+   *
+   * ⚠️ NEVER scrollIntoView UNCONDITIONALLY — on a short form that yanks a page that was already
+   * perfectly readable. Only when the top of the card has gone above the fold, which is exactly
+   * what happens on a phone after tapping Next at the bottom of a tall screen.
+   */
+  function go(next: number) {
+    setScreen(next);
+    setState("idle");
+    requestAnimationFrame(() => {
+      const el = formRef.current;
+      if (el && el.getBoundingClientRect().top < 0) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (trap) return; // honeypot caught a bot — silently do nothing
+
+    // Mid-survey the button is Next, not Send. Only this screen's answers are checked, so nobody
+    // is blocked by a question they haven't been shown yet.
+    if (!lastScreen) {
+      if (missingHere.length) {
+        setState("error");
+        return;
+      }
+      go(at + 1);
+      return;
+    }
+
     if (missing.length) {
+      // ⚠️ TAKE THEM TO THE BLANK, don't just say there is one. On a survey the offending box is
+      // usually on a screen that isn't showing, so "fill in every box and try again" would point
+      // at a screen where every box is already filled.
+      const first = list.indexOf(missing[0]);
+      const idx = screens.findIndex((s) => s.fields.includes(list[first]));
+      if (stepped && idx >= 0 && idx !== at) go(idx);
       setState("error");
       return;
     }
@@ -272,7 +389,7 @@ export default function LeadForm(props: LeadFormProps) {
         ? altSuccess
         : null;
 
-    return (
+    return banded(
       <div className={`${cardCls} text-center${inColumn ? "" : " mx-auto max-w-xl"}`}>
         <h3
           className={`text-2xl font-bold md:text-3xl ${
@@ -309,14 +426,64 @@ export default function LeadForm(props: LeadFormProps) {
     );
   }
 
-  return (
+  return banded(
     <form
+      ref={formRef}
       onSubmit={submit}
       noValidate
       className={`${cardCls}${inColumn ? "" : " mx-auto max-w-xl"}`}
     >
-      <div className="space-y-5">
-        {list.map((f, i) => {
+      {/* ── WHERE YOU ARE ────────────────────────────────────────────────────────────────────
+          A survey with no end in sight is one people quit. The bar and the count are the whole
+          reason a five-screen form gets finished, and they cost one row. Only drawn when the form
+          actually steps — a four-question contact form with a progress bar looks bureaucratic. */}
+      {stepped ? (
+        <div className="mb-6">
+          <div
+            className={`h-1.5 w-full overflow-hidden rounded-full ${
+              dark ? "bg-white/10" : "bg-gray-200"
+            }`}
+          >
+            <div
+              className="h-full rounded-full transition-all duration-500 ease-out"
+              style={{
+                width: `${((at + 1) / screens.length) * 100}%`,
+                backgroundColor: dark
+                  ? "#00D9FF"
+                  : buttonColor
+                    ? resolveColor(buttonColor)
+                    : "var(--color-sjc-blue)",
+              }}
+            />
+          </div>
+          <div className="mt-2 flex items-baseline justify-between">
+            {/* An authored step keeps its heading (/apply); an auto-split one has none, and an
+                empty <h4> would just add a blank line. */}
+            <span
+              className={`text-sm font-semibold ${
+                dark ? "text-slate-200" : "text-[color:var(--color-sjc-ink)]"
+              }`}
+            >
+              {screens[at]?.title || ""}
+            </span>
+            <span className={`text-xs ${dark ? "text-slate-400" : "text-[color:var(--color-sjc-mute)]"}`}>
+              Step {at + 1} of {screens.length}
+            </span>
+          </div>
+        </div>
+      ) : null}
+
+      {/* `minHeight` is what stops the page jumping between screens — see the note on minH. */}
+      <div
+        ref={bodyRef}
+        className="space-y-5"
+        style={stepped && minH ? { minHeight: minH } : undefined}
+      >
+        {shown.map((f) => {
+          // ⚠️ THE INDEX MUST BE THE ONE IN THE FULL LIST, NOT IN THIS SCREEN. keyFor() falls back
+          // to the position when a block predates the form library, so numbering a screen's fields
+          // from zero would file screen two's answers under screen one's columns.
+          const i = list.indexOf(f);
           const k = keyFor(f, i);
           return (
             <div key={k}>
@@ -388,22 +555,41 @@ export default function LeadForm(props: LeadFormProps) {
         className="absolute left-[-9999px]"
       />
 
-      <button
-        type="submit"
-        disabled={state === "sending"}
-        className={
-          dark
-            ? "mt-8 w-full rounded-xl bg-[#00D9FF] px-6 py-4 text-lg font-bold text-[#0A0E27] shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[#00D9FF]/50 disabled:opacity-60"
-            : `mt-8 w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
-                buttonColor
-                  ? " hover:opacity-90"
-                  : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
-              }`
-        }
-        style={!dark && buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
-      >
-        {state === "sending" ? "Sending…" : buttonLabel}
-      </button>
+      {/* ⚠️ BACK IS A BUTTON, NEVER THE BROWSER'S. The survey is state inside this block — the URL
+          never changes — so a visitor reaching for the browser's back arrow would leave the page
+          entirely and lose every answer. Giving Back its own obvious control is what stops that
+          reach happening. It also never submits: type="button" on a form is load-bearing. */}
+      <div className={stepped && at > 0 ? "mt-8 flex gap-3" : "mt-8"}>
+        {stepped && at > 0 ? (
+          <button
+            type="button"
+            onClick={() => go(at - 1)}
+            className={
+              dark
+                ? "shrink-0 rounded-xl border border-white/20 px-5 py-4 text-lg font-semibold text-slate-200 transition hover:bg-white/10"
+                : "shrink-0 rounded-lg border border-gray-300 px-5 py-4 text-lg font-semibold text-[color:var(--color-sjc-mute)] transition hover:bg-gray-50"
+            }
+          >
+            ← Back
+          </button>
+        ) : null}
+        <button
+          type="submit"
+          disabled={state === "sending"}
+          className={
+            dark
+              ? "w-full rounded-xl bg-[#00D9FF] px-6 py-4 text-lg font-bold text-[#0A0E27] shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[#00D9FF]/50 disabled:opacity-60"
+              : `w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
+                  buttonColor
+                    ? " hover:opacity-90"
+                    : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
+                }`
+          }
+          style={!dark && buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
+        >
+          {state === "sending" ? "Sending…" : lastScreen ? buttonLabel : "Next →"}
+        </button>
+      </div>
 
       {state === "error" ? (
         <p
@@ -411,9 +597,11 @@ export default function LeadForm(props: LeadFormProps) {
             dark ? "text-red-400" : "text-red-600"
           }`}
         >
-          {missing.length
-            ? "Fill in every box and try again."
-            : "That didn't go through — give it another try, or just call."}
+          {!lastScreen
+            ? "Fill in every box to carry on."
+            : missing.length
+              ? "Fill in every box and try again."
+              : "That didn't go through — give it another try, or just call."}
         </p>
       ) : null}
 

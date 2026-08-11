@@ -94,6 +94,8 @@ type Props = {
     buttonColor: string;
     inColumn: boolean;
     theme: string;
+    background: string;
+    bandPadding: number;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
@@ -106,7 +108,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; contactLayout: string; paddingTop: number; paddingBottom: number; legalGap: number; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -422,6 +424,19 @@ export const FOOTER_DEFAULTS = {
   brandStyle: "",
   brandLine2: "",
   brandLine2Color: "",
+  // ⚠️ Blank on both, same rule again: no accent word means the name renders in one colour, which
+  // is every footer already published. Nothing moves until it's picked.
+  brandAccentWord: "",
+  brandAccentColor: "",
+  // Blank = the solid brand fill every existing footer and menu already draws.
+  buttonStyle: "",
+  // Blank = stacked, which is every footer already published.
+  contactLayout: "",
+  // ⚠️ These three ARE the old hardcoded values (py-14 / mt-12), so an untouched footer does not
+  // move a pixel — the numbers just became reachable.
+  paddingTop: 56,
+  paddingBottom: 56,
+  legalGap: 48,
   // Blank = drawn glyphs and three buttons. A client site never inherits SJC's artwork or
   // SJC's booking link by default.
   iconCall: "",
@@ -627,7 +642,22 @@ export const config: Config<Props, RootProps> = {
     forms: {
       title: "Forms",
       defaultExpanded: false,
-      components: ["LeadForm", "FormStep", "FormQuestion"] as (keyof Props)[],
+      // ⚠️ ONE BLOCK, NOT THREE. A form is a SECTION now: drop LeadForm onto any page and it picks
+      // its own shape — under five questions it just sits there, five or more and it steps through
+      // screens in place (lib/formsShared surveyScreensOf). Steven, on why the old way felt wrong:
+      // *"we don't need a full freaking page to put these survey forms on our website. We need a
+      // section."*
+      components: ["LeadForm"] as (keyof Props)[],
+    },
+    // ⚠️ KEPT, NOT DELETED — /apply IS BUILT OUT OF THESE. FormStep/FormQuestion are the
+    // hand-assembled wizard: many blocks with no single one owning the set, which is exactly why
+    // that page's library link had to live in PAGE settings rather than on a block. LeadForm
+    // replaces them for anything new, but /apply is a live funnel made of them and has to stay
+    // editable. Out of the everyday kit, not out of the builder.
+    legacy: {
+      title: "Step blocks (older pages)",
+      defaultExpanded: false,
+      components: ["FormStep", "FormQuestion"] as (keyof Props)[],
     },
     sitewide: {
       title: "Header & footer",
@@ -1471,6 +1501,24 @@ export const config: Config<Props, RootProps> = {
             { label: "Fill the column", value: true },
           ],
         },
+        // ⛔ THE BAND BELONGS TO THIS BLOCK, BECAUSE IT CANNOT BELONG TO A SECTION.
+        // "Section (band)" has no drop zone — every block is a sibling, never a child — so a form
+        // can never be placed inside one and inherit its colour. Steven hit exactly that: he could
+        // colour the band holding the heading, and the form underneath it stayed white.
+        background: {
+          type: "custom" as const,
+          label: "Band behind the form (blank = none)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        bandPadding: {
+          type: "custom" as const,
+          label: "Space above and below the card (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space above and below" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+          ),
+        },
       },
       defaultProps: { ...LEADFORM_DEFAULTS, preset: "", formId: "" } as LeadFormBlock,
       /**
@@ -1485,7 +1533,7 @@ export const config: Config<Props, RootProps> = {
        * would drag the database client into the editor bundle.
        */
       resolveData: resolveLeadFormPreset,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, bandPadding }) => (
         <LeadForm
           source={source}
           fields={fields}
@@ -1496,6 +1544,8 @@ export const config: Config<Props, RootProps> = {
           buttonColor={buttonColor}
           inColumn={inColumn}
           theme={theme === "dark" ? "dark" : "light"}
+          background={background}
+          bandPadding={bandPadding}
         />
       ),
     },
@@ -1791,6 +1841,61 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // ⛔ ON SCREEN, NOT IN CODE — the same rule contactWidth below was created under. A value
+        // only a developer can reach costs a build, a deploy and a publish to change a word's
+        // colour. These are what make the footer's name match the header's two-tone mark.
+        brandAccentWord: {
+          type: "text" as const,
+          label: "Last word in the accent colour — e.g. Consulting (blank = one colour)",
+        },
+        brandAccentColor: {
+          type: "custom" as const,
+          label: "That word's colour (blank = the brand blue)",
+          render: ({ onChange, value }) => (
+            <ColorField value={value as string} onChange={onChange} />
+          ),
+        },
+        buttonStyle: {
+          type: "radio" as const,
+          label: "Contact buttons",
+          options: [
+            { label: "Solid brand fill", value: "" },
+            { label: "Outlined pills", value: "outline" },
+          ],
+        },
+        // ⚠️ ONLY BITES ON A FOOTER WITH NO LINK COLUMNS — the label says so rather than leaving it
+        // to be discovered by picking it and seeing nothing change.
+        contactLayout: {
+          type: "radio" as const,
+          label: "Contact buttons layout (no link columns)",
+          options: [
+            { label: "Stacked", value: "" },
+            { label: "Side by side — call · text · email", value: "row" },
+          ],
+        },
+        // ⛔ THE BAND'S DEPTH, ON SCREEN. Was `py-14` in code — 56px that Steven could not reach on
+        // the very footer he had just stripped to one row to make it shallow.
+        paddingTop: {
+          type: "custom" as const,
+          label: "Space at the top (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space at the top" value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+          ),
+        },
+        paddingBottom: {
+          type: "custom" as const,
+          label: "Space at the bottom (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Space at the bottom" value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+          ),
+        },
+        legalGap: {
+          type: "custom" as const,
+          label: "Gap above the copyright line (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label="Gap above the copyright line" value={value as number} onChange={onChange} fallback={48} step={8} min={0} />
+          ),
+        },
         // Same four contact controls the header block has, so the two cannot say different things.
         // ⛔ ONE EDIT INSTEAD OF TWO. On, the footer renders the HEADER's link groups — same
         // labels, same descriptions, same column headings — so the menu becomes the single place
@@ -1837,7 +1942,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color, iconCall, iconText, iconEmail, bookHref, bookLabel, bookIcon, contactWidth, buttonWidthMobile }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color, brandAccentWord, brandAccentColor, buttonStyle, contactLayout, paddingTop, paddingBottom, legalGap, iconCall, iconText, iconEmail, bookHref, bookLabel, bookIcon, contactWidth, buttonWidthMobile }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -1855,6 +1960,13 @@ export const config: Config<Props, RootProps> = {
           brandStyle={brandStyle}
           brandLine2={brandLine2}
           brandLine2Color={brandLine2Color}
+          brandAccentWord={brandAccentWord}
+          brandAccentColor={brandAccentColor}
+          buttonStyle={buttonStyle}
+          contactLayout={contactLayout}
+          paddingTop={paddingTop}
+          paddingBottom={paddingBottom}
+          legalGap={legalGap}
           iconCall={iconCall}
           iconText={iconText}
           iconEmail={iconEmail}

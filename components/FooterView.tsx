@@ -63,6 +63,58 @@ export type FooterViewProps = {
   brandLine2?: string;
   brandLine2Color?: string;
   /**
+   * THE TAIL OF THE NAME, IN THE ACCENT COLOUR — "Steven James **Consulting**".
+   *
+   * Steven, comparing the footer to the header: *"you see how my name is fancy up in the header,
+   * and then you changed it for the footer. I want those to match."* The header's mark is two-tone
+   * and the wordmark below was one flat colour, so the same words read as two different brands on
+   * one page.
+   *
+   * ⛔ AN EXPLICIT WORD, NOT "colour the last word". A heuristic gets "Marbleford Pet **Wash**"
+   * right and "Bexar Oak **Co.**" wrong, on somebody's live site, with nobody watching. Blank
+   * leaves the name in one colour, which is every existing footer.
+   *
+   * ⚠️ Matched at the END of the name, case-insensitively, and only ever the tail — so it can
+   * never chop a word out of the middle.
+   */
+  brandAccentWord?: string;
+  brandAccentColor?: string;
+  /** "outline" = bordered pills on the dark band, matching the menu's calmer treatment. */
+  buttonStyle?: string;
+  /**
+   * "row" = the contact buttons sit SIDE BY SIDE across the band — call · text · email — instead
+   * of stacked in a column.
+   *
+   * Steven, on the stripped footer: *"do the call in the left column, text in the middle column,
+   * and email in the right column. That'll make the footer much lower profile on desktop, which is
+   * what I wanted as far as being minimalist, and on a phone it will just stack."*
+   *
+   * ⚠️ IT IS THE HEIGHT HE IS BUYING, NOT THE ARRANGEMENT. Three stacked pills plus their gaps is
+   * roughly three times the band depth of one row, and on a footer carrying nothing else that
+   * depth is the whole difference between minimal and padded.
+   *
+   * ⚠️ ONLY MEANINGFUL WITH NO LINK COLUMNS. With Divisions and Company beside it the contact
+   * block IS one column of the grid, and a row inside a 300px track would wrap to nonsense. Guarded
+   * below rather than left to whoever picks it.
+   *
+   * Blank = stacked, which is every footer already published.
+   */
+  contactLayout?: string;
+  /**
+   * THE BAND'S OWN DEPTH — the last hardcoded number in this component.
+   *
+   * ⚠️ IT WAS `py-14`, AND ON A STRIPPED FOOTER THAT 56px WAS MOST OF THE REMAINING HEIGHT. Steven
+   * had just cut the footer to one row precisely to make it low-profile, and the only thing left
+   * holding it open was a number nobody could reach. Exactly the same failure as `contactWidth`
+   * before it — see the note on that field, in his words.
+   *
+   * Defaults match `py-14` / `mt-12` exactly, so nothing already published moves a pixel.
+   */
+  paddingTop?: number | null;
+  paddingBottom?: number | null;
+  /** Gap above the copyright + legal row. Was `mt-12`. */
+  legalGap?: number | null;
+  /**
    * Contact-button artwork and the Book a Call target — mirrors the menu's fields exactly.
    * ⛔ Blank on every one of them means a client site falls back to the drawn glyphs and shows
    * three buttons, never SJC's icons or SJC's booking link.
@@ -104,6 +156,13 @@ export default function FooterView({
   brandStyle,
   brandLine2,
   brandLine2Color,
+  brandAccentWord,
+  brandAccentColor,
+  buttonStyle,
+  contactLayout,
+  paddingTop,
+  paddingBottom,
+  legalGap,
   iconCall,
   iconText,
   iconEmail,
@@ -120,11 +179,40 @@ export default function FooterView({
   const fg = foreground || "white";
   const name = brandName || "Steven James Consulting";
   const logoOn = showLogo !== false;
+
+  // ── THE TWO-TONE SPLIT ──────────────────────────────────────────────────────────────────────
+  // Tail-only and case-insensitive; anything else leaves the name exactly as typed. Built here
+  // rather than inline so both the wordmark and the plain lockup can use the same split and cannot
+  // disagree about where the accent starts.
+  const accentWord = String(brandAccentWord || "").trim();
+  const splitAt =
+    accentWord && name.toLowerCase().endsWith(accentWord.toLowerCase())
+      ? name.length - accentWord.length
+      : -1;
+  const nameHead = splitAt > 0 ? name.slice(0, splitAt) : name;
+  const nameTail = splitAt > 0 ? name.slice(splitAt) : "";
+  const brandMark =
+    nameTail !== "" ? (
+      <>
+        {nameHead}
+        <span style={{ color: resolveColorOr(brandAccentColor, "var(--color-sjc-blue)") }}>
+          {nameTail}
+        </span>
+      </>
+    ) : (
+      name
+    );
+
+  const pillVariant = String(buttonStyle) === "outline" ? "outline" : "solid";
   const year = new Date().getFullYear();
   const linkEls = (links || []).filter((l) => l && l.label);
   const groupEls = (groups || [])
     .map((g) => ({ heading: g?.heading || "", links: (g?.links || []).filter((l) => l && l.label) }))
     .filter((g) => g.links.length);
+  // ⚠️ GUARDED, NOT TRUSTED — and declared HERE because it reads `groupEls`. A row inside a ~300px
+  // grid track wraps to nonsense, so the option only takes effect on a footer with no link columns,
+  // which is the only shape it was asked for.
+  const contactRow = String(contactLayout) === "row" && !groupEls.length;
   // The "More" column only appears when it has something in it. Without this, adding groups left
   // an empty titled column sitting between them — a heading with nothing under it, which reads as
   // a bug rather than as a design.
@@ -167,7 +255,15 @@ export default function FooterView({
         className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full opacity-[0.14]"
         style={{ backgroundColor: "var(--color-sjc-blue)", filter: "blur(120px)" }}
       />
-      <div className="relative mx-auto max-w-6xl px-6 py-14">
+      <div
+        className="relative mx-auto max-w-6xl px-6"
+        // ⚠️ NUMBERS, NOT CLASSES. `py-14` could not be overridden from a field without an
+        // !important fight, so the value moves to a style and the class goes.
+        style={{
+          paddingTop: typeof paddingTop === "number" ? paddingTop : 56,
+          paddingBottom: typeof paddingBottom === "number" ? paddingBottom : 56,
+        }}
+      >
         {/* ⛔ ONE COLUMN ON A PHONE, COLUMNS FROM md UP. This is the fix for the email running off
             the right edge — and the fix has to be a BREAKPOINT, not a cleverer track definition.
 
@@ -214,7 +310,7 @@ export default function FooterView({
                     fontSize: "26px",
                   }}
                 >
-                  {name}
+                  {brandMark}
                 </span>
                 {brandLine2 ? (
                   <span
@@ -234,7 +330,7 @@ export default function FooterView({
             ) : (
               <div className="flex items-center gap-3">
                 {logoOn ? <img src={LOGO_URL} alt="logo" className="h-12 w-12 rounded-full" /> : null}
-                <span className="text-lg font-semibold">{name}</span>
+                <span className="text-lg font-semibold">{brandMark}</span>
               </div>
             )}
             {blurb ? <p className="mt-6 text-sm leading-relaxed text-white/80">{blurb}</p> : null}
@@ -369,9 +465,32 @@ export default function FooterView({
                 below `lg`, because there the column IS the screen.
                 max-w-[75%] caps it while stacked; lg:max-w-none hands control back to the 300px
                 track so the two sizes can be tuned independently. */}
+            {/* ⛔ WITH NO LINK COLUMNS THERE IS NO GRID TO SIT IN, AND THE BUTTONS RAN THE WHOLE BAND.
+                `sm:max-w-none` hands the width back to the grid track — correct when Divisions and
+                Company are beside it, and meaningless on a stripped footer where the contact block
+                IS the row. Three blue bars 1400px wide is what Steven was looking at.
+                So when there are no groups the block keeps an explicit width and stays left: the
+                same ~300px column it would have occupied, which is the proportion he pointed at on
+                his own site. Dialled from `contactWidth`, the field that already exists for it. */}
+            {/* ⛔ ONE ROW ACROSS THE BAND when `contactLayout` is "row" — call · text · email, side
+                by side, stacking under `sm` with no media query of its own. `items-stretch` is what
+                holds the three pills to the same height when one label wraps and the others don't;
+                without it a long email address makes its own column taller and the row goes ragged.
+                No width cap in this mode: the columns ARE the width. */}
             <div
-              className="mx-auto mt-4 flex max-w-[var(--sjc-btn-w)] flex-col items-stretch gap-3 sm:mx-0 sm:max-w-none"
-              style={{ "--sjc-btn-w": `${buttonWidthMobile || 50}%` } as React.CSSProperties}
+              className={`mt-4 gap-3 ${
+                contactRow
+                  ? "grid items-stretch sm:grid-cols-3"
+                  : groupEls.length
+                    ? "mx-auto flex max-w-[var(--sjc-btn-w)] flex-col items-stretch sm:mx-0 sm:max-w-none"
+                    : "mx-auto flex max-w-[var(--sjc-btn-w)] flex-col items-stretch sm:mx-0 sm:max-w-[var(--sjc-contact-w)]"
+              }`}
+              style={
+                {
+                  "--sjc-btn-w": `${buttonWidthMobile || 50}%`,
+                  "--sjc-contact-w": `${contactWidth || 300}px`,
+                } as React.CSSProperties
+              }
             >
               <ContactButtons
                 phone={phone}
@@ -384,12 +503,19 @@ export default function FooterView({
                 bookLabel={bookLabel}
                 bookIcon={bookIcon}
                 bookNote={bookHref ? "(Click Here)" : ""}
+                variant={pillVariant}
+                // Left-aligned only on the outline pill: a bordered pill at a fixed width reads as
+                // a list of actions, and a centred label in a wide bordered box reads as a gap.
+                align={pillVariant === "outline" ? "left" : "center"}
               />
             </div>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
+        <div
+          className="flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between"
+          style={{ marginTop: typeof legalGap === "number" ? legalGap : 48 }}
+        >
           <p>© {year} {copyright}. All rights reserved.</p>
           <div className="flex gap-6">
             {privacyUrl ? (
