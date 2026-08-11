@@ -250,13 +250,39 @@ export function fillTokens(
  * So this catches the case that one is for: a record edited by hand in the Markup box, or written
  * before the import-time sanitiser existed. Cheap, no dependencies, runs on every render.
  */
+// A recognised video embed is the one iframe allowed through — see EMBED_HOSTS in
+// lib/designHtml.ts, which this deliberately mirrors. Kept as a literal list rather than an
+// import: this file must not pull node-html-parser into the browser bundle (see above), and the
+// two lists disagreeing is a smaller risk than the circular import.
+//
+// ⚠️ ANCHORED. The host must come straight after `src="https://` and be followed by `/` or the
+// closing quote, so `youtube.com.evil.tld` and `evil.tld/?x=youtube.com` both still get stripped.
+const EMBED_SRC =
+  /src\s*=\s*"https:\/\/(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|player\.vimeo\.com)(?:\/|")/i;
+
 function stripDangerous(html: string): string {
   return String(html || "")
-    .replace(/<\s*(script|iframe|object|embed|base)\b[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
-    .replace(/<\s*(script|iframe|object|embed|base)\b[^>]*\/?>/gi, "")
-    .replace(/\son[a-z]+\s*=\s*(["'])[\s\S]*?\1/gi, "")
-    .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "")
-    .replace(/(href|src|srcset|action)\s*=\s*(["'])\s*(javascript|vbscript):[\s\S]*?\2/gi, "$1=$2#$2");
+    // Pull recognised embeds aside, sanitise everything else, then put them back. Two passes over
+    // one regex is far less fragile than trying to write "iframe, unless…" as a single pattern.
+    .split(/(<iframe\b[^>]*>[\s\S]*?<\/\s*iframe\s*>|<iframe\b[^>]*\/?>)/gi)
+    .map((chunk, i) => {
+      const isIframe = i % 2 === 1;
+      if (isIframe) {
+        if (!EMBED_SRC.test(chunk)) return "";
+        // Allowed: still scrub the attributes that would make it more than a player.
+        return chunk
+          .replace(/\ssrcdoc\s*=\s*(["'])[\s\S]*?\1/gi, "")
+          .replace(/\son[a-z]+\s*=\s*(["'])[\s\S]*?\1/gi, "")
+          .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "");
+      }
+      return chunk
+        .replace(/<\s*(script|object|embed|base)\b[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+        .replace(/<\s*(script|object|embed|base)\b[^>]*\/?>/gi, "")
+        .replace(/\son[a-z]+\s*=\s*(["'])[\s\S]*?\1/gi, "")
+        .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "")
+        .replace(/(href|src|srcset|action)\s*=\s*(["'])\s*(javascript|vbscript):[\s\S]*?\2/gi, "$1=$2#$2");
+    })
+    .join("");
 }
 
 /**

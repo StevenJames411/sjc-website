@@ -10,6 +10,35 @@ import type { DesignText, DesignImage, DesignLink } from "@/components/blocks/De
 // and the whole point of this pipeline is that the markup reaches a customer's live website.
 const STRIP_TAGS = new Set(["script", "iframe", "object", "embed", "link", "meta", "base"]);
 
+// ── THE ONE EXCEPTION: A VIDEO EMBED WE RECOGNISE ────────────────────────────────────────────
+// `iframe` is on the strip list above and stays there, because an imported design must not be
+// able to put an arbitrary frame on a customer's live site. But a podcast page IS its videos,
+// and the embed code YouTube hands you is an iframe — so a blanket strip meant five interviews
+// imported as five empty gaps, with the import still reporting success.
+//
+// So: an iframe survives ONLY if its src host is one of these. Anything else — an ad network, a
+// tracker, a login form, a frame with no src at all — is removed exactly as before. Matched on
+// the parsed HOST, never a substring of the URL: "youtube.com.evil.tld" is not youtube.com, and
+// a `src="//..."` with no protocol resolves against https so it can't slip through as garbage.
+const EMBED_HOSTS = new Set([
+  "www.youtube.com",
+  "youtube.com",
+  "www.youtube-nocookie.com",
+  "youtube-nocookie.com",
+  "player.vimeo.com",
+]);
+
+function isAllowedEmbed(src: string | undefined): boolean {
+  const raw = String(src || "").trim();
+  if (!raw) return false;
+  try {
+    const u = new URL(raw, "https://x.invalid");
+    return u.protocol === "https:" && EMBED_HOSTS.has(u.host.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 // ── WHY THE FORM SURVIVES, AS A <div> ────────────────────────────────────────────────────────
 // The inputs and the button are KEPT: a generated contact section is mostly form, and stripping
 // it leaves a heading floating over empty space — the section looks broken, which is no good for
@@ -32,6 +61,20 @@ export function sanitizeDesignHtml(html: string): string {
   for (const el of root.querySelectorAll("*")) {
     const tag = el.rawTagName?.toLowerCase();
     if (tag && STRIP_TAGS.has(tag)) {
+      // See EMBED_HOSTS: a recognised video embed is the single allowed iframe.
+      if (tag === "iframe" && isAllowedEmbed(el.getAttribute("src"))) {
+        // Strip anything that could turn the frame into more than a player.
+        el.removeAttribute("srcdoc");
+        el.removeAttribute("onload");
+        el.removeAttribute("onerror");
+        el.setAttribute("loading", "lazy");
+        el.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        // ⚠️ DELIBERATELY NO `sandbox`. The security control here is the HOST ALLOWLIST — the frame
+        // can only ever point at YouTube or Vimeo. A sandbox on top of that adds nothing we need
+        // and is a known way to break playback and fullscreen, which would ship as "the videos are
+        // there but they don't work" — worse than the problem it pretends to solve.
+        continue;
+      }
       el.remove();
       continue;
     }
