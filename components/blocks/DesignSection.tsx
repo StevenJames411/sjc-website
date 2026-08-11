@@ -70,6 +70,17 @@ export type DesignImage = {
    * Blank = the design's own size. Height in px, width as a % of the column it sits in; over 100%
    * it spills out of that column on purpose, which is sometimes exactly the look.
    */
+  /**
+   * THE FRAME'S SHAPE — and the control that should be reached for first.
+   *
+   * A ratio is RELATIVE, so it is correct at every width with no breakpoint and nothing to check
+   * on a phone: a wide column gives a big frame, a narrow one gives a small frame, same
+   * proportions. That is the whole mechanic behind builders that "just know" what to do on mobile
+   * — not cleverness, just never naming a fixed number.
+   *
+   * frameHeight below is the escape hatch for "I want exactly this", and it costs a breakpoint.
+   */
+  frameShape?: string;
   frameHeight?: number | null;
   frameWidth?: number | null;
   /**
@@ -419,13 +430,14 @@ function frameCss(images: DesignImage[]): string {
   for (const img of images || []) {
     const key = String(img?.key || "");
     if (!key) continue;
+    const shape = String(img?.frameShape || "").trim();
     const h = typeof img?.frameHeight === "number" && img.frameHeight > 0 ? img.frameHeight : null;
     const w = typeof img?.frameWidth === "number" && img.frameWidth > 0 ? img.frameWidth : null;
     const band = typeof img?.bandWidth === "number" && img.bandWidth > 0 ? img.bandWidth : null;
     const bandCol = resolveColor(img?.bandColor);
     const glow = resolveColor(img?.glowColor);
     const z = typeof img?.zoom === "number" && img.zoom > 100 ? img.zoom : 100;
-    if (!h && !w && !band && !bandCol && !glow) continue;
+    if (!shape && !h && !w && !band && !bandCol && !glow) continue;
 
     const sel = `.${DESIGN_SCOPE} *:has(> img[data-sjc-img="${key}"])`;
 
@@ -449,6 +461,9 @@ function frameCss(images: DesignImage[]): string {
     // The band and the glow are proportional and read correctly at any width, so they are NOT
     // behind the breakpoint — losing the glass look on a phone would be its own bug.
     const always = [
+      // A ratio needs no breakpoint — it is already relative. `height:auto` so the design's own
+      // height, if it had one, stops fighting the shape.
+      shape ? `aspect-ratio:${shape};height:auto` : "",
       // The band is padding: the frame's own background showing around the photo. box-sizing so a
       // band never makes the frame taller than the height that was asked for.
       band ? `padding:${band}px;box-sizing:border-box` : "",
@@ -465,7 +480,13 @@ function frameCss(images: DesignImage[]): string {
     // ⚠️ `height:100%` BELONGS WITH THE FRAME HEIGHT, NOT OUTSIDE IT. Left unconditional, a photo
     // on a phone stretches to fill a frame that no longer has a height of its own, which is how a
     // portrait photo ends up squashed into whatever box the stacked column happens to be.
-    const fillSized = h || w ? `@media (min-width:961px){${sel} > img[data-sjc-img="${key}"]{width:100%;height:100%;object-fit:cover}}` : "";
+    // With a shape the photo must cover the frame at EVERY width — the frame has a real size at
+    // every width, so there is nothing to hold back for desktop.
+    const fillSized = shape
+      ? `${sel} > img[data-sjc-img="${key}"]{width:100%;height:100%;object-fit:cover}`
+      : h || w
+        ? `@media (min-width:961px){${sel} > img[data-sjc-img="${key}"]{width:100%;height:100%;object-fit:cover}}`
+        : "";
     const fill = [
       `object-position:${pos}`,
       // Rounded to match whatever radius the design gave the frame, so a banded photo doesn't sit

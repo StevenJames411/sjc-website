@@ -768,9 +768,26 @@ export const config: Config<Props, RootProps> = {
             // ⚠️ The frame takes its height from the PHOTO'S proportions unless you set one here,
             // which is why a hero photo is always shorter than the text column beside it and no
             // amount of reframing fixes it. Blank = the design's own size.
+            // ⚠️ SHAPE FIRST, HEIGHT SECOND — the order is the advice.
+            //
+            // A ratio is relative, so it is right at every width with no breakpoint and nothing to
+            // re-check on a phone. A pixel height says "this many pixels, everywhere, forever",
+            // which is how a 620px frame ended up swallowing a 390px phone screen.
+            frameShape: {
+              type: "select" as const,
+              label: "Frame shape — sizes itself on every screen",
+              options: [
+                { label: "As designed", value: "" },
+                { label: "Wide 16:9", value: "16/9" },
+                { label: "Landscape 4:3", value: "4/3" },
+                { label: "Square", value: "1/1" },
+                { label: "Portrait 3:4", value: "3/4" },
+                { label: "Tall 2:3", value: "2/3" },
+              ],
+            },
             frameHeight: {
               type: "custom" as const,
-              label: "Frame height — the panel the photo sits in (px)",
+              label: "Frame height — exact px, desktop only (use Shape first)",
               render: ({ onChange, value }) => (
                 <SizeStepper label="Frame height" value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
               ),
