@@ -18,7 +18,7 @@
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey } from "@/lib/puckContent";
-import { markBoxesIn } from "@/lib/designHtml";
+import { markBoxesIn, unmarkBoxes } from "@/lib/designHtml";
 import { readPages } from "@/lib/pageRegistry";
 import { SJC } from "@/lib/siteKeys";
 
@@ -28,7 +28,7 @@ export const maxDuration = 300;
 type Block = { type?: string; props?: Record<string, unknown> };
 
 export async function POST(req: Request) {
-  let body: { site?: string; dryRun?: boolean; publish?: boolean };
+  let body: { site?: string; dryRun?: boolean; publish?: boolean; force?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
   const site = String(body?.site || SJC).trim() || SJC;
   const dryRun = body?.dryRun !== false;
   const publish = body?.publish === true;
+  const force = body?.force === true;
 
   const client = getClient();
   const pages = await readPages(site);
@@ -51,13 +52,19 @@ export async function POST(req: Request) {
 
     let groups = 0;
     let cards = 0;
-    const content = data.content.map((block) => {
+    const content = data.content.map((block, i) => {
       if (block?.type !== "DesignSection") return block;
-      const html = String(block.props?.html || "");
-      // Already marked — leave it exactly as it is.
-      if (!html || html.includes("data-sjc-box")) return block;
+      let html = String(block.props?.html || "");
+      if (!html) return block;
+      // Already marked — leave it alone, unless asked to redo it (a re-detect is what fixes keys
+      // that were assigned before they were unique across the page).
+      if (html.includes("data-sjc-box")) {
+        if (!force) return block;
+        html = unmarkBoxes(html);
+      }
 
-      const found = markBoxesIn(html);
+      // Prefixed by section so two sections can never hand out the same group key.
+      const found = markBoxesIn(html, `s${i + 1}`);
       if (!found.boxes.length) return block;
 
       groups += found.boxes.length;

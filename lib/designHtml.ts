@@ -349,7 +349,7 @@ export type DesignBoxGroup = Surface & {
 
 const BOX_MIN = 3;
 
-function markBoxes(root: HTMLElement): DesignBoxGroup[] {
+function markBoxes(root: HTMLElement, prefix = ""): DesignBoxGroup[] {
   const groups: DesignBoxGroup[] = [];
 
   for (const parent of root.querySelectorAll("*")) {
@@ -407,7 +407,10 @@ function markBoxes(root: HTMLElement): DesignBoxGroup[] {
       // points at.
       if (members.some((m) => m.getAttribute("data-sjc-box"))) continue;
 
-      const key = `b${groups.length + 1}`;
+      // ⚠️ UNIQUE ACROSS THE PAGE, NOT THE SECTION. Detection runs per section, so without a
+      // prefix every section restarts at b1 — and the style selector is page-wide, so three
+      // different card sets all answered to `b1` and restyling one restyled all three.
+      const key = `${prefix}b${groups.length + 1}`;
       const captions: string[] = [];
       members.forEach((m, i) => {
         m.setAttribute("data-sjc-box", key);
@@ -435,13 +438,18 @@ function markBoxes(root: HTMLElement): DesignBoxGroup[] {
  * detection existed has no markers, and re-importing to get them would discard every page built
  * out since. ONE definition, so a repaired site and a freshly imported one detect identically.
  */
-export function markBoxesIn(html: string): { html: string; boxes: DesignBoxGroup[] } {
+export function markBoxesIn(html: string, prefix = ""): { html: string; boxes: DesignBoxGroup[] } {
   const root = parse(String(html || ""), { comment: false });
-  const boxes = markBoxes(root);
+  const boxes = markBoxes(root, prefix);
   return { html: root.toString(), boxes };
 }
 
-export function tokenizeSection(html: string): {
+/** Strip existing card markers so a section can be re-detected from scratch. */
+export function unmarkBoxes(html: string): string {
+  return String(html || "").replace(/\s+data-sjc-box(?:-i)?="[^"]*"/g, "");
+}
+
+export function tokenizeSection(html: string, prefix = ""): {
   html: string;
   text: DesignText[];
   images: DesignImage[];
@@ -610,7 +618,7 @@ export function tokenizeSection(html: string): {
 
   // AFTER the walk: tokenising rewrites the markup, and the boxes have to be marked on what
   // actually ships, not on a version that no longer exists.
-  const boxes = markBoxes(root);
+  const boxes = markBoxes(root, prefix);
 
   return {
     html: root.toString(),
