@@ -371,6 +371,27 @@ function markBoxes(root: HTMLElement): DesignBoxGroup[] {
 
     for (const [, members] of byClass) {
       if (members.length < BOX_MIN) continue;
+      // ⚠️ A MENU IS NOT A SET OF CARDS, AND IT LOOKS EXACTLY LIKE ONE.
+      //
+      // The overlay menu and the footer are repeated siblings sharing a class, each with a heading
+      // and a sentence — they pass every test a feature card passes. On sjc-2026 the first run
+      // detected the nav columns as "Feature cards (4)" twice over, which would have put Steven's
+      // navigation in the panel as something to restyle.
+      //
+      // The clean separator: a menu item IS a link, a card CONTAINS content. Plus anything living
+      // inside the page's chrome is chrome by definition.
+      const isLink = (m: HTMLElement) => m.rawTagName?.toLowerCase() === "a";
+      const inChrome = (m: HTMLElement) => {
+        let p: HTMLElement | null = m.parentNode as HTMLElement | null;
+        while (p) {
+          const t = p.rawTagName?.toLowerCase();
+          if (t === "header" || t === "footer" || t === "nav") return true;
+          p = p.parentNode as HTMLElement | null;
+        }
+        return false;
+      };
+      if (members.some(isLink) || members.some(inChrome)) continue;
+
       // Substance: a heading, or a sentence of its own.
       const solid = members.filter(
         (m) => /<h[1-6]\b/i.test(m.toString()) || clean(m.text).length > 40
@@ -399,6 +420,19 @@ function markBoxes(root: HTMLElement): DesignBoxGroup[] {
   }
 
   return groups;
+}
+
+/**
+ * Mark the feature cards in a chunk of already-tokenised markup.
+ *
+ * Same detector the importer uses, exposed for admin/mark-boxes — a site imported before card
+ * detection existed has no markers, and re-importing to get them would discard every page built
+ * out since. ONE definition, so a repaired site and a freshly imported one detect identically.
+ */
+export function markBoxesIn(html: string): { html: string; boxes: DesignBoxGroup[] } {
+  const root = parse(String(html || ""), { comment: false });
+  const boxes = markBoxes(root);
+  return { html: root.toString(), boxes };
 }
 
 export function tokenizeSection(html: string): {
