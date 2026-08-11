@@ -392,10 +392,16 @@ function markBoxes(root: HTMLElement): DesignBoxGroup[] {
       };
       if (members.some(isLink) || members.some(inChrome)) continue;
 
-      // Substance: a heading, or a sentence of its own.
-      const solid = members.filter(
-        (m) => /<h[1-6]\b/i.test(m.toString()) || clean(m.text).length > 40
-      );
+      // ⚠️ A HEADING IS REQUIRED, NOT "A HEADING OR ENOUGH TEXT".
+      //
+      // The looser test matched any repeated block with a sentence in it, which on one page
+      // produced EIGHT groups — most of them unnameable, listed in the panel as "Card 1, Card 2,
+      // Card 3" because there was no heading to name them with. A row you cannot name is a row
+      // you cannot use, and forty of them is the unusable panel this whole design was avoiding.
+      //
+      // A feature card in the sense that matters — the thing a person points at and calls a card —
+      // always has a heading. That is what makes it nameable, and being nameable is the point.
+      const solid = members.filter((m) => /<h[1-6]\b/i.test(m.toString()));
       if (solid.length < BOX_MIN) continue;
       // Already claimed by an outer group — the outermost wins, because that is the box a person
       // points at.
