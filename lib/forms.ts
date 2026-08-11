@@ -103,11 +103,27 @@ export async function findForm(id: string): Promise<FormDef | undefined> {
 }
 
 async function writeForms(forms: FormDef[]): Promise<{ ok: boolean; reason?: string }> {
+  // ── READ-MODIFY-WRITE ON THE WHOLE BLOB (fix 2026-08-11) ────────────────────────────────────
+  //
+  // ⚠️ THIS USED TO WRITE `{ forms }` AND NOTHING ELSE, which silently dropped `sections` — the
+  // renamed group headings that live in the same document. writeSections() above already carries
+  // `forms` through and its comment warns about exactly this mistake in the other direction; this
+  // half was never given the same treatment.
+  //
+  // It stayed invisible until a heading was actually renamed. From that moment `sections` existed,
+  // so EVERY form save tried to delete it, the guard refused the write, and the library became
+  // read-only: renaming a form returned "top-level keys disappeared: sections" with no way out and
+  // nothing wrong with the form. Steven hit it renaming "Manage or Start Running Paid Ads".
+  //
+  // Spreading the stored blob rather than naming the keys means the next thing added to this
+  // document is preserved by default instead of quietly dropped by the write that forgot it.
+  const blob = (await store().read<FormsBlob>()) || {};
+
   // writeResult, not write: the save guard in lib/pgClient.ts refuses an array that shrinks too
   // far, and deleting a few presets from a small library is exactly that shape. A refused save
   // that reports success is the failure this whole layer exists to prevent, so the reason has to
   // reach the human looking at the save indicator.
-  const res = await store().writeResult({ forms });
+  const res = await store().writeResult({ ...blob, forms });
   return { ok: res.ok, reason: res.reason };
 }
 
