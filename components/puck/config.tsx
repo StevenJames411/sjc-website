@@ -95,7 +95,13 @@ type Props = {
     inColumn: boolean;
     theme: string;
     background: string;
-    bandPadding: number;
+    paddingTop: number;
+    paddingBottom: number;
+    /** @deprecated superseded by paddingTop/paddingBottom; still read so saved blocks don't jump. */
+    bandPadding?: number;
+    heading: string;
+    subheading: string;
+    headingColor: string;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
@@ -164,7 +170,7 @@ const ALIGN_FIELD = {
   type: "radio" as const,
   options: [
     { label: "Left", value: "left" },
-    { label: "Center", value: "center" },
+    { label: "Centre", value: "center" },
     { label: "Right", value: "right" },
   ],
 };
@@ -173,15 +179,31 @@ const ALIGN_FIELD = {
 // The band a section sits on. Roles, not hexes — and note "SJC navy" is gone: a band named after
 // one company can't be the option a client's site picks, and it stopped being true the day the
 // palette moved anyway.
-const BG_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "White", value: "white" },
-    { label: "Light band", value: "bandSoft" },
-    { label: "Dark band", value: "bandDark" },
-    { label: "Dark band (deeper)", value: "bandDarker" },
-  ],
+// ── ONE COLOUR CONTROL, EVERYWHERE ───────────────────────────────────────────────────────────
+//
+// ⛔ THERE USED TO BE FOUR. The swatch grid (41 fields), a four-item select (6), a four-item
+// select storing LITERAL HEXES (2), and three bespoke selects. Heading colour was the swatch grid
+// and Text colour — the block directly beneath it — was a dropdown: same job, different control,
+// and only one of them could be cleared.
+//
+// ⚠️ THE SELECTS WERE ALSO LYING. Six fields defaulted to a value that was not among their own
+// options (`Divider.color: "line"`, `SiteHeader.taglineColor: "secondary"`, nav link
+// `color: "white"`, and three blanks), so those boxes opened on nothing and could never be put
+// back. ColorField has a real `none`, which fixes all six by existing.
+//
+// ⚠️ AND THE NAV ONES FROZE THE PALETTE. NAV_COLOR_FIELD stored `#ffffff` / `#22c55e` — exactly
+// what the law thirty lines below forbids, because a literal hex is invisible to a re-skin.
+//
+// These names are kept so the ~50 call sites need no edit; only the widget behind them changed.
+// ColorField's roles are a superset of every option these selects offered, so nothing is lost and
+// a one-off hex becomes possible on fields that never had one.
+const COLOR_CONTROL = {
+  type: "custom" as const,
+  render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
+    <ColorField value={value as string} onChange={onChange} />
+  ),
 };
+const BG_FIELD = COLOR_CONTROL;
 
 // The same pickers, for an IMPORTED section — plus the one option the native block cannot need:
 // LEAVE IT ALONE.
@@ -189,10 +211,7 @@ const BG_FIELD = {
 // ⚠️ A BOUGHT DESIGN ARRIVES WITH ITS OWN PALETTE, in its own stylesheet. Without a blank default
 // every band would be repainted to a brand role the instant the block rendered, which is not an
 // edit anybody asked for. Blank means "keep the design's own", and it is the default.
-const DESIGN_BG_FIELD = {
-  type: "select" as const,
-  options: [{ label: "Keep the design's own", value: "" }, ...BG_FIELD.options],
-};
+const DESIGN_BG_FIELD = COLOR_CONTROL;
 
 // A glow is an ACCENT, not a page band — offering the band colours here would only ever let you
 // glow a photo the same colour as the page behind it, which is invisible.
@@ -217,22 +236,22 @@ const SURFACE_FIELDS = {
     // Named for what it does, not for `opacity` — and it only dilutes the FILL, so the words on
     // top stay solid instead of looking disabled.
     label: "See-through % (100 = solid glass)",
-    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-      <SizeStepper label="See-through %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
+    render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+      <SizeStepper value={value as number} onChange={onChange} fallback={100} step={5} min={0} unit="%" />
     ),
   },
   corners: {
     type: "custom" as const,
-    label: "Corners — 0 is square, higher is rounder (px)",
-    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-      <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={12} step={2} min={0} />
+    label: "Corner rounding (− / +)",
+    render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+      <SizeStepper value={value as number} onChange={onChange} fallback={12} step={2} min={0} />
     ),
   },
   bandWidth: {
     type: "custom" as const,
     label: "Band around it — width (px)",
-    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-      <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={2} step={1} min={0} />
+    render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+      <SizeStepper value={value as number} onChange={onChange} fallback={2} step={1} min={0} />
     ),
   },
   bandColor: {
@@ -252,8 +271,8 @@ const SURFACE_FIELDS = {
   glowSize: {
     type: "custom" as const,
     label: "Glow size (px)",
-    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-      <SizeStepper label="Glow size" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+    render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+      <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
     ),
   },
   textColor: {
@@ -306,23 +325,12 @@ const DESIGN_GLOW_FIELD = {
 // change could reach it afterwards. Pages already holding the hexes still render exactly as
 // before (resolveColor passes an unrecognised value straight through) and convert via
 // /api/admin/reskin.
-const COLOR_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "Ink (default)", value: "ink" },
-    { label: "White", value: "white" },
-    { label: "Blue", value: "accent" },
-    { label: "Muted gray", value: "mute" },
-  ],
-};
+const COLOR_FIELD = COLOR_CONTROL;
 
 // Text colour for an IMPORTED section — same options, plus "keep the design's own" as default.
 // Pairs with DESIGN_BG_FIELD: changing a band's background without being able to change its text
 // is what turns a dark band flipped to White into white-on-white.
-const DESIGN_FG_FIELD = {
-  type: "select" as const,
-  options: [{ label: "Keep the design's own", value: "" }, ...COLOR_FIELD.options],
-};
+const DESIGN_FG_FIELD = COLOR_CONTROL;
 
 // Where a link opens. Same tab for anything on this site; new tab for anywhere off it, so a
 // visitor sent to an outside page (Skool, YouTube) still has the site sitting behind them.
@@ -348,15 +356,7 @@ const WIDTH_FIELD = {
 };
 
 // Nav text colors (sit on the dark navy header band).
-const NAV_COLOR_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "White", value: "#ffffff" },
-    { label: "Green", value: "#22c55e" },
-    { label: "Light blue", value: "#93c5fd" },
-    { label: "Muted", value: "#cbd5e1" },
-  ],
-};
+const NAV_COLOR_FIELD = COLOR_CONTROL;
 
 // Single source of truth for the nav's starting content — used by BOTH the seed (so /edit/nav
 // opens to it) AND Nav.tsx's fallback (so the live nav never renders blank if nothing's published).
@@ -539,6 +539,33 @@ type RootProps = {
  * self-contradictory shape (`Record<string, boolean> & { id: string }`) when it can't infer, and
  * nothing can be assigned to it. The runtime contract is unaffected.
  */
+/**
+ * DROP CONTROLS THAT CANNOT APPLY, rather than leaving them on screen doing nothing.
+ *
+ * ⛔ BOTH OF THESE EXIST BECAUSE A RENDERER RETURNS EARLY. Card ignores seven box controls when
+ * "No box" is picked; LeadForm ignores its band when the form is filling a column. In both cases
+ * the controls stayed visible AND editable, which is exactly Steven's complaint about this panel:
+ * *"plenty of choices, but only like half of them"* do anything, with nothing saying which half.
+ *
+ * ⚠️ Cast the same way `resolveLeadFormPreset` is: Puck's generics do not infer through an inline
+ * arrow at the component, and widening `changed` by hand is worse than one cast at the seam.
+ */
+const dropFields = (fields: Record<string, unknown>, keys: string[]) => {
+  const next = { ...fields };
+  for (const k of keys) delete next[k];
+  return next;
+};
+
+const hideWhenBare = ((data: { props?: Record<string, unknown> }, { fields }: { fields: Record<string, unknown> }) =>
+  data?.props?.bare
+    ? dropFields(fields, ["surface", "surfaceColor", "surfaceOpacity", "borderColor", "hoverBorderColor", "shadowColor", "radius"])
+    : fields) as unknown as ComponentConfig<Props["Card"]>["resolveFields"];
+
+const hideBandInColumn = ((data: { props?: Record<string, unknown> }, { fields }: { fields: Record<string, unknown> }) =>
+  data?.props?.inColumn
+    ? dropFields(fields, ["background", "paddingTop", "paddingBottom", "bandPadding"])
+    : fields) as unknown as ComponentConfig<Props["LeadForm"]>["resolveFields"];
+
 const resolveLeadFormPreset = (async (
   data: { props: Props["LeadForm"] },
   params: { changed?: Record<string, boolean> }
@@ -751,13 +778,12 @@ export const config: Config<Props, RootProps> = {
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
             <SizeStepper
-              label="Space above"
               value={value as number}
               onChange={onChange}
               fallback={80}
               step={8}
               min={0}
-            />
+            clearable unsetLabel="keeping the design\'s own spacing" />
           ),
         },
         paddingBottom: {
@@ -765,13 +791,12 @@ export const config: Config<Props, RootProps> = {
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
             <SizeStepper
-              label="Space below"
               value={value as number}
               onChange={onChange}
               fallback={80}
               step={8}
               min={0}
-            />
+            clearable unsetLabel="keeping the design\'s own spacing" />
           ),
         },
         images: {
@@ -820,14 +845,14 @@ export const config: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Frame height — exact px, desktop only (use Shape first)",
               render: ({ onChange, value }) => (
-                <SizeStepper label="Frame height" value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
+                <SizeStepper value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
               ),
             },
             frameWidth: {
               type: "custom" as const,
               label: "Frame width — % of its column (over 100 spills out)",
               render: ({ onChange, value }) => (
-                <SizeStepper label="Frame width %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
+                <SizeStepper value={value as number} onChange={onChange} fallback={100} step={5} min={0} unit="%" />
               ),
             },
             // ── THE BAND. What makes a photo read as glass rather than a rectangle pasted on
@@ -837,7 +862,7 @@ export const config: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Band around the photo — width (px)",
               render: ({ onChange, value }) => (
-                <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
+                <SizeStepper value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
               ),
             },
             bandColor: SURFACE_FIELDS.bandColor,
@@ -859,7 +884,7 @@ export const config: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Zoom % (100 = fit, higher = closer)",
               render: ({ onChange, value }) => (
-                <SizeStepper label="Zoom %" value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} />
+                <SizeStepper value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} unit="%" />
               ),
             },
             focus: {
@@ -1045,7 +1070,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Top line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Label size" value={value as number} onChange={onChange} fallback={12} step={2} min={8} allowZero={false} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={12} step={2} min={8} allowZero={false} />
           ),
         },
         eyebrowColor: {
@@ -1093,7 +1118,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "How solid the glass is (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Solidity" value={value as number} onChange={onChange} fallback={7} step={5} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={7} step={5} min={0} />
           ),
         },
         borderColor: {
@@ -1127,9 +1152,9 @@ export const config: Config<Props, RootProps> = {
         },
         radius: {
           type: "custom" as const,
-          label: "Corner roundness (− / +)",
+          label: "Corner rounding (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
           ),
         },
         heading: { type: "textarea" as const, label: "Middle line — the card's heading (an H3 for Google)" },
@@ -1137,7 +1162,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Middle line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Heading size" value={value as number} onChange={onChange} fallback={20} step={2} min={10} allowZero={false} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={20} step={2} min={10} allowZero={false} />
           ),
         },
         headingColor: {
@@ -1160,7 +1185,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Bottom line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Body size" value={value as number} onChange={onChange} fallback={16} step={2} min={10} allowZero={false} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={2} min={10} allowZero={false} />
           ),
         },
         bodyColor: {
@@ -1183,7 +1208,7 @@ export const config: Config<Props, RootProps> = {
           label: "Text",
           options: [
             { label: "Left", value: false },
-            { label: "Centered", value: true },
+            { label: "Centred", value: true },
           ],
         },
         layout: {
@@ -1198,11 +1223,26 @@ export const config: Config<Props, RootProps> = {
           type: "radio" as const,
           label: "Card box",
           options: [
-            { label: "White box", value: false },
+            // ⛔ WAS ALSO "White box", WORD FOR WORD THE FIRST OPTION OF `surface` ABOVE — two
+            // different fields in one panel offering the identical phrase for different things.
+            { label: "Keep the box", value: false },
             { label: "No box (sits on the band)", value: true },
           ],
         },
       },
+      /**
+       * ⛔ NO BOX MEANS THE BOX CONTROLS ARE DEAD — SO THEY LEAVE THE PANEL.
+       *
+       * Card.tsx returns early when `bare` is on, which silently ignored seven controls that
+       * stayed on screen and stayed editable: the surface, its tint and opacity, both edge
+       * colours, the glow and the corner radius. Steven's exact complaint about this panel was
+       * "plenty of choices, but only like half of them" do anything — and here that was literally
+       * true, with nothing on screen saying which half.
+       *
+       * Hiding beats relabelling: a control that cannot apply should not be arguing for attention
+       * next to six that can.
+       */
+      resolveFields: hideWhenBare,
       defaultProps: CARD_DEFAULTS as CardBlock,
       render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps, surface, surfaceColor, surfaceOpacity, borderColor, hoverBorderColor, shadowColor, hoverLift, radius }) => (
         <Card
@@ -1337,7 +1377,7 @@ export const config: Config<Props, RootProps> = {
       fields: {
         dotColor: {
           type: "select" as const,
-          label: "Dot color",
+          label: "Dot colour",
           // Labelled by ROLE, not by colour name — "Second accent" stays true after a re-skin;
           // an option called "Green" is a lie the moment the palette moves.
           options: [
@@ -1346,7 +1386,7 @@ export const config: Config<Props, RootProps> = {
             { label: "Ink", value: "ink" },
           ],
         },
-        textColor: { ...COLOR_FIELD, label: "Text color" },
+        textColor: { ...COLOR_FIELD, label: "Text colour" },
         rows: {
           type: "array" as const,
           label: "Items",
@@ -1385,12 +1425,12 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
-        labelColor: { ...COLOR_FIELD, label: "Label color" },
+        labelColor: { ...COLOR_FIELD, label: "Label colour" },
         valueSize: {
           type: "custom" as const,
           label: "Number size (0 = fits the screen automatically)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
           ),
         },
         align: {
@@ -1455,6 +1495,15 @@ export const config: Config<Props, RootProps> = {
           label: "…or start from a preset and edit here (a one-off copy)",
           render: ({ onChange }) => <FormPicker onApply={(id) => onChange(id)} />,
         },
+        // ⛔ THE FORM HAD NO CUSTOMER-FACING TITLE. The library name is internal, so the only way
+        // to say what this form is was a Text block above it — which has no band, so the colour
+        // started below the heading and the section looked broken.
+        heading: { type: "text" as const, label: "Heading the customer sees (optional)" },
+        subheading: { type: "textarea" as const, label: "Line under the heading (optional)" },
+        headingColor: {
+          ...COLOR_FIELD,
+          label: "Heading colour (blank = the page's own)",
+        },
         source: { type: "text" as const, label: "Source tag (shows in the intake sheet)" },
         fields: {
           type: "array" as const,
@@ -1477,7 +1526,7 @@ export const config: Config<Props, RootProps> = {
         buttonLabel: { type: "text" as const, label: "Button text" },
         note: { type: "textarea" as const, label: "Small line under the button" },
         successHeading: { type: "text" as const, label: "Thank-you heading" },
-        successBody: { type: "textarea" as const, label: "Thank-you body" },
+        successBody: { type: "textarea" as const, label: "Thank-you message" },
         buttonColor: {
           type: "custom" as const,
           label: "Submit button colour (blank = site blue)",
@@ -1487,10 +1536,10 @@ export const config: Config<Props, RootProps> = {
         },
         theme: {
           type: "radio" as const,
-          label: "Form panel",
+          label: "Sitting on",
           options: [
-            { label: "White", value: "light" },
-            { label: "Glass (on dark)", value: "dark" },
+            { label: "A light band", value: "light" },
+            { label: "A dark band", value: "dark" },
           ],
         },
         inColumn: {
@@ -1512,14 +1561,34 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
-        bandPadding: {
+        // ⛔ SPLIT, LIKE EVERY OTHER BLOCK. This was one combined dial while Heading, Text, Image,
+        // HeroImage, Section, DesignSection and the footer all give two — the exact "different
+        // shit for every section" Steven called out.
+        paddingTop: {
           type: "custom" as const,
-          label: "Space above and below the card (− / +)",
-          render: ({ onChange, value }) => (
-            <SizeStepper label="Space above and below" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+          label: "Space above (− / +)",
+          render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
+          ),
+        },
+        paddingBottom: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
           ),
         },
       },
+      /**
+       * ⛔ THE BAND CANNOT APPLY IN A COLUMN, SO IT LEAVES THE PANEL THERE.
+       *
+       * LeadForm returns the bare card when `inColumn` is set — a full-width band inside one half
+       * of a two-column layout is not a band, it is a coloured rectangle behind half a row. Both
+       * the colour and its padding were therefore dead in that mode while staying fully editable,
+       * which is the same trap as Card's box controls. Shipped by me tonight; caught by the audit
+       * the same evening.
+       */
+      resolveFields: hideBandInColumn,
       defaultProps: { ...LEADFORM_DEFAULTS, preset: "", formId: "" } as LeadFormBlock,
       /**
        * Copy a preset's questions into THIS block, then forget the preset.
@@ -1533,7 +1602,7 @@ export const config: Config<Props, RootProps> = {
        * would drag the database client into the editor bundle.
        */
       resolveData: resolveLeadFormPreset,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, bandPadding }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, paddingTop, paddingBottom, bandPadding, heading, subheading, headingColor }) => (
         <LeadForm
           source={source}
           fields={fields}
@@ -1545,7 +1614,12 @@ export const config: Config<Props, RootProps> = {
           inColumn={inColumn}
           theme={theme === "dark" ? "dark" : "light"}
           background={background}
+          paddingTop={paddingTop}
+          paddingBottom={paddingBottom}
           bandPadding={bandPadding}
+          heading={heading}
+          subheading={subheading}
+          headingColor={headingColor}
         />
       ),
     },
@@ -1877,23 +1951,23 @@ export const config: Config<Props, RootProps> = {
         // the very footer he had just stripped to one row to make it shallow.
         paddingTop: {
           type: "custom" as const,
-          label: "Space at the top (− / +)",
+          label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space at the top" value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
           ),
         },
         paddingBottom: {
           type: "custom" as const,
-          label: "Space at the bottom (− / +)",
+          label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space at the bottom" value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
           ),
         },
         legalGap: {
           type: "custom" as const,
           label: "Gap above the copyright line (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Gap above the copyright line" value={value as number} onChange={onChange} fallback={48} step={8} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={48} step={8} min={0} />
           ),
         },
         // Same four contact controls the header block has, so the two cannot say different things.
@@ -1929,7 +2003,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Button width on mobile, % (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={50} step={5} min={25} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={50} step={5} min={25} unit="%" />
           ),
         },
         showLogo: {
@@ -2023,8 +2097,8 @@ export const config: Config<Props, RootProps> = {
             <SizeStepper value={value as number} onChange={onChange} fallback={16} step={1} min={12} />
           ),
         },
-        tagline: { type: "text" as const, label: "Center tagline (who you are)" },
-        taglineColor: { ...NAV_COLOR_FIELD, label: "Tagline color" },
+        tagline: { type: "text" as const, label: "Centre tagline (who you are)" },
+        taglineColor: { ...NAV_COLOR_FIELD, label: "Tagline colour" },
         taglineSize: {
           type: "custom" as const,
           label: "Tagline size (− / +)",
@@ -2045,7 +2119,7 @@ export const config: Config<Props, RootProps> = {
                 <SizeStepper value={value as number} onChange={onChange} fallback={14} step={1} min={10} />
               ),
             },
-            color: { ...NAV_COLOR_FIELD, label: "Color" },
+            color: { ...NAV_COLOR_FIELD, label: "Colour" },
             newTab: { ...OPENS_IN_FIELD },
             // Menu style only — a bar has nowhere to put either of these.
             note: { type: "text" as const, label: "One line under it (menu style only)" },
@@ -2076,7 +2150,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Button width on mobile, % (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={70} step={5} min={25} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={70} step={5} min={25} unit="%" />
           ),
         },
         // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
@@ -2172,16 +2246,16 @@ export const config: Config<Props, RootProps> = {
         maxWidth: { ...WIDTH_FIELD, label: "Content width" },
         paddingTop: {
           type: "custom" as const,
-          label: "Padding top (− / +)",
+          label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Padding top" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
           ),
         },
         paddingBottom: {
           type: "custom" as const,
-          label: "Padding bottom (− / +)",
+          label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Padding bottom" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
           ),
         },
         // ── The three things a bought design does to a band that we couldn't say before.
@@ -2197,7 +2271,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Fade direction (degrees)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Angle" value={value as number} onChange={onChange} fallback={135} step={15} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={135} step={15} min={0} unit="°" />
           ),
         },
         // Soft colour washes bleeding in from the corners. Blank = off, which is what every
@@ -2284,7 +2358,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
           ),
         },
       },
@@ -2318,7 +2392,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
           ),
         },
       },
@@ -2355,19 +2429,19 @@ export const config: Config<Props, RootProps> = {
     Divider: {
       label: "Divider (line)",
       fields: {
-        color: { ...COLOR_FIELD, label: "Line color" },
+        color: { ...COLOR_FIELD, label: "Line colour" },
         thickness: {
           type: "custom" as const,
           label: "Thickness (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Thickness" value={value as number} onChange={onChange} fallback={1} step={1} min={1} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={1} step={1} min={1} />
           ),
         },
         spacing: {
           type: "custom" as const,
           label: "Space above/below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Spacing" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
       },
@@ -2396,7 +2470,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Gap between columns (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Gap between columns" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
         col1: { type: "slot" as const },
@@ -2451,27 +2525,27 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Font size" allowZero={false} value={value as number} onChange={onChange} fallback={32} />
+            <SizeStepper allowZero={false} value={value as number} onChange={onChange} fallback={32} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: {
           type: "custom" as const,
-          label: "Color",
+          label: "Colour",
           render: ({ onChange, value }) => (
             <ColorField value={value as string} onChange={onChange} />
           ),
@@ -2598,25 +2672,25 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Font size" allowZero={false} value={value as number} onChange={onChange} fallback={18} />
+            <SizeStepper allowZero={false} value={value as number} onChange={onChange} fallback={18} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
-        color: { ...COLOR_FIELD, label: "Default color (whole block)" },
+        color: { ...COLOR_FIELD, label: "Default colour (whole block)" },
         // PILL MODE — turns a line of text into the little bordered badge a good design uses for
         // a star rating or an address. Blank = an ordinary paragraph, which is what every
         // existing Text block on the site has saved.
@@ -2683,7 +2757,13 @@ export const config: Config<Props, RootProps> = {
               className={`inline-flex items-center gap-2 leading-snug${pill || pillBorder ? " rounded-full px-4 py-2" : ""}`}
               style={{
                 color: resolveColorOr(color, "var(--color-sjc-ink)"),
-                background: pill || undefined,
+                // ⛔ WAS `background: pill || undefined` — THE PICKER'S VALUE HANDED STRAIGHT TO CSS.
+                // ColorField saves a ROLE ("accent") or a marked hex ("custom:#ff0000"); neither is
+                // valid CSS, so every colour this control could produce painted NOTHING. Only a
+                // legacy raw hex ever worked, which is why it read as flaky rather than broken.
+                // `pillBorder` on the very next line always resolved — two lines written a minute
+                // apart and only one of them right.
+                background: pill ? resolveColor(pill) : undefined,
                 border: pillBorder ? `1px solid ${resolveColor(pillBorder)}` : undefined,
                 boxShadow: pill || pillBorder ? "0 1px 2px rgba(0,0,0,0.05)" : undefined,
               }}
@@ -2871,7 +2951,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Photo height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={560} step={20} min={160} allowZero={false} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={560} step={20} min={160} allowZero={false} />
           ),
         },
         tilt: {
@@ -2889,7 +2969,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Corner rounding (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Corner rounding" value={value as number} onChange={onChange} fallback={40} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={40} step={4} min={0} />
           ),
         },
         frame: {
@@ -2912,7 +2992,7 @@ export const config: Config<Props, RootProps> = {
         pillText: { type: "text" as const, label: "Corner pill — e.g. Open Today (blank = hide)" },
         pillColor: {
           type: "custom" as const,
-          label: "Corner pill color",
+          label: "Corner pill colour",
           render: ({ onChange, value }) => (
             <ColorField value={value as string} onChange={onChange} />
           ),
@@ -2921,14 +3001,14 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
       },
@@ -2975,7 +3055,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Zoom % (100 = fit, higher = closer)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Zoom %" value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} unit="%" />
           ),
         },
         focus: {
@@ -2995,26 +3075,26 @@ export const config: Config<Props, RootProps> = {
         },
         alt: { type: "text" as const, label: "Alt text (describe the image)" },
         caption: { type: "textarea" as const, label: "Caption (optional)" },
-        captionColor: { ...COLOR_FIELD, label: "Caption color" },
+        captionColor: { ...COLOR_FIELD, label: "Caption colour" },
         maxWidth: {
           type: "custom" as const,
           label: "Max width px (0 = full width)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Max width (0 = full)" value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         rounded: {
@@ -3031,10 +3111,10 @@ export const config: Config<Props, RootProps> = {
         linkUrl: { type: "text" as const, label: "Link URL (make the image clickable)" },
         openInNewTab: {
           type: "radio" as const,
-          label: "Open link in…",
+          label: "Opens in",
           options: [
-            { label: "New tab", value: "yes" },
             { label: "Same tab", value: "no" },
+            { label: "New tab", value: "yes" },
           ],
         },
       },
