@@ -778,6 +778,7 @@ export const config: Config<Props, RootProps> = {
               label: "Frame shape — sizes itself on every screen",
               options: [
                 { label: "As designed", value: "" },
+                { label: "Match the column beside it", value: "match" },
                 { label: "Wide 16:9", value: "16/9" },
                 { label: "Landscape 4:3", value: "4/3" },
                 { label: "Square", value: "1/1" },

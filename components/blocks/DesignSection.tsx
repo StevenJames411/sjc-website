@@ -460,10 +460,21 @@ function frameCss(images: DesignImage[]): string {
 
     // The band and the glow are proportional and read correctly at any width, so they are NOT
     // behind the breakpoint — losing the glass look on a phone would be its own bug.
+    // ── "MATCH" IS THE ONE THAT NEEDS NO NUMBER AT ALL ───────────────────────────────────────
+    // The frame takes its height from the column BESIDE it, which is what "make the glass as big
+    // as the text" actually means. It needs no breakpoint in either direction: when the design
+    // stacks on a phone there is no column beside it, the row is one item tall, and the frame
+    // falls back to the photo's own shape on its own.
+    //
+    // ⚠️ The stretch has to land on the frame's PARENT — the grid/flex ITEM — because that is what
+    // the design centres (`align-items:center` on the row). Setting height on the frame alone does
+    // nothing while its parent is only as tall as its contents.
+    const matchCol = shape === "match";
     const always = [
+      matchCol ? "height:100%" : "",
       // A ratio needs no breakpoint — it is already relative. `height:auto` so the design's own
       // height, if it had one, stops fighting the shape.
-      shape ? `aspect-ratio:${shape};height:auto` : "",
+      shape && !matchCol ? `aspect-ratio:${shape};height:auto` : "",
       // The band is padding: the frame's own background showing around the photo. box-sizing so a
       // band never makes the frame taller than the height that was asked for.
       band ? `padding:${band}px;box-sizing:border-box` : "",
@@ -482,6 +493,9 @@ function frameCss(images: DesignImage[]): string {
     // portrait photo ends up squashed into whatever box the stacked column happens to be.
     // With a shape the photo must cover the frame at EVERY width — the frame has a real size at
     // every width, so there is nothing to hold back for desktop.
+    const stretchParent = matchCol
+      ? `.${DESIGN_SCOPE} *:has(> * > img[data-sjc-img="${key}"]){align-self:stretch;display:flex}`
+      : "";
     const fillSized = shape
       ? `${sel} > img[data-sjc-img="${key}"]{width:100%;height:100%;object-fit:cover}`
       : h || w
@@ -496,6 +510,7 @@ function frameCss(images: DesignImage[]): string {
     ].filter(Boolean).join(";");
     if (fill) out.push(`${sel} > img[data-sjc-img="${key}"]{${fill}}`);
     if (fillSized) out.push(fillSized);
+    if (stretchParent) out.push(stretchParent);
   }
   return out.join("");
 }
