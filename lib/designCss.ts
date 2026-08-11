@@ -116,6 +116,84 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
 }
 
 /**
+ * The one kind of "hidden" that must STAY hidden.
+ *
+ * ⚠️ THIS EXACT RULE BURIED A LIVE SITE. revealHiddenStates() (below) un-hides anything parked at
+ * zero opacity, because a scroll-reveal that never gets un-hidden renders the page blank. A mobile
+ * MENU hides itself the identical way:
+ *
+ *   .ovl { position:fixed; inset:0; z-index:100; background:var(--navy); opacity:0; visibility:hidden }
+ *   .ovl[data-open="true"] { opacity:1; visibility:visible }
+ *
+ * Strip those two declarations and the menu can never close. On sjc-2026 that put a full-viewport
+ * navy panel over every page — header, hero and footer all still there, all underneath it — in the
+ * studio AND on the published site. It reads as "the header and footer are missing".
+ *
+ * `position: fixed` is the line between the two cases, and it holds in both directions: an element
+ * pinned to the viewport is a menu, modal, drawer or cookie bar — never a scroll reveal, which by
+ * definition has to scroll. So a fixed element at zero opacity keeps its hide state.
+ */
+const OVERLAY = /(?:^|;|\s)position\s*:\s*fixed\b/i;
+
+/**
+ * Put back a hide state that an earlier import already stripped.
+ *
+ * ⚠️ NEEDED BECAUSE THE STYLESHEET IS COMPILED ONCE, AT IMPORT, AND STORED. Fixing the compiler
+ * fixes the next import and nothing else — a site imported before the fix keeps serving the broken
+ * sheet forever. Re-importing would heal it and throw away every page built out since, so the
+ * stored CSS gets repaired in place instead.
+ *
+ * Only touches a rule that is all four of: fixed-position, carrying no opacity or visibility of its
+ * own, and shadowed by a companion rule that turns the SAME selector visible in some state
+ * (`.ovl[data-open="true"]`). That companion is the proof the base rule was meant to be hidden —
+ * without it, a fixed element with no opacity is just a normal sticky bar, and hiding it would be
+ * the same bug pointing the other way.
+ *
+ * Idempotent: a repaired rule declares opacity, so a second run skips it.
+ */
+export function repairOverlayHides(css: string): { css: string; repaired: number } {
+  const src = String(css || "");
+  const RULE = /(@keyframes[\s\S]*?\{[\s\S]*?\}\s*\})|([^{}]+)\{([^{}]*)\}/g;
+
+  // ⚠️ SELECTORS ARRIVE WITH COMMENTS INSIDE THEM. scopeCss() prefixes the scope onto whatever text
+  // sits before the `{`, and a design that comments its sections leaves that comment in the middle:
+  //
+  //   .sjc-design /* ── full-screen menu overlay ── */
+  //   .ovl{position:fixed;…}
+  //
+  // Comparing that raw against `.sjc-design .ovl[data-open="true"]` matches nothing, which is why
+  // the first run of this repair reported 0 on a sheet that visibly needed it.
+  const normSel = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\s+/g, " ").trim();
+
+  // Pass 1 — every selector some rule turns visible. These are the state rules.
+  const shown: string[] = [];
+  for (const m of src.matchAll(RULE)) {
+    const [, keyframes, selector, body] = m;
+    if (keyframes || !selector) continue;
+    if (!/visibility\s*:\s*visible|opacity\s*:\s*(?:1|0?\.\d*[1-9])/i.test(body)) continue;
+    for (const s of selector.split(",")) shown.push(normSel(s));
+  }
+
+  // A companion is the base selector plus a STATE qualifier — an attribute, class, id or
+  // pseudo-class glued directly onto it. `.ovl` -> `.ovl[data-open="true"]`. The glue matters:
+  // `.ovl .thing` is a descendant, a different element entirely, and proves nothing.
+  const hasCompanion = (base: string) =>
+    shown.some((s) => s.length > base.length && s.startsWith(base) && /[[.:#]/.test(s[base.length]));
+
+  let repaired = 0;
+  const out = src.replace(RULE, (whole, keyframes: string | undefined, selector: string, body: string) => {
+    if (keyframes || !selector) return whole;
+    if (!OVERLAY.test(body)) return whole;
+    if (/(?:^|;|\s)(opacity|visibility)\s*:/i.test(body)) return whole;
+    if (!selector.split(",").some((s) => hasCompanion(normSel(s)))) return whole;
+    repaired++;
+    return `${selector}{${body.replace(/;\s*$/, "")};opacity:0;visibility:hidden}`;
+  });
+
+  return { css: out, repaired };
+}
+
+/**
  * Undo "hidden until JavaScript says otherwise" states.
  *
  * ⚠️ THE FAILURE THIS PREVENTS IS SILENT AND TOTAL. Generated pages ship a scroll-reveal: a class
@@ -138,6 +216,7 @@ export function revealHiddenStates(css: string): string {
     (whole, keyframes: string | undefined, selector: string, body: string) => {
       if (keyframes) return keyframes;
       if (!/opacity\s*:\s*0(\.0+)?\s*(;|$)/i.test(body)) return whole;
+      if (OVERLAY.test(body)) return whole;
       const cleaned = body
         .split(";")
         .filter((d) => !/^\s*(opacity\s*:\s*0(\.0+)?|visibility\s*:\s*hidden|transform\s*:)/i.test(d))
