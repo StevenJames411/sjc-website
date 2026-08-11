@@ -8,6 +8,7 @@ import CtaButton from "@/components/CtaButton";
 import RichText from "@/components/puck/RichText";
 import SizeStepper from "@/components/puck/SizeStepper";
 import ColorField from "@/components/puck/ColorField";
+import type { DesignBoxGroup } from "@/lib/designHtml";
 import DesignTextField from "@/components/puck/DesignTextField";
 import FormPicker from "@/components/puck/FormPicker";
 import FormLink from "@/components/puck/FormLink";
@@ -45,6 +46,7 @@ type Props = {
     text: DesignText[];
     images: DesignImage[];
     links: DesignLink[];
+    boxes: DesignBoxGroup[];
     paddingTop: number | null;
     paddingBottom: number | null;
     background: string;
@@ -278,6 +280,7 @@ const SURFACE_FIELDS = {
     label: "Motion",
     options: [
       { label: "Static", value: "" },
+      { label: "Lift on hover", value: "lift" },
       { label: "Pulsing", value: "pulse" },
     ],
   },
@@ -845,6 +848,41 @@ export const config: Config<Props, RootProps> = {
             key: { type: "text" as const, label: "Token (do not change)" },
           },
         },
+        // ── FEATURE CARDS. Steven's name for them, so the panel says what he'd say.
+        //
+        // ⚠️ ONE ROW FOR THE WHOLE SET, NOT ONE PER CARD. Six cards styled individually is six
+        // chances to drift apart, and it is the fastest way to a forty-entry panel nobody can
+        // read. The look is shared; only the DESTINATIONS differ, which is exactly how they are
+        // used — same card, different page behind it.
+        boxes: {
+          type: "array" as const,
+          label: "Feature cards",
+          getItemSummary: (item: DesignBoxGroup) => item?.label || "Feature cards",
+          arrayFields: {
+            ...SURFACE_FIELDS,
+            hrefs: {
+              type: "array" as const,
+              label: "Where each card goes (blank = not clickable)",
+              getItemSummary: (_: unknown, i) => `Card ${(i ?? 0) + 1}`,
+              arrayFields: {
+                href: {
+                  type: "text" as const,
+                  label: "A page (/custom-websites), a calendar link, or blank",
+                },
+              },
+            },
+            // Carriers. Puck requires a field for every prop, so they are declared rather than
+            // hidden — nothing above depends on anyone touching them.
+            key: { type: "text" as const, label: "Token (do not change)" },
+            label: { type: "text" as const, label: "Name (set at import)" },
+            count: { type: "number" as const, label: "How many (set at import)" },
+            captions: {
+              type: "array" as const,
+              label: "Card headings (set at import)",
+              arrayFields: { caption: { type: "text" as const, label: "Heading" } },
+            },
+          },
+        },
         // ⚠️ OUR OWN FIELD, not Puck's array field. A bought design lands as forty-odd rows in one
         // section, so this needs a search box — and clicking a word on the canvas has to open
         // that word's row, which through Puck's array field means selecting content-hashed class
@@ -896,7 +934,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
+      render: ({ html, text, images, links, boxes, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
           // Marks each filled word so a click on the canvas can name its row. Editor only.
           editing={puck?.isEditing}
@@ -904,6 +942,7 @@ export const config: Config<Props, RootProps> = {
           text={text}
           images={images}
           links={links}
+          boxes={boxes}
           sticky={sticky}
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}

@@ -14,6 +14,12 @@
 // next import and nothing already in the database. Re-importing would fix it and discard every page
 // built out since the import, so the stored sheets get repaired in place — which is all this is.
 //
+// ── ALSO REPAIRS MOBILE ───────────────────────────────────────────────────────────────────────
+// A comment on the line above an @media block hid the at-rule from scopeCss, so the rules INSIDE
+// were left unscoped — one class — while the desktop rules outside got two. A media query adds no
+// specificity, so on a phone the desktop rule won and nothing stacked: every three-column grid,
+// the hero split and the footer columns stayed side by side. Same shape of bug, same fix.
+//
 //   POST { site?, dryRun?, publish? } -> { ok, dryRun, pages: [{ slug, draft, published }], total }
 //
 // ⚠️ DEFAULTS TO A DRY RUN, like every other admin route here: the first answer should be a count
@@ -24,7 +30,7 @@
 // run normally wants both.
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { repairOverlayHides } from "@/lib/designCss";
+import { repairOverlayHides, repairMediaScope } from "@/lib/designCss";
 import { readPages } from "@/lib/pageRegistry";
 import { siteKeys, SJC } from "@/lib/siteKeys";
 
@@ -61,7 +67,11 @@ export async function POST(req: Request) {
       const css = saved && typeof saved.css === "string" ? saved.css : "";
       if (!css) continue;
 
-      const { css: next, repaired } = repairOverlayHides(css);
+      // Two repairs, one pass — both are "the stylesheet was compiled before a fix existed".
+      const hides = repairOverlayHides(css);
+      const media = repairMediaScope(hides.css);
+      const next = media.css;
+      const repaired = hides.repaired + media.repaired;
       if (!repaired) continue;
 
       if (!dryRun) await store.write({ css: next });

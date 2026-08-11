@@ -30,7 +30,7 @@ export type Surface = {
   /** What changes while the mouse is over it. Blank = no change. */
   hoverFill?: string;
   hoverText?: string;
-  /** "" | "pulse" */
+  /** "" | "pulse" | "lift" */
   motion?: string;
 };
 
@@ -73,6 +73,7 @@ export function surfaceCss(sel: string, s: Surface | undefined): string {
   const hoverFill = resolveColor(s.hoverFill);
   const hoverText = resolveColor(s.hoverText);
   const pulse = s.motion === "pulse";
+  const lift = s.motion === "lift";
 
   const base: string[] = [];
   if (fill) base.push(`background:${opacity !== null && opacity < 100 ? translucent(fill, opacity) : fill}`);
@@ -88,16 +89,28 @@ export function surfaceCss(sel: string, s: Surface | undefined): string {
   if (pulse) base.push(`animation:${PULSE_NAME} 2.4s ease-in-out infinite`);
 
   const hover: string[] = [];
+  // A card that rises under the cursor. Transform only — never top/margin, which would reflow the
+  // grid and nudge every card beside it.
+  if (lift) hover.push("transform:translateY(-6px)");
   if (hoverFill) hover.push(`background:${opacity !== null && opacity < 100 ? translucent(hoverFill, opacity) : hoverFill}`);
   if (hoverText) hover.push(`color:${hoverText}`);
 
+  // ⚠️ ONE transition declaration, built from everything that actually animates. Emitting a second
+  // `transition` in its own rule silently replaces the first — which is what made a lifting card
+  // jump instead of glide the first time this was written.
+  if (hover.length) {
+    const moves = [
+      hoverFill ? "background .2s ease" : "",
+      hoverText ? "color .2s ease" : "",
+      lift ? "transform .2s ease" : "",
+      lift ? "box-shadow .2s ease" : "",
+    ].filter(Boolean);
+    if (moves.length) base.push(`transition:${moves.join(",")}`);
+  }
+
   const out: string[] = [];
   if (base.length) out.push(`${sel}{${base.join(";")}}`);
-  // A transition only matters if something actually changes on hover.
-  if (hover.length) {
-    out.push(`${sel}{transition:background .2s ease,color .2s ease}`);
-    out.push(`${sel}:hover{${hover.join(";")}}`);
-  }
+  if (hover.length) out.push(`${sel}:hover{${hover.join(";")}}`);
   return out.join("");
 }
 

@@ -65,6 +65,31 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
 
     let prelude = css.slice(i, brace).trim();
 
+    // ⚠️ A COMMENT BEFORE A RULE IS NOT PART OF ITS SELECTOR — AND LEAVING IT THERE DISABLED EVERY
+    // MOBILE RULE ON AN IMPORTED SITE.
+    //
+    // A well-commented stylesheet writes `/* mobile */` on the line above its @media block. That
+    // comment lands in this prelude, so the `@media` test below fails (the string starts with `/*`),
+    // the block is treated as a SELECTOR LIST, and the scope class is glued onto the comment:
+    //
+    //     .sjc-design /* mobile */
+    //     @media (max-width:960px){ .split{grid-template-columns:1fr} }
+    //
+    // The browser then applies that media block with its selectors UNSCOPED — one class — while the
+    // desktop rule outside it got scoped to two. A media query adds no specificity, so on a phone
+    // the desktop rule wins and NOTHING STACKS. Measured on sjc-2026: every three-column grid, the
+    // hero split and the footer columns all stayed side by side on a phone, with the correct CSS
+    // present and simply out-ranked.
+    //
+    // Comments are pulled out here and re-emitted ahead of the rule, so they can never hide an
+    // at-rule or be mistaken for part of a selector.
+    const leading: string[] = [];
+    prelude = prelude.replace(/\/\*[\s\S]*?\*\//g, (c) => {
+      leading.push(c);
+      return " ";
+    }).trim();
+    if (leading.length) out.push(leading.join(""));
+
     // ⚠️ STATEMENT AT-RULES ARE NOT SELECTORS. `@layer theme, base, components, utilities;`
     // declares layer ORDER — commas separate layer NAMES, not selectors. Splitting it on commas
     // and prefixing each part produced `@layer theme,.sjc-design base,…`, which is invalid, so
@@ -113,6 +138,50 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
   }
 
   return out.join("\n");
+}
+
+/**
+ * Scope the rules inside a media query that an earlier compile left bare.
+ *
+ * ⚠️ NEEDED BECAUSE THE STYLESHEET IS COMPILED ONCE, AT IMPORT, AND STORED — same reason
+ * repairOverlayHides exists. Fixing scopeCss fixes the next import and nothing already in the
+ * database, and re-importing would discard every page built out since.
+ *
+ * The damage is one-sided and that is what makes it safe to repair: rules OUTSIDE media queries
+ * were scoped correctly, only the ones inside were left bare. So any selector in a media block
+ * that doesn't already start with the scope gets it — which is exactly what scopeCss would have
+ * produced had the comment not hidden the at-rule from it.
+ */
+export function repairMediaScope(css: string, scope = DESIGN_SCOPE): { css: string; repaired: number } {
+  const sel = `.${scope}`;
+  let repaired = 0;
+
+  const out = String(css || "").replace(
+    /(@media[^{]*\{)([\s\S]*?)(\n\})/g,
+    (whole, open: string, body: string, close: string) => {
+      // Only rules — never keyframe stops, which live in their own at-rule and are not selectors.
+      const fixed = body.replace(/(^|\})([^{}@]+)\{/g, (m, before: string, prelude: string) => {
+        const comments: string[] = [];
+        const bare = prelude
+          .replace(/\/\*[\s\S]*?\*\//g, (c: string) => {
+            comments.push(c);
+            return " ";
+          })
+          .trim();
+        if (!bare) return m;
+        const parts = bare.split(",").map((x) => x.trim()).filter(Boolean);
+        if (!parts.length || parts.every((x) => x.startsWith(sel))) return m;
+        repaired++;
+        const scoped = parts
+          .map((x) => (x.startsWith(sel) ? x : `${sel} ${x}`))
+          .join(",");
+        return `${before}${comments.join("")}${scoped}{`;
+      });
+      return `${open}${fixed}${close}`;
+    }
+  );
+
+  return { css: out, repaired };
 }
 
 /**

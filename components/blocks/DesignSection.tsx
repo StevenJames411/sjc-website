@@ -26,6 +26,7 @@
 import { DESIGN_SCOPE } from "@/lib/designShared";
 import { resolveColor } from "@/lib/brandColor";
 import { surfaceCss, wantsPulse, PULSE_KEYFRAMES, type Surface } from "@/lib/surfaceStyle";
+import type { DesignBoxGroup } from "@/lib/designHtml";
 import DesignFormMount from "./DesignFormMount";
 import DesignMenu from "./DesignMenu";
 import type { LeadFormField } from "./LeadForm";
@@ -115,6 +116,7 @@ export type DesignSectionProps = {
   html?: string;
   text?: DesignText[];
   images?: DesignImage[];
+  boxes?: DesignBoxGroup[];
   /** Every link's destination — phone, email, page or #section. */
   links?: DesignLink[];
   /**
@@ -457,6 +459,39 @@ function frameCss(images: DesignImage[]): string {
   return out.join("");
 }
 
+/**
+ * Make a whole feature card clickable.
+ *
+ * ⚠️ A REAL ANCHOR, NOT A CLICK HANDLER. A card that navigates on click but isn't a link cannot be
+ * opened in a new tab, can't be copied, doesn't show its destination in the status bar, and is
+ * invisible to Google — and these cards link to the pages this site most wants found.
+ *
+ * ⚠️ AND NOT A WRAPPER EITHER. Wrapping the card in an <a> would mean restructuring markup we
+ * promised to leave alone, and `<a>` cannot legally contain another `<a>`. So the anchor is
+ * INSERTED INSIDE the card and stretched over it — the pattern every CSS framework settled on.
+ * Real links inside the card sit above it (see boxLinkCss) and keep working.
+ */
+function injectBoxLinks(html: string, boxes: DesignBoxGroup[]): string {
+  let out = html;
+  for (const b of boxes || []) {
+    (b?.hrefs || []).forEach((href, i) => {
+      const to = String(href || "").trim();
+      if (!to) return;
+      const re = new RegExp(
+        `(<[a-z][a-z0-9]*\\b[^>]*data-sjc-box="${b.key}"[^>]*data-sjc-box-i="${i}"[^>]*>)`,
+        "i"
+      );
+      const label = (b.captions?.[i] || "").replace(/"/g, "&quot;");
+      out = out.replace(
+        re,
+        (open: string) =>
+          `${open}<a class="sjc-box-link" href="${to.replace(/"/g, "&quot;")}" aria-label="${label}"></a>`
+      );
+    });
+  }
+  return out;
+}
+
 function styleImages(html: string, images: DesignImage[]): string {
   let out = html;
   for (const img of images) {
@@ -495,6 +530,7 @@ export default function DesignSection(props: DesignSectionProps) {
     images = [],
     links = [],
     sticky,
+    boxes,
     paddingTop,
     paddingBottom,
     background,
@@ -521,7 +557,21 @@ export default function DesignSection(props: DesignSectionProps) {
     .map((l) => surfaceCss(`.${DESIGN_SCOPE} [data-sjc-link="${l?.key}"]`, l))
     .filter(Boolean)
     .join("");
-  const anyPulse = (links || []).some(wantsPulse);
+  const anyPulse = (links || []).some(wantsPulse) || (boxes || []).some(wantsPulse);
+
+  // Feature cards. ONE style for the whole set — that is what makes them a set — while each card
+  // keeps its own destination below.
+  const boxStyling = (boxes || [])
+    .map((b) => surfaceCss(`.${DESIGN_SCOPE} [data-sjc-box="${b?.key}"]`, b as Surface))
+    .filter(Boolean)
+    .join("");
+  // A card that links needs somewhere for the anchor to sit, and the anchor has to sit UNDER any
+  // real link inside the card or it would swallow its clicks.
+  const boxLinkCss = (boxes || []).some((b) => (b?.hrefs || []).some(Boolean))
+    ? `.${DESIGN_SCOPE} [data-sjc-box]{position:relative}` +
+      `.${DESIGN_SCOPE} .sjc-box-link{position:absolute;inset:0;z-index:1}` +
+      `.${DESIGN_SCOPE} [data-sjc-box] a:not(.sjc-box-link){position:relative;z-index:2}`
+    : "";
 
   const decls = [
     // ⚠️ STICKY IS NOT IN HERE — see the wrapper below. These declarations are injected into the
@@ -540,9 +590,12 @@ export default function DesignSection(props: DesignSectionProps) {
     .join(";");
 
   const filled = injectStyle(
-    styleImages(
-      dropRemovedLinks(stripDangerous(fillTokens(html, text, images, links, editing)), links),
-      images
+    injectBoxLinks(
+      styleImages(
+        dropRemovedLinks(stripDangerous(fillTokens(html, text, images, links, editing)), links),
+        images
+      ),
+      boxes || []
     ),
     decls
   );
@@ -597,10 +650,10 @@ export default function DesignSection(props: DesignSectionProps) {
       style={sticky ? { position: "sticky", top: 0, zIndex: 40 } : undefined}
     >
       {framing ? <style dangerouslySetInnerHTML={{ __html: framing }} /> : null}
-      {linkStyling ? (
+      {linkStyling || boxStyling || boxLinkCss ? (
         <style
           dangerouslySetInnerHTML={{
-            __html: (anyPulse ? PULSE_KEYFRAMES : "") + linkStyling,
+            __html: (anyPulse ? PULSE_KEYFRAMES : "") + linkStyling + boxStyling + boxLinkCss,
           }}
         />
       ) : null}

@@ -5,6 +5,7 @@
 
 import { parse, HTMLElement, NodeType, type Node } from "node-html-parser";
 import type { DesignText, DesignImage, DesignLink } from "@/components/blocks/DesignSection";
+import type { Surface } from "@/lib/surfaceStyle";
 
 // Tags that can execute or phone home. A bought design has no business containing any of them,
 // and the whole point of this pipeline is that the markup reaches a customer's live website.
@@ -316,11 +317,96 @@ function labelFor(el: HTMLElement | null, value: string, n: number): string {
  * whitespace, and text inside script/style/svg, are left alone — turning an SVG path's contents
  * into an editable field would be noise in a list Steven has to read.
  */
+/**
+ * Find the repeating boxes on a section — what Steven calls FEATURE CARDS — and mark them.
+ *
+ * ── WHY REPETITION IS THE SIGNAL ──────────────────────────────────────────────────────────────
+ * A card is a plain `<div>`. Nothing about it says "card", and guessing at class names means
+ * guessing at whatever the generator happened to invent. But cards never come alone: they come as
+ * three or six siblings inside one grid, all wearing the same class. That repetition is the thing
+ * a person actually sees when they look at the page and say "the feature cards", and it holds
+ * across designs that share no vocabulary at all.
+ *
+ * ⚠️ THREE IS THE FLOOR. Two matching siblings is a coincidence — a heading and its paragraph, a
+ * label and its value. Three is a set.
+ *
+ * ⚠️ ONLY BOXES WITH SUBSTANCE. A row of six icons or six nav links repeats too, and turning those
+ * into stylable cards would bury the real ones in noise. A card has to carry a heading or a real
+ * sentence of its own.
+ *
+ * Each member is stamped twice: the GROUP key, because one style covers the whole set, and its
+ * INDEX, because each card can point somewhere different.
+ */
+export type DesignBoxGroup = Surface & {
+  key: string;
+  label: string;
+  count: number;
+  /** One destination per card, index-aligned. Blank = not a link. */
+  hrefs: string[];
+  /** Each card's own heading, purely so the link fields are labelled with what you see. */
+  captions: string[];
+};
+
+const BOX_MIN = 3;
+
+function markBoxes(root: HTMLElement): DesignBoxGroup[] {
+  const groups: DesignBoxGroup[] = [];
+
+  for (const parent of root.querySelectorAll("*")) {
+    const kids = parent.childNodes.filter(
+      (n): n is HTMLElement =>
+        n instanceof HTMLElement &&
+        !!n.rawTagName &&
+        !["script", "style", "br"].includes(n.rawTagName.toLowerCase())
+    );
+    if (kids.length < BOX_MIN) continue;
+
+    // Group the children by their exact class, and take the biggest matching run.
+    const byClass = new Map<string, HTMLElement[]>();
+    for (const k of kids) {
+      const cls = (k.getAttribute("class") || "").trim();
+      if (!cls) continue;
+      byClass.set(cls, [...(byClass.get(cls) || []), k]);
+    }
+
+    for (const [, members] of byClass) {
+      if (members.length < BOX_MIN) continue;
+      // Substance: a heading, or a sentence of its own.
+      const solid = members.filter(
+        (m) => /<h[1-6]\b/i.test(m.toString()) || clean(m.text).length > 40
+      );
+      if (solid.length < BOX_MIN) continue;
+      // Already claimed by an outer group — the outermost wins, because that is the box a person
+      // points at.
+      if (members.some((m) => m.getAttribute("data-sjc-box"))) continue;
+
+      const key = `b${groups.length + 1}`;
+      const captions: string[] = [];
+      members.forEach((m, i) => {
+        m.setAttribute("data-sjc-box", key);
+        m.setAttribute("data-sjc-box-i", String(i));
+        const head = m.querySelector("h1,h2,h3,h4,h5,h6");
+        captions.push(clean(head?.text || "").slice(0, 40) || `Card ${i + 1}`);
+      });
+      groups.push({
+        key,
+        label: `Feature cards (${members.length})`,
+        count: members.length,
+        hrefs: members.map(() => ""),
+        captions,
+      });
+    }
+  }
+
+  return groups;
+}
+
 export function tokenizeSection(html: string): {
   html: string;
   text: DesignText[];
   images: DesignImage[];
   links: DesignLink[];
+  boxes: DesignBoxGroup[];
   hasForm: boolean;
   formFields: { label: string; inputType: string }[];
   formButton: string;
@@ -482,11 +568,16 @@ export function tokenizeSection(html: string): {
 
   walk(root);
 
+  // AFTER the walk: tokenising rewrites the markup, and the boxes have to be marked on what
+  // actually ships, not on a version that no longer exists.
+  const boxes = markBoxes(root);
+
   return {
     html: root.toString(),
     text,
     images,
     links,
+    boxes,
     hasForm: !!formEl,
     formFields,
     formButton,
