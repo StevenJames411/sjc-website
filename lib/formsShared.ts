@@ -161,6 +161,76 @@ export function stepsOf(fields: FormField[]): { title: string; fields: FormField
 }
 
 /**
+ * HOW MANY QUESTIONS FIT ON ONE SCREEN OF A SURVEY.
+ *
+ * Steven set these from the mobile case, which is the only case that matters: *"one to four
+ * questions lives on the page… if it's more than five questions, the page doesn't look like it
+ * goes anywhere and the next set of questions just loads."* A screen has to fit a phone with the
+ * Next button reachable without scrolling — that is the whole constraint, and both numbers come
+ * out of it. On a desktop it simply reads as generous spacing.
+ */
+export const SURVEY_CAP = 4;
+/** Below this many questions a form isn't worth stepping — it just sits in its section. */
+export const SURVEY_MIN = 5;
+
+/** A textarea eats a screen the way two short boxes do; so does a long list of options. */
+function screenWeight(f: { type?: string; inputType?: string; options?: string[] }): number {
+  const t = String(f?.type || f?.inputType || "").toLowerCase();
+  if (t === "textarea") return 2;
+  if ((f?.options?.length || 0) > 4) return 2;
+  return 1;
+}
+
+/**
+ * THE SCREENS OF A SURVEY — the one rule the live page and the builder both ask.
+ *
+ * Three outcomes, in order:
+ *   1. The form AUTHORED its own steps (`step` titles, as /apply does) -> use them, untouched.
+ *   2. Fewer than SURVEY_MIN questions -> ONE screen. A three-question contact form split across
+ *      two screens is worse than the wall the split was meant to fix.
+ *   3. Otherwise -> balanced screens of about SURVEY_CAP.
+ *
+ * ⚠️ AUTHORED STEPS WIN, AND THAT IS NOT A COURTESY. /apply is a live funnel whose thirteen
+ * questions sit under headings somebody wrote. Re-chunking them by count would redesign a running
+ * funnel as a side effect of a layout change — precisely the trap `step` was added to avoid.
+ *
+ * ⚠️ BALANCED, NOT GREEDY. Filling each screen to the cap strands the remainder on the last one:
+ * seventeen questions become 4/4/4/4/1, and a final screen holding a single box reads as a bug.
+ * Splitting to a running target gives 4/4/3/3/3 — no orphan, and nothing over the cap.
+ */
+export function surveyScreensOf<
+  T extends { step?: string; type?: string; inputType?: string; options?: string[] }
+>(fields: T[]): { title: string; fields: T[] }[] {
+  const list = (fields || []).filter(Boolean);
+  if (!list.length) return [];
+  if (list.some((f) => String(f?.step || "").trim())) {
+    return stepsOf(list as unknown as FormField[]) as unknown as { title: string; fields: T[] }[];
+  }
+  if (list.length < SURVEY_MIN) return [{ title: "", fields: list }];
+
+  const weights = list.map(screenWeight);
+  const total = weights.reduce((n, w) => n + w, 0);
+  const screens = Math.max(1, Math.ceil(total / SURVEY_CAP));
+
+  const out: { title: string; fields: T[] }[] = [];
+  let current: T[] = [];
+  let carried = 0;
+  for (let i = 0; i < list.length; i++) {
+    current.push(list[i]);
+    carried += weights[i];
+    // Close this screen once it has taken its share of the total — except the last one, which
+    // takes whatever remains rather than opening another screen for the tail.
+    const target = (total * (out.length + 1)) / screens;
+    const lastField = i === list.length - 1;
+    if (lastField || (carried >= target && out.length < screens - 1)) {
+      out.push({ title: "", fields: current });
+      current = [];
+    }
+  }
+  return out;
+}
+
+/**
  * What Steven picks from instead of typing `business.phoneDisplay`.
  *
  * The paths are real dotted paths into the Site record (lib/sitesShared.ts). Keeping the list here

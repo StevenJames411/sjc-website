@@ -627,7 +627,22 @@ export const config: Config<Props, RootProps> = {
     forms: {
       title: "Forms",
       defaultExpanded: false,
-      components: ["LeadForm", "FormStep", "FormQuestion"] as (keyof Props)[],
+      // ⚠️ ONE BLOCK, NOT THREE. A form is a SECTION now: drop LeadForm onto any page and it picks
+      // its own shape — under five questions it just sits there, five or more and it steps through
+      // screens in place (lib/formsShared surveyScreensOf). Steven, on why the old way felt wrong:
+      // *"we don't need a full freaking page to put these survey forms on our website. We need a
+      // section."*
+      components: ["LeadForm"] as (keyof Props)[],
+    },
+    // ⚠️ KEPT, NOT DELETED — /apply IS BUILT OUT OF THESE. FormStep/FormQuestion are the
+    // hand-assembled wizard: many blocks with no single one owning the set, which is exactly why
+    // that page's library link had to live in PAGE settings rather than on a block. LeadForm
+    // replaces them for anything new, but /apply is a live funnel made of them and has to stay
+    // editable. Out of the everyday kit, not out of the builder.
+    legacy: {
+      title: "Step blocks (older pages)",
+      defaultExpanded: false,
+      components: ["FormStep", "FormQuestion"] as (keyof Props)[],
     },
     sitewide: {
       title: "Header & footer",

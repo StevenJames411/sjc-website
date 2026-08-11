@@ -486,11 +486,16 @@ export default function FormEditor({
           style={{ marginTop: 3 }}
         />
         <span>
-          <strong>One question at a time</strong>
+          <strong>One question at a time — onboarding link only</strong>
+          {/* ⚠️ THE LABEL NOW SAYS WHERE IT APPLIES, BECAUSE IT DOESN'T APPLY EVERYWHERE. This
+              switch only ever reached the onboarding link and the older step-by-step pages — the
+              form block on a website has never read it. Reading as a general layout choice is what
+              made it look like the on-page form was ignoring a setting that was switched on. */}
           <span style={{ display: "block", ...hint, marginBottom: 0, marginTop: 3 }}>
-            Worth it on a long form. Fifteen boxes on a phone is a wall people close; one question
-            with a big box is a conversation, and it saves as they go so they can come back to it.
-            Leave it off for a short contact form.
+            Only changes the onboarding link, where answers save as they go so a client can come
+            back to it. On a website this does nothing: a form dropped on a page decides its own
+            shape — under five questions it sits in its section, five or more and it becomes a
+            survey, a few questions at a time.
           </span>
         </span>
       </label>

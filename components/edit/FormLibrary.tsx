@@ -586,9 +586,13 @@ export default function FormLibrary({
           your forms, four lines of instructions push the forms themselves off the canvas. The
           detail hasn't gone anywhere — it's on the form editor, which is where you are when it
           matters. */}
+      {/* ⚠️ THIS USED TO SAY "link a form to a page", AND THAT SENT STEVEN OFF TO BUILD A PAGE for
+          every form. A form is a SECTION — it drops onto a page that already has a header and a
+          footer. Saying "page" cost him a whole page per form, which is the clunk he named. */}
       <p style={hint}>
-        Link a form to a page in the builder and the link stays <strong>live</strong> — edit the
-        questions here and every website using it updates.
+        Drop a form into a section on any page — the link stays <strong>live</strong>, so edit the
+        questions here and every website using it updates. Five or more questions turn into a{" "}
+        <strong>survey</strong> on their own: a few at a time, without leaving the page.
       </p>
 
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search forms…" style={search} />
