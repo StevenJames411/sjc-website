@@ -82,6 +82,25 @@ export type FooterViewProps = {
   /** "outline" = bordered pills on the dark band, matching the menu's calmer treatment. */
   buttonStyle?: string;
   /**
+   * "row" = the contact buttons sit SIDE BY SIDE across the band — call · text · email — instead
+   * of stacked in a column.
+   *
+   * Steven, on the stripped footer: *"do the call in the left column, text in the middle column,
+   * and email in the right column. That'll make the footer much lower profile on desktop, which is
+   * what I wanted as far as being minimalist, and on a phone it will just stack."*
+   *
+   * ⚠️ IT IS THE HEIGHT HE IS BUYING, NOT THE ARRANGEMENT. Three stacked pills plus their gaps is
+   * roughly three times the band depth of one row, and on a footer carrying nothing else that
+   * depth is the whole difference between minimal and padded.
+   *
+   * ⚠️ ONLY MEANINGFUL WITH NO LINK COLUMNS. With Divisions and Company beside it the contact
+   * block IS one column of the grid, and a row inside a 300px track would wrap to nonsense. Guarded
+   * below rather than left to whoever picks it.
+   *
+   * Blank = stacked, which is every footer already published.
+   */
+  contactLayout?: string;
+  /**
    * Contact-button artwork and the Book a Call target — mirrors the menu's fields exactly.
    * ⛔ Blank on every one of them means a client site falls back to the drawn glyphs and shows
    * three buttons, never SJC's icons or SJC's booking link.
@@ -126,6 +145,7 @@ export default function FooterView({
   brandAccentWord,
   brandAccentColor,
   buttonStyle,
+  contactLayout,
   iconCall,
   iconText,
   iconEmail,
@@ -172,6 +192,10 @@ export default function FooterView({
   const groupEls = (groups || [])
     .map((g) => ({ heading: g?.heading || "", links: (g?.links || []).filter((l) => l && l.label) }))
     .filter((g) => g.links.length);
+  // ⚠️ GUARDED, NOT TRUSTED — and declared HERE because it reads `groupEls`. A row inside a ~300px
+  // grid track wraps to nonsense, so the option only takes effect on a footer with no link columns,
+  // which is the only shape it was asked for.
+  const contactRow = String(contactLayout) === "row" && !groupEls.length;
   // The "More" column only appears when it has something in it. Without this, adding groups left
   // an empty titled column sitting between them — a heading with nothing under it, which reads as
   // a bug rather than as a design.
@@ -423,11 +447,18 @@ export default function FooterView({
                 So when there are no groups the block keeps an explicit width and stays left: the
                 same ~300px column it would have occupied, which is the proportion he pointed at on
                 his own site. Dialled from `contactWidth`, the field that already exists for it. */}
+            {/* ⛔ ONE ROW ACROSS THE BAND when `contactLayout` is "row" — call · text · email, side
+                by side, stacking under `sm` with no media query of its own. `items-stretch` is what
+                holds the three pills to the same height when one label wraps and the others don't;
+                without it a long email address makes its own column taller and the row goes ragged.
+                No width cap in this mode: the columns ARE the width. */}
             <div
-              className={`mt-4 flex flex-col items-stretch gap-3 ${
-                groupEls.length
-                  ? "mx-auto max-w-[var(--sjc-btn-w)] sm:mx-0 sm:max-w-none"
-                  : "mx-auto max-w-[var(--sjc-btn-w)] sm:mx-0 sm:max-w-[var(--sjc-contact-w)]"
+              className={`mt-4 gap-3 ${
+                contactRow
+                  ? "grid items-stretch sm:grid-cols-3"
+                  : groupEls.length
+                    ? "mx-auto flex max-w-[var(--sjc-btn-w)] flex-col items-stretch sm:mx-0 sm:max-w-none"
+                    : "mx-auto flex max-w-[var(--sjc-btn-w)] flex-col items-stretch sm:mx-0 sm:max-w-[var(--sjc-contact-w)]"
               }`}
               style={
                 {

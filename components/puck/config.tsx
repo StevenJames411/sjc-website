@@ -106,7 +106,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; contactLayout: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -428,6 +428,8 @@ export const FOOTER_DEFAULTS = {
   brandAccentColor: "",
   // Blank = the solid brand fill every existing footer and menu already draws.
   buttonStyle: "",
+  // Blank = stacked, which is every footer already published.
+  contactLayout: "",
   // Blank = drawn glyphs and three buttons. A client site never inherits SJC's artwork or
   // SJC's booking link by default.
   iconCall: "",
@@ -1834,6 +1836,16 @@ export const config: Config<Props, RootProps> = {
             { label: "Outlined pills", value: "outline" },
           ],
         },
+        // ⚠️ ONLY BITES ON A FOOTER WITH NO LINK COLUMNS — the label says so rather than leaving it
+        // to be discovered by picking it and seeing nothing change.
+        contactLayout: {
+          type: "radio" as const,
+          label: "Contact buttons layout (no link columns)",
+          options: [
+            { label: "Stacked", value: "" },
+            { label: "Side by side — call · text · email", value: "row" },
+          ],
+        },
         // Same four contact controls the header block has, so the two cannot say different things.
         // ⛔ ONE EDIT INSTEAD OF TWO. On, the footer renders the HEADER's link groups — same
         // labels, same descriptions, same column headings — so the menu becomes the single place
@@ -1880,7 +1892,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color, brandAccentWord, brandAccentColor, buttonStyle, iconCall, iconText, iconEmail, bookHref, bookLabel, bookIcon, contactWidth, buttonWidthMobile }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color, brandAccentWord, brandAccentColor, buttonStyle, contactLayout, iconCall, iconText, iconEmail, bookHref, bookLabel, bookIcon, contactWidth, buttonWidthMobile }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -1901,6 +1913,7 @@ export const config: Config<Props, RootProps> = {
           brandAccentWord={brandAccentWord}
           brandAccentColor={brandAccentColor}
           buttonStyle={buttonStyle}
+          contactLayout={contactLayout}
           iconCall={iconCall}
           iconText={iconText}
           iconEmail={iconEmail}

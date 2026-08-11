@@ -119,6 +119,13 @@ const stripped = {
     // proportion Steven pointed at on stevenbarchetti.com. Both are fields in the builder now, so
     // the next nudge costs a click rather than a deploy.
     buttonStyle: "outline",
+    // ⛔ ONE ROW, THREE COLUMNS — call · text · email. Steven: *"that'll make the footer much lower
+    // profile on desktop, which is what I wanted as far as being minimalist, and on a phone it will
+    // just stack."* The height is the point: three stacked pills is roughly three times the band
+    // depth of one row, on a footer carrying nothing else.
+    contactLayout: "row",
+    // Ignored while contactLayout is "row" (the columns are the width) — kept so switching back to
+    // stacked lands on the width he already approved rather than the 300px default.
     contactWidth: 420,
     blurb: "",
     links: [],
