@@ -131,7 +131,10 @@ const stripped = {
     copyright: "ARV Venture Group LLC Parent Company · Steven James Consulting",
     background: "",
     foreground: "",
-    brandStyle: "",
+    // ⚠️ NO SECOND `brandStyle` HERE. There was one, set to "", and a duplicate key later in an
+    // object literal silently wins — so the wordmark set above was overwritten by the plain
+    // lockup and the footer rendered in the body sans while the header stayed serif. The two-tone
+    // accent worked, which made it look like a font-loading problem rather than a typo.
     brandLine2: "",
     brandLine2Color: "",
     iconCall: "",
