@@ -223,6 +223,11 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   text: [],
   images: [],
   links: [],
+  // ⚠️ WAS MISSING. `boxes` is on the props and editable in the panel, but had no default — so a
+  // freshly dragged section started with it undefined while every sibling array started empty.
+  // Every consumer had to guard, and the first one that forgot would throw on a block nobody had
+  // even touched.
+  boxes: [],
   sticky: false,
   paddingTop: null,
   paddingBottom: null,

@@ -148,6 +148,8 @@ type Props = {
     brandStyle: string;
     brandLine2: string;
     brandLine2Color: string;
+    brandAccentWord: string;
+    brandAccentColor: string;
     bandGrid: string;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
@@ -307,16 +309,6 @@ const SURFACE_FIELDS = {
   },
 };
 
-const DESIGN_GLOW_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "None", value: "" },
-    { label: "Accent", value: "accent" },
-    { label: "Secondary", value: "secondary" },
-    { label: "Button colour", value: "cta" },
-    { label: "White", value: "white" },
-  ],
-};
 
 // Per-block text color. Default ink; "White" is for blocks sitting on a dark Section band.
 //
@@ -395,6 +387,9 @@ export const NAV_DEFAULTS = {
   brandStyle: "",
   brandLine2: "",
   brandLine2Color: "",
+  // ⚠️ Blank = one colour, which is every header already published.
+  brandAccentWord: "",
+  brandAccentColor: "",
   bandGrid: "",
 };
 
@@ -898,6 +893,8 @@ export const config: Config<Props, RootProps> = {
                 { label: "Right", value: "right" },
                 { label: "Top left", value: "left top" },
                 { label: "Top right", value: "right top" },
+                { label: "Bottom left", value: "left bottom" },
+                { label: "Bottom right", value: "right bottom" },
               ],
             },
             alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
@@ -2086,6 +2083,16 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // ⛔ THE FOOTER HAS THESE AND THE HEADER DID NOT, while the comment above the footer
+        // block claimed the two marks are kept identical. Same labels, same behaviour, both ends.
+        brandAccentWord: {
+          type: "text" as const,
+          label: "Last word in the accent colour — e.g. Consulting (blank = one colour)",
+        },
+        brandAccentColor: {
+          ...COLOR_FIELD,
+          label: "That word's colour (blank = the brand blue)",
+        },
         brandHref: {
           type: "text" as const,
           label: "Logo + name links to (\"/\" for home; on a sales page, that page's own URL)",
@@ -2204,11 +2211,13 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, ctaIcon, menuIconCall, menuIconText, menuIconEmail, menuButtonWidthMobile, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, ctaIcon, menuIconCall, menuIconText, menuIconEmail, menuButtonWidthMobile, brandStyle, brandLine2, brandLine2Color, brandAccentWord, brandAccentColor, bandGrid }) => (
         <NavView
           brandStyle={brandStyle}
           brandLine2={brandLine2}
           brandLine2Color={brandLine2Color}
+          brandAccentWord={brandAccentWord}
+          brandAccentColor={brandAccentColor}
           bandGrid={bandGrid}
           menuMode={menuMode}
           menuPhone={menuPhone}
