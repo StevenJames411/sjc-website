@@ -174,8 +174,34 @@ export function guardReason(prev: unknown, next: unknown): string | null {
       return `'${k}' shrank ${a.length} -> ${b.length}`;
     }
   }
+  // ── DELETING A BLOCK IS AN EDIT, NOT DATA LOSS (fix 2026-08-11) ─────────────────────────────
+  //
+  // The byte rule below counts bytes and nothing else, so it cannot tell "a bad publish gutted the
+  // page" from "he deleted the biggest block on it". Steven deleted ONE of three blocks on
+  // test-form-page — a 13-question form — and the page went 2833 -> 955 bytes. Refused, on every
+  // save, with no way out: the only thing that would clear the error is the write the guard keeps
+  // refusing. Same shape as the `zones: {}` and `_pub` failures above, and the third time this
+  // guard has made the editor unusable while the stored data was perfectly fine.
+  //
+  // ⚠️ THE ARRAY RULE ABOVE IS THE AUTHORITY ON REMOVING BLOCKS — this one must not overrule it.
+  // Blocks are wildly different sizes, so ANY deliberate deletion can cross a byte threshold; if
+  // the loop above was willing to allow the removal, refusing the same edit two lines later on a
+  // byte count is the guard arguing with itself. It got the last word, so deletion was effectively
+  // banned in the editor no matter how few blocks were involved.
+  //
+  // ⛔ WHAT THIS STILL CATCHES — and it is the case worth catching: a document whose blocks all
+  // survive while their CONTENT is hollowed out. Same block count, a fraction of the bytes, is not
+  // an edit anyone makes on purpose, and no rule above looks at it.
+  //
+  // A wipe to nothing never reaches here: `'content' shrank 8 -> 0` returns from the loop above.
+  const pc = Array.isArray(p.content) ? (p.content as unknown[]).length : 0;
+  const nc = Array.isArray(n.content) ? (n.content as unknown[]).length : 0;
+  const explainedByBlocks = pc > 0 && nc > 0 && nc < pc;
+
   const pl = JSON.stringify(prev).length, nl = JSON.stringify(next).length;
-  if (pl > 500 && nl < pl * 0.4) return `document shrank ${pl} -> ${nl} bytes`;
+  if (!explainedByBlocks && pl > 500 && nl < pl * 0.4) {
+    return `document shrank ${pl} -> ${nl} bytes`;
+  }
   return null;
 }
 
