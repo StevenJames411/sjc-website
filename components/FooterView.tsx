@@ -62,6 +62,26 @@ export type FooterViewProps = {
   /** The second line ("Consulting"). Wordmark mode only. */
   brandLine2?: string;
   brandLine2Color?: string;
+  /**
+   * Contact-button artwork and the Book a Call target — mirrors the menu's fields exactly.
+   * ⛔ Blank on every one of them means a client site falls back to the drawn glyphs and shows
+   * three buttons, never SJC's icons or SJC's booking link.
+   */
+  iconCall?: string;
+  iconText?: string;
+  iconEmail?: string;
+  bookHref?: string;
+  bookLabel?: string;
+  bookIcon?: string;
+  /**
+   * ⛔ THE TWO GEOMETRY DIALS THAT ESCAPED CODE. Steven: "if I could click buttons... it'd be
+   * ten times quicker if those controls were at my fingertips instead of being in code."
+   * Every footer width change tonight cost a build, a push, a deploy and a publish for a number
+   * that takes five seconds to dial. These two are the ones that kept coming back.
+   * Defaults match what was hardcoded, so an untouched footer does not move.
+   */
+  contactWidth?: number;       // px, the desktop Contact column
+  buttonWidthMobile?: number;  // %, the stacked button width
 };
 
 // The live site footer, rendered from props. Used BOTH on the live site (via Footer.tsx, which
@@ -84,6 +104,14 @@ export default function FooterView({
   brandStyle,
   brandLine2,
   brandLine2Color,
+  iconCall,
+  iconText,
+  iconEmail,
+  bookHref,
+  bookLabel,
+  bookIcon,
+  contactWidth,
+  buttonWidthMobile,
 }: FooterViewProps) {
   // ROLES, not hexes. #111827 here meant the footer sat one shade off every dark band above it and
   // never moved when the palette did — on 2026-08-05 the whole site went near-black cyan and the
@@ -170,8 +198,7 @@ export default function FooterView({
               4 columns from lg  (brand · divisions · company · contact)
             ⚠️ No 3-column step: with four children, three columns strands the fourth on a row of
             its own — the exact lopsidedness this is fixing. */}
-        <div className={`grid gap-10 ${groupEls.length ? "sm:grid-cols-2 lg:grid-cols-4" : ""}`}>
-          <div className={groupEls.length ? "" : "md:col-span-2"}>
+        <div className="mb-12 max-w-xl">
             {String(brandStyle) === "wordmark" ? (
               // Same mark as the header (NavView) — Playfair is already loaded site-wide, so this
               // costs no extra font request. `font-variant: small-caps` is what produces the
@@ -212,13 +239,65 @@ export default function FooterView({
             )}
             {blurb ? <p className="mt-6 text-sm leading-relaxed text-white/80">{blurb}</p> : null}
           </div>
+        {/* ⛔ THREE COLUMNS, MATCHING THE MENU: Divisions · Company · Contact.
+            Steven: "if we do three columns in both places... then the header and the footer will
+            match, and as the screen collapses, the three columns go to two columns on a tablet,
+            and they go to one column on a phone."
+            The brand block moved ABOVE this grid rather than being a fourth column, which is what
+            makes the footer's lower half structurally identical to the menu overlay. */}
+        {/* ⛔ PROPORTIONAL, NOT EQUAL. Equal thirds held wildly unequal content: Divisions has
+            two-line entries and wants the room, Company has one-word links that floated in ~500px
+            of empty column, and Contact's buttons stretched to ~450px because the COLUMN was 450px.
+            Steven read the middle one as "too narrow" — it was not narrow, it was cavernous, so the
+            words looked stranded.
+
+            ⚠️ Contact is a FIXED 300px, and that is the piece that matters: the buttons stop
+            stretching because their column stops stretching. Every earlier attempt capped the
+            button and left the column wide, which is why they kept looking wrong.
+
+            sm and single-column stacking are untouched, so the phone view does not move. */}
+        <div
+          className={`grid gap-10 ${
+            // ⚠️ 1fr / 1fr, was 1.5fr / 1fr. The old ratio was right for a Company column of three
+            // BARE links — and wrong the moment that column started deriving from NAV_EXTRA, which
+            // gave it four links WITH descriptions. At 1fr those wrapped to two lines while
+            // Divisions' fit on one. Both columns are title + description now, so they want the
+            // same width.
+            // ⛔ Not a repeat of the equal-thirds mistake: that was equal widths over genuinely
+            // unequal content. This is the reverse — the content became equal, so the widths did.
+            groupEls.length ? "sm:grid-cols-2 lg:grid-cols-[1fr_1fr_var(--sjc-contact-w)]" : ""
+          }`}
+          // ⛔ A CSS VARIABLE, NOT AN INLINE WIDTH. An inline style beats a Tailwind class at
+          // EVERY breakpoint, so styling the width directly would pin one value across all of
+          // them and the responsive classes would silently stop working. Feeding a variable that
+          // the class consumes keeps the breakpoints in charge.
+          style={{ "--sjc-contact-w": `${contactWidth || 300}px` } as React.CSSProperties}
+        >
 
           {groupEls.map((g, gi) => (
-            <div key={`g${gi}`}>
+            <div key={`g${gi}`} className="text-center sm:text-left">
               <p className="text-sm font-semibold uppercase tracking-wide text-white/90">{g.heading}</p>
-              <ul className="mt-4 space-y-3 text-sm">
+              {/* ⛔ PROXIMITY, NOT SIZE — space-y-3 → space-y-6 plus a hairline between items.
+                  The gap between a description and the NEXT title used to be about the same as the
+                  gap between a title and ITS OWN description (12px between, 2px within). With
+                  one-line notes that read fine; with the three-line copy Steven wrote, the four
+                  entries merged into one block of text.
+                  The divider is the menu overlay's own treatment at footer scale — the two are
+                  meant to match now, and one having lines while the other didn't was the second
+                  thing his eye caught. */}
+              <ul className="mt-4 space-y-6 text-sm">
                 {g.links.map((l, i) => (
-                  <li key={i}>
+                  <li
+                    key={i}
+                    // ⛔ THE MENU'S OWN VALUE, NOT A GUESS AT ONE. Three rounds went to nudging
+                    // this — white/10, /25, /50 — each a guess at "tasteful" when the instruction
+                    // was simply "match the header". The menu draws its dividers in currentColor at
+                    // 0.95, so that is what this uses.
+                    // Steven: "why don't we go to what's in the header? What would it be too
+                    // fucking white?" Correct question. There was no reason.
+                    className={i ? "border-t pt-6" : undefined}
+                    style={i ? { borderColor: "currentColor", borderTopWidth: 1, opacity: 0.95 } : undefined}
+                  >
                     <a href={l.target || "#"} className="group block text-white/80 hover:text-white">
                       <span className="block">{l.label}</span>
                       {/* ⛔ UNDER THE LABEL, NOT ON HOVER. These four lines are the pitch — what
@@ -276,10 +355,36 @@ export default function FooterView({
               items-stretch: the buttons fill their column at every width. That is what closes the
               ragged empty space left-alignment opened up on a phone — the block gets a hard right
               edge instead of a jagged one. */}
-          <div>
+          <div className="text-center sm:text-left">
             <p className="text-sm font-semibold uppercase tracking-wide text-white/90">Contact</p>
-            <div className="mt-4 flex flex-col items-stretch gap-3">
-              <ContactButtons phone={phone} phoneDisplay={phoneDisplay} email={email} />
+            {/* ⛔ FOUR BUTTONS NOW, AND THE SAME ARTWORK THE MENU USES. The footer had Call / Text /
+                Email while the menu had those plus Book a Call, and the footer's still rendered the
+                flat drawn glyphs — the same block showing two different things in two places, which
+                is the exact drift the shared component was created to end. Book a Call and the icon
+                URLs are props, so a client site sets its own or gets none. */}
+            {/* ⛔ 75% WHEN STACKED, FULL COLUMN ON DESKTOP.
+                Steven: "on the mobile phone it still looks stupid because it's too wide."
+                On a phone the button was 100% of the column — the viewport minus 48px of padding,
+                so ~342px on a 390px iPhone. The desktop fix (a fixed 300px column) does nothing
+                below `lg`, because there the column IS the screen.
+                max-w-[75%] caps it while stacked; lg:max-w-none hands control back to the 300px
+                track so the two sizes can be tuned independently. */}
+            <div
+              className="mx-auto mt-4 flex max-w-[var(--sjc-btn-w)] flex-col items-stretch gap-3 sm:mx-0 sm:max-w-none"
+              style={{ "--sjc-btn-w": `${buttonWidthMobile || 50}%` } as React.CSSProperties}
+            >
+              <ContactButtons
+                phone={phone}
+                phoneDisplay={phoneDisplay}
+                email={email}
+                iconCall={iconCall}
+                iconText={iconText}
+                iconEmail={iconEmail}
+                bookHref={bookHref}
+                bookLabel={bookLabel}
+                bookIcon={bookIcon}
+                bookNote={bookHref ? "(Click Here)" : ""}
+              />
             </div>
           </div>
         </div>

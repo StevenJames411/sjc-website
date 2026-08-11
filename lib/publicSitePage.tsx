@@ -299,6 +299,59 @@ export async function SitePageBody({
       }
     : { nav: null, footer: null };
 
+  // ── ⛔ THE FOOTER CAN MIRROR THE HEADER'S LINKS ──────────────────────────────────────────────
+  // Steven, after rewriting every menu description in the studio and finding the footer unchanged:
+  // "the global footer and global header — are they able to be the same thing or not?"
+  //
+  // The honest answer was that content.ts derives both lists from one source, but only at PORT
+  // time — `--chrome` writes two INDEPENDENT documents, and after that editing one does nothing to
+  // the other. "Edit once, both update" was true of the code and false of the builder.
+  //
+  // ⚠️ THIS IS THE ONLY PLACE BOTH DOCUMENTS EXIST. FooterView receives its own block's props and
+  // has no way to see the nav document, so the mirror has to happen at this seam.
+  //
+  // ⚠️ THE BUILDER CANVAS WILL NOT SHOW IT. The editor renders one block in isolation, so the
+  // footer's canvas keeps showing its own stored groups. The LIVE page is what mirrors — judge it
+  // published, not in the editor.
+  //
+  // OFF BY DEFAULT, and Steven named why: "maybe for all of our future builds, we leave them
+  // separated unless we want them joined." A client footer usually wants to be shorter than the
+  // menu.
+  if (chrome.nav && chrome.footer) {
+    type Blk = { type?: string; props?: Record<string, unknown> };
+    const footerBlk = ((chrome.footer as { content?: Blk[] }).content || []).find(
+      (b) => b?.type === "SiteFooter"
+    );
+    if (footerBlk?.props?.mirrorHeaderLinks) {
+      const navBlk = ((chrome.nav as { content?: Blk[] }).content || []).find(
+        (b) => b?.type === "SiteHeader"
+      );
+      const navLinks = (navBlk?.props?.links || []) as {
+        label?: string; target?: string; note?: string; group?: string;
+      }[];
+      // Group by the nav link's own `group` field — the same thing that titles the menu's columns,
+      // so the footer's headings come out identical without being typed again.
+      const grouped: { heading: string; links: { label: string; target: string; note: string }[] }[] = [];
+      for (const l of navLinks) {
+        if (!l?.label) continue;
+        const heading = l.group || "";
+        const bucket = grouped.find((g) => g.heading === heading);
+        const item = { label: l.label, target: l.target || "#", note: l.note || "" };
+        if (bucket) bucket.links.push(item);
+        else grouped.push({ heading, links: [item] });
+      }
+      if (grouped.length) {
+        // A copy — never mutate the cached document the store handed back.
+        chrome.footer = {
+          ...(chrome.footer as object),
+          content: ((chrome.footer as { content?: Blk[] }).content || []).map((b) =>
+            b === footerBlk ? { ...b, props: { ...b.props, groups: grouped } } : b
+          ),
+        } as typeof chrome.footer;
+      }
+    }
+  }
+
   const body = (
     <SiteProvider
       siteId={siteId}

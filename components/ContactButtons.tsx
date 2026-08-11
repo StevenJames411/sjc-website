@@ -64,6 +64,19 @@ export type ContactButtonsProps = {
   iconCall?: string;
   iconText?: string;
   iconEmail?: string;
+  /**
+   * BOOK A CALL — the fourth button, rendered FIRST when `bookHref` is set.
+   *
+   * ⛔ IT LIVED IN NavView AS HAND-BUILT MARKUP with its own copy of the pill classes, which is the
+   * same duplication that let the menu and the footer drift apart to begin with. It also meant the
+   * footer had three buttons and the menu four — the same block, two different contents.
+   * One component owns all four now, so neither surface can be missing one again.
+   */
+  bookHref?: string;
+  bookLabel?: string;
+  bookIcon?: string;
+  /** Second line under the book label — Steven's "(Click Here)" convention. */
+  bookNote?: string;
 };
 
 // One path per icon, sized by the caller — so a size change cannot alter the artwork.
@@ -80,6 +93,9 @@ const PATHS = {
       <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
     </>
   ),
+  book: (
+    <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clipRule="evenodd" />
+  ),
 };
 
 // ⛔ SHAPE AND COLOUR ARE SEPARATE ON PURPOSE.
@@ -94,13 +110,15 @@ const PATHS = {
 const PILL_BASE = "group relative w-full rounded-lg font-semibold text-white shadow transition";
 export const PILL_SIZE = {
   md: "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm",
-  // ⚠️ py-8 → py-4, gap-3 → gap-2. Steven: "the blue CTA buttons are twice the size that they need
-  // to be... so the buttons don't look like boulders." The padding was set to fill the overlay's
-  // empty half rather than to fit the content — the tile should be sized by its icon and label,
-  // and the leftover canvas is allowed to just be empty.
-  tile: "flex flex-col items-center justify-center gap-2 px-4 py-4 text-center text-base",
+  // ⛔ THE ICON SETS THE HEIGHT — PADDING WAS THE WRONG DIAL, AND IT GOT PULLED TWICE BEFORE THIS.
+  // First pass: py-8 → py-4, "so the buttons don't look like boulders." They still read as "four
+  // giant blocks on the page", because at h-14 the ICON was 56px and no amount of padding trimming
+  // touches that. Cutting one while the other holds the height is the same mistake made twice more
+  // in this component's history (scaling a pill when the shape was wrong, twice).
+  // So icon and padding move TOGETHER, in one constant, and the block halves for real.
+  tile: "flex flex-col items-center justify-center gap-1.5 px-3 py-3 text-center text-sm",
 } as const;
-export const ICON_SIZE = { md: "h-4 w-4", tile: "h-14 w-14" } as const;
+export const ICON_SIZE = { md: "h-4 w-4", tile: "h-9 w-9" } as const;
 const PILL = `${PILL_BASE} bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]`;
 
 export default function ContactButtons({
@@ -112,13 +130,18 @@ export default function ContactButtons({
   iconCall = "",
   iconText = "",
   iconEmail = "",
+  bookHref = "",
+  bookLabel = "Book a Call",
+  bookIcon = "",
+  bookNote = "",
 }: ContactButtonsProps) {
   const button = (
     href: string,
     path: React.ReactNode,
     verb: string,
     value: string,
-    src?: string
+    src?: string,
+    note?: string
   ) => (
     <a href={href} className={`${PILL} ${PILL_SIZE[size]} ${className}`} title={value}>
       {src ? (
@@ -129,7 +152,14 @@ export default function ContactButtons({
           {path}
         </svg>
       )}
-      {verb}
+      {note ? (
+        <span className="flex flex-col leading-tight">
+          <span>{verb}</span>
+          <span className="text-xs font-normal opacity-90">{note}</span>
+        </span>
+      ) : (
+        verb
+      )}
       {/* ⛔ THE VALUE IS ON HOVER AT EVERY SIZE — SETTLED, AND I BROKE IT ONCE.
           Building the tile I printed the number under the label, reasoning that a tile has the
           room. Steven: "take the email and phone number off of them, and when you hover it you'll
@@ -149,6 +179,12 @@ export default function ContactButtons({
 
   return (
     <>
+      {/* FIRST — it is the one thing the page is asking for; the other three are how to reach us.
+          Its hover value is its own label, because a booking link has no number to reveal and a
+          browser otherwise falls back to showing the image URL. */}
+      {bookHref
+        ? button(bookHref, PATHS.book, bookLabel, bookLabel, bookIcon, bookNote)
+        : null}
       {phone ? button(telLink(phone), PATHS.call, "Click to Call", phoneDisplay || phone, iconCall) : null}
       {phone ? button(`sms:${phone}`, PATHS.text, "Click to Text", phoneDisplay || phone, iconText) : null}
       {email ? button(`mailto:${email}`, PATHS.email, "Click to Email", email, iconEmail) : null}

@@ -102,7 +102,7 @@ type Props = {
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string };
+  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -132,6 +132,7 @@ type Props = {
     menuIconCall: string;
     menuIconText: string;
     menuIconEmail: string;
+    menuButtonWidthMobile: number;
     brandStyle: string;
     brandLine2: string;
     brandLine2Color: string;
@@ -247,6 +248,7 @@ export const NAV_DEFAULTS = {
   menuIconCall: "",
   menuIconText: "",
   menuIconEmail: "",
+  menuButtonWidthMobile: 70,
   ctaLabel: "See How It Works",
   ctaHref: "/#at-work",
   ctaNewTab: false,
@@ -292,6 +294,20 @@ export const FOOTER_DEFAULTS = {
   brandStyle: "",
   brandLine2: "",
   brandLine2Color: "",
+  // Blank = drawn glyphs and three buttons. A client site never inherits SJC's artwork or
+  // SJC's booking link by default.
+  iconCall: "",
+  iconText: "",
+  iconEmail: "",
+  bookHref: "",
+  bookLabel: "Book a Call",
+  bookIcon: "",
+  // Match what was hardcoded, so an untouched footer does not move.
+  contactWidth: 300,
+  buttonWidthMobile: 50,
+  // ⛔ OFF by default. A client footer usually wants to be SHORTER than the menu, and
+  // turning this on for everyone would silently rewrite every existing footer's links.
+  mirrorHeaderLinks: false,
 };
 
 export const IMAGE_DEFAULTS = {
@@ -1551,6 +1567,42 @@ export const config: Config<Props, RootProps> = {
             <ColorField value={value as string} onChange={onChange} />
           ),
         },
+        // Same four contact controls the header block has, so the two cannot say different things.
+        // ⛔ ONE EDIT INSTEAD OF TWO. On, the footer renders the HEADER's link groups — same
+        // labels, same descriptions, same column headings — so the menu becomes the single place
+        // those links are maintained. ⚠️ The builder canvas still shows the footer's own stored
+        // groups; only the live page mirrors.
+        mirrorHeaderLinks: {
+          type: "radio" as const,
+          label: "Footer links",
+          options: [
+            { label: "Its own links (default)", value: false },
+            { label: "Mirror the header's menu", value: true },
+          ],
+        },
+        bookHref: { type: "text" as const, label: "Book button links to (blank = hide the button)" },
+        bookLabel: { type: "text" as const, label: "Book button label" },
+        bookIcon: { type: "text" as const, label: "Book icon — image URL" },
+        iconCall: { type: "text" as const, label: "Call icon — image URL" },
+        iconText: { type: "text" as const, label: "Text icon — image URL" },
+        iconEmail: { type: "text" as const, label: "Email icon — image URL" },
+        // ⛔ THE TWO GEOMETRY DIALS THAT ESCAPED CODE. Every footer width change cost a build, a
+        // push, a deploy and a publish for a number that takes five seconds to click. Steppers,
+        // not text boxes — Steven asked to CLICK between 50 and 70, not type it.
+        contactWidth: {
+          type: "custom" as const,
+          label: "Contact column width, desktop (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={300} step={20} min={180} />
+          ),
+        },
+        buttonWidthMobile: {
+          type: "custom" as const,
+          label: "Button width on mobile, % (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={50} step={5} min={25} />
+          ),
+        },
         showLogo: {
           type: "radio" as const,
           label: "SJC logo",
@@ -1561,7 +1613,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: FOOTER_DEFAULTS,
-      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color }) => (
+      render: ({ blurb, links, groups, phone, phoneDisplay, email, privacyUrl, tosUrl, copyright, background, foreground, brandName, showLogo, brandStyle, brandLine2, brandLine2Color, iconCall, iconText, iconEmail, bookHref, bookLabel, bookIcon, contactWidth, buttonWidthMobile }) => (
         <FooterView
           blurb={blurb}
           links={links}
@@ -1579,6 +1631,14 @@ export const config: Config<Props, RootProps> = {
           brandStyle={brandStyle}
           brandLine2={brandLine2}
           brandLine2Color={brandLine2Color}
+          iconCall={iconCall}
+          iconText={iconText}
+          iconEmail={iconEmail}
+          bookHref={bookHref}
+          bookLabel={bookLabel}
+          bookIcon={bookIcon}
+          contactWidth={contactWidth}
+          buttonWidthMobile={buttonWidthMobile}
         />
       ),
     },
@@ -1674,6 +1734,15 @@ export const config: Config<Props, RootProps> = {
         menuIconCall: { type: "text" as const, label: "Call icon — image URL" },
         menuIconText: { type: "text" as const, label: "Text icon — image URL" },
         menuIconEmail: { type: "text" as const, label: "Email icon — image URL" },
+        // Pairs with the footer block's own width stepper. Separate numbers on purpose — the
+        // menu's buttons are alone on the screen at that width, the footer's are not.
+        menuButtonWidthMobile: {
+          type: "custom" as const,
+          label: "Button width on mobile, % (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange} fallback={70} step={5} min={25} />
+          ),
+        },
         // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
         // Blank = SJC's own look. Set these on a client build so their header isn't wearing
         // our navy. Existing nav documents have none of them saved, so they render unchanged.
@@ -1725,7 +1794,7 @@ export const config: Config<Props, RootProps> = {
         },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, ctaIcon, menuIconCall, menuIconText, menuIconEmail, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, ctaIcon, menuIconCall, menuIconText, menuIconEmail, menuButtonWidthMobile, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
         <NavView
           brandStyle={brandStyle}
           brandLine2={brandLine2}
@@ -1739,6 +1808,7 @@ export const config: Config<Props, RootProps> = {
           menuIconCall={menuIconCall}
           menuIconText={menuIconText}
           menuIconEmail={menuIconEmail}
+          menuButtonWidthMobile={menuButtonWidthMobile}
           brandName={brandName}
           brandHref={brandHref}
           brandSize={brandSize}

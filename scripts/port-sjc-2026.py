@@ -223,12 +223,12 @@ header = blk("SiteHeader",
     # public/icons, so they deploy with the site and are in version control — an icon cannot
     # silently vanish, and no third-party account sits in front of the most-clicked controls.
     ctaIcon="/icons/calendar.png",
+    menuIconCall="/icons/phone.png",
     menuIconText="/icons/sms.png",
     menuIconEmail="/icons/email.png",
-    # ⚠️ STILL HOTLINKED — the only one left. The phone exists solely on Landing Site's CDN, and the
-    # AVIF export macOS produces when dragging it out is a bitstream sharp cannot decode. Re-save it
-    # as PNG (open in Preview → File → Export) and this becomes /icons/phone.png like the rest.
-    menuIconCall="https://imagedelivery.net/xaKlCos5cTg_1RWzIu_h-A/55a02769-6830-4e6f-998a-6c3efa7b4a00/public",
+    # Stacked-phone width for the contact buttons. There is a stepper on the block, so this is only
+    # the starting value — Steven moves it in the studio without a deploy.
+    menuButtonWidthMobile=70,
     brandName="Steven James", brandHref="/", brandSize=26,
     brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
     tagline="", taglineColor="accent", taglineSize=14,
@@ -266,7 +266,14 @@ footer = blk("SiteFooter",
     # ⛔ THE SAME MARK AS THE HEADER. The footer shipped the `SJC` circle while the header wore the
     # serif wordmark — two brands on one screen, visible in the first phone screenshot Steven took.
     background="", foreground="", brandName="Steven James", showLogo=True,
-    brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent")
+    brandStyle="wordmark", brandLine2="Consulting", brandLine2Color="accent",
+    # ⛔ THE SAME FOUR BUTTONS AS THE MENU, FROM THE SAME SOURCES. The footer used to carry three
+    # (no Book a Call) with the drawn glyphs while the menu had four with the real artwork — one
+    # block showing two different things on one page. bookLabel reads ASK.cta so the footer button,
+    # the menu button and the page's own CTA cannot say three different things.
+    bookHref=C["CONTACT"]["book"], bookLabel=C["ASK"]["cta"]["label"],
+    bookIcon="/icons/calendar.png", iconCall="/icons/phone.png",
+    iconText="/icons/sms.png", iconEmail="/icons/email.png")
 
 # ⛔ THE PAGE NO LONGER CARRIES THE CHROME. `header` and `footer` now live in the SITE's own `nav`
 # and `footer` documents (--chrome, below), which every page of this website renders inside. Leaving
