@@ -108,6 +108,18 @@ const stripped = {
     id: "site-footer-stripped",
     brandName: "Steven James Consulting",
     showLogo: false,
+    // ⚠️ THE NAME HAS TO MATCH THE HEADER'S. Steven: *"you see how my name is fancy up in the
+    // header, and then you changed it for the footer. I want those to match."* `wordmark` is the
+    // same Playfair small-caps mark the header draws; the accent word is what makes it two-tone
+    // instead of one flat colour.
+    brandStyle: "wordmark",
+    brandAccentWord: "Consulting",
+    brandAccentColor: "",
+    // Bordered pills instead of three solid slabs, at the width of one column of three — the
+    // proportion Steven pointed at on stevenbarchetti.com. Both are fields in the builder now, so
+    // the next nudge costs a click rather than a deploy.
+    buttonStyle: "outline",
+    contactWidth: 420,
     blurb: "",
     links: [],
     groups: [],

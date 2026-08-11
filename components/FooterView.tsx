@@ -63,6 +63,25 @@ export type FooterViewProps = {
   brandLine2?: string;
   brandLine2Color?: string;
   /**
+   * THE TAIL OF THE NAME, IN THE ACCENT COLOUR — "Steven James **Consulting**".
+   *
+   * Steven, comparing the footer to the header: *"you see how my name is fancy up in the header,
+   * and then you changed it for the footer. I want those to match."* The header's mark is two-tone
+   * and the wordmark below was one flat colour, so the same words read as two different brands on
+   * one page.
+   *
+   * ⛔ AN EXPLICIT WORD, NOT "colour the last word". A heuristic gets "Marbleford Pet **Wash**"
+   * right and "Bexar Oak **Co.**" wrong, on somebody's live site, with nobody watching. Blank
+   * leaves the name in one colour, which is every existing footer.
+   *
+   * ⚠️ Matched at the END of the name, case-insensitively, and only ever the tail — so it can
+   * never chop a word out of the middle.
+   */
+  brandAccentWord?: string;
+  brandAccentColor?: string;
+  /** "outline" = bordered pills on the dark band, matching the menu's calmer treatment. */
+  buttonStyle?: string;
+  /**
    * Contact-button artwork and the Book a Call target — mirrors the menu's fields exactly.
    * ⛔ Blank on every one of them means a client site falls back to the drawn glyphs and shows
    * three buttons, never SJC's icons or SJC's booking link.
@@ -104,6 +123,9 @@ export default function FooterView({
   brandStyle,
   brandLine2,
   brandLine2Color,
+  brandAccentWord,
+  brandAccentColor,
+  buttonStyle,
   iconCall,
   iconText,
   iconEmail,
@@ -120,6 +142,31 @@ export default function FooterView({
   const fg = foreground || "white";
   const name = brandName || "Steven James Consulting";
   const logoOn = showLogo !== false;
+
+  // ── THE TWO-TONE SPLIT ──────────────────────────────────────────────────────────────────────
+  // Tail-only and case-insensitive; anything else leaves the name exactly as typed. Built here
+  // rather than inline so both the wordmark and the plain lockup can use the same split and cannot
+  // disagree about where the accent starts.
+  const accentWord = String(brandAccentWord || "").trim();
+  const splitAt =
+    accentWord && name.toLowerCase().endsWith(accentWord.toLowerCase())
+      ? name.length - accentWord.length
+      : -1;
+  const nameHead = splitAt > 0 ? name.slice(0, splitAt) : name;
+  const nameTail = splitAt > 0 ? name.slice(splitAt) : "";
+  const brandMark =
+    nameTail !== "" ? (
+      <>
+        {nameHead}
+        <span style={{ color: resolveColorOr(brandAccentColor, "var(--color-sjc-blue)") }}>
+          {nameTail}
+        </span>
+      </>
+    ) : (
+      name
+    );
+
+  const pillVariant = String(buttonStyle) === "outline" ? "outline" : "solid";
   const year = new Date().getFullYear();
   const linkEls = (links || []).filter((l) => l && l.label);
   const groupEls = (groups || [])
@@ -214,7 +261,7 @@ export default function FooterView({
                     fontSize: "26px",
                   }}
                 >
-                  {name}
+                  {brandMark}
                 </span>
                 {brandLine2 ? (
                   <span
@@ -234,7 +281,7 @@ export default function FooterView({
             ) : (
               <div className="flex items-center gap-3">
                 {logoOn ? <img src={LOGO_URL} alt="logo" className="h-12 w-12 rounded-full" /> : null}
-                <span className="text-lg font-semibold">{name}</span>
+                <span className="text-lg font-semibold">{brandMark}</span>
               </div>
             )}
             {blurb ? <p className="mt-6 text-sm leading-relaxed text-white/80">{blurb}</p> : null}
@@ -369,9 +416,25 @@ export default function FooterView({
                 below `lg`, because there the column IS the screen.
                 max-w-[75%] caps it while stacked; lg:max-w-none hands control back to the 300px
                 track so the two sizes can be tuned independently. */}
+            {/* ⛔ WITH NO LINK COLUMNS THERE IS NO GRID TO SIT IN, AND THE BUTTONS RAN THE WHOLE BAND.
+                `sm:max-w-none` hands the width back to the grid track — correct when Divisions and
+                Company are beside it, and meaningless on a stripped footer where the contact block
+                IS the row. Three blue bars 1400px wide is what Steven was looking at.
+                So when there are no groups the block keeps an explicit width and stays left: the
+                same ~300px column it would have occupied, which is the proportion he pointed at on
+                his own site. Dialled from `contactWidth`, the field that already exists for it. */}
             <div
-              className="mx-auto mt-4 flex max-w-[var(--sjc-btn-w)] flex-col items-stretch gap-3 sm:mx-0 sm:max-w-none"
-              style={{ "--sjc-btn-w": `${buttonWidthMobile || 50}%` } as React.CSSProperties}
+              className={`mt-4 flex flex-col items-stretch gap-3 ${
+                groupEls.length
+                  ? "mx-auto max-w-[var(--sjc-btn-w)] sm:mx-0 sm:max-w-none"
+                  : "mx-auto max-w-[var(--sjc-btn-w)] sm:mx-0 sm:max-w-[var(--sjc-contact-w)]"
+              }`}
+              style={
+                {
+                  "--sjc-btn-w": `${buttonWidthMobile || 50}%`,
+                  "--sjc-contact-w": `${contactWidth || 300}px`,
+                } as React.CSSProperties
+              }
             >
               <ContactButtons
                 phone={phone}
@@ -384,6 +447,10 @@ export default function FooterView({
                 bookLabel={bookLabel}
                 bookIcon={bookIcon}
                 bookNote={bookHref ? "(Click Here)" : ""}
+                variant={pillVariant}
+                // Left-aligned only on the outline pill: a bordered pill at a fixed width reads as
+                // a list of actions, and a centred label in a wide bordered box reads as a gap.
+                align={pillVariant === "outline" ? "left" : "center"}
               />
             </div>
           </div>
