@@ -428,11 +428,27 @@ function frameCss(images: DesignImage[]): string {
     if (!h && !w && !band && !bandCol && !glow) continue;
 
     const sel = `.${DESIGN_SCOPE} *:has(> img[data-sjc-img="${key}"])`;
-    const box = [
+
+    // ⚠️ A HAND-SET FRAME SIZE IS A DESKTOP DECISION, AND MUST NOT FOLLOW THE PAGE ONTO A PHONE.
+    //
+    // The size is chosen by eye against the text column beside it, so it is only meaningful while
+    // there IS a column beside it. Emitted without a breakpoint, a 620px frame stays 620px tall
+    // inside a 350px-wide stacked column: on sjc-2026's hero the photo swallowed the whole screen
+    // and pushed the headline off it. Below the breakpoint the frame goes back to the shape the
+    // photo actually is, which is what the design does on its own.
+    //
+    // 960px because that is where these designs stack — the same number this design's own media
+    // queries use, and the common one across the generators we import from.
+    const sized = [
       h ? `height:${h}px` : "",
       // max-width:none so a width over 100% can actually leave the column instead of being
       // clamped back to it by the design's own max-width.
       w ? `width:${w}%;max-width:none` : "",
+    ].filter(Boolean).join(";");
+
+    // The band and the glow are proportional and read correctly at any width, so they are NOT
+    // behind the breakpoint — losing the glass look on a phone would be its own bug.
+    const always = [
       // The band is padding: the frame's own background showing around the photo. box-sizing so a
       // band never makes the frame taller than the height that was asked for.
       band ? `padding:${band}px;box-sizing:border-box` : "",
@@ -441,20 +457,24 @@ function frameCss(images: DesignImage[]): string {
       // no shadow under it reads as a sticker, not glass.
       glow ? `box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 48px ${glow}` : "",
     ].filter(Boolean).join(";");
-    out.push(`${sel}{${box}}`);
+
+    if (always) out.push(`${sel}{${always}}`);
+    if (sized) out.push(`@media (min-width:961px){${sel}{${sized}}}`);
 
     const pos = img?.focus || "center";
+    // ⚠️ `height:100%` BELONGS WITH THE FRAME HEIGHT, NOT OUTSIDE IT. Left unconditional, a photo
+    // on a phone stretches to fill a frame that no longer has a height of its own, which is how a
+    // portrait photo ends up squashed into whatever box the stacked column happens to be.
+    const fillSized = h || w ? `@media (min-width:961px){${sel} > img[data-sjc-img="${key}"]{width:100%;height:100%;object-fit:cover}}` : "";
     const fill = [
-      "width:100%",
-      "height:100%",
-      "object-fit:cover",
       `object-position:${pos}`,
       // Rounded to match whatever radius the design gave the frame, so a banded photo doesn't sit
       // as a square inside a rounded panel.
       band ? "border-radius:inherit" : "",
       z > 100 ? `transform:scale(${z / 100});transform-origin:${pos}` : "",
     ].filter(Boolean).join(";");
-    out.push(`${sel} > img[data-sjc-img="${key}"]{${fill}}`);
+    if (fill) out.push(`${sel} > img[data-sjc-img="${key}"]{${fill}}`);
+    if (fillSized) out.push(fillSized);
   }
   return out.join("");
 }
