@@ -190,6 +190,19 @@ const DESIGN_BG_FIELD = {
   options: [{ label: "Keep the design's own", value: "" }, ...BG_FIELD.options],
 };
 
+// A glow is an ACCENT, not a page band — offering the band colours here would only ever let you
+// glow a photo the same colour as the page behind it, which is invisible.
+const DESIGN_GLOW_FIELD = {
+  type: "select" as const,
+  options: [
+    { label: "None", value: "" },
+    { label: "Accent", value: "accent" },
+    { label: "Secondary", value: "secondary" },
+    { label: "Button colour", value: "cta" },
+    { label: "White", value: "white" },
+  ],
+};
+
 // Per-block text color. Default ink; "White" is for blocks sitting on a dark Section band.
 //
 // ⚠️ ROLES, NOT HEXES. The swatch saves what a colour MEANS, so the brand screen drives it. These
@@ -675,6 +688,18 @@ export const config: Config<Props, RootProps> = {
                 <SizeStepper label="Frame width %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
               ),
             },
+            // ── THE BAND. What makes a photo read as glass rather than a rectangle pasted on
+            // the page: a visible margin of frame around it, in its own colour, with a glow under
+            // it. The Designs site has it; the ten-pager's design draws its photo edge-to-edge.
+            bandWidth: {
+              type: "custom" as const,
+              label: "Band around the photo — width (px)",
+              render: ({ onChange, value }) => (
+                <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
+              ),
+            },
+            bandColor: { ...DESIGN_BG_FIELD, label: "Band colour" },
+            glowColor: { ...DESIGN_GLOW_FIELD, label: "Glow under the frame" },
             // The SAME three controls as the Image block — a photo is reframed the one way
             // everywhere, not a different way depending on where it came from.
             shape: {

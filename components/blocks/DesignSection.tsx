@@ -71,6 +71,19 @@ export type DesignImage = {
   frameHeight?: number | null;
   frameWidth?: number | null;
   /**
+   * THE BAND — the visible margin of frame showing around the photo, and the glow under it.
+   *
+   * This is what reads as depth and makes a photo look like it is sitting IN something rather than
+   * being a rectangle pasted on the page. The Designs site has it; the ten-pager lost it, because
+   * the design draws its photo edge-to-edge inside the frame.
+   *
+   * Width is padding on the frame, colour is the frame's own background showing through it, and
+   * the glow is a coloured shadow underneath. Blank on all three = the design's own look.
+   */
+  bandWidth?: number | null;
+  bandColor?: string;
+  glowColor?: string;
+  /**
    * ── SAME THREE CONTROLS AS THE IMAGE BLOCK: shape, zoom, keep-in-view. ────────────────────
    *
    * ⚠️ NOT max-width. In an imported design the SLOT is fixed — the design decided how big that
@@ -400,8 +413,11 @@ function frameCss(images: DesignImage[]): string {
     if (!key) continue;
     const h = typeof img?.frameHeight === "number" && img.frameHeight > 0 ? img.frameHeight : null;
     const w = typeof img?.frameWidth === "number" && img.frameWidth > 0 ? img.frameWidth : null;
+    const band = typeof img?.bandWidth === "number" && img.bandWidth > 0 ? img.bandWidth : null;
+    const bandCol = resolveColor(img?.bandColor);
+    const glow = resolveColor(img?.glowColor);
     const z = typeof img?.zoom === "number" && img.zoom > 100 ? img.zoom : 100;
-    if (!h && !w) continue;
+    if (!h && !w && !band && !bandCol && !glow) continue;
 
     const sel = `.${DESIGN_SCOPE} *:has(> img[data-sjc-img="${key}"])`;
     const box = [
@@ -409,6 +425,13 @@ function frameCss(images: DesignImage[]): string {
       // max-width:none so a width over 100% can actually leave the column instead of being
       // clamped back to it by the design's own max-width.
       w ? `width:${w}%;max-width:none` : "",
+      // The band is padding: the frame's own background showing around the photo. box-sizing so a
+      // band never makes the frame taller than the height that was asked for.
+      band ? `padding:${band}px;box-sizing:border-box` : "",
+      bandCol ? `background:${bandCol}` : "",
+      // Keep the depth shadow the design shipped with and add the glow on top of it — a glow with
+      // no shadow under it reads as a sticker, not glass.
+      glow ? `box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 48px ${glow}` : "",
     ].filter(Boolean).join(";");
     out.push(`${sel}{${box}}`);
 
@@ -418,6 +441,9 @@ function frameCss(images: DesignImage[]): string {
       "height:100%",
       "object-fit:cover",
       `object-position:${pos}`,
+      // Rounded to match whatever radius the design gave the frame, so a banded photo doesn't sit
+      // as a square inside a rounded panel.
+      band ? "border-radius:inherit" : "",
       z > 100 ? `transform:scale(${z / 100});transform-origin:${pos}` : "",
     ].filter(Boolean).join(";");
     out.push(`${sel} > img[data-sjc-img="${key}"]{${fill}}`);
