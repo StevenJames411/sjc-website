@@ -1,4 +1,5 @@
 import Nav from "@/components/Nav";
+import { tenantPage, tenantPageMetadata } from "@/lib/sjcRoute";
 import Footer from "@/components/Footer";
 import ApplyForm, { type Step, type Intro, type Booking } from "@/components/ApplyForm";
 import { readPuckPublished } from "@/lib/puckContent";
@@ -17,6 +18,9 @@ export const dynamic = "force-dynamic";
 // Preview text too — edited at /edit/apply with no block selected (the Page Settings panel).
 // What's below is only the fallback this page shipped with, used while the panel is empty.
 export async function generateMetadata() {
+  // Not SJC's domain? This name belongs to whoever that host is. See lib/sjcRoute.
+  const tenant = await tenantPageMetadata("apply");
+  if (tenant) return tenant;
   return pageMetadata("apply", {
     path: "/apply",
     title: "Apply — Steven James Consulting",
@@ -136,6 +140,8 @@ async function stepsFromLibrary(formId: string, pageKeys: string[]): Promise<Ste
 }
 
 export default async function Apply() {
+  const tenant = await tenantPage("apply");
+  if (tenant) return tenant;
   const data = (await readPuckPublished("apply", SJC)) || seedFor("apply", "Apply");
   const { intro, disclaimer, booking, steps: blockSteps } = extract(data);
 
