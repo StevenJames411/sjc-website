@@ -101,6 +101,20 @@ export type FooterViewProps = {
    */
   contactLayout?: string;
   /**
+   * THE BAND'S OWN DEPTH — the last hardcoded number in this component.
+   *
+   * ⚠️ IT WAS `py-14`, AND ON A STRIPPED FOOTER THAT 56px WAS MOST OF THE REMAINING HEIGHT. Steven
+   * had just cut the footer to one row precisely to make it low-profile, and the only thing left
+   * holding it open was a number nobody could reach. Exactly the same failure as `contactWidth`
+   * before it — see the note on that field, in his words.
+   *
+   * Defaults match `py-14` / `mt-12` exactly, so nothing already published moves a pixel.
+   */
+  paddingTop?: number | null;
+  paddingBottom?: number | null;
+  /** Gap above the copyright + legal row. Was `mt-12`. */
+  legalGap?: number | null;
+  /**
    * Contact-button artwork and the Book a Call target — mirrors the menu's fields exactly.
    * ⛔ Blank on every one of them means a client site falls back to the drawn glyphs and shows
    * three buttons, never SJC's icons or SJC's booking link.
@@ -146,6 +160,9 @@ export default function FooterView({
   brandAccentColor,
   buttonStyle,
   contactLayout,
+  paddingTop,
+  paddingBottom,
+  legalGap,
   iconCall,
   iconText,
   iconEmail,
@@ -238,7 +255,15 @@ export default function FooterView({
         className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full opacity-[0.14]"
         style={{ backgroundColor: "var(--color-sjc-blue)", filter: "blur(120px)" }}
       />
-      <div className="relative mx-auto max-w-6xl px-6 py-14">
+      <div
+        className="relative mx-auto max-w-6xl px-6"
+        // ⚠️ NUMBERS, NOT CLASSES. `py-14` could not be overridden from a field without an
+        // !important fight, so the value moves to a style and the class goes.
+        style={{
+          paddingTop: typeof paddingTop === "number" ? paddingTop : 56,
+          paddingBottom: typeof paddingBottom === "number" ? paddingBottom : 56,
+        }}
+      >
         {/* ⛔ ONE COLUMN ON A PHONE, COLUMNS FROM md UP. This is the fix for the email running off
             the right edge — and the fix has to be a BREAKPOINT, not a cleverer track definition.
 
@@ -487,7 +512,10 @@ export default function FooterView({
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
+        <div
+          className="flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between"
+          style={{ marginTop: typeof legalGap === "number" ? legalGap : 48 }}
+        >
           <p>© {year} {copyright}. All rights reserved.</p>
           <div className="flex gap-6">
             {privacyUrl ? (
