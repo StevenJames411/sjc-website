@@ -20,7 +20,7 @@
 import type { Data } from "@measured/puck";
 import { importHtml } from "@/lib/importHtml";
 import { importDesign, detectFonts, detectAccent } from "@/lib/importDesign";
-import { createSite, updateSite } from "@/lib/sites";
+import { createSite, updateSite, readSites } from "@/lib/sites";
 import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
@@ -65,6 +65,52 @@ async function fetchHtml(raw: string): Promise<{ html?: string; error?: string }
   }
 }
 
+/**
+ * Make every asset reference absolute against the page it came from.
+ *
+ * ⛔ WITHOUT THIS, A RELATIVE IMAGE PATH IMPORTS AS A BROKEN IMAGE — SILENTLY.
+ * A page that writes `src="assets/portfolio/x.jpg"` is perfectly correct on its own host, but
+ * the moment its markup is stored and re-rendered from the builder that path resolves against
+ * the BUILDER's domain and 404s. The import still reports success, the editor still shows an
+ * image field, and the picture is just missing. Ten portfolio screenshots landed that way on
+ * 2026-08-11 before this existed.
+ *
+ * Only runs when the HTML was fetched from a URL — pasted markup has no base to resolve against.
+ * Absolute urls, protocol-relative urls, data: and mailto:/tel:/# are all left alone.
+ */
+function absolutizeAssets(html: string, base: string): string {
+  let origin: URL;
+  try {
+    origin = new URL(base);
+  } catch {
+    return html;
+  }
+  const fix = (v: string) => {
+    const t = v.trim();
+    if (!t || /^(https?:|data:|blob:|mailto:|tel:|sms:|#|\/\/)/i.test(t)) return v;
+    try {
+      return new URL(t, origin).toString();
+    } catch {
+      return v;
+    }
+  };
+  return String(html)
+    .replace(/\b(src|poster)\s*=\s*"([^"]*)"/gi, (_m, a, v) => `${a}="${fix(v)}"`)
+    // srcset is a comma-separated list of "url descriptor" pairs
+    .replace(/\bsrcset\s*=\s*"([^"]*)"/gi, (_m, list: string) => {
+      const out = list
+        .split(",")
+        .map((part) => {
+          const s = part.trim();
+          if (!s) return s;
+          const [u, ...rest] = s.split(/\s+/);
+          return [fix(u), ...rest].join(" ");
+        })
+        .join(", ");
+      return `srcset="${out}"`;
+    });
+}
+
 /** "best-in-show-grooming.sitedrop.ai" -> "Best In Show Grooming" */
 function nameFromUrl(raw: string): string {
   try {
@@ -77,7 +123,17 @@ function nameFromUrl(raw: string): string {
 }
 
 export async function POST(req: Request) {
-  let body: { html?: string; url?: string; businessName?: string; dryRun?: boolean; mode?: string };
+  let body: {
+    html?: string;
+    url?: string;
+    businessName?: string;
+    dryRun?: boolean;
+    mode?: string;
+    /** Import INTO an existing website instead of creating a new one — see below. */
+    siteId?: string;
+    /** The page's name inside that website. Defaults to "Home". */
+    pageTitle?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -90,7 +146,10 @@ export async function POST(req: Request) {
   if (!html.trim() && url) {
     const got = await fetchHtml(url);
     if (got.error) return Response.json({ ok: false, error: got.error }, { status: 400 });
-    html = got.html || "";
+    // Resolve asset paths against the page they came from BEFORE anything parses the markup —
+    // see absolutizeAssets. Doing it here means every downstream step (tokenising, the image
+    // adopter, the stored source archive) sees a URL that actually works.
+    html = absolutizeAssets(got.html || "", url);
   }
 
   if (!html.trim()) {
@@ -163,11 +222,27 @@ export async function POST(req: Request) {
   }
 
   // ── THE WEBSITE ─────────────────────────────────────────────────────────────────────────────
-  const site = await createSite({ name: businessName, kind: "client" });
-  if (!site.ok || !site.id) return Response.json(site, { status: 400 });
-  const siteId = site.id;
+  // ⛔ ONE CALL USED TO MEAN ONE WEBSITE, WHICH MADE A MULTI-PAGE SITE IMPOSSIBLE.
+  // A ten-page design took ten calls and produced TEN separate websites — ten cards in the
+  // Design Library, ten drawers, no shared nav or footer, and the same junk-card sprawl this
+  // route's own header warns about. Pass `siteId` to import into a website that already exists
+  // and `pageTitle` to name the page inside it: the first page comes in as Home, the rest as
+  // themselves. Omit both and the old behaviour is unchanged.
+  const intoExisting = String(body?.siteId || "").trim();
+  let siteId: string;
+  if (intoExisting) {
+    const sites = await readSites();
+    if (!sites.some((s) => s.id === intoExisting)) {
+      return Response.json({ ok: false, error: `No website with id "${intoExisting}".` }, { status: 400 });
+    }
+    siteId = intoExisting;
+  } else {
+    const site = await createSite({ name: businessName, kind: "client" });
+    if (!site.ok || !site.id) return Response.json(site, { status: 400 });
+    siteId = site.id;
+  }
 
-  const created = await createPage("Home", siteId);
+  const created = await createPage(String(body?.pageTitle || "").trim() || "Home", siteId);
   if (!created.ok || !created.slug) return Response.json(created, { status: 400 });
 
   // The importer already digs the business facts out of the markup. They go on the SITE RECORD —
@@ -184,7 +259,10 @@ export async function POST(req: Request) {
     address: "",
     hours: "",
   };
-  await updateSite(siteId, { business });
+  // ⚠️ ONLY WHEN THIS CALL CREATED THE WEBSITE. Importing page seven into an existing site must
+  // not re-derive its business record from that page's footer — the site's details were settled
+  // on page one, and a later page whose footer parsed differently would quietly overwrite them.
+  if (!intoExisting) await updateSite(siteId, { business });
 
   // …AND the page is wired to them in the same breath. Doing this at import is the whole point:
   // otherwise every imported site arrives with the phone number typed into six blocks and needs a
@@ -233,7 +311,12 @@ export async function POST(req: Request) {
   // Space Grotesk imports and renders in Lexend, and it reads as a botched import rather than a
   // missing setting. (In "design" mode the sections carry their own CSS and this only governs
   // what a section added LATER picks up.)
-  if (mode !== "blocks") {
+  // ⚠️ Skipped when importing into an existing website: the brand was settled by page one, and
+  // re-deriving it per page means the LAST page imported silently decides the whole site's fonts
+  // and accent. Page ten is not a better source than page one.
+  if (intoExisting) {
+    // nothing — the site already has its brand
+  } else if (mode !== "blocks") {
     const fonts = result.fonts ?? detectFonts(html);
     const accent = result.accent ?? detectAccent(html);
     await writeBrand(
