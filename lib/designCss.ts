@@ -55,6 +55,26 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
   const out: string[] = [];
   let i = 0;
 
+  // ⚠️ COMMENTS COME OUT FIRST, ONCE, BEFORE ANY PARSING — AND THIS IS LOAD-BEARING.
+  //
+  // This walker reads everything between the last `}` and the next `{` as a selector. A stylesheet
+  // that documents itself writes `/* responsive */` on the line above its @media block, so that
+  // comment lands in the prelude, the `@media` test fails (the string starts with `/*`), and the
+  // whole block is treated as a SELECTOR LIST:
+  //
+  //     .sjc-design /* responsive */
+  //     @media (max-width:960px){ .split{grid-template-columns:1fr} }
+  //
+  // A selector followed by an at-rule is not valid CSS, so the browser DISCARDS THE ENTIRE MEDIA
+  // BLOCK. On sjc-2026 the parsed stylesheet contained exactly one `.split` rule — the desktop one
+  // — so nothing stacked on a phone: every three-column grid, the hero split, the footer columns.
+  // The mobile CSS was present in the file and had never been parsed.
+  //
+  // Handling comments per-prelude was tried first and did not hold on a real sheet. Removing them
+  // up front does, and this is a COMPILED ARTIFACT — nobody reads it, and the design's own source
+  // keeps its comments.
+  css = String(css || "").replace(/\/\*[\s\S]*?\*\//g, "");
+
   const NO_SCOPE = /^@(keyframes|-\w+-keyframes|font-face|property|import|charset|namespace)/;
   const NESTED = /^@(media|supports|container|layer|scope)\b/;
 
@@ -83,12 +103,7 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
     //
     // Comments are pulled out here and re-emitted ahead of the rule, so they can never hide an
     // at-rule or be mistaken for part of a selector.
-    const leading: string[] = [];
-    prelude = prelude.replace(/\/\*[\s\S]*?\*\//g, (c) => {
-      leading.push(c);
-      return " ";
-    }).trim();
-    if (leading.length) out.push(leading.join(""));
+
 
     // ⚠️ STATEMENT AT-RULES ARE NOT SELECTORS. `@layer theme, base, components, utilities;`
     // declares layer ORDER — commas separate layer NAMES, not selectors. Splitting it on commas
@@ -152,37 +167,21 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
  * that doesn't already start with the scope gets it — which is exactly what scopeCss would have
  * produced had the comment not hidden the at-rule from it.
  */
-export function repairMediaScope(css: string, scope = DESIGN_SCOPE): { css: string; repaired: number } {
-  const sel = `.${scope}`;
-  let repaired = 0;
-
-  const out = String(css || "").replace(
-    /(@media[^{]*\{)([\s\S]*?)(\n\})/g,
-    (whole, open: string, body: string, close: string) => {
-      // Only rules — never keyframe stops, which live in their own at-rule and are not selectors.
-      const fixed = body.replace(/(^|\})([^{}@]+)\{/g, (m, before: string, prelude: string) => {
-        const comments: string[] = [];
-        const bare = prelude
-          .replace(/\/\*[\s\S]*?\*\//g, (c: string) => {
-            comments.push(c);
-            return " ";
-          })
-          .trim();
-        if (!bare) return m;
-        const parts = bare.split(",").map((x) => x.trim()).filter(Boolean);
-        if (!parts.length || parts.every((x) => x.startsWith(sel))) return m;
-        repaired++;
-        const scoped = parts
-          .map((x) => (x.startsWith(sel) ? x : `${sel} ${x}`))
-          .join(",");
-        return `${before}${comments.join("")}${scoped}{`;
-      });
-      return `${open}${fixed}${close}`;
-    }
-  );
-
-  return { css: out, repaired };
-}
+/**
+ * ⚠️ DELETED ON PURPOSE — DO NOT REINTRODUCE A COMPILED-CSS PATCHER.
+ *
+ * A first attempt repaired the media-query damage by editing the STORED, ALREADY-COMPILED sheet:
+ * strip the stray scope before the at-rule, then re-scope the bare selectors inside it. It
+ * produced correct CSS on the first run and then would not converge — one more rewrite on every
+ * subsequent run, forever, because a hand-rolled walk over a large compiled stylesheet keeps
+ * shifting its own block boundaries. Two other shapes were tried (a regex terminator, and simply
+ * re-running scopeCss over the whole sheet) and each failed differently.
+ *
+ * The right repair is to RECOMPILE from the archived source, which the importer stores for exactly
+ * this case — see siteKeys.designSrc and app/api/admin/recompile-css. Patching a compiled artifact
+ * to imitate what a fixed compiler would have produced is guesswork; running the fixed compiler is
+ * not.
+ */
 
 /**
  * The one kind of "hidden" that must STAY hidden.

@@ -30,7 +30,7 @@
 // run normally wants both.
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { repairOverlayHides, repairMediaScope } from "@/lib/designCss";
+import { repairOverlayHides } from "@/lib/designCss";
 import { readPages } from "@/lib/pageRegistry";
 import { siteKeys, SJC } from "@/lib/siteKeys";
 
@@ -67,11 +67,7 @@ export async function POST(req: Request) {
       const css = saved && typeof saved.css === "string" ? saved.css : "";
       if (!css) continue;
 
-      // Two repairs, one pass — both are "the stylesheet was compiled before a fix existed".
-      const hides = repairOverlayHides(css);
-      const media = repairMediaScope(hides.css);
-      const next = media.css;
-      const repaired = hides.repaired + media.repaired;
+      const { css: next, repaired } = repairOverlayHides(css);
       if (!repaired) continue;
 
       if (!dryRun) await store.write({ css: next });

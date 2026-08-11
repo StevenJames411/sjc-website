@@ -34,6 +34,24 @@ export type DesignImport = {
   report: string[];
 };
 
+/**
+ * The stylesheet for a design, from its raw HTML.
+ *
+ * ⚠️ ONE DEFINITION, TWO CALLERS. The importer runs this at import; admin/recompile-css runs it
+ * again later when a compiler bug has to be undone on a site already in the database. Those two
+ * must never drift — a repair that compiles even slightly differently from the importer produces a
+ * site that nobody can reproduce.
+ *
+ * Icons first: a generated page ships empty `<i data-lucide>` tags filled in by a CDN script we
+ * strip, and the CSS must be built from exactly what will render or a class that only exists
+ * post-transform compiles to nothing.
+ */
+export async function compileCssForDesign(html: string): Promise<string> {
+  const icons = await inlineLucideIcons(html);
+  const withIcons = modernizeOpacityUtilities(icons.html);
+  return compileDesignCss(withIcons, inlineStyles(html));
+}
+
 /** Every inline <style> in the document — the non-utility rules a design brings with it. */
 function inlineStyles(html: string): string {
   return [...String(html).matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]).join("\n");
@@ -186,7 +204,7 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
 
   // Compile from the icon-inlined markup, not the original — the CSS must be built from exactly
   // what will render, or a class that only exists post-transform compiles to nothing.
-  const css = await compileDesignCss(withIcons, inlineStyles(html));
+  const css = await compileCssForDesign(html);
   report.push(`${(css.length / 1024).toFixed(1)}KB of stylesheet compiled`);
 
   const fonts = detectFonts(html);
