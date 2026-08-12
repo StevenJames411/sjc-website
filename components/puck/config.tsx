@@ -619,16 +619,24 @@ const baseConfig: Config<Props, RootProps> = {
         ),
       },
       description: {
-        type: "textarea" as const,
+        // Same reason as `title` above: this holds tokens on an imported page, and a person has to
+        // be able to read the sentence a prospect will see.
+        type: "custom" as const,
         label: "Preview text — the sentence under the title in a text message or Google result",
+        render: ({ onChange, value }) => (
+          <TokenText value={value as string} onChange={onChange as (v: string) => void} />
+        ),
       },
       // ⚠️ The label used to read "(leave blank on SJC's own pages)". The builder is a Steven
       // James Designs product and Consulting is one tenant in it — naming a specific tenant in a
       // field every other business also fills in is the landlord-vs-tenant confusion made visible,
       // and it read as an instruction to anyone who wasn't SJC. Says what the blank DOES instead.
       businessName: {
-        type: "text" as const,
+        type: "custom" as const,
         label: "Business name — the source line on the preview card (blank uses the website's own name)",
+        render: ({ onChange, value }) => (
+          <TokenText value={value as string} onChange={onChange as (v: string) => void} />
+        ),
       },
       shareImage: {
         type: "custom" as const,
