@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RETENTION_DAYS, daysLeft, type Site } from "@/lib/sitesShared";
+import { RETENTION_DAYS, daysLeft, statusOf, type Site } from "@/lib/sitesShared";
 import type { IntakeSummary } from "@/lib/intakeShared";
 import { publicUrlFor, onboardUrlFor } from "@/lib/hostShared";
 import IntakeAnswers from "./IntakeAnswers";
@@ -96,14 +96,51 @@ export default function SiteGallery({ sites, intake, title }: Props) {
     () => sites.filter((s) => s.kind === "template" && !s.deletedAt),
     [sites]
   );
+  // ARCHIVED sits with the bin, not with the working set — but it is NOT the bin.
+  //
+  // Deleting starts a 30-day timer that ends in erasure; archiving ends nothing. Steven found his
+  // retired site counting down in the bin: *"there was no draft mode… that should be archive."*
+  // Work you are finished with is not a mistake you want gone, and one button for both is how a
+  // retired site quietly expires.
+  const archived = useMemo(
+    () => sites.filter((s) => !s.deletedAt && statusOf(s) === "archived"),
+    [sites]
+  );
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const live = sites.filter((s) => s.kind !== "template" && !s.deletedAt);
+    const live = sites.filter(
+      (s) => s.kind !== "template" && !s.deletedAt && statusOf(s) !== "archived"
+    );
     if (!needle) return live;
     return live.filter((s) =>
       [s.name, s.description, s.domain, s.business?.name].filter(Boolean).join(" ").toLowerCase().includes(needle)
     );
   }, [sites, q]);
+
+  /**
+   * Move a website between states.
+   *
+   * ⚠️ THE ONLY WRITER. The cockpit and the heartbeat board read a site's state; this screen sets
+   * it. Two screens that can both write is how you switch something off in one place and have the
+   * other still report it on.
+   */
+  async function setStatus(s: Site, status: "draft" | "demo" | "published" | "archived") {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/admin/set-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ site: s.id, status, dryRun: false }),
+      }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error || "Couldn't change it.");
+      router.refresh();
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Couldn't change it.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function restore(s: Site) {
     setDeleting(s.id);
@@ -186,15 +223,35 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                   described the record; "Demo" describes the thing you actually need to know when
                   scanning a hundred of these — is this out with a prospect, or is it a paying
                   client pointed at their own domain? */}
+              {/* ⛔ THE STATE, NOT AN INFERENCE FROM `domain`. The badge used to read "Demo" for
+                  anything without a domain, which described a field rather than the site — and it
+                  was wrong: a domain-less site was served IN FULL at its demo address, readable by
+                  anyone holding the link. "Draft" now means only you, and means it. */}
               <div style={badgeRow}>
                 {s.kind === "sjc" ? <span style={chip}>Yours</span> : null}
-                {s.domain ? (
-                  <span style={chipLive}>{s.domain}</span>
-                ) : (
-                  <span style={chipDemo} title="No domain yet — served from our address and kept out of Google">
-                    Demo
-                  </span>
-                )}
+                {(() => {
+                  const st = statusOf(s);
+                  if (st === "published" && s.domain) return <span style={chipLive}>{s.domain}</span>;
+                  if (st === "published")
+                    return (
+                      <span style={chipDemo} title="Published, but no domain is pointed at it yet — the demo link stays alive until DNS resolves">
+                        Published · no domain yet
+                      </span>
+                    );
+                  if (st === "demo")
+                    return (
+                      <span style={chipDemo} title="The demo link works and is shareable. Kept out of Google.">
+                        Demo
+                      </span>
+                    );
+                  if (st === "archived")
+                    return <span style={chip}>Archived</span>;
+                  return (
+                    <span style={chipDraft} title="Only you. The demo address 404s — nobody else can reach this.">
+                      Draft
+                    </span>
+                  );
+                })()}
               </div>
               <h2 style={cardName}>{s.name}</h2>
               {s.description ? <p style={cardDesc}>{s.description}</p> : null}
@@ -344,6 +401,37 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                 </div>
               </div>
             ) : (
+              <>
+              {/* WHO CAN REACH IT — the one control that used to be a side effect of typing a
+                  domain into Settings. Three buttons rather than a dropdown: the whole point is
+                  that the current state is readable without opening anything, and a closed select
+                  hides it behind a click.
+
+                  Archive is not here. It belongs with Delete, in the gear, because it is a
+                  decision about the site's life rather than about who can see it this week. */}
+              <div style={statusRow}>
+                {(["draft", "demo", "published"] as const).map((st) => {
+                  const on = statusOf(s) === st;
+                  return (
+                    <button
+                      key={st}
+                      type="button"
+                      disabled={busy || on}
+                      onClick={() => setStatus(s, st)}
+                      title={
+                        st === "draft"
+                          ? "Only you. Its address returns 404 for everyone else."
+                          : st === "demo"
+                            ? "The demo link works and is shareable. Kept out of Google."
+                            : "Live on its own domain, and in Google. The demo address dies."
+                      }
+                      style={{ ...statusBtn, ...(on ? statusBtnOn : null) }}
+                    >
+                      {st === "draft" ? "Draft" : st === "demo" ? "Demo" : "Published"}
+                    </button>
+                  );
+                })}
+              </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   type="button"
@@ -380,6 +468,7 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                   </button>
                 ) : null}
               </div>
+              </>
             )}
           </div>
         ))}
@@ -404,6 +493,42 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                 <button type="button" style={editBtn} onClick={() => router.push(`/edit/${t.id}/home`)}>
                   Edit template
                 </button>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {/* ARCHIVED — FINISHED WORK, KEPT. Not the bin: nothing here is counting down to erasure.
+          Above the bin because these are sites you chose to retire, not ones you binned. */}
+      {archived.length ? (
+        <>
+          <h3 style={sectionH}>Archived</h3>
+          <p style={binNote}>
+            Retired on purpose and kept indefinitely &mdash; nothing here expires. Reachable by
+            nobody: their addresses return 404 until you put them back to Draft or Demo.
+          </p>
+          <div style={grid}>
+            {archived.map((s) => (
+              <div key={s.id} style={{ ...card, opacity: 0.72 }}>
+                <div style={cardTop}>
+                  <span style={chip}>Archived</span>
+                  <h2 style={cardName}>{s.name}</h2>
+                  {s.domain ? <p style={cardDesc}>{s.domain}</p> : null}
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+                  <button
+                    type="button"
+                    style={{ ...ghostBtn, flex: 1 }}
+                    disabled={busy}
+                    onClick={() => setStatus(s, "draft")}
+                  >
+                    Put it back (as Draft)
+                  </button>
+                  <button type="button" style={ghostBtn} onClick={() => router.push(`/edit/${s.id}/home`)}>
+                    Open
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -681,6 +806,9 @@ const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "
 const chipMuted: React.CSSProperties = { ...chip, background: "var(--e-line-soft)", color: "var(--e-muted)" };
 const chipLive: React.CSSProperties = { ...chip, background: "var(--e-ok-bg)", color: "var(--e-ok-ink)" };
 const chipDemo: React.CSSProperties = { ...chip, background: "var(--e-warn-bg)", color: "var(--e-warn-ink)" };
+// Draft is the resting state of everything, so it is deliberately the quietest chip on the card —
+// a library where every badge shouts is a library with no signal in it.
+const chipDraft: React.CSSProperties = { ...chip, background: "var(--e-muted-bg, #eef1f6)", color: "var(--e-muted-ink, #55617a)" };
 const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeight: 1.25 };
 const cardDesc: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.45 };
 const cardLink: React.CSSProperties = { fontSize: 12, color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
@@ -688,6 +816,11 @@ const primaryBtn: React.CSSProperties = { background: "var(--e-ink)", color: "va
 const navBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-block", whiteSpace: "nowrap" };
 const ghostBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
+// Segmented, and deliberately not a <select>: the current state has to be readable while scanning
+// the library, which is the entire complaint that produced this control.
+const statusRow: React.CSSProperties = { display: "flex", gap: 0, marginBottom: 8, border: "1px solid var(--e-line)", borderRadius: 8, overflow: "hidden" };
+const statusBtn: React.CSSProperties = { flex: 1, background: "var(--e-panel)", color: "var(--e-muted, #55617a)", border: "none", borderRight: "1px solid var(--e-line)", padding: "7px 0", fontSize: 12, fontWeight: 600, cursor: "pointer" };
+const statusBtnOn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", cursor: "default" };
 const pickBox: React.CSSProperties = { display: "flex", gap: 10, alignItems: "flex-start", border: "1px solid var(--e-line)", borderRadius: 10, padding: "10px 12px", cursor: "pointer" };
 const gearBtn: React.CSSProperties = { ...ghostBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1 };
 // Quiet by default and red only once you've committed to it — a destructive control shouldn't
