@@ -150,8 +150,35 @@ export async function POST(req: Request) {
   // the one moment worth being loud about.
   const leftovers = transferLeftovers(clean);
   if (leftovers.length) {
+    // ⚠️ SAY WHY IT COULD NOT SCRUB, NOT JUST THAT IT DIDN'T. The patterns are DERIVED from the
+    // source site's own Website settings — that is what makes them work for the next business
+    // without a code change. The flip side is that a site with an empty settings record gives the
+    // scrub nothing to match, so a page full of literal phone numbers passes through untouched and
+    // trips this check.
+    //
+    // "Not saved — it still contains a phone number" is true and useless. The fix is two steps and
+    // they belong in the message, because the person reading it is standing in the editor.
+    const b = site.business || ({} as typeof site.business);
+    const blank = [
+      !b.phone?.trim() && !b.phoneDisplay?.trim() ? "phone" : "",
+      !b.email?.trim() ? "email" : "",
+      !b.address?.trim() ? "address" : "",
+    ].filter(Boolean);
+
     return Response.json(
-      { ok: false, error: `Not saved — it still contains ${leftovers.join(", ")}.`, leftovers },
+      {
+        ok: false,
+        error:
+          `Not saved — this page still has ${leftovers.join(" and ")} written into it, and a saved ` +
+          `page can land on anyone's website.` +
+          (blank.length
+            ? ` I can't tell which are ${site.name}'s: its Website settings have no ${blank.join(", ")}. ` +
+              `Fill those in, then run Tokenize on this page — that swaps the literals for ` +
+              `{{business.*}} references, and the page becomes portable by construction.`
+            : ` Run Tokenize on this page to swap the literals for {{business.*}} references.`),
+        leftovers,
+        settingsMissing: blank,
+      },
       { status: 422 }
     );
   }
