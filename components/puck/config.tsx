@@ -1047,10 +1047,21 @@ const baseConfig: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, boxes, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
+      // ⚠️ THIS IS AN EXPLICIT PROP BRIDGE, NOT A SPREAD — every prop has to be named TWICE, in the
+      // destructure and again below. A prop declared in the Props map, given a field and given a
+      // default still reaches the component as `undefined` if it is missing from these two lists,
+      // and nothing warns: the page renders, just without whatever that prop controlled.
+      //
+      // That is exactly how `sheet` went missing. It was added to the type, the field and the
+      // defaults, the data was stamped correctly, and the block still rendered `class="sjc-design"`
+      // with no per-sheet class — harmless while every sheet was scoped under the shared class, and
+      // fatal for the next import, which compiles scoped to `.sjc-design-<id>` and would have come
+      // out completely unstyled with every receipt green.
+      render: ({ sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
           // Marks each filled word so a click on the canvas can name its row. Editor only.
           editing={puck?.isEditing}
+          sheet={sheet}
           html={html}
           text={text}
           images={images}

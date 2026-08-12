@@ -722,6 +722,11 @@ export default function DesignSection(props: DesignSectionProps) {
       // designs on one page style their own blocks instead of overwriting each other's identically
       // named utilities. A block with no sheet id (pre-backfill) just gets the shared class.
       className={sheet ? `${DESIGN_SCOPE} ${sheetScope(sheet)}` : DESIGN_SCOPE}
+      // Which stylesheet this section asked for, visible in the served HTML. Kept because the one
+      // question you have when an imported page renders unstyled is "did the block get its sheet
+      // id, or did the sheet fail to load" — and without this the two are indistinguishable from
+      // the outside. `none` means the prop never arrived.
+      data-sjc-sheet={sheet || "none"}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
       {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
       {...(fgRole ? { "data-sjc-fg": fgRole } : {})}
