@@ -14,6 +14,23 @@ export type SiteKind = "sjc" | "client" | "template";
  */
 export type BusinessFacts = {
   name: string;
+  /**
+   * WHERE A HAPPY CUSTOMER IS SENT TO LEAVE A REVIEW — this business's own Google link.
+   *
+   * ⚠️ IT LIVES HERE BECAUSE IT IS A DESTINATION, AND THE FORM LIBRARY MUST NOT HOLD ONE.
+   * lib/formsShared states the invariant plainly: a form carries QUESTIONS, never a destination,
+   * "because there is nothing here to carry, copying a form cannot carry one client's destination
+   * onto another client's site."
+   *
+   * `altSuccess.buttonUrl` was the exception that broke it. Forms are live POINTERS — several sites
+   * share one library form — so a real URL typed there would hand every one of those businesses'
+   * delighted customers to whichever review page got filled in first. The seeded form's own comment
+   * says exactly that and leaves it blank, which is a rule enforced by remembering.
+   *
+   * As a fact on the SITE it resolves per business through `{{business.reviewUrl}}`, the same way
+   * the phone number does. One shared form, the right link on every site.
+   */
+  reviewUrl?: string;
   phone: string;        // dialable, e.g. +12104746252
   phoneDisplay: string; // human, e.g. (210) 474-6252
   email: string;

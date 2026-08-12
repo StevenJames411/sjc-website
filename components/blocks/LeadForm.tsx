@@ -483,7 +483,13 @@ export default function LeadForm(props: LeadFormProps) {
         </p>
         {/* No link, no button. An empty href on a review form is a dead end that reads as broken;
             saying nothing reads as a thank-you, which it still is. */}
-        {alt?.buttonUrl && alt.buttonLabel ? (
+        {/* ⚠️ A LINK, NOT A LEFTOVER TOKEN OR AN EMPTY HREF. `buttonUrl` is
+            `{{business.reviewUrl}}` on the shared form, resolved per site — so on a business that
+            has not set its review link it arrives EMPTY (or, if the token pass never ran, as the
+            literal braces). Either way there is no page to send anyone to, and a "Leave a Google
+            review" button that goes nowhere is worse than no button at the moment someone is
+            pleased enough to press it. */}
+        {alt?.buttonUrl && !alt.buttonUrl.includes("{{") && alt.buttonLabel ? (
           <a
             href={alt.buttonUrl}
             target="_blank"

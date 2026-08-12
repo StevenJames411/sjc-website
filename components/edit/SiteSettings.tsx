@@ -22,6 +22,9 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.email}}", "email"],
   ["{{business.address}}", "address"],
   ["{{business.hours}}", "hours"],
+  // Listed like the rest so the review form's button reads as a normal reference rather than
+  // machinery — it is the one token that resolves to a LINK instead of words.
+  ["{{business.reviewUrl}}", "reviewUrl"],
 ];
 
 export default function SiteSettings({ site, pageCount, pages }: Props) {
@@ -120,6 +123,14 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
       <Field label="Email" v={s.business.email} on={(v) => biz("email", v)} ph="hello@yourbusiness.com" />
       <Field label="Address" v={s.business.address} on={(v) => biz("address", v)} ph="123 Main Street, Your City, ST 00000" />
       <Field label="Hours" v={s.business.hours} on={(v) => biz("hours", v)} ph="Mon – Fri: 9:00 AM – 5:00 PM" />
+      {/* A DESTINATION, so it lives on the business and not on the shared review form — see
+          BusinessFacts.reviewUrl. Blank simply hides the button on the thank-you screen. */}
+      <Field
+        label="Google review link — where a happy customer is sent"
+        v={s.business.reviewUrl || ""}
+        on={(v) => biz("reviewUrl", v)}
+        ph="https://g.page/r/…/review — blank hides the button"
+      />
 
       <div style={tokenBox}>
         <strong style={{ fontSize: 13 }}>Tokens you can paste into any text block</strong>

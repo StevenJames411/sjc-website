@@ -523,9 +523,11 @@ export const BUILTIN_FORMS: FormDef[] = [
         "Would you mind saying that on Google? It takes a minute and it's the single biggest " +
         "thing that helps people find us.",
       buttonLabel: "Leave a Google review",
-      // ⚠️ BLANK, AND IT HAS TO BE. A real link here would send every client's customers to
-      // whoever's review page got typed in first. Filled in per client, on the copy.
-      buttonUrl: "",
+      // ⚠️ A REFERENCE, NOT A LINK — and that is what makes a SHARED form safe to point several
+      // sites at. A real URL here would send every one of those businesses' delighted customers to
+      // whichever review page got typed in first; leaving it blank only worked while everyone
+      // remembered to. `{{business.reviewUrl}}` resolves per site at render, like the phone number.
+      buttonUrl: "{{business.reviewUrl}}",
     },
   },
   {
