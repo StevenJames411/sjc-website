@@ -24,7 +24,7 @@
 // URL the server will serve.
 import { headers } from "next/headers";
 import { cache } from "react";
-import { readSites, type Site, reachability } from "./sites";
+import { readSites, readSitesRaw, type Site, reachability } from "./sites";
 import { SJC } from "./siteKeys";
 import { normalizeHost, STUDIO_HOST, SJC_HOST } from "./hostShared";
 
@@ -120,7 +120,19 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
       // `-demo` is a label, not part of the id — see publicBaseFor in ./hostShared. The bare form
       // is still matched so any link sent before the suffix existed keeps resolving.
       const bare = label.endsWith("-demo") ? label.slice(0, -"-demo".length) : label;
-      const demo = sites.find((s) => s.id !== SJC && (s.id === bare || s.id === label));
+      // ⚠️ RAW — DELETED AND ARCHIVED SITES INCLUDED, AND THAT IS THE WHOLE POINT HERE.
+      //
+      // `readSites()` hides binned sites, so a deleted site's demo label matched NOTHING and the
+      // request fell all the way through to the SJC fallback at the bottom of this function —
+      // quietly serving the consulting site at `<their-business>-demo.…`. That is precisely the
+      // failure the note below warns about, and it was live for every deleted site.
+      //
+      // Looking it up raw means the address is recognised as one we used to serve, so it can be
+      // answered with `gone` instead of being mistaken for an unknown host.
+      const demo = (await readSitesRaw()).find((s) => s.id !== SJC && (s.id === bare || s.id === label));
+      // A site in the bin, or archived, is reachable by nobody — `reachability` already says so,
+      // but a deleted one has no status to consult, so it is refused here first.
+      if (demo?.deletedAt) return { kind: "gone" };
       // ⛔ THE DEMO ADDRESS DIES THE DAY THEY BUY. Steven, and he has said it more than once:
       // *"everybody gets a demo URL. Once they become a customer, the demo URL dies… If they buy,
       // they get a real URL."* A prospect who didn't buy loses the link — that is the point of it
