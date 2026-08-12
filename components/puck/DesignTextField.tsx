@@ -174,7 +174,7 @@ export default function DesignTextField({
                     min={0}
                   />
                   <ColorField value={row.color} onChange={(v) => set(row.key, { color: v })} />
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                     {[
                       { label: "As designed", v: null },
                       { label: "Bold", v: true },
@@ -185,7 +185,11 @@ export default function DesignTextField({
                         type="button"
                         onClick={() => set(row.key, { bold: o.v as boolean | null })}
                         style={{
-                          flex: 1,
+                          // `1 1 auto` + minWidth 0 lets a button wrap to the next line instead of
+                          // widening the panel; nowrap keeps a label from breaking mid-word.
+                          flex: "1 1 auto",
+                          minWidth: 0,
+                          whiteSpace: "nowrap",
                           padding: "4px 6px",
                           fontSize: 12,
                           borderRadius: 6,

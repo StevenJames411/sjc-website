@@ -410,3 +410,29 @@
     --e-line: #e5e7eb;
   }
 }
+
+/* ── NEITHER SIDEBAR MAY EVER SCROLL SIDEWAYS ────────────────────────────────────────────────
+   A control that cannot shrink below its own text widens the whole panel, and the setting that
+   ends up off the right edge is invisible — there is no scrollbar hint until you happen to drag.
+   Steven lost the Bold button that way and concluded the builder did not have one.
+
+   min-width:0 is the actual fix: a flex/grid child defaults to min-width:auto, which refuses to go
+   narrower than its content. Applied to the panel's descendants so no future field can reintroduce
+   this, and the hidden overflow is the backstop rather than the mechanism. */
+/* ⚠️ THE CLASS NAMES ARE PUCK'S OWN — _Sidebar--left / _Sidebar--right, checked against its
+   shipped stylesheet rather than guessed. A selector that matches nothing fails silently, which
+   on a CSS fix looks identical to the bug never being fixed. */
+[class*="_Sidebar--left"],
+[class*="_Sidebar--right"] {
+  overflow-x: hidden;
+}
+[class*="_Sidebar--left"] *,
+[class*="_Sidebar--right"] * {
+  min-width: 0;
+}
+/* Long values — a pasted URL, an email address — wrap instead of pushing the panel wide. */
+[class*="_Sidebar--right"] input,
+[class*="_Sidebar--right"] textarea,
+[class*="_Sidebar--right"] select {
+  max-width: 100%;
+}
