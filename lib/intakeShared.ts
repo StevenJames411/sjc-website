@@ -225,4 +225,13 @@ export type IntakeSummary = {
   asked: number;
   photos: number;
   submitted: boolean;
+  /**
+   * The unguessable half of her onboarding link, so the gallery can build a URL that actually
+   * opens. Absent for a link opened before tokens existed (2026-08-12) — those still work on the
+   * old address until they are closed and reopened.
+   *
+   * ⚠️ This ships to the browser. That is fine and deliberate: it is the OWNER'S own screen, gated
+   * by middleware, and copying those links is the entire job of the card it renders on.
+   */
+  token?: string;
 };

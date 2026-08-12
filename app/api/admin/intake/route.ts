@@ -49,7 +49,8 @@ export async function GET(req: Request) {
   return Response.json({
     ok: true,
     site: id,
-    url: onboardUrlFor({ id, domain: (await findSite(id))?.domain }),
+    // WITH the token, or it is a dead address. `access` was read above and holds it.
+    url: onboardUrlFor({ id, domain: (await findSite(id))?.domain }, access?.token),
     status: access?.status || "never opened",
     openedAt: access?.openedAt || null,
     lastUsedAt: access?.lastUsedAt || null,
@@ -75,12 +76,19 @@ export async function POST(req: Request) {
 
   const action = new URL(req.url).searchParams.get("action");
   if (action === "open") {
-    const ok = await openIntake(id);
+    // Opening MINTS A FRESH TOKEN, so the URL returned here is the only place it appears. A
+    // previously shared link does not come back to life when a form is reopened — same rule as an
+    // invoice's publicId and the demo URL dying on purchase.
+    const { ok, token } = await openIntake(id);
     // REOPENING MEANS "KEEP GOING". Without this, a form she already submitted reopens straight
     // onto "Got it — thank you", with no way to add the photos that were the whole reason for
     // opening it again. Her answers stay; only the finished flag is lifted.
     await patchIntake(id, { submittedAt: "", stoppedBecause: "" });
-    return Response.json({ ok, status: "open", url: onboardUrlFor({ id, domain: (await findSite(id))?.domain }) });
+    return Response.json({
+      ok,
+      status: "open",
+      url: onboardUrlFor({ id, domain: (await findSite(id))?.domain }, token),
+    });
   }
   if (action === "close") {
     const ok = await closeIntake(id, "closed by Steven");

@@ -159,12 +159,14 @@ export async function POST(req: Request) {
     });
   }
 
-  await openIntake(siteId);
+  // The token is minted here and appears only in the URL below — there is no second copy to
+  // look up later, by design. Reopening from /api/admin/intake mints a new one.
+  const { token: intakeToken } = await openIntake(siteId);
 
   return Response.json({
     ok: true,
     siteId,
-    onboardUrl: onboardUrlFor({ id: siteId, domain: site?.domain }),
+    onboardUrl: onboardUrlFor({ id: siteId, domain: site?.domain }, intakeToken),
     sheetUrl,
     editUrl: `${origin}/edit/${siteId}/home`,
     reused: Boolean(already),

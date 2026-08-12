@@ -83,7 +83,8 @@ export default function SiteGallery({ sites, intake, title }: Props) {
   async function copyLink(site: Site) {
     // The onboarding link has to look like her website's address, because that's what makes it
     // legitimate in a text message — so it follows the same host rules, not the editor's origin.
-    await navigator.clipboard?.writeText(onboardUrlFor(site));
+    // WITH her token, or this copies a dead address. See lib/intakeLinks.ts.
+    await navigator.clipboard?.writeText(onboardUrlFor(site, intake[site.id]?.token));
     setCopied(site.id);
     setTimeout(() => setCopied(""), 1800);
   }
@@ -235,13 +236,13 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                       as plain text. Same link on the form editor, so the two screens can't drift. */}
                   {intake[s.id]?.status === "open" ? (
                     <a
-                      href={onboardUrlFor(s)}
+                      href={onboardUrlFor(s, intake[s.id]?.token)}
                       target="_blank"
                       rel="noreferrer"
                       style={{ ...cardLink, display: "block", marginTop: 2 }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {`${onboardUrlFor(s).replace(/^https:\/\//, "")} ↗`}
+                      {`${onboardUrlFor(s, intake[s.id]?.token).replace(/^https:\/\//, "")} ↗`}
                     </a>
                   ) : null}
                 </span>

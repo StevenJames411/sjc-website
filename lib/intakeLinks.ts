@@ -43,8 +43,33 @@ type Access = {
   lastUsedAt: string;
   closedBecause?: string;
   closedAt?: string;
+  /**
+   * The unguessable half of the onboarding URL — /start/<siteId>/<token>.
+   *
+   * ⚠️ ADDED 2026-08-12 ON STEVEN'S CALL, REVERSING THE HEADER NOTE ABOVE. Two earlier versions put
+   * a credential in the link and he rejected both: a link with a code in it doesn't get tapped, and
+   * can't be read out over the phone. The second half turned out not to matter — *"nobody needs to
+   * manually type it"*. The link is SENT, exactly like an invoice link, so an unguessable address
+   * costs her nothing.
+   *
+   * What it buys: the address used to BE the business name, so the open window was guessable by
+   * anyone who knew the business. Inside that window a stranger could read her answers and photos,
+   * overwrite them, and — the one with teeth — submit, which writes their text into her business
+   * facts, and those render on her live website.
+   *
+   * Same shape as an invoice's `publicId`: 128 bits, minted when the link is opened. It ROTATES on
+   * every open, so a closed-then-reopened link is a new address and the old one stays dead.
+   */
+  token?: string;
 };
 type AccessBlob = { access?: Record<string, Access> };
+
+/** 128 bits, hex. Same strength and the same reason as an invoice's publicId. */
+function mintToken(): string {
+  const b = new Uint8Array(16);
+  crypto.getRandomValues(b);
+  return Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+}
 
 const store = () => createKvStore(getClient(), ACCESS_KEY);
 const now = () => new Date().toISOString();
@@ -59,15 +84,36 @@ async function writeAll(access: Record<string, Access>) {
 export type AccessCheck = { ok: true } | { ok: false; reason: "never-opened" | "closed" };
 
 /**
- * Is this business's form open right now? The ONLY thing standing between a stranger and her
- * record, so it is the one function to be careful about.
+ * Constant-time string compare. `===` on a secret leaks its length and prefix through timing, and
+ * this is the one comparison standing between a stranger and a business's record. Same reason the
+ * bearer-token path in middleware.ts does it this way.
  */
-export async function checkIntakeOpen(siteId: string): Promise<AccessCheck> {
+function sameToken(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/**
+ * Is this business's form open right now, and does the caller hold its link? The ONLY thing
+ * standing between a stranger and her record, so it is the one function to be careful about.
+ *
+ * ⚠️ THE TOKEN IS REQUIRED WHEN ONE EXISTS, AND ONLY THEN. A link opened before 2026-08-12 has no
+ * token stored, and those keep working on the old URL until they are closed and reopened — which
+ * mints one. Requiring a token nobody has been given would lock a business out of a form she is
+ * mid-way through, and "open" is already a deliberate act with a 60-day backstop.
+ *
+ * Reported as `closed`, never as "wrong token" — see CLOSED_MESSAGE. A wrong-token message tells a
+ * stranger the business exists and that a different URL would work.
+ */
+export async function checkIntakeOpen(siteId: string, token?: string): Promise<AccessCheck> {
   const all = await readAll();
   const a = all[siteId];
   // Fail closed. A site nobody has explicitly opened is not open.
   if (!a) return { ok: false, reason: "never-opened" };
   if (a.status !== "open") return { ok: false, reason: "closed" };
+  if (a.token && !sameToken(a.token, String(token || ""))) return { ok: false, reason: "closed" };
 
   if (Date.now() - Date.parse(a.lastUsedAt) > STALE_DAYS * 86400_000) {
     all[siteId] = { ...a, status: "closed", closedBecause: "no activity", closedAt: now() };
@@ -80,17 +126,26 @@ export async function checkIntakeOpen(siteId: string): Promise<AccessCheck> {
   return { ok: true };
 }
 
-/** Open it — the deliberate act that starts an onboarding. */
-export async function openIntake(siteId: string) {
+/**
+ * Open it — the deliberate act that starts an onboarding. Returns the token for the link.
+ *
+ * ⚠️ A FRESH TOKEN EVERY TIME. Reopening after a close mints a new address, so a link that was
+ * shared, forwarded or sat in an old text thread does not come back to life with the form. That is
+ * the same reasoning as an invoice's publicId and as the demo URL dying on purchase: the previous
+ * address stays dead.
+ */
+export async function openIntake(siteId: string): Promise<{ ok: boolean; token?: string }> {
   const all = await readAll();
+  const token = mintToken();
   all[siteId] = {
     status: "open",
     openedAt: now(),
     lastUsedAt: now(),
     closedBecause: undefined,
     closedAt: undefined,
+    token,
   };
-  return (await writeAll(all)).ok;
+  return { ok: (await writeAll(all)).ok, token };
 }
 
 /** Close it. Called automatically on submit, and manually when Steven wants it shut. */

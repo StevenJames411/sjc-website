@@ -150,7 +150,11 @@ f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
  * Narrow on purpose: only the SJC host. Demo subdomains, custom domains, *.vercel.app and
  * localhost all fall through untouched, so a client's own site is never redirected anywhere.
  */
-const STUDIO_PATHS = [/^\/[^/]+\/onboard\/?$/, /^\/edit(\/.*)?$/];
+// ⚠️ THE TOKEN SEGMENT IS OPTIONAL AND MUST MATCH (2026-08-12). The onboarding link is now
+// /<business>/onboard/<token>; without the trailing group, a link texted to a client would miss
+// this redirect and land on the consulting host instead of the studio — which is precisely the
+// wrong-brand failure the note above exists to prevent.
+const STUDIO_PATHS = [/^\/[^/]+\/onboard(\/[^/]+)?\/?$/, /^\/edit(\/.*)?$/];
 
 function studioRedirect(req: NextRequest, pathname: string): URL | null {
   if (!STUDIO_PATHS.some((re) => re.test(pathname))) return null;

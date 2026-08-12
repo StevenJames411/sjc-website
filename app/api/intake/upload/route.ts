@@ -14,7 +14,10 @@ const MAX_BYTES = 4 * 1024 * 1024;
 export async function POST(req: Request) {
   const siteId = (new URL(req.url).searchParams.get("site") || "").trim();
   if (!siteId) return Response.json({ ok: false, error: "site required" }, { status: 400 });
-  const open = await checkIntakeOpen(siteId);
+  // ⚠️ THE ROUTE PROVES IT AGAIN. The page checked the token before rendering, but a route is
+  // reachable directly with curl and cannot assume anyone rendered the page first — that is
+  // exactly how this endpoint was readable and writable by anyone who guessed the business name.
+  const open = await checkIntakeOpen(siteId, new URL(req.url).searchParams.get("k") || "");
   if (!open.ok) return Response.json({ ok: false, error: "form is closed" }, { status: 403 });
 
   // A cap per client, not per request — otherwise "one at a time" is an unlimited upload loop.

@@ -61,7 +61,9 @@ async function onboardingFacts() {
       return {
         id: s.id,
         name: s.name,
-        url: onboardUrlFor({ id: s.id, domain: s.domain }),
+        // WITH the token — `access` is already loaded per business, and without it this
+        // renders an address that no longer opens.
+        url: onboardUrlFor({ id: s.id, domain: s.domain }, a?.token),
         status: it?.status || "never opened",
         answered: it?.answered || 0,
         asked: it?.asked || 0,
