@@ -378,6 +378,16 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
                     {chip2(w.hasEmail, "Lead email")}
                     {chip2(w.hasSheet, "Sheet")}
                     {chip2(w.hasGhl, "GoHighLevel")}
+                    {/* ⚠️ NOT PART OF leadWiring, DELIBERATELY. The three above are where a LEAD
+                        goes — the board checks them as one joint, and a collision between two
+                        clients there is a red alarm. This is where a happy CUSTOMER is sent, which
+                        is a different destination with a different failure: nobody is misrouted,
+                        the thank-you screen just quietly loses its button.
+
+                        It belongs on this row anyway, because the row answers "what is wired up"
+                        and this is the one destination that lives on the business rather than the
+                        form. See BusinessFacts.reviewUrl. */}
+                    {chip2(!!s.business?.reviewUrl?.trim(), "Google review")}
                     {s.chloe?.attached
                       ? chip2(!!s.chloe.on, s.chloe.on ? "Chloe on" : `Chloe off${s.chloe.offReason ? ` — ${s.chloe.offReason}` : ""}`)
                       : null}
