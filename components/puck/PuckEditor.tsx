@@ -689,7 +689,7 @@ export default function PuckEditor({
           style={{ ...btn, fontWeight: 700 }}
           title="Back to all websites"
         >
-          ← {siteName}
+          ← {businessName?.trim() || siteName}
         </button>
         <span style={{ fontWeight: 700, fontSize: 13 }}>Page:</span>
         {/* The page list, and at its foot the way to bring one IN from another website. It sits

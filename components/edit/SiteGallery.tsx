@@ -253,7 +253,21 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                   );
                 })()}
               </div>
-              <h2 style={cardName}>{s.name}</h2>
+              {/* ⛔ TWO NAMES, AND THE CARD USED TO SHOW ONLY THE INTERNAL ONE. `business.name` is
+                  who the website is FOR — what a customer sees and what every {{business.name}}
+                  token resolves to. `name` is Steven's own label for the build ("SJC 2026"), which
+                  is how he tells two sites for the SAME business apart.
+                  
+                  Leading with the internal label made them read as one field contradicting itself:
+                  he set the business name in Website settings and the card carried on saying
+                  something else. The business leads; the label rides underneath, and only when it
+                  actually differs. */}
+              <h2 style={cardName}>{s.business?.name?.trim() || s.name}</h2>
+              {s.business?.name?.trim() && s.business.name.trim() !== s.name ? (
+                <p style={cardLabel} title="Your own label for this build — not shown to anyone else">
+                  {s.name}
+                </p>
+              ) : null}
               {s.description ? <p style={cardDesc}>{s.description}</p> : null}
               {/* The live address, so you can look at a site without opening the builder. Once a
                   domain is attached that becomes the real address; until then it's our path. */}
@@ -844,6 +858,8 @@ const chipDemo: React.CSSProperties = { ...chip, background: "var(--e-warn-bg)",
 // a library where every badge shouts is a library with no signal in it.
 const chipDraft: React.CSSProperties = { ...chip, background: "var(--e-muted-bg, #eef1f6)", color: "var(--e-muted-ink, #55617a)" };
 const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeight: 1.25 };
+// The internal build label. Quiet on purpose — it is a note to self, not the business's name.
+const cardLabel: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", margin: "2px 0 0", fontWeight: 600 };
 const cardDesc: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.45 };
 const cardLink: React.CSSProperties = { fontSize: 12, color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
 const primaryBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
