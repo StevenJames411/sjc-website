@@ -214,7 +214,11 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                 <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 7 }}>
                   {g.lines.map((l) => (
                     <div key={l.label} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12.5 }}>
-                      <span style={{ marginTop: 4 }}>
+                      {/* ⚠️ inline-flex, NOT a plain span. Dot is a <span> sized with width/height,
+                          and those do nothing on an inline element — it only ever worked because it
+                          sat directly inside a flex container. Wrapping it in a normal span
+                          rendered it at zero size: still in the DOM, invisible on screen. */}
+                      <span style={{ display: "inline-flex", marginTop: 4 }}>
                         <Dot colour={l.colour} size={8} />
                       </span>
                       <span style={{ minWidth: 0 }}>
