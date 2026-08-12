@@ -69,6 +69,7 @@ Owners who are excellent at their trade and invisible online: strong word of mou
 // have 404'd this file on the very domain it was written for.
 export async function GET() {
   const h = await resolveHost();
+  if (h.kind === "gone") return new Response("Not found", { status: 404 });
   const onStudio =
     h.kind === "studio" ||
     (h.kind === "client" && normalizeHost(h.site.domain || "") === normalizeHost(STUDIO_HOST));

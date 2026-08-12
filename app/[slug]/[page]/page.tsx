@@ -17,6 +17,8 @@ export const dynamic = "force-dynamic";
 
 async function find(slug: string, page: string) {
   const h = await resolveHost();
+  // A demo address for a site that has bought its own domain: dead, not forwarded.
+  if (h.kind === "gone") notFound();
   if (h.kind === "client") return null;
   return resolvePage(slug, page);
 }
@@ -39,6 +41,8 @@ export default async function ClientSubPage({
 }) {
   const { slug, page } = await params;
   const h = await resolveHost();
+  // A demo address for a site that has bought its own domain: dead, not forwarded.
+  if (h.kind === "gone") notFound();
 
   // Old sub-page links, same reasoning as app/[slug]: the address was texted to someone.
   if (h.kind === "sjc") {

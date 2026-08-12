@@ -39,6 +39,9 @@ export const dynamic = "force-dynamic";
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const h = await resolveHost();
 
+  // A retired demo address: nothing here, and nothing to crawl.
+  if (h.kind === "gone") return { rules: [{ userAgent: "*", disallow: "/" }] };
+
   if (h.kind === "client") {
     // No domain (a demo), or held back on purpose while the build finishes.
     if (!h.site.domain || h.site.holdIndexing) {

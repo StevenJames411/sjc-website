@@ -33,6 +33,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
   const h = await resolveHost();
 
+  // A retired demo address publishes no sitemap.
+  if (h.kind === "gone") return [];
+
   if (h.kind === "client") {
     // No domain means demo means noindex — nothing to publish. Same when the site is on its
     // real domain but deliberately held back until launch.

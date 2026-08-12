@@ -24,6 +24,8 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const h = await resolveHost();
+  // A demo address for a site that has bought its own domain: dead, not forwarded.
+  if (h.kind === "gone") notFound();
 
   if (h.kind === "studio") {
     return pageMetadata("websites", {
@@ -49,6 +51,8 @@ export async function generateMetadata() {
 
 export default async function Home() {
   const h = await resolveHost();
+  // A demo address for a site that has bought its own domain: dead, not forwarded.
+  if (h.kind === "gone") notFound();
 
   if (h.kind === "studio") return <StudioBody />;
 
