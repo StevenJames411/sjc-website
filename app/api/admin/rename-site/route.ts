@@ -19,10 +19,10 @@
 // and compared, so a failure halfway leaves the ORIGINAL site fully intact and the worst outcome
 // is a duplicate. dryRun is the default posture for anything destructive in this codebase.
 import { readSitesRaw, findSite } from "@/lib/sites";
-import { readPages } from "@/lib/pageRegistry";
+import { allSlugsEver } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { siteKeys, SITES_KEY, SJC } from "@/lib/siteKeys";
+import { allKeysFor, SITES_KEY, SJC } from "@/lib/siteKeys";
 import { RESERVED_SITE_IDS, type Site } from "@/lib/sitesShared";
 
 export const dynamic = "force-dynamic";
@@ -57,21 +57,20 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: `'${to}' is taken or reserved.` }, { status: 400 });
   }
 
-  const kNew = siteKeys(to);
-  const kOld = siteKeys(from);
-  const pages = await readPages(from);
-  const pairs: [string, string][] = [
-    [kOld.pages, kNew.pages],
-    [kOld.brand(false), kNew.brand(false)],
-    [kOld.brand(true), kNew.brand(true)],
-    [kOld.intake, kNew.intake],
-  ];
-  for (const p of pages) {
-    pairs.push([kOld.puck(p.slug, false), kNew.puck(p.slug, false)]);
-    pairs.push([kOld.puck(p.slug, true), kNew.puck(p.slug, true)]);
-    pairs.push([kOld.designCss(p.slug, false), kNew.designCss(p.slug, false)]);
-    pairs.push([kOld.designCss(p.slug, true), kNew.designCss(p.slug, true)]);
-  }
+  // ⚠️ NOW ACTUALLY DERIVED — WHICH IS WHAT THE HEADER ABOVE ALREADY CLAIMED (fixed 2026-08-12).
+  // This block used to hand-list the key shapes, and the list predated `leads` and `designSrc`. So
+  // renaming a site silently stranded the client's ENTIRE LEAD HISTORY and the archived design
+  // source under an id that no longer existed in the registry: unreachable from the app, and
+  // invisible to the orphan sweeper, whose parser could not match those key shapes either.
+  //
+  // `allKeysFor` returns the same shape in the same order for any id, so zipping old→new is exact —
+  // and it THROWS if a key is added to siteKeys and left unaccounted for. Slugs come from
+  // `allSlugsEver`, not `readPages`: a deleted page's stylesheet outlives its content and has to
+  // move too, or it is orphaned by the rename.
+  const slugs = await allSlugsEver(from);
+  const oldKeys = allKeysFor(from, slugs);
+  const newKeys = allKeysFor(to, slugs);
+  const pairs: [string, string][] = oldKeys.map((k, i) => [k, newKeys[i]]);
 
   const client = getClient();
   const moved: Record<string, number> = {};

@@ -24,15 +24,52 @@ import {
   modernizeOpacityUtilities,
 } from "./designHtml";
 import { compileDesignCss } from "./designCss";
+import { sheetScope, DESIGN_PIPELINE_REV } from "./designShared";
 import { nearestFont, type BrandFont } from "./brandShared";
+import { createHash } from "node:crypto";
 
 export type DesignImport = {
   data: Data;
   css: string;
+  /** The sheet's content-addressed id, stamped on every block as `props.sheet`. */
+  sheetId: string;
   fonts: { headingFont: BrandFont; bodyFont: BrandFont };
   accent: string;
   report: string[];
 };
+
+/**
+ * A design's identity: a hash of the markup its stylesheet was compiled from.
+ *
+ * This id is what makes the sheet travel. It lives in `DesignSection.props.sheet`, so every path
+ * that copies block props — which is all of them — carries the stylesheet reference for free, and
+ * none of them has to know a stylesheet exists.
+ *
+ * ⚠️ THE TAILWIND VERSION IS PART OF THE HASH, DELIBERATELY. The same markup compiled by a
+ * different Tailwind is different CSS, so it is a different sheet and must not quietly reuse the
+ * old id. Include it and a compiler upgrade re-imports cleanly; leave it out and pages keep
+ * pointing at a sheet built by a compiler that no longer exists.
+ *
+ * 16 hex chars: far past any practical collision concern, short enough to read in a key and in the
+ * block's props.
+ */
+export function sheetIdFor(html: string, tailwindVersion = TW_VERSION): string {
+  return createHash("sha256")
+    .update(`${tailwindVersion}\n${DESIGN_PIPELINE_REV}\n${html}`)
+    .digest("hex")
+    .slice(0, 16);
+}
+
+// Read once at module load. Failing to resolve it is not fatal — "unknown" still hashes
+// consistently within a deployment, which is all the id has to do.
+const TW_VERSION: string = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return String(require("tailwindcss/package.json").version || "unknown");
+  } catch {
+    return "unknown";
+  }
+})();
 
 /**
  * The stylesheet for a design, from its raw HTML.
@@ -49,7 +86,10 @@ export type DesignImport = {
 export async function compileCssForDesign(html: string): Promise<string> {
   const icons = await inlineLucideIcons(html);
   const withIcons = modernizeOpacityUtilities(icons.html);
-  return compileDesignCss(withIcons, inlineStyles(html));
+  // Scoped to THIS design's own class, so two designs on one page don't overwrite each other's
+  // identically-named utilities. The id is derived from the same `html` the caller hashes, so the
+  // scope here and the `props.sheet` stamped on the blocks always agree.
+  return compileDesignCss(withIcons, inlineStyles(html), sheetScope(sheetIdFor(html)));
 }
 
 /** Every inline <style> in the document — the non-utility rules a design brings with it. */
@@ -143,6 +183,10 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
   // success. Brand marks (github, twitter…) are the usual cause — lucide dropped them.
   if (icons.missing.length) report.push(`⚠️ icons not found: ${icons.missing.join(", ")}`);
 
+  // Minted from the RAW html — the same input `compileCssForDesign` hashes below — so the scope the
+  // sheet is compiled under and the id stamped on the blocks are guaranteed to match.
+  const sheetId = sheetIdFor(html);
+
   const sections = splitSections(withIcons);
   if (!sections.length) throw new Error("No top-level sections found in that page.");
 
@@ -162,6 +206,11 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
       type: "DesignSection",
       props: {
         id,
+        // ⚠️ THIS IS WHAT MAKES THE STYLESHEET TRAVEL. The sheet used to be keyed by (site, page),
+        // so seven copy paths had to remember to carry it and several didn't — silently, with a
+        // green receipt. Here it is a prop like any other, so cloning, duplicating, templating,
+        // splitting and the libraries all carry it by construction. See lib/siteKeys.ts:designSheet.
+        sheet: sheetId,
         html: tokenized,
         text,
         images,
@@ -219,5 +268,5 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
     zones: {},
     content,
   } as unknown as Data;
-  return { data, css, fonts, accent, report };
+  return { data, css, sheetId, fonts, accent, report };
 }

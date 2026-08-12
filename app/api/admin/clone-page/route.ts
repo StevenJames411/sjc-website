@@ -12,16 +12,18 @@
 // give you clean; an imported design gives you gravitas, and no amount of section-background
 // tuning closes that gap.
 //
-// ⛔ THE STYLESHEET IS THE WHOLE POINT, AND IT IS NOT IN THE PAGE DATA. A design page keeps its
-// compiled CSS under a SEPARATE key (`siteKeys(site).designCss(page, pub)`). Copying only the
-// content is the exact failure the publish route already documents: the page goes live with no
-// stylesheet, and the result is not "a bit plain" — inline styles survive, layout doesn't, and
-// the grid overlay loses `absolute inset-0` and paints the whole page in lines. So this copies
-// BOTH, or it copies nothing.
+// ⛔ THE STYLESHEET USED TO BE THE WHOLE POINT OF THIS ROUTE. As of 2026-08-12 it is not its
+// problem at all. A design's CSS used to live under a per-page key (`designCss(page, pub)`), so
+// copying content alone put the page live with no stylesheet — not "a bit plain" but wreckage, with
+// inline styles surviving and layout gone. This route existed to copy BOTH or copy nothing.
+//
+// Sheets are now global, immutable and content-addressed, and the BLOCKS carry the id, so a clone
+// references the same sheet the moment its content lands. What remains here is the page-registry
+// trap below, which is still real.
 //
 // ⚠️ It writes the DRAFT by default. Publishing is a separate, deliberate act — and the publish
 // route is what carries the stylesheet across to the -pub key.
-import { readPuckDraft, readPuckPublished, readDesignCss, readDesignCssDraft, writeDesignCss, puckKey } from "@/lib/puckContent";
+import { readPuckDraft, readPuckPublished, sheetIdsIn, puckKey } from "@/lib/puckContent";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { readPages, createPage } from "@/lib/pageRegistry";
@@ -57,7 +59,12 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: `no content at ${fromSite}/${fromPage}` }, { status: 404 });
   }
 
-  const css = (await readDesignCss(fromPage, fromSite)) || (await readDesignCssDraft(fromPage, fromSite));
+  // ⚠️ THE STYLESHEET IS NO LONGER COPIED, BECAUSE IT NO LONGER HAS TO BE (2026-08-12). It used to
+  // live in a per-page key that this route existed to carry — "or it copies nothing". Sheets are
+  // now global and immutable, and the blocks name theirs, so a clone references the same sheet the
+  // source did the instant its content lands. Reported so a clone that came out unstyled says which
+  // sheet it wanted rather than looking like a rendering bug.
+  const sheets = sheetIdsIn(data);
 
   // ⚠️ THE PAGE HAS TO EXIST IN THE REGISTRY OR THE SITE 404s. Writing content for an unregistered
   // slug returns ok, publishes ok, and serves nothing — the trap this route was written right
@@ -85,25 +92,14 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: wrote.reason || "content write refused" }, { status: 409 });
   }
 
-  // ⛔ Both, or neither. A design page without its stylesheet is wreckage, not a plain page.
-  let cssWritten = false;
-  if (css) {
-    cssWritten = await writeDesignCss(slug, css, false, toSite);
-    if (!cssWritten) {
-      return Response.json(
-        { ok: false, error: "content copied but the stylesheet write failed — publish would render wreckage", slug },
-        { status: 502 }
-      );
-    }
-  }
-
   return Response.json({
     ok: true,
     slug,
     blocks: ((clean as { content?: unknown[] }).content || []).length,
-    cssBytes: css.length,
-    cssWritten,
+    // Which sheets this page now references. Global and immutable, so nothing was copied — but a
+    // page that renders unstyled should be able to say WHICH sheet it was looking for.
+    sheets,
     // Say it plainly: nothing is live yet.
-    note: "Draft only. Publish it when you're happy — publishing is what carries the stylesheet live.",
+    note: "Draft only. Publish it when you're happy.",
   });
 }

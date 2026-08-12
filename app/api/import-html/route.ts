@@ -24,7 +24,7 @@ import { createSite, updateSite, readSites } from "@/lib/sites";
 import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { puckKey, writeDesignCss } from "@/lib/puckContent";
+import { puckKey, writeDesignSheet } from "@/lib/puckContent";
 import { siteKeys } from "@/lib/siteKeys";
 import { writeBrand } from "@/lib/brand";
 import type { BrandFont } from "@/lib/brandShared";
@@ -189,6 +189,8 @@ export async function POST(req: Request) {
     report: string[] | Record<string, unknown>;
     palette?: unknown;
     css?: string;
+    /** Only "design" mode compiles a stylesheet, so only it mints a sheet id. */
+    sheetId?: string;
     fonts?: { headingFont: BrandFont; bodyFont: BrandFont };
     accent?: string;
   };
@@ -277,32 +279,27 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "Website created but its content couldn't be saved." }, { status: 500 });
   }
 
-  // ── THE DESIGN'S OWN STYLESHEET ─────────────────────────────────────────────────────────────
-  // Draft, like the content. A design has to go live with the page it belongs to — publishing the
-  // stylesheet on import would restyle a page nobody had approved yet.
-  if (mode === "design" && result.css) {
-    if (!(await writeDesignCss(created.slug, result.css, false, siteId))) {
+  // ── THE DESIGN'S STYLESHEET, AND THE SOURCE IT WAS BUILT FROM ───────────────────────────────
+  // Both stored under the sheet's content-addressed id — global, not per page per site. The blocks
+  // written above already carry that id in `props.sheet`, so from here the stylesheet travels with
+  // the content through every copy, clone, template and library entry. See lib/siteKeys.ts for why
+  // the per-page key was the wrong address.
+  //
+  // No draft/published split any more: an immutable sheet has nothing to promote, so the old worry
+  // — publishing a stylesheet on import would restyle a page nobody had approved — is gone with it.
+  // The page's blocks are a draft; until they publish, nothing references this sheet publicly.
+  //
+  // The source is archived beside it so this import can be RE-RUN later against a better pipeline.
+  // Without it, "re-import" means asking someone to go find the original file again — which on
+  // 2026-08-05 is exactly what four already-imported pages needed, and nobody had them. Keyed by
+  // sheet id, it now survives every copy, instead of existing only for the page first imported.
+  if (mode === "design" && result.css && result.sheetId) {
+    if (!(await writeDesignSheet(result.sheetId, result.css, html))) {
       return Response.json(
         { ok: false, error: "Website created but its design stylesheet couldn't be saved." },
         { status: 500 }
       );
     }
-  }
-
-  // ── KEEP THE SOURCE ─────────────────────────────────────────────────────────────────────────
-  // The markup exactly as it arrived, so this import can be RE-RUN later against a better
-  // pipeline. Without it "re-import" means asking someone to go find the original file again —
-  // which on 2026-08-05 is exactly what four already-imported pages needed, and nobody had them.
-  //
-  // Best-effort on purpose: a website whose source archive failed to write is still a fine
-  // website, and failing the import over it would be the tail wagging the dog. Its absence shows
-  // up later as "no stored source", not as a broken page.
-  if (mode === "design") {
-    await createKvStore(getClient(), siteKeys(siteId).designSrc(created.slug)).write({
-      html,
-      businessName,
-      importedAt: new Date().toISOString(),
-    });
   }
 
   // ── THE BRAND ───────────────────────────────────────────────────────────────────────────────

@@ -16,8 +16,8 @@ import { createSite, deleteSite } from "@/lib/sites";
 import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { puckKey } from "@/lib/puckContent";
-import { SJC, siteKeys } from "@/lib/siteKeys";
+import { puckKey, sheetIdsIn } from "@/lib/puckContent";
+import { SJC } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -79,12 +79,35 @@ const FORBIDDEN: [string, RegExp][] = [
 const withoutPlaceholders = (s: string) =>
   Object.values(PH).reduce((acc, p) => acc.split(p).join(""), s);
 
-function scrub(value: unknown, counts: Record<string, number>): unknown {
+/**
+ * ⛔ A DESIGN'S MARKUP IS NOT SCRUBBED FOR COLOUR, AND THAT IS LOAD-BEARING (2026-08-12).
+ *
+ * A bought design keeps its palette in its CLASS NAMES — `bg-[#0A0E27]`, `text-[#00D9FF]`,
+ * `shadow-[#00D9FF]/20` — and its compiled stylesheet declares rules for exactly those selectors.
+ * The colour scrub below ran over every string in the page, `DesignSection.props.html` included, so
+ * it rewrote those class names to `bg-[bandDark]` and the sheet's selectors matched nothing.
+ *
+ * The trap was that this looked like success. `FORBIDDEN` refuses to finish if a hex survives — so
+ * the check PASSED precisely BECAUSE the hexes had been destroyed, and the route reported ok on a
+ * template that could not render. A design import could never have passed that check with its
+ * classes intact.
+ *
+ * So: business FACTS are still scrubbed everywhere (a phone number in imported markup is exactly
+ * what this route exists to remove), but colour is left alone inside a design's own markup. The
+ * palette is the product, not a frozen brand value to be re-roled.
+ */
+const isDesignHtml = (key: string, holder: unknown) =>
+  key === "html" &&
+  !!holder &&
+  typeof holder === "object" &&
+  typeof (holder as { html?: unknown }).html === "string";
+
+function scrub(value: unknown, counts: Record<string, number>, skipColour = false): unknown {
   if (typeof value === "string") {
     let out = value;
 
     const role = HEX_TO_ROLE[out.trim().toLowerCase()];
-    if (role) {
+    if (role && !skipColour) {
       counts.colours = (counts.colours || 0) + 1;
       return role;
     }
@@ -97,19 +120,25 @@ function scrub(value: unknown, counts: Record<string, number>): unknown {
       re.lastIndex = 0;
     }
 
-    // A hex that wasn't in the known palette still can't stay — it would freeze a colour into the
-    // template that no brand panel can reach. Fall back to the nearest sensible role.
-    out = out.replace(/#[0-9a-f]{6}\b/gi, (hex) => {
-      counts.strayColours = (counts.strayColours || 0) + 1;
-      return HEX_TO_ROLE[hex.toLowerCase()] || "accent";
-    });
+    // A hex that wasn't in the known palette still can't stay in a NATIVE block — it would freeze a
+    // colour into the template that no brand panel can reach. Skipped inside a design's markup, for
+    // the reason on `isDesignHtml` above: there the hex is part of the class name the stylesheet
+    // targets, and rewriting it silently unstyles the whole template.
+    if (!skipColour) {
+      out = out.replace(/#[0-9a-f]{6}\b/gi, (hex) => {
+        counts.strayColours = (counts.strayColours || 0) + 1;
+        return HEX_TO_ROLE[hex.toLowerCase()] || "accent";
+      });
+    }
 
     return out;
   }
-  if (Array.isArray(value)) return value.map((v) => scrub(v, counts));
+  if (Array.isArray(value)) return value.map((v) => scrub(v, counts, skipColour));
   if (value && typeof value === "object") {
     const o: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) o[k] = scrub(v, counts);
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      o[k] = scrub(v, counts, skipColour || isDesignHtml(k, value));
+    }
     return o;
   }
   return value;
@@ -169,8 +198,18 @@ export async function POST(req: Request) {
   blankLeadSources(cleaned.content, leads);
   counts.leadFormsCleared = leads.n;
 
+  // ⚠️ THE HEX RULE IS EVALUATED WITH DESIGN MARKUP REMOVED (2026-08-12), and the rest of the rules
+  // are not. A phone number or an email inside imported markup is still a hard stop — that is the
+  // whole point of this route. But a design's markup legitimately contains hexes in its class names
+  // (`bg-[#0A0E27]`), and the only way it ever passed this check was by having them destroyed,
+  // which unstyled the template while reporting success. Colour is checked on everything else.
   const text = withoutPlaceholders(JSON.stringify(cleaned));
-  const leftovers = FORBIDDEN.filter(([, re]) => re.test(text)).map(([what]) => what);
+  const textNoDesignHtml = withoutPlaceholders(
+    JSON.stringify(cleaned, (k, v) => (isDesignHtml(k, { html: v }) ? "" : v))
+  );
+  const leftovers = FORBIDDEN.filter(([what, re]) =>
+    re.test(what === "a hex colour" ? textNoDesignHtml : text)
+  ).map(([what]) => what);
   if (leftovers.length) {
     return Response.json(
       { ok: false, error: `Scrub incomplete — still contains ${leftovers.join(", ")}.`, leftovers, counts },
@@ -201,29 +240,18 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "Couldn't save the template's content." }, { status: 500 });
   }
 
-  // ⚠️ THE STYLESHEET HAS TO COME TOO, AND IT DIDN'T UNTIL 2026-08-05.
+  // ⚠️ THE STYLESHEET USED TO HAVE TO BE COPIED HERE, AND ONCE WASN'T (2026-08-05 → 2026-08-12).
   //
-  // A bought design keeps its compiled Tailwind in its OWN key, per page per site (siteKeys →
-  // designCss), deliberately: a 50KB blob inside the page data would make the store's save-guard
-  // diff meaningless. This route copied the content and not the stylesheet, so a template made
-  // from an imported design carried every piece of markup and none of the CSS.
+  // A bought design's compiled Tailwind lived in its OWN per-page, per-site key, so this route
+  // copied content and not CSS: a template made from an imported design carried every piece of
+  // markup and none of the styling. It failed the worst way — silently and later. The template got
+  // created, the API said ok, and nothing looked wrong until somebody built a site from it and got
+  // unstyled HTML. Copying it here in August fixed this route and left `copySiteContent` — the path
+  // that actually CONSUMES a template — still dropping it, so the fix was inert.
   //
-  // It failed the worst way — silently, and later. The template gets created, the API says ok, and
-  // nothing looks wrong until somebody builds a site from it and gets unstyled HTML. The same
-  // shape as every other failure today: the receipt said done, the page said otherwise.
-  //
-  // Missing is NOT an error: a template made from a native build has no design sheet and never
-  // did. Reported as `styled` instead, so "no stylesheet" is something you can see rather than
-  // something you assume.
-  const css =
-    (await createKvStore(client, siteKeys(fromSite).designCss(from, true)).read<unknown>()) ??
-    (await createKvStore(client, siteKeys(fromSite).designCss(from, false)).read<unknown>());
-  let styled = false;
-  if (css) {
-    styled = await createKvStore(client, siteKeys(site.id).designCss(page.slug, true)).write(css);
-    // The draft too, so the builder canvas matches the published page.
-    await createKvStore(client, siteKeys(site.id).designCss(page.slug, false)).write(css);
-  }
+  // Sheets are now global, immutable and referenced by `DesignSection.props.sheet`, which the scrub
+  // above copies like any other prop. Nothing to carry, and nothing left to forget.
+  const sheets = sheetIdsIn(cleaned);
 
   return Response.json({
     ok: true,
@@ -231,7 +259,8 @@ export async function POST(req: Request) {
     slug: page.slug,
     counts,
     published: okPub,
-    styled,
+    // Which design sheets the template references. Empty is normal for a natively built page.
+    sheets,
     leftovers: [],
   });
 }

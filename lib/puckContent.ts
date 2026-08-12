@@ -8,8 +8,7 @@
 import type { Data } from "@measured/puck";
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
-import { siteKeys, SJC } from "./siteKeys";
-import { readPages } from "./pageRegistry";
+import { siteKeys, designSheet, designSource, SJC } from "./siteKeys";
 
 /**
  * A page's storage key.
@@ -71,61 +70,97 @@ export async function readPuckDraft(page: string, siteId: string): Promise<Data 
  * stylesheet nobody approved.
  */
 export async function readDesignCss(page: string, siteId: string): Promise<string> {
-  const read = async (slug: string, pub: boolean) => {
-    const store = createKvStore(getClient(), siteKeys(siteId).designCss(slug, pub));
-    const v = await store.read<{ css?: string }>();
-    return (v && typeof v.css === "string" ? v.css : "") || "";
-  };
-  const own = async () => {
-    if (await previewRequested()) {
-      const draft = await read(page, false);
-      if (draft) return draft;
-    }
-    return read(page, true);
-  };
-
-  const mine = await own();
-  if (mine) return mine;
-
-  // ── WHY A BOUGHT DESIGN COULD ONLY EVER BE ONE PAGE ───────────────────────────────────────
-  // The stylesheet is compiled AT IMPORT and stored per page. An import creates exactly one page,
-  // so page two has no stylesheet — and since the header and footer are sections of that design,
-  // a second page rendered with its nav and footer completely unstyled. Nobody added one twice.
-  //
-  // Every page of one bought design shares that design's CSS, so falling back to a sibling's is
-  // correct rather than a patch: the rules are all scoped under .sjc-design and keyed off classes
-  // in the markup, so a sibling's sheet styles this page's header and footer identically.
-  //
-  // Only reached when the page has none of its own, so an imported page keeps using exactly the
-  // stylesheet it was compiled with.
-  for (const p of await readPages(siteId)) {
-    if (p.slug === page) continue;
-    const sibling = await read(p.slug, true);
-    if (sibling) return sibling;
-  }
-  return "";
+  const data = (await readPuckPublished(page, siteId)) || (await readPuckDraft(page, siteId));
+  return sheetsFor(data);
 }
 
 /**
- * The DRAFT stylesheet, explicitly — no preview-mode logic.
+ * The stylesheets a page's blocks actually reference — read straight off the data.
  *
- * ⚠️ Publish must use this, not readDesignCss(). That one consults preview mode, which is false
- * in an API request, so it would read the PUBLISHED key — the very key publish is about to write.
- * Publishing would then copy the old (usually empty) stylesheet over itself and report success.
+ * ── WHAT THIS REPLACED, AND WHY (2026-08-12) ──────────────────────────────────────────────────
+ * This used to look up `designCss(page, pub)` and, finding nothing, fall through to ANY SIBLING
+ * PAGE'S published sheet in the same site. The fallback existed because the sheet was keyed per
+ * page while a design spans a whole site: page two of an import had no sheet of its own, so its
+ * header and footer rendered unstyled.
+ *
+ * It papered over the real problem and created a worse one. The fallback was scoped to the SITE,
+ * not to the design — with two designs in one site it returned whichever page `readPages` happened
+ * to list first, so a band could silently wear a different design's stylesheet, and any utility
+ * name the two shared (`px-6`, `grid-cols-3`) rendered with the wrong values. It also meant a page
+ * with NO design could capture a neighbour's 50KB sheet, and carrying that into a library entry
+ * would then poison the destination site's fallback for every page in it, days later, looking for
+ * all the world like a rendering bug.
+ *
+ * Now each block names its own sheet: a page emits exactly the sheets it uses, and a page with no
+ * design blocks emits none. There is nothing left for a fallback to do.
+ *
+ * ⚠️ NO DRAFT/PUB SPLIT, BY CONSTRUCTION. Sheets are immutable and content-addressed, so there is
+ * no second version to promote and no way for content and stylesheet to disagree — publishing the
+ * content publishes the reference. That removes the publish/unpublish desync entirely.
  */
-export async function readDesignCssDraft(page: string, siteId: string): Promise<string> {
-  const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, false));
-  const v = await store.read<{ css?: string }>();
-  return (v && typeof v.css === "string" ? v.css : "") || "";
+export async function sheetsFor(data: unknown): Promise<string> {
+  const ids = sheetIdsIn(data);
+  if (!ids.length) return "";
+  const client = getClient();
+  const sheets = await Promise.all(
+    ids.map(async (id) => {
+      const v = await createKvStore(client, designSheet(id)).read<{ css?: string }>();
+      return (v && typeof v.css === "string" ? v.css : "") || "";
+    })
+  );
+  return sheets.filter(Boolean).join("\n");
 }
 
-/** Store a page's compiled design stylesheet. Draft by default, like everything else. */
-export async function writeDesignCss(
-  page: string,
+/** Every distinct `props.sheet` in a document's blocks, in first-seen order. */
+export function sheetIdsIn(node: unknown, out = new Set<string>()): string[] {
+  if (Array.isArray(node)) {
+    node.forEach((n) => sheetIdsIn(n, out));
+  } else if (node && typeof node === "object") {
+    const n = node as Record<string, unknown> & { props?: Record<string, unknown> };
+    const sheet = n.props?.sheet;
+    if (typeof sheet === "string" && sheet) out.add(sheet);
+    if (n.props) Object.values(n.props).forEach((v) => sheetIdsIn(v, out));
+    // `content` and `zones` sit beside `props` on the document root, not inside it.
+    for (const k of ["content", "zones"]) if (n[k]) sheetIdsIn(n[k], out);
+  }
+  return [...out];
+}
+
+/**
+ * Store a compiled stylesheet under its content-addressed id, and archive the markup it came from.
+ *
+ * ⚠️ WRITE-ONCE. The id IS the hash of the source, so a given id always names the same bytes.
+ * Re-writing it would be a no-op at best and, if the compiler had changed, would silently restyle
+ * every page pointing at it — so an existing sheet is left alone and reported as a hit. That is
+ * also what makes two imports of the same design dedupe for free.
+ *
+ * The source is stored beside it under the same id. It used to be written in one place, read in
+ * one place, and copied by NONE — so every cloned or templated page was permanently
+ * un-recompilable, which is the exact thing the archive was added to prevent. Sharing the sheet's
+ * id means it now travels wherever the block travels.
+ */
+export async function writeDesignSheet(
+  sheetId: string,
   css: string,
-  pub = false,
-  siteId: string
+  sourceHtml?: string
 ): Promise<boolean> {
-  const store = createKvStore(getClient(), siteKeys(siteId).designCss(page, pub));
-  return store.write({ css: String(css || "") });
+  const client = getClient();
+  const store = createKvStore(client, designSheet(sheetId));
+  const existing = await store.read<{ css?: string }>();
+  if (!existing?.css) {
+    if (!(await store.write({ css: String(css || "") }))) return false;
+  }
+  if (sourceHtml) {
+    const src = createKvStore(client, designSource(sheetId));
+    if (!(await src.read<{ html?: string }>())?.html) {
+      await src.write({ html: String(sourceHtml), at: new Date().toISOString() });
+    }
+  }
+  return true;
+}
+
+/** The archived source markup for a sheet, for re-running the import pipeline on it later. */
+export async function readDesignSource(sheetId: string): Promise<string> {
+  const v = await createKvStore(getClient(), designSource(sheetId)).read<{ html?: string }>();
+  return (v && typeof v.html === "string" ? v.html : "") || "";
 }

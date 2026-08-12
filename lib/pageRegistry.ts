@@ -63,6 +63,30 @@ export async function readPages(siteId: string): Promise<PageEntry[]> {
   return [...builtins, ...custom];
 }
 
+/**
+ * Every slug this site has EVER used — live pages, tombstoned built-ins, renamed ones, and the
+ * built-in list itself.
+ *
+ * ⚠️ NOT `readPages().map(p => p.slug)`, and the difference is what leaks. `readPages` deliberately
+ * hides tombstoned built-ins, and a deleted custom page leaves the registry entirely. But deleting
+ * a page only blanks its Puck content — its compiled stylesheet and archived design source stay in
+ * the store under that slug. A purge that walked only LIVE pages would erase the site and leave
+ * the dead pages' design keys behind forever, invisible to the orphan sweeper that is supposed to
+ * catch exactly that.
+ *
+ * For accounting only — deleting, renaming, sweeping. Never for anything user-facing.
+ */
+export async function allSlugsEver(siteId: string): Promise<string[]> {
+  const blob = await readBlob(siteId);
+  const out = new Set<string>(["home"]);
+  // Built-ins are defined in code, so their keys can exist with no registry row at all.
+  for (const p of PUCK_PAGES) out.add(p.slug);
+  for (const p of blob.custom || []) out.add(p.slug);
+  for (const s of blob.hidden || []) out.add(s);
+  for (const s of Object.keys(blob.titles || {})) out.add(s);
+  return [...out];
+}
+
 export async function findPageMeta(
   slug: string,
   siteId: string
