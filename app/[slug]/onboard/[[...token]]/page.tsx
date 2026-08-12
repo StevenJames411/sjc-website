@@ -61,10 +61,10 @@ export default async function OnboardPage({
 }: {
   params: Promise<{ slug: string; token?: string[] }>;
 }) {
-  // ⚠️ OPTIONAL CATCH-ALL, ON PURPOSE. The link is now /<business>/onboard/<token>, but a link
-  // opened before tokens existed has no token and must keep working — checkIntakeOpen only demands
-  // one when the record actually stored one. Making the segment optional means BOTH shapes resolve
-  // to this page instead of the old one 404ing on a form somebody is halfway through.
+  // ⚠️ OPTIONAL CATCH-ALL SO THE TOKENLESS URL STILL LANDS HERE. The token is always required, but
+  // /<business>/onboard with none should show her the same "this form is closed" page as a wrong
+  // token does — not a Next 404, which looks like a broken link and invites a phone call. The
+  // segment being optional is about the MESSAGE, not about letting anyone in.
   const { slug, token } = await params;
   const key = token?.[0] || "";
 

@@ -119,8 +119,8 @@ export function onboardUrlFor(site: { id: string; domain?: string }, token?: str
   const host = normalizeHost(process.env.NEXT_PUBLIC_STUDIO_DOMAIN || STUDIO_HOST);
   // ⚠️ THE TOKEN IS THE LAST SEGMENT (2026-08-12). Her business name stays in the path — that is
   // what makes the link read as legitimate in a text message — and the unguessable half sits after
-  // it. Omitted when there is no token, which means a link opened before this existed; those keep
-  // working on the old address until they are closed and reopened. See lib/intakeLinks.ts.
+  // it. A URL built without one does not open: the token is always required, and a record that has
+  // none reads as closed until it is reopened. See lib/intakeLinks.ts.
   return `https://${host}/${site.id}/onboard${token ? `/${token}` : ""}`;
 }
 

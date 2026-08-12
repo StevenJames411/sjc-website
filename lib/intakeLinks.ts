@@ -1,23 +1,27 @@
-// Whether a business's onboarding form is OPEN. SERVER ONLY.
+// Whether a business's onboarding form is OPEN, and whether the caller holds its link. SERVER ONLY.
 //
-//   https://stevenjamesconsulting.com/lucky-dog-wash-house/onboard
+//   https://stevenjamesconsulting.com/lucky-dog-wash-house/onboard/<128-bit token>
 //
-// ── THE URL IS THE BUSINESS NAME. THAT'S DELIBERATE ────────────────────────────────────────────
-// Two earlier versions put a credential in the link — a signed token, then a word pair. Steven
-// rejected both, and the reasoning is sound: a groomer who gets a link with a code in it doesn't
-// tap it, and a link she can't read out over the phone is a link she can't use. The address of
-// her onboarding form should look like the address of her website, because it is.
+// ── TWO GUARDS: THE STATE, AND THE TOKEN ──────────────────────────────────────────────────────
+// The form must be OPEN, and the URL must carry the token minted when it was opened. Both, always.
 //
-// So the URL is guessable. It has to be, to be usable.
+// ⚠️ THE TOKEN WAS ADDED 2026-08-12, REVERSING TWO EARLIER REJECTIONS. Steven had turned down a
+// signed token and then a word pair, on the grounds that a groomer who gets a link with a code in
+// it doesn't tap it, and a link she can't read out over the phone is a link she can't use.
 //
-// ── WHICH MEANS THE STATE IS THE GUARD ─────────────────────────────────────────────────────────
-// Protection moves from "you can't find the URL" to "the URL only works while it's open". The
-// exposure window is the days you're actively onboarding, not forever.
+// The second half turned out not to be true of this link: it is SENT, exactly like an invoice
+// link, never dictated — *"nobody needs to manually type it"*. So an unguessable address costs her
+// nothing, and the first objection never applied to a link she taps rather than types.
 //
-// What's behind it during that window: her business hours, the work she wants, and photos she is
-// paying to have published. Everything here is destined for a public website. The real risk isn't
-// someone reading it, it's someone overwriting it — which is why the store keeps every revision
-// (append-only `state_rev`), so a vandalised answer is recoverable rather than lost.
+// What it bought: the address used to BE the business name, so during the open window anyone who
+// knew the business could reach her record. Behind it are her hours, the work she wants, and the
+// photos she is paying to have published. The real risk was never someone reading it — it was
+// someone OVERWRITING it, because a submitted PUT writes into her business facts, and those render
+// on her live website. (The store keeps every revision, append-only, so a vandalised answer is
+// recoverable rather than lost — but recoverable is not the same as prevented.)
+//
+// Her business name is still in the path, which is the part that makes the link read as legitimate
+// in a text message. Only the unguessable half was added.
 //
 // ── NOBODY HAS TO REMEMBER TO CLOSE IT ─────────────────────────────────────────────────────────
 // Steven's objection to a manual switch was the right one: anything a person must remember to
@@ -44,7 +48,7 @@ type Access = {
   closedBecause?: string;
   closedAt?: string;
   /**
-   * The unguessable half of the onboarding URL — /start/<siteId>/<token>.
+   * The unguessable half of the onboarding URL — /<siteId>/onboard/<token>.
    *
    * ⚠️ ADDED 2026-08-12 ON STEVEN'S CALL, REVERSING THE HEADER NOTE ABOVE. Two earlier versions put
    * a credential in the link and he rejected both: a link with a code in it doesn't get tapped, and
@@ -59,6 +63,9 @@ type Access = {
    *
    * Same shape as an invoice's `publicId`: 128 bits, minted when the link is opened. It ROTATES on
    * every open, so a closed-then-reopened link is a new address and the old one stays dead.
+   *
+   * Optional only because records written before this existed have none — and those read as CLOSED
+   * until reopened. There is no tokenless path.
    */
   token?: string;
 };
@@ -99,13 +106,13 @@ function sameToken(a: string, b: string): boolean {
  * Is this business's form open right now, and does the caller hold its link? The ONLY thing
  * standing between a stranger and her record, so it is the one function to be careful about.
  *
- * ⚠️ THE TOKEN IS REQUIRED WHEN ONE EXISTS, AND ONLY THEN. A link opened before 2026-08-12 has no
- * token stored, and those keep working on the old URL until they are closed and reopened — which
- * mints one. Requiring a token nobody has been given would lock a business out of a form she is
- * mid-way through, and "open" is already a deliberate act with a 60-day backstop.
+ * ⚠️ THE TOKEN IS ALWAYS REQUIRED. No compatibility path for tokenless links: none were ever sent,
+ * so there is nothing to keep working. A record with no token — opened before 2026-08-12 — reads as
+ * closed, and reopening it mints one. "Required only when present" would be a hedge that quietly
+ * becomes a hole the first time a record loses its token.
  *
- * Reported as `closed`, never as "wrong token" — see CLOSED_MESSAGE. A wrong-token message tells a
- * stranger the business exists and that a different URL would work.
+ * Reported as `closed`, never as "wrong token" — see CLOSED_MESSAGE. A distinct message would tell
+ * a stranger the business exists and that a different URL would work.
  */
 export async function checkIntakeOpen(siteId: string, token?: string): Promise<AccessCheck> {
   const all = await readAll();
@@ -113,7 +120,7 @@ export async function checkIntakeOpen(siteId: string, token?: string): Promise<A
   // Fail closed. A site nobody has explicitly opened is not open.
   if (!a) return { ok: false, reason: "never-opened" };
   if (a.status !== "open") return { ok: false, reason: "closed" };
-  if (a.token && !sameToken(a.token, String(token || ""))) return { ok: false, reason: "closed" };
+  if (!a.token || !sameToken(a.token, String(token || ""))) return { ok: false, reason: "closed" };
 
   if (Date.now() - Date.parse(a.lastUsedAt) > STALE_DAYS * 86400_000) {
     all[siteId] = { ...a, status: "closed", closedBecause: "no activity", closedAt: now() };
