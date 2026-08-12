@@ -158,7 +158,7 @@ export function linesOf(group: Group): { colour: Colour; label: string; detail: 
     .sort((a, b) => RANK.indexOf(a.colour) - RANK.indexOf(b.colour))
     .map((r) => ({
       colour: r.colour,
-      label: r.def.label,
+      label: r.def.short || r.def.label,
       // The check's own sentence, trimmed to a glance. The full text is one click away on the row.
       detail: (r.st?.lastDetail || "").replace(/\s+/g, " ").trim(),
     }));

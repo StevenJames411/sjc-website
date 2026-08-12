@@ -41,6 +41,7 @@ export const CHECKS: CheckDef[] = [
   {
     id: "store.durable",
     label: "The durable store is answering",
+    short: "Database",
     layer: 1,
     scope: "global",
     expectation: "Postgres is the engine (not the cache fallback) and a read round-trips.",
@@ -54,6 +55,7 @@ export const CHECKS: CheckDef[] = [
   {
     id: "resend.domain",
     label: "The lead-alert sending domain is verified",
+    short: "Email sending",
     layer: 1,
     scope: "global",
     expectation: "Every domain on the Resend account reports status `verified`.",
@@ -75,6 +77,7 @@ export const CHECKS: CheckDef[] = [
     // man, a woman, a veteran — and guessing wrong in a tile Steven reads every morning trains the
     // wrong habit into the copy that eventually faces the customer. The business is THEY.
     label: "Their website answers, and it is THEIRS",
+    short: "Website",
     layer: 2,
     scope: "site",
     expectation:
@@ -91,6 +94,7 @@ export const CHECKS: CheckDef[] = [
   {
     id: "site.domain_expiry",
     label: "Their domain registration is not about to lapse",
+    short: "Domain expiry",
     layer: 1,
     scope: "site",
     expectation: "The registry says the domain expires more than 45 days from now.",
@@ -106,6 +110,7 @@ export const CHECKS: CheckDef[] = [
   {
     id: "site.lead_destination",
     label: "Their leads have somewhere to go",
+    short: "Lead destinations",
     layer: 2,
     scope: "site",
     expectation:
