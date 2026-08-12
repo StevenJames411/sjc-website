@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { resolveHost, publicUrlFor } from "@/lib/host";
+import { reachability } from "@/lib/sitesShared";
 import { readPages } from "@/lib/pageRegistry";
 import { readPuckPublished } from "@/lib/puckContent";
 import { SJC_HOST } from "@/lib/hostShared";
@@ -37,9 +38,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (h.kind === "gone") return [];
 
   if (h.kind === "client") {
-    // No domain means demo means noindex — nothing to publish. Same when the site is on its
-    // real domain but deliberately held back until launch.
-    if (!h.site.domain || h.site.holdIndexing) return [];
+    // Same single derivation robots.txt uses, so the two can never disagree about whether this
+    // site is meant to be in Google.
+    if (!reachability(h.site).indexable) return [];
     const pages = await readPages(h.site.id);
     const origin = publicUrlFor(h.site);
 

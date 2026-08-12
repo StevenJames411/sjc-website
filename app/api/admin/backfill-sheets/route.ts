@@ -28,7 +28,7 @@ import { getClient } from "@/lib/store";
 import { readSites } from "@/lib/sites";
 import { allSlugsEver } from "@/lib/pageRegistry";
 import { sheetIdFor } from "@/lib/importDesign";
-import { writeDesignSheet, puckKey } from "@/lib/puckContent";
+import { writeDesignSheet, puckKey, sheetIdsIn } from "@/lib/puckContent";
 import { siteKeys } from "@/lib/siteKeys";
 import { createHash } from "node:crypto";
 
@@ -148,10 +148,67 @@ export async function POST(req: Request) {
     }
   }
 
+  // ── PASS 2: THE DOCUMENTS THAT NEVER HAD A STYLESHEET OF THEIR OWN ──────────────────────────
+  //
+  // ⚠️ THE CHROME. `nav` and `footer` are sections of the bought design, but they were never
+  // IMPORTED as pages, so no `designcss-nav` key ever existed for pass 1 to find. They rendered
+  // correctly anyway because `readDesignCss` fell back to any sibling page's sheet — and deleting
+  // that fallback (rightly: it was scoped to the site, not the design, so it served the wrong
+  // stylesheet the moment a site held two) took the header and footer down with it. Steven opened
+  // /edit/sjc-2026/nav to raw text.
+  //
+  // The same is true of any page ADDED to an imported site: it has design blocks and no sheet key.
+  //
+  // So the fallback's answer gets FROZEN INTO THE DATA, once, here — instead of being recomputed
+  // on every render forever. After this the block names its sheet like every other block, and
+  // nothing has to guess again.
+  //
+  // ⚠️ WHICH SHEET, WHEN A SITE HAS MORE THAN ONE. The old fallback took whichever page
+  // `readPages` happened to list first, which is exactly the ambiguity that made it wrong. Here it
+  // takes the sheet used by the MOST pages in that site, and reports the choice — so a site with
+  // two designs shows up in `inherited` as something to look at rather than being silently guessed
+  // at a second time.
+  const inherited: { site: string; page: string; sheet: string; blocks: number }[] = [];
+  for (const site of sites) {
+    // ⚠️ THE TALLY COMES FROM THE DATA, NOT FROM PASS 1'S REPORT — and that is what makes this
+    // idempotent. Reading the report meant a SECOND run found nothing to do in pass 1 (everything
+    // was already stamped), so `mine` was empty, so pass 2 was skipped entirely and the chrome
+    // stayed unstamped no matter how many times it was run. A migration that only works on the
+    // first attempt is a migration you cannot verify.
+    const slugs = await allSlugsEver(site.id);
+    const tally = new Map<string, number>();
+    for (const slug of slugs) {
+      const d = await createKvStore(client, puckKey(slug, false, site.id)).read<unknown>();
+      for (const id of sheetIdsIn(d)) tally.set(id, (tally.get(id) || 0) + 1);
+    }
+    if (!tally.size) continue; // no design anywhere in this site — nothing to inherit
+    const dominant = [...tally.entries()].sort((a, b) => b[1] - a[1])[0][0];
+
+    for (const slug of slugs) {
+      for (const pub of [false, true]) {
+        const store = createKvStore(client, puckKey(slug, pub, site.id));
+        const data = await store.read<Record<string, unknown>>();
+        if (!data || !hasDesignBlock(data)) continue;
+        const n = stamp(data, dominant);
+        if (!n) continue;
+        if (!dryRun && !(await store.write(data))) {
+          return Response.json(
+            { ok: false, error: `Couldn't write ${site.id}/${slug} (${pub ? "published" : "draft"}).` },
+            { status: 500 }
+          );
+        }
+        inherited.push({ site: site.id, page: slug, sheet: dominant, blocks: n });
+      }
+    }
+  }
+
   return Response.json({
     ok: true,
     dryRun,
     pages: report,
+    // Documents that had design blocks but never their own stylesheet — the chrome, and any page
+    // added to an imported site. They now name the sheet the old fallback would have found.
+    inherited,
     distinctSheets: [...new Set(report.map((r) => r.sheet))].length,
     notRecompilable: report.filter((r) => !r.recompilable).map((r) => `${r.site}/${r.page}`),
     skipped,

@@ -24,7 +24,7 @@
 // URL the server will serve.
 import { headers } from "next/headers";
 import { cache } from "react";
-import { readSites, type Site } from "./sites";
+import { readSites, readSitesRaw, type Site, reachability } from "./sites";
 import { SJC } from "./siteKeys";
 import { normalizeHost, STUDIO_HOST, SJC_HOST } from "./hostShared";
 
@@ -89,7 +89,16 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
   // filter below is what stops the retiring site re-claiming the apex through this path. Keep it.
   const sites = await readSites();
   const site = sites.find((s) => s.id !== SJC && s.domain && normalizeHost(s.domain) === host);
-  if (site) return { kind: "client", site };
+  // ⛔ THE STATE CHECK IS A BRANCH ON THE FOUND SITE — NEVER A PREDICATE INSIDE THE `.find()`.
+  //
+  // Written the natural way — `find(s => … && reachability(s).onDomain)` — a site set to Draft
+  // stops MATCHING, execution falls six lines down to the apex fallback, and
+  // stevenjamesconsulting.com starts serving the RETIRED legacy site (which declares the apex as
+  // its own default; see lib/sites.ts). Steven would flip a switch labelled "only you can see
+  // this" and put the old site on the money domain, with no error anywhere.
+  //
+  // Match first, decide second: an unreachable site is GONE, not absent.
+  if (site) return reachability(site).onDomain ? { kind: "client", site } : { kind: "gone" };
 
   // The apex with nothing in the registry claiming it — the legacy site, exactly as before.
   if (host === sjcHost()) return { kind: "sjc" };
@@ -111,7 +120,19 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
       // `-demo` is a label, not part of the id — see publicBaseFor in ./hostShared. The bare form
       // is still matched so any link sent before the suffix existed keeps resolving.
       const bare = label.endsWith("-demo") ? label.slice(0, -"-demo".length) : label;
-      const demo = sites.find((s) => s.id !== SJC && (s.id === bare || s.id === label));
+      // ⚠️ RAW — DELETED AND ARCHIVED SITES INCLUDED, AND THAT IS THE WHOLE POINT HERE.
+      //
+      // `readSites()` hides binned sites, so a deleted site's demo label matched NOTHING and the
+      // request fell all the way through to the SJC fallback at the bottom of this function —
+      // quietly serving the consulting site at `<their-business>-demo.…`. That is precisely the
+      // failure the note below warns about, and it was live for every deleted site.
+      //
+      // Looking it up raw means the address is recognised as one we used to serve, so it can be
+      // answered with `gone` instead of being mistaken for an unknown host.
+      const demo = (await readSitesRaw()).find((s) => s.id !== SJC && (s.id === bare || s.id === label));
+      // A site in the bin, or archived, is reachable by nobody — `reachability` already says so,
+      // but a deleted one has no status to consult, so it is refused here first.
+      if (demo?.deletedAt) return { kind: "gone" };
       // ⛔ THE DEMO ADDRESS DIES THE DAY THEY BUY. Steven, and he has said it more than once:
       // *"everybody gets a demo URL. Once they become a customer, the demo URL dies… If they buy,
       // they get a real URL."* A prospect who didn't buy loses the link — that is the point of it
@@ -121,8 +142,11 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
       // the SJC fallback at the bottom of this function, so a dead demo address would quietly
       // serve the consulting site — the same content at a third address, which is worse than the
       // duplicate it was meant to remove.
-      if (demo?.domain) return { kind: "gone" };
-      if (demo) return { kind: "client", site: demo };
+      // ⚠️ NOW DECIDED BY STATE, NOT BY "HAS A DOMAIN". Same rule, said properly: `onDemo` is true
+      // for a Demo site, and for a Published one whose domain is not resolving yet — the handover
+      // window, where killing the demo link would leave the prospect with two dead addresses.
+      // Draft and Archived are reachable by nobody, which is the whole point of them.
+      if (demo) return reachability(demo).onDemo ? { kind: "client", site: demo } : { kind: "gone" };
     }
   }
 

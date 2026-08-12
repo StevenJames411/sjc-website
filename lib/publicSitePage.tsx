@@ -14,7 +14,7 @@ import { fillBusinessTokens } from "@/lib/businessTokens";
 import { SiteProvider } from "@/components/blocks/SiteContext";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
-import type { Site } from "@/lib/sitesShared";
+import { reachability, type Site } from "@/lib/sitesShared";
 import { localBusinessSchema } from "@/lib/siteSchema";
 import { publicUrlFor } from "@/lib/hostShared";
 
@@ -203,7 +203,7 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
     // A demo lives on the studio's domain carrying a real business's name, phone and address,
     // while robots.txt welcomes every AI crawler. Until it's on its own domain it stays out.
     // ...or while it is deliberately held back on a real domain — see Site.holdIndexing.
-    ...(isClient && (!site.domain || site.holdIndexing)
+    ...(isClient && !reachability(site).indexable
       ? { robots: { index: false, follow: false, nocache: true } }
       : {}),
   };

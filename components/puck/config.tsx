@@ -13,6 +13,7 @@ import DesignTextField from "@/components/puck/DesignTextField";
 import FormPicker from "@/components/puck/FormPicker";
 import FormLink from "@/components/puck/FormLink";
 import ImageUpload from "@/components/puck/ImageUpload";
+import TokenText from "@/components/puck/TokenText";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
@@ -41,6 +42,17 @@ type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; grid: string; gradientTo: string; gradientAngle: number; content: Slot };
   /** One section of a bought design, kept verbatim. Words, photos and vertical spacing editable. */
   DesignSection: {
+    /**
+     * Which compiled stylesheet this section needs (lib/siteKeys:designSheet).
+     *
+     * ⚠️ IT HAS TO BE DECLARED HERE OR PUCK DOES NOT HAND IT TO THE COMPONENT. It was on the
+     * component's own prop type and stamped correctly in the data, and the page still rendered
+     * `class="sjc-design"` with no per-sheet class — because a prop Puck's Props map doesn't know
+     * about never reaches the render. Harmless for a backfilled sheet, which is scoped under the
+     * shared class; fatal for a NEW import, which compiles scoped to `.sjc-design-<id>` and would
+     * have rendered completely unstyled.
+     */
+    sheet: string;
     sticky: boolean;
     html: string;
     text: DesignText[];
@@ -606,20 +618,36 @@ const baseConfig: Config<Props, RootProps> = {
   root: {
     fields: {
       title: {
-        type: "text" as const,
+        // ⛔ NOT A PLAIN TEXT FIELD, BECAUSE A TOKEN IS UNREADABLE. On a tokenised page this field
+        // holds the literal characters `{{business.name}}`, so the one line naming the page told
+        // Steven nothing about which page he had open. TokenText keeps the token stored — that is
+        // what makes a phone number or a business name changeable in ONE place forever — and shows
+        // the words it resolves to underneath. See components/puck/TokenText.tsx.
+        type: "custom" as const,
         label: "Page title — the browser tab, and the bold line when this link is texted",
+        render: ({ onChange, value }) => (
+          <TokenText value={value as string} onChange={onChange as (v: string) => void} />
+        ),
       },
       description: {
-        type: "textarea" as const,
+        // Same reason as `title` above: this holds tokens on an imported page, and a person has to
+        // be able to read the sentence a prospect will see.
+        type: "custom" as const,
         label: "Preview text — the sentence under the title in a text message or Google result",
+        render: ({ onChange, value }) => (
+          <TokenText value={value as string} onChange={onChange as (v: string) => void} />
+        ),
       },
       // ⚠️ The label used to read "(leave blank on SJC's own pages)". The builder is a Steven
       // James Designs product and Consulting is one tenant in it — naming a specific tenant in a
       // field every other business also fills in is the landlord-vs-tenant confusion made visible,
       // and it read as an instruction to anyone who wasn't SJC. Says what the blank DOES instead.
       businessName: {
-        type: "text" as const,
+        type: "custom" as const,
         label: "Business name — the source line on the preview card (blank uses the website's own name)",
+        render: ({ onChange, value }) => (
+          <TokenText value={value as string} onChange={onChange as (v: string) => void} />
+        ),
       },
       shareImage: {
         type: "custom" as const,
@@ -707,6 +735,21 @@ const baseConfig: Config<Props, RootProps> = {
       // read as unreachable. The first person to use this concluded imported photos couldn't be
       // changed at all. A control nobody can find is the same as a control that isn't there.
       fields: {
+        /**
+         * ⛔ MACHINERY, DELIBERATELY INVISIBLE. Puck requires a field for every prop in its Props
+         * map, and `sheet` has to be in that map or the value never reaches the component — which
+         * is exactly how a correctly-stamped page still rendered `class="sjc-design"` with no
+         * per-sheet class. So it is declared, and it renders nothing.
+         *
+         * It must NOT appear in the sidebar: it is a content hash, and a hash in front of a person
+         * is the same mistake as `{{business.name}}` in a title field. It is set by the importer
+         * and by admin/backfill-sheets, never by hand.
+         */
+        sheet: {
+          type: "custom" as const,
+          label: "",
+          render: () => <></>,
+        },
         // Only meaningful on a section that HAS a form; harmless elsewhere.
         useRealForm: {
           type: "radio" as const,
@@ -1004,10 +1047,21 @@ const baseConfig: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
-      render: ({ html, text, images, links, boxes, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
+      // ⚠️ THIS IS AN EXPLICIT PROP BRIDGE, NOT A SPREAD — every prop has to be named TWICE, in the
+      // destructure and again below. A prop declared in the Props map, given a field and given a
+      // default still reaches the component as `undefined` if it is missing from these two lists,
+      // and nothing warns: the page renders, just without whatever that prop controlled.
+      //
+      // That is exactly how `sheet` went missing. It was added to the type, the field and the
+      // defaults, the data was stamped correctly, and the block still rendered `class="sjc-design"`
+      // with no per-sheet class — harmless while every sheet was scoped under the shared class, and
+      // fatal for the next import, which compiles scoped to `.sjc-design-<id>` and would have come
+      // out completely unstyled with every receipt green.
+      render: ({ sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
           // Marks each filled word so a click on the canvas can name its row. Editor only.
           editing={puck?.isEditing}
+          sheet={sheet}
           html={html}
           text={text}
           images={images}

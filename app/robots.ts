@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { resolveHost, publicUrlFor } from "@/lib/host";
+import { reachability } from "@/lib/sitesShared";
 import { SJC_HOST } from "@/lib/hostShared";
 
 // Serves /robots.txt. We WANT to be read and cited by AI assistants (ChatGPT, Gemini, Perplexity,
@@ -43,8 +44,9 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   if (h.kind === "gone") return { rules: [{ userAgent: "*", disallow: "/" }] };
 
   if (h.kind === "client") {
-    // No domain (a demo), or held back on purpose while the build finishes.
-    if (!h.site.domain || h.site.holdIndexing) {
+    // ⚠️ ONE DERIVATION, NOT A REPEATED `!domain || holdIndexing`. That expression was copied into
+    // three files, which is how `domain` came to mean three things — see reachability().
+    if (!reachability(h.site).indexable) {
       return { rules: [{ userAgent: "*", disallow: "/" }] };
     }
     const origin = publicUrlFor(h.site);

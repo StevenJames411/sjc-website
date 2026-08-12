@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { normalizeHost, SJC_HOST, STUDIO_HOST } from "@/lib/hostShared";
+import { normalizeHost, STUDIO_HOST } from "@/lib/hostShared";
 
 // PUBLIC SITE (launched 2026-07-09) — the website is live to the general public. Only the
 // owner-edit + admin surfaces stay gated behind the app password (mirroring the private
@@ -128,46 +128,44 @@ f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
 }
 
 /**
- * THE STUDIO'S SURFACES BELONG ON THE STUDIO'S DOMAIN.
+ * ONE BRAND, ONE ROOT — everything on stevenjamesdesigns.com moves to the consulting domain.
  *
- * Two things live here, for the same reason:
+ * ⛔ THIS USED TO POINT THE OTHER WAY, AND THE REASONING EXPIRED (fixed 2026-08-12). It read: "the
+ * builder is a Steven James DESIGNS product; Consulting is one row in its library" — true before
+ * the brands merged, and false the moment they did. STUDIO_HOST moved to the consulting domain on
+ * 08-11, which quietly turned this redirect into a no-op consulting→consulting while
+ * `stevenjamesdesigns.com/edit` carried on serving the builder perfectly happily.
  *
- *   /<id>/onboard   Links already texted to a client point at stevenjamesconsulting.com. Both
- *                   domains serve this deployment so the address answers, and it must keep
- *                   answering — a link in someone's message thread is not ours to break. But it
- *                   must not keep that ADDRESS: the page says it's from Steven James Designs, and
- *                   where a document lives is part of the document.
+ * So the studio had two working front doors and the legacy one is what ended up in the address bar
+ * all day. Steven, looking at it: *"the root URL for the entire design studio is incorrect."*
  *
- *   /edit/*         The website builder. It is a Steven James DESIGNS product; Consulting is one
- *                   row in its library, no different from a client. Serving the builder from the
- *                   consulting domain made the consultancy look like the landlord of a tool it is
- *                   merely a tenant of — and every screenshot, every pasted link and every browser
- *                   history entry repeated it.
+ * A redirect, not a second correct-looking home: two addresses that both work is exactly how the
+ * wrong one ends up in a screenshot.
  *
- * A redirect, not a second correct-looking home: two addresses that both work is how the wrong one
- * ends up in a screenshot.
+ * ⚠️ WHOLE-HOST, NOT JUST /edit. Every path moves, because the point is that the old brand's root
+ * is retired — a redirect that covered only the builder would leave the same problem on every
+ * other page. Demo subdomains, custom domains, *.vercel.app and localhost fall through untouched,
+ * so a client's own site is never redirected anywhere.
  *
- * Narrow on purpose: only the SJC host. Demo subdomains, custom domains, *.vercel.app and
- * localhost all fall through untouched, so a client's own site is never redirected anywhere.
+ * Onboarding links already texted to a client keep answering: they land here and are moved, which
+ * is a change of address rather than a broken link.
  */
-// ⚠️ THE TOKEN SEGMENT IS OPTIONAL AND MUST MATCH (2026-08-12). The onboarding link is now
-// /<business>/onboard/<token>; without the trailing group, a link texted to a client would miss
-// this redirect and land on the consulting host instead of the studio — which is precisely the
-// wrong-brand failure the note above exists to prevent.
-const STUDIO_PATHS = [/^\/[^/]+\/onboard(\/[^/]+)?\/?$/, /^\/edit(\/.*)?$/];
-
-function studioRedirect(req: NextRequest, pathname: string): URL | null {
-  if (!STUDIO_PATHS.some((re) => re.test(pathname))) return null;
-
+const LEGACY_HOST = "stevenjamesdesigns.com";
+function studioRedirect(req: NextRequest): URL | null {
   const here = normalizeHost(
     req.headers.get("x-forwarded-host") || req.headers.get("host") || ""
   );
-  if (here !== normalizeHost(SJC_HOST)) return null;
+  // ONLY the retired root. A demo subdomain (`<id>-demo.…`), a client's own domain, a preview URL
+  // and localhost all fall through, so nobody else's site is ever moved.
+  if (here !== normalizeHost(LEGACY_HOST)) return null;
+
+  const to = normalizeHost(process.env.NEXT_PUBLIC_STUDIO_DOMAIN || STUDIO_HOST);
+  if (here === to) return null; // nothing to do if they are configured the same
 
   const url = new URL(req.nextUrl);
   url.protocol = "https:";
   url.port = "";
-  url.host = normalizeHost(process.env.NEXT_PUBLIC_STUDIO_DOMAIN || STUDIO_HOST);
+  url.host = to;
   return url;
 }
 
@@ -176,7 +174,7 @@ export function middleware(req: NextRequest) {
 
   // Before anything else — a change of address, not a decision about who's allowed in. The
   // builder is still gated once it lands on the studio host; this only decides WHICH host.
-  const moved = studioRedirect(req, pathname);
+  const moved = studioRedirect(req);
   if (moved) return NextResponse.redirect(moved, 308);
 
   const authed = isOwner(req, pathname);
