@@ -66,6 +66,21 @@ export type Site = {
   /** The client's own domain, once they have one. Empty = served from the demo URL. */
   domain?: string;
   /**
+   * KEEP THIS SITE OUT OF GOOGLE WHILE IT IS BEING BUILT ON ITS REAL DOMAIN.
+   *
+   * ⛔ "INVISIBLE" USED TO BE INFERRED FROM HAVING NO DOMAIN, and that conflated two different
+   * things: where a site lives, and whether the world is allowed in. Point a client's real domain
+   * at a half-finished build and it became indexable the same second — the only way to stay
+   * hidden was to keep the domain off, which is the opposite of what you want while you finish it.
+   *
+   * Every build wants this gap: domain pointed, world not yet let in. Launch day is unticking one
+   * box, not a DNS change.
+   *
+   * ⚠️ Default off, so nothing already built changes. Read alongside `!domain` everywhere that
+   * asks "is this public?" — see lib/publicSitePage, app/robots.ts, app/sitemap.ts.
+   */
+  holdIndexing?: boolean;
+  /**
    * WHERE THIS WEBSITE'S LEADS GO.
    *
    * ⚠️ THE ONE THAT ENDS RELATIONSHIPS. Every lead form used to post to one endpoint that fed

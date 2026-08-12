@@ -202,7 +202,8 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
     alternates: { canonical: canonical || path },
     // A demo lives on the studio's domain carrying a real business's name, phone and address,
     // while robots.txt welcomes every AI crawler. Until it's on its own domain it stays out.
-    ...(isClient && !site.domain
+    // ...or while it is deliberately held back on a real domain — see Site.holdIndexing.
+    ...(isClient && (!site.domain || site.holdIndexing)
       ? { robots: { index: false, follow: false, nocache: true } }
       : {}),
   };

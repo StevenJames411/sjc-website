@@ -81,6 +81,7 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
           name: s.name.trim(),
           description: s.description || "",
           domain: (s.domain || "").trim(),
+          holdIndexing: !!s.holdIndexing,
           leadEmail: (s.leadEmail || "").trim(),
           sheetId: (s.sheetId || "").trim(),
           business: s.business,
@@ -176,6 +177,27 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
           </>
         )}
       </p>
+
+      {/* ⛔ DOMAIN AND VISIBILITY ARE TWO DIFFERENT DECISIONS. Being out of Google used to be a
+          side effect of having no domain, so pointing a client's real domain at a half-finished
+          build made it indexable the same second — the only way to stay hidden was to keep the
+          domain off, which is the opposite of what you want while you finish it. Launch day is
+          unticking this box. */}
+      <label style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 12 }}>
+        <input
+          type="checkbox"
+          checked={!!s.holdIndexing}
+          onChange={(e) => setS({ ...s, holdIndexing: e.target.checked })}
+          style={{ marginTop: 3 }}
+        />
+        <span>
+          <strong>Keep this site out of Google until launch</strong>
+          <span style={{ display: "block", ...hint, marginBottom: 0, marginTop: 3 }}>
+            Point the domain now, let the world in later. While this is on, the site tells search
+            engines and AI crawlers to stay away and publishes no sitemap — even on its own domain.
+          </span>
+        </span>
+      </label>
 
       <h2 style={sec}>Where the leads go</h2>
       <p style={hint}>
