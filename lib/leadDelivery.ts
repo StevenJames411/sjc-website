@@ -43,7 +43,9 @@ const RESEND = "https://api.resend.com/emails";
  * the afternoon before real prospects start filling these forms in. Two call sites, one of which
  * is proven. Consolidate when there's a reason to touch it anyway.
  */
-async function sendAlert(opts: {
+// Exported since 2026-08-12 for the magic-link sign-in, which needs to send one email and has no
+// business owning a second copy of the Resend call — one sender, one place a failure is handled.
+export async function sendAlert(opts: {
   to: string;
   from: string;
   fromName: string;

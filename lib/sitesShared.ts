@@ -162,6 +162,20 @@ export type Site = {
    */
   leadEmail?: string;
   /**
+   * WHO MAY SIGN IN AND EDIT THIS WEBSITE. Lower-cased addresses; a magic link to any of them opens
+   * this site and nothing else.
+   *
+   * ⛔ DELIBERATELY NOT `leadEmail`. It is tempting to reuse it — it is usually the same person —
+   * and it would be wrong twice over. Where a lead GOES is a delivery setting a client changes at
+   * will, sometimes to a shared inbox, an assistant, or a CRM address nobody reads; who may EDIT
+   * is a permission. Wiring the two together means changing where enquiries land silently hands
+   * or revokes access to the website, and the screen gives no hint that it did.
+   *
+   * Absent or empty means nobody but the owner — which is the right default for every site Steven
+   * builds before a client is invited to it.
+   */
+  ownerEmails?: string[];
+  /**
    * WHAT ADDRESS THE OWNER'S ALERT IS SENT *FROM* — the part after the @.
    *
    * Almost always blank, and blank is correct: it falls back to LEAD_FROM, then to the one
