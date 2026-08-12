@@ -20,7 +20,7 @@
 // through here turns "unknown or malformed site" into a clean 404/400 instead.
 import { headers } from "next/headers";
 import { findSite } from "./sites";
-import { IDENTITY_HEADER, verifyIdentity, identityMayTouch } from "./identity";
+import { IDENTITY_HEADER, verifyIdentity } from "./identity";
 import type { Identity } from "./identity";
 import type { Site } from "./sitesShared";
 
@@ -75,8 +75,26 @@ export async function assertSiteAccess(
   // request through: middleware decides you may be HERE, this decides you may touch THIS. The two
   // are not the same question, and collapsing them is how a signed-in client reaches a stranger's
   // site by changing one string in a request body.
+  // ⛔ CHECKED AGAINST THE SITE RECORD, NOT THE LIST BAKED INTO THE SESSION — and this is a
+  // correction to how it was written an hour earlier.
+  //
+  // A session is signed for 30 days and carries its own list of site ids. That made revocation a
+  // LIE: taking a client off a website, or offboarding them entirely, changed nothing until their
+  // cookie expired a month later. "I removed their access" would have been true on the screen and
+  // false in the system, which is the worst shape a security control can have.
+  //
+  // Now the session proves WHO you are and the site record decides WHAT you may open. Removing an
+  // address from ownerEmails locks them out on their very next request. It costs nothing: findSite
+  // has already run three lines above, so the answer is in hand.
+  //
+  // The baked list survives only for `"*"` — the owner and machine credentials, which are not
+  // per-site and have no record to check against.
   const id = await currentIdentity();
-  if (!identityMayTouch(id, site.id)) {
+  const owns =
+    id?.sites === "*" ||
+    (!!id?.email &&
+      (site.ownerEmails || []).some((o) => (o || "").trim().toLowerCase() === id.email));
+  if (!owns) {
     return {
       ok: false,
       // 404, NOT 403. A client probing site ids must not be able to map who else exists on the
@@ -100,4 +118,27 @@ export async function siteOr(
   return {
     deny: Response.json({ ok: false, error: res.error }, { status: res.status }),
   };
+}
+
+/**
+ * FOR SURFACES THAT ARE NOT ABOUT ONE WEBSITE — refuse anyone who is not the owner.
+ *
+ * `assertSiteAccess` answers "may you touch THIS site", which is the wrong question for a handful
+ * of routes that are inherently cross-site:
+ *
+ *   • /api/sections and the page library — ONE shared library, deliberately. A band proven on one
+ *     build is available on the next, which also means a client saving or deleting an entry
+ *     changes what every other client's builder offers.
+ *   • /api/forms/usage — answers "which websites point at this form", so its whole output is a
+ *     list of other people's site names and page titles.
+ *
+ * Scoping these per-site is not possible because they have no site. The honest guard is ownership.
+ *
+ * ⛔ 404, NOT 403 — same reason as above: never confirm a surface exists to someone who may not
+ * use it.
+ */
+export async function ownerOnly(): Promise<Response | null> {
+  const id = await currentIdentity();
+  if (id?.sites === "*") return null;
+  return Response.json({ ok: false, error: "not found" }, { status: 404 });
 }

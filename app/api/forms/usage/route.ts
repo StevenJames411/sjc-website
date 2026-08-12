@@ -14,6 +14,7 @@
 // ⚠️ DRAFTS COUNT TOO, and are marked. A page someone is halfway through building is still going
 // to break — finding out at Publish is finding out too late.
 import { readSites } from "@/lib/sites";
+import { ownerOnly } from "@/lib/siteAccess";
 import { readPages } from "@/lib/pageRegistry";
 import { readPuckDraft, readPuckPublished } from "@/lib/puckContent";
 import { readForms } from "@/lib/forms";
@@ -23,6 +24,11 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 export async function GET(req: Request) {
+  // ⛔ OWNER ONLY — this surface is shared across every website, so there is no site to scope it
+  // to. A client reaching it would be editing what every other client's builder offers, or
+  // reading a list of other people's sites. See ownerOnly() in lib/siteAccess.
+  const denied = await ownerOnly();
+  if (denied) return denied;
   const id = (new URL(req.url).searchParams.get("id") || "").trim();
   if (!id) return Response.json({ ok: false, error: "which form?" }, { status: 400 });
 

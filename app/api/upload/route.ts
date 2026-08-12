@@ -2,6 +2,7 @@
 // "file" field, stores the file in Vercel Blob (public access), returns { url }.
 // Protected by middleware — only the signed-in owner can reach this route.
 import { put } from "@vercel/blob";
+import { siteOr } from "@/lib/siteAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -51,10 +52,16 @@ export async function POST(req: Request) {
   // ENUMERATE one site's images, let alone remove them, which quietly made the 30-day erasure
   // promise false for every photo a client ever sent. `purgeSiteForever` deletes the `sites/<id>/`
   // prefix; without this line there is nothing there for it to find.
-  const site =
+  // ⛔ SCOPED — and this one matters more than most: an upload writes a PUBLIC blob under
+  // `sites/<id>/`, so an unscoped call drops a stranger's file into someone else's folder, where
+  // it is then served from their website and swept up by THEIR deletion.
+  const asked =
     String(new URL(req.url).searchParams.get("site") || "")
       .replace(/[^a-z0-9-]/gi, "")
       .toLowerCase() || "sjc";
+  const { site: __s, deny } = await siteOr(asked, req);
+  if (deny) return deny;
+  const site = __s.id;
   // Timestamp so repeated uploads of the same filename don't collide.
   const pathname = `sites/${site}/uploads/${Date.now()}-${safe}`;
   const blob = await put(pathname, file, { access: "public" });

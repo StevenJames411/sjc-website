@@ -22,6 +22,7 @@
 //   GET  ?page=&site=            -> { ok, versions: [{ id, at, bytes }] }
 //   POST { page, site, id }      -> { ok, restoredTo: "draft" }
 import { listRevisions, readRevision, revisionColumns } from "@/lib/pgClient";
+import { siteOr } from "@/lib/siteAccess";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient, backend } from "@/lib/store";
 import { puckKey } from "@/lib/puckContent";
@@ -34,7 +35,10 @@ const pubKeyFor = (page: string, site: string) => puckKey(page, true, site);
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const page = (url.searchParams.get("page") || "").trim();
-  const site = (url.searchParams.get("site") || SJC).trim() || SJC;
+  // ⛔ SCOPED. The `|| SJC` fallback meant an omitted or unknown site landed on the flagship.
+  const { site: __s, deny } = await siteOr((url.searchParams.get("site") || SJC).trim() || SJC, req);
+  if (deny) return deny;
+  const site = __s.id;
   if (!page) return Response.json({ ok: false, error: "which page?" }, { status: 400 });
 
   // Said out loud rather than returned as an empty list: "no versions yet" and "history isn't
@@ -76,7 +80,10 @@ export async function POST(req: Request) {
   }
 
   const page = String(body?.page || "").trim();
-  const site = String(body?.site || SJC).trim() || SJC;
+  // ⛔ SCOPED. The `|| SJC` fallback meant an omitted or unknown site landed on the flagship.
+  const { site: __s, deny } = await siteOr(String(body?.site || SJC).trim() || SJC, req);
+  if (deny) return deny;
+  const site = __s.id;
   const id = Number(body?.id);
   if (!page || !Number.isFinite(id)) {
     return Response.json({ ok: false, error: "which page, which version?" }, { status: 400 });
