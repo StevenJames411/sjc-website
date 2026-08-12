@@ -109,12 +109,12 @@ type Props = {
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
-  Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
+  Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
   Video: { src: string; caption: string; poster: string };
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; contactLayout: string; paddingTop: number; paddingBottom: number; legalGap: number; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
+  SiteFooter: { blurb: string; links: { label: string; target: string; newTab?: boolean }[]; groups: { heading: string; links: { label: string; target: string; note?: string; newTab?: boolean }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; contactLayout: string; paddingTop: number; paddingBottom: number; legalGap: number; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -1841,7 +1841,8 @@ const baseConfig: Config<Props, RootProps> = {
           label: "Footer links (add / delete)",
           arrayFields: {
             label: { type: "text" as const, label: "Label" },
-            target: { type: "text" as const, label: "Links to (page or /#section)" },
+            target: { type: "text" as const, label: "Links to — a page (/about) or a section (/#services)" },
+            newTab: OPENS_IN_FIELD,
           },
           getItemSummary: (i: { label?: string }) => i?.label || "link",
           defaultItemProps: { label: "New link", target: "/" },
@@ -1864,7 +1865,8 @@ const baseConfig: Config<Props, RootProps> = {
               defaultItemProps: { label: "New link", target: "/", note: "" },
               arrayFields: {
                 label: { type: "text" as const, label: "Label" },
-                target: { type: "text" as const, label: "Links to (page or /#section)" },
+                target: { type: "text" as const, label: "Links to — a page (/about) or a section (/#services)" },
+            newTab: OPENS_IN_FIELD,
                 // Same field the nav's links carry. A footer column has room to say what a link
                 // MEANS, which is the difference between listing four divisions and teaching them.
                 note: { type: "text" as const, label: "One line under it (blank = hide)" },
@@ -2794,7 +2796,11 @@ const baseConfig: Config<Props, RootProps> = {
       fields: {
         title: { type: "text" as const, label: "Button text" },
         subtitle: { type: "textarea" as const, label: "Small line under (optional)" },
-        href: { type: "text" as const, label: "Link" },
+        href: { type: "text" as const, label: "Links to — a page (/about) or a full web address" },
+        // ⛔ THE BUTTON POINTS OFF-SITE MORE THAN ANYTHING ELSE ON THE PAGE — booking links, Skool,
+        // YouTube — and it was the one link block with no way to say so. Same control the header
+        // menu and images already use, so there is one answer to this question site-wide.
+        newTab: OPENS_IN_FIELD,
         icon: { type: "select" as const, label: "Icon", options: ICON_OPTIONS },
         variant: {
           type: "radio" as const,
@@ -2834,6 +2840,7 @@ const baseConfig: Config<Props, RootProps> = {
         title: "Book the Call",
         subtitle: "",
         href: "/#contact",
+        newTab: false,
         icon: "",
         variant: "",
         shape: "",
@@ -2841,12 +2848,12 @@ const baseConfig: Config<Props, RootProps> = {
         align: "center" as Align,
         fullWidth: false,
       },
-      render: ({ title, subtitle, href, icon, variant, shape, color, align, fullWidth }) => {
+      render: ({ title, subtitle, href, newTab, icon, variant, shape, color, align, fullWidth }) => {
         // No styling chosen => the original button, untouched.
         if (!variant && !shape && !color && !icon) {
           return (
             <div className="mt-8 flex justify-center">
-              <CtaButton title={title} subtitle={subtitle || undefined} href={href} />
+              <CtaButton title={title} subtitle={subtitle || undefined} href={href} newTab={newTab} />
             </div>
           );
         }
@@ -2857,6 +2864,10 @@ const baseConfig: Config<Props, RootProps> = {
           <div className="mt-6 flex" style={{ justifyContent: justify }}>
             <a
               href={href || "#"}
+              // ⚠️ THE STYLED PATH TOO. This block goes through CtaButton when nothing is styled and
+              // through this anchor the moment anything is — wire one and the setting works on half
+              // the buttons on the site, which is worse than not having it at all.
+              {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               className={`inline-flex items-center justify-center gap-2 px-8 py-4 font-bold transition-all hover:-translate-y-0.5${
                 shape === "pill" ? " rounded-full" : " rounded-xl"
               }${fullWidth ? " w-full" : ""}`}
