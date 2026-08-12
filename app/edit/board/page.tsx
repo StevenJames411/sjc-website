@@ -12,11 +12,12 @@
 // per owner. The tiles moved to ./[owner] — see the note at the top of ./shared.tsx for why.
 //
 // Owner-only: /edit/* is gated in middleware.ts.
-import { ageText, type Colour } from "@/lib/checksShared";
+import { ageText } from "@/lib/checksShared";
 import { navLabel } from "@/lib/editNav";
 import { readBoardView, summarise, linesOf } from "./groups";
 import Roster from "./Roster";
 import { FOOTNOTE } from "./shared";
+import SweepButton from "./SweepButton";
 
 export const dynamic = "force-dynamic";
 
@@ -33,21 +34,14 @@ function lookedAt(g: { rows: { st?: { lastRunAt?: string; lastPassAt?: string } 
 
 export default async function BoardPage() {
   const [view, title] = await Promise.all([readBoardView(), navLabel("board")]);
-  // ⛔ THE ROWS NO LONGER RE-SORT THEMSELVES, so the count has to be the thing that finds trouble.
-  // Each pill with a non-zero count jumps to the first owner in that state. Steven's arrangement
-  // stays put and the broken row is still one click away — instead of the row coming to him and
-  // his arrangement being rearranged behind his back.
-  const firstIn = (c: Colour) => view.groups.find((g) => g.colour === c)?.key;
-
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
       {/* "← All websites" lived here until the rail took over global navigation. */}
       <h1 style={{ fontSize: 34, fontWeight: 800, margin: "0 0 6px" }}>{title}</h1>
-      <p style={{ color: "var(--e-muted)", margin: "0 0 18px", maxWidth: 760 }}>
-        One row per website, plus the plumbing they all share. Every vendor&rsquo;s dashboard sees
-        only its own end, so nothing else answers &ldquo;is this customer&rsquo;s machine working&rdquo;.
-      </p>
-
+      {/* ⚠️ NO DESCRIPTION PARAGRAPH. The pills below name what is watched and say what each one
+          means, which is the same information the paragraph was carrying in longer form — and it
+          sat above the data on every single visit. A screen you read once does not deserve
+          permanent real estate. */}
       {/* ⛔ WHAT IS TRACKED, NOT WHAT COLOUR IT IS. This was four colour pills and a paragraph
           explaining them — six lines of prose before any data. Steven: *"this real estate is
           absolutely wasted… the three things we're tracking, that's the only thing that needs to be
@@ -78,8 +72,7 @@ export default async function BoardPage() {
 
       <p style={{ color: "var(--e-muted)", fontSize: 12.5, margin: "0 0 26px" }}>
         {view.totalChecks} checks across {view.clientCount} website(s) &middot; last sweep{" "}
-        {ageText(view.sweptAt)} &middot;{" "}
-        <a href="/api/cron/checks" style={{ color: "var(--e-accent)" }}>run one now</a>
+        {ageText(view.sweptAt)} &middot; <SweepButton />
       </p>
 
       {/* One row per owner, in the order Steven dragged them into. */}
