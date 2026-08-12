@@ -13,7 +13,7 @@
 // Server-only (pulls in the store). Types that the browser needs live in ./sitesShared.
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
-import { siteKeys, allKeysFor, SITES_KEY, SJC } from "./siteKeys";
+import { siteKeys, allKeysFor, KEY_INFIXES, SITES_KEY, SJC } from "./siteKeys";
 import { RESERVED_SITE_IDS, daysLeft, type Site, type SiteKind, emptyBusiness, emptySeo } from "./sitesShared";
 
 export * from "./sitesShared";
@@ -120,7 +120,14 @@ export async function createSite(opts: {
   const taken = new Set([...RESERVED_SITE_IDS, ...existing.map((s) => s.id)]);
   let id = base;
   let n = 2;
-  while (taken.has(id)) id = `${base}-${n++}`;
+  // ⚠️ ALSO SKIP IDS THAT COULD BE MISREAD AS ANOTHER SITE'S KEY (2026-08-12). Keys are
+  // `site-<id>-<what>` joined with a hyphen, and site ids and page slugs share the charset — so a
+  // site called "Fox Puck Home" gets `site-fox-puck-home-pages`, byte-identical to site `fox`'s
+  // page `home-pages`. One tenant's registry would be another tenant's page. Skipping the name at
+  // creation makes the ambiguous id impossible instead of merely unlikely — see KEY_INFIXES.
+  const ambiguous = (candidate: string) =>
+    KEY_INFIXES.some((w) => candidate.includes(`-${w}-`) || candidate.endsWith(`-${w}`));
+  while (taken.has(id) || ambiguous(id)) id = `${base}-${n++}`;
 
   const site: Site = {
     id,
@@ -217,6 +224,18 @@ export async function updateSite(
   const sites = await readSitesRaw();
   const i = sites.findIndex((x) => x.id === s);
   if (i < 0) return { ok: false, error: "No such website." };
+
+  // ⚠️ NOBODY MAY CLAIM A DOMAIN SOMEBODY ELSE IS SERVING (2026-08-12). `resolveHost` finds a site
+  // by matching `domain` BEFORE it falls back to the apex, so any non-SJC site whose domain is set
+  // to `stevenjamesconsulting.com` would simply be served there. `restoreSite` has always checked
+  // for a clash; this — the function that runs on every ordinary Website-settings save — did not.
+  // While only Steven can reach that field it is invisible; the day a customer edits their own
+  // settings it is a one-field takeover of any domain pointed at this deployment.
+  const domain = patch.domain?.trim();
+  if (domain) {
+    const clash = sites.some((x) => x.id !== s && !x.deletedAt && x.domain === domain);
+    if (clash) return { ok: false, error: `Another website is already using ${domain}.` };
+  }
 
   const next = [...sites];
   next[i] = {

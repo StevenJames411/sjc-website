@@ -153,6 +153,21 @@ const EDITOR_SEGMENTS = ["settings", "brand"];
 // ⚠️ NOT `RESERVED_SITE_IDS`. That list reserves WEBSITE ids and contains "home" — applying it to
 // page slugs meant a new site's first page came out as "home-2", and the public route looks for
 // "home", so the site 404'd at its own address. Site ids and page slugs are different namespaces.
+/**
+ * ⛔ A SLUG MAY NOT END IN `-pub`, AND THIS ONE IS REACHABLE WITH A PLAUSIBLE NAME (2026-08-12).
+ *
+ * A page's keys are `<ns>-puck-<slug>` for the draft and the same plus `-pub` for the published
+ * snapshot. Nothing reserved that suffix — so creating a page called "Home Pub" yields slug
+ * `home-pub`, and `puck("home-pub", false)` is byte-identical to `puck("home", true)`.
+ *
+ * Saving that page's draft therefore OVERWRITES the site's published home page with a document
+ * carrying no `_pub` marker, so the front page 404s; deleting it writes `{}` over the same key.
+ * A perfectly reasonable page name silently takes the site's home page down.
+ *
+ * Rejected at creation rather than mangled, so the name is a decision the person makes.
+ */
+const collidesWithPublishedKey = (slug: string) => /-pub$/.test(slug);
+
 async function reservedSlugs(siteId: string): Promise<Set<string>> {
   const pages = await readPages(siteId);
   return new Set([
@@ -176,10 +191,20 @@ export async function createPage(
   const base = slugify(t);
   if (!base) return { ok: false, error: "That name has no usable letters or numbers." };
 
+  // Refused, not silently renamed: the storage key for a `-pub` slug is the same key as another
+  // page's PUBLISHED snapshot, so saving it would take that page off the live site. See
+  // collidesWithPublishedKey. Renaming it behind his back would hide a name worth reconsidering.
+  if (collidesWithPublishedKey(base)) {
+    return {
+      ok: false,
+      error: `A page name can't end in "pub" — "${base}" would share its storage with another page's published copy. Try another name.`,
+    };
+  }
+
   const reserved = await reservedSlugs(siteId);
   let slug = base;
   let n = 2;
-  while (reserved.has(slug)) slug = `${base}-${n++}`;
+  while (reserved.has(slug) || collidesWithPublishedKey(slug)) slug = `${base}-${n++}`;
 
   const blob = await readBlob(siteId);
   const custom = [...(blob.custom || []), { slug, title: t }];

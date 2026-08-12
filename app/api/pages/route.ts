@@ -8,15 +8,21 @@
 //
 // Standing up a new CLIENT is POST /api/sites, not this.
 import { readPages, createPage, duplicatePage, deletePage, renamePage } from "@/lib/pageRegistry";
+import { siteOr } from "@/lib/siteAccess";
 import { SJC } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
 
-const siteOf = (v: unknown) => String(v || SJC).trim() || SJC;
+// ⚠️ RESOLVE THROUGH THE REGISTRY, NEVER A REQUEST STRING STRAIGHT INTO siteKeys(). Passing it
+// through unchecked is how `site=!!!` reached the FLAGSHIP site's legacy keys; and now that
+// siteKeys() throws on a malformed id, an unresolved one would surface as a 500 rather than a 404.
+// `siteOr` hands back either the resolved site or the Response to return. See lib/siteAccess.ts.
+const siteOf = (v: unknown) => String(v ?? "").trim() || SJC;
 
 export async function GET(req: Request) {
-  const site = siteOf(new URL(req.url).searchParams.get("site"));
-  return Response.json({ pages: await readPages(site) });
+  const { site, deny } = await siteOr(siteOf(new URL(req.url).searchParams.get("site")), req);
+  if (deny) return deny;
+  return Response.json({ pages: await readPages(site.id) });
 }
 
 export async function POST(req: Request) {
@@ -26,10 +32,11 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
   }
-  const site = siteOf(body?.site);
+  const { site, deny } = await siteOr(siteOf(body?.site), req);
+  if (deny) return deny;
   const res = body?.from
-    ? await duplicatePage(body.from, body?.title || "", site)
-    : await createPage(body?.title || "", site);
+    ? await duplicatePage(body.from, body?.title || "", site.id)
+    : await createPage(body?.title || "", site.id);
   return Response.json(res, { status: res.ok ? 200 : 400 });
 }
 
@@ -40,7 +47,9 @@ export async function PATCH(req: Request) {
   } catch {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
   }
-  const res = await renamePage(body?.slug || "", body?.title || "", siteOf(body?.site));
+  const { site, deny } = await siteOr(siteOf(body?.site), req);
+  if (deny) return deny;
+  const res = await renamePage(body?.slug || "", body?.title || "", site.id);
   return Response.json(res, { status: res.ok ? 200 : 400 });
 }
 
@@ -51,6 +60,8 @@ export async function DELETE(req: Request) {
   } catch {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
   }
-  const res = await deletePage(body?.slug || "", siteOf(body?.site));
+  const { site, deny } = await siteOr(siteOf(body?.site), req);
+  if (deny) return deny;
+  const res = await deletePage(body?.slug || "", site.id);
   return Response.json(res, { status: res.ok ? 200 : 400 });
 }

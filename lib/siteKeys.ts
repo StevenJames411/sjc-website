@@ -17,9 +17,46 @@ export const SJC = "sjc";
 
 const safe = (s: string) => String(s || "").replace(/[^a-z0-9-]/gi, "").toLowerCase();
 
-/** The storage keys for one website. */
+/**
+ * Key infixes a SITE ID must never contain, because keys are `site-<id>-<what>` joined with a
+ * hyphen and site ids and page slugs share the charset `[a-z0-9-]`.
+ *
+ * ⚠️ THE AMBIGUITY IS STRUCTURAL, NOT HYPOTHETICAL. A site called "Fox Puck Home" slugifies to
+ * `fox-puck-home`, whose page-registry key is `site-fox-puck-home-pages` — byte-identical to site
+ * `fox`'s page `home-pages`. One tenant's registry would silently be another tenant's page.
+ *
+ * The obvious fix is a separator that can't appear in either namespace (`site:{id}:puck:{page}`),
+ * but that changes the format of every key already in the store and buys a migration to close a
+ * collision that only a contrived name reaches. Forbidding the infix at CREATION closes the same
+ * hole at zero cost, and it is a fork rather than a bouncer: the ambiguous name never exists.
+ */
+export const KEY_INFIXES = ["puck", "pages", "brand", "intake", "leads", "designcss", "designsrc"];
+
+/**
+ * The storage keys for one website.
+ *
+ * ⚠️ AN INVALID ID THROWS — IT DOES NOT QUIETLY BECOME SJC (2026-08-12). This used to read
+ * `safe(siteId) || SJC`, so any id that sanitised away to nothing returned the FLAGSHIP SITE'S
+ * legacy, unnamespaced keys. `siteKeys("!!!")`, `siteKeys("...")` and `siteKeys("···")` all handed
+ * back `sjc-pages` / `sjc-puck-home` / `sjc-brand`. Since almost every route takes the site as a
+ * free string from a query or body, that was a live path to writing into the flagship site by
+ * sending punctuation — a lead stored into `sjc-leads`, or the apex's brand repainted.
+ *
+ * An EMPTY id still means "the default site", because plenty of internal callers legitimately mean
+ * that. A non-empty id that isn't a valid slug is a caller bug or an attack, and either way must be
+ * loud rather than silently redirected at SJC.
+ */
 export function siteKeys(siteId: string) {
-  const id = safe(siteId) || SJC;
+  const raw = String(siteId ?? "").trim();
+  // Empty means "the default site" and is a legitimate internal call. Anything else has to BE a
+  // valid id already — sanitising it here is what let punctuation resolve to the flagship's keys.
+  if (raw && !/^[a-z0-9-]+$/i.test(raw)) {
+    throw new Error(
+      `siteKeys: '${raw}' is not a valid website id. Resolve the site through the registry first — ` +
+        `an unknown id must 404, never fall back to the flagship site's keys.`
+    );
+  }
+  const id = safe(raw) || SJC;
   const legacy = id === SJC;
   const ns = legacy ? "sjc" : `site-${id}`;
 
