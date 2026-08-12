@@ -403,6 +403,72 @@ export default function PuckEditor({
   // ⚠️ Restoring reloads the editor. The draft has changed underneath Puck, and Puck holds its
   // own copy in memory; without the reload the canvas keeps showing the old version and the next
   // autosave writes it straight back over the one just restored.
+  /**
+   * Keep this whole page in the shared library.
+   *
+   * The section library's ★ saves one band; this saves the page. Both are shared across every
+   * website on purpose — a page proven on one build is available on the next.
+   */
+  const onSaveToLibrary = async () => {
+    const name = window.prompt("Name this page (e.g. Outdoor-living home page):");
+    if (!name || !name.trim()) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/page-library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ name: name.trim(), site: siteId, page }),
+      }).then((x) => x.json());
+      // A refusal here is the scrub doing its job — it names what it found rather than saving
+      // something that would carry one business's phone number onto another's site.
+      window.alert(r.ok ? `Saved "${name.trim()}" to the page library.` : r.error || "Couldn't save it.");
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** The insert half: pick a saved page and drop it onto THIS website as a new page. */
+  const onAddFromLibrary = async () => {
+    setBusy(true);
+    try {
+      const list = await fetch("/api/page-library", { credentials: "same-origin" }).then((x) => x.json());
+      const rows: { id: string; name: string; from: string }[] = list?.pages || [];
+      if (!rows.length) {
+        window.alert("Nothing in the page library yet. Save a page first — it's under ⋯ More.");
+        return;
+      }
+      const pick = window.prompt(
+        "Which page?\n\n" +
+          rows.map((r, i) => `${i + 1}. ${r.name}  (${r.from})`).join("\n") +
+          "\n\nType a number:"
+      );
+      const chosen = rows[Number(pick) - 1];
+      if (!chosen) return;
+
+      const asName = window.prompt("Call it what on this website?", chosen.name);
+      if (!asName || !asName.trim()) return;
+      const slug = asName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+      const r = await fetch("/api/page-library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ id: chosen.id, toSite: siteId, toPage: slug }),
+      }).then((x) => x.json());
+      if (!r.ok) return window.alert(r.error || "Couldn't add it.");
+      // It lands as a DRAFT. Going straight to it is the point — you asked for the page, so you
+      // get the page, not a message about it.
+      router.push(`/edit/${siteId}/${r.slug}`);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const openVersions = async () => {
     setBusy(true);
     try {
@@ -626,9 +692,18 @@ export default function PuckEditor({
           ← {siteName}
         </button>
         <span style={{ fontWeight: 700, fontSize: 13 }}>Page:</span>
+        {/* The page list, and at its foot the way to bring one IN from another website. It sits
+            here rather than on the band because "which page am I on" and "add another page" are the
+            same question asked half a second apart — and the band is full. */}
         <select
           value={page}
-          onChange={(e) => router.push(`/edit/${siteId}/${e.target.value}`)}
+          onChange={(e) => {
+            if (e.target.value === "__library__") {
+              onAddFromLibrary();
+              return;
+            }
+            router.push(`/edit/${siteId}/${e.target.value}`);
+          }}
           style={select}
         >
           {pages.map((p) => (
@@ -636,6 +711,8 @@ export default function PuckEditor({
               {p.title}
             </option>
           ))}
+          <option disabled>──────────</option>
+          <option value="__library__">＋ Add a page from the library…</option>
         </select>
         {/* Everything global to this website — the business's name, phone, address, its domain,
             its SEO defaults. Lives one level up from a page, because it belongs to all of them. */}
@@ -682,6 +759,7 @@ export default function PuckEditor({
                   { label: "Add saved section", onClick: openLibrary, title: "Drop in a band you saved from any website" },
                   { label: "Adopt images", onClick: onAdoptImages, title: "Copy this page's images onto our own storage so nothing depends on whoever generated the design" },
                   { label: "Save as template", onClick: onSaveAsTemplate, title: "Strip the business details and save this layout as a reusable template" },
+                  { label: "Save page to library", onClick: onSaveToLibrary, title: "Keep this whole page so you can drop it onto another website" },
                   { label: "Rename page", onClick: onRenamePage, title: "Changes the name in the list only — the web address and the page are untouched" },
                   { label: "Versions", onClick: openVersions, title: "Every time you pressed Publish — restore an earlier one" },
                 ].map((m) => (
