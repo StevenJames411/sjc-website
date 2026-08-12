@@ -88,6 +88,10 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
           holdIndexing: !!s.holdIndexing,
           leadEmail: (s.leadEmail || "").trim(),
           sheetId: (s.sheetId || "").trim(),
+          // ⚠️ MISSING FROM THIS PAYLOAD UNTIL 2026-08-12 — the third lead destination, and the one
+          // the offer is sold on. Without it here the new field would type, look saved, and drop
+          // the value on the floor: the worst version of a bug, because the screen agrees with you.
+          ghlWebhookUrl: (s.ghlWebhookUrl || "").trim(),
           business: s.business,
           seo: s.seo,
         }),
@@ -270,6 +274,27 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
         docs.google.com/spreadsheets/d/<strong>THIS-PART</strong>/edit. Every lead from this
         website also writes a row here, which is what a business looks at when it wants its own
         record rather than an inbox.
+      </p>
+
+      {/* ⛔ THIS FIELD DID NOT EXIST UNTIL 2026-08-12, AND THE VALUE HAS BEEN LOAD-BEARING ALL ALONG.
+          `ghlWebhookUrl` is read by lead delivery and checked by the heartbeat board — it is the
+          third leg of "where the leads go", and the one the $97 offer actually sells: every lead in
+          one inbox. It could only ever be set by an admin route with a bearer token.
+          
+          So the card's GoHighLevel light could never come on by anything Steven could do on screen,
+          and the board's warning about it named a fix that existed nowhere. A setting that only
+          code can write makes the person who writes code a single point of failure. */}
+      <Field
+        label="GoHighLevel inbound webhook — their CRM"
+        v={s.ghlWebhookUrl || ""}
+        on={(v) => setS({ ...s, ghlWebhookUrl: v })}
+        ph="https://services.leadconnectorhq.com/hooks/… — blank means no CRM for this one"
+      />
+      <p style={hint}>
+        In GoHighLevel: <strong>Automation &rarr; Workflows &rarr; Inbound Webhook</strong>, then
+        copy the URL it gives you. Every enquiry from this website is posted there as a contact, so
+        it lands in the same inbox as their calls and texts. Blank is right for a demo and for the
+        tier without a CRM &mdash; the email and the sheet still get the lead.
       </p>
 
       <h2 style={sec}>How it looks when the link is shared</h2>
