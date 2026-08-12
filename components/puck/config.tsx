@@ -600,7 +600,7 @@ const resolveLeadFormPreset = (async (
   }
 }) as unknown as ComponentConfig<Props["LeadForm"]>["resolveData"];
 
-export const config: Config<Props, RootProps> = {
+const baseConfig: Config<Props, RootProps> = {
   // Labels are written for the person filling them in, not for an SEO tool: they name WHERE the
   // text shows up, because that's the only thing that makes the field self-explanatory on sight.
   root: {
@@ -3321,6 +3321,88 @@ export const config: Config<Props, RootProps> = {
     // Industry deep page (HVAC / Roofing / Garage Doors …) — full template, copy editable.
   },
 } satisfies Config;
+
+// ── EVERY BLOCK GETS THE SAME TWO SPACING CONTROLS ───────────────────────────────────────────
+//
+// Steven: *"I don't need every micro setting editable. Just the basic section padding and so
+// forth… I want everything in this template to be the same."* Four blocks had spacing; twenty-two
+// did not, so adding space anywhere else meant dragging in a Spacer. Adding the pair by hand to
+// each one is twenty-two chances to name it differently — which is how the panel got this way.
+// So it is added ONCE, here, and every block is identical by construction.
+//
+// ⛔ THE WRAPPER IS NOT EMITTED UNTIL IT IS USED, AND THAT IS THE WHOLE SAFETY STORY.
+//
+// Wrapping unconditionally would put a new element between every block and its parent on every
+// page — inert at zero padding, but not harmless: a card in a Columns row would stop stretching to
+// its neighbours' height (the column sizes the wrapper, not the card), anything sticky would stick
+// inside the wrapper instead of the page, and a full-height block would lose its chain. None of
+// that crashes; it is the kind of drift you notice on a client's site a week later.
+//
+// With both values at zero — which is every block on every page that exists today — `render`
+// returns exactly what it returned before, byte for byte. The wrapper appears only where spacing
+// has deliberately been dialled in.
+//
+// ⚠️ SKIPPED, AND WHY. Chrome (SiteHeader/SiteFooter) sets its own band depth. Section and
+// DesignSection are bands with their own padding. FormStep/FormQuestion are screens inside a
+// wizard, not page blocks. Anything already carrying `spaceAbove` or `paddingTop` keeps its own.
+const SPACING_SKIP = new Set([
+  "SiteHeader",
+  "SiteFooter",
+  "Section",
+  "DesignSection",
+  "FormStep",
+  "FormQuestion",
+]);
+
+type LooseComponent = {
+  fields?: Record<string, unknown>;
+  defaultProps?: Record<string, unknown>;
+  render: (props: Record<string, unknown>) => React.ReactNode;
+};
+
+function withSpacingControls(cfg: Config<Props, RootProps>): Config<Props, RootProps> {
+  const components = cfg.components as unknown as Record<string, LooseComponent>;
+
+  for (const [name, component] of Object.entries(components)) {
+    if (SPACING_SKIP.has(name)) continue;
+    const fields = component.fields || {};
+    // Already has its own spacing, under either vocabulary — leave it alone rather than give it
+    // a second, competing pair.
+    if ("spaceAbove" in fields || "paddingTop" in fields) continue;
+
+    component.fields = {
+      ...fields,
+      spaceAbove: {
+        type: "custom",
+        label: "Space above (− / +)",
+        render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+          <SizeStepper value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+        ),
+      },
+      spaceBelow: {
+        type: "custom",
+        label: "Space below (− / +)",
+        render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+          <SizeStepper value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+        ),
+      },
+    };
+    component.defaultProps = { ...(component.defaultProps || {}), spaceAbove: 0, spaceBelow: 0 };
+
+    const inner = component.render;
+    component.render = (props: Record<string, unknown>) => {
+      const above = typeof props.spaceAbove === "number" ? props.spaceAbove : 0;
+      const below = typeof props.spaceBelow === "number" ? props.spaceBelow : 0;
+      const node = inner(props);
+      // ⛔ NOTHING SET -> NOTHING ADDED. Not an empty div, not a fragment: the original node.
+      if (!above && !below) return node;
+      return <div style={{ paddingTop: above, paddingBottom: below }}>{node}</div>;
+    };
+  }
+  return cfg;
+}
+
+export const config = withSpacingControls(baseConfig);
 
 // Seed = the current /about page expressed as Puck blocks, so Steven opens the editor to the
 // page he already has and can immediately add / delete / reorder. (The headshot image block
