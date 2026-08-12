@@ -21,7 +21,7 @@
 import { getClient } from "./store";
 import { readSites } from "./sites";
 import { publicUrlFor } from "./hostShared";
-import { leadWiring } from "./sitesShared";
+import { leadWiring, reachability, statusOf } from "./sitesShared";
 import type { Site } from "./sitesShared";
 import type { Board, CheckDef, CheckRun, CheckState } from "./checksShared";
 
@@ -306,6 +306,26 @@ async function checkResendDomain(): Promise<CheckRun> {
 }
 
 async function checkSiteReachable(site: Site): Promise<CheckRun> {
+  // ⛔ A DRAFT SITE IS NOT BROKEN. It 404s BECAUSE that is what Draft means, so probing it and
+  // calling the 404 a failure turns a deliberate setting into five red tiles — which is exactly
+  // what happened the moment every site in the library was moved to Draft: the board went from
+  // "0 broken" to "5 broken" with nothing actually wrong.
+  //
+  // Same rule this file already applies to an unset vendor key: SKIPPED, never passed and never
+  // failed. A check that cannot be evaluated has no verdict, and dressing "not applicable" as
+  // either colour is how a board stops being believed.
+  const reach = reachability(site);
+  if (!reach.onDomain && !reach.onDemo) {
+    return {
+      checkId: "site.reachable",
+      siteId: site.id,
+      status: "skipped",
+      detail: `${statusOf(site)} — nobody is meant to be able to open it, so there is nothing to check.`,
+      evidence: { status: statusOf(site) },
+      at: now(),
+    };
+  }
+
   const url = publicUrlFor(site);
   const res = await fetch(url, { redirect: "follow", headers: { "user-agent": "sjc-checks/1" } });
   const html = await res.text();

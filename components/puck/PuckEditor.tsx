@@ -189,6 +189,7 @@ export default function PuckEditor({
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState<boolean | null>(null);
   const [showVersions, setShowVersions] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [versions, setVersions] = useState<{ id: number; at: string; bytes: number }[]>([]);
   const [showLibrary, setShowLibrary] = useState(false);
   const [library, setLibrary] = useState<{ id: string; name: string; type: string; savedAt: string }[]>([]);
@@ -650,41 +651,71 @@ export default function PuckEditor({
         <button type="button" onClick={onNewPage} disabled={busy} style={btn}>
           + New Page
         </button>
-        <button
-          type="button"
-          onClick={onAdoptImages}
-          disabled={busy}
-          style={btn}
-          title="Copy this page's images onto our own storage so nothing depends on whoever generated the design"
-        >
-          Adopt images
-        </button>
-        <button
-          type="button"
-          onClick={onSaveAsTemplate}
-          disabled={busy}
-          style={btn}
-          title="Strip the business details and save this layout as a reusable template"
-        >
-          Save as template
-        </button>
-        <button type="button" onClick={onRenamePage} disabled={busy} style={btn}>
-          Rename
-        </button>
-        {/* THE WAY BACK. Revisions have been written on every save since the Postgres migration
-            and nothing ever read them — the safety net existed and was unreachable. */}
-        <button type="button" onClick={openVersions} disabled={busy} style={btn}>
-          Versions
-        </button>
-        {/* The insert half of the section library. The save half is the ★ on each section. */}
-        <button type="button" onClick={openLibrary} disabled={busy} style={btn}>
-          Add saved section
-        </button>
-        {canDelete ? (
-          <button type="button" onClick={onDeletePage} disabled={busy} style={btnDanger}>
-            Delete Page
+        {/* ── EVERYTHING ELSE ────────────────────────────────────────────────────────────────
+            One menu, because the band is for what you touch on a normal editing pass and these
+            are not. Adopt images and Save as template are once per SITE; Rename is once per page;
+            Versions is once in a while and only when something went wrong.
+
+            Steven, looking at eleven controls: *"it was getting crowded."* A bar you scan is worse
+            than a menu you read — eleven things at equal weight means hunting every time, and the
+            two the page library is about to add would have landed on top of that. */}
+        <div style={{ position: "relative" }}>
+          <button
+            type="button"
+            onClick={() => setMoreOpen((v) => !v)}
+            disabled={busy}
+            style={btn}
+            aria-expanded={moreOpen}
+            title="Adopt images, Save as template, Rename, Versions, saved sections"
+          >
+            ⋯ More
           </button>
-        ) : null}
+          {moreOpen ? (
+            <>
+              {/* Click-away. A menu that only closes on its own button is a menu left open. */}
+              <div
+                onClick={() => setMoreOpen(false)}
+                style={{ position: "fixed", inset: 0, zIndex: 40 }}
+              />
+              <div style={moreMenu}>
+                {[
+                  { label: "Add saved section", onClick: openLibrary, title: "Drop in a band you saved from any website" },
+                  { label: "Adopt images", onClick: onAdoptImages, title: "Copy this page's images onto our own storage so nothing depends on whoever generated the design" },
+                  { label: "Save as template", onClick: onSaveAsTemplate, title: "Strip the business details and save this layout as a reusable template" },
+                  { label: "Rename page", onClick: onRenamePage, title: "Changes the name in the list only — the web address and the page are untouched" },
+                  { label: "Versions", onClick: openVersions, title: "Every time you pressed Publish — restore an earlier one" },
+                ].map((m) => (
+                  <button
+                    key={m.label}
+                    type="button"
+                    title={m.title}
+                    disabled={busy}
+                    onClick={() => {
+                      setMoreOpen(false);
+                      m.onClick();
+                    }}
+                    style={moreItem}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+                {canDelete ? (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setMoreOpen(false);
+                      onDeletePage();
+                    }}
+                    style={{ ...moreItem, color: "var(--e-danger, #b91c1c)", borderTop: "1px solid #eee" }}
+                  >
+                    Delete page
+                  </button>
+                ) : null}
+              </div>
+            </>
+          ) : null}
+        </div>
         <span
           title={saveError || undefined}
           style={{
@@ -1012,6 +1043,31 @@ const bar: React.CSSProperties = {
   borderBottom: "1px solid #e5e7eb",
   background: "#fff",
   fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+};
+const moreMenu: React.CSSProperties = {
+  position: "absolute",
+  top: "calc(100% + 6px)",
+  left: 0,
+  zIndex: 41,
+  minWidth: 210,
+  background: "#fff",
+  border: "1px solid #e5e7eb",
+  borderRadius: 10,
+  boxShadow: "0 10px 30px rgba(0,0,0,.12)",
+  padding: 4,
+  display: "flex",
+  flexDirection: "column",
+};
+const moreItem: React.CSSProperties = {
+  textAlign: "left",
+  background: "none",
+  border: "none",
+  padding: "9px 12px",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#111827",
+  cursor: "pointer",
+  borderRadius: 6,
 };
 const select: React.CSSProperties = {
   border: "1px solid #d1d5db",
