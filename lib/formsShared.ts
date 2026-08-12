@@ -300,6 +300,12 @@ export function mergeSections(saved?: Partial<Record<SectionKey, string>>): Reco
   return out;
 }
 
+/**
+ * Where a review button points, always. A REFERENCE, never a link — resolved per site at render
+ * from that website's own settings. See FormDef.altSuccess for why no form may hold a URL.
+ */
+export const REVIEW_BUTTON_URL = "{{business.reviewUrl}}";
+
 export type FormDef = {
   id: string;
   name: string;
@@ -356,9 +362,24 @@ export type FormDef = {
     values: string[];
     heading: string;
     body: string;
-    /** Optional button on the thank-you screen — for a review form, the Google review link. */
+    /**
+     * Optional button on the thank-you screen — for a review form, "Leave a Google review".
+     *
+     * ⛔ THERE IS NO `buttonUrl` HERE, AND THAT IS THE POINT. A form is SHARED: several sites point
+     * at one definition. A URL stored on it is one client's review page shown to every other
+     * client's customers — the plan's own named counterexample, and it was live. The editor even
+     * labelled the field "THIS CLIENT'S Google review link" on an object that has no client.
+     *
+     * Worse, the guard had it backwards: `normalizeAltSuccess` accepted a value only if it matched
+     * `^https?://`, so a hardcoded literal passed and `{{business.reviewUrl}}` — the safe answer,
+     * seeded right here in code — was blanked on the first save through the editor.
+     *
+     * Now the destination is not the form's to hold. lib/formPointer stamps REVIEW_BUTTON_URL on
+     * the block when a label exists, and it resolves per site at render from Website settings,
+     * exactly like the phone number. Pointing one client's form at another's review page stopped
+     * being something to remember and became something you cannot express.
+     */
     buttonLabel?: string;
-    buttonUrl?: string;
   };
 };
 
@@ -523,11 +544,6 @@ export const BUILTIN_FORMS: FormDef[] = [
         "Would you mind saying that on Google? It takes a minute and it's the single biggest " +
         "thing that helps people find us.",
       buttonLabel: "Leave a Google review",
-      // ⚠️ A REFERENCE, NOT A LINK — and that is what makes a SHARED form safe to point several
-      // sites at. A real URL here would send every one of those businesses' delighted customers to
-      // whichever review page got typed in first; leaving it blank only worked while everyone
-      // remembered to. `{{business.reviewUrl}}` resolves per site at render, like the phone number.
-      buttonUrl: "{{business.reviewUrl}}",
     },
   },
   {

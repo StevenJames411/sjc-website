@@ -119,8 +119,11 @@ export const CHECKS: CheckDef[] = [
     runbook:
       "⛔ Two live sites sharing a lead email or a GHL webhook is client A's enquiries landing in " +
       "client B's inbox. That ends the retainer and the referral behind it, so it is red on the " +
-      "first sighting, never yellow. Fix in Website settings. A missing destination is yellow — " +
-      "they are paying for a lead record they do not have.",
+      "first sighting, never yellow. Fix in Website settings.\n\n" +
+      "⛔ Also red: NO client inbox and NO CRM webhook on a reachable site. Enquiries arrive and " +
+      "nobody is told — a sheet does not count, it is a record, not a notification. Set the " +
+      "client's inbox in Website settings.\n\n" +
+      "A missing sheet on its own is yellow — they are paying for a lead record they do not have.",
     cadenceSeconds: 6 * HOUR,
     freshSeconds: 12 * HOUR,
     staleSeconds: 2 * DAY,
@@ -447,16 +450,33 @@ function checkLeadDestinations(site: Site, all: Site[]): CheckRun {
     siteId: site.id,
     // ⛔ A collision is RED on sight. Missing is yellow — they are owed something they haven't got.
     // Shared is a different animal: their customer's enquiry arrives in someone else's inbox.
-    status: w.collidesWith ? "fail" : w.missing.length ? "warn" : "pass",
+    // ⛔ TWO DIFFERENT REDS, AND ONE YELLOW THAT USED TO SWALLOW ONE OF THEM.
+    //
+    // A collision is red on sight: their customer's enquiry arrives in someone else's inbox.
+    //
+    // NOBODY NOTIFIED is the second red, and until 2026-08-12 it was folded into the yellow. A
+    // reachable site with a sheet but no inbox and no CRM read "no lead email, no CRM webhook" in
+    // the same amber as a site that merely lacked a spreadsheet. One of those is a gap in the
+    // record; the other is every enquiry arriving in silence while the owner waits for a call that
+    // is never coming. leadDelivery already refuses to treat them alike — it fires the SJC lead
+    // alarm — but that fires AFTER a lead exists. This is the same predicate, before one does.
+    status: w.collidesWith || !w.notifiesSomeone ? "fail" : w.missing.length ? "warn" : "pass",
     detail: w.collidesWith
       ? `SHARES A DESTINATION with ${w.collidesWith} — leads can land in that inbox instead.`
-      : w.missing.length
-        ? `${w.missing.join(", ")}.`
-        : "email, sheet and CRM webhook all set, and none shared with another client.",
+      : !w.notifiesSomeone
+        ? `NOBODY GETS TOLD — no client inbox and no CRM webhook. ` +
+          (w.hasSheet
+            ? `Enquiries are filed in the sheet and no alert goes out; the sheet is a record, not a notification.`
+            : `Enquiries are stored here and nowhere else.`) +
+          ` Set the client's inbox in Website settings.`
+        : w.missing.length
+          ? `${w.missing.join(", ")}.`
+          : "email, sheet and CRM webhook all set, and none shared with another client.",
     evidence: {
       hasEmail: w.hasEmail,
       hasSheet: w.hasSheet,
       hasGhl: w.hasGhl,
+      notifiesSomeone: w.notifiesSomeone,
       collidesWith: w.collidesWith,
     },
     at: now(),
