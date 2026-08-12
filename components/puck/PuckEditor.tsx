@@ -921,6 +921,17 @@ export default function PuckEditor({
           config={config}
           data={data}
           iframe={{ enabled: false }}
+          // ⛔ THE HEADER SAID `{{business.name}}` (fixed 2026-08-12). Puck's default header shows
+          // `root.props.title` — the page's SEO title — which on a tokenised page is the literal
+          // characters `{{business.name}}`. Steven, looking at it: *"that whole custom value
+          // bullshit is for code, not humans… the only way I know I'm in the right website is I
+          // have to read the URL."*
+          //
+          // A token is a STORAGE format. It must never be what a person reads. And the useful thing
+          // to put in the one always-visible spot is not the SEO title at all — it is WHERE YOU
+          // ARE: which website, which page. That is the question the header should answer.
+          headerTitle={`${siteName} › ${title}`}
+          headerPath={publicPath || undefined}
           overrides={{ actionBar: SectionActionBar }}
           onChange={onChange}
           onPublish={async (d) => {

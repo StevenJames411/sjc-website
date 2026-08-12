@@ -13,6 +13,7 @@ import DesignTextField from "@/components/puck/DesignTextField";
 import FormPicker from "@/components/puck/FormPicker";
 import FormLink from "@/components/puck/FormLink";
 import ImageUpload from "@/components/puck/ImageUpload";
+import TokenText from "@/components/puck/TokenText";
 import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
@@ -606,8 +607,16 @@ const baseConfig: Config<Props, RootProps> = {
   root: {
     fields: {
       title: {
-        type: "text" as const,
+        // ⛔ NOT A PLAIN TEXT FIELD, BECAUSE A TOKEN IS UNREADABLE. On a tokenised page this field
+        // holds the literal characters `{{business.name}}`, so the one line naming the page told
+        // Steven nothing about which page he had open. TokenText keeps the token stored — that is
+        // what makes a phone number or a business name changeable in ONE place forever — and shows
+        // the words it resolves to underneath. See components/puck/TokenText.tsx.
+        type: "custom" as const,
         label: "Page title — the browser tab, and the bold line when this link is texted",
+        render: ({ onChange, value }) => (
+          <TokenText value={value as string} onChange={onChange as (v: string) => void} />
+        ),
       },
       description: {
         type: "textarea" as const,

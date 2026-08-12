@@ -52,6 +52,16 @@ export function tokenRules(b: BusinessFacts): Rule[] {
 const DIAL_PROPS = new Set(["phone", "tel"]);
 
 /**
+ * …and the same problem when the STRING is the link rather than the prop.
+ *
+ * ⚠️ AN IMPORTED DESIGN CARRIES ITS CALL BUTTON AS `href: "tel:+12104746252"`, and `href` is not in
+ * DIAL_PROPS — so the rule above handed it the READABLE token and produced `tel:(210) 474-6252`, a
+ * Call-now button that does nothing when tapped. Deciding by prop NAME alone was only ever right
+ * for our own blocks; imported markup puts the whole URL in the value.
+ */
+const isDialString = (s: string) => /tel:\s*$|^\s*tel:/i.test(s);
+
+/**
  * Apply the rules to every string in a page, counting what changed.
  *
  * The prop NAME matters, not just the value: the same phone number means the readable form in a
@@ -67,8 +77,18 @@ export function applyTokens<T>(data: T, rules: Rule[], counts: Record<string, nu
         const hits = s.match(re);
         if (hits?.length) {
           counts[label] = (counts[label] || 0) + hits.length;
-          const t = label === "phone" && DIAL_PROPS.has(key) ? "{{business.phoneDial}}" : token;
-          s = s.replace(re, t);
+          // The dialable form when this value IS a tel: link, or sits in a prop that becomes one.
+          // Inside a blob of markup a number can appear both ways, so the replacement decides per
+          // match on what immediately precedes it rather than once for the whole string.
+          s =
+            label === "phone"
+              ? s.replace(re, (m, ...rest) => {
+                  const at = rest[rest.length - 2] as number;
+                  return isDialString(s.slice(Math.max(0, at - 8), at)) || DIAL_PROPS.has(key)
+                    ? "{{business.phoneDial}}"
+                    : token;
+                })
+              : s.replace(re, token);
         }
       }
       return s;
