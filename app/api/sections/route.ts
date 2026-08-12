@@ -18,6 +18,8 @@
 // form's `source`, the tag deciding whose inbox an enquiry lands in. Saving strips it, the same
 // way make-template does, rather than trusting whoever clicks Save to have checked.
 import { createKvStore } from "@/lib/kvStateStore";
+import { findSite } from "@/lib/sites";
+import { scrubForTransfer } from "@/lib/transferScrub";
 import { getClient } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -72,7 +74,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  let body: { name?: string; block?: Record<string, unknown> };
+  let body: { name?: string; block?: Record<string, unknown>; site?: string };
   try {
     body = await req.json();
   } catch {
@@ -80,11 +82,26 @@ export async function POST(req: Request) {
   }
 
   const name = String(body?.name || "").trim();
+  const sourceSite = String(body?.site || "").trim();
   const block = body?.block;
   if (!name) return Response.json({ ok: false, error: "Give it a name." }, { status: 400 });
   if (!block?.type) return Response.json({ ok: false, error: "No section selected." }, { status: 400 });
 
-  const copy = JSON.parse(JSON.stringify(block)) as Record<string, unknown>;
+  // ⛔ THE FULL TRANSFER SCRUB, NOT JUST `source` (2026-08-12). This blanked one field on one block
+  // type and every comment here called it "the one that ends relationships" — it is not. `source`
+  // is a LABEL (see components/blocks/LeadForm.tsx); the worst case is a confusing word in a
+  // spreadsheet cell. What actually travelled was a `tel:` in `links[].href`, so a visitor on the
+  // destination site could tap Call Now and ring the business the band was saved FROM.
+  //
+  // The library is shared across every site by design, so a saved band is the single most likely
+  // thing to land on somebody else's page. It gets the strictest floor, always — there is no
+  // "same business" exemption here, because a library entry has no destination yet.
+  const raw = JSON.parse(JSON.stringify(block)) as Record<string, unknown>;
+  const owner = sourceSite ? await findSite(sourceSite) : null;
+  const scrub = owner
+    ? scrubForTransfer(raw, owner)
+    : { value: raw, report: { facts: 0, routingLinks: 0, images: 0, leadSources: 0 } };
+  const copy = scrub.value as Record<string, unknown>;
   blankLeadSources(copy);
   // The id must be re-minted when it's inserted, not carried: two blocks sharing an id are ONE
   // node to Puck, and the page renders the last one's content in every slot. Dropped here so the
@@ -107,7 +124,7 @@ export async function POST(req: Request) {
   if (!(await store().write([saved, ...all]))) {
     return Response.json({ ok: false, error: "Couldn't save that section." }, { status: 500 });
   }
-  return Response.json({ ok: true, id });
+  return Response.json({ ok: true, id, scrubbed: scrub.report });
 }
 
 export async function DELETE(req: Request) {

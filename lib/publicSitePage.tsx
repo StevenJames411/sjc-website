@@ -2,7 +2,7 @@ import { Render } from "@measured/puck";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
-import { readPuckPublished, readDesignCss } from "@/lib/puckContent";
+import { readPuckPublished, sheetsFor } from "@/lib/puckContent";
 import { resolveFormPointers } from "@/lib/formPointer";
 import { readForms } from "@/lib/forms";
 import { findPageMeta, readPages } from "@/lib/pageRegistry";
@@ -246,11 +246,16 @@ export async function SitePageBody({
   // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
   const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
 
-  // A page built from a bought design carries its own compiled stylesheet. Every rule in it is
-  // scoped under .sjc-design, and that class rides on the DesignSection block itself
-  // (lib/designShared) — so this only has to EMIT the stylesheet, and the same rules apply
-  // identically in the builder canvas, which renders the same blocks.
-  const designCss = page ? await readDesignCss(page, siteId) : "";
+  // The stylesheets this page's blocks actually reference, read off the data already loaded above.
+  // Each design's rules are scoped under its own `sjc-design-<id>` class, which rides on the
+  // DesignSection block itself (lib/designShared) — so this only has to EMIT them, and the builder
+  // canvas, rendering the same blocks, styles identically.
+  //
+  // ⚠️ Passing `data` rather than a page slug IS the fix. The old lookup was per page and fell back
+  // to any sibling page's sheet when a page had none, so a band could silently wear a different
+  // design's stylesheet. A page now emits exactly what its blocks name, and a page with no design
+  // blocks emits nothing at all.
+  const designCss = await sheetsFor(data);
 
   // THIS BUSINESS'S OWN STRUCTURED DATA.
   //

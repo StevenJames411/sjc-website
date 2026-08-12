@@ -5,20 +5,26 @@
 // All routes are gated by middleware (only the signed-in owner can reach them).
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { puckKey, readDesignCssDraft, writeDesignCss } from "@/lib/puckContent";
+import { puckKey } from "@/lib/puckContent";
+import { siteOr } from "@/lib/siteAccess";
 import { SJC } from "@/lib/siteKeys";
 import { CHROME, isChrome } from "@/lib/puckPages";
 
 export const dynamic = "force-dynamic";
 
-const siteOf = (v: unknown) => String(v || SJC).trim() || SJC;
+// ⚠️ RESOLVE THROUGH THE REGISTRY, NEVER A REQUEST STRING STRAIGHT INTO siteKeys(). Passing it
+// through unchecked is how `site=!!!` reached the FLAGSHIP site's legacy keys; and now that
+// siteKeys() throws on a malformed id, an unresolved one would surface as a 500 rather than a 404.
+// See lib/siteAccess.ts.
+const siteOf = (v: unknown) => String(v ?? "").trim() || SJC;
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const page = url.searchParams.get("page") || "about";
-  const site = siteOf(url.searchParams.get("site"));
+  const { site, deny } = await siteOr(siteOf(url.searchParams.get("site")), req);
+  if (deny) return deny;
   const pub = url.searchParams.get("pub") === "1";
-  const store = createKvStore(getClient(), puckKey(page, pub, site));
+  const store = createKvStore(getClient(), puckKey(page, pub, site.id));
   return Response.json({ data: (await store.read()) || null });
 }
 
@@ -29,7 +35,9 @@ export async function PUT(req: Request) {
   } catch {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
   }
-  const store = createKvStore(getClient(), puckKey(body?.page || "about", false, siteOf(body?.site)));
+  const { site, deny } = await siteOr(siteOf(body?.site), req);
+  if (deny) return deny;
+  const store = createKvStore(getClient(), puckKey(body?.page || "about", false, site.id));
   // Report the REASON, not just a boolean. A refused save used to return ok:false with an HTTP
   // 200 and no explanation, which the editor rendered as "saved". 409 = the write guard said no.
   const { ok, reason } = await store.writeResult(body?.data || {});
@@ -39,7 +47,9 @@ export async function PUT(req: Request) {
 export async function POST(req: Request) {
   const url = new URL(req.url);
   const page = url.searchParams.get("page") || "about";
-  const site = siteOf(url.searchParams.get("site"));
+  const { site: resolved, deny } = await siteOr(siteOf(url.searchParams.get("site")), req);
+  if (deny) return deny;
+  const site = resolved.id;
   const client = getClient();
   const pub = createKvStore(client, puckKey(page, true, site));
 
@@ -53,17 +63,18 @@ export async function POST(req: Request) {
   const data = ((await draft.read()) || {}) as Record<string, unknown>;
   const ok = await pub.write({ ...data, _pub: 1 });
 
-  // ⚠️ THE STYLESHEET HAS TO GO WITH IT. A page imported from a bought design keeps its compiled
-  // CSS in a separate key, on the same draft/-pub convention. Publishing the CONTENT alone put
-  // the page live with no stylesheet at all — and because only inline styles survive that, the
-  // result wasn't "a bit plain", it was wreckage: the grid overlay lost its `absolute inset-0`
-  // and covered the whole page in cyan lines.
+  // ⚠️ THE STYLESHEET USED TO NEED PROMOTING HERE, AND NOW CANNOT GO WRONG (2026-08-12).
   //
-  // Worst of all it reported success, and `?preview=1` still looked perfect — preview reads the
-  // DRAFT css, so the one view you'd check to reassure yourself was the one that couldn't show
-  // the problem.
-  const css = await readDesignCssDraft(page, site);
-  if (css) await writeDesignCss(page, css, true, site);
+  // A design's CSS used to live in its own key on the same draft/-pub convention, so publishing the
+  // CONTENT alone put the page live with no stylesheet — not "a bit plain" but wreckage: the grid
+  // overlay lost its `absolute inset-0` and covered the page in cyan lines. It reported success,
+  // and `?preview=1` still looked perfect, because preview read the DRAFT css — so the one view
+  // you'd check to reassure yourself was the one that could not show the problem.
+  //
+  // Sheets are now immutable and content-addressed, and the page's own blocks carry the id. There
+  // is no second copy to promote and no way for content and stylesheet to disagree: publishing the
+  // content publishes the reference. It is also why the unpublish branch above no longer strands a
+  // live sheet behind for neighbouring pages to inherit.
 
   // ⛔ THE CHROME GOES LIVE WITH THE PAGE. Steven: "Publishing the page is the only thing we should
   // do. Not adding every freaking section one by one."

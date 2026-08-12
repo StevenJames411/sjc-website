@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { deliverLead } from "@/lib/leadDelivery";
 import { recordLead, attachDelivery } from "@/lib/leadStore";
+import { resolveHost } from "@/lib/host";
+import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
 
 // Discovery-call intake handler. Receives a dynamic ordered list of {label, value} answers
@@ -51,7 +53,39 @@ export async function POST(req: Request) {
   // today would have left /apply and the podcast form with NO notification whatsoever — a real
   // application arriving with nobody told. Same convention lib/puckContent already uses: a caller
   // that predates multi-site means SJC.
-  const siteId = String(body.siteId || "").trim() || SJC;
+  // ⛔ THE HOST DECIDES, NOT THE BODY (2026-08-12). The note above is true of the BROWSER and was
+  // false of the ENDPOINT: the server read `siteId` straight off the JSON and never checked it
+  // against anything. So anyone could POST `{"siteId":"<someone>"}` directly — no page visit, no
+  // honeypot (that check is client-side only) — and write into that business's Google Sheet, POST
+  // a contact into their GHL, and email their owner with `reply_to` set to whatever they supplied.
+  //
+  // And destructively: `recordLead` trims stored leads to the newest 500, so a few hundred forged
+  // posts evict every real one from the safety net that exists for exactly the "I never got that
+  // lead" conversation.
+  //
+  // `resolveHost` already answers "which website is this request for" from the hostname, and that
+  // is the only trustworthy source. A body id that disagrees is REFUSED rather than quietly
+  // preferred, so a mismatch shows up instead of becoming someone else's lead.
+  const host = await resolveHost();
+  const claimed = String(body.siteId || "").trim();
+  let siteId: string;
+  if (host.kind === "client") {
+    // The hostname names a real website. That is authoritative, and a body claiming a DIFFERENT
+    // site is refused rather than quietly preferred — this is the whole exploit.
+    if (claimed && claimed !== host.site.id) {
+      return NextResponse.json(
+        { ok: false, error: "That form doesn't belong to this website." },
+        { status: 400 }
+      );
+    }
+    siteId = host.site.id;
+  } else {
+    // The host resolves to no particular website — a Vercel preview URL, localhost, or the studio
+    // domain. There is nothing to contradict, so a claimed id is accepted, but only after being
+    // checked against the registry so an arbitrary string still cannot mint keys.
+    const known = claimed ? await findSite(claimed) : null;
+    siteId = known?.id || SJC;
+  }
 
   // ── WRITTEN DOWN FIRST, DELIVERED SECOND ────────────────────────────────────────────────────
   //

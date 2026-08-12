@@ -176,6 +176,7 @@ export async function intakeSummaries(
         asked: asked.length,
         photos: record.photos.length,
         submitted: Boolean(record.submittedAt),
+        token: access?.token,
       };
     })
   );

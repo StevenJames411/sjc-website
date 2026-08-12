@@ -18,25 +18,37 @@
 // ⚠️ This empties live documents; `state_rev` keeps every prior revision. Not erasure in the
 // data-retention sense — see the note on deleteSite.
 import { readSitesRaw } from "@/lib/sites";
+import { allSlugsEver } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { SJC } from "@/lib/siteKeys";
+import { allKeysFor, SJC } from "@/lib/siteKeys";
 import pg from "pg";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Which site does a storage key belong to?
+ * Which site does a storage key belong to? — for GROUPING THE REPORT ONLY.
  *
- * Keys are `site-<id>-<what>`, where `<what>` is `pages` | `brand[-pub]` | `intake` |
- * `puck-<page>[-pub]` | `designcss-<page>[-pub]`. Strip the suffix to recover the id. A site id
- * can itself contain hyphens, so the suffixes are matched from the END, never by splitting.
+ * ⚠️ THIS NO LONGER DECIDES WHAT IS AN ORPHAN, AND THAT IS THE FIX (2026-08-12). The old parser
+ * matched `pages|brand|intake|puck-.+|designcss-.+` and returned null for everything else, and
+ * null meant SKIP. So `site-<id>-leads` (the client's own customers — names, phones, emails),
+ * `site-<id>-designsrc-<page>`, and — unnoticed — `site-<id>-brand-pub` were passed over in
+ * silence: the `brand` alternative was anchored to the end of the string and could never absorb
+ * the `-pub` suffix. The sweeper built to find what deletion left behind was itself blind to three
+ * of the eight key shapes, and reported a clean sweep.
+ *
+ * Orphan-ness is now decided by MEMBERSHIP: `allKeysFor` enumerates every key a known site owns,
+ * and anything under `site-…` outside that set is an orphan by definition — no parsing involved,
+ * so a key shape this file has never heard of cannot hide. This function only labels the finding,
+ * and anything it cannot label is reported under `(unrecognised)` rather than dropped.
  */
 function siteIdFromKey(key: string): string | null {
   if (!key.startsWith("site-")) return null;
   const rest = key.slice("site-".length);
-  const m = rest.match(/^(.+?)-(pages|brand|intake|puck-.+|designcss-.+)$/);
+  const m = rest.match(
+    /^(.+?)-(pages|brand|intake|leads|puck-.+|designcss-.+|designsrc-.+)(?:-pub)?$/
+  );
   return m ? m[1] : null;
 }
 
@@ -69,10 +81,30 @@ export async function POST(req: Request) {
   const live = new Set((await readSitesRaw()).map((s) => s.id));
   live.add(SJC); // implicit, and its keys aren't namespaced anyway
 
+  // ⚠️ THE OWNED SET IS WHAT DECIDES, NOT THE PARSER. Every key a known site owns, derived from
+  // `allKeysFor` — the same function deletion and rename use, so all three agree by construction.
+  // Anything under `site-…` that is not in here belongs to no website that exists.
+  //
+  // Slugs come from each site's registry AND from the keys themselves: a page key names its own
+  // slug, so a page deleted from the registry (whose stylesheet outlived it) is still recognised as
+  // owned rather than being swept out from under a live site.
+  const owned = new Set<string>();
+  for (const id of live) {
+    if (id === SJC) continue; // legacy keys aren't namespaced; the `site-%` query never sees them
+    const slugs = new Set<string>(await allSlugsEver(id));
+    const claims = new RegExp(`^site-${id}-(?:puck|designcss|designsrc)-(.+?)(?:-pub)?$`);
+    for (const { key } of rows) {
+      const m = key.match(claims);
+      if (m) slugs.add(m[1]);
+    }
+    for (const k of allKeysFor(id, [...slugs])) owned.add(k);
+  }
+
   const byId = new Map<string, { keys: string[]; bytes: number }>();
   for (const { key, bytes } of rows) {
-    const id = siteIdFromKey(key);
-    if (!id || live.has(id)) continue;
+    if (owned.has(key)) continue;
+    // Labelled for the report; an unparseable key is still an orphan and still gets purged.
+    const id = siteIdFromKey(key) || "(unrecognised)";
     const e = byId.get(id) || { keys: [], bytes: 0 };
     e.keys.push(key);
     e.bytes += Number(bytes) || 0;

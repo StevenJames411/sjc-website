@@ -63,6 +63,30 @@ export async function readPages(siteId: string): Promise<PageEntry[]> {
   return [...builtins, ...custom];
 }
 
+/**
+ * Every slug this site has EVER used — live pages, tombstoned built-ins, renamed ones, and the
+ * built-in list itself.
+ *
+ * ⚠️ NOT `readPages().map(p => p.slug)`, and the difference is what leaks. `readPages` deliberately
+ * hides tombstoned built-ins, and a deleted custom page leaves the registry entirely. But deleting
+ * a page only blanks its Puck content — its compiled stylesheet and archived design source stay in
+ * the store under that slug. A purge that walked only LIVE pages would erase the site and leave
+ * the dead pages' design keys behind forever, invisible to the orphan sweeper that is supposed to
+ * catch exactly that.
+ *
+ * For accounting only — deleting, renaming, sweeping. Never for anything user-facing.
+ */
+export async function allSlugsEver(siteId: string): Promise<string[]> {
+  const blob = await readBlob(siteId);
+  const out = new Set<string>(["home"]);
+  // Built-ins are defined in code, so their keys can exist with no registry row at all.
+  for (const p of PUCK_PAGES) out.add(p.slug);
+  for (const p of blob.custom || []) out.add(p.slug);
+  for (const s of blob.hidden || []) out.add(s);
+  for (const s of Object.keys(blob.titles || {})) out.add(s);
+  return [...out];
+}
+
 export async function findPageMeta(
   slug: string,
   siteId: string
@@ -129,6 +153,21 @@ const EDITOR_SEGMENTS = ["settings", "brand"];
 // ⚠️ NOT `RESERVED_SITE_IDS`. That list reserves WEBSITE ids and contains "home" — applying it to
 // page slugs meant a new site's first page came out as "home-2", and the public route looks for
 // "home", so the site 404'd at its own address. Site ids and page slugs are different namespaces.
+/**
+ * ⛔ A SLUG MAY NOT END IN `-pub`, AND THIS ONE IS REACHABLE WITH A PLAUSIBLE NAME (2026-08-12).
+ *
+ * A page's keys are `<ns>-puck-<slug>` for the draft and the same plus `-pub` for the published
+ * snapshot. Nothing reserved that suffix — so creating a page called "Home Pub" yields slug
+ * `home-pub`, and `puck("home-pub", false)` is byte-identical to `puck("home", true)`.
+ *
+ * Saving that page's draft therefore OVERWRITES the site's published home page with a document
+ * carrying no `_pub` marker, so the front page 404s; deleting it writes `{}` over the same key.
+ * A perfectly reasonable page name silently takes the site's home page down.
+ *
+ * Rejected at creation rather than mangled, so the name is a decision the person makes.
+ */
+const collidesWithPublishedKey = (slug: string) => /-pub$/.test(slug);
+
 async function reservedSlugs(siteId: string): Promise<Set<string>> {
   const pages = await readPages(siteId);
   return new Set([
@@ -152,10 +191,20 @@ export async function createPage(
   const base = slugify(t);
   if (!base) return { ok: false, error: "That name has no usable letters or numbers." };
 
+  // Refused, not silently renamed: the storage key for a `-pub` slug is the same key as another
+  // page's PUBLISHED snapshot, so saving it would take that page off the live site. See
+  // collidesWithPublishedKey. Renaming it behind his back would hide a name worth reconsidering.
+  if (collidesWithPublishedKey(base)) {
+    return {
+      ok: false,
+      error: `A page name can't end in "pub" — "${base}" would share its storage with another page's published copy. Try another name.`,
+    };
+  }
+
   const reserved = await reservedSlugs(siteId);
   let slug = base;
   let n = 2;
-  while (reserved.has(slug)) slug = `${base}-${n++}`;
+  while (reserved.has(slug) || collidesWithPublishedKey(slug)) slug = `${base}-${n++}`;
 
   const blob = await readBlob(siteId);
   const custom = [...(blob.custom || []), { slug, title: t }];

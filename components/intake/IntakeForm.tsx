@@ -18,6 +18,7 @@ import type { IntakeAnswers, IntakeQuestion } from "@/lib/intakeShared";
 
 export default function IntakeForm({
   site,
+  accessToken,
   contact,
   businessName,
   questions,
@@ -31,6 +32,14 @@ export default function IntakeForm({
 }: {
   /** Which business this form belongs to. The server checks it's open on every call. */
   site: string;
+  /**
+   * The unguessable half of her link, forwarded on every call.
+   *
+   * The page already proved it; these API routes have to prove it again, because a route is
+   * reachable directly and cannot assume anyone rendered the page first. Empty for a link
+   * opened before tokens existed — checkIntakeOpen only demands one when the record has one.
+   */
+  accessToken?: string;
   /** SJC's number, read from the site record — never hardcoded here. See lib/sites.ts. */
   contact: { display: string; dial: string };
   businessName: string;
@@ -79,7 +88,7 @@ export default function IntakeForm({
     async (patch: Partial<{ answers: IntakeAnswers; submittedAt: string }>) => {
       setSaveState("saving");
       try {
-        const res = await fetch(`/api/intake?site=${encodeURIComponent(site)}`, {
+        const res = await fetch(`/api/intake?site=${encodeURIComponent(site)}${accessToken ? `&k=${encodeURIComponent(accessToken)}` : ""}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(patch),
@@ -105,7 +114,7 @@ export default function IntakeForm({
     const onHide = () => {
       if (saveState === "saving") return;
       navigator.sendBeacon?.(
-        `/api/intake?site=${encodeURIComponent(site)}`,
+        `/api/intake?site=${encodeURIComponent(site)}${accessToken ? `&k=${encodeURIComponent(accessToken)}` : ""}`,
         new Blob([JSON.stringify({ answers })], { type: "application/json" })
       );
     };
@@ -137,7 +146,7 @@ export default function IntakeForm({
         const { file } = await prepareImage(files[n]);
         const form = new FormData();
         form.append("file", file);
-        const res = await fetch(`/api/intake/upload?site=${encodeURIComponent(site)}`, {
+        const res = await fetch(`/api/intake/upload?site=${encodeURIComponent(site)}${accessToken ? `&k=${encodeURIComponent(accessToken)}` : ""}`, {
           method: "POST",
           body: form,
         });

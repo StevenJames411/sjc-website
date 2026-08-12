@@ -115,9 +115,13 @@ export function publicPathFor(
  * from the PATH, so on her own subdomain (`/onboard`, no slug) it looked for a page of her site
  * named "onboard" and 404'd. Generating this shape is what makes that route correct again.
  */
-export function onboardUrlFor(site: { id: string; domain?: string }): string {
+export function onboardUrlFor(site: { id: string; domain?: string }, token?: string): string {
   const host = normalizeHost(process.env.NEXT_PUBLIC_STUDIO_DOMAIN || STUDIO_HOST);
-  return `https://${host}/${site.id}/onboard`;
+  // ⚠️ THE TOKEN IS THE LAST SEGMENT (2026-08-12). Her business name stays in the path — that is
+  // what makes the link read as legitimate in a text message — and the unguessable half sits after
+  // it. A URL built without one does not open: the token is always required, and a record that has
+  // none reads as closed until it is reopened. See lib/intakeLinks.ts.
+  return `https://${host}/${site.id}/onboard${token ? `/${token}` : ""}`;
 }
 
 /**

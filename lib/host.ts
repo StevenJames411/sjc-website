@@ -40,7 +40,15 @@ export type HostKind =
   /** The web studio: its sales page at /, its demos one level down. */
   | { kind: "studio" }
   /** A customer's own domain. Their site is served at the root of it. */
-  | { kind: "client"; site: Site };
+  | { kind: "client"; site: Site }
+  /**
+   * A demo address for a site that has since bought its own domain. Serves NOTHING — 404.
+   *
+   * ⛔ NOT A REDIRECT. The demo URL is the sales asset; it dies when the sale closes. Forwarding
+   * it would keep a second address alive for every customer forever, which is the duplicate this
+   * exists to kill.
+   */
+  | { kind: "gone" };
 
 /**
  * The host of the request being served. `x-forwarded-host` first, because that is what Vercel
@@ -104,6 +112,16 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
       // is still matched so any link sent before the suffix existed keeps resolving.
       const bare = label.endsWith("-demo") ? label.slice(0, -"-demo".length) : label;
       const demo = sites.find((s) => s.id !== SJC && (s.id === bare || s.id === label));
+      // ⛔ THE DEMO ADDRESS DIES THE DAY THEY BUY. Steven, and he has said it more than once:
+      // *"everybody gets a demo URL. Once they become a customer, the demo URL dies… If they buy,
+      // they get a real URL."* A prospect who didn't buy loses the link — that is the point of it
+      // being a demo, not an oversight to be smoothed over with a redirect.
+      //
+      // ⚠️ GONE, NOT FORWARDED, AND NOT FALLING THROUGH. Falling through would hand the request to
+      // the SJC fallback at the bottom of this function, so a dead demo address would quietly
+      // serve the consulting site — the same content at a third address, which is worse than the
+      // duplicate it was meant to remove.
+      if (demo?.domain) return { kind: "gone" };
       if (demo) return { kind: "client", site: demo };
     }
   }

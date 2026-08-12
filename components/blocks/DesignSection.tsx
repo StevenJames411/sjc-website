@@ -23,7 +23,7 @@
 // ⚠️ A MISSING TOKEN RENDERS AS EMPTY, NOT AS `{{t:k3}}`. A field someone deleted must leave a
 // gap in the design, never leak the machinery onto a customer's live website.
 
-import { DESIGN_SCOPE } from "@/lib/designShared";
+import { DESIGN_SCOPE, sheetScope } from "@/lib/designShared";
 import { resolveColor } from "@/lib/brandColor";
 import { surfaceCss, wantsPulse, PULSE_KEYFRAMES, type Surface } from "@/lib/surfaceStyle";
 import type { DesignBoxGroup } from "@/lib/designHtml";
@@ -123,6 +123,21 @@ export type DesignImage = {
 export type DesignLink = { key: string; label: string; href: string } & Surface;
 
 export type DesignSectionProps = {
+  /**
+   * WHICH COMPILED STYLESHEET THIS SECTION NEEDS — a content-addressed id (lib/siteKeys:designSheet).
+   *
+   * ⚠️ THIS PROP IS WHY THE STYLESHEET TRAVELS. The sheet used to be keyed `(site, page, published)`,
+   * so every code path that copied a page had to ALSO remember to copy a value nothing in the
+   * content referenced. Several didn't — silently, reporting success: templates shipped unstyled,
+   * `copySiteContent` dropped it so no template could ever be used, `split-page` lost it and then
+   * deleted the source, the section library stranded it.
+   *
+   * As a prop it is carried by all of those paths for free, because copying props is all any of
+   * them do. Nothing downstream has to know a stylesheet exists.
+   *
+   * Absent on a block imported before 2026-08-12, until admin/backfill-sheets stamps it.
+   */
+  sheet?: string;
   /** The section's markup, with {{t:…}} / {{i:…}} where the editable bits were. */
   html?: string;
   text?: DesignText[];
@@ -586,6 +601,7 @@ function styleImages(html: string, images: DesignImage[]): string {
 
 export default function DesignSection(props: DesignSectionProps) {
   const {
+    sheet,
     html = "",
     text = [],
     images = [],
@@ -696,7 +712,12 @@ export default function DesignSection(props: DesignSectionProps) {
   // form is a React component and could never have worked there anyway.
   return (
     <div
-      className={DESIGN_SCOPE}
+      // TWO classes, doing two different jobs. `DESIGN_SCOPE` is what the runtime rules generated
+      // further up this file target, and what keeps a design's preflight off the builder's own UI.
+      // `sheetScope(sheet)` is what THIS design's compiled stylesheet is scoped under, so two
+      // designs on one page style their own blocks instead of overwriting each other's identically
+      // named utilities. A block with no sheet id (pre-backfill) just gets the shared class.
+      className={sheet ? `${DESIGN_SCOPE} ${sheetScope(sheet)}` : DESIGN_SCOPE}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
       {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
       {...(fgRole ? { "data-sjc-fg": fgRole } : {})}

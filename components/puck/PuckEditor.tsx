@@ -95,7 +95,15 @@ function SectionActionBar({
               method: "POST",
               headers: { "Content-Type": "application/json" },
               credentials: "same-origin",
-              body: JSON.stringify({ name: name.trim(), block: atIndex }),
+              // The site this band came FROM, so the server can take that business out of it —
+              // its phone number, its address, and any tel:/mailto: link that would otherwise ring
+              // the wrong company from somebody else's page. Read from the URL because this action
+              // bar is rendered by Puck, not by us. See lib/transferScrub.ts.
+              body: JSON.stringify({
+                name: name.trim(),
+                block: atIndex,
+                site: window.location.pathname.match(/^\/edit\/([a-z0-9-]+)\//i)?.[1] || "",
+              }),
             })
               .then((x) => x.json())
               .catch(() => ({ ok: false, error: "Couldn't reach the server." }));

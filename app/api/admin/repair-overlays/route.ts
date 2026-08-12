@@ -32,7 +32,8 @@ import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { repairOverlayHides } from "@/lib/designCss";
 import { readPages } from "@/lib/pageRegistry";
-import { siteKeys, SJC } from "@/lib/siteKeys";
+import { sheetIdsIn, puckKey } from "@/lib/puckContent";
+import { designSheet, SJC } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -48,36 +49,51 @@ export async function POST(req: Request) {
   }
 
   const site = String(body?.site || SJC).trim() || SJC;
-  const dryRun = body?.dryRun !== false;
-  const publish = body?.publish === true;
 
+  // ⛔ REPORT ONLY SINCE 2026-08-12 — THIS ROUTE'S MECHANISM IS NO LONGER LEGAL.
+  //
+  // It healed the bug by REWRITING A STORED STYLESHEET IN PLACE. Sheets are now content-addressed
+  // and immutable: the id is a hash of the source markup, so editing the bytes under an existing id
+  // would make the id a lie, and would silently restyle every page pointing at it — live, with no
+  // publish and no revision. That is precisely the class of surprise the new model removes.
+  //
+  // The replacement is strictly better and already exists. `repairOverlayHides` runs inside the
+  // compiler, so the fix applies at compile time; bumping DESIGN_PIPELINE_REV in lib/designShared.ts
+  // gives every affected sheet a new id, and `admin/recompile-css` recompiles from the archived
+  // source and repoints each page's DRAFT. The repair then goes live when the page is published,
+  // like any other change, through the guard.
+  //
+  // Kept as a diagnostic so the finding stays observable — it just no longer writes.
   const client = getClient();
-  const keys = siteKeys(site);
   const pages = await readPages(site);
   const report: Row[] = [];
   let total = 0;
 
   for (const page of pages) {
     const row: Row = { slug: page.slug, draft: 0, published: 0 };
-
-    for (const pub of [false, true]) {
-      if (pub && !publish) continue;
-      const store = createKvStore(client, keys.designCss(page.slug, pub));
-      const saved = await store.read<{ css?: string }>();
+    const data = await createKvStore(client, puckKey(page.slug, false, site)).read<unknown>();
+    for (const id of sheetIdsIn(data)) {
+      const saved = await createKvStore(client, designSheet(id)).read<{ css?: string }>();
       const css = saved && typeof saved.css === "string" ? saved.css : "";
       if (!css) continue;
-
-      const { css: next, repaired } = repairOverlayHides(css);
-      if (!repaired) continue;
-
-      if (!dryRun) await store.write({ css: next });
-      if (pub) row.published = repaired;
-      else row.draft = repaired;
+      const { repaired } = repairOverlayHides(css);
+      row.draft += repaired;
       total += repaired;
     }
-
-    if (row.draft || row.published) report.push(row);
+    if (row.draft) report.push(row);
   }
 
-  return Response.json({ ok: true, dryRun, publish, site, pages: report, total });
+  return Response.json({
+    ok: true,
+    dryRun: true,
+    site,
+    pages: report,
+    total,
+    note:
+      total > 0
+        ? "REPORT ONLY — this route no longer writes. Bump DESIGN_PIPELINE_REV in " +
+          "lib/designShared.ts, then POST /api/admin/recompile-css {site, dryRun:false} to " +
+          "recompile from source and repoint the drafts. Publish each page to take it live."
+        : "Nothing to repair.",
+  });
 }

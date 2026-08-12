@@ -22,6 +22,9 @@ export const dynamic = "force-dynamic";
 async function find(slug: string) {
   const h = await resolveHost();
 
+  // A demo address for a site that has bought its own domain: dead, not forwarded.
+  if (h.kind === "gone") notFound();
+
   // The studio's domain: one segment is a SITE, and it serves whatever its first page is called.
   if (h.kind === "studio") return resolvePage(slug, "home", true);
 

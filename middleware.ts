@@ -16,37 +16,46 @@ import { normalizeHost, SJC_HOST, STUDIO_HOST } from "@/lib/hostShared";
 //               value as the cockpit's COCKPIT_PASSWORD so one password unlocks both)
 // Optional env: SITE_EDIT_USER (defaults to "steven")
 
-// The owner-only surfaces. Everything NOT matched here is public.
+/**
+ * The genuinely PUBLIC API routes. Everything else under /api is owner-only.
+ *
+ * ⛔ INVERTED 2026-08-12, AND THE INVERSION IS THE POINT. This used to enumerate the PROTECTED
+ * routes, so a route that wasn't on the list was public — deny by omission. Which means every
+ * route added later by anyone who never read this file shipped open to the internet. Three had:
+ *
+ *   • /api/sections — read, write and DELETE of the shared section library, unauthenticated. GET
+ *     with `full=1` handed back every string in a saved band: the phone numbers in its link hrefs,
+ *     the copy, the photo URLs.
+ *   • /api/brand — took the site from the request and wrote the PUBLISHED brand key, so a single
+ *     POST repainted any site's colours and fonts live, with no publish step involved.
+ *   • /api/versions — POST restored any page of any site to any earlier revision, so the owner's
+ *     next Publish shipped content they never wrote.
+ *
+ * None of that was a decision anyone made. It was the default. Listing what is PUBLIC makes a new
+ * route protected until somebody deliberately opens it, and the deliberate act is adding a line
+ * here with a reason next to it.
+ */
+const PUBLIC_API = [
+  "/api/login",
+  "/api/logout",
+  "/api/auth-status", // self-reports authed:false; never leaks state
+  "/api/apply", // the public lead form
+  "/api/guest", // podcast guest intake
+  "/api/careers",
+  "/api/send-roadmap",
+  "/api/intake", // the client's own onboarding link — gated by its own capability token
+  "/api/lead-problem",
+  "/api/board-status", // read-only health for the status board
+  "/api/health",
+  "/api/cron", // gated by CRON_SECRET, not by the owner cookie
+  "/api/stripe", // Stripe's own signature is the gate
+];
+
+// The owner-only surfaces: the whole editor, plus every API route not explicitly made public.
 function isProtected(pathname: string): boolean {
-  return (
-    pathname === "/edit" ||
-    pathname.startsWith("/edit/") ||
-    pathname.startsWith("/api/puck") ||
-    pathname.startsWith("/api/pages") ||
-    // The website registry + the importer. Both create and destroy client sites, so they are
-    // owner-only for the same reason /api/pages is.
-    pathname.startsWith("/api/sites") ||
-    // The form library. Owner-only: the public site never reads it (a preset is copied into the
-    // page when it's picked), so nothing legitimate calls this from a visitor's browser.
-    pathname.startsWith("/api/forms") ||
-    // The invoice book. Owner-only for the obvious reason: it records who was billed what.
-    pathname.startsWith("/api/invoices") ||
-    // The dial board. Owner-only twice over: it hands back Steven's prospecting lists, and it
-    // WRITES into his Google Sheets. Left open, a stranger could read who he is calling and stamp
-    // "not interested" on all of it.
-    pathname.startsWith("/api/dial") ||
-    // The board's row order and the back office's own menu. Nothing secret in either, but both are
-    // WRITES to stored state, and an unauthenticated write is an unauthenticated write.
-    pathname.startsWith("/api/board-order") ||
-    pathname.startsWith("/api/edit-nav") ||
-    pathname.startsWith("/api/import-html") ||
-    pathname.startsWith("/api/adopt-images") ||
-    // One-time maintenance routes. They create and rewrite stored content, so they are owner-only
-    // — an unauthenticated /api/admin/* is a stranger with write access to every client's site.
-    pathname.startsWith("/api/admin") ||
-    pathname.startsWith("/api/site-content") ||
-    pathname.startsWith("/api/upload")
-  );
+  if (pathname === "/edit" || pathname.startsWith("/edit/")) return true;
+  if (!pathname.startsWith("/api/")) return false; // public pages stay public
+  return !PUBLIC_API.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 const COOKIE_NAME = "sjc_site_auth";
@@ -141,7 +150,11 @@ f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
  * Narrow on purpose: only the SJC host. Demo subdomains, custom domains, *.vercel.app and
  * localhost all fall through untouched, so a client's own site is never redirected anywhere.
  */
-const STUDIO_PATHS = [/^\/[^/]+\/onboard\/?$/, /^\/edit(\/.*)?$/];
+// ⚠️ THE TOKEN SEGMENT IS OPTIONAL AND MUST MATCH (2026-08-12). The onboarding link is now
+// /<business>/onboard/<token>; without the trailing group, a link texted to a client would miss
+// this redirect and land on the consulting host instead of the studio — which is precisely the
+// wrong-brand failure the note above exists to prevent.
+const STUDIO_PATHS = [/^\/[^/]+\/onboard(\/[^/]+)?\/?$/, /^\/edit(\/.*)?$/];
 
 function studioRedirect(req: NextRequest, pathname: string): URL | null {
   if (!STUDIO_PATHS.some((re) => re.test(pathname))) return null;

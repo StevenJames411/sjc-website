@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import PuckEditor from "@/components/puck/PuckEditor";
 import { readPages, findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
-import { readDesignCssDraft, readDesignCss } from "@/lib/puckContent";
+import { readPuckDraft, sheetsFor } from "@/lib/puckContent";
 import { SiteProvider } from "@/components/blocks/SiteContext";
 import { isChrome } from "@/lib/puckPages";
 import { defaultChrome } from "@/lib/siteChrome";
@@ -46,17 +46,19 @@ export default async function EditPage({
   // which now rides on the DesignSection block itself — so this can style the imported content
   // and can never reach Puck's own buttons and panels.
   //
-  // ⚠️ AND A SIBLING'S SHEET IF THIS PAGE HAS NONE. A page ADDED to an imported design was never
-  // itself imported, so it has no compiled stylesheet — and the header and footer are sections of
-  // that design. Without this the editor rendered the chrome completely unstyled (a footer whose
-  // columns collapsed to one word per line) while the live page, which already falls back, looked
-  // correct. The editor and the public page disagreeing is exactly what the note above is about.
+  // ⚠️ THE CHROME'S SHEETS TOO, AND NOW FOR AN HONEST REASON. A page ADDED to an imported design
+  // was never itself imported, so it has no design blocks of its own — but the canvas still renders
+  // the header and footer, which are sections of that design. This used to be solved by falling
+  // back to ANY sibling page's stylesheet, which happened to work while a site held one design and
+  // silently served the wrong one as soon as it held two.
   //
-  // Deliberately at the CALL SITE, not inside readDesignCssDraft: the publish route uses that
-  // function to snapshot the draft sheet, and giving IT a fallback would bake a sibling's CSS into
-  // this page's own published key, where it would then go stale the next time the design changed.
-  const designCss =
-    (await readDesignCssDraft(entry.slug, siteId)) || (await readDesignCss(entry.slug, siteId));
+  // Now each document names its own sheets, so the canvas simply emits the union of what the page
+  // and the two chrome documents reference. Nothing is guessed, and a page with no design blocks
+  // and plain chrome emits nothing.
+  const chrome = await Promise.all(
+    ["nav", "footer"].map((slug) => readPuckDraft(slug, siteId))
+  );
+  const designCss = await sheetsFor([await readPuckDraft(entry.slug, siteId), ...chrome]);
 
   return (
     <>

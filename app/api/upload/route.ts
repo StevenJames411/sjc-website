@@ -45,8 +45,18 @@ export async function POST(req: Request) {
 
   // Keep the name recognisable but strip anything that could confuse a path or a URL.
   const safe = file.name.replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "").slice(-80) || "image";
-  // Prefix with a timestamp so repeated uploads of the same filename don't collide.
-  const pathname = `uploads/${Date.now()}-${safe}`;
+  // ⚠️ SITE-PREFIXED, AND THAT IS WHAT MAKES DELETION POSSIBLE AT ALL (2026-08-12). Every upload
+  // used to land in one flat `uploads/` folder with nothing naming its owner — so when a website
+  // was permanently deleted its photos stayed publicly served forever. There was no way to even
+  // ENUMERATE one site's images, let alone remove them, which quietly made the 30-day erasure
+  // promise false for every photo a client ever sent. `purgeSiteForever` deletes the `sites/<id>/`
+  // prefix; without this line there is nothing there for it to find.
+  const site =
+    String(new URL(req.url).searchParams.get("site") || "")
+      .replace(/[^a-z0-9-]/gi, "")
+      .toLowerCase() || "sjc";
+  // Timestamp so repeated uploads of the same filename don't collide.
+  const pathname = `sites/${site}/uploads/${Date.now()}-${safe}`;
   const blob = await put(pathname, file, { access: "public" });
   return Response.json({ url: blob.url });
 }

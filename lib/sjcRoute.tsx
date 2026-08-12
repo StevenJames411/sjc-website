@@ -26,6 +26,10 @@ import { resolvePage, metadataFor, SitePageBody } from "@/lib/publicSitePage";
 async function forTenant(slug: string) {
   const h = await resolveHost();
   if (h.kind === "sjc") return null;
+  // ⛔ A DEMO ADDRESS FOR A SITE THAT HAS BOUGHT ITS OWN DOMAIN IS DEAD. This guard sits above the
+  // `h.site` read below, and that is not incidental: without it the address would fall through and
+  // serve SJC's own /apply, /careers or /guest at somebody's retired demo URL.
+  if (h.kind === "gone") notFound();
   // Same two readings as the catch-all: on the studio a segment is a SITE, on a customer's own
   // domain it is a PAGE of theirs.
   const r =

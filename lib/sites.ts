@@ -13,7 +13,8 @@
 // Server-only (pulls in the store). Types that the browser needs live in ./sitesShared.
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
-import { siteKeys, SITES_KEY, SJC } from "./siteKeys";
+import { siteKeys, allKeysFor, KEY_INFIXES, SITES_KEY, SJC } from "./siteKeys";
+import { scrubForTransfer, sameBusiness } from "./transferScrub";
 import { RESERVED_SITE_IDS, daysLeft, type Site, type SiteKind, emptyBusiness, emptySeo } from "./sitesShared";
 
 export * from "./sitesShared";
@@ -120,7 +121,14 @@ export async function createSite(opts: {
   const taken = new Set([...RESERVED_SITE_IDS, ...existing.map((s) => s.id)]);
   let id = base;
   let n = 2;
-  while (taken.has(id)) id = `${base}-${n++}`;
+  // ⚠️ ALSO SKIP IDS THAT COULD BE MISREAD AS ANOTHER SITE'S KEY (2026-08-12). Keys are
+  // `site-<id>-<what>` joined with a hyphen, and site ids and page slugs share the charset — so a
+  // site called "Fox Puck Home" gets `site-fox-puck-home-pages`, byte-identical to site `fox`'s
+  // page `home-pages`. One tenant's registry would be another tenant's page. Skipping the name at
+  // creation makes the ambiguous id impossible instead of merely unlikely — see KEY_INFIXES.
+  const ambiguous = (candidate: string) =>
+    KEY_INFIXES.some((w) => candidate.includes(`-${w}-`) || candidate.endsWith(`-${w}`));
+  while (taken.has(id) || ambiguous(id)) id = `${base}-${n++}`;
 
   const site: Site = {
     id,
@@ -164,13 +172,26 @@ export async function copySiteContent(fromId: string, toId: string): Promise<boo
   const wroteRegistry = await createKvStore(client, to.pages).write({ custom, hidden: [], titles: {} });
   if (!wroteRegistry) return false;
 
+  // ⛔ SCRUB WHEN THE BUSINESS CHANGES. This is the path EVERY new site is built on
+  // (`createSite({from})`), and it copied every page draft AND published snapshot verbatim. A
+  // template made by `make-template` is already clean, but "new website from an existing website"
+  // carried the source business's phone number, address, name and photos straight onto the new
+  // one — the exact failure make-template's header says that file exists to prevent, on the route
+  // that actually runs. Skipped between one business's own sites; see sameBusiness().
+  const [fromSite_, toSite_] = await Promise.all([findSite(fromId), findSite(toId)]);
+  const crossBusiness = !!fromSite_ && !!toSite_ && !sameBusiness(fromSite_, toSite_);
+
   let copied = 0;
   for (const p of pages) {
     for (const pub of [false, true]) {
       const src = await createKvStore(client, from.puck(p.slug, pub)).read<Record<string, unknown>>();
       if (!src) continue;
       const { _pub, ...rest } = src as { _pub?: number };
-      if (await createKvStore(client, to.puck(p.slug, pub)).write(rest)) copied++;
+      const body =
+        crossBusiness && fromSite_
+          ? (scrubForTransfer(rest, fromSite_).value as Record<string, unknown>)
+          : rest;
+      if (await createKvStore(client, to.puck(p.slug, pub)).write(body)) copied++;
     }
   }
 
@@ -179,6 +200,19 @@ export async function copySiteContent(fromId: string, toId: string): Promise<boo
     const b = await createKvStore(client, from.brand(pub)).read<Record<string, unknown>>();
     if (b) await createKvStore(client, to.brand(pub)).write(b);
   }
+
+  // ⚠️ THIS IS WHERE "NEW WEBSITE FROM TEMPLATE" SILENTLY LOST THE STYLING (fixed 2026-08-12).
+  //
+  // The loop above copies page content and nothing else — which was correct for everything except
+  // the compiled stylesheet, then keyed per site per page. So `make-template` was carefully taught
+  // to carry the sheet on 08-05, and this function — the ONLY thing that consumes a template — was
+  // not. Every site built from an imported-design template opened as raw markup with zero styling,
+  // `ok: true` on both calls, and the 08-05 fix was inert because nothing else reads a template.
+  //
+  // Nothing needs adding here now. Sheets are global and immutable, and `DesignSection.props.sheet`
+  // rides inside the content this loop already copies verbatim. That is the entire reason the id
+  // was moved onto the block: the paths that copy content are all of them, and none of them should
+  // have to know a stylesheet exists.
 
   return copied > 0;
 }
@@ -204,6 +238,18 @@ export async function updateSite(
   const sites = await readSitesRaw();
   const i = sites.findIndex((x) => x.id === s);
   if (i < 0) return { ok: false, error: "No such website." };
+
+  // ⚠️ NOBODY MAY CLAIM A DOMAIN SOMEBODY ELSE IS SERVING (2026-08-12). `resolveHost` finds a site
+  // by matching `domain` BEFORE it falls back to the apex, so any non-SJC site whose domain is set
+  // to `stevenjamesconsulting.com` would simply be served there. `restoreSite` has always checked
+  // for a clash; this — the function that runs on every ordinary Website-settings save — did not.
+  // While only Steven can reach that field it is invisible; the day a customer edits their own
+  // settings it is a one-field takeover of any domain pointed at this deployment.
+  const domain = patch.domain?.trim();
+  if (domain) {
+    const clash = sites.some((x) => x.id !== s && !x.deletedAt && x.domain === domain);
+    if (clash) return { ok: false, error: `Another website is already using ${domain}.` };
+  }
 
   const next = [...sites];
   next[i] = {
@@ -290,28 +336,34 @@ export async function purgeSiteForever(id: string): Promise<{ ok: boolean; error
   const all = await readSitesRaw();
   if (!all.some((x) => x.id === s)) return { ok: false, error: "No such website." };
 
-  const { readPages } = await import("./pageRegistry");
+  const { allSlugsEver } = await import("./pageRegistry");
   const client = getClient();
-  const k = siteKeys(s);
   const failed: string[] = [];
-  const keys: string[] = [];
-  const kill = async (key: string) => {
-    keys.push(key);
+
+  // ⚠️ THE KEY LIST IS DERIVED, NOT TYPED HERE (2026-08-12). This loop used to hand-list the keys,
+  // and it was written before `designSrc` and `leads` existed — so "permanently deleted" left the
+  // CLIENT'S OWN CUSTOMERS behind: up to 500 names, phones and emails sitting in `<ns>-leads` under
+  // a site that appeared nowhere, which the orphan sweeper could not even see to report. The
+  // docblock above promised otherwise. `allKeysFor` THROWS when a key is added to siteKeys and not
+  // accounted for, which is what keeps that promise true from here on.
+  //
+  // Slugs come from `allSlugsEver`, not `readPages`: a deleted page's stylesheet outlives its
+  // content, so walking only live pages would strand those keys.
+  const keys = allKeysFor(s, await allSlugsEver(s));
+  for (const key of keys) {
     const res = await createKvStore(client, key).purge();
     if (!res.ok) failed.push(`${key}: ${res.reason}`);
-  };
-
-  for (const p of await readPages(s)) {
-    await kill(k.puck(p.slug));
-    await kill(k.puck(p.slug, true));
-    // A page from a bought design keeps its compiled stylesheet in its own key.
-    await kill(k.designCss(p.slug));
-    await kill(k.designCss(p.slug, true));
   }
-  await kill(k.pages);
-  await kill(k.brand());
-  await kill(k.brand(true));
-  await kill(k.intake);
+
+  // Uploaded photos are blobs, not KV rows. Site-prefixed since 2026-08-12 precisely so they can be
+  // removed as a set; before that they were unreachable and outlived the site forever.
+  try {
+    const { del, list } = await import("@vercel/blob");
+    const { blobs } = await list({ prefix: `sites/${s}/` });
+    if (blobs.length) await del(blobs.map((b) => b.url));
+  } catch (e) {
+    failed.push(`uploaded images: ${e instanceof Error ? e.message : String(e)}`);
+  }
 
   if (failed.length) {
     return { ok: false, error: `Nothing was erased — ${failed.join("; ")}` };

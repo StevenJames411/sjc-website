@@ -299,8 +299,17 @@ export function revealHiddenStates(css: string): string {
  *
  * `extraCss` is the design's own inline <style> — the handful of rules that aren't utilities
  * (SiteDrop's `.animate-on-scroll` is the whole of it on this page). It gets scoped too.
+ *
+ * `scope` is the class every rule is prefixed with. It defaults to the shared `DESIGN_SCOPE` so
+ * existing callers are unchanged; the importer passes `sheetScope(id)` so two designs can sit on
+ * one page without their identically-named utilities overwriting each other — see the note on
+ * `sheetScope` in lib/designShared.ts for why the shared class alone could not do that.
  */
-export async function compileDesignCss(html: string, extraCss = ""): Promise<string> {
+export async function compileDesignCss(
+  html: string,
+  extraCss = "",
+  scope: string = DESIGN_SCOPE
+): Promise<string> {
   const candidates = classNamesIn(html);
   if (!candidates.length && !extraCss.trim()) return "";
 
@@ -328,5 +337,5 @@ export async function compileDesignCss(html: string, extraCss = ""): Promise<str
   }
 
   const utilities = build(candidates);
-  return scopeCss(`${utilities}\n${revealHiddenStates(extraCss)}`);
+  return scopeCss(`${utilities}\n${revealHiddenStates(extraCss)}`, scope);
 }

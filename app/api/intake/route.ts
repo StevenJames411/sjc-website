@@ -16,9 +16,14 @@ export const dynamic = "force-dynamic";
 async function authorize(req: Request): Promise<{ siteId: string } | Response> {
   const siteId = (new URL(req.url).searchParams.get("site") || "").trim();
   if (!siteId) return Response.json({ ok: false, error: "site required" }, { status: 400 });
-  // The open/closed state is the ONLY guard — the URL is public by design. A site nobody opened
-  // fails closed, so this can never be a write path into a business that isn't onboarding.
-  const open = await checkIntakeOpen(siteId);
+  // TWO guards since 2026-08-12: the form must be OPEN, and the caller must hold its link token.
+  // A site nobody opened fails closed, so this can never be a write path into a business that
+  // isn't onboarding — and the token means knowing the business name is no longer enough.
+  //
+  // ⚠️ THE ROUTE PROVES IT AGAIN. The page checked the token before rendering, but a route is
+  // reachable directly with curl and cannot assume anyone rendered the page first — that is
+  // exactly how this endpoint was readable and writable by anyone who guessed the business name.
+  const open = await checkIntakeOpen(siteId, new URL(req.url).searchParams.get("k") || "");
   if (!open.ok) return Response.json({ ok: false, error: "form is closed" }, { status: 403 });
   return { siteId };
 }

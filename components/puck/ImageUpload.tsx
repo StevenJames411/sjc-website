@@ -32,7 +32,15 @@ export default function ImageUpload({
       setStatus("uploading");
       const form = new FormData();
       form.append("file", ready);
-      const res = await fetch("/api/upload", { method: "POST", body: form });
+      // Which site this photo belongs to, so the blob lands under `sites/<id>/` and is deletable
+      // with the site. Read from the URL rather than threaded through props: a Puck custom field is
+      // rendered by the library, not by us, and the builder is only ever mounted at
+      // /edit/<site>/<page>. No match leaves the server's own default.
+      const site = window.location.pathname.match(/^\/edit\/([a-z0-9-]+)\//i)?.[1] || "";
+      const res = await fetch(`/api/upload${site ? `?site=${encodeURIComponent(site)}` : ""}`, {
+        method: "POST",
+        body: form,
+      });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error || `Upload failed (${res.status})`);

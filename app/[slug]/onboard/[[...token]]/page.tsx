@@ -56,8 +56,17 @@ export async function generateMetadata({
   };
 }
 
-export default async function OnboardPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function OnboardPage({
+  params,
+}: {
+  params: Promise<{ slug: string; token?: string[] }>;
+}) {
+  // ⚠️ OPTIONAL CATCH-ALL SO THE TOKENLESS URL STILL LANDS HERE. The token is always required, but
+  // /<business>/onboard with none should show her the same "this form is closed" page as a wrong
+  // token does — not a Next 404, which looks like a broken link and invites a phone call. The
+  // segment being optional is about the MESSAGE, not about letting anyone in.
+  const { slug, token } = await params;
+  const key = token?.[0] || "";
 
   const site = await findSite(slug);
   const contact = await sjcContact();
@@ -65,7 +74,7 @@ export default async function OnboardPage({ params }: { params: Promise<{ slug: 
   // let someone map which businesses are real by trying names.
   if (!site) return <Blocked message={CLOSED_MESSAGE["never-opened"]} contact={contact} />;
 
-  const open = await checkIntakeOpen(slug);
+  const open = await checkIntakeOpen(slug, key);
   if (!open.ok) return <Blocked message={CLOSED_MESSAGE[open.reason]} contact={contact} />;
 
   const record = await readIntake(slug);
@@ -95,6 +104,7 @@ export default async function OnboardPage({ params }: { params: Promise<{ slug: 
     >
       <IntakeForm
         site={slug}
+        accessToken={key}
         contact={contact}
         businessName={business}
         // The whole prospect-vs-inbound mechanism: she is only asked what we don't already know.
