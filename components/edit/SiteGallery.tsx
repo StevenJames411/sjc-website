@@ -13,13 +13,19 @@ import IntakeAnswers from "./IntakeAnswers";
 // another's. Every builder that does this at scale (GoHighLevel, Landingsite, SiteDrop) opens on a
 // gallery with search and a New-website button, and the page switcher lives INSIDE a site.
 
-type Props = { sites: Site[]; intake: Record<string, IntakeSummary>; title: string };
+type Props = {
+  sites: Site[];
+  intake: Record<string, IntakeSummary>;
+  title: string;
+  /** Which canvas to show — comes from the URL so each is its own address. See app/edit/page.tsx. */
+  view?: string;
+};
 type Mode = "blank" | "template" | "import";
 
-export default function SiteGallery({ sites, intake, title }: Props) {
+export default function SiteGallery({ sites, intake, title, view = "all" }: Props) {
   const router = useRouter();
   const [q, setQ] = useState("");
-  const [tab, setTab] = useState<"all" | "published" | "demo" | "draft" | "archived">("all");
+
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   // Which card's onboarding button is mid-flight, so it can't be double-clicked.
@@ -128,6 +134,7 @@ export default function SiteGallery({ sites, intake, title }: Props) {
     return c;
   }, [inPlay]);
 
+  const tab = view;
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const byTab = inPlay.filter((s) => (tab === "all" ? statusOf(s) !== "archived" : statusOf(s) === tab));
@@ -244,14 +251,15 @@ export default function SiteGallery({ sites, intake, title }: Props) {
           ["demo", "Demo"],
           ["draft", "Draft"],
           ["archived", "Archived"],
+          ["deleted", "Deleted"],
         ] as const).map(([key, label]) => {
-          const n = key === "all" ? counts.all - counts.archived : counts[key];
+          const n =
+            key === "all" ? counts.all - counts.archived : key === "deleted" ? binned.length : counts[key];
           return (
-            <button
+            <a
               key={key}
-              type="button"
-              onClick={() => setTab(key)}
-              style={{ ...tabBtn, ...(tab === key ? tabBtnOn : null) }}
+              href={key === "all" ? "/edit" : `/edit?view=${key}`}
+              style={{ ...tabBtn, ...(tab === key ? tabBtnOn : null), textDecoration: "none" }}
               title={
                 key === "draft"
                   ? "Only you can reach these"
@@ -261,16 +269,20 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                       ? "Live on their own domain"
                       : key === "archived"
                         ? "Retired and kept — nothing expires"
-                        : "Everything except archived"
+                        : key === "deleted"
+                          ? `Erased for good after ${RETENTION_DAYS} days`
+                          : "Everything except archived and deleted"
               }
             >
               {label} <span style={{ opacity: 0.6 }}>{n}</span>
-            </button>
+            </a>
           );
         })}
       </div>
 
-      <div style={grid}>
+      {/* The Deleted canvas is the bin below, not this grid — a view showing both would be two
+          answers to "what am I looking at". */}
+      <div style={{ ...grid, display: tab === "deleted" ? "none" : grid.display }}>
         {shown.map((s) => (
           <div key={s.id} style={card}>
             <div style={cardTop}>
@@ -608,7 +620,7 @@ export default function SiteGallery({ sites, intake, title }: Props) {
           it expires. */}
       {/* THE BIN. Deleted websites live here for RETENTION_DAYS and can be put back with one
           click. Shown last and muted — it's a safety net, not part of the daily view. */}
-      {binned.length ? (
+      {tab === "deleted" && binned.length ? (
         <>
           <h3 style={sectionH}>Deleted</h3>
           <p style={binNote}>
