@@ -201,8 +201,8 @@ const ALIGN_FIELD = {
 // a one-off hex becomes possible on fields that never had one.
 const COLOR_CONTROL = {
   type: "custom" as const,
-  render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-    <ColorField value={value as string} onChange={onChange} />
+  render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+    <ColorField label={field?.label} value={value as string} onChange={onChange} />
   ),
 };
 const BG_FIELD = COLOR_CONTROL;
@@ -229,8 +229,8 @@ const SURFACE_FIELDS = {
   fill: {
     type: "custom" as const,
     label: "Fill colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   fillOpacity: {
@@ -239,63 +239,63 @@ const SURFACE_FIELDS = {
     // top stay solid instead of looking disabled.
     label: "See-through % (100 = solid glass)",
     render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
-      <SizeStepper value={value as number} onChange={onChange} fallback={100} step={5} min={0} unit="%" />
+      <SizeStepper label={"See-through % (100 = solid glass)"} value={value as number} onChange={onChange} fallback={100} step={5} min={0} unit="%" />
     ),
   },
   corners: {
     type: "custom" as const,
     label: "Corner rounding (− / +)",
     render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
-      <SizeStepper value={value as number} onChange={onChange} fallback={12} step={2} min={0} />
+      <SizeStepper label={"Corner rounding"} value={value as number} onChange={onChange} fallback={12} step={2} min={0} />
     ),
   },
   bandWidth: {
     type: "custom" as const,
     label: "Band around it — width (px)",
     render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
-      <SizeStepper value={value as number} onChange={onChange} fallback={2} step={1} min={0} />
+      <SizeStepper label={"Band around it — width"} value={value as number} onChange={onChange} fallback={2} step={1} min={0} />
     ),
   },
   bandColor: {
     type: "custom" as const,
     label: "Band colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   glowColor: {
     type: "custom" as const,
     label: "Glow colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   glowSize: {
     type: "custom" as const,
     label: "Glow size (px)",
     render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
-      <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+      <SizeStepper label={"Glow size"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
     ),
   },
   textColor: {
     type: "custom" as const,
     label: "Text colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   hoverFill: {
     type: "custom" as const,
     label: "Hover — fill colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   hoverText: {
     type: "custom" as const,
     label: "Hover — text colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   motion: {
@@ -772,7 +772,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper
+            <SizeStepper label={"Space above"}
               value={value as number}
               onChange={onChange}
               fallback={80}
@@ -785,7 +785,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper
+            <SizeStepper label={"Space below"}
               value={value as number}
               onChange={onChange}
               fallback={80}
@@ -840,14 +840,14 @@ const baseConfig: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Frame height — exact px, desktop only (use Shape first)",
               render: ({ onChange, value }) => (
-                <SizeStepper value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
+                <SizeStepper label={"Frame height — exact px, desktop only (use Shape first)"} value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
               ),
             },
             frameWidth: {
               type: "custom" as const,
               label: "Frame width — % of its column (over 100 spills out)",
               render: ({ onChange, value }) => (
-                <SizeStepper value={value as number} onChange={onChange} fallback={100} step={5} min={0} unit="%" />
+                <SizeStepper label={"Frame width — % of its column (over 100 spills out)"} value={value as number} onChange={onChange} fallback={100} step={5} min={0} unit="%" />
               ),
             },
             // ── THE BAND. What makes a photo read as glass rather than a rectangle pasted on
@@ -857,7 +857,7 @@ const baseConfig: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Band around the photo — width (px)",
               render: ({ onChange, value }) => (
-                <SizeStepper value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
+                <SizeStepper label={"Band around the photo — width"} value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
               ),
             },
             bandColor: SURFACE_FIELDS.bandColor,
@@ -879,7 +879,7 @@ const baseConfig: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Zoom % (100 = fit, higher = closer)",
               render: ({ onChange, value }) => (
-                <SizeStepper value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} unit="%" />
+                <SizeStepper label={"Zoom % (100 = fit, higher = closer)"} value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} unit="%" />
               ),
             },
             focus: {
@@ -1034,8 +1034,8 @@ const baseConfig: Config<Props, RootProps> = {
         badgeColor: {
           type: "custom" as const,
           label: "Badge colour (blank = site blue)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         badgePosition: {
@@ -1050,8 +1050,8 @@ const baseConfig: Config<Props, RootProps> = {
         iconColor: {
           type: "custom" as const,
           label: "Icon colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // TYPE CONTROLS (2026-07-30). Each of the card's three text lines gets its own size and
@@ -1067,14 +1067,14 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Top line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={12} step={2} min={8} allowZero={false} />
+            <SizeStepper label={"Top line — size"} value={value as number} onChange={onChange} fallback={12} step={2} min={8} allowZero={false} />
           ),
         },
         eyebrowColor: {
           type: "custom" as const,
           label: "Top line — colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         eyebrowBold: {
@@ -1107,36 +1107,36 @@ const baseConfig: Config<Props, RootProps> = {
         surfaceColor: {
           type: "custom" as const,
           label: "Glass tint (blank = white)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         surfaceOpacity: {
           type: "custom" as const,
           label: "How solid the glass is (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={7} step={5} min={0} />
+            <SizeStepper label={"How solid the glass is"} value={value as number} onChange={onChange} fallback={7} step={5} min={0} />
           ),
         },
         borderColor: {
           type: "custom" as const,
           label: "Hairline edge (blank = white)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         hoverBorderColor: {
           type: "custom" as const,
           label: "Edge on hover (blank = no change)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         shadowColor: {
           type: "custom" as const,
           label: "Glow underneath (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         hoverLift: {
@@ -1151,7 +1151,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Corner rounding (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+            <SizeStepper label={"Corner rounding"} value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
           ),
         },
         heading: { type: "textarea" as const, label: "Middle line — the card's heading (an H3 for Google)" },
@@ -1159,14 +1159,14 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Middle line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={20} step={2} min={10} allowZero={false} />
+            <SizeStepper label={"Middle line — size"} value={value as number} onChange={onChange} fallback={20} step={2} min={10} allowZero={false} />
           ),
         },
         headingColor: {
           type: "custom" as const,
           label: "Middle line — colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         headingBold: {
@@ -1182,14 +1182,14 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Bottom line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={2} min={10} allowZero={false} />
+            <SizeStepper label={"Bottom line — size"} value={value as number} onChange={onChange} fallback={16} step={2} min={10} allowZero={false} />
           ),
         },
         bodyColor: {
           type: "custom" as const,
           label: "Bottom line — colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         bodyBold: {
@@ -1418,8 +1418,8 @@ const baseConfig: Config<Props, RootProps> = {
         valueColor: {
           type: "custom" as const,
           label: "Number colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         labelColor: { ...COLOR_FIELD, label: "Label colour" },
@@ -1427,7 +1427,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Number size (0 = fits the screen automatically)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+            <SizeStepper label={"Number size (0 = fits the screen automatically)"} value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
           ),
         },
         align: {
@@ -1527,8 +1527,8 @@ const baseConfig: Config<Props, RootProps> = {
         buttonColor: {
           type: "custom" as const,
           label: "Submit button colour (blank = site blue)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         theme: {
@@ -1554,8 +1554,8 @@ const baseConfig: Config<Props, RootProps> = {
         background: {
           type: "custom" as const,
           label: "Band behind the form (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // ⛔ SPLIT, LIKE EVERY OTHER BLOCK. This was one combined dial while Heading, Text, Image,
@@ -1884,15 +1884,15 @@ const baseConfig: Config<Props, RootProps> = {
         background: {
           type: "custom" as const,
           label: "Footer band colour (blank = SJC near-black)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         foreground: {
           type: "custom" as const,
           label: "Footer text colour (blank = white)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         brandName: { type: "text" as const, label: "Business name (blank = Steven James Consulting)" },
@@ -1910,8 +1910,8 @@ const baseConfig: Config<Props, RootProps> = {
         brandLine2Color: {
           type: "custom" as const,
           label: "Second line colour (blank = matches the name)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // ⛔ ON SCREEN, NOT IN CODE — the same rule contactWidth below was created under. A value
@@ -1924,8 +1924,8 @@ const baseConfig: Config<Props, RootProps> = {
         brandAccentColor: {
           type: "custom" as const,
           label: "That word's colour (blank = the brand blue)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         buttonStyle: {
@@ -1952,21 +1952,21 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
           ),
         },
         paddingBottom: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
           ),
         },
         legalGap: {
           type: "custom" as const,
           label: "Gap above the copyright line (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={48} step={8} min={0} />
+            <SizeStepper label={"Gap above the copyright line"} value={value as number} onChange={onChange} fallback={48} step={8} min={0} />
           ),
         },
         // Same four contact controls the header block has, so the two cannot say different things.
@@ -1995,14 +1995,14 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Contact column width, desktop (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={300} step={20} min={180} />
+            <SizeStepper label={"Contact column width, desktop"} value={value as number} onChange={onChange} fallback={300} step={20} min={180} />
           ),
         },
         buttonWidthMobile: {
           type: "custom" as const,
           label: "Button width on mobile, % (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={50} step={5} min={25} unit="%" />
+            <SizeStepper label={"Button width on mobile, %"} value={value as number} onChange={onChange} fallback={50} step={5} min={25} unit="%" />
           ),
         },
         showLogo: {
@@ -2081,8 +2081,8 @@ const baseConfig: Config<Props, RootProps> = {
         brandLine2Color: {
           type: "custom" as const,
           label: "Second line colour (blank = matches the name)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // ⛔ THE FOOTER HAS THESE AND THE HEADER DID NOT, while the comment above the footer
@@ -2103,7 +2103,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Business name size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={1} min={12} />
+            <SizeStepper label={"Business name size"} value={value as number} onChange={onChange} fallback={16} step={1} min={12} />
           ),
         },
         tagline: { type: "text" as const, label: "Centre tagline (who you are)" },
@@ -2112,7 +2112,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Tagline size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={18} step={1} min={10} />
+            <SizeStepper label={"Tagline size"} value={value as number} onChange={onChange} fallback={18} step={1} min={10} />
           ),
         },
         links: {
@@ -2125,7 +2125,7 @@ const baseConfig: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Size (− / +)",
               render: ({ onChange, value }) => (
-                <SizeStepper value={value as number} onChange={onChange} fallback={14} step={1} min={10} />
+                <SizeStepper label={"Size"} value={value as number} onChange={onChange} fallback={14} step={1} min={10} />
               ),
             },
             color: { ...NAV_COLOR_FIELD, label: "Colour" },
@@ -2159,7 +2159,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Button width on mobile, % (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={70} step={5} min={25} unit="%" />
+            <SizeStepper label={"Button width on mobile, %"} value={value as number} onChange={onChange} fallback={70} step={5} min={25} unit="%" />
           ),
         },
         // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
@@ -2168,15 +2168,15 @@ const baseConfig: Config<Props, RootProps> = {
         background: {
           type: "custom" as const,
           label: "Header band colour (blank = SJC navy)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         foreground: {
           type: "custom" as const,
           label: "Header text colour (blank = white)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         showLogo: {
@@ -2190,16 +2190,16 @@ const baseConfig: Config<Props, RootProps> = {
         ctaColor: {
           type: "custom" as const,
           label: "Button colour (blank = SJC blue)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         brandIcon: { type: "select" as const, label: "Mark beside the name (client sites)", options: ICON_OPTIONS },
         brandIconColor: {
           type: "custom" as const,
           label: "Mark colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // Set it to the hero's grid colour and the bar stops reading as a separate rectangle
@@ -2207,8 +2207,8 @@ const baseConfig: Config<Props, RootProps> = {
         bandGrid: {
           type: "custom" as const,
           label: "Grid overlay on the header band (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
       },
@@ -2274,15 +2274,15 @@ const baseConfig: Config<Props, RootProps> = {
         gradientTo: {
           type: "custom" as const,
           label: "Fade to (blank = flat colour)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         gradientAngle: {
           type: "custom" as const,
           label: "Fade direction (degrees)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={135} step={15} min={0} unit="°" />
+            <SizeStepper label={"Fade direction (degrees)"} value={value as number} onChange={onChange} fallback={135} step={15} min={0} unit="°" />
           ),
         },
         // Soft colour washes bleeding in from the corners. Blank = off, which is what every
@@ -2290,8 +2290,8 @@ const baseConfig: Config<Props, RootProps> = {
         decor: {
           type: "custom" as const,
           label: "Corner glow (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // Faint graph-paper overlay. Reads as "technical" and is most of why a dark band in a
@@ -2299,8 +2299,8 @@ const baseConfig: Config<Props, RootProps> = {
         grid: {
           type: "custom" as const,
           label: "Grid overlay (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         content: { type: "slot" as const },
@@ -2369,7 +2369,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
+            <SizeStepper label={"Height"} value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
           ),
         },
       },
@@ -2403,7 +2403,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
+            <SizeStepper label={"Height"} value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
           ),
         },
       },
@@ -2445,14 +2445,14 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Thickness (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={1} step={1} min={1} />
+            <SizeStepper label={"Thickness"} value={value as number} onChange={onChange} fallback={1} step={1} min={1} />
           ),
         },
         spacing: {
           type: "custom" as const,
           label: "Space above/below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper label={"Space above/below"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
       },
@@ -2481,7 +2481,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Gap between columns (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper label={"Gap between columns"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
         col1: { type: "slot" as const },
@@ -2536,29 +2536,29 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper allowZero={false} value={value as number} onChange={onChange} fallback={32} />
+            <SizeStepper label={"Font size"} allowZero={false} value={value as number} onChange={onChange} fallback={32} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: {
           type: "custom" as const,
           label: "Colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // TWO-TONE — type the words you want in the accent colour and they get picked out of the
@@ -2568,15 +2568,15 @@ const baseConfig: Config<Props, RootProps> = {
         highlightFade: {
           type: "custom" as const,
           label: "Fade those words to (blank = flat colour)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         highlightColor: {
           type: "custom" as const,
           label: "Highlight colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // The hand-drawn swipe under a headline. Blank = off, which is what every existing
@@ -2584,8 +2584,8 @@ const baseConfig: Config<Props, RootProps> = {
         underline: {
           type: "custom" as const,
           label: "Hand-drawn underline (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
       },
@@ -2683,21 +2683,21 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper allowZero={false} value={value as number} onChange={onChange} fallback={18} />
+            <SizeStepper label={"Font size"} allowZero={false} value={value as number} onChange={onChange} fallback={18} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
@@ -2708,23 +2708,23 @@ const baseConfig: Config<Props, RootProps> = {
         pill: {
           type: "custom" as const,
           label: "Pill background (blank = plain text)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         pillBorder: {
           type: "custom" as const,
           label: "Pill border colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         icon: { type: "select" as const, label: "Icon before the text", options: ICON_OPTIONS },
         iconColor: {
           type: "custom" as const,
           label: "Icon colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
       },
@@ -2822,8 +2822,8 @@ const baseConfig: Config<Props, RootProps> = {
         color: {
           type: "custom" as const,
           label: "Button colour (blank = site default)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
@@ -2971,7 +2971,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Photo height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={560} step={20} min={160} allowZero={false} />
+            <SizeStepper label={"Photo height"} value={value as number} onChange={onChange} fallback={560} step={20} min={160} allowZero={false} />
           ),
         },
         tilt: {
@@ -2989,7 +2989,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Corner rounding (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={40} step={4} min={0} />
+            <SizeStepper label={"Corner rounding"} value={value as number} onChange={onChange} fallback={40} step={4} min={0} />
           ),
         },
         frame: {
@@ -3003,8 +3003,8 @@ const baseConfig: Config<Props, RootProps> = {
         glow: {
           type: "custom" as const,
           label: "Glow behind photo (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         badgeTitle: { type: "text" as const, label: "Floating card — bold line (blank = hide)" },
@@ -3013,22 +3013,22 @@ const baseConfig: Config<Props, RootProps> = {
         pillColor: {
           type: "custom" as const,
           label: "Corner pill colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
       },
@@ -3075,7 +3075,7 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Zoom % (100 = fit, higher = closer)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} unit="%" />
+            <SizeStepper label={"Zoom % (100 = fit, higher = closer)"} value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} unit="%" />
           ),
         },
         focus: {
@@ -3100,21 +3100,21 @@ const baseConfig: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Max width px (0 = full width)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
+            <SizeStepper label={"Max width px (0 = full width)"} value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         rounded: {
@@ -3387,14 +3387,14 @@ function withSpacingControls(cfg: Config<Props, RootProps>): Config<Props, RootP
         type: "custom",
         label: "Space above (− / +)",
         render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
-          <SizeStepper value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+          <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
         ),
       },
       spaceBelow: {
         type: "custom",
         label: "Space below (− / +)",
         render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
-          <SizeStepper value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+          <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
         ),
       },
     };
