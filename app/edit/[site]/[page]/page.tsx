@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import PuckEditor from "@/components/puck/PuckEditor";
 import { readPages, findPageMeta } from "@/lib/pageRegistry";
 import { findSite } from "@/lib/sites";
+import { reachability } from "@/lib/sitesShared";
 import { readPuckDraft, sheetsFor } from "@/lib/puckContent";
 import { SiteProvider } from "@/components/blocks/SiteContext";
 import { isChrome } from "@/lib/puckPages";
@@ -76,6 +77,9 @@ export default async function EditPage({
           siteId={siteId}
           siteName={site.name}
           businessName={site.business?.name || ""}
+          // Who can reach this site — so the editor can stop calling a page "live" on a site
+          // nobody can open. Derived server-side from the one helper every surface uses.
+          reach={reachability(site)}
           page={entry.slug}
           title={entry.title}
           pages={pages}

@@ -141,6 +141,7 @@ export default function PuckEditor({
   siteId,
   siteName,
   businessName,
+  reach,
   page,
   title,
   pages,
@@ -151,6 +152,16 @@ export default function PuckEditor({
   siteName: string;
   /** The BUSINESS's name from Website settings — what the header shows. See below. */
   businessName?: string;
+  /**
+   * Who can reach the SITE — separate from whether this PAGE has been published.
+   *
+   * ⚠️ TWO PUBLISH CONCEPTS EXIST AND THEY USED TO DISAGREE SILENTLY. A page's `_pub` marker says
+   * its content was published; the site's state says whether anybody can open the address. On a
+   * Draft site the dot went green, the bar said "Published — live on <url>", and the Copy button
+   * handed over a link that 404s. That is this codebase's own named failure — the receipt said
+   * done, the page said otherwise.
+   */
+  reach?: { status: string; onDomain: boolean; onDemo: boolean; indexable: boolean };
   page: string;
   title: string;
   pages: PageItem[];
@@ -480,6 +491,11 @@ export default function PuckEditor({
     }
   };
 
+  // Can a visitor open this site's address at all? Separate question from whether the PAGE has
+  // been published — see the `reach` prop. Defaults to true so any caller that hasn't been given
+  // the prop behaves exactly as before rather than reporting everything unreachable.
+  const reachable = reach ? reach.onDomain || reach.onDemo : true;
+
   // Is there actually a published version behind that address? A link that 404s is worse than no
   // link, so the bar says which it is rather than letting you find out by clicking.
   useEffect(() => {
@@ -689,13 +705,23 @@ export default function PuckEditor({
             actually published there, so a link that would 404 says so before you click it. */}
         {publicPath ? (
           <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            {/* THREE states, not two. Green means a visitor can open this page RIGHT NOW: the
+                content is published AND the site is reachable. Amber is "published, but nobody
+                can get to it" — the case that used to render green and lie. */}
             <span
-              title={live ? "Published" : "Not published yet"}
+              title={
+                !reachable
+                  ? `This site is ${reach?.status ?? "draft"} — nobody can open this address yet`
+                  : live
+                    ? "Published and reachable"
+                    : "Not published yet"
+              }
               style={{
                 width: 8,
                 height: 8,
                 borderRadius: 999,
-                background: live === null ? "#d1d5db" : live ? "#16a34a" : "#f59e0b",
+                background:
+                  live === null ? "#d1d5db" : live && reachable ? "#16a34a" : "#f59e0b",
               }}
             />
             <a
@@ -703,7 +729,13 @@ export default function PuckEditor({
               target="_blank"
               rel="noreferrer"
               style={{ fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 600 }}
-              title={live === false ? "Nothing published here yet — hit Publish first" : "Open the live page"}
+              title={
+                !reachable
+                  ? `The site is ${reach?.status ?? "draft"} — this address returns 404 until you set it to Demo or Published`
+                  : live === false
+                    ? "Nothing published here yet — hit Publish first"
+                    : "Open the live page"
+              }
             >
               {publicPath} ↗
             </a>
@@ -956,7 +988,14 @@ export default function PuckEditor({
             setLive(true);
             if (typeof window !== "undefined") {
               // The real address, not a guess — /<page> was wrong for every client website.
-              window.alert(`Published — live on ${publicPath || "this site"}`);
+              // ⚠️ SAY WHICH OF THE TWO THINGS HAPPENED. Publish ships the CONTENT; the site's
+              // state decides whether anyone can reach it. Reporting "live on <url>" for a Draft
+              // site is the receipt lying about the page.
+              window.alert(
+                reachable
+                  ? `Published — live on ${publicPath || "this site"}`
+                  : `Published. This site is still ${reach?.status ?? "draft"}, so nobody can reach it yet — set it to Demo or Published in the Design Library.`
+              );
             }
           }}
         />
