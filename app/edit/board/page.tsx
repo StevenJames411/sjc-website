@@ -14,7 +14,7 @@
 // Owner-only: /edit/* is gated in middleware.ts.
 import { ageText, type Colour } from "@/lib/checksShared";
 import { navLabel } from "@/lib/editNav";
-import { readBoardView, summarise, tallyOf } from "./groups";
+import { readBoardView, summarise, linesOf } from "./groups";
 import Roster from "./Roster";
 import { Dot, FOOTNOTE, SWATCH } from "./shared";
 
@@ -103,7 +103,7 @@ export default async function BoardPage() {
           subtitle: g.subtitle,
           summary: summarise(g),
           colour: g.colour,
-          tally: tallyOf(g),
+          lines: linesOf(g),
           state: g.state,
           looked: lookedAt(g),
         }))}

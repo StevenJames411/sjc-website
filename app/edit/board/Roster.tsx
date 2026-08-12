@@ -30,8 +30,8 @@ export type RosterRow = {
   subtitle: string;
   summary: string;
   colour: Colour;
-  /** Per-colour counts — rendered as pills so the row says WHICH part is broken, not just how bad. */
-  tally: { colour: Colour; count: number }[];
+  /** One line per check — its NAME and how it came back. Counts told him nothing; names do. */
+  lines: { colour: Colour; label: string; detail: string }[];
   /** draft / demo / published / archived. Absent on the mainline, which is not a website. */
   state?: string;
   /** "last looked 24m ago" — kept as words because a board without a timestamp is a placebo. */
@@ -212,25 +212,24 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                       {g.state}
                     </span>
                   ) : null}
-                  {g.tally.map((t) => (
-                    <span
-                      key={t.colour}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        borderRadius: 999,
-                        padding: "3px 9px",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        background: SWATCH[t.colour].bg,
-                        border: `1px solid ${SWATCH[t.colour].border}`,
-                      }}
-                    >
-                      <Dot colour={t.colour} size={8} />
-                      {t.count} {SWATCH[t.colour].label.toLowerCase()}
-                    </span>
+                </div>
+                {/* ONE LINE PER CHECK, WORST FIRST — the name of the thing, and what it said.
+                    "1 needs you soon" required opening the row to learn which one; this is the
+                    same information without the click. */}
+                <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
+                  {g.lines.map((l) => (
+                    <div key={l.label} style={{ display: "flex", gap: 7, alignItems: "baseline", fontSize: 12.5 }}>
+                      <Dot colour={l.colour} size={8} />
+                      <span style={{ fontWeight: 600, color: "var(--e-ink)" }}>{l.label}</span>
+                      {l.detail ? (
+                        <span style={{ color: "var(--e-muted)" }}>
+                          — {l.detail.length > 72 ? `${l.detail.slice(0, 72)}…` : l.detail}
+                        </span>
+                      ) : null}
+                    </div>
                   ))}
+                </div>
+                <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
                   {g.looked ? (
                     <span style={{ fontSize: 12, color: "var(--e-muted)" }}>· {g.looked}</span>
                   ) : null}

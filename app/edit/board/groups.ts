@@ -140,12 +140,28 @@ export async function readBoardView(): Promise<BoardView> {
  * only honest reading — everything here was verified at least this recently. Anything else leads
  * with what's wrong and how many, worst first.
  */
-/** Per-colour counts for the row's pills. The roster renders these instead of a sentence. */
-export function tallyOf(group: Group): { colour: Colour; count: number }[] {
+/**
+ * WHAT each check is and how it came back — NAMED, not counted.
+ *
+ * ⛔ COUNTS ANSWER THE WRONG QUESTION. The row used to read "1 needs you soon · 2 verified", and
+ * Steven's verdict on it was exact: *"I don't know what any of that means. I literally have to go
+ * figure out what needs my attention and what was verified. So the dashboard is absolutely
+ * useless."*
+ *
+ * He is right. A tally is only worth the space when there are too many items to name — with two or
+ * three checks per site, the count IS the noise, and it costs a click to learn the one thing the
+ * row existed to tell you. Worst-first, so the thing that needs him is the first thing he reads.
+ */
+export function linesOf(group: Group): { colour: Colour; label: string; detail: string }[] {
   const RANK: Colour[] = ["red", "yellow", "grey", "green"];
-  return RANK.map((c) => ({ colour: c, count: group.rows.filter((r) => r.colour === c).length })).filter(
-    (x) => x.count > 0
-  );
+  return [...group.rows]
+    .sort((a, b) => RANK.indexOf(a.colour) - RANK.indexOf(b.colour))
+    .map((r) => ({
+      colour: r.colour,
+      label: r.def.label,
+      // The check's own sentence, trimmed to a glance. The full text is one click away on the row.
+      detail: (r.st?.lastDetail || "").replace(/\s+/g, " ").trim(),
+    }));
 }
 
 export function summarise(group: Group): string {
