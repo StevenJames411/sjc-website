@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Site } from "@/lib/sitesShared";
+import { reachability, type Site } from "@/lib/sitesShared";
+import { publicUrlFor } from "@/lib/hostShared";
 
 // EVERYTHING GLOBAL TO ONE WEBSITE, ON ONE SCREEN.
 //
@@ -158,24 +159,52 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
         on={(v) => setS({ ...s, domain: v })}
         ph="theirbusiness.com"
       />
-      {/* SJC is the domain root; a client site is served under its own id until it has a domain.
-          Saying "/sjc" on the site that owns the domain was just wrong. */}
+      {/* ⛔ THIS USED TO ASSUME `kind === "sjc"` MEANT "OWNS THE DOMAIN", AND IT LIED (fixed
+          2026-08-12). sjc-2026 is kind `client` and serves stevenjamesconsulting.com — so this
+          panel told Steven, on the site that IS the live site, that pointing the domain at it "is
+          a separate step and isn't wired up yet".
+
+          It also said a site is reachable at `/<id>`, which predates demos moving to their own
+          subdomain. Both are now derived from the same helpers the server actually routes with, so
+          this panel cannot disagree with what is being served. */}
       <p style={hint}>
-        {s.kind === "sjc" ? (
-          <>
-            Served at <code style={code}>/</code> — this is the site the domain belongs to.
-          </>
-        ) : s.domain ? (
-          <>
-            Currently reachable at <code style={code}>/{s.id}</code>. Pointing{" "}
-            <strong>{s.domain}</strong> at it is a separate step and isn&apos;t wired up yet.
-          </>
-        ) : (
-          <>
-            Served at <code style={code}>/{s.id}</code>, and kept out of Google on purpose — it
-            carries a real business&apos;s details on our address. Add their domain once they buy.
-          </>
-        )}
+        {(() => {
+          const r = reachability(s);
+          const url = publicUrlFor(s).replace(/^https:\/\//, "");
+          if (r.onDomain) {
+            return (
+              <>
+                Serving <strong>{url}</strong> right now
+                {r.indexable ? "" : ", and kept out of Google by the box below"}.
+              </>
+            );
+          }
+          if (r.status === "published") {
+            return (
+              <>
+                Published, but no domain is pointed at it yet — so it is still answering at{" "}
+                <code style={code}>{url}</code>.
+              </>
+            );
+          }
+          if (r.status === "demo") {
+            return (
+              <>
+                Served at <code style={code}>{url}</code>, and kept out of Google on purpose — it
+                carries a real business&apos;s details on our address. Add their domain once they buy.
+              </>
+            );
+          }
+          if (r.status === "archived") {
+            return <>Archived — its address returns 404 for everyone. Put it back to Draft to work on it.</>;
+          }
+          return (
+            <>
+              Draft — <strong>only you</strong> can open it. Its address returns 404 for everyone
+              else. Set it to Demo in the Design Library when you want to send someone the link.
+            </>
+          );
+        })()}
       </p>
 
       {/* ⛔ DOMAIN AND VISIBILITY ARE TWO DIFFERENT DECISIONS. Being out of Google used to be a

@@ -19,6 +19,7 @@ type Mode = "blank" | "template" | "import";
 export default function SiteGallery({ sites, intake, title }: Props) {
   const router = useRouter();
   const [q, setQ] = useState("");
+  const [tab, setTab] = useState<"all" | "published" | "demo" | "draft" | "archived">("all");
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   // Which card's onboarding button is mid-flight, so it can't be double-clicked.
@@ -106,16 +107,35 @@ export default function SiteGallery({ sites, intake, title }: Props) {
     () => sites.filter((s) => !s.deletedAt && statusOf(s) === "archived"),
     [sites]
   );
+  // ⚠️ FILTERS, NOT THREE SEPARATE PAGES. Steven: *"should we have only the live websites showing,
+  // and then I toggle… maybe there's three pages here."* Tabs do the job, and the counts are what
+  // makes them safe: split across real pages, or default to a filtered view without them, and six
+  // draft sites look like they have been deleted.
+  //
+  // It also defaults to ALL rather than to Live, because right now Live is one card — and a
+  // library that opens on "1 website" the day after you set everything to Draft is alarming
+  // before it is useful.
+  const inPlay = useMemo(
+    () => sites.filter((s) => s.kind !== "template" && !s.deletedAt),
+    [sites]
+  );
+  const counts = useMemo(() => {
+    const c = { all: 0, published: 0, demo: 0, draft: 0, archived: 0 } as Record<string, number>;
+    for (const s of inPlay) {
+      c.all++;
+      c[statusOf(s)]++;
+    }
+    return c;
+  }, [inPlay]);
+
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const live = sites.filter(
-      (s) => s.kind !== "template" && !s.deletedAt && statusOf(s) !== "archived"
-    );
-    if (!needle) return live;
-    return live.filter((s) =>
+    const byTab = inPlay.filter((s) => (tab === "all" ? statusOf(s) !== "archived" : statusOf(s) === tab));
+    if (!needle) return byTab;
+    return byTab.filter((s) =>
       [s.name, s.description, s.domain, s.business?.name].filter(Boolean).join(" ").toLowerCase().includes(needle)
     );
-  }, [sites, q]);
+  }, [inPlay, q, tab]);
 
   /**
    * Move a website between states.
@@ -214,6 +234,41 @@ export default function SiteGallery({ sites, intake, title }: Props) {
         placeholder="Search websites…"
         style={search}
       />
+
+      {/* THE COUNTS ARE THE POINT. A tab that just says "Draft" hides how much is behind it; with
+          the number on it, filtering never feels like anything went missing. */}
+      <div style={tabRow}>
+        {([
+          ["all", "All"],
+          ["published", "Published"],
+          ["demo", "Demo"],
+          ["draft", "Draft"],
+          ["archived", "Archived"],
+        ] as const).map(([key, label]) => {
+          const n = key === "all" ? counts.all - counts.archived : counts[key];
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTab(key)}
+              style={{ ...tabBtn, ...(tab === key ? tabBtnOn : null) }}
+              title={
+                key === "draft"
+                  ? "Only you can reach these"
+                  : key === "demo"
+                    ? "Shareable link, out of Google"
+                    : key === "published"
+                      ? "Live on their own domain"
+                      : key === "archived"
+                        ? "Retired and kept — nothing expires"
+                        : "Everything except archived"
+              }
+            >
+              {label} <span style={{ opacity: 0.6 }}>{n}</span>
+            </button>
+          );
+        })}
+      </div>
 
       <div style={grid}>
         {shown.map((s) => (
@@ -547,42 +602,10 @@ export default function SiteGallery({ sites, intake, title }: Props) {
         </>
       ) : null}
 
-      {/* ARCHIVED — FINISHED WORK, KEPT. Not the bin: nothing here is counting down to erasure.
-          Above the bin because these are sites you chose to retire, not ones you binned. */}
-      {archived.length ? (
-        <>
-          <h3 style={sectionH}>Archived</h3>
-          <p style={binNote}>
-            Retired on purpose and kept indefinitely &mdash; nothing here expires. Reachable by
-            nobody: their addresses return 404 until you put them back to Draft or Demo.
-          </p>
-          <div style={grid}>
-            {archived.map((s) => (
-              <div key={s.id} style={{ ...card, opacity: 0.72 }}>
-                <div style={cardTop}>
-                  <span style={chip}>Archived</span>
-                  <h2 style={cardName}>{s.name}</h2>
-                  {s.domain ? <p style={cardDesc}>{s.domain}</p> : null}
-                </div>
-                <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-                  <button
-                    type="button"
-                    style={{ ...ghostBtn, flex: 1 }}
-                    disabled={busy}
-                    onClick={() => setStatus(s, "draft")}
-                  >
-                    Put it back (as Draft)
-                  </button>
-                  <button type="button" style={ghostBtn} onClick={() => router.push(`/edit/${s.id}/home`)}>
-                    Open
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      ) : null}
-
+      {/* ⚠️ NO SEPARATE ARCHIVED SECTION — the Archived TAB is where they live now. Two places
+          showing the same sites is how one of them goes stale, and the tab carries a count so
+          nothing is hidden. The bin below stays its own section because it is a different thing:
+          it expires. */}
       {/* THE BIN. Deleted websites live here for RETENTION_DAYS and can be put back with one
           click. Shown last and muted — it's a safety net, not part of the daily view. */}
       {binned.length ? (
@@ -845,6 +868,9 @@ const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", j
 const h1: React.CSSProperties = { fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em" };
 const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
 const sectionH: React.CSSProperties = { fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--e-muted)", margin: "36px 0 12px" };
+const tabRow: React.CSSProperties = { display: "flex", gap: 6, flexWrap: "wrap", margin: "0 0 18px" };
+const tabBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-muted)", border: "1px solid var(--e-line)", borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
+const tabBtnOn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", borderColor: "var(--e-ink)" };
 const search: React.CSSProperties = { width: "100%", maxWidth: 340, margin: "24px 0", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
 const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 };
 const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16, minHeight: 190, background: "var(--e-panel)" };
