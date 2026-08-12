@@ -234,6 +234,10 @@ export const DESIGN_SUCCESS_BODY =
   "We'll be in touch shortly. Rather talk now? Call {{business.phone}}.";
 
 export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
+  // Empty for a section dragged in by hand — there is no design behind it, so no stylesheet to
+  // reference. The importer stamps the real id; the backfill stamped it on everything imported
+  // before that existed.
+  sheet: "",
   html: "",
   text: [],
   images: [],

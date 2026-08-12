@@ -42,6 +42,17 @@ type Props = {
   Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; grid: string; gradientTo: string; gradientAngle: number; content: Slot };
   /** One section of a bought design, kept verbatim. Words, photos and vertical spacing editable. */
   DesignSection: {
+    /**
+     * Which compiled stylesheet this section needs (lib/siteKeys:designSheet).
+     *
+     * ⚠️ IT HAS TO BE DECLARED HERE OR PUCK DOES NOT HAND IT TO THE COMPONENT. It was on the
+     * component's own prop type and stamped correctly in the data, and the page still rendered
+     * `class="sjc-design"` with no per-sheet class — because a prop Puck's Props map doesn't know
+     * about never reaches the render. Harmless for a backfilled sheet, which is scoped under the
+     * shared class; fatal for a NEW import, which compiles scoped to `.sjc-design-<id>` and would
+     * have rendered completely unstyled.
+     */
+    sheet: string;
     sticky: boolean;
     html: string;
     text: DesignText[];
@@ -724,6 +735,21 @@ const baseConfig: Config<Props, RootProps> = {
       // read as unreachable. The first person to use this concluded imported photos couldn't be
       // changed at all. A control nobody can find is the same as a control that isn't there.
       fields: {
+        /**
+         * ⛔ MACHINERY, DELIBERATELY INVISIBLE. Puck requires a field for every prop in its Props
+         * map, and `sheet` has to be in that map or the value never reaches the component — which
+         * is exactly how a correctly-stamped page still rendered `class="sjc-design"` with no
+         * per-sheet class. So it is declared, and it renders nothing.
+         *
+         * It must NOT appear in the sidebar: it is a content hash, and a hash in front of a person
+         * is the same mistake as `{{business.name}}` in a title field. It is set by the importer
+         * and by admin/backfill-sheets, never by hand.
+         */
+        sheet: {
+          type: "custom" as const,
+          label: "",
+          render: () => <></>,
+        },
         // Only meaningful on a section that HAS a form; harmless elsewhere.
         useRealForm: {
           type: "radio" as const,
