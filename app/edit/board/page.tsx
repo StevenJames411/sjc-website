@@ -16,7 +16,7 @@ import { ageText, type Colour } from "@/lib/checksShared";
 import { navLabel } from "@/lib/editNav";
 import { readBoardView, summarise, linesOf } from "./groups";
 import Roster from "./Roster";
-import { Dot, FOOTNOTE, SWATCH } from "./shared";
+import { FOOTNOTE } from "./shared";
 
 export const dynamic = "force-dynamic";
 
@@ -56,38 +56,23 @@ export default async function BoardPage() {
           Colour was the wrong axis for a summary. "6 needs you soon" spread across three unrelated
           things is not something anyone can act on; "Lead destinations — 1 set, 6 not" is a job.
           The colours are still here, attached to the thing they describe. */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
         {view.byCheck.map((c) => (
-          <a
+          <span
             key={c.id}
-            href={c.firstBad ? `#row-${c.firstBad}` : undefined}
-            title={c.firstBad ? "Jump to the first one that needs you" : "All good"}
             style={{
               display: "inline-flex",
-              alignItems: "center",
-              gap: 10,
+              alignItems: "baseline",
+              gap: 7,
               border: "1px solid var(--e-line)",
-              borderRadius: 10,
-              padding: "8px 14px",
-              textDecoration: "none",
-              color: "inherit",
-              cursor: c.firstBad ? "pointer" : "default",
+              borderRadius: 999,
+              padding: "6px 14px",
+              fontSize: 12.5,
             }}
           >
-            <span style={{ fontWeight: 700, fontSize: 13 }}>{c.label}</span>
-            <span style={{ display: "inline-flex", gap: 8 }}>
-              {c.counts.map((n) => (
-                <span
-                  key={n.colour}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "var(--e-muted)" }}
-                  title={SWATCH[n.colour].label}
-                >
-                  <Dot colour={n.colour} size={8} />
-                  {n.count}
-                </span>
-              ))}
-            </span>
-          </a>
+            <span style={{ fontWeight: 700 }}>{c.label}</span>
+            <span style={{ color: "var(--e-muted)" }}>{c.says}</span>
+          </span>
         ))}
       </div>
 

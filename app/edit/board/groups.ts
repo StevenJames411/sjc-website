@@ -55,10 +55,10 @@ export type Group = {
  */
 export type CheckSummary = {
   id: string;
+  /** The noun. "Lead destinations". */
   label: string;
-  counts: { colour: Colour; count: number }[];
-  /** The first owner with a non-green result for this check, for the jump link. */
-  firstBad?: string;
+  /** What it means, in a phrase. The CheckDef's own sentence — it IS the expectation. */
+  says: string;
 };
 
 export type BoardView = {
@@ -147,21 +147,17 @@ export async function readBoardView(): Promise<BoardView> {
 
   const all = groups.flatMap((g) => g.rows);
 
-  // One line per THING WATCHED, across every row — the summary that replaced the colour pills.
-  const RANK2: Colour[] = ["red", "yellow", "grey", "green"];
-  const byCheck: CheckSummary[] = CHECKS.map((def) => {
-    const mine = ordered.flatMap((g) =>
-      g.rows.filter((r) => r.def.id === def.id).map((r) => ({ key: g.key, colour: r.colour }))
-    );
-    return {
-      id: def.id,
-      label: def.short || def.label,
-      counts: RANK2.map((c) => ({ colour: c, count: mine.filter((m) => m.colour === c).length })).filter(
-        (x) => x.count > 0
-      ),
-      firstBad: mine.find((m) => m.colour !== "green")?.key,
-    };
-  }).filter((c) => c.counts.length);
+  // ⛔ WHAT IS WATCHED — A KEY, NOT A SCOREBOARD. This carried counts by colour until Steven read
+  // it back: *"I don't even need the colors in that area, because the feature cards tell me which
+  // ones are healthy. I just need an explanation. The lights need to live on the feature cards."*
+  //
+  // He is right, and it is the same mistake twice: a summary that repeats what the rows already
+  // say, in a weaker form. Two numbers at the top cannot tell you WHICH site, so they send you to
+  // the rows anyway — the rows where the lights now are. Up here, all that is missing is what the
+  // words mean.
+  const byCheck: CheckSummary[] = CHECKS.filter((def) =>
+    ordered.some((g) => g.rows.some((r) => r.def.id === def.id))
+  ).map((def) => ({ id: def.id, label: def.short || def.label, says: def.label }));
 
   return {
     groups: ordered,
