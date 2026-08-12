@@ -25,7 +25,7 @@ import { getClient } from "@/lib/store";
 import { readSites } from "@/lib/sites";
 import { signIdentity, SESSION_COOKIE } from "@/lib/identity";
 import type { Identity } from "@/lib/identity";
-import { sendAlert } from "@/lib/leadDelivery";
+import { sendAlert, DEFAULT_LEAD_FROM } from "@/lib/leadDelivery";
 import { currentIdentity } from "@/lib/siteAccess";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +67,7 @@ async function tapSteven(email: string, why: string, detail: string): Promise<vo
     if (!to) return;
     await sendAlert({
       to,
-      from: process.env.LEAD_FROM || "leads@send.stevenjamesdesigns.com",
+      from: DEFAULT_LEAD_FROM,
       fromName: "SJC sign-in watch",
       subject: `Sign-in trouble — ${email}`,
       html:
@@ -173,7 +173,7 @@ export async function POST(req: Request) {
   let sendError = "";
   await sendAlert({
     to: email,
-    from: process.env.LEAD_FROM || "leads@send.stevenjamesdesigns.com",
+    from: DEFAULT_LEAD_FROM,
     fromName: "Steven James Consulting",
     subject: "Your sign-in link",
     html:

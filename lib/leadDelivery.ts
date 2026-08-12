@@ -45,6 +45,53 @@ const RESEND = "https://api.resend.com/emails";
  */
 // Exported since 2026-08-12 for the magic-link sign-in, which needs to send one email and has no
 // business owning a second copy of the Resend call — one sender, one place a failure is handled.
+/**
+ * WHO SJC's MAIL COMES FROM. One constant, because it was written out by hand in four places and
+ * three of them were the wrong brand.
+ *
+ * ⛔ CONSULTING, NOT DESIGNS (changed 2026-08-12). The brands merged and the domain moved to
+ * stevenjamesconsulting.com on 08-11; the sender did not follow, so Consulting enquiries arrived
+ * from a Designs address — and worse than off-brand, it did not AUTHENTICATE:
+ *
+ *   send.stevenjamesdesigns.com     DKIM only. No SPF. No DMARC on it or on its root.
+ *   send.stevenjamesconsulting.com  DKIM, under a root `p=quarantine; adkim=r` — so DKIM ALIGNS
+ *                                   and the mail actually passes DMARC rather than merely being
+ *                                   signed by somebody.
+ *
+ * How it surfaced: a lead alert arrived fine and a magic-link email vanished — not spam, gone —
+ * from the SAME sender. A "new enquiry" from a weakly-authenticated domain squeaks by on
+ * reputation; "Your sign-in link" with a login button is the most phishing-shaped mail there is
+ * and Gmail refused it. Auth-link email is where a missing SPF record stops being cosmetic.
+ *
+ * ⚠️ STILL NOT FINISHED. SPF and the SES bounce MX are missing on the consulting subdomain too;
+ * this makes the mail align, it does not make it fully authenticated. See _CHECKPOINT.
+ */
+export const DEFAULT_LEAD_FROM =
+  process.env.LEAD_FROM || "leads@send.stevenjamesdesigns.com";
+
+// ⛔ STILL DESIGNS, AND NOT BY CHOICE — REVERTED 2026-08-12, MINUTES AFTER THE SWITCH ABOVE.
+//
+// Pointing this at Consulting broke every outgoing email instantly:
+//
+//   resend 403 — "The send.stevenjamesconsulting.com domain is not verified."
+//
+// THE TWO SETUPS ARE FIGHTING EACH OTHER, exactly as Steven guessed. `resend._domainkey.send.
+// stevenjamesconsulting.com` RESOLVES — the DKIM record is published and looks healthy from the
+// outside — but the domain is NOT registered in Resend. It was deleted there (see the note above
+// about the consulting domain being removed the same day) and the DNS record was left behind. So
+// DNS says verified and Resend says unknown, and only Resend gets a vote.
+//
+// ⚠️ DIAGNOSING THIS FROM `dig` ALONE WOULD HAVE CONFIRMED THE WRONG THING. Every record you can
+// see from outside said the consulting subdomain was the better sender. The authority is the
+// Resend domains list, not the zone.
+//
+// Sequence to finish it, in this order and no other:
+//   1. Add send.stevenjamesconsulting.com in Resend; take the records IT gives (DKIM, SPF, and the
+//      region-specific SES bounce MX — do not guess the region).
+//   2. Publish them; wait for Resend to show Verified.
+//   3. THEN flip this constant back to consulting.
+// Flipping first is what this comment exists to stop somebody doing twice.
+
 export async function sendAlert(opts: {
   to: string;
   from: string;
@@ -336,7 +383,7 @@ export async function deliverLead(
     if (fallbackTo) {
       await sendAlert({
         to: fallbackTo,
-        from: process.env.LEAD_FROM || "leads@send.stevenjamesdesigns.com",
+        from: DEFAULT_LEAD_FROM,
         fromName: "SJC lead alarm",
         subject: `⚠ Lead with nowhere to go — ${business}`,
         html:
@@ -372,10 +419,7 @@ export async function deliverLead(
   //
   // Only the part after the @ is fixed. The name the client reads is his own business (below), so
   // one domain serves everyone. site.leadFrom is the seam for the day a second brand needs its own.
-  const from =
-    (site?.leadFrom || "").trim() ||
-    process.env.LEAD_FROM ||
-    "leads@send.stevenjamesdesigns.com";
+  const from = (site?.leadFrom || "").trim() || DEFAULT_LEAD_FROM;
   if (!key) {
     problems.push("RESEND_API_KEY not set — the owner's copy could NOT be sent");
     return { toOwner: false, toRecord, toSheet, toGhl, problems };
