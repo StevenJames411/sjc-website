@@ -246,14 +246,14 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
       <h2 style={sec}>Where the leads go</h2>
       <p style={hint}>
         Blank means enquiries from this website stay in your own intake — right for a demo, and for
-        your own pages. Put the owner&apos;s address in when they buy, and every enquiry goes
+        your own pages. Put the client&apos;s address in when they buy, and every enquiry goes
         straight to them with reply-to set to the customer, so hitting reply on their phone
         answers the person who asked.{" "}
         <strong>Your copy is kept either way</strong> — that&apos;s the record at renewal and the
         answer to &quot;I never got that lead&quot;.
       </p>
       <Field
-        label="Owner's email for leads"
+        label="Client's inbox — where their leads land"
         v={s.leadEmail || ""}
         on={(v) => setS({ ...s, leadEmail: v })}
         ph="the client's own inbox — leave blank while it's a demo"
