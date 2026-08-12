@@ -45,6 +45,26 @@ export type SiteSeo = {
  */
 export const RETENTION_DAYS = 30;
 
+/**
+ * WHO CAN REACH THIS WEBSITE. A stated fact, not an inference.
+ *
+ * ⛔ IT USED TO BE INFERRED FROM `domain`, WHICH WAS TWO FACTS IN ONE FIELD: where a site lives,
+ * and whether anyone is allowed in. So "no domain" meant draft — except it did not, because a
+ * domain-less site is served IN FULL at `<id>-demo.…`, kept out of Google but readable by anybody
+ * with the link. The state Steven kept calling "draft" was one the system did not have.
+ *
+ *   draft      Only you, in the studio. The demo address 404s. THE DEFAULT for everything.
+ *   demo       The demo link works and is shareable. Out of Google. No domain of its own.
+ *   published  Live on its own domain and indexable. The demo address dies — see lib/host.ts.
+ *   archived   Kept indefinitely, reachable by nobody, out of the main grid. NOT a countdown.
+ *
+ * ⚠️ ARCHIVED IS NOT DELETED, AND THAT IS THE POINT OF IT. Deleting starts a 30-day timer that
+ * ends in erasure; archiving ends nothing. Steven, finding his retired site sitting in the bin:
+ * *"there was no draft mode… that should be archive."* Work you are finished with is not the same
+ * as a mistake you want gone, and giving them one button is how a retired site quietly expires.
+ */
+export type SiteStatus = "draft" | "demo" | "published" | "archived";
+
 export type Site = {
   id: string;
   name: string;
@@ -52,6 +72,39 @@ export type Site = {
   description?: string;
   /** Gallery card image. */
   logo?: string;
+  /**
+   * Who can reach it. Absent on a record written before 2026-08-12 — always read it through
+   * `statusOf()` so the fallback lives in exactly one place and cannot drift between readers.
+   */
+  status?: SiteStatus;
+  /**
+   * SET WHEN THE SITE WAS ARCHIVED. Absent = not archived.
+   *
+   * Kept as a timestamp rather than only a status so "when did we retire this" survives, the same
+   * way `deletedAt` does. Nothing expires it.
+   */
+  archivedAt?: string;
+  /**
+   * IS CHLOE ATTACHED TO THIS CLIENT, AND IS SHE ANSWERING?
+   *
+   * ⚠️ ONE WRITER, MANY VIEWS. The kill switch used to be global, in the cockpit — so pausing one
+   * client for nonpayment would have stopped Chloe replying for every paying client at the same
+   * time. It has to be per-customer, and the customer is this record.
+   *
+   * The STUDIO writes this, because this is where a client's Sheet, CRM webhook and lead email are
+   * already set. The cockpit and the heartbeat board READ it. Two screens that can both write is
+   * how you end up switching her off in one place while she answers somebody's customer from the
+   * other.
+   *
+   * ⚠️ AND THE SWITCH IS ENFORCED WHERE SHE RUNS, not on either screen. Chloe's server checks this
+   * before she replies — same rule as the lead-delivery gate: the check belongs at the moment of
+   * the action, not at the control. A toggle her server does not consult is a light switch wired
+   * to nothing, and you would find out from a customer.
+   *
+   * `offReason` is written by whoever turned her off, including the automatic nonpayment kill, so
+   * a machine's decision and yours land in the same field and the reason is on screen.
+   */
+  chloe?: { attached: boolean; on: boolean; offReason?: string; changedAt?: string };
   /**
    * SET WHEN THE SITE WAS DELETED. Absent = live.
    *
@@ -189,6 +242,56 @@ export const ACCOUNT_LABELS: Record<string, string> = {
   anthropicKeyRef: "Anthropic key (1Password ref)",
   vercelProject: "Vercel project",
 };
+
+/**
+ * THIS SITE'S STATE — the only place the fallback for an unset `status` lives.
+ *
+ * ⚠️ NO READER MAY TOUCH `site.status` DIRECTLY. An absent value is a real case (every record
+ * written before 2026-08-12), and a fallback repeated at each call site is a fallback that drifts
+ * — which is how `domain` came to mean three different things in three different files.
+ *
+ * The derivation is deliberately conservative: a site with its own domain was already serving the
+ * world, so it is `published`; everything else is `draft`, which is the tighter of the two. A
+ * domain-less site WAS reachable at its demo address, so this narrows what the world can see
+ * rather than widening it — and Steven's own reading of his library was that all of it should be
+ * draft anyway.
+ */
+export function statusOf(site: Pick<Site, "status" | "domain" | "archivedAt">): SiteStatus {
+  if (site.status) return site.status;
+  if (site.archivedAt) return "archived";
+  return site.domain?.trim() ? "published" : "draft";
+}
+
+/**
+ * What each surface needs to know, derived from the state in ONE place.
+ *
+ *   onDomain   serve this site at its own domain
+ *   onDemo     serve it at `<id>-demo.<studio host>`
+ *   indexable  let Google in
+ *
+ * ⚠️ `noindex` REMAINS A SEPARATE AXIS ON TOP OF THIS. Publishing decides whether the world can
+ * REACH the site; indexing decides whether Google is invited. A site live on its own domain that
+ * is still being finished wants the first without the second, and folding them into one enum is
+ * what made `holdIndexing` necessary as an override before a line of it was written.
+ */
+export function reachability(site: Pick<Site, "status" | "domain" | "archivedAt" | "holdIndexing">): {
+  status: SiteStatus;
+  onDomain: boolean;
+  onDemo: boolean;
+  indexable: boolean;
+} {
+  const status = statusOf(site);
+  const published = status === "published";
+  return {
+    status,
+    // A published site needs a domain to be served at one. Published with the domain not yet
+    // pointed is the handover window: nothing serves there until DNS resolves, and the demo link
+    // stays alive so the prospect is not left with two dead addresses.
+    onDomain: published && !!site.domain?.trim(),
+    onDemo: status === "demo" || (published && !site.domain?.trim()),
+    indexable: published && !!site.domain?.trim() && !site.holdIndexing,
+  };
+}
 
 export const emptyBusiness = (): BusinessFacts => ({
   name: "",

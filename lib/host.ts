@@ -24,7 +24,7 @@
 // URL the server will serve.
 import { headers } from "next/headers";
 import { cache } from "react";
-import { readSites, type Site } from "./sites";
+import { readSites, type Site, reachability } from "./sites";
 import { SJC } from "./siteKeys";
 import { normalizeHost, STUDIO_HOST, SJC_HOST } from "./hostShared";
 
@@ -89,7 +89,16 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
   // filter below is what stops the retiring site re-claiming the apex through this path. Keep it.
   const sites = await readSites();
   const site = sites.find((s) => s.id !== SJC && s.domain && normalizeHost(s.domain) === host);
-  if (site) return { kind: "client", site };
+  // ⛔ THE STATE CHECK IS A BRANCH ON THE FOUND SITE — NEVER A PREDICATE INSIDE THE `.find()`.
+  //
+  // Written the natural way — `find(s => … && reachability(s).onDomain)` — a site set to Draft
+  // stops MATCHING, execution falls six lines down to the apex fallback, and
+  // stevenjamesconsulting.com starts serving the RETIRED legacy site (which declares the apex as
+  // its own default; see lib/sites.ts). Steven would flip a switch labelled "only you can see
+  // this" and put the old site on the money domain, with no error anywhere.
+  //
+  // Match first, decide second: an unreachable site is GONE, not absent.
+  if (site) return reachability(site).onDomain ? { kind: "client", site } : { kind: "gone" };
 
   // The apex with nothing in the registry claiming it — the legacy site, exactly as before.
   if (host === sjcHost()) return { kind: "sjc" };
@@ -121,8 +130,11 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
       // the SJC fallback at the bottom of this function, so a dead demo address would quietly
       // serve the consulting site — the same content at a third address, which is worse than the
       // duplicate it was meant to remove.
-      if (demo?.domain) return { kind: "gone" };
-      if (demo) return { kind: "client", site: demo };
+      // ⚠️ NOW DECIDED BY STATE, NOT BY "HAS A DOMAIN". Same rule, said properly: `onDemo` is true
+      // for a Demo site, and for a Published one whose domain is not resolving yet — the handover
+      // window, where killing the demo link would leave the prospect with two dead addresses.
+      // Draft and Archived are reachable by nobody, which is the whole point of them.
+      if (demo) return reachability(demo).onDemo ? { kind: "client", site: demo } : { kind: "gone" };
     }
   }
 

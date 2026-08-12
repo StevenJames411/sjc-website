@@ -134,6 +134,11 @@ export async function createSite(opts: {
     id,
     name,
     kind: opts?.kind || "client",
+    // ⚠️ EXPLICIT, NOT LEFT TO THE FALLBACK. An absent status is a fourth state whose meaning is
+    // decided by whichever reader gets there first — the same shape of bug as `domain` meaning
+    // three things. And draft is the honest default: a brand-new website has been sent to nobody,
+    // which is exactly what this function's own docblock has always claimed it starts as.
+    status: "draft",
     description: opts?.description || "",
     business: { ...emptyBusiness(), name, ...(opts?.business || {}) },
     seo: { ...emptySeo(), ...(opts?.seo || {}) },
