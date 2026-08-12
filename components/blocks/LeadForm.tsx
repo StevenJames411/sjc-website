@@ -194,9 +194,19 @@ export default function LeadForm(props: LeadFormProps) {
   const banded = (card: React.ReactNode, withTitle = true) => {
     // ⚠️ THE OLD COMBINED DIAL IS THE FALLBACK, not a second setting. A block saved before the
     // split keeps the spacing it had; a block saved after ignores it entirely.
+    // ⛔ SPACE NO LONGER REQUIRES A COLOUR. Steven: *"I definitely want to add some top padding.
+    // And I don't know what you mean by a band… so I literally have to add a band to do top
+    // spacing on these sections."* No. Wanting room above a form has nothing to do with wanting a
+    // colour behind it, and tying the two together was my mistake.
+    //
+    // ⚠️ THE FALLBACK STILL DEPENDS ON THE COLOUR, and that is what stops every form already on a
+    // page from jumping. A form with a colour behind it has always had 64px of breathing room, so
+    // that stays its default. A form with NO colour has always had none — so its default is 0, and
+    // it only gains space when a number is actually set.
     const legacy = typeof bandPadding === "number" && bandPadding >= 0 ? bandPadding : 64;
-    const top = typeof paddingTop === "number" ? paddingTop : legacy;
-    const bottom = typeof paddingBottom === "number" ? paddingBottom : legacy;
+    const fallbackPad = background ? legacy : 0;
+    const top = typeof paddingTop === "number" ? paddingTop : fallbackPad;
+    const bottom = typeof paddingBottom === "number" ? paddingBottom : fallbackPad;
 
     // The heading belongs to the form, so it rides INSIDE the band — that is the whole reason it
     // exists. Rendered even without a band, where it simply sits above the card.
@@ -221,11 +231,17 @@ export default function LeadForm(props: LeadFormProps) {
       </>
     );
 
-    if (!background || inColumn) return titled;
+    // Nothing to draw: no colour and no space asked for.
+    if ((!background && !top && !bottom) || inColumn) return titled;
     return (
       <div
         className="w-full"
-        style={{ backgroundColor: resolveColor(background), paddingTop: top, paddingBottom: bottom }}
+        style={{
+          // Transparent when no colour is set — the wrapper is then purely the space.
+          ...(background ? { backgroundColor: resolveColor(background) } : {}),
+          paddingTop: top,
+          paddingBottom: bottom,
+        }}
       >
         {/* px-6 so the card never touches the screen edge on a phone. */}
         <div className="mx-auto w-full px-6">{titled}</div>

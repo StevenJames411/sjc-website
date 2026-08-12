@@ -1501,6 +1501,50 @@ const baseConfig: Config<Props, RootProps> = {
           ...COLOR_FIELD,
           label: "Heading colour (blank = the page's own)",
         },
+        theme: {
+          type: "radio" as const,
+          label: "Sitting on",
+          options: [
+            { label: "A light band", value: "light" },
+            { label: "A dark band", value: "dark" },
+          ],
+        },
+        inColumn: {
+          type: "radio" as const,
+          label: "Width",
+          options: [
+            { label: "Centred island", value: false },
+            { label: "Fill the column", value: true },
+          ],
+        },
+        // ⛔ THE BAND BELONGS TO THIS BLOCK, BECAUSE IT CANNOT BELONG TO A SECTION.
+        // "Section (band)" has no drop zone — every block is a sibling, never a child — so a form
+        // can never be placed inside one and inherit its colour. Steven hit exactly that: he could
+        // colour the band holding the heading, and the form underneath it stayed white.
+        background: {
+          type: "custom" as const,
+          label: "Background colour behind the form (blank = none)",
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
+          ),
+        },
+        // ⛔ SPLIT, LIKE EVERY OTHER BLOCK. This was one combined dial while Heading, Text, Image,
+        // HeroImage, Section, DesignSection and the footer all give two — the exact "different
+        // shit for every section" Steven called out.
+        paddingTop: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
+          ),
+        },
+        paddingBottom: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
+          ),
+        },
         source: { type: "text" as const, label: "Source tag (shows in the intake sheet)" },
         fields: {
           type: "array" as const,
@@ -1529,50 +1573,6 @@ const baseConfig: Config<Props, RootProps> = {
           label: "Submit button colour (blank = site blue)",
           render: ({ field, onChange, value }) => (
             <ColorField label={field?.label} value={value as string} onChange={onChange} />
-          ),
-        },
-        theme: {
-          type: "radio" as const,
-          label: "Sitting on",
-          options: [
-            { label: "A light band", value: "light" },
-            { label: "A dark band", value: "dark" },
-          ],
-        },
-        inColumn: {
-          type: "radio" as const,
-          label: "Width",
-          options: [
-            { label: "Centred island", value: false },
-            { label: "Fill the column", value: true },
-          ],
-        },
-        // ⛔ THE BAND BELONGS TO THIS BLOCK, BECAUSE IT CANNOT BELONG TO A SECTION.
-        // "Section (band)" has no drop zone — every block is a sibling, never a child — so a form
-        // can never be placed inside one and inherit its colour. Steven hit exactly that: he could
-        // colour the band holding the heading, and the form underneath it stayed white.
-        background: {
-          type: "custom" as const,
-          label: "Band behind the form (blank = none)",
-          render: ({ field, onChange, value }) => (
-            <ColorField label={field?.label} value={value as string} onChange={onChange} />
-          ),
-        },
-        // ⛔ SPLIT, LIKE EVERY OTHER BLOCK. This was one combined dial while Heading, Text, Image,
-        // HeroImage, Section, DesignSection and the footer all give two — the exact "different
-        // shit for every section" Steven called out.
-        paddingTop: {
-          type: "custom" as const,
-          label: "Space above (− / +)",
-          render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
-          ),
-        },
-        paddingBottom: {
-          type: "custom" as const,
-          label: "Space below (− / +)",
-          render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
           ),
         },
       },
