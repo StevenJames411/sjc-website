@@ -27,6 +27,8 @@ import { readPuckDraft, readPuckPublished, sheetIdsIn, puckKey } from "@/lib/puc
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { readPages, createPage } from "@/lib/pageRegistry";
+import { findSite } from "@/lib/sites";
+import { scrubForTransfer, sameBusiness } from "@/lib/transferScrub";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -83,11 +85,26 @@ export async function POST(req: Request) {
   }
 
   // Strip the published marker: this is a DRAFT until somebody publishes it on purpose.
-  const clean = { ...(data as Record<string, unknown>) };
-  delete clean._pub;
+  const stripped = { ...(data as Record<string, unknown>) };
+  delete stripped._pub;
+
+  // ⛔ AND TAKE THE SOURCE BUSINESS OUT OF IT — WHEN THE BUSINESS ACTUALLY CHANGES. This route
+  // scrubbed NOTHING: it wrote the source page verbatim into the destination, so the previous
+  // owner's phone number, address, business name and photos all landed on another site, and the
+  // response said `ok` with a block count. The worst of it is `links[].href` — a `tel:` carried
+  // across means a visitor taps Call Now on one site and rings a different company.
+  //
+  // ⚠️ SKIPPED BETWEEN A BUSINESS'S OWN SITES. Steven runs several (sjc, sjc-2026,
+  // steven-james-designs); blanking his own number while he moves a page between them would break
+  // the page he is building and read as a bug in the clone. See sameBusiness().
+  const src = await findSite(fromSite);
+  const dst = await findSite(toSite);
+  const crossBusiness = !!src && !!dst && !sameBusiness(src, dst);
+  const { value: clean, report: scrubbed } =
+    src && crossBusiness ? scrubForTransfer(stripped, src) : { value: stripped, report: null };
 
   const store = createKvStore(getClient(), puckKey(slug, false, toSite));
-  const wrote = await store.writeResult(clean);
+  const wrote = await store.writeResult(clean as Record<string, unknown>);
   if (!wrote.ok) {
     return Response.json({ ok: false, error: wrote.reason || "content write refused" }, { status: 409 });
   }
@@ -96,6 +113,7 @@ export async function POST(req: Request) {
     ok: true,
     slug,
     blocks: ((clean as { content?: unknown[] }).content || []).length,
+    scrubbed,
     // Which sheets this page now references. Global and immutable, so nothing was copied — but a
     // page that renders unstyled should be able to say WHICH sheet it was looking for.
     sheets,

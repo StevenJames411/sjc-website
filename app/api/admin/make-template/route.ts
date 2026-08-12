@@ -18,6 +18,8 @@ import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey, sheetIdsIn } from "@/lib/puckContent";
 import { SJC } from "@/lib/siteKeys";
+import { findSite } from "@/lib/sites";
+import { scrubForTransfer, transferLeftovers } from "@/lib/transferScrub";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -33,8 +35,9 @@ const HEX_TO_ROLE: Record<string, string> = {
   "#0f172a": "bandDark",
 };
 
-// The placeholders this scrub writes. Named once so the safety check below can tell "we put this
-// here" apart from "the source business's real number survived".
+// The placeholders written into a template. Kept in step with lib/transferScrub's PLACEHOLDER so
+// `withoutPlaceholders` can tell "we put this here" apart from "the source business's real number
+// survived" — without that, the leftover check reads its own output as a violation.
 const PH = {
   phone: "+15550000000",
   phoneDisplay: "(555) 000-0000",
@@ -44,36 +47,26 @@ const PH = {
   slug: "your-business",
 };
 
-// Anything that names a specific business.
+// ⛔ THE HARDCODED FACT LIST IS GONE (2026-08-12) — see lib/transferScrub.ts.
 //
-// ⚠️ ORDER AND SEPARATORS BOTH MATTER. The hyphenated slug form has to be caught before the
-// spaced form, and a pattern written only for spaces silently misses it — that is exactly how
-// `"source": "/lucky-dog-wash-house — demo"` survived a scrub that reported success. The lead
-// form's source field is the one that decides whose inbox a lead lands in.
-const FACTS: [RegExp, string][] = [
-  [/819 New Laredo Hwy,?\s*San Antonio,?\s*TX\s*78211/gi, PH.address],
-  [/hello@luckydogwashhouse\.com/gi, PH.email],
-  [/\+1\s*\(?210\)?[\s.-]?474[\s.-]?6252/g, PH.phone],
-  [/tel:\+?1?2104746252/gi, `tel:${PH.phone}`],
-  [/\+?1?2104746252/g, PH.phone],
-  [/\(?210\)?[\s.-]?474[\s.-]?6252/g, PH.phoneDisplay],
-  [/lucky[-_]dog[-_]wash[-_]house/gi, PH.slug], // slug form FIRST
-  [/lucky[\s-]*dog[\s-]*wash[\s-]*house/gi, PH.name],
-  [/luckydogwashhouse/gi, "yourbusiness"],
-  [/San Antonio's Premier Pet Wash & Grooming/gi, "Your City's Best [Your Service]"],
-  [/San Antonio/gi, "Your City"],
-  [/New Laredo Hwy/gi, "Main Street"],
-];
+// It used to be a column of literal Lucky Dog values: that business's street address, its email,
+// its phone in six spellings, its name in three separator forms. A one-shot script wearing the
+// shape of a policy. Run it against business number two and it would have reported a clean scrub
+// having removed nothing at all, because none of those patterns matched anything on the page.
+//
+// `scrubForTransfer` derives the same patterns from the SOURCE SITE'S OWN `business` record, so it
+// works for the next business with no code change — and it also handles the carriers this list
+// never touched: `links[].href` (a tel: that rings the wrong company), and photos stored under the
+// source site's blob prefix.
 
-// What must NOT survive. This is the check that makes the template trustworthy — and it runs on
-// the text with our own placeholders removed, so a placeholder phone number can't mask a real one.
-const FORBIDDEN: [string, RegExp][] = [
-  ["a phone number", /\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/],
-  ["a hex colour", /#[0-9a-f]{6}\b/i],
-  ["an email address", /[\w.+-]+@[\w-]+\.[\w.]+/],
-  // Separator-tolerant on purpose: "lucky dog", "lucky-dog" and "luckydog" must all trip it.
-  ["the source business name", /lucky[\s\-_]*dog/i],
-];
+// What must NOT survive, over and above the shared check in lib/transferScrub. Colour is the one
+// rule that belongs to TEMPLATES specifically: a template re-skins from the brand panel, so a
+// frozen hex is a defect there and merely a design choice anywhere else.
+//
+// ⚠️ The old list also named the source business literally (`/lucky[\s\-_]*dog/i`), which made
+// this check pass for every business except the one it was written for. That is now derived —
+// see transferLeftovers().
+const FORBIDDEN: [string, RegExp][] = [["a hex colour", /#[0-9a-f]{6}\b/i]];
 
 /** Remove the placeholders we deliberately wrote, so FORBIDDEN only sees real leftovers. */
 const withoutPlaceholders = (s: string) =>
@@ -102,6 +95,13 @@ const isDesignHtml = (key: string, holder: unknown) =>
   typeof holder === "object" &&
   typeof (holder as { html?: unknown }).html === "string";
 
+/**
+ * THE COLOUR PASS. Business facts are handled before this, by `scrubForTransfer`.
+ *
+ * A template's job is to re-skin from the brand panel, so a literal hex frozen into a block is a
+ * defect here in a way it is not anywhere else — which is why this rule lives in this route and not
+ * in the shared scrub.
+ */
 function scrub(value: unknown, counts: Record<string, number>, skipColour = false): unknown {
   if (typeof value === "string") {
     let out = value;
@@ -110,14 +110,6 @@ function scrub(value: unknown, counts: Record<string, number>, skipColour = fals
     if (role && !skipColour) {
       counts.colours = (counts.colours || 0) + 1;
       return role;
-    }
-
-    for (const [re, to] of FACTS) {
-      if (re.test(out)) {
-        counts.facts = (counts.facts || 0) + 1;
-        out = out.replace(re, to);
-      }
-      re.lastIndex = 0;
     }
 
     // A hex that wasn't in the known palette still can't stay in a NATIVE block — it would freeze a
@@ -188,7 +180,17 @@ export async function POST(req: Request) {
 
   const counts: Record<string, number> = {};
   const { _pub, ...rest } = src as { _pub?: number };
-  const cleaned = scrub(rest, counts) as Record<string, unknown>;
+
+  // Business facts first, from the source site's own record — one implementation shared with
+  // clone-page, copySiteContent and the section library. Then the COLOUR pass below, which is
+  // specific to templates: a template has to re-skin from the brand panel, so a literal hex has to
+  // become the role it was playing. (Skipped inside a design's own markup — see isDesignHtml.)
+  const owner = await findSite(fromSite);
+  const factScrub = owner
+    ? scrubForTransfer(rest, owner)
+    : { value: rest, report: { facts: 0, routingLinks: 0, images: 0, leadSources: 0 } };
+  Object.assign(counts, factScrub.report);
+  const cleaned = scrub(factScrub.value, counts) as Record<string, unknown>;
 
   // The page title is the root prop the builder shows; it must not name the source business.
   const root = (cleaned.root as { props?: Record<string, unknown> } | undefined)?.props;
@@ -207,9 +209,10 @@ export async function POST(req: Request) {
   const textNoDesignHtml = withoutPlaceholders(
     JSON.stringify(cleaned, (k, v) => (isDesignHtml(k, { html: v }) ? "" : v))
   );
-  const leftovers = FORBIDDEN.filter(([what, re]) =>
-    re.test(what === "a hex colour" ? textNoDesignHtml : text)
-  ).map(([what]) => what);
+  const leftovers = [
+    ...FORBIDDEN.filter(([, re]) => re.test(textNoDesignHtml)).map(([what]) => what),
+    ...transferLeftovers(cleaned),
+  ];
   if (leftovers.length) {
     return Response.json(
       { ok: false, error: `Scrub incomplete — still contains ${leftovers.join(", ")}.`, leftovers, counts },

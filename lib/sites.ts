@@ -14,6 +14,7 @@
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
 import { siteKeys, allKeysFor, KEY_INFIXES, SITES_KEY, SJC } from "./siteKeys";
+import { scrubForTransfer, sameBusiness } from "./transferScrub";
 import { RESERVED_SITE_IDS, daysLeft, type Site, type SiteKind, emptyBusiness, emptySeo } from "./sitesShared";
 
 export * from "./sitesShared";
@@ -171,13 +172,26 @@ export async function copySiteContent(fromId: string, toId: string): Promise<boo
   const wroteRegistry = await createKvStore(client, to.pages).write({ custom, hidden: [], titles: {} });
   if (!wroteRegistry) return false;
 
+  // ⛔ SCRUB WHEN THE BUSINESS CHANGES. This is the path EVERY new site is built on
+  // (`createSite({from})`), and it copied every page draft AND published snapshot verbatim. A
+  // template made by `make-template` is already clean, but "new website from an existing website"
+  // carried the source business's phone number, address, name and photos straight onto the new
+  // one — the exact failure make-template's header says that file exists to prevent, on the route
+  // that actually runs. Skipped between one business's own sites; see sameBusiness().
+  const [fromSite_, toSite_] = await Promise.all([findSite(fromId), findSite(toId)]);
+  const crossBusiness = !!fromSite_ && !!toSite_ && !sameBusiness(fromSite_, toSite_);
+
   let copied = 0;
   for (const p of pages) {
     for (const pub of [false, true]) {
       const src = await createKvStore(client, from.puck(p.slug, pub)).read<Record<string, unknown>>();
       if (!src) continue;
       const { _pub, ...rest } = src as { _pub?: number };
-      if (await createKvStore(client, to.puck(p.slug, pub)).write(rest)) copied++;
+      const body =
+        crossBusiness && fromSite_
+          ? (scrubForTransfer(rest, fromSite_).value as Record<string, unknown>)
+          : rest;
+      if (await createKvStore(client, to.puck(p.slug, pub)).write(body)) copied++;
     }
   }
 
