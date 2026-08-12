@@ -15,6 +15,7 @@ import { CHECKS, readBoard } from "@/lib/checks";
 import { colourFor, worst, ageText, type Colour } from "@/lib/checksShared";
 import { publicUrlFor } from "@/lib/hostShared";
 import { readSites } from "@/lib/sites";
+import { statusOf } from "@/lib/sitesShared";
 import type { Row } from "./shared";
 
 /** The roster key for the global row. Leading underscore — a slugified site id can never be this. */
@@ -27,6 +28,17 @@ export type Group = {
   subtitle: string;
   rows: Row[];
   colour: Colour;
+  /**
+   * WHAT STATE THE WEBSITE IS IN — draft / demo / published / archived, or undefined for the
+   * mainline, which is not a website.
+   *
+   * ⚠️ IT BELONGS ON THE ROW BECAUSE IT EXPLAINS THE OTHER PILLS. A Draft site is deliberately
+   * unreachable, so its reachability check records `skipped` and the row fills with grey. Without
+   * the state on screen that reads as "nothing is proven and I don't know why"; with it, the row
+   * says its own reason. Steven: *"if it's in draft mode and that pill is lit up, that's why none
+   * of the other plumbing is working."*
+   */
+  state?: string;
 };
 
 export type BoardView = {
@@ -84,6 +96,8 @@ export async function readBoardView(): Promise<BoardView> {
         subtitle: s.business?.name || s.name || s.id,
         rows,
         colour: worst(rows.map((r) => r.colour)),
+        // The reason half the row is grey when a site is Draft — see the note on Group.state.
+        state: statusOf(s),
       };
     }),
   ];
@@ -126,6 +140,14 @@ export async function readBoardView(): Promise<BoardView> {
  * only honest reading — everything here was verified at least this recently. Anything else leads
  * with what's wrong and how many, worst first.
  */
+/** Per-colour counts for the row's pills. The roster renders these instead of a sentence. */
+export function tallyOf(group: Group): { colour: Colour; count: number }[] {
+  const RANK: Colour[] = ["red", "yellow", "grey", "green"];
+  return RANK.map((c) => ({ colour: c, count: group.rows.filter((r) => r.colour === c).length })).filter(
+    (x) => x.count > 0
+  );
+}
+
 export function summarise(group: Group): string {
   const RANK: Colour[] = ["red", "yellow", "grey", "green"];
   const n = group.rows.length;

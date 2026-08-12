@@ -14,7 +14,7 @@
 // Owner-only: /edit/* is gated in middleware.ts.
 import { ageText, type Colour } from "@/lib/checksShared";
 import { navLabel } from "@/lib/editNav";
-import { readBoardView, summarise } from "./groups";
+import { readBoardView, summarise, tallyOf } from "./groups";
 import Roster from "./Roster";
 import { Dot, FOOTNOTE, SWATCH } from "./shared";
 
@@ -23,6 +23,12 @@ export const dynamic = "force-dynamic";
 // Heading and tab both read the name Steven gave this screen in the rail. See lib/editNav.ts.
 export async function generateMetadata() {
   return { title: await navLabel("board") };
+}
+
+/** "last looked 24m ago" — the oldest look in the row. A board with no timestamp is a placebo. */
+function lookedAt(g: { rows: { st?: { lastRunAt?: string; lastPassAt?: string } }[] }): string {
+  const times = g.rows.map((r) => r.st?.lastRunAt || r.st?.lastPassAt).filter(Boolean) as string[];
+  return times.length ? `last looked ${ageText(times.sort()[0])}` : "";
 }
 
 export default async function BoardPage() {
@@ -37,13 +43,15 @@ export default async function BoardPage() {
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
       {/* "← All websites" lived here until the rail took over global navigation. */}
       <h1 style={{ fontSize: 34, fontWeight: 800, margin: "0 0 6px" }}>{title}</h1>
-      <p style={{ color: "var(--e-muted)", margin: "0 0 4px", maxWidth: 720 }}>
-        Every joint between the fifteen systems that carry a client. No vendor watches a joint —
-        each end reports success on its own side — so this is the only place they meet.
+      <p style={{ color: "var(--e-muted)", margin: "0 0 8px", maxWidth: 760 }}>
+        One row per website, plus a row for the plumbing they all share. Every vendor&rsquo;s own
+        dashboard sees only its own end, so nothing anywhere answers &ldquo;is this customer&rsquo;s
+        machine working&rdquo; &mdash; this does.
       </p>
-      <p style={{ color: "var(--e-muted)", fontSize: 13, margin: "0 0 22px" }}>
-        Green means <strong>verified recently</strong>, not &ldquo;nothing alarmed.&rdquo; If a
-        check stops running, its tile goes yellow and then red on its own.
+      <p style={{ color: "var(--e-muted)", fontSize: 13, margin: "0 0 18px", maxWidth: 760 }}>
+        Each row shows what state the website is in and how its checks came back. A{" "}
+        <strong>draft</strong> site is unreachable on purpose, so most of its checks have nothing to
+        test and sit grey &mdash; that is the setting working, not a fault.
       </p>
 
       {/* The header count, across everybody. This is the glance the whole board exists for, so it
@@ -75,6 +83,13 @@ export default async function BoardPage() {
         })}
       </div>
 
+      <p style={{ color: "var(--e-muted)", fontSize: 12, margin: "0 0 4px", maxWidth: 760 }}>
+        <strong>Broken now</strong> — something is failing. <strong>Needs you soon</strong> — it
+        still works but it expires, or it was last verified too long ago.{" "}
+        <strong>Nothing proven yet</strong> — never checked, or nothing to check.{" "}
+        <strong>Verified</strong> — confirmed working, with a time next to it. Click a pill to jump
+        to the first one.
+      </p>
       <p style={{ color: "var(--e-muted)", fontSize: 13, margin: "0 0 26px" }}>
         {view.totalChecks} checks across {view.clientCount} client site(s) · last sweep{" "}
         {ageText(view.sweptAt)} · <a href="/api/cron/checks" style={{ color: "var(--e-accent)" }}>run one now</a>
@@ -88,6 +103,9 @@ export default async function BoardPage() {
           subtitle: g.subtitle,
           summary: summarise(g),
           colour: g.colour,
+          tally: tallyOf(g),
+          state: g.state,
+          looked: lookedAt(g),
         }))}
       />
 

@@ -30,6 +30,12 @@ export type RosterRow = {
   subtitle: string;
   summary: string;
   colour: Colour;
+  /** Per-colour counts — rendered as pills so the row says WHICH part is broken, not just how bad. */
+  tally: { colour: Colour; count: number }[];
+  /** draft / demo / published / archived. Absent on the mainline, which is not a website. */
+  state?: string;
+  /** "last looked 24m ago" — kept as words because a board without a timestamp is a placebo. */
+  looked?: string;
 };
 
 export default function Roster({ rows }: { rows: RosterRow[] }) {
@@ -176,7 +182,59 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                   {g.title}
                 </div>
                 <div style={{ fontSize: 12.5, color: "var(--e-muted)", marginTop: 2 }}>{g.subtitle}</div>
-                <div style={{ fontSize: 13, color: "var(--e-ink)", marginTop: 6 }}>{g.summary}</div>
+                {/* PILLS, NOT A SENTENCE. The header counts tell you the shape of the whole board;
+                    these tell you which part of THIS client's plumbing is which colour — the thing
+                    you actually need before deciding whether to open the row.
+
+                    The state pill sits first and explains the rest: a Draft site is deliberately
+                    unreachable, so its checks record `skipped` and the row fills with grey. Without
+                    it that reads as "nothing proven and no idea why". */}
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 7 }}>
+                  {g.state && g.state !== "published" ? (
+                    <span
+                      style={{
+                        borderRadius: 999,
+                        padding: "3px 9px",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: "var(--e-muted-bg, #eef1f6)",
+                        color: "var(--e-muted-ink, #55617a)",
+                        textTransform: "capitalize",
+                      }}
+                      title={
+                        g.state === "draft"
+                          ? "Only you can reach this site, so most checks have nothing to test"
+                          : g.state === "archived"
+                            ? "Retired and reachable by nobody"
+                            : "Shareable demo link, kept out of Google"
+                      }
+                    >
+                      {g.state}
+                    </span>
+                  ) : null}
+                  {g.tally.map((t) => (
+                    <span
+                      key={t.colour}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        borderRadius: 999,
+                        padding: "3px 9px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        background: SWATCH[t.colour].bg,
+                        border: `1px solid ${SWATCH[t.colour].border}`,
+                      }}
+                    >
+                      <Dot colour={t.colour} size={8} />
+                      {t.count} {SWATCH[t.colour].label.toLowerCase()}
+                    </span>
+                  ))}
+                  {g.looked ? (
+                    <span style={{ fontSize: 12, color: "var(--e-muted)" }}>· {g.looked}</span>
+                  ) : null}
+                </div>
               </a>
 
               <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: "0 0 auto" }}>
