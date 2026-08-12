@@ -14,7 +14,7 @@
 // Owner-only: /edit/* is gated in middleware.ts.
 import { ageText } from "@/lib/checksShared";
 import { navLabel } from "@/lib/editNav";
-import { readBoardView, summarise, linesOf } from "./groups";
+import { readBoardView, summarise, linesOf, SJC_KEY } from "./groups";
 import Roster from "./Roster";
 import { FOOTNOTE } from "./shared";
 import SweepButton from "./SweepButton";
@@ -32,8 +32,40 @@ function lookedAt(g: { rows: { st?: { lastRunAt?: string; lastPassAt?: string } 
   return times.length ? `last looked ${ageText(times.sort()[0])}` : "";
 }
 
-export default async function BoardPage() {
+/**
+ * ⚠️ THIS DEFAULTS TO LIVE; THE DESIGN LIBRARY DEFAULTS TO ALL. The two screens answer different
+ * questions and the defaults follow from that.
+ *
+ * The library is an INVENTORY — "what have I got" — so hiding six of seven websites by default
+ * would be lying about the size of the thing.
+ *
+ * The board is TRIAGE — "what needs me". A draft site is unreachable by design, so every check on
+ * it records `skipped` and its row is grey by definition. Six grey rows above the one amber row is
+ * the signal buried in the thing that cannot break.
+ */
+export default async function BoardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const tab = (await searchParams)?.view || "live";
   const [view, title] = await Promise.all([readBoardView(), navLabel("board")]);
+
+  // The mainline is never filtered out — it is not a website, and if the shared floor is broken
+  // every client is broken whatever you are looking at.
+  const isMainline = (g: { key: string }) => g.key === SJC_KEY;
+  const liveish = (st?: string) => st === "published" || st === "demo";
+  const rows = view.groups.filter((g) => {
+    if (isMainline(g)) return true;
+    if (tab === "all") return true;
+    if (tab === "draft") return !liveish(g.state);
+    return liveish(g.state);
+  });
+  const counts = {
+    live: view.groups.filter((g) => !isMainline(g) && liveish(g.state)).length,
+    draft: view.groups.filter((g) => !isMainline(g) && !liveish(g.state)).length,
+    all: view.groups.filter((g) => !isMainline(g)).length,
+  };
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
       {/* "← All websites" lived here until the rail took over global navigation. */}
@@ -76,8 +108,42 @@ export default async function BoardPage() {
       </p>
 
       {/* One row per owner, in the order Steven dragged them into. */}
+      {/* Same shape as the Design Library's canvases, and for the same reason: each is an address
+          you can land on, not a toggle held in memory. */}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "0 0 18px" }}>
+        {([
+          ["live", "Live", counts.live],
+          ["draft", "Draft", counts.draft],
+          ["all", "All", counts.all],
+        ] as const).map(([key, label, n]) => (
+          <a
+            key={key}
+            href={key === "live" ? "/edit/board" : `/edit/board?view=${key}`}
+            title={
+              key === "live"
+                ? "Websites anyone can actually reach — the ones that can break"
+                : key === "draft"
+                  ? "Draft and archived: nothing to check, so nothing to report"
+                  : "Every website"
+            }
+            style={{
+              background: tab === key ? "var(--e-ink)" : "var(--e-panel)",
+              color: tab === key ? "var(--e-panel)" : "var(--e-muted)",
+              border: `1px solid ${tab === key ? "var(--e-ink)" : "var(--e-line)"}`,
+              borderRadius: 999,
+              padding: "6px 14px",
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            {label} <span style={{ opacity: 0.6 }}>{n}</span>
+          </a>
+        ))}
+      </div>
+
       <Roster
-        rows={view.groups.map((g) => ({
+        rows={rows.map((g) => ({
           key: g.key,
           title: g.title,
           subtitle: g.subtitle,
