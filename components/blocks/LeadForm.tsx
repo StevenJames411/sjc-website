@@ -89,8 +89,29 @@ export type LeadFormProps = {
    * full-width band inside a column is not a band, it is a coloured rectangle behind half a row.
    */
   background?: string;
-  /** Space above and below the card inside the band, in px. Only used when `background` is set. */
+  /**
+   * ⛔ SPLIT, BECAUSE EVERY OTHER BLOCK IS SPLIT. This shipped as ONE combined "Space above and
+   * below the card" while Heading, Text, Image, HeroImage, Section, DesignSection and the footer
+   * all give two. Steven: *"the other places where I adjust the spacing, they're separate, one for
+   * the top, one for the bottom… I don't need every section to be different. That's the whole
+   * concept of a template."*
+   */
+  paddingTop?: number | null;
+  paddingBottom?: number | null;
+  /** @deprecated The old combined dial. Still read so a block saved with it does not jump. */
   bandPadding?: number;
+  /**
+   * WHAT THE CUSTOMER IS FILLING IN — on the form itself.
+   *
+   * ⛔ THE FORM HAD NO CUSTOMER-FACING TITLE AT ALL. The library name is internal, so the only way
+   * to tell a visitor what this is was to drop a Text block above it — and a Text block has no
+   * band, so the colour started BELOW the heading and the section looked broken. Steven hit
+   * exactly that. Putting the words on the form means one block to place, one block to colour, and
+   * the heading sits inside the band by construction.
+   */
+  heading?: string;
+  subheading?: string;
+  headingColor?: string;
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
@@ -113,7 +134,11 @@ export const LEADFORM_DEFAULTS: LeadFormProps = {
   theme: "light",
   // ⚠️ BLANK, so no form already on a page grows a band it never had.
   background: "",
-  bandPadding: 64,
+  paddingTop: 64,
+  paddingBottom: 64,
+  heading: "",
+  subheading: "",
+  headingColor: "",
   successBody:
     "Ten minutes on the phone is all I need. If you'd rather not wait, call me straight out at (210) 851-4906.",
 };
@@ -150,6 +175,11 @@ export default function LeadForm(props: LeadFormProps) {
     altSuccess,
     background = "",
     bandPadding,
+    paddingTop,
+    paddingBottom,
+    heading = "",
+    subheading = "",
+    headingColor = "",
   } = props;
 
   /**
@@ -159,16 +189,62 @@ export default function LeadForm(props: LeadFormProps) {
    * someone submits, so the page flashes from a coloured section to a white one at the exact moment
    * you most want it to look deliberate.
    */
-  const banded = (card: React.ReactNode) => {
-    if (!background || inColumn) return card;
-    const pad = typeof bandPadding === "number" && bandPadding >= 0 ? bandPadding : 64;
+  // ⚠️ `withTitle` IS FALSE ON THE THANK-YOU. The heading asks someone to fill the form in; leaving
+  // it above the confirmation tells a person who just submitted to submit again.
+  const banded = (card: React.ReactNode, withTitle = true) => {
+    // ⚠️ THE OLD COMBINED DIAL IS THE FALLBACK, not a second setting. A block saved before the
+    // split keeps the spacing it had; a block saved after ignores it entirely.
+    // ⛔ SPACE NO LONGER REQUIRES A COLOUR. Steven: *"I definitely want to add some top padding.
+    // And I don't know what you mean by a band… so I literally have to add a band to do top
+    // spacing on these sections."* No. Wanting room above a form has nothing to do with wanting a
+    // colour behind it, and tying the two together was my mistake.
+    //
+    // ⚠️ THE FALLBACK STILL DEPENDS ON THE COLOUR, and that is what stops every form already on a
+    // page from jumping. A form with a colour behind it has always had 64px of breathing room, so
+    // that stays its default. A form with NO colour has always had none — so its default is 0, and
+    // it only gains space when a number is actually set.
+    const legacy = typeof bandPadding === "number" && bandPadding >= 0 ? bandPadding : 64;
+    const fallbackPad = background ? legacy : 0;
+    const top = typeof paddingTop === "number" ? paddingTop : fallbackPad;
+    const bottom = typeof paddingBottom === "number" ? paddingBottom : fallbackPad;
+
+    // The heading belongs to the form, so it rides INSIDE the band — that is the whole reason it
+    // exists. Rendered even without a band, where it simply sits above the card.
+    const titled = (
+      <>
+        {withTitle && (heading || subheading) ? (
+          <div
+            className={`mb-8 ${inColumn ? "text-left" : "mx-auto max-w-xl text-center"}`}
+            style={headingColor ? { color: resolveColor(headingColor) } : undefined}
+          >
+            {heading ? (
+              <h2 className="text-2xl font-bold leading-tight md:text-3xl">{fill(heading)}</h2>
+            ) : null}
+            {subheading ? (
+              <p className={`text-base leading-relaxed opacity-80${heading ? " mt-3" : ""}`}>
+                {fill(subheading)}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+        {card}
+      </>
+    );
+
+    // Nothing to draw: no colour and no space asked for.
+    if ((!background && !top && !bottom) || inColumn) return titled;
     return (
       <div
         className="w-full"
-        style={{ backgroundColor: resolveColor(background), paddingTop: pad, paddingBottom: pad }}
+        style={{
+          // Transparent when no colour is set — the wrapper is then purely the space.
+          ...(background ? { backgroundColor: resolveColor(background) } : {}),
+          paddingTop: top,
+          paddingBottom: bottom,
+        }}
       >
         {/* px-6 so the card never touches the screen edge on a phone. */}
-        <div className="mx-auto w-full px-6">{card}</div>
+        <div className="mx-auto w-full px-6">{titled}</div>
       </div>
     );
   };
@@ -422,7 +498,8 @@ export default function LeadForm(props: LeadFormProps) {
             {alt.buttonLabel}
           </a>
         ) : null}
-      </div>
+      </div>,
+      false
     );
   }
 

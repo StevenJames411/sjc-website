@@ -91,6 +91,9 @@ export type NavViewProps = {
   // unrelated places the moment anyone flips nav style.
   brandLine2?: string;
   brandLine2Color?: string;
+  /** The tail of the name in the accent colour — "Steven James **Consulting**". Mirrors the footer. */
+  brandAccentWord?: string;
+  brandAccentColor?: string;
   // Faint graph-paper over the header band, same overlay the Section block draws. Blank = off.
   // With it set to the hero's grid colour the bar and the hero read as ONE navy field instead of
   // two stacked rectangles — which is the whole point of putting it here rather than only below.
@@ -146,6 +149,8 @@ export default function NavView({
   brandStyle,
   brandLine2,
   brandLine2Color,
+  brandAccentWord,
+  brandAccentColor,
   bandGrid,
   menuButtonWidthMobile,
 }: NavViewProps) {
@@ -166,6 +171,25 @@ export default function NavView({
   const fg = foreground || "white";
   const logoOn = showLogo !== false;
 
+  // ⚠️ THE SAME SPLIT THE FOOTER DOES, deliberately identical: tail-only and case-insensitive, so
+  // "Marbleford Pet Wash" cannot have a word chopped out of its middle. Blank leaves one colour.
+  const accentWord = String(brandAccentWord || "").trim();
+  const splitAt =
+    accentWord && String(brandName || "").toLowerCase().endsWith(accentWord.toLowerCase())
+      ? String(brandName).length - accentWord.length
+      : -1;
+  const markHead = splitAt > 0 ? String(brandName).slice(0, splitAt) : brandName;
+  const markTail = splitAt > 0 ? String(brandName).slice(splitAt) : "";
+  const brandMark =
+    markTail !== "" ? (
+      <>
+        {markHead}
+        <span style={{ color: resolveColorOr(brandAccentColor, "var(--color-sjc-blue)") }}>{markTail}</span>
+      </>
+    ) : (
+      brandName
+    );
+
   // The typeset wordmark. Playfair is already loaded site-wide (app/layout.tsx), so this costs
   // no new font request. `font-variant: small-caps` is what produces the tall-initial / small-rest
   // shape — uppercasing the string instead gives you shouting, not a wordmark.
@@ -181,7 +205,7 @@ export default function NavView({
           fontSize: `${brandSize || 26}px`,
         }}
       >
-        {brandName}
+        {brandMark}
       </span>
       {brandLine2 ? (
         <span
@@ -226,7 +250,7 @@ export default function NavView({
       ) : logoOn ? (
         <img src={LOGO_URL} alt="logo" className="h-9 w-9 rounded-full" />
       ) : null}
-      <span className="font-semibold tracking-tight" style={{ fontSize: `${brandSize || 16}px` }}>{brandName}</span>
+      <span className="font-semibold tracking-tight" style={{ fontSize: `${brandSize || 16}px` }}>{brandMark}</span>
     </a>
   );
 

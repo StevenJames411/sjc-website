@@ -34,8 +34,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const h = await resolveHost();
 
   if (h.kind === "client") {
-    // No domain means demo means noindex — nothing to publish.
-    if (!h.site.domain) return [];
+    // No domain means demo means noindex — nothing to publish. Same when the site is on its
+    // real domain but deliberately held back until launch.
+    if (!h.site.domain || h.site.holdIndexing) return [];
     const pages = await readPages(h.site.id);
     const origin = publicUrlFor(h.site);
 

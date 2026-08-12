@@ -40,7 +40,10 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   const h = await resolveHost();
 
   if (h.kind === "client") {
-    if (!h.site.domain) return { rules: [{ userAgent: "*", disallow: "/" }] };
+    // No domain (a demo), or held back on purpose while the build finishes.
+    if (!h.site.domain || h.site.holdIndexing) {
+      return { rules: [{ userAgent: "*", disallow: "/" }] };
+    }
     const origin = publicUrlFor(h.site);
     return {
       rules: [

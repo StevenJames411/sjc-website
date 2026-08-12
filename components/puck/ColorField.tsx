@@ -36,9 +36,20 @@ const ROLE_PREVIEW: Record<BrandRole, string> = {
 export default function ColorField({
   value,
   onChange,
+  label,
 }: {
   value?: string;
   onChange: (v: string) => void;
+  /**
+   * ⛔ PUCK DOES NOT CAPTION A CUSTOM FIELD — see its own source: it wraps a field with its label
+   * for every type EXCEPT "custom" and "slot". So every colour picker in this builder has always
+   * rendered as an unlabelled grid of swatches, and a panel with two of them gave you no way to
+   * tell the button colour from the band colour. Steven, looking at the hero section: *"I see
+   * colour settings. I don't even know what they adjust. What colour? The text, the background."*
+   *
+   * The caption has to come from here, because nothing above will draw it.
+   */
+  label?: string;
 }) {
   const v = (value || "").trim();
   const custom = v.startsWith("custom:") ? v.slice(7) : /^#[0-9a-f]{6}$/i.test(v) ? v : "";
@@ -46,6 +57,9 @@ export default function ColorField({
 
   return (
     <div>
+      {label ? (
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{label}</div>
+      ) : null}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
         {ROLES.map((r) => (
           <button

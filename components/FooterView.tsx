@@ -12,7 +12,8 @@ const LOGO_URL =
 // the footer's division links too, with the comment "a footer has the room a nav bar doesn't."
 // It was simply never rendered here, so the footer listed the four divisions where the menu
 // TEACHES them. Optional, so no existing footer changes.
-export type FooterLink = { label: string; target: string; note?: string };
+// ⚠️ `newTab` OPTIONAL, so every footer link already saved keeps opening in the same tab.
+export type FooterLink = { label: string; target: string; note?: string; newTab?: boolean };
 /**
  * A titled column of links — "SERVICES", "COMPANY".
  *
@@ -394,7 +395,7 @@ export default function FooterView({
                     className={i ? "border-t pt-6" : undefined}
                     style={i ? { borderColor: "currentColor", borderTopWidth: 1, opacity: 0.95 } : undefined}
                   >
-                    <a href={l.target || "#"} className="group block text-white/80 hover:text-white">
+                    <a href={l.target || "#"} {...(l.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="group block text-white/80 hover:text-white">
                       <span className="block">{l.label}</span>
                       {/* ⛔ UNDER THE LABEL, NOT ON HOVER. These four lines are the pitch — what
                           each division actually does — not a detail worth hiding. Hover does not
@@ -417,7 +418,7 @@ export default function FooterView({
             <ul className="mt-4 space-y-3 text-sm">
               {linkEls.map((l, i) => (
                 <li key={i}>
-                  <a href={l.target || "#"} className="text-white/80 hover:text-white">{l.label}</a>
+                  <a href={l.target || "#"} {...(l.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="text-white/80 hover:text-white">{l.label}</a>
                 </li>
               ))}
               {/* ⛔ THE EMAIL AND PHONE USED TO BE PRINTED HERE AS PLAIN LINES, AND THEY ARE GONE.

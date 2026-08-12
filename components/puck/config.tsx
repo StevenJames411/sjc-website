@@ -95,7 +95,13 @@ type Props = {
     inColumn: boolean;
     theme: string;
     background: string;
-    bandPadding: number;
+    paddingTop: number;
+    paddingBottom: number;
+    /** @deprecated superseded by paddingTop/paddingBottom; still read so saved blocks don't jump. */
+    bandPadding?: number;
+    heading: string;
+    subheading: string;
+    headingColor: string;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
@@ -103,12 +109,12 @@ type Props = {
   Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
-  Button: { title: string; subtitle: string; href: string; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
+  Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
   Video: { src: string; caption: string; poster: string };
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
-  SiteFooter: { blurb: string; links: { label: string; target: string }[]; groups: { heading: string; links: { label: string; target: string; note?: string }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; contactLayout: string; paddingTop: number; paddingBottom: number; legalGap: number; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
+  SiteFooter: { blurb: string; links: { label: string; target: string; newTab?: boolean }[]; groups: { heading: string; links: { label: string; target: string; note?: string; newTab?: boolean }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; contactLayout: string; paddingTop: number; paddingBottom: number; legalGap: number; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
   PhoneLink: { label: string; tel: string };
   // Hero — now a props-driven block (text editable via fields). The rest below are still
   // "wrapped" as-is; they get the same treatment section by section.
@@ -142,6 +148,8 @@ type Props = {
     brandStyle: string;
     brandLine2: string;
     brandLine2Color: string;
+    brandAccentWord: string;
+    brandAccentColor: string;
     bandGrid: string;
   };
   // Intake-form building blocks (the /apply page). FormStep = one screen (a slot holding
@@ -164,7 +172,7 @@ const ALIGN_FIELD = {
   type: "radio" as const,
   options: [
     { label: "Left", value: "left" },
-    { label: "Center", value: "center" },
+    { label: "Centre", value: "center" },
     { label: "Right", value: "right" },
   ],
 };
@@ -173,15 +181,31 @@ const ALIGN_FIELD = {
 // The band a section sits on. Roles, not hexes — and note "SJC navy" is gone: a band named after
 // one company can't be the option a client's site picks, and it stopped being true the day the
 // palette moved anyway.
-const BG_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "White", value: "white" },
-    { label: "Light band", value: "bandSoft" },
-    { label: "Dark band", value: "bandDark" },
-    { label: "Dark band (deeper)", value: "bandDarker" },
-  ],
+// ── ONE COLOUR CONTROL, EVERYWHERE ───────────────────────────────────────────────────────────
+//
+// ⛔ THERE USED TO BE FOUR. The swatch grid (41 fields), a four-item select (6), a four-item
+// select storing LITERAL HEXES (2), and three bespoke selects. Heading colour was the swatch grid
+// and Text colour — the block directly beneath it — was a dropdown: same job, different control,
+// and only one of them could be cleared.
+//
+// ⚠️ THE SELECTS WERE ALSO LYING. Six fields defaulted to a value that was not among their own
+// options (`Divider.color: "line"`, `SiteHeader.taglineColor: "secondary"`, nav link
+// `color: "white"`, and three blanks), so those boxes opened on nothing and could never be put
+// back. ColorField has a real `none`, which fixes all six by existing.
+//
+// ⚠️ AND THE NAV ONES FROZE THE PALETTE. NAV_COLOR_FIELD stored `#ffffff` / `#22c55e` — exactly
+// what the law thirty lines below forbids, because a literal hex is invisible to a re-skin.
+//
+// These names are kept so the ~50 call sites need no edit; only the widget behind them changed.
+// ColorField's roles are a superset of every option these selects offered, so nothing is lost and
+// a one-off hex becomes possible on fields that never had one.
+const COLOR_CONTROL = {
+  type: "custom" as const,
+  render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+    <ColorField label={field?.label} value={value as string} onChange={onChange} />
+  ),
 };
+const BG_FIELD = COLOR_CONTROL;
 
 // The same pickers, for an IMPORTED section — plus the one option the native block cannot need:
 // LEAVE IT ALONE.
@@ -189,10 +213,7 @@ const BG_FIELD = {
 // ⚠️ A BOUGHT DESIGN ARRIVES WITH ITS OWN PALETTE, in its own stylesheet. Without a blank default
 // every band would be repainted to a brand role the instant the block rendered, which is not an
 // edit anybody asked for. Blank means "keep the design's own", and it is the default.
-const DESIGN_BG_FIELD = {
-  type: "select" as const,
-  options: [{ label: "Keep the design's own", value: "" }, ...BG_FIELD.options],
-};
+const DESIGN_BG_FIELD = COLOR_CONTROL;
 
 // A glow is an ACCENT, not a page band — offering the band colours here would only ever let you
 // glow a photo the same colour as the page behind it, which is invisible.
@@ -208,8 +229,8 @@ const SURFACE_FIELDS = {
   fill: {
     type: "custom" as const,
     label: "Fill colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   fillOpacity: {
@@ -217,64 +238,64 @@ const SURFACE_FIELDS = {
     // Named for what it does, not for `opacity` — and it only dilutes the FILL, so the words on
     // top stay solid instead of looking disabled.
     label: "See-through % (100 = solid glass)",
-    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-      <SizeStepper label="See-through %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
+    render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+      <SizeStepper label={"See-through % (100 = solid glass)"} value={value as number} onChange={onChange} fallback={100} step={5} min={0} unit="%" />
     ),
   },
   corners: {
     type: "custom" as const,
-    label: "Corners — 0 is square, higher is rounder (px)",
-    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-      <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={12} step={2} min={0} />
+    label: "Corner rounding (− / +)",
+    render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+      <SizeStepper label={"Corner rounding"} value={value as number} onChange={onChange} fallback={12} step={2} min={0} />
     ),
   },
   bandWidth: {
     type: "custom" as const,
     label: "Band around it — width (px)",
-    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-      <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={2} step={1} min={0} />
+    render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+      <SizeStepper label={"Band around it — width"} value={value as number} onChange={onChange} fallback={2} step={1} min={0} />
     ),
   },
   bandColor: {
     type: "custom" as const,
     label: "Band colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   glowColor: {
     type: "custom" as const,
     label: "Glow colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   glowSize: {
     type: "custom" as const,
     label: "Glow size (px)",
-    render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
-      <SizeStepper label="Glow size" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+    render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+      <SizeStepper label={"Glow size"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
     ),
   },
   textColor: {
     type: "custom" as const,
     label: "Text colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   hoverFill: {
     type: "custom" as const,
     label: "Hover — fill colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   hoverText: {
     type: "custom" as const,
     label: "Hover — text colour",
-    render: ({ onChange, value }: { onChange: (v: string) => void; value: unknown }) => (
-      <ColorField value={value as string} onChange={onChange} />
+    render: ({ field, onChange, value }: { field?: { label?: string }; onChange: (v: string) => void; value: unknown }) => (
+      <ColorField label={field?.label} value={value as string} onChange={onChange} />
     ),
   },
   motion: {
@@ -288,16 +309,6 @@ const SURFACE_FIELDS = {
   },
 };
 
-const DESIGN_GLOW_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "None", value: "" },
-    { label: "Accent", value: "accent" },
-    { label: "Secondary", value: "secondary" },
-    { label: "Button colour", value: "cta" },
-    { label: "White", value: "white" },
-  ],
-};
 
 // Per-block text color. Default ink; "White" is for blocks sitting on a dark Section band.
 //
@@ -306,23 +317,12 @@ const DESIGN_GLOW_FIELD = {
 // change could reach it afterwards. Pages already holding the hexes still render exactly as
 // before (resolveColor passes an unrecognised value straight through) and convert via
 // /api/admin/reskin.
-const COLOR_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "Ink (default)", value: "ink" },
-    { label: "White", value: "white" },
-    { label: "Blue", value: "accent" },
-    { label: "Muted gray", value: "mute" },
-  ],
-};
+const COLOR_FIELD = COLOR_CONTROL;
 
 // Text colour for an IMPORTED section — same options, plus "keep the design's own" as default.
 // Pairs with DESIGN_BG_FIELD: changing a band's background without being able to change its text
 // is what turns a dark band flipped to White into white-on-white.
-const DESIGN_FG_FIELD = {
-  type: "select" as const,
-  options: [{ label: "Keep the design's own", value: "" }, ...COLOR_FIELD.options],
-};
+const DESIGN_FG_FIELD = COLOR_CONTROL;
 
 // Where a link opens. Same tab for anything on this site; new tab for anywhere off it, so a
 // visitor sent to an outside page (Skool, YouTube) still has the site sitting behind them.
@@ -348,15 +348,7 @@ const WIDTH_FIELD = {
 };
 
 // Nav text colors (sit on the dark navy header band).
-const NAV_COLOR_FIELD = {
-  type: "select" as const,
-  options: [
-    { label: "White", value: "#ffffff" },
-    { label: "Green", value: "#22c55e" },
-    { label: "Light blue", value: "#93c5fd" },
-    { label: "Muted", value: "#cbd5e1" },
-  ],
-};
+const NAV_COLOR_FIELD = COLOR_CONTROL;
 
 // Single source of truth for the nav's starting content — used by BOTH the seed (so /edit/nav
 // opens to it) AND Nav.tsx's fallback (so the live nav never renders blank if nothing's published).
@@ -395,6 +387,9 @@ export const NAV_DEFAULTS = {
   brandStyle: "",
   brandLine2: "",
   brandLine2Color: "",
+  // ⚠️ Blank = one colour, which is every header already published.
+  brandAccentWord: "",
+  brandAccentColor: "",
   bandGrid: "",
 };
 
@@ -539,6 +534,33 @@ type RootProps = {
  * self-contradictory shape (`Record<string, boolean> & { id: string }`) when it can't infer, and
  * nothing can be assigned to it. The runtime contract is unaffected.
  */
+/**
+ * DROP CONTROLS THAT CANNOT APPLY, rather than leaving them on screen doing nothing.
+ *
+ * ⛔ BOTH OF THESE EXIST BECAUSE A RENDERER RETURNS EARLY. Card ignores seven box controls when
+ * "No box" is picked; LeadForm ignores its band when the form is filling a column. In both cases
+ * the controls stayed visible AND editable, which is exactly Steven's complaint about this panel:
+ * *"plenty of choices, but only like half of them"* do anything, with nothing saying which half.
+ *
+ * ⚠️ Cast the same way `resolveLeadFormPreset` is: Puck's generics do not infer through an inline
+ * arrow at the component, and widening `changed` by hand is worse than one cast at the seam.
+ */
+const dropFields = (fields: Record<string, unknown>, keys: string[]) => {
+  const next = { ...fields };
+  for (const k of keys) delete next[k];
+  return next;
+};
+
+const hideWhenBare = ((data: { props?: Record<string, unknown> }, { fields }: { fields: Record<string, unknown> }) =>
+  data?.props?.bare
+    ? dropFields(fields, ["surface", "surfaceColor", "surfaceOpacity", "borderColor", "hoverBorderColor", "shadowColor", "radius"])
+    : fields) as unknown as ComponentConfig<Props["Card"]>["resolveFields"];
+
+const hideBandInColumn = ((data: { props?: Record<string, unknown> }, { fields }: { fields: Record<string, unknown> }) =>
+  data?.props?.inColumn
+    ? dropFields(fields, ["background", "paddingTop", "paddingBottom", "bandPadding"])
+    : fields) as unknown as ComponentConfig<Props["LeadForm"]>["resolveFields"];
+
 const resolveLeadFormPreset = (async (
   data: { props: Props["LeadForm"] },
   params: { changed?: Record<string, boolean> }
@@ -578,7 +600,7 @@ const resolveLeadFormPreset = (async (
   }
 }) as unknown as ComponentConfig<Props["LeadForm"]>["resolveData"];
 
-export const config: Config<Props, RootProps> = {
+const baseConfig: Config<Props, RootProps> = {
   // Labels are written for the person filling them in, not for an SEO tool: they name WHERE the
   // text shows up, because that's the only thing that makes the field self-explanatory on sight.
   root: {
@@ -750,28 +772,26 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper
-              label="Space above"
+            <SizeStepper label={"Space above"}
               value={value as number}
               onChange={onChange}
               fallback={80}
               step={8}
               min={0}
-            />
+            clearable unsetLabel="keeping the design\'s own spacing" />
           ),
         },
         paddingBottom: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper
-              label="Space below"
+            <SizeStepper label={"Space below"}
               value={value as number}
               onChange={onChange}
               fallback={80}
               step={8}
               min={0}
-            />
+            clearable unsetLabel="keeping the design\'s own spacing" />
           ),
         },
         images: {
@@ -820,14 +840,14 @@ export const config: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Frame height — exact px, desktop only (use Shape first)",
               render: ({ onChange, value }) => (
-                <SizeStepper label="Frame height" value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
+                <SizeStepper label={"Frame height — exact px, desktop only (use Shape first)"} value={value as number} onChange={onChange} fallback={420} step={20} min={0} />
               ),
             },
             frameWidth: {
               type: "custom" as const,
               label: "Frame width — % of its column (over 100 spills out)",
               render: ({ onChange, value }) => (
-                <SizeStepper label="Frame width %" value={value as number} onChange={onChange} fallback={100} step={5} min={0} />
+                <SizeStepper label={"Frame width — % of its column (over 100 spills out)"} value={value as number} onChange={onChange} fallback={100} step={5} min={0} unit="%" />
               ),
             },
             // ── THE BAND. What makes a photo read as glass rather than a rectangle pasted on
@@ -837,7 +857,7 @@ export const config: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Band around the photo — width (px)",
               render: ({ onChange, value }) => (
-                <SizeStepper label="Band width" value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
+                <SizeStepper label={"Band around the photo — width"} value={value as number} onChange={onChange} fallback={14} step={2} min={0} />
               ),
             },
             bandColor: SURFACE_FIELDS.bandColor,
@@ -859,7 +879,7 @@ export const config: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Zoom % (100 = fit, higher = closer)",
               render: ({ onChange, value }) => (
-                <SizeStepper label="Zoom %" value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} />
+                <SizeStepper label={"Zoom % (100 = fit, higher = closer)"} value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} unit="%" />
               ),
             },
             focus: {
@@ -873,6 +893,8 @@ export const config: Config<Props, RootProps> = {
                 { label: "Right", value: "right" },
                 { label: "Top left", value: "left top" },
                 { label: "Top right", value: "right top" },
+                { label: "Bottom left", value: "left bottom" },
+                { label: "Bottom right", value: "right bottom" },
               ],
             },
             alt: { type: "text" as const, label: "Describe the photo (for Google + screen readers)" },
@@ -1012,8 +1034,8 @@ export const config: Config<Props, RootProps> = {
         badgeColor: {
           type: "custom" as const,
           label: "Badge colour (blank = site blue)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         badgePosition: {
@@ -1028,8 +1050,8 @@ export const config: Config<Props, RootProps> = {
         iconColor: {
           type: "custom" as const,
           label: "Icon colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // TYPE CONTROLS (2026-07-30). Each of the card's three text lines gets its own size and
@@ -1045,14 +1067,14 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Top line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Label size" value={value as number} onChange={onChange} fallback={12} step={2} min={8} allowZero={false} />
+            <SizeStepper label={"Top line — size"} value={value as number} onChange={onChange} fallback={12} step={2} min={8} allowZero={false} />
           ),
         },
         eyebrowColor: {
           type: "custom" as const,
           label: "Top line — colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         eyebrowBold: {
@@ -1085,36 +1107,36 @@ export const config: Config<Props, RootProps> = {
         surfaceColor: {
           type: "custom" as const,
           label: "Glass tint (blank = white)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         surfaceOpacity: {
           type: "custom" as const,
           label: "How solid the glass is (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Solidity" value={value as number} onChange={onChange} fallback={7} step={5} min={0} />
+            <SizeStepper label={"How solid the glass is"} value={value as number} onChange={onChange} fallback={7} step={5} min={0} />
           ),
         },
         borderColor: {
           type: "custom" as const,
           label: "Hairline edge (blank = white)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         hoverBorderColor: {
           type: "custom" as const,
           label: "Edge on hover (blank = no change)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         shadowColor: {
           type: "custom" as const,
           label: "Glow underneath (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         hoverLift: {
@@ -1127,9 +1149,9 @@ export const config: Config<Props, RootProps> = {
         },
         radius: {
           type: "custom" as const,
-          label: "Corner roundness (− / +)",
+          label: "Corner rounding (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Corners" value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+            <SizeStepper label={"Corner rounding"} value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
           ),
         },
         heading: { type: "textarea" as const, label: "Middle line — the card's heading (an H3 for Google)" },
@@ -1137,14 +1159,14 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Middle line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Heading size" value={value as number} onChange={onChange} fallback={20} step={2} min={10} allowZero={false} />
+            <SizeStepper label={"Middle line — size"} value={value as number} onChange={onChange} fallback={20} step={2} min={10} allowZero={false} />
           ),
         },
         headingColor: {
           type: "custom" as const,
           label: "Middle line — colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         headingBold: {
@@ -1160,14 +1182,14 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Bottom line — size",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Body size" value={value as number} onChange={onChange} fallback={16} step={2} min={10} allowZero={false} />
+            <SizeStepper label={"Bottom line — size"} value={value as number} onChange={onChange} fallback={16} step={2} min={10} allowZero={false} />
           ),
         },
         bodyColor: {
           type: "custom" as const,
           label: "Bottom line — colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         bodyBold: {
@@ -1183,7 +1205,7 @@ export const config: Config<Props, RootProps> = {
           label: "Text",
           options: [
             { label: "Left", value: false },
-            { label: "Centered", value: true },
+            { label: "Centred", value: true },
           ],
         },
         layout: {
@@ -1198,11 +1220,26 @@ export const config: Config<Props, RootProps> = {
           type: "radio" as const,
           label: "Card box",
           options: [
-            { label: "White box", value: false },
+            // ⛔ WAS ALSO "White box", WORD FOR WORD THE FIRST OPTION OF `surface` ABOVE — two
+            // different fields in one panel offering the identical phrase for different things.
+            { label: "Keep the box", value: false },
             { label: "No box (sits on the band)", value: true },
           ],
         },
       },
+      /**
+       * ⛔ NO BOX MEANS THE BOX CONTROLS ARE DEAD — SO THEY LEAVE THE PANEL.
+       *
+       * Card.tsx returns early when `bare` is on, which silently ignored seven controls that
+       * stayed on screen and stayed editable: the surface, its tint and opacity, both edge
+       * colours, the glow and the corner radius. Steven's exact complaint about this panel was
+       * "plenty of choices, but only like half of them" do anything — and here that was literally
+       * true, with nothing on screen saying which half.
+       *
+       * Hiding beats relabelling: a control that cannot apply should not be arguing for attention
+       * next to six that can.
+       */
+      resolveFields: hideWhenBare,
       defaultProps: CARD_DEFAULTS as CardBlock,
       render: ({ badge, eyebrow, heading, body, icon, iconColor, badgeColor, badgePosition, centered, layout, bare, eyebrowSize, eyebrowColor, headingSize, headingColor, bodySize, bodyColor, eyebrowBold, headingBold, bodyBold, eyebrowCaps, surface, surfaceColor, surfaceOpacity, borderColor, hoverBorderColor, shadowColor, hoverLift, radius }) => (
         <Card
@@ -1337,7 +1374,7 @@ export const config: Config<Props, RootProps> = {
       fields: {
         dotColor: {
           type: "select" as const,
-          label: "Dot color",
+          label: "Dot colour",
           // Labelled by ROLE, not by colour name — "Second accent" stays true after a re-skin;
           // an option called "Green" is a lie the moment the palette moves.
           options: [
@@ -1346,7 +1383,7 @@ export const config: Config<Props, RootProps> = {
             { label: "Ink", value: "ink" },
           ],
         },
-        textColor: { ...COLOR_FIELD, label: "Text color" },
+        textColor: { ...COLOR_FIELD, label: "Text colour" },
         rows: {
           type: "array" as const,
           label: "Items",
@@ -1381,16 +1418,16 @@ export const config: Config<Props, RootProps> = {
         valueColor: {
           type: "custom" as const,
           label: "Number colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
-        labelColor: { ...COLOR_FIELD, label: "Label color" },
+        labelColor: { ...COLOR_FIELD, label: "Label colour" },
         valueSize: {
           type: "custom" as const,
           label: "Number size (0 = fits the screen automatically)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Size" value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
+            <SizeStepper label={"Number size (0 = fits the screen automatically)"} value={value as number} onChange={onChange} fallback={0} step={2} min={0} />
           ),
         },
         align: {
@@ -1455,6 +1492,59 @@ export const config: Config<Props, RootProps> = {
           label: "…or start from a preset and edit here (a one-off copy)",
           render: ({ onChange }) => <FormPicker onApply={(id) => onChange(id)} />,
         },
+        // ⛔ THE FORM HAD NO CUSTOMER-FACING TITLE. The library name is internal, so the only way
+        // to say what this form is was a Text block above it — which has no band, so the colour
+        // started below the heading and the section looked broken.
+        heading: { type: "text" as const, label: "Heading the customer sees (optional)" },
+        subheading: { type: "textarea" as const, label: "Line under the heading (optional)" },
+        headingColor: {
+          ...COLOR_FIELD,
+          label: "Heading colour (blank = the page's own)",
+        },
+        theme: {
+          type: "radio" as const,
+          label: "Sitting on",
+          options: [
+            { label: "A light band", value: "light" },
+            { label: "A dark band", value: "dark" },
+          ],
+        },
+        inColumn: {
+          type: "radio" as const,
+          label: "Width",
+          options: [
+            { label: "Centred island", value: false },
+            { label: "Fill the column", value: true },
+          ],
+        },
+        // ⛔ THE BAND BELONGS TO THIS BLOCK, BECAUSE IT CANNOT BELONG TO A SECTION.
+        // "Section (band)" has no drop zone — every block is a sibling, never a child — so a form
+        // can never be placed inside one and inherit its colour. Steven hit exactly that: he could
+        // colour the band holding the heading, and the form underneath it stayed white.
+        background: {
+          type: "custom" as const,
+          label: "Background colour behind the form (blank = none)",
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
+          ),
+        },
+        // ⛔ SPLIT, LIKE EVERY OTHER BLOCK. This was one combined dial while Heading, Text, Image,
+        // HeroImage, Section, DesignSection and the footer all give two — the exact "different
+        // shit for every section" Steven called out.
+        paddingTop: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
+          ),
+        },
+        paddingBottom: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }: { onChange: (v: number) => void; value: unknown }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
+          ),
+        },
         source: { type: "text" as const, label: "Source tag (shows in the intake sheet)" },
         fields: {
           type: "array" as const,
@@ -1477,49 +1567,25 @@ export const config: Config<Props, RootProps> = {
         buttonLabel: { type: "text" as const, label: "Button text" },
         note: { type: "textarea" as const, label: "Small line under the button" },
         successHeading: { type: "text" as const, label: "Thank-you heading" },
-        successBody: { type: "textarea" as const, label: "Thank-you body" },
+        successBody: { type: "textarea" as const, label: "Thank-you message" },
         buttonColor: {
           type: "custom" as const,
           label: "Submit button colour (blank = site blue)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
-          ),
-        },
-        theme: {
-          type: "radio" as const,
-          label: "Form panel",
-          options: [
-            { label: "White", value: "light" },
-            { label: "Glass (on dark)", value: "dark" },
-          ],
-        },
-        inColumn: {
-          type: "radio" as const,
-          label: "Width",
-          options: [
-            { label: "Centred island", value: false },
-            { label: "Fill the column", value: true },
-          ],
-        },
-        // ⛔ THE BAND BELONGS TO THIS BLOCK, BECAUSE IT CANNOT BELONG TO A SECTION.
-        // "Section (band)" has no drop zone — every block is a sibling, never a child — so a form
-        // can never be placed inside one and inherit its colour. Steven hit exactly that: he could
-        // colour the band holding the heading, and the form underneath it stayed white.
-        background: {
-          type: "custom" as const,
-          label: "Band behind the form (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
-          ),
-        },
-        bandPadding: {
-          type: "custom" as const,
-          label: "Space above and below the card (− / +)",
-          render: ({ onChange, value }) => (
-            <SizeStepper label="Space above and below" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
       },
+      /**
+       * ⛔ THE BAND CANNOT APPLY IN A COLUMN, SO IT LEAVES THE PANEL THERE.
+       *
+       * LeadForm returns the bare card when `inColumn` is set — a full-width band inside one half
+       * of a two-column layout is not a band, it is a coloured rectangle behind half a row. Both
+       * the colour and its padding were therefore dead in that mode while staying fully editable,
+       * which is the same trap as Card's box controls. Shipped by me tonight; caught by the audit
+       * the same evening.
+       */
+      resolveFields: hideBandInColumn,
       defaultProps: { ...LEADFORM_DEFAULTS, preset: "", formId: "" } as LeadFormBlock,
       /**
        * Copy a preset's questions into THIS block, then forget the preset.
@@ -1533,7 +1599,7 @@ export const config: Config<Props, RootProps> = {
        * would drag the database client into the editor bundle.
        */
       resolveData: resolveLeadFormPreset,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, bandPadding }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, paddingTop, paddingBottom, bandPadding, heading, subheading, headingColor }) => (
         <LeadForm
           source={source}
           fields={fields}
@@ -1545,7 +1611,12 @@ export const config: Config<Props, RootProps> = {
           inColumn={inColumn}
           theme={theme === "dark" ? "dark" : "light"}
           background={background}
+          paddingTop={paddingTop}
+          paddingBottom={paddingBottom}
           bandPadding={bandPadding}
+          heading={heading}
+          subheading={subheading}
+          headingColor={headingColor}
         />
       ),
     },
@@ -1770,7 +1841,8 @@ export const config: Config<Props, RootProps> = {
           label: "Footer links (add / delete)",
           arrayFields: {
             label: { type: "text" as const, label: "Label" },
-            target: { type: "text" as const, label: "Links to (page or /#section)" },
+            target: { type: "text" as const, label: "Links to — a page (/about) or a section (/#services)" },
+            newTab: OPENS_IN_FIELD,
           },
           getItemSummary: (i: { label?: string }) => i?.label || "link",
           defaultItemProps: { label: "New link", target: "/" },
@@ -1793,7 +1865,8 @@ export const config: Config<Props, RootProps> = {
               defaultItemProps: { label: "New link", target: "/", note: "" },
               arrayFields: {
                 label: { type: "text" as const, label: "Label" },
-                target: { type: "text" as const, label: "Links to (page or /#section)" },
+                target: { type: "text" as const, label: "Links to — a page (/about) or a section (/#services)" },
+            newTab: OPENS_IN_FIELD,
                 // Same field the nav's links carry. A footer column has room to say what a link
                 // MEANS, which is the difference between listing four divisions and teaching them.
                 note: { type: "text" as const, label: "One line under it (blank = hide)" },
@@ -1811,15 +1884,15 @@ export const config: Config<Props, RootProps> = {
         background: {
           type: "custom" as const,
           label: "Footer band colour (blank = SJC near-black)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         foreground: {
           type: "custom" as const,
           label: "Footer text colour (blank = white)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         brandName: { type: "text" as const, label: "Business name (blank = Steven James Consulting)" },
@@ -1837,8 +1910,8 @@ export const config: Config<Props, RootProps> = {
         brandLine2Color: {
           type: "custom" as const,
           label: "Second line colour (blank = matches the name)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // ⛔ ON SCREEN, NOT IN CODE — the same rule contactWidth below was created under. A value
@@ -1851,8 +1924,8 @@ export const config: Config<Props, RootProps> = {
         brandAccentColor: {
           type: "custom" as const,
           label: "That word's colour (blank = the brand blue)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         buttonStyle: {
@@ -1877,23 +1950,23 @@ export const config: Config<Props, RootProps> = {
         // the very footer he had just stripped to one row to make it shallow.
         paddingTop: {
           type: "custom" as const,
-          label: "Space at the top (− / +)",
+          label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space at the top" value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
           ),
         },
         paddingBottom: {
           type: "custom" as const,
-          label: "Space at the bottom (− / +)",
+          label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space at the bottom" value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={56} step={8} min={0} />
           ),
         },
         legalGap: {
           type: "custom" as const,
           label: "Gap above the copyright line (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Gap above the copyright line" value={value as number} onChange={onChange} fallback={48} step={8} min={0} />
+            <SizeStepper label={"Gap above the copyright line"} value={value as number} onChange={onChange} fallback={48} step={8} min={0} />
           ),
         },
         // Same four contact controls the header block has, so the two cannot say different things.
@@ -1922,14 +1995,14 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Contact column width, desktop (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={300} step={20} min={180} />
+            <SizeStepper label={"Contact column width, desktop"} value={value as number} onChange={onChange} fallback={300} step={20} min={180} />
           ),
         },
         buttonWidthMobile: {
           type: "custom" as const,
           label: "Button width on mobile, % (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={50} step={5} min={25} />
+            <SizeStepper label={"Button width on mobile, %"} value={value as number} onChange={onChange} fallback={50} step={5} min={25} unit="%" />
           ),
         },
         showLogo: {
@@ -2008,9 +2081,19 @@ export const config: Config<Props, RootProps> = {
         brandLine2Color: {
           type: "custom" as const,
           label: "Second line colour (blank = matches the name)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
+        },
+        // ⛔ THE FOOTER HAS THESE AND THE HEADER DID NOT, while the comment above the footer
+        // block claimed the two marks are kept identical. Same labels, same behaviour, both ends.
+        brandAccentWord: {
+          type: "text" as const,
+          label: "Last word in the accent colour — e.g. Consulting (blank = one colour)",
+        },
+        brandAccentColor: {
+          ...COLOR_FIELD,
+          label: "That word's colour (blank = the brand blue)",
         },
         brandHref: {
           type: "text" as const,
@@ -2020,16 +2103,16 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Business name size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={16} step={1} min={12} />
+            <SizeStepper label={"Business name size"} value={value as number} onChange={onChange} fallback={16} step={1} min={12} />
           ),
         },
-        tagline: { type: "text" as const, label: "Center tagline (who you are)" },
-        taglineColor: { ...NAV_COLOR_FIELD, label: "Tagline color" },
+        tagline: { type: "text" as const, label: "Centre tagline (who you are)" },
+        taglineColor: { ...NAV_COLOR_FIELD, label: "Tagline colour" },
         taglineSize: {
           type: "custom" as const,
           label: "Tagline size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={18} step={1} min={10} />
+            <SizeStepper label={"Tagline size"} value={value as number} onChange={onChange} fallback={18} step={1} min={10} />
           ),
         },
         links: {
@@ -2042,10 +2125,10 @@ export const config: Config<Props, RootProps> = {
               type: "custom" as const,
               label: "Size (− / +)",
               render: ({ onChange, value }) => (
-                <SizeStepper value={value as number} onChange={onChange} fallback={14} step={1} min={10} />
+                <SizeStepper label={"Size"} value={value as number} onChange={onChange} fallback={14} step={1} min={10} />
               ),
             },
-            color: { ...NAV_COLOR_FIELD, label: "Color" },
+            color: { ...NAV_COLOR_FIELD, label: "Colour" },
             newTab: { ...OPENS_IN_FIELD },
             // Menu style only — a bar has nowhere to put either of these.
             note: { type: "text" as const, label: "One line under it (menu style only)" },
@@ -2076,7 +2159,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Button width on mobile, % (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper value={value as number} onChange={onChange} fallback={70} step={5} min={25} />
+            <SizeStepper label={"Button width on mobile, %"} value={value as number} onChange={onChange} fallback={70} step={5} min={25} unit="%" />
           ),
         },
         // ── WHOSE SITE IS THIS ────────────────────────────────────────────────────────────
@@ -2085,15 +2168,15 @@ export const config: Config<Props, RootProps> = {
         background: {
           type: "custom" as const,
           label: "Header band colour (blank = SJC navy)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         foreground: {
           type: "custom" as const,
           label: "Header text colour (blank = white)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         showLogo: {
@@ -2107,16 +2190,16 @@ export const config: Config<Props, RootProps> = {
         ctaColor: {
           type: "custom" as const,
           label: "Button colour (blank = SJC blue)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         brandIcon: { type: "select" as const, label: "Mark beside the name (client sites)", options: ICON_OPTIONS },
         brandIconColor: {
           type: "custom" as const,
           label: "Mark colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // Set it to the hero's grid colour and the bar stops reading as a separate rectangle
@@ -2124,17 +2207,19 @@ export const config: Config<Props, RootProps> = {
         bandGrid: {
           type: "custom" as const,
           label: "Grid overlay on the header band (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
       },
       defaultProps: NAV_DEFAULTS,
-      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, ctaIcon, menuIconCall, menuIconText, menuIconEmail, menuButtonWidthMobile, brandStyle, brandLine2, brandLine2Color, bandGrid }) => (
+      render: ({ brandName, brandHref, brandSize, tagline, taglineColor, taglineSize, links, ctaLabel, ctaHref, ctaNewTab, background, foreground, showLogo, ctaColor, brandIcon, brandIconColor, menuMode, menuPhone, menuPhoneDisplay, menuEmail, ctaIcon, menuIconCall, menuIconText, menuIconEmail, menuButtonWidthMobile, brandStyle, brandLine2, brandLine2Color, brandAccentWord, brandAccentColor, bandGrid }) => (
         <NavView
           brandStyle={brandStyle}
           brandLine2={brandLine2}
           brandLine2Color={brandLine2Color}
+          brandAccentWord={brandAccentWord}
+          brandAccentColor={brandAccentColor}
           bandGrid={bandGrid}
           menuMode={menuMode}
           menuPhone={menuPhone}
@@ -2172,16 +2257,16 @@ export const config: Config<Props, RootProps> = {
         maxWidth: { ...WIDTH_FIELD, label: "Content width" },
         paddingTop: {
           type: "custom" as const,
-          label: "Padding top (− / +)",
+          label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Padding top" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
           ),
         },
         paddingBottom: {
           type: "custom" as const,
-          label: "Padding bottom (− / +)",
+          label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Padding bottom" value={value as number} onChange={onChange} fallback={64} step={8} min={0} />
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={64} step={8} min={0} />
           ),
         },
         // ── The three things a bought design does to a band that we couldn't say before.
@@ -2189,15 +2274,15 @@ export const config: Config<Props, RootProps> = {
         gradientTo: {
           type: "custom" as const,
           label: "Fade to (blank = flat colour)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         gradientAngle: {
           type: "custom" as const,
           label: "Fade direction (degrees)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Angle" value={value as number} onChange={onChange} fallback={135} step={15} min={0} />
+            <SizeStepper label={"Fade direction (degrees)"} value={value as number} onChange={onChange} fallback={135} step={15} min={0} unit="°" />
           ),
         },
         // Soft colour washes bleeding in from the corners. Blank = off, which is what every
@@ -2205,8 +2290,8 @@ export const config: Config<Props, RootProps> = {
         decor: {
           type: "custom" as const,
           label: "Corner glow (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // Faint graph-paper overlay. Reads as "technical" and is most of why a dark band in a
@@ -2214,8 +2299,8 @@ export const config: Config<Props, RootProps> = {
         grid: {
           type: "custom" as const,
           label: "Grid overlay (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         content: { type: "slot" as const },
@@ -2284,7 +2369,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
+            <SizeStepper label={"Height"} value={value as number} onChange={onChange} fallback={32} step={8} min={0} />
           ),
         },
       },
@@ -2318,7 +2403,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
+            <SizeStepper label={"Height"} value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
           ),
         },
       },
@@ -2355,19 +2440,19 @@ export const config: Config<Props, RootProps> = {
     Divider: {
       label: "Divider (line)",
       fields: {
-        color: { ...COLOR_FIELD, label: "Line color" },
+        color: { ...COLOR_FIELD, label: "Line colour" },
         thickness: {
           type: "custom" as const,
           label: "Thickness (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Thickness" value={value as number} onChange={onChange} fallback={1} step={1} min={1} />
+            <SizeStepper label={"Thickness"} value={value as number} onChange={onChange} fallback={1} step={1} min={1} />
           ),
         },
         spacing: {
           type: "custom" as const,
           label: "Space above/below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Spacing" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper label={"Space above/below"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
       },
@@ -2396,7 +2481,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Gap between columns (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Gap between columns" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper label={"Gap between columns"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
         col1: { type: "slot" as const },
@@ -2451,29 +2536,29 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Font size" allowZero={false} value={value as number} onChange={onChange} fallback={32} />
+            <SizeStepper label={"Font size"} allowZero={false} value={value as number} onChange={onChange} fallback={32} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={12} step={4} min={0} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
         color: {
           type: "custom" as const,
-          label: "Color",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          label: "Colour",
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // TWO-TONE — type the words you want in the accent colour and they get picked out of the
@@ -2483,15 +2568,15 @@ export const config: Config<Props, RootProps> = {
         highlightFade: {
           type: "custom" as const,
           label: "Fade those words to (blank = flat colour)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         highlightColor: {
           type: "custom" as const,
           label: "Highlight colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         // The hand-drawn swipe under a headline. Blank = off, which is what every existing
@@ -2499,8 +2584,8 @@ export const config: Config<Props, RootProps> = {
         underline: {
           type: "custom" as const,
           label: "Hand-drawn underline (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
       },
@@ -2598,48 +2683,48 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Font size (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Font size" allowZero={false} value={value as number} onChange={onChange} fallback={18} />
+            <SizeStepper label={"Font size"} allowZero={false} value={value as number} onChange={onChange} fallback={18} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={16} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
-        color: { ...COLOR_FIELD, label: "Default color (whole block)" },
+        color: { ...COLOR_FIELD, label: "Default colour (whole block)" },
         // PILL MODE — turns a line of text into the little bordered badge a good design uses for
         // a star rating or an address. Blank = an ordinary paragraph, which is what every
         // existing Text block on the site has saved.
         pill: {
           type: "custom" as const,
           label: "Pill background (blank = plain text)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         pillBorder: {
           type: "custom" as const,
           label: "Pill border colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         icon: { type: "select" as const, label: "Icon before the text", options: ICON_OPTIONS },
         iconColor: {
           type: "custom" as const,
           label: "Icon colour",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
       },
@@ -2683,7 +2768,13 @@ export const config: Config<Props, RootProps> = {
               className={`inline-flex items-center gap-2 leading-snug${pill || pillBorder ? " rounded-full px-4 py-2" : ""}`}
               style={{
                 color: resolveColorOr(color, "var(--color-sjc-ink)"),
-                background: pill || undefined,
+                // ⛔ WAS `background: pill || undefined` — THE PICKER'S VALUE HANDED STRAIGHT TO CSS.
+                // ColorField saves a ROLE ("accent") or a marked hex ("custom:#ff0000"); neither is
+                // valid CSS, so every colour this control could produce painted NOTHING. Only a
+                // legacy raw hex ever worked, which is why it read as flaky rather than broken.
+                // `pillBorder` on the very next line always resolved — two lines written a minute
+                // apart and only one of them right.
+                background: pill ? resolveColor(pill) : undefined,
                 border: pillBorder ? `1px solid ${resolveColor(pillBorder)}` : undefined,
                 boxShadow: pill || pillBorder ? "0 1px 2px rgba(0,0,0,0.05)" : undefined,
               }}
@@ -2705,7 +2796,11 @@ export const config: Config<Props, RootProps> = {
       fields: {
         title: { type: "text" as const, label: "Button text" },
         subtitle: { type: "textarea" as const, label: "Small line under (optional)" },
-        href: { type: "text" as const, label: "Link" },
+        href: { type: "text" as const, label: "Links to — a page (/about) or a full web address" },
+        // ⛔ THE BUTTON POINTS OFF-SITE MORE THAN ANYTHING ELSE ON THE PAGE — booking links, Skool,
+        // YouTube — and it was the one link block with no way to say so. Same control the header
+        // menu and images already use, so there is one answer to this question site-wide.
+        newTab: OPENS_IN_FIELD,
         icon: { type: "select" as const, label: "Icon", options: ICON_OPTIONS },
         variant: {
           type: "radio" as const,
@@ -2727,8 +2822,8 @@ export const config: Config<Props, RootProps> = {
         color: {
           type: "custom" as const,
           label: "Button colour (blank = site default)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         align: { ...ALIGN_FIELD, label: "Align" },
@@ -2745,6 +2840,7 @@ export const config: Config<Props, RootProps> = {
         title: "Book the Call",
         subtitle: "",
         href: "/#contact",
+        newTab: false,
         icon: "",
         variant: "",
         shape: "",
@@ -2752,12 +2848,12 @@ export const config: Config<Props, RootProps> = {
         align: "center" as Align,
         fullWidth: false,
       },
-      render: ({ title, subtitle, href, icon, variant, shape, color, align, fullWidth }) => {
+      render: ({ title, subtitle, href, newTab, icon, variant, shape, color, align, fullWidth }) => {
         // No styling chosen => the original button, untouched.
         if (!variant && !shape && !color && !icon) {
           return (
             <div className="mt-8 flex justify-center">
-              <CtaButton title={title} subtitle={subtitle || undefined} href={href} />
+              <CtaButton title={title} subtitle={subtitle || undefined} href={href} newTab={newTab} />
             </div>
           );
         }
@@ -2768,6 +2864,10 @@ export const config: Config<Props, RootProps> = {
           <div className="mt-6 flex" style={{ justifyContent: justify }}>
             <a
               href={href || "#"}
+              // ⚠️ THE STYLED PATH TOO. This block goes through CtaButton when nothing is styled and
+              // through this anchor the moment anything is — wire one and the setting works on half
+              // the buttons on the site, which is worse than not having it at all.
+              {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               className={`inline-flex items-center justify-center gap-2 px-8 py-4 font-bold transition-all hover:-translate-y-0.5${
                 shape === "pill" ? " rounded-full" : " rounded-xl"
               }${fullWidth ? " w-full" : ""}`}
@@ -2871,7 +2971,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Photo height (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Height" value={value as number} onChange={onChange} fallback={560} step={20} min={160} allowZero={false} />
+            <SizeStepper label={"Photo height"} value={value as number} onChange={onChange} fallback={560} step={20} min={160} allowZero={false} />
           ),
         },
         tilt: {
@@ -2889,7 +2989,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Corner rounding (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Corner rounding" value={value as number} onChange={onChange} fallback={40} step={4} min={0} />
+            <SizeStepper label={"Corner rounding"} value={value as number} onChange={onChange} fallback={40} step={4} min={0} />
           ),
         },
         frame: {
@@ -2903,8 +3003,8 @@ export const config: Config<Props, RootProps> = {
         glow: {
           type: "custom" as const,
           label: "Glow behind photo (blank = none)",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         badgeTitle: { type: "text" as const, label: "Floating card — bold line (blank = hide)" },
@@ -2912,23 +3012,23 @@ export const config: Config<Props, RootProps> = {
         pillText: { type: "text" as const, label: "Corner pill — e.g. Open Today (blank = hide)" },
         pillColor: {
           type: "custom" as const,
-          label: "Corner pill color",
-          render: ({ onChange, value }) => (
-            <ColorField value={value as string} onChange={onChange} />
+          label: "Corner pill colour",
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
       },
@@ -2975,7 +3075,7 @@ export const config: Config<Props, RootProps> = {
           type: "custom" as const,
           label: "Zoom % (100 = fit, higher = closer)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Zoom %" value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} />
+            <SizeStepper label={"Zoom % (100 = fit, higher = closer)"} value={value as number} onChange={onChange} fallback={100} step={10} min={100} allowZero={false} unit="%" />
           ),
         },
         focus: {
@@ -2995,26 +3095,26 @@ export const config: Config<Props, RootProps> = {
         },
         alt: { type: "text" as const, label: "Alt text (describe the image)" },
         caption: { type: "textarea" as const, label: "Caption (optional)" },
-        captionColor: { ...COLOR_FIELD, label: "Caption color" },
+        captionColor: { ...COLOR_FIELD, label: "Caption colour" },
         maxWidth: {
           type: "custom" as const,
           label: "Max width px (0 = full width)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Max width (0 = full)" value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
+            <SizeStepper label={"Max width px (0 = full width)"} value={value as number} onChange={onChange} fallback={0} step={40} min={0} />
           ),
         },
         spaceAbove: {
           type: "custom" as const,
           label: "Space above (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space above" value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
         spaceBelow: {
           type: "custom" as const,
           label: "Space below (− / +)",
           render: ({ onChange, value }) => (
-            <SizeStepper label="Space below" value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
           ),
         },
         rounded: {
@@ -3031,10 +3131,10 @@ export const config: Config<Props, RootProps> = {
         linkUrl: { type: "text" as const, label: "Link URL (make the image clickable)" },
         openInNewTab: {
           type: "radio" as const,
-          label: "Open link in…",
+          label: "Opens in",
           options: [
-            { label: "New tab", value: "yes" },
             { label: "Same tab", value: "no" },
+            { label: "New tab", value: "yes" },
           ],
         },
       },
@@ -3232,6 +3332,88 @@ export const config: Config<Props, RootProps> = {
     // Industry deep page (HVAC / Roofing / Garage Doors …) — full template, copy editable.
   },
 } satisfies Config;
+
+// ── EVERY BLOCK GETS THE SAME TWO SPACING CONTROLS ───────────────────────────────────────────
+//
+// Steven: *"I don't need every micro setting editable. Just the basic section padding and so
+// forth… I want everything in this template to be the same."* Four blocks had spacing; twenty-two
+// did not, so adding space anywhere else meant dragging in a Spacer. Adding the pair by hand to
+// each one is twenty-two chances to name it differently — which is how the panel got this way.
+// So it is added ONCE, here, and every block is identical by construction.
+//
+// ⛔ THE WRAPPER IS NOT EMITTED UNTIL IT IS USED, AND THAT IS THE WHOLE SAFETY STORY.
+//
+// Wrapping unconditionally would put a new element between every block and its parent on every
+// page — inert at zero padding, but not harmless: a card in a Columns row would stop stretching to
+// its neighbours' height (the column sizes the wrapper, not the card), anything sticky would stick
+// inside the wrapper instead of the page, and a full-height block would lose its chain. None of
+// that crashes; it is the kind of drift you notice on a client's site a week later.
+//
+// With both values at zero — which is every block on every page that exists today — `render`
+// returns exactly what it returned before, byte for byte. The wrapper appears only where spacing
+// has deliberately been dialled in.
+//
+// ⚠️ SKIPPED, AND WHY. Chrome (SiteHeader/SiteFooter) sets its own band depth. Section and
+// DesignSection are bands with their own padding. FormStep/FormQuestion are screens inside a
+// wizard, not page blocks. Anything already carrying `spaceAbove` or `paddingTop` keeps its own.
+const SPACING_SKIP = new Set([
+  "SiteHeader",
+  "SiteFooter",
+  "Section",
+  "DesignSection",
+  "FormStep",
+  "FormQuestion",
+]);
+
+type LooseComponent = {
+  fields?: Record<string, unknown>;
+  defaultProps?: Record<string, unknown>;
+  render: (props: Record<string, unknown>) => React.ReactNode;
+};
+
+function withSpacingControls(cfg: Config<Props, RootProps>): Config<Props, RootProps> {
+  const components = cfg.components as unknown as Record<string, LooseComponent>;
+
+  for (const [name, component] of Object.entries(components)) {
+    if (SPACING_SKIP.has(name)) continue;
+    const fields = component.fields || {};
+    // Already has its own spacing, under either vocabulary — leave it alone rather than give it
+    // a second, competing pair.
+    if ("spaceAbove" in fields || "paddingTop" in fields) continue;
+
+    component.fields = {
+      ...fields,
+      spaceAbove: {
+        type: "custom",
+        label: "Space above (− / +)",
+        render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+          <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+        ),
+      },
+      spaceBelow: {
+        type: "custom",
+        label: "Space below (− / +)",
+        render: ({ onChange, value }: { onChange: (v: number | null) => void; value: unknown }) => (
+          <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+        ),
+      },
+    };
+    component.defaultProps = { ...(component.defaultProps || {}), spaceAbove: 0, spaceBelow: 0 };
+
+    const inner = component.render;
+    component.render = (props: Record<string, unknown>) => {
+      const above = typeof props.spaceAbove === "number" ? props.spaceAbove : 0;
+      const below = typeof props.spaceBelow === "number" ? props.spaceBelow : 0;
+      const node = inner(props);
+      // ⛔ NOTHING SET -> NOTHING ADDED. Not an empty div, not a fragment: the original node.
+      if (!above && !below) return node;
+      return <div style={{ paddingTop: above, paddingBottom: below }}>{node}</div>;
+    };
+  }
+  return cfg;
+}
+
+export const config = withSpacingControls(baseConfig);
 
 // Seed = the current /about page expressed as Puck blocks, so Steven opens the editor to the
 // page he already has and can immediately add / delete / reorder. (The headshot image block

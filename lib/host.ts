@@ -62,18 +62,29 @@ async function requestHost(): Promise<string> {
 export const resolveHost = cache(async (): Promise<HostKind> => {
   const host = await requestHost();
 
-  if (!host || host === sjcHost()) return { kind: "sjc" };
+  if (!host) return { kind: "sjc" };
 
-  // THE REGISTRY WINS, INCLUDING FOR THE STUDIO'S OWN DOMAIN.
+  // THE REGISTRY WINS — FOR THE STUDIO'S OWN DOMAIN, AND NOW FOR THE APEX TOO.
   //
-  // Checked before the studio branch on purpose. The studio's sales page is not a special kind of
-  // page — it is a website Steven builds in his own builder, exactly like a client's, and it
-  // claims stevenjamesdesigns.com the same way a client's site claims theirs. Assign the domain in
-  // Website settings and it serves at the root; there is no code path to change and no hardcoded
-  // sales page to keep in sync with the builder.
+  // The studio's sales page is not a special kind of page — it is a website Steven builds in his
+  // own builder, exactly like a client's, and it claims its domain the same way a client's site
+  // claims theirs. Assign the domain in Website settings and it serves at the root; there is no
+  // code path to change and no hardcoded sales page to keep in sync with the builder.
+  //
+  // ⛔ THE APEX USED TO SHORT-CIRCUIT ABOVE THIS LINE. `host === sjcHost()` returned the legacy
+  // site before the registry was ever consulted, which made the rule above a half-truth: the
+  // registry won everywhere except the one domain that mattered most. Steven rebuilt SJC's own
+  // site as `sjc-2026` and there was no setting in the builder that could serve it at the apex.
+  //
+  // ⚠️ NOTHING VALIDATES DOMAIN UNIQUENESS — `updateSite` writes the field through unchecked — and
+  // the built-in `sjc` row declares the apex as its own default (lib/sites.ts). The `s.id !== SJC`
+  // filter below is what stops the retiring site re-claiming the apex through this path. Keep it.
   const sites = await readSites();
   const site = sites.find((s) => s.id !== SJC && s.domain && normalizeHost(s.domain) === host);
   if (site) return { kind: "client", site };
+
+  // The apex with nothing in the registry claiming it — the legacy site, exactly as before.
+  if (host === sjcHost()) return { kind: "sjc" };
 
   // A DEMO: <site-id>.stevenjamesdesigns.com
   //
