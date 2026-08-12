@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RETENTION_DAYS, daysLeft, statusOf, type Site } from "@/lib/sitesShared";
+import { RETENTION_DAYS, daysLeft, statusOf, leadWiring, type Site } from "@/lib/sitesShared";
 import type { IntakeSummary } from "@/lib/intakeShared";
 import { publicUrlFor, onboardUrlFor } from "@/lib/hostShared";
 import IntakeAnswers from "./IntakeAnswers";
@@ -270,6 +270,40 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                 {publicUrlFor(s).replace(/^https:\/\//, "")} ↗
               </a>
             </div>
+
+            {/* WHAT IS ACTUALLY WIRED UP — answerable while scanning, instead of behind the gear.
+                Every one of these lived in Website settings, so "is this site connected to
+                anything" meant opening each card in turn. The heartbeat board asks the same three
+                fields whether the joint is HEALTHY; this asks whether it exists at all, from the
+                same derivation so the two can never disagree.
+
+                ⛔ A SHARED destination is red and named. Missing is something a client is owed;
+                shared means their customer's enquiry lands in another client's inbox. */}
+            {s.kind !== "sjc" ? (
+              (() => {
+                const w = leadWiring(s, sites);
+                const chip2 = (ok: boolean, label: string) => (
+                  <span key={label} style={ok ? wiredOn : wiredOff} title={ok ? `${label} is set` : `No ${label} yet`}>
+                    {ok ? "●" : "○"} {label}
+                  </span>
+                );
+                return (
+                  <div style={wiredRow}>
+                    {w.collidesWith ? (
+                      <span style={wiredClash} title="Two websites pointing at the same destination — leads can land in the wrong inbox">
+                        ⛔ Shares a destination with {w.collidesWith}
+                      </span>
+                    ) : null}
+                    {chip2(w.hasEmail, "Lead email")}
+                    {chip2(w.hasSheet, "Sheet")}
+                    {chip2(w.hasGhl, "GoHighLevel")}
+                    {s.chloe?.attached
+                      ? chip2(!!s.chloe.on, s.chloe.on ? "Chloe on" : `Chloe off${s.chloe.offReason ? ` — ${s.chloe.offReason}` : ""}`)
+                      : null}
+                  </div>
+                );
+              })()
+            ) : null}
 
             {/* ONBOARDING — the chase list.
                 One control whose label follows the state, because there is only ever one sensible
@@ -818,6 +852,12 @@ const ghostBtn: React.CSSProperties = { background: "var(--e-panel)", color: "va
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
 // Segmented, and deliberately not a <select>: the current state has to be readable while scanning
 // the library, which is the entire complaint that produced this control.
+// One line, scannable. Filled dot = set, hollow = not yet. Deliberately not colour-coded green:
+// "wired up" is not the same as "healthy", and the heartbeat board is what answers the second.
+const wiredRow: React.CSSProperties = { display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 0", borderTop: "1px solid var(--e-line)", fontSize: 11 };
+const wiredOn: React.CSSProperties = { color: "var(--e-ink)", fontWeight: 600 };
+const wiredOff: React.CSSProperties = { color: "var(--e-muted, #8a94a6)" };
+const wiredClash: React.CSSProperties = { width: "100%", color: "var(--e-danger)", fontWeight: 700 };
 const statusRow: React.CSSProperties = { display: "flex", gap: 0, marginBottom: 8, border: "1px solid var(--e-line)", borderRadius: 8, overflow: "hidden" };
 const statusBtn: React.CSSProperties = { flex: 1, background: "var(--e-panel)", color: "var(--e-muted, #55617a)", border: "none", borderRight: "1px solid var(--e-line)", padding: "7px 0", fontSize: 12, fontWeight: 600, cursor: "pointer" };
 const statusBtnOn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", cursor: "default" };

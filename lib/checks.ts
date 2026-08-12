@@ -21,6 +21,7 @@
 import { getClient } from "./store";
 import { readSites } from "./sites";
 import { publicUrlFor } from "./hostShared";
+import { leadWiring } from "./sitesShared";
 import type { Site } from "./sitesShared";
 import type { Board, CheckDef, CheckRun, CheckState } from "./checksShared";
 
@@ -392,41 +393,28 @@ async function checkDomainExpiry(site: Site): Promise<CheckRun> {
  * It answers the question nothing else does: is there a destination at all, and is it theirs alone.
  */
 function checkLeadDestinations(site: Site, all: Site[]): CheckRun {
-  const email = (site.leadEmail || "").trim().toLowerCase();
-  const ghl = (site.ghlWebhookUrl || "").trim();
-  const missing: string[] = [];
-  if (!email) missing.push("no lead email");
-  if (!site.sheetId) missing.push("no sheet");
-  if (!ghl) missing.push("no CRM webhook");
+  // ⚠️ ONE IMPLEMENTATION, SHARED WITH THE DESIGN LIBRARY CARD. The card asks "is this wired up"
+  // and this asks "is this joint healthy" — the same three fields answering two questions. Two
+  // copies would drift the first time a destination changed, and whichever screen you happened to
+  // be looking at would decide what you believed. See leadWiring() in lib/sitesShared.
+  const w = leadWiring(site, all);
 
-  const others = all.filter((s) => s.id !== site.id && s.kind === "client" && !s.deletedAt);
-  // Ternaries rather than `email && find(...)`: `&&` on an empty string yields "" rather than
-  // undefined, and a collision variable that can be a string is a collision variable that lies.
-  const sharedEmail = email
-    ? others.find((s) => (s.leadEmail || "").trim().toLowerCase() === email)
-    : undefined;
-  const sharedGhl = ghl ? others.find((s) => (s.ghlWebhookUrl || "").trim() === ghl) : undefined;
-  const sharedSheet = site.sheetId
-    ? others.find((s) => s.sheetId === site.sheetId)
-    : undefined;
-
-  const collision: Site | undefined = sharedEmail || sharedGhl || sharedSheet;
   return {
     checkId: "site.lead_destination",
     siteId: site.id,
     // ⛔ A collision is RED on sight. Missing is yellow — they are owed something they haven't got.
     // Shared is a different animal: their customer's enquiry arrives in someone else's inbox.
-    status: collision ? "fail" : missing.length ? "warn" : "pass",
-    detail: collision
-      ? `SHARES A DESTINATION with ${collision.name} — leads can land in that inbox instead.`
-      : missing.length
-        ? `${missing.join(", ")}.`
+    status: w.collidesWith ? "fail" : w.missing.length ? "warn" : "pass",
+    detail: w.collidesWith
+      ? `SHARES A DESTINATION with ${w.collidesWith} — leads can land in that inbox instead.`
+      : w.missing.length
+        ? `${w.missing.join(", ")}.`
         : "email, sheet and CRM webhook all set, and none shared with another client.",
     evidence: {
-      hasEmail: Boolean(email),
-      hasSheet: Boolean(site.sheetId),
-      hasGhl: Boolean(ghl),
-      collidesWith: collision ? collision.id : null,
+      hasEmail: w.hasEmail,
+      hasSheet: w.hasSheet,
+      hasGhl: w.hasGhl,
+      collidesWith: w.collidesWith,
     },
     at: now(),
   };

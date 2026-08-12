@@ -293,6 +293,57 @@ export function reachability(site: Pick<Site, "status" | "domain" | "archivedAt"
   };
 }
 
+/**
+ * WHERE THIS SITE'S LEADS GO — and whether any of it belongs to somebody else.
+ *
+ * ⚠️ ONE IMPLEMENTATION, TWO SURFACES. The heartbeat board asks "is this joint healthy" and the
+ * Design Library card asks "is this wired up" — the same three fields answering two questions. If
+ * the card computed its own version they would drift the first time a destination changed, and the
+ * screen you happened to be looking at would decide what you believed.
+ *
+ * Lives in sitesShared rather than lib/checks so the gallery (a client component) and the board (a
+ * server sweep) can both call it.
+ *
+ * ⛔ A COLLISION IS THE SERIOUS ONE. Missing means a client is owed something they have not got —
+ * amber. SHARED means their customer's enquiry arrives in another client's inbox, which is the
+ * cross-tenant failure this whole layer exists to prevent. Red, on sight.
+ */
+export function leadWiring(
+  site: Pick<Site, "id" | "kind" | "leadEmail" | "sheetId" | "ghlWebhookUrl">,
+  all: Pick<Site, "id" | "kind" | "name" | "deletedAt" | "leadEmail" | "sheetId" | "ghlWebhookUrl">[]
+): {
+  hasEmail: boolean;
+  hasSheet: boolean;
+  hasGhl: boolean;
+  missing: string[];
+  collidesWith: string | null;
+} {
+  const email = (site.leadEmail || "").trim().toLowerCase();
+  const ghl = (site.ghlWebhookUrl || "").trim();
+  const sheet = (site.sheetId || "").trim();
+
+  const missing: string[] = [];
+  if (!email) missing.push("no lead email");
+  if (!sheet) missing.push("no sheet");
+  if (!ghl) missing.push("no CRM webhook");
+
+  const others = all.filter((s) => s.id !== site.id && s.kind === "client" && !s.deletedAt);
+  // Ternaries rather than `email && find(...)`: `&&` on an empty string yields "" rather than
+  // undefined, and a collision variable that can be a string is a collision variable that lies.
+  const clash =
+    (email ? others.find((s) => (s.leadEmail || "").trim().toLowerCase() === email) : undefined) ||
+    (ghl ? others.find((s) => (s.ghlWebhookUrl || "").trim() === ghl) : undefined) ||
+    (sheet ? others.find((s) => (s.sheetId || "").trim() === sheet) : undefined);
+
+  return {
+    hasEmail: !!email,
+    hasSheet: !!sheet,
+    hasGhl: !!ghl,
+    missing,
+    collidesWith: clash ? clash.name : null,
+  };
+}
+
 export const emptyBusiness = (): BusinessFacts => ({
   name: "",
   phone: "",
