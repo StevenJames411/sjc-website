@@ -43,56 +43,58 @@ export default async function BoardPage() {
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
       {/* "← All websites" lived here until the rail took over global navigation. */}
       <h1 style={{ fontSize: 34, fontWeight: 800, margin: "0 0 6px" }}>{title}</h1>
-      <p style={{ color: "var(--e-muted)", margin: "0 0 8px", maxWidth: 760 }}>
-        One row per website, plus a row for the plumbing they all share. Every vendor&rsquo;s own
-        dashboard sees only its own end, so nothing anywhere answers &ldquo;is this customer&rsquo;s
-        machine working&rdquo; &mdash; this does.
-      </p>
-      <p style={{ color: "var(--e-muted)", fontSize: 13, margin: "0 0 18px", maxWidth: 760 }}>
-        Each row shows what state the website is in and how its checks came back. A{" "}
-        <strong>draft</strong> site is unreachable on purpose, so most of its checks have nothing to
-        test and sit grey &mdash; that is the setting working, not a fault.
+      <p style={{ color: "var(--e-muted)", margin: "0 0 18px", maxWidth: 760 }}>
+        One row per website, plus the plumbing they all share. Every vendor&rsquo;s dashboard sees
+        only its own end, so nothing else answers &ldquo;is this customer&rsquo;s machine working&rdquo;.
       </p>
 
-      {/* The header count, across everybody. This is the glance the whole board exists for, so it
-          stays on the roster — one page per customer would mean opening ten to learn nothing's
-          wrong. Grey is surfaced beside the rest deliberately: an unmonitored joint is worse than
-          a broken one, because it looks like nothing at all. */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
-        {(["red", "yellow", "grey", "green"] as Colour[]).map((c) => {
-          const jump = view.tally(c) ? firstIn(c) : undefined;
-          const style = {
-            display: "inline-flex", alignItems: "center", gap: 8,
-            background: SWATCH[c].bg, border: `1px solid ${SWATCH[c].border}`,
-            borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600,
-            color: "inherit", textDecoration: "none",
-          } as const;
-          const body = (
-            <>
-              <Dot colour={c} size={9} />
-              {view.tally(c)} {SWATCH[c].label.toLowerCase()}
-            </>
-          );
-          return jump ? (
-            <a key={c} href={`#row-${jump}`} style={style} title="Jump to the first one">
-              {body}
-            </a>
-          ) : (
-            <span key={c} style={style}>{body}</span>
-          );
-        })}
+      {/* ⛔ WHAT IS TRACKED, NOT WHAT COLOUR IT IS. This was four colour pills and a paragraph
+          explaining them — six lines of prose before any data. Steven: *"this real estate is
+          absolutely wasted… the three things we're tracking, that's the only thing that needs to be
+          in it."*
+
+          Colour was the wrong axis for a summary. "6 needs you soon" spread across three unrelated
+          things is not something anyone can act on; "Lead destinations — 1 set, 6 not" is a job.
+          The colours are still here, attached to the thing they describe. */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+        {view.byCheck.map((c) => (
+          <a
+            key={c.id}
+            href={c.firstBad ? `#row-${c.firstBad}` : undefined}
+            title={c.firstBad ? "Jump to the first one that needs you" : "All good"}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              border: "1px solid var(--e-line)",
+              borderRadius: 10,
+              padding: "8px 14px",
+              textDecoration: "none",
+              color: "inherit",
+              cursor: c.firstBad ? "pointer" : "default",
+            }}
+          >
+            <span style={{ fontWeight: 700, fontSize: 13 }}>{c.label}</span>
+            <span style={{ display: "inline-flex", gap: 8 }}>
+              {c.counts.map((n) => (
+                <span
+                  key={n.colour}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, color: "var(--e-muted)" }}
+                  title={SWATCH[n.colour].label}
+                >
+                  <Dot colour={n.colour} size={8} />
+                  {n.count}
+                </span>
+              ))}
+            </span>
+          </a>
+        ))}
       </div>
 
-      <p style={{ color: "var(--e-muted)", fontSize: 12, margin: "0 0 4px", maxWidth: 760 }}>
-        <strong>Broken now</strong> — something is failing. <strong>Needs you soon</strong> — it
-        still works but it expires, or it was last verified too long ago.{" "}
-        <strong>Nothing proven yet</strong> — never checked, or nothing to check.{" "}
-        <strong>Verified</strong> — confirmed working, with a time next to it. Click a pill to jump
-        to the first one.
-      </p>
-      <p style={{ color: "var(--e-muted)", fontSize: 13, margin: "0 0 26px" }}>
-        {view.totalChecks} checks across {view.clientCount} client site(s) · last sweep{" "}
-        {ageText(view.sweptAt)} · <a href="/api/cron/checks" style={{ color: "var(--e-accent)" }}>run one now</a>
+      <p style={{ color: "var(--e-muted)", fontSize: 12.5, margin: "0 0 26px" }}>
+        {view.totalChecks} checks across {view.clientCount} website(s) &middot; last sweep{" "}
+        {ageText(view.sweptAt)} &middot;{" "}
+        <a href="/api/cron/checks" style={{ color: "var(--e-accent)" }}>run one now</a>
       </p>
 
       {/* One row per owner, in the order Steven dragged them into. */}

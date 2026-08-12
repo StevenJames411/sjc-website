@@ -41,12 +41,34 @@ export type Group = {
   state?: string;
 };
 
+/**
+ * THE PORTFOLIO SUMMARY — by WHAT IS TRACKED, not by colour.
+ *
+ * ⛔ THE HEADER USED TO BE FOUR COLOUR PILLS AND A PARAGRAPH EXPLAINING THEM. Steven, looking at
+ * six lines of prose before any data: *"this real estate is absolutely wasted… the three things
+ * we're tracking — lead destinations, website health, the domain — that's the only thing that needs
+ * to be in it."*
+ *
+ * He is right, and colour was the wrong axis. "6 needs you soon" spread across three unrelated
+ * things tells you nothing you can act on; "Lead destinations: 1 set, 6 not" is a job. The colours
+ * are still there, on the thing they describe.
+ */
+export type CheckSummary = {
+  id: string;
+  label: string;
+  counts: { colour: Colour; count: number }[];
+  /** The first owner with a non-green result for this check, for the jump link. */
+  firstBad?: string;
+};
+
 export type BoardView = {
   groups: Group[];
   totalChecks: number;
   clientCount: number;
   sweptAt?: string;
   tally: (c: Colour) => number;
+  /** One line per thing watched, across every row. See CheckSummary. */
+  byCheck: CheckSummary[];
 };
 
 /** Bare hostname — no scheme, no trailing slash. The thing he actually reads. */
@@ -124,12 +146,30 @@ export async function readBoardView(): Promise<BoardView> {
   );
 
   const all = groups.flatMap((g) => g.rows);
+
+  // One line per THING WATCHED, across every row — the summary that replaced the colour pills.
+  const RANK2: Colour[] = ["red", "yellow", "grey", "green"];
+  const byCheck: CheckSummary[] = CHECKS.map((def) => {
+    const mine = ordered.flatMap((g) =>
+      g.rows.filter((r) => r.def.id === def.id).map((r) => ({ key: g.key, colour: r.colour }))
+    );
+    return {
+      id: def.id,
+      label: def.short || def.label,
+      counts: RANK2.map((c) => ({ colour: c, count: mine.filter((m) => m.colour === c).length })).filter(
+        (x) => x.count > 0
+      ),
+      firstBad: mine.find((m) => m.colour !== "green")?.key,
+    };
+  }).filter((c) => c.counts.length);
+
   return {
     groups: ordered,
     totalChecks: all.length,
     clientCount: clients.length,
     sweptAt: board.updatedAt,
     tally: (c: Colour) => all.filter((r) => r.colour === c).length,
+    byCheck,
   };
 }
 

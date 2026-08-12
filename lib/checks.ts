@@ -424,6 +424,24 @@ function checkLeadDestinations(site: Site, all: Site[]): CheckRun {
   // be looking at would decide what you believed. See leadWiring() in lib/sitesShared.
   const w = leadWiring(site, all);
 
+  // ⛔ A SITE NOBODY CAN REACH IS NOT OWED A DESTINATION YET. Draft means it collects nothing, so
+  // "no lead email, no sheet, no CRM webhook" is a description of a build in progress, not a fault
+  // — and it was amber on every demo, which is six warnings that mean nothing and one that does.
+  //
+  // A COLLISION still fails even here: two sites sharing a destination is wrong the moment it is
+  // configured, whether or not either of them is live.
+  const reach = reachability(site);
+  if (!reach.onDomain && !reach.onDemo && !w.collidesWith) {
+    return {
+      checkId: "site.lead_destination",
+      siteId: site.id,
+      status: "skipped",
+      detail: `${statusOf(site)} — it isn't collecting anything yet, so it has nowhere to need.`,
+      evidence: { status: statusOf(site) },
+      at: now(),
+    };
+  }
+
   return {
     checkId: "site.lead_destination",
     siteId: site.id,
