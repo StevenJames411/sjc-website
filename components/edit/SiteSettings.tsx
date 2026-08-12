@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Site } from "@/lib/sitesShared";
+import { reachability, type Site } from "@/lib/sitesShared";
+import { publicUrlFor } from "@/lib/hostShared";
 
 // EVERYTHING GLOBAL TO ONE WEBSITE, ON ONE SCREEN.
 //
@@ -21,6 +22,9 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.email}}", "email"],
   ["{{business.address}}", "address"],
   ["{{business.hours}}", "hours"],
+  // Listed like the rest so the review form's button reads as a normal reference rather than
+  // machinery — it is the one token that resolves to a LINK instead of words.
+  ["{{business.reviewUrl}}", "reviewUrl"],
 ];
 
 export default function SiteSettings({ site, pageCount, pages }: Props) {
@@ -84,6 +88,10 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
           holdIndexing: !!s.holdIndexing,
           leadEmail: (s.leadEmail || "").trim(),
           sheetId: (s.sheetId || "").trim(),
+          // ⚠️ MISSING FROM THIS PAYLOAD UNTIL 2026-08-12 — the third lead destination, and the one
+          // the offer is sold on. Without it here the new field would type, look saved, and drop
+          // the value on the floor: the worst version of a bug, because the screen agrees with you.
+          ghlWebhookUrl: (s.ghlWebhookUrl || "").trim(),
           business: s.business,
           seo: s.seo,
         }),
@@ -119,6 +127,14 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
       <Field label="Email" v={s.business.email} on={(v) => biz("email", v)} ph="hello@yourbusiness.com" />
       <Field label="Address" v={s.business.address} on={(v) => biz("address", v)} ph="123 Main Street, Your City, ST 00000" />
       <Field label="Hours" v={s.business.hours} on={(v) => biz("hours", v)} ph="Mon – Fri: 9:00 AM – 5:00 PM" />
+      {/* A DESTINATION, so it lives on the business and not on the shared review form — see
+          BusinessFacts.reviewUrl. Blank simply hides the button on the thank-you screen. */}
+      <Field
+        label="Google review link — where a happy customer is sent"
+        v={s.business.reviewUrl || ""}
+        on={(v) => biz("reviewUrl", v)}
+        ph="https://g.page/r/…/review — blank hides the button"
+      />
 
       <div style={tokenBox}>
         <strong style={{ fontSize: 13 }}>Tokens you can paste into any text block</strong>
@@ -158,24 +174,52 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
         on={(v) => setS({ ...s, domain: v })}
         ph="theirbusiness.com"
       />
-      {/* SJC is the domain root; a client site is served under its own id until it has a domain.
-          Saying "/sjc" on the site that owns the domain was just wrong. */}
+      {/* ⛔ THIS USED TO ASSUME `kind === "sjc"` MEANT "OWNS THE DOMAIN", AND IT LIED (fixed
+          2026-08-12). sjc-2026 is kind `client` and serves stevenjamesconsulting.com — so this
+          panel told Steven, on the site that IS the live site, that pointing the domain at it "is
+          a separate step and isn't wired up yet".
+
+          It also said a site is reachable at `/<id>`, which predates demos moving to their own
+          subdomain. Both are now derived from the same helpers the server actually routes with, so
+          this panel cannot disagree with what is being served. */}
       <p style={hint}>
-        {s.kind === "sjc" ? (
-          <>
-            Served at <code style={code}>/</code> — this is the site the domain belongs to.
-          </>
-        ) : s.domain ? (
-          <>
-            Currently reachable at <code style={code}>/{s.id}</code>. Pointing{" "}
-            <strong>{s.domain}</strong> at it is a separate step and isn&apos;t wired up yet.
-          </>
-        ) : (
-          <>
-            Served at <code style={code}>/{s.id}</code>, and kept out of Google on purpose — it
-            carries a real business&apos;s details on our address. Add their domain once they buy.
-          </>
-        )}
+        {(() => {
+          const r = reachability(s);
+          const url = publicUrlFor(s).replace(/^https:\/\//, "");
+          if (r.onDomain) {
+            return (
+              <>
+                Serving <strong>{url}</strong> right now
+                {r.indexable ? "" : ", and kept out of Google by the box below"}.
+              </>
+            );
+          }
+          if (r.status === "published") {
+            return (
+              <>
+                Published, but no domain is pointed at it yet — so it is still answering at{" "}
+                <code style={code}>{url}</code>.
+              </>
+            );
+          }
+          if (r.status === "demo") {
+            return (
+              <>
+                Served at <code style={code}>{url}</code>, and kept out of Google on purpose — it
+                carries a real business&apos;s details on our address. Add their domain once they buy.
+              </>
+            );
+          }
+          if (r.status === "archived") {
+            return <>Archived — its address returns 404 for everyone. Put it back to Draft to work on it.</>;
+          }
+          return (
+            <>
+              Draft — <strong>only you</strong> can open it. Its address returns 404 for everyone
+              else. Set it to Demo in the Design Library when you want to send someone the link.
+            </>
+          );
+        })()}
       </p>
 
       {/* ⛔ DOMAIN AND VISIBILITY ARE TWO DIFFERENT DECISIONS. Being out of Google used to be a
@@ -202,14 +246,14 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
       <h2 style={sec}>Where the leads go</h2>
       <p style={hint}>
         Blank means enquiries from this website stay in your own intake — right for a demo, and for
-        your own pages. Put the owner&apos;s address in when they buy, and every enquiry goes
+        your own pages. Put the client&apos;s address in when they buy, and every enquiry goes
         straight to them with reply-to set to the customer, so hitting reply on their phone
         answers the person who asked.{" "}
         <strong>Your copy is kept either way</strong> — that&apos;s the record at renewal and the
         answer to &quot;I never got that lead&quot;.
       </p>
       <Field
-        label="Owner's email for leads"
+        label="Client's inbox — where their leads land"
         v={s.leadEmail || ""}
         on={(v) => setS({ ...s, leadEmail: v })}
         ph="the client's own inbox — leave blank while it's a demo"
@@ -230,6 +274,27 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
         docs.google.com/spreadsheets/d/<strong>THIS-PART</strong>/edit. Every lead from this
         website also writes a row here, which is what a business looks at when it wants its own
         record rather than an inbox.
+      </p>
+
+      {/* ⛔ THIS FIELD DID NOT EXIST UNTIL 2026-08-12, AND THE VALUE HAS BEEN LOAD-BEARING ALL ALONG.
+          `ghlWebhookUrl` is read by lead delivery and checked by the heartbeat board — it is the
+          third leg of "where the leads go", and the one the $97 offer actually sells: every lead in
+          one inbox. It could only ever be set by an admin route with a bearer token.
+          
+          So the card's GoHighLevel light could never come on by anything Steven could do on screen,
+          and the board's warning about it named a fix that existed nowhere. A setting that only
+          code can write makes the person who writes code a single point of failure. */}
+      <Field
+        label="GoHighLevel inbound webhook — their CRM"
+        v={s.ghlWebhookUrl || ""}
+        on={(v) => setS({ ...s, ghlWebhookUrl: v })}
+        ph="https://services.leadconnectorhq.com/hooks/… — blank means no CRM for this one"
+      />
+      <p style={hint}>
+        In GoHighLevel: <strong>Automation &rarr; Workflows &rarr; Inbound Webhook</strong>, then
+        copy the URL it gives you. Every enquiry from this website is posted there as a contact, so
+        it lands in the same inbox as their calls and texts. Blank is right for a demo and for the
+        tier without a CRM &mdash; the email and the sheet still get the lead.
       </p>
 
       <h2 style={sec}>How it looks when the link is shared</h2>

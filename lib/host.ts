@@ -67,6 +67,15 @@ async function requestHost(): Promise<string> {
  * cache across requests: a domain typed into Website settings has to take effect on the next page
  * load, not after some revalidation window nobody can see.
  */
+/** Is the signed-in owner making this request? Set by middleware, stripped from anything inbound. */
+async function isOwnerRequest(): Promise<boolean> {
+  try {
+    return (await headers()).get("x-sjc-owner") === "1";
+  } catch {
+    return false; // outside a request scope (static generation, scripts) nobody is the owner
+  }
+}
+
 export const resolveHost = cache(async (): Promise<HostKind> => {
   const host = await requestHost();
 
@@ -98,7 +107,13 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
   // this" and put the old site on the money domain, with no error anywhere.
   //
   // Match first, decide second: an unreachable site is GONE, not absent.
-  if (site) return reachability(site).onDomain ? { kind: "client", site } : { kind: "gone" };
+  // The owner sees his own work at its real address even while it is Draft — otherwise "how does
+  // this look on a phone" has no answer short of publishing it. A visitor still gets the 404.
+  if (site) {
+    return reachability(site).onDomain || (await isOwnerRequest())
+      ? { kind: "client", site }
+      : { kind: "gone" };
+  }
 
   // The apex with nothing in the registry claiming it — the legacy site, exactly as before.
   if (host === sjcHost()) return { kind: "sjc" };
@@ -146,7 +161,11 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
       // for a Demo site, and for a Published one whose domain is not resolving yet — the handover
       // window, where killing the demo link would leave the prospect with two dead addresses.
       // Draft and Archived are reachable by nobody, which is the whole point of them.
-      if (demo) return reachability(demo).onDemo ? { kind: "client", site: demo } : { kind: "gone" };
+      if (demo) {
+        return reachability(demo).onDemo || (await isOwnerRequest())
+          ? { kind: "client", site: demo }
+          : { kind: "gone" };
+      }
     }
   }
 

@@ -141,6 +141,7 @@ export default function PuckEditor({
   siteId,
   siteName,
   businessName,
+  reach,
   page,
   title,
   pages,
@@ -151,6 +152,16 @@ export default function PuckEditor({
   siteName: string;
   /** The BUSINESS's name from Website settings — what the header shows. See below. */
   businessName?: string;
+  /**
+   * Who can reach the SITE — separate from whether this PAGE has been published.
+   *
+   * ⚠️ TWO PUBLISH CONCEPTS EXIST AND THEY USED TO DISAGREE SILENTLY. A page's `_pub` marker says
+   * its content was published; the site's state says whether anybody can open the address. On a
+   * Draft site the dot went green, the bar said "Published — live on <url>", and the Copy button
+   * handed over a link that 404s. That is this codebase's own named failure — the receipt said
+   * done, the page said otherwise.
+   */
+  reach?: { status: string; onDomain: boolean; onDemo: boolean; indexable: boolean };
   page: string;
   title: string;
   pages: PageItem[];
@@ -178,6 +189,7 @@ export default function PuckEditor({
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState<boolean | null>(null);
   const [showVersions, setShowVersions] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [versions, setVersions] = useState<{ id: number; at: string; bytes: number }[]>([]);
   const [showLibrary, setShowLibrary] = useState(false);
   const [library, setLibrary] = useState<{ id: string; name: string; type: string; savedAt: string }[]>([]);
@@ -391,6 +403,72 @@ export default function PuckEditor({
   // ⚠️ Restoring reloads the editor. The draft has changed underneath Puck, and Puck holds its
   // own copy in memory; without the reload the canvas keeps showing the old version and the next
   // autosave writes it straight back over the one just restored.
+  /**
+   * Keep this whole page in the shared library.
+   *
+   * The section library's ★ saves one band; this saves the page. Both are shared across every
+   * website on purpose — a page proven on one build is available on the next.
+   */
+  const onSaveToLibrary = async () => {
+    const name = window.prompt("Name this page (e.g. Outdoor-living home page):");
+    if (!name || !name.trim()) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/page-library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ name: name.trim(), site: siteId, page }),
+      }).then((x) => x.json());
+      // A refusal here is the scrub doing its job — it names what it found rather than saving
+      // something that would carry one business's phone number onto another's site.
+      window.alert(r.ok ? `Saved "${name.trim()}" to the page library.` : r.error || "Couldn't save it.");
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** The insert half: pick a saved page and drop it onto THIS website as a new page. */
+  const onAddFromLibrary = async () => {
+    setBusy(true);
+    try {
+      const list = await fetch("/api/page-library", { credentials: "same-origin" }).then((x) => x.json());
+      const rows: { id: string; name: string; from: string }[] = list?.pages || [];
+      if (!rows.length) {
+        window.alert("Nothing in the page library yet. Save a page first — it's under ⋯ More.");
+        return;
+      }
+      const pick = window.prompt(
+        "Which page?\n\n" +
+          rows.map((r, i) => `${i + 1}. ${r.name}  (${r.from})`).join("\n") +
+          "\n\nType a number:"
+      );
+      const chosen = rows[Number(pick) - 1];
+      if (!chosen) return;
+
+      const asName = window.prompt("Call it what on this website?", chosen.name);
+      if (!asName || !asName.trim()) return;
+      const slug = asName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+      const r = await fetch("/api/page-library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ id: chosen.id, toSite: siteId, toPage: slug }),
+      }).then((x) => x.json());
+      if (!r.ok) return window.alert(r.error || "Couldn't add it.");
+      // It lands as a DRAFT. Going straight to it is the point — you asked for the page, so you
+      // get the page, not a message about it.
+      router.push(`/edit/${siteId}/${r.slug}`);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const openVersions = async () => {
     setBusy(true);
     try {
@@ -479,6 +557,11 @@ export default function PuckEditor({
       setBusy(false);
     }
   };
+
+  // Can a visitor open this site's address at all? Separate question from whether the PAGE has
+  // been published — see the `reach` prop. Defaults to true so any caller that hasn't been given
+  // the prop behaves exactly as before rather than reporting everything unreachable.
+  const reachable = reach ? reach.onDomain || reach.onDemo : true;
 
   // Is there actually a published version behind that address? A link that 404s is worse than no
   // link, so the bar says which it is rather than letting you find out by clicking.
@@ -606,12 +689,21 @@ export default function PuckEditor({
           style={{ ...btn, fontWeight: 700 }}
           title="Back to all websites"
         >
-          ← {siteName}
+          ← {businessName?.trim() || siteName}
         </button>
         <span style={{ fontWeight: 700, fontSize: 13 }}>Page:</span>
+        {/* The page list, and at its foot the way to bring one IN from another website. It sits
+            here rather than on the band because "which page am I on" and "add another page" are the
+            same question asked half a second apart — and the band is full. */}
         <select
           value={page}
-          onChange={(e) => router.push(`/edit/${siteId}/${e.target.value}`)}
+          onChange={(e) => {
+            if (e.target.value === "__library__") {
+              onAddFromLibrary();
+              return;
+            }
+            router.push(`/edit/${siteId}/${e.target.value}`);
+          }}
           style={select}
         >
           {pages.map((p) => (
@@ -619,6 +711,8 @@ export default function PuckEditor({
               {p.title}
             </option>
           ))}
+          <option disabled>──────────</option>
+          <option value="__library__">＋ Add a page from the library…</option>
         </select>
         {/* Everything global to this website — the business's name, phone, address, its domain,
             its SEO defaults. Lives one level up from a page, because it belongs to all of them. */}
@@ -634,41 +728,72 @@ export default function PuckEditor({
         <button type="button" onClick={onNewPage} disabled={busy} style={btn}>
           + New Page
         </button>
-        <button
-          type="button"
-          onClick={onAdoptImages}
-          disabled={busy}
-          style={btn}
-          title="Copy this page's images onto our own storage so nothing depends on whoever generated the design"
-        >
-          Adopt images
-        </button>
-        <button
-          type="button"
-          onClick={onSaveAsTemplate}
-          disabled={busy}
-          style={btn}
-          title="Strip the business details and save this layout as a reusable template"
-        >
-          Save as template
-        </button>
-        <button type="button" onClick={onRenamePage} disabled={busy} style={btn}>
-          Rename
-        </button>
-        {/* THE WAY BACK. Revisions have been written on every save since the Postgres migration
-            and nothing ever read them — the safety net existed and was unreachable. */}
-        <button type="button" onClick={openVersions} disabled={busy} style={btn}>
-          Versions
-        </button>
-        {/* The insert half of the section library. The save half is the ★ on each section. */}
-        <button type="button" onClick={openLibrary} disabled={busy} style={btn}>
-          Add saved section
-        </button>
-        {canDelete ? (
-          <button type="button" onClick={onDeletePage} disabled={busy} style={btnDanger}>
-            Delete Page
+        {/* ── EVERYTHING ELSE ────────────────────────────────────────────────────────────────
+            One menu, because the band is for what you touch on a normal editing pass and these
+            are not. Adopt images and Save as template are once per SITE; Rename is once per page;
+            Versions is once in a while and only when something went wrong.
+
+            Steven, looking at eleven controls: *"it was getting crowded."* A bar you scan is worse
+            than a menu you read — eleven things at equal weight means hunting every time, and the
+            two the page library is about to add would have landed on top of that. */}
+        <div style={{ position: "relative" }}>
+          <button
+            type="button"
+            onClick={() => setMoreOpen((v) => !v)}
+            disabled={busy}
+            style={btn}
+            aria-expanded={moreOpen}
+            title="Adopt images, Save as template, Rename, Versions, saved sections"
+          >
+            ⋯ More
           </button>
-        ) : null}
+          {moreOpen ? (
+            <>
+              {/* Click-away. A menu that only closes on its own button is a menu left open. */}
+              <div
+                onClick={() => setMoreOpen(false)}
+                style={{ position: "fixed", inset: 0, zIndex: 40 }}
+              />
+              <div style={moreMenu}>
+                {[
+                  { label: "Add saved section", onClick: openLibrary, title: "Drop in a band you saved from any website" },
+                  { label: "Adopt images", onClick: onAdoptImages, title: "Copy this page's images onto our own storage so nothing depends on whoever generated the design" },
+                  { label: "Save as template", onClick: onSaveAsTemplate, title: "Strip the business details and save this layout as a reusable template" },
+                  { label: "Save page to library", onClick: onSaveToLibrary, title: "Keep this whole page so you can drop it onto another website" },
+                  { label: "Rename page", onClick: onRenamePage, title: "Changes the name in the list only — the web address and the page are untouched" },
+                  { label: "Versions", onClick: openVersions, title: "Every time you pressed Publish — restore an earlier one" },
+                ].map((m) => (
+                  <button
+                    key={m.label}
+                    type="button"
+                    title={m.title}
+                    disabled={busy}
+                    onClick={() => {
+                      setMoreOpen(false);
+                      m.onClick();
+                    }}
+                    style={moreItem}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+                {canDelete ? (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setMoreOpen(false);
+                      onDeletePage();
+                    }}
+                    style={{ ...moreItem, color: "var(--e-danger, #b91c1c)", borderTop: "1px solid #eee" }}
+                  >
+                    Delete page
+                  </button>
+                ) : null}
+              </div>
+            </>
+          ) : null}
+        </div>
         <span
           title={saveError || undefined}
           style={{
@@ -689,13 +814,23 @@ export default function PuckEditor({
             actually published there, so a link that would 404 says so before you click it. */}
         {publicPath ? (
           <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            {/* THREE states, not two. Green means a visitor can open this page RIGHT NOW: the
+                content is published AND the site is reachable. Amber is "published, but nobody
+                can get to it" — the case that used to render green and lie. */}
             <span
-              title={live ? "Published" : "Not published yet"}
+              title={
+                !reachable
+                  ? `This site is ${reach?.status ?? "draft"} — nobody can open this address yet`
+                  : live
+                    ? "Published and reachable"
+                    : "Not published yet"
+              }
               style={{
                 width: 8,
                 height: 8,
                 borderRadius: 999,
-                background: live === null ? "#d1d5db" : live ? "#16a34a" : "#f59e0b",
+                background:
+                  live === null ? "#d1d5db" : live && reachable ? "#16a34a" : "#f59e0b",
               }}
             />
             <a
@@ -703,7 +838,13 @@ export default function PuckEditor({
               target="_blank"
               rel="noreferrer"
               style={{ fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 600 }}
-              title={live === false ? "Nothing published here yet — hit Publish first" : "Open the live page"}
+              title={
+                !reachable
+                  ? `The site is ${reach?.status ?? "draft"} — this address returns 404 until you set it to Demo or Published`
+                  : live === false
+                    ? "Nothing published here yet — hit Publish first"
+                    : "Open the live page"
+              }
             >
               {publicPath} ↗
             </a>
@@ -956,7 +1097,14 @@ export default function PuckEditor({
             setLive(true);
             if (typeof window !== "undefined") {
               // The real address, not a guess — /<page> was wrong for every client website.
-              window.alert(`Published — live on ${publicPath || "this site"}`);
+              // ⚠️ SAY WHICH OF THE TWO THINGS HAPPENED. Publish ships the CONTENT; the site's
+              // state decides whether anyone can reach it. Reporting "live on <url>" for a Draft
+              // site is the receipt lying about the page.
+              window.alert(
+                reachable
+                  ? `Published — live on ${publicPath || "this site"}`
+                  : `Published. This site is still ${reach?.status ?? "draft"}, so nobody can reach it yet — set it to Demo or Published in the Design Library.`
+              );
             }
           }}
         />
@@ -973,6 +1121,31 @@ const bar: React.CSSProperties = {
   borderBottom: "1px solid #e5e7eb",
   background: "#fff",
   fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+};
+const moreMenu: React.CSSProperties = {
+  position: "absolute",
+  top: "calc(100% + 6px)",
+  left: 0,
+  zIndex: 41,
+  minWidth: 210,
+  background: "#fff",
+  border: "1px solid #e5e7eb",
+  borderRadius: 10,
+  boxShadow: "0 10px 30px rgba(0,0,0,.12)",
+  padding: 4,
+  display: "flex",
+  flexDirection: "column",
+};
+const moreItem: React.CSSProperties = {
+  textAlign: "left",
+  background: "none",
+  border: "none",
+  padding: "9px 12px",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#111827",
+  cursor: "pointer",
+  borderRadius: 6,
 };
 const select: React.CSSProperties = {
   border: "1px solid #d1d5db",

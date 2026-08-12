@@ -46,6 +46,9 @@ export function fillTokens(s: string, b: BusinessFacts, url = ""): string {
     }
     const map: Record<string, string> = {
       name: b.name,
+      // A destination, resolved per site — see BusinessFacts.reviewUrl for why it cannot live on
+      // the shared form.
+      reviewurl: b.reviewUrl || "",
       email: b.email,
       address: b.address,
       hours: b.hours,

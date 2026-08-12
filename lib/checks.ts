@@ -21,6 +21,7 @@
 import { getClient } from "./store";
 import { readSites } from "./sites";
 import { publicUrlFor } from "./hostShared";
+import { leadWiring, reachability, statusOf } from "./sitesShared";
 import type { Site } from "./sitesShared";
 import type { Board, CheckDef, CheckRun, CheckState } from "./checksShared";
 
@@ -40,6 +41,7 @@ export const CHECKS: CheckDef[] = [
   {
     id: "store.durable",
     label: "The durable store is answering",
+    short: "Database",
     layer: 1,
     scope: "global",
     expectation: "Postgres is the engine (not the cache fallback) and a read round-trips.",
@@ -53,6 +55,7 @@ export const CHECKS: CheckDef[] = [
   {
     id: "resend.domain",
     label: "The lead-alert sending domain is verified",
+    short: "Email sending",
     layer: 1,
     scope: "global",
     expectation: "Every domain on the Resend account reports status `verified`.",
@@ -74,6 +77,7 @@ export const CHECKS: CheckDef[] = [
     // man, a woman, a veteran — and guessing wrong in a tile Steven reads every morning trains the
     // wrong habit into the copy that eventually faces the customer. The business is THEY.
     label: "Their website answers, and it is THEIRS",
+    short: "Website",
     layer: 2,
     scope: "site",
     expectation:
@@ -90,6 +94,7 @@ export const CHECKS: CheckDef[] = [
   {
     id: "site.domain_expiry",
     label: "Their domain registration is not about to lapse",
+    short: "Domain expiry",
     layer: 1,
     scope: "site",
     expectation: "The registry says the domain expires more than 45 days from now.",
@@ -105,6 +110,7 @@ export const CHECKS: CheckDef[] = [
   {
     id: "site.lead_destination",
     label: "Their leads have somewhere to go",
+    short: "Lead destinations",
     layer: 2,
     scope: "site",
     expectation:
@@ -305,6 +311,26 @@ async function checkResendDomain(): Promise<CheckRun> {
 }
 
 async function checkSiteReachable(site: Site): Promise<CheckRun> {
+  // ⛔ A DRAFT SITE IS NOT BROKEN. It 404s BECAUSE that is what Draft means, so probing it and
+  // calling the 404 a failure turns a deliberate setting into five red tiles — which is exactly
+  // what happened the moment every site in the library was moved to Draft: the board went from
+  // "0 broken" to "5 broken" with nothing actually wrong.
+  //
+  // Same rule this file already applies to an unset vendor key: SKIPPED, never passed and never
+  // failed. A check that cannot be evaluated has no verdict, and dressing "not applicable" as
+  // either colour is how a board stops being believed.
+  const reach = reachability(site);
+  if (!reach.onDomain && !reach.onDemo) {
+    return {
+      checkId: "site.reachable",
+      siteId: site.id,
+      status: "skipped",
+      detail: `${statusOf(site)} — nobody is meant to be able to open it, so there is nothing to check.`,
+      evidence: { status: statusOf(site) },
+      at: now(),
+    };
+  }
+
   const url = publicUrlFor(site);
   const res = await fetch(url, { redirect: "follow", headers: { "user-agent": "sjc-checks/1" } });
   const html = await res.text();
@@ -392,41 +418,46 @@ async function checkDomainExpiry(site: Site): Promise<CheckRun> {
  * It answers the question nothing else does: is there a destination at all, and is it theirs alone.
  */
 function checkLeadDestinations(site: Site, all: Site[]): CheckRun {
-  const email = (site.leadEmail || "").trim().toLowerCase();
-  const ghl = (site.ghlWebhookUrl || "").trim();
-  const missing: string[] = [];
-  if (!email) missing.push("no lead email");
-  if (!site.sheetId) missing.push("no sheet");
-  if (!ghl) missing.push("no CRM webhook");
+  // ⚠️ ONE IMPLEMENTATION, SHARED WITH THE DESIGN LIBRARY CARD. The card asks "is this wired up"
+  // and this asks "is this joint healthy" — the same three fields answering two questions. Two
+  // copies would drift the first time a destination changed, and whichever screen you happened to
+  // be looking at would decide what you believed. See leadWiring() in lib/sitesShared.
+  const w = leadWiring(site, all);
 
-  const others = all.filter((s) => s.id !== site.id && s.kind === "client" && !s.deletedAt);
-  // Ternaries rather than `email && find(...)`: `&&` on an empty string yields "" rather than
-  // undefined, and a collision variable that can be a string is a collision variable that lies.
-  const sharedEmail = email
-    ? others.find((s) => (s.leadEmail || "").trim().toLowerCase() === email)
-    : undefined;
-  const sharedGhl = ghl ? others.find((s) => (s.ghlWebhookUrl || "").trim() === ghl) : undefined;
-  const sharedSheet = site.sheetId
-    ? others.find((s) => s.sheetId === site.sheetId)
-    : undefined;
+  // ⛔ A SITE NOBODY CAN REACH IS NOT OWED A DESTINATION YET. Draft means it collects nothing, so
+  // "no lead email, no sheet, no CRM webhook" is a description of a build in progress, not a fault
+  // — and it was amber on every demo, which is six warnings that mean nothing and one that does.
+  //
+  // A COLLISION still fails even here: two sites sharing a destination is wrong the moment it is
+  // configured, whether or not either of them is live.
+  const reach = reachability(site);
+  if (!reach.onDomain && !reach.onDemo && !w.collidesWith) {
+    return {
+      checkId: "site.lead_destination",
+      siteId: site.id,
+      status: "skipped",
+      detail: `${statusOf(site)} — it isn't collecting anything yet, so it has nowhere to need.`,
+      evidence: { status: statusOf(site) },
+      at: now(),
+    };
+  }
 
-  const collision: Site | undefined = sharedEmail || sharedGhl || sharedSheet;
   return {
     checkId: "site.lead_destination",
     siteId: site.id,
     // ⛔ A collision is RED on sight. Missing is yellow — they are owed something they haven't got.
     // Shared is a different animal: their customer's enquiry arrives in someone else's inbox.
-    status: collision ? "fail" : missing.length ? "warn" : "pass",
-    detail: collision
-      ? `SHARES A DESTINATION with ${collision.name} — leads can land in that inbox instead.`
-      : missing.length
-        ? `${missing.join(", ")}.`
+    status: w.collidesWith ? "fail" : w.missing.length ? "warn" : "pass",
+    detail: w.collidesWith
+      ? `SHARES A DESTINATION with ${w.collidesWith} — leads can land in that inbox instead.`
+      : w.missing.length
+        ? `${w.missing.join(", ")}.`
         : "email, sheet and CRM webhook all set, and none shared with another client.",
     evidence: {
-      hasEmail: Boolean(email),
-      hasSheet: Boolean(site.sheetId),
-      hasGhl: Boolean(ghl),
-      collidesWith: collision ? collision.id : null,
+      hasEmail: w.hasEmail,
+      hasSheet: w.hasSheet,
+      hasGhl: w.hasGhl,
+      collidesWith: w.collidesWith,
     },
     at: now(),
   };

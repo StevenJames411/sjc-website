@@ -14,6 +14,15 @@ export type Layer =
   | 3; // did the outcome actually happen — nothing reports it unless we build it
 
 export type CheckDef = {
+  /**
+   * A NOUN, for the roster. Two or three words.
+   *
+   * ⚠️ `label` is a SENTENCE — "Their domain registration is not about to lapse" — which is the
+   * EXPECTATION, and reads well on the tile where you have gone to find out what broke. On the
+   * roster, where five of them stack in a narrow column beside their details, sentences wrap into
+   * each other and the row stops being scannable. Same information, two jobs, two lengths.
+   */
+  short?: string;
   id: string;
   label: string;
   layer: Layer;

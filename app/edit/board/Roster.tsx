@@ -30,6 +30,12 @@ export type RosterRow = {
   subtitle: string;
   summary: string;
   colour: Colour;
+  /** One line per check — its NAME and how it came back. Counts told him nothing; names do. */
+  lines: { colour: Colour; label: string; detail: string }[];
+  /** draft / demo / published / archived. Absent on the mainline, which is not a website. */
+  state?: string;
+  /** "last looked 24m ago" — kept as words because a board without a timestamp is a placebo. */
+  looked?: string;
 };
 
 export default function Roster({ rows }: { rows: RosterRow[] }) {
@@ -163,8 +169,6 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                 ⋮⋮
               </span>
 
-              <Dot colour={g.colour} size={12} />
-
               {/* The link wraps the TEXT, not the row. Wrapping the row made every drag end in a
                   navigation away from the board the moment the pointer came up. */}
               <a
@@ -172,11 +176,67 @@ export default function Roster({ rows }: { rows: RosterRow[] }) {
                 style={{ minWidth: 0, flex: 1, textDecoration: "none", color: "inherit" }}
                 draggable={false}
               >
-                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--e-ink)", overflowWrap: "anywhere" }}>
-                  {g.title}
+                {/* THE ROW'S OWN LIGHT SITS ON THE TITLE LINE. It used to sit in the left gutter,
+                    vertically centred against a block that grows — so it drifted away from the name
+                    it describes and stole a column from a canvas Steven deliberately keeps narrow. */}
+                <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+                  <Dot colour={g.colour} size={12} />
+                  <span style={{ fontSize: 15, fontWeight: 700, color: "var(--e-ink)", overflowWrap: "anywhere" }}>
+                    {g.title}
+                  </span>
+                  {g.state && g.state !== "published" ? (
+                    <span
+                      style={{
+                        borderRadius: 999,
+                        padding: "2px 8px",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        background: "var(--e-muted-bg, #eef1f6)",
+                        color: "var(--e-muted-ink, #55617a)",
+                        textTransform: "capitalize",
+                      }}
+                      title={
+                        g.state === "draft"
+                          ? "Only you can reach this site, so most checks have nothing to test"
+                          : g.state === "archived"
+                            ? "Retired and reachable by nobody"
+                            : "Shareable demo link, kept out of Google"
+                      }
+                    >
+                      {g.state}
+                    </span>
+                  ) : null}
                 </div>
                 <div style={{ fontSize: 12.5, color: "var(--e-muted)", marginTop: 2 }}>{g.subtitle}</div>
-                <div style={{ fontSize: 13, color: "var(--e-ink)", marginTop: 6 }}>{g.summary}</div>
+                {/* ONE LINE PER CHECK, WORST FIRST — a NOUN and what it said.
+                    The name and the detail are on separate lines: side by side they wrap into each
+                    other the moment the canvas is narrow, which is how Steven actually works. */}
+                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 7 }}>
+                  {g.lines.map((l) => (
+                    <div key={l.label} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12.5 }}>
+                      {/* ⚠️ inline-flex, NOT a plain span. Dot is a <span> sized with width/height,
+                          and those do nothing on an inline element — it only ever worked because it
+                          sat directly inside a flex container. Wrapping it in a normal span
+                          rendered it at zero size: still in the DOM, invisible on screen. */}
+                      <span style={{ display: "inline-flex", marginTop: 4 }}>
+                        <Dot colour={l.colour} size={8} />
+                      </span>
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ fontWeight: 700, color: "var(--e-ink)" }}>{l.label}</span>
+                        {l.detail ? (
+                          <span style={{ display: "block", color: "var(--e-muted)", marginTop: 1 }}>
+                            {l.detail.length > 96 ? `${l.detail.slice(0, 96)}…` : l.detail}
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                  {g.looked ? (
+                    <span style={{ fontSize: 12, color: "var(--e-muted)" }}>· {g.looked}</span>
+                  ) : null}
+                </div>
               </a>
 
               <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: "0 0 auto" }}>

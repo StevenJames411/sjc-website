@@ -65,6 +65,18 @@ const COOKIE_NAME = "sjc_site_auth";
 // lib/puckContent.ts reads it. Nothing else should set it.
 export const PREVIEW_HEADER = "x-sjc-preview";
 
+/**
+ * "This request is the signed-in owner." Set ONLY here, and stripped from every inbound request
+ * first, exactly like PREVIEW_HEADER.
+ *
+ * ⚠️ WITHOUT THIS, DRAFT LOCKS STEVEN OUT TOO. Draft means the address 404s — which is the point —
+ * but it must not mean HE cannot open his own site on a phone. `resolveHost` serves a draft site
+ * when this header is present, so the same URL is a 404 in a private window and the real page for
+ * him. The builder canvas is a different surface and would not have covered it: "how does this
+ * look on an actual phone" is the question preview exists to answer.
+ */
+export const OWNER_HEADER = "x-sjc-owner";
+
 function expectedToken(): string | null {
   const pass = process.env.SITE_EDIT_PASSWORD;
   if (!pass) return null; // no password set -> fail closed (locked)
@@ -199,7 +211,9 @@ export function middleware(req: NextRequest) {
   const forward = (preview: boolean) => {
     const headers = new Headers(req.headers);
     headers.delete(PREVIEW_HEADER);
+    headers.delete(OWNER_HEADER); // forgeable otherwise — same reason as the preview header
     if (preview) headers.set(PREVIEW_HEADER, "1");
+    if (authed) headers.set(OWNER_HEADER, "1");
     return NextResponse.next({ request: { headers } });
   };
 

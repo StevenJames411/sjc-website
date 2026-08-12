@@ -22,11 +22,70 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  let body: { site?: string; slug?: string; dryRun?: boolean };
+  let body: { site?: string; slug?: string; dryRun?: boolean; sweep?: boolean };
   try {
     body = await req.json();
   } catch {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
+  }
+
+  // ── SWEEP: every page of every website ──────────────────────────────────────────────────────
+  //
+  // ⚠️ THE POINT IS THE `blocked` LIST, NOT THE REPLACEMENTS. Tokenizing only ever swaps values
+  // that are ALREADY in a site's settings — it cannot invent a match, which is what makes it safe
+  // to run anywhere. The flip side is that a site with a thin settings record silently does
+  // nothing, and you find out much later when a page refuses to save to the library, or when a
+  // client changes their phone number in settings and the page does not move.
+  //
+  // So the sweep reports what it CANNOT do and why, per site. That list is the work.
+  if (body?.sweep) {
+    const { readSites } = await import("@/lib/sites");
+    const { readPages } = await import("@/lib/pageRegistry");
+    const client = getClient();
+    const dry = body?.dryRun !== false;
+
+    const done: { site: string; page: string; total: number; replacements: Record<string, number> }[] = [];
+    const blocked: { site: string; missing: string[] }[] = [];
+
+    for (const s of await readSites()) {
+      const rs = tokenRules(s.business);
+      const missing = (["name", "phoneDisplay", "email", "address"] as const).filter(
+        (k) => !s.business[k]?.trim()
+      );
+      if (!rs.length) {
+        blocked.push({ site: s.id, missing });
+        continue;
+      }
+      for (const p of await readPages(s.id)) {
+        const store = createKvStore(client, puckKey(p.slug, false, s.id));
+        const draft = await store.read<Record<string, unknown>>();
+        if (!draft) continue;
+        const counts: Record<string, number> = {};
+        const { _pub, ...rest } = draft as { _pub?: number };
+        const next = applyTokens(rest, rs, counts) as Record<string, unknown>;
+        const total = Object.values(counts).reduce((a, n) => a + n, 0);
+        if (!total) continue;
+        if (!dry && !(await store.write(next))) {
+          return Response.json(
+            { ok: false, error: `Couldn't save ${s.id}/${p.slug}.`, done },
+            { status: 500 }
+          );
+        }
+        done.push({ site: s.id, page: p.slug, total, replacements: counts });
+      }
+      if (missing.length) blocked.push({ site: s.id, missing });
+    }
+
+    return Response.json({
+      ok: true,
+      dryRun: dry,
+      done,
+      // Sites whose settings are too thin to link everything. Fill these in and run it again.
+      blocked,
+      note: dry
+        ? "Dry run. Nothing written."
+        : "Drafts tokenized. Publish each page to take it live.",
+    });
   }
 
   const siteId = String(body?.site || SJC).trim() || SJC;

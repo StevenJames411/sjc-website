@@ -225,6 +225,20 @@ export const designSheet = (sheetId: string) => `design-sheet-${safe(sheetId)}`;
  */
 export const designSource = (sheetId: string) => `design-src-${safe(sheetId)}`;
 
+/**
+ * THE PAGE LIBRARY — a whole page, saved once, droppable onto any website.
+ *
+ * ⚠️ ONE KEY PER ENTRY, PLUS A SMALL INDEX. The section library keeps every saved band in ONE
+ * array (`sjc-section-library`), which means the picker reads megabytes to render a list of names,
+ * and the store's save-guard stringifies the whole thing twice on every write. A page is far
+ * bigger than a band — an imported one carries markup for a dozen sections — so the same shape
+ * would be the 50KB-blob mistake `designSheet` above exists to avoid, one level up.
+ *
+ * The index holds names and provenance only. The entry is fetched at the moment it is inserted.
+ */
+export const pageLibraryEntry = (id: string) => `page-lib-${safe(id)}`;
+export const PAGE_LIBRARY_INDEX = "sjc-page-library";
+
 /** The registry of all websites. One key, not per-site. */
 export const SITES_KEY = "sjc-sites";
 

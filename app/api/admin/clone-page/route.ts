@@ -23,12 +23,8 @@
 //
 // ⚠️ It writes the DRAFT by default. Publishing is a separate, deliberate act — and the publish
 // route is what carries the stylesheet across to the -pub key.
-import { readPuckDraft, readPuckPublished, sheetIdsIn, puckKey } from "@/lib/puckContent";
-import { createKvStore } from "@/lib/kvStateStore";
-import { getClient } from "@/lib/store";
-import { readPages, createPage } from "@/lib/pageRegistry";
-import { findSite } from "@/lib/sites";
-import { scrubForTransfer, sameBusiness } from "@/lib/transferScrub";
+import { readPuckDraft, readPuckPublished } from "@/lib/puckContent";
+import { placePage } from "@/lib/placePage";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -64,59 +60,33 @@ export async function POST(req: Request) {
   // ⚠️ THE STYLESHEET IS NO LONGER COPIED, BECAUSE IT NO LONGER HAS TO BE (2026-08-12). It used to
   // live in a per-page key that this route existed to carry — "or it copies nothing". Sheets are
   // now global and immutable, and the blocks name theirs, so a clone references the same sheet the
-  // source did the instant its content lands. Reported so a clone that came out unstyled says which
-  // sheet it wanted rather than looking like a rendering bug.
-  const sheets = sheetIdsIn(data);
+  // source did the instant its content lands. placePage reports which, so a clone that came out
+  // unstyled can say what it was looking for rather than looking like a rendering bug.
 
-  // ⚠️ THE PAGE HAS TO EXIST IN THE REGISTRY OR THE SITE 404s. Writing content for an unregistered
-  // slug returns ok, publishes ok, and serves nothing — the trap this route was written right
-  // after hitting.
-  const pages = await readPages(toSite);
-  let slug = toPage;
-  if (!pages.some((p) => p.slug === toPage)) {
-    // ⚠️ createPage(title, siteId) — TITLE FIRST. Both are strings, so getting this backwards
-    // typechecks cleanly and creates a page named after the site, in a site named after the page.
-    const title = toPage.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-    const made = await createPage(title, toSite);
-    if (!made.ok || !made.slug) {
-      return Response.json({ ok: false, error: made.error || "could not create the destination page" }, { status: 400 });
-    }
-    slug = made.slug;
-  }
-
-  // Strip the published marker: this is a DRAFT until somebody publishes it on purpose.
-  const stripped = { ...(data as Record<string, unknown>) };
-  delete stripped._pub;
-
-  // ⛔ AND TAKE THE SOURCE BUSINESS OUT OF IT — WHEN THE BUSINESS ACTUALLY CHANGES. This route
-  // scrubbed NOTHING: it wrote the source page verbatim into the destination, so the previous
-  // owner's phone number, address, business name and photos all landed on another site, and the
-  // response said `ok` with a block count. The worst of it is `links[].href` — a `tel:` carried
-  // across means a visitor taps Call Now on one site and rings a different company.
+  // ⚠️ ONE IMPLEMENTATION, SHARED WITH THE PAGE LIBRARY. Registering the page before writing its
+  // content, stripping `_pub`, scrubbing when the business changes, and refusing to overwrite by
+  // accident are four things every caller has to get right — so they live in lib/placePage rather
+  // than being got right twice.
   //
-  // ⚠️ SKIPPED BETWEEN A BUSINESS'S OWN SITES. Steven runs several (sjc, sjc-2026,
-  // steven-james-designs); blanking his own number while he moves a page between them would break
-  // the page he is building and read as a bug in the clone. See sameBusiness().
-  const src = await findSite(fromSite);
-  const dst = await findSite(toSite);
-  const crossBusiness = !!src && !!dst && !sameBusiness(src, dst);
-  const { value: clean, report: scrubbed } =
-    src && crossBusiness ? scrubForTransfer(stripped, src) : { value: stripped, report: null };
-
-  const store = createKvStore(getClient(), puckKey(slug, false, toSite));
-  const wrote = await store.writeResult(clean as Record<string, unknown>);
-  if (!wrote.ok) {
-    return Response.json({ ok: false, error: wrote.reason || "content write refused" }, { status: 409 });
-  }
+  // `overwrite` is passed EXPLICITLY: this route's long-standing behaviour is to write over the
+  // destination, and the helper has no default, so the destructive path is something a caller types.
+  const res = await placePage({
+    data: data as Record<string, unknown>,
+    fromSite,
+    toSite,
+    toPage,
+    onExisting: "overwrite",
+  });
+  if (!res.ok) return Response.json({ ok: false, error: res.error }, { status: res.status });
 
   return Response.json({
     ok: true,
-    slug,
-    blocks: ((clean as { content?: unknown[] }).content || []).length,
-    scrubbed,
+    slug: res.slug,
+    blocks: res.blocks,
+    scrubbed: res.scrubbed,
     // Which sheets this page now references. Global and immutable, so nothing was copied — but a
     // page that renders unstyled should be able to say WHICH sheet it was looking for.
-    sheets,
+    sheets: res.sheets,
     // Say it plainly: nothing is live yet.
     note: "Draft only. Publish it when you're happy.",
   });

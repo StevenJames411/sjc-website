@@ -15,6 +15,7 @@ import { CHECKS, readBoard } from "@/lib/checks";
 import { colourFor, worst, ageText, type Colour } from "@/lib/checksShared";
 import { publicUrlFor } from "@/lib/hostShared";
 import { readSites } from "@/lib/sites";
+import { statusOf } from "@/lib/sitesShared";
 import type { Row } from "./shared";
 
 /** The roster key for the global row. Leading underscore — a slugified site id can never be this. */
@@ -27,6 +28,37 @@ export type Group = {
   subtitle: string;
   rows: Row[];
   colour: Colour;
+  /**
+   * WHAT STATE THE WEBSITE IS IN — draft / demo / published / archived, or undefined for the
+   * mainline, which is not a website.
+   *
+   * ⚠️ IT BELONGS ON THE ROW BECAUSE IT EXPLAINS THE OTHER PILLS. A Draft site is deliberately
+   * unreachable, so its reachability check records `skipped` and the row fills with grey. Without
+   * the state on screen that reads as "nothing is proven and I don't know why"; with it, the row
+   * says its own reason. Steven: *"if it's in draft mode and that pill is lit up, that's why none
+   * of the other plumbing is working."*
+   */
+  state?: string;
+};
+
+/**
+ * THE PORTFOLIO SUMMARY — by WHAT IS TRACKED, not by colour.
+ *
+ * ⛔ THE HEADER USED TO BE FOUR COLOUR PILLS AND A PARAGRAPH EXPLAINING THEM. Steven, looking at
+ * six lines of prose before any data: *"this real estate is absolutely wasted… the three things
+ * we're tracking — lead destinations, website health, the domain — that's the only thing that needs
+ * to be in it."*
+ *
+ * He is right, and colour was the wrong axis. "6 needs you soon" spread across three unrelated
+ * things tells you nothing you can act on; "Lead destinations: 1 set, 6 not" is a job. The colours
+ * are still there, on the thing they describe.
+ */
+export type CheckSummary = {
+  id: string;
+  /** The noun. "Lead destinations". */
+  label: string;
+  /** What it means, in a phrase. The CheckDef's own sentence — it IS the expectation. */
+  says: string;
 };
 
 export type BoardView = {
@@ -35,6 +67,8 @@ export type BoardView = {
   clientCount: number;
   sweptAt?: string;
   tally: (c: Colour) => number;
+  /** One line per thing watched, across every row. See CheckSummary. */
+  byCheck: CheckSummary[];
 };
 
 /** Bare hostname — no scheme, no trailing slash. The thing he actually reads. */
@@ -84,6 +118,8 @@ export async function readBoardView(): Promise<BoardView> {
         subtitle: s.business?.name || s.name || s.id,
         rows,
         colour: worst(rows.map((r) => r.colour)),
+        // The reason half the row is grey when a site is Draft — see the note on Group.state.
+        state: statusOf(s),
       };
     }),
   ];
@@ -110,12 +146,26 @@ export async function readBoardView(): Promise<BoardView> {
   );
 
   const all = groups.flatMap((g) => g.rows);
+
+  // ⛔ WHAT IS WATCHED — A KEY, NOT A SCOREBOARD. This carried counts by colour until Steven read
+  // it back: *"I don't even need the colors in that area, because the feature cards tell me which
+  // ones are healthy. I just need an explanation. The lights need to live on the feature cards."*
+  //
+  // He is right, and it is the same mistake twice: a summary that repeats what the rows already
+  // say, in a weaker form. Two numbers at the top cannot tell you WHICH site, so they send you to
+  // the rows anyway — the rows where the lights now are. Up here, all that is missing is what the
+  // words mean.
+  const byCheck: CheckSummary[] = CHECKS.filter((def) =>
+    ordered.some((g) => g.rows.some((r) => r.def.id === def.id))
+  ).map((def) => ({ id: def.id, label: def.short || def.label, says: def.label }));
+
   return {
     groups: ordered,
     totalChecks: all.length,
     clientCount: clients.length,
     sweptAt: board.updatedAt,
     tally: (c: Colour) => all.filter((r) => r.colour === c).length,
+    byCheck,
   };
 }
 
@@ -126,6 +176,30 @@ export async function readBoardView(): Promise<BoardView> {
  * only honest reading — everything here was verified at least this recently. Anything else leads
  * with what's wrong and how many, worst first.
  */
+/**
+ * WHAT each check is and how it came back — NAMED, not counted.
+ *
+ * ⛔ COUNTS ANSWER THE WRONG QUESTION. The row used to read "1 needs you soon · 2 verified", and
+ * Steven's verdict on it was exact: *"I don't know what any of that means. I literally have to go
+ * figure out what needs my attention and what was verified. So the dashboard is absolutely
+ * useless."*
+ *
+ * He is right. A tally is only worth the space when there are too many items to name — with two or
+ * three checks per site, the count IS the noise, and it costs a click to learn the one thing the
+ * row existed to tell you. Worst-first, so the thing that needs him is the first thing he reads.
+ */
+export function linesOf(group: Group): { colour: Colour; label: string; detail: string }[] {
+  const RANK: Colour[] = ["red", "yellow", "grey", "green"];
+  return [...group.rows]
+    .sort((a, b) => RANK.indexOf(a.colour) - RANK.indexOf(b.colour))
+    .map((r) => ({
+      colour: r.colour,
+      label: r.def.short || r.def.label,
+      // The check's own sentence, trimmed to a glance. The full text is one click away on the row.
+      detail: (r.st?.lastDetail || "").replace(/\s+/g, " ").trim(),
+    }));
+}
+
 export function summarise(group: Group): string {
   const RANK: Colour[] = ["red", "yellow", "grey", "green"];
   const n = group.rows.length;

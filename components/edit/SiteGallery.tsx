@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RETENTION_DAYS, daysLeft, type Site } from "@/lib/sitesShared";
+import { RETENTION_DAYS, daysLeft, statusOf, leadWiring, type Site } from "@/lib/sitesShared";
 import type { IntakeSummary } from "@/lib/intakeShared";
 import { publicUrlFor, onboardUrlFor } from "@/lib/hostShared";
 import IntakeAnswers from "./IntakeAnswers";
@@ -13,12 +13,19 @@ import IntakeAnswers from "./IntakeAnswers";
 // another's. Every builder that does this at scale (GoHighLevel, Landingsite, SiteDrop) opens on a
 // gallery with search and a New-website button, and the page switcher lives INSIDE a site.
 
-type Props = { sites: Site[]; intake: Record<string, IntakeSummary>; title: string };
+type Props = {
+  sites: Site[];
+  intake: Record<string, IntakeSummary>;
+  title: string;
+  /** Which canvas to show — comes from the URL so each is its own address. See app/edit/page.tsx. */
+  view?: string;
+};
 type Mode = "blank" | "template" | "import";
 
-export default function SiteGallery({ sites, intake, title }: Props) {
+export default function SiteGallery({ sites, intake, title, view = "all" }: Props) {
   const router = useRouter();
   const [q, setQ] = useState("");
+
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   // Which card's onboarding button is mid-flight, so it can't be double-clicked.
@@ -96,14 +103,71 @@ export default function SiteGallery({ sites, intake, title }: Props) {
     () => sites.filter((s) => s.kind === "template" && !s.deletedAt),
     [sites]
   );
+  // ARCHIVED sits with the bin, not with the working set — but it is NOT the bin.
+  //
+  // Deleting starts a 30-day timer that ends in erasure; archiving ends nothing. Steven found his
+  // retired site counting down in the bin: *"there was no draft mode… that should be archive."*
+  // Work you are finished with is not a mistake you want gone, and one button for both is how a
+  // retired site quietly expires.
+  const archived = useMemo(
+    () => sites.filter((s) => !s.deletedAt && statusOf(s) === "archived"),
+    [sites]
+  );
+  // ⚠️ FILTERS, NOT THREE SEPARATE PAGES. Steven: *"should we have only the live websites showing,
+  // and then I toggle… maybe there's three pages here."* Tabs do the job, and the counts are what
+  // makes them safe: split across real pages, or default to a filtered view without them, and six
+  // draft sites look like they have been deleted.
+  //
+  // It also defaults to ALL rather than to Live, because right now Live is one card — and a
+  // library that opens on "1 website" the day after you set everything to Draft is alarming
+  // before it is useful.
+  const inPlay = useMemo(
+    () => sites.filter((s) => s.kind !== "template" && !s.deletedAt),
+    [sites]
+  );
+  const counts = useMemo(() => {
+    const c = { all: 0, published: 0, demo: 0, draft: 0, archived: 0 } as Record<string, number>;
+    for (const s of inPlay) {
+      c.all++;
+      c[statusOf(s)]++;
+    }
+    return c;
+  }, [inPlay]);
+
+  const tab = view;
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const live = sites.filter((s) => s.kind !== "template" && !s.deletedAt);
-    if (!needle) return live;
-    return live.filter((s) =>
+    const byTab = inPlay.filter((s) => (tab === "all" ? statusOf(s) !== "archived" : statusOf(s) === tab));
+    if (!needle) return byTab;
+    return byTab.filter((s) =>
       [s.name, s.description, s.domain, s.business?.name].filter(Boolean).join(" ").toLowerCase().includes(needle)
     );
-  }, [sites, q]);
+  }, [inPlay, q, tab]);
+
+  /**
+   * Move a website between states.
+   *
+   * ⚠️ THE ONLY WRITER. The cockpit and the heartbeat board read a site's state; this screen sets
+   * it. Two screens that can both write is how you switch something off in one place and have the
+   * other still report it on.
+   */
+  async function setStatus(s: Site, status: "draft" | "demo" | "published" | "archived") {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/admin/set-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ site: s.id, status, dryRun: false }),
+      }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error || "Couldn't change it.");
+      router.refresh();
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Couldn't change it.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function restore(s: Site) {
     setDeleting(s.id);
@@ -178,7 +242,47 @@ export default function SiteGallery({ sites, intake, title }: Props) {
         style={search}
       />
 
-      <div style={grid}>
+      {/* THE COUNTS ARE THE POINT. A tab that just says "Draft" hides how much is behind it; with
+          the number on it, filtering never feels like anything went missing. */}
+      <div style={tabRow}>
+        {([
+          ["all", "All"],
+          ["published", "Published"],
+          ["demo", "Demo"],
+          ["draft", "Draft"],
+          ["archived", "Archived"],
+          ["deleted", "Deleted"],
+        ] as const).map(([key, label]) => {
+          const n =
+            key === "all" ? counts.all - counts.archived : key === "deleted" ? binned.length : counts[key];
+          return (
+            <a
+              key={key}
+              href={key === "all" ? "/edit" : `/edit?view=${key}`}
+              style={{ ...tabBtn, ...(tab === key ? tabBtnOn : null), textDecoration: "none" }}
+              title={
+                key === "draft"
+                  ? "Only you can reach these"
+                  : key === "demo"
+                    ? "Shareable link, out of Google"
+                    : key === "published"
+                      ? "Live on their own domain"
+                      : key === "archived"
+                        ? "Retired and kept — nothing expires"
+                        : key === "deleted"
+                          ? `Erased for good after ${RETENTION_DAYS} days`
+                          : "Everything except archived and deleted"
+              }
+            >
+              {label} <span style={{ opacity: 0.6 }}>{n}</span>
+            </a>
+          );
+        })}
+      </div>
+
+      {/* The Deleted canvas is the bin below, not this grid — a view showing both would be two
+          answers to "what am I looking at". */}
+      <div style={{ ...grid, display: tab === "deleted" ? "none" : grid.display }}>
         {shown.map((s) => (
           <div key={s.id} style={card}>
             <div style={cardTop}>
@@ -186,17 +290,51 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                   described the record; "Demo" describes the thing you actually need to know when
                   scanning a hundred of these — is this out with a prospect, or is it a paying
                   client pointed at their own domain? */}
+              {/* ⛔ THE STATE, NOT AN INFERENCE FROM `domain`. The badge used to read "Demo" for
+                  anything without a domain, which described a field rather than the site — and it
+                  was wrong: a domain-less site was served IN FULL at its demo address, readable by
+                  anyone holding the link. "Draft" now means only you, and means it. */}
               <div style={badgeRow}>
                 {s.kind === "sjc" ? <span style={chip}>Yours</span> : null}
-                {s.domain ? (
-                  <span style={chipLive}>{s.domain}</span>
-                ) : (
-                  <span style={chipDemo} title="No domain yet — served from our address and kept out of Google">
-                    Demo
-                  </span>
-                )}
+                {(() => {
+                  const st = statusOf(s);
+                  if (st === "published" && s.domain) return <span style={chipLive}>{s.domain}</span>;
+                  if (st === "published")
+                    return (
+                      <span style={chipDemo} title="Published, but no domain is pointed at it yet — the demo link stays alive until DNS resolves">
+                        Published · no domain yet
+                      </span>
+                    );
+                  if (st === "demo")
+                    return (
+                      <span style={chipDemo} title="The demo link works and is shareable. Kept out of Google.">
+                        Demo
+                      </span>
+                    );
+                  if (st === "archived")
+                    return <span style={chip}>Archived</span>;
+                  return (
+                    <span style={chipDraft} title="Only you. The demo address 404s — nobody else can reach this.">
+                      Draft
+                    </span>
+                  );
+                })()}
               </div>
-              <h2 style={cardName}>{s.name}</h2>
+              {/* ⛔ TWO NAMES, AND THE CARD USED TO SHOW ONLY THE INTERNAL ONE. `business.name` is
+                  who the website is FOR — what a customer sees and what every {{business.name}}
+                  token resolves to. `name` is Steven's own label for the build ("SJC 2026"), which
+                  is how he tells two sites for the SAME business apart.
+                  
+                  Leading with the internal label made them read as one field contradicting itself:
+                  he set the business name in Website settings and the card carried on saying
+                  something else. The business leads; the label rides underneath, and only when it
+                  actually differs. */}
+              <h2 style={cardName}>{s.business?.name?.trim() || s.name}</h2>
+              {s.business?.name?.trim() && s.business.name.trim() !== s.name ? (
+                <p style={cardLabel} title="Your own label for this build — not shown to anyone else">
+                  {s.name}
+                </p>
+              ) : null}
               {s.description ? <p style={cardDesc}>{s.description}</p> : null}
               {/* The live address, so you can look at a site without opening the builder. Once a
                   domain is attached that becomes the real address; until then it's our path. */}
@@ -213,6 +351,66 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                 {publicUrlFor(s).replace(/^https:\/\//, "")} ↗
               </a>
             </div>
+
+            {/* WHAT IS ACTUALLY WIRED UP — answerable while scanning, instead of behind the gear.
+                Every one of these lived in Website settings, so "is this site connected to
+                anything" meant opening each card in turn. The heartbeat board asks the same three
+                fields whether the joint is HEALTHY; this asks whether it exists at all, from the
+                same derivation so the two can never disagree.
+
+                ⛔ A SHARED destination is red and named. Missing is something a client is owed;
+                shared means their customer's enquiry lands in another client's inbox. */}
+            {s.kind !== "sjc" ? (
+              (() => {
+                const w = leadWiring(s, sites);
+                const chip2 = (ok: boolean, label: string) => (
+                  <span key={label} style={ok ? wiredOn : wiredOff} title={ok ? `${label} is set` : `No ${label} yet`}>
+                    {ok ? "●" : "○"} {label}
+                  </span>
+                );
+                return (
+                  <div style={wiredRow}>
+                    {w.collidesWith ? (
+                      <span style={wiredClash} title="Two websites pointing at the same destination — leads can land in the wrong inbox">
+                        ⛔ Shares a destination with {w.collidesWith}
+                      </span>
+                    ) : null}
+                    {/* ⛔ WHEN IT IS SET, SHOW THE ADDRESS — not the word.
+                        Steven asked whether the chip could carry the client's name: *"if Alamo Slim
+                        Clinic, obviously that name gets long."* It can, and it should not — the
+                        card's headline IS the business name, two lines above, so "Alamo Slim inbox"
+                        repeats what he just read.
+                        
+                        What the label cannot tell him is WHICH inbox, and that is the thing worth
+                        checking at a glance: a client's leads going to the right address is the
+                        difference between a working site and a support call. Unset, it names what
+                        is missing; set, it shows where they land. */}
+                    {w.hasEmail ? (
+                      <span style={wiredOn} title={`Leads are emailed to ${s.leadEmail}`}>
+                        ● {s.leadEmail}
+                      </span>
+                    ) : (
+                      chip2(false, "Client inbox")
+                    )}
+                    {chip2(w.hasSheet, "Sheet")}
+                    {chip2(w.hasGhl, "GoHighLevel")}
+                    {/* ⚠️ NOT PART OF leadWiring, DELIBERATELY. The three above are where a LEAD
+                        goes — the board checks them as one joint, and a collision between two
+                        clients there is a red alarm. This is where a happy CUSTOMER is sent, which
+                        is a different destination with a different failure: nobody is misrouted,
+                        the thank-you screen just quietly loses its button.
+
+                        It belongs on this row anyway, because the row answers "what is wired up"
+                        and this is the one destination that lives on the business rather than the
+                        form. See BusinessFacts.reviewUrl. */}
+                    {chip2(!!s.business?.reviewUrl?.trim(), "Google review")}
+                    {s.chloe?.attached
+                      ? chip2(!!s.chloe.on, s.chloe.on ? "Chloe on" : `Chloe off${s.chloe.offReason ? ` — ${s.chloe.offReason}` : ""}`)
+                      : null}
+                  </div>
+                );
+              })()
+            ) : null}
 
             {/* ONBOARDING — the chase list.
                 One control whose label follows the state, because there is only ever one sensible
@@ -344,6 +542,37 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                 </div>
               </div>
             ) : (
+              <>
+              {/* WHO CAN REACH IT — the one control that used to be a side effect of typing a
+                  domain into Settings. Three buttons rather than a dropdown: the whole point is
+                  that the current state is readable without opening anything, and a closed select
+                  hides it behind a click.
+
+                  Archive is not here. It belongs with Delete, in the gear, because it is a
+                  decision about the site's life rather than about who can see it this week. */}
+              <div style={statusRow}>
+                {(["draft", "demo", "published"] as const).map((st) => {
+                  const on = statusOf(s) === st;
+                  return (
+                    <button
+                      key={st}
+                      type="button"
+                      disabled={busy || on}
+                      onClick={() => setStatus(s, st)}
+                      title={
+                        st === "draft"
+                          ? "Only you. Its address returns 404 for everyone else."
+                          : st === "demo"
+                            ? "The demo link works and is shareable. Kept out of Google."
+                            : "Live on its own domain, and in Google. The demo address dies."
+                      }
+                      style={{ ...statusBtn, ...(on ? statusBtnOn : null) }}
+                    >
+                      {st === "draft" ? "Draft" : st === "demo" ? "Demo" : "Published"}
+                    </button>
+                  );
+                })}
+              </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   type="button"
@@ -380,6 +609,7 @@ export default function SiteGallery({ sites, intake, title }: Props) {
                   </button>
                 ) : null}
               </div>
+              </>
             )}
           </div>
         ))}
@@ -410,9 +640,13 @@ export default function SiteGallery({ sites, intake, title }: Props) {
         </>
       ) : null}
 
+      {/* ⚠️ NO SEPARATE ARCHIVED SECTION — the Archived TAB is where they live now. Two places
+          showing the same sites is how one of them goes stale, and the tab carries a count so
+          nothing is hidden. The bin below stays its own section because it is a different thing:
+          it expires. */}
       {/* THE BIN. Deleted websites live here for RETENTION_DAYS and can be put back with one
           click. Shown last and muted — it's a safety net, not part of the daily view. */}
-      {binned.length ? (
+      {tab === "deleted" && binned.length ? (
         <>
           <h3 style={sectionH}>Deleted</h3>
           <p style={binNote}>
@@ -672,6 +906,9 @@ const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", j
 const h1: React.CSSProperties = { fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em" };
 const sub: React.CSSProperties = { color: "var(--e-muted)", fontSize: 14, marginTop: 4 };
 const sectionH: React.CSSProperties = { fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--e-muted)", margin: "36px 0 12px" };
+const tabRow: React.CSSProperties = { display: "flex", gap: 6, flexWrap: "wrap", margin: "0 0 18px" };
+const tabBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-muted)", border: "1px solid var(--e-line)", borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer" };
+const tabBtnOn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", borderColor: "var(--e-ink)" };
 const search: React.CSSProperties = { width: "100%", maxWidth: 340, margin: "24px 0", border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 12px", fontSize: 14, outline: "none" };
 const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 };
 const card: React.CSSProperties = { border: "1px solid var(--e-line)", borderRadius: 12, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16, minHeight: 190, background: "var(--e-panel)" };
@@ -681,13 +918,29 @@ const chip: React.CSSProperties = { fontSize: 11, fontWeight: 700, background: "
 const chipMuted: React.CSSProperties = { ...chip, background: "var(--e-line-soft)", color: "var(--e-muted)" };
 const chipLive: React.CSSProperties = { ...chip, background: "var(--e-ok-bg)", color: "var(--e-ok-ink)" };
 const chipDemo: React.CSSProperties = { ...chip, background: "var(--e-warn-bg)", color: "var(--e-warn-ink)" };
+// Draft is the resting state of everything, so it is deliberately the quietest chip on the card —
+// a library where every badge shouts is a library with no signal in it.
+const chipDraft: React.CSSProperties = { ...chip, background: "var(--e-muted-bg, #eef1f6)", color: "var(--e-muted-ink, #55617a)" };
 const cardName: React.CSSProperties = { fontSize: 17, fontWeight: 700, lineHeight: 1.25 };
+// The internal build label. Quiet on purpose — it is a note to self, not the business's name.
+const cardLabel: React.CSSProperties = { fontSize: 12, color: "var(--e-muted)", margin: "2px 0 0", fontWeight: 600 };
 const cardDesc: React.CSSProperties = { fontSize: 13, color: "var(--e-muted)", lineHeight: 1.45 };
 const cardLink: React.CSSProperties = { fontSize: 12, color: "var(--e-accent)", textDecoration: "none", fontWeight: 600 };
 const primaryBtn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer" };
 const navBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-block", whiteSpace: "nowrap" };
 const ghostBtn: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const editBtn: React.CSSProperties = { ...primaryBtn, width: "100%", textAlign: "center" };
+// Segmented, and deliberately not a <select>: the current state has to be readable while scanning
+// the library, which is the entire complaint that produced this control.
+// One line, scannable. Filled dot = set, hollow = not yet. Deliberately not colour-coded green:
+// "wired up" is not the same as "healthy", and the heartbeat board is what answers the second.
+const wiredRow: React.CSSProperties = { display: "flex", flexWrap: "wrap", gap: 6, padding: "8px 0", borderTop: "1px solid var(--e-line)", fontSize: 11 };
+const wiredOn: React.CSSProperties = { color: "var(--e-ink)", fontWeight: 600 };
+const wiredOff: React.CSSProperties = { color: "var(--e-muted, #8a94a6)" };
+const wiredClash: React.CSSProperties = { width: "100%", color: "var(--e-danger)", fontWeight: 700 };
+const statusRow: React.CSSProperties = { display: "flex", gap: 0, marginBottom: 8, border: "1px solid var(--e-line)", borderRadius: 8, overflow: "hidden" };
+const statusBtn: React.CSSProperties = { flex: 1, background: "var(--e-panel)", color: "var(--e-muted, #55617a)", border: "none", borderRight: "1px solid var(--e-line)", padding: "7px 0", fontSize: 12, fontWeight: 600, cursor: "pointer" };
+const statusBtnOn: React.CSSProperties = { background: "var(--e-ink)", color: "var(--e-panel)", cursor: "default" };
 const pickBox: React.CSSProperties = { display: "flex", gap: 10, alignItems: "flex-start", border: "1px solid var(--e-line)", borderRadius: 10, padding: "10px 12px", cursor: "pointer" };
 const gearBtn: React.CSSProperties = { ...ghostBtn, padding: "10px 13px", fontSize: 15, lineHeight: 1 };
 // Quiet by default and red only once you've committed to it — a destructive control shouldn't
