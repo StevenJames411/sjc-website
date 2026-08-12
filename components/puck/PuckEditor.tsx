@@ -140,6 +140,7 @@ type SaveState = "idle" | "saving" | "saved" | "failed";
 export default function PuckEditor({
   siteId,
   siteName,
+  businessName,
   page,
   title,
   pages,
@@ -148,6 +149,8 @@ export default function PuckEditor({
 }: {
   siteId: string;
   siteName: string;
+  /** The BUSINESS's name from Website settings — what the header shows. See below. */
+  businessName?: string;
   page: string;
   title: string;
   pages: PageItem[];
@@ -930,8 +933,18 @@ export default function PuckEditor({
           // A token is a STORAGE format. It must never be what a person reads. And the useful thing
           // to put in the one always-visible spot is not the SEO title at all — it is WHERE YOU
           // ARE: which website, which page. That is the question the header should answer.
-          headerTitle={`${siteName} › ${title}`}
-          headerPath={publicPath || undefined}
+          // ⛔ THE BUSINESS NAME, NOT THE SITE LABEL, AND NO URL. Steven: *"I don't need to see the
+          // URL there for the second time. What I want to see there is Steven James Consulting or
+          // Alamo Slim Clinic — I want to see the business name."*
+          //
+          // The address is already in the browser bar and again in the toolbar's live link, so a
+          // third copy in the one always-visible line was spending the most valuable space in the
+          // editor on something already answered twice. `site.name` is the LABEL in the gallery
+          // ("SJC 2026"); the business name is who the website is FOR, which is the thing you need
+          // when you have several open.
+          //
+          // Falls back to the label only when Website settings has no business name yet.
+          headerTitle={`${businessName?.trim() || siteName} › ${title}`}
           overrides={{ actionBar: SectionActionBar }}
           onChange={onChange}
           onPublish={async (d) => {

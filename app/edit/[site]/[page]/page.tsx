@@ -75,6 +75,7 @@ export default async function EditPage({
         <PuckEditor
           siteId={siteId}
           siteName={site.name}
+          businessName={site.business?.name || ""}
           page={entry.slug}
           title={entry.title}
           pages={pages}
