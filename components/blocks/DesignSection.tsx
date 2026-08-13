@@ -196,6 +196,17 @@ export type DesignSectionProps = {
    */
   columns?: number | null;
   /**
+   * WHICH CHILD THE COLUMN BREAK FALLS AFTER. Blank = the design's own flow.
+   *
+   * ⛔ THE CONTROL THAT MAKES `columns` MEAN ANYTHING. Two columns with auto-flow puts one child per
+   * cell, so a band's eyebrow landed left and its headline right. Nobody has ever wanted that. What
+   * "two columns" means to a person is text on one side and the picture on the other — a split, at
+   * a point only they can pick, because only they know which child the picture is.
+   */
+  splitAfter?: number | null;
+  /** Swap the columns left-to-right. For when the picture is the FIRST child, not the last. */
+  flip?: boolean;
+  /**
    * Band colours for an IMPORTED section. Blank = keep whatever the design shipped with.
    *
    * ⚠️ THE IMPORTED SECTIONS WERE THE ONLY ONES YOU COULDN'T RECOLOUR. The native Section block
@@ -278,6 +289,8 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   // ⚠️ NULL, and it has to be. Any new field must default to the DO-NOTHING value or every
   // untouched section on every site starts emitting layout it never had.
   columns: null,
+  splitAfter: null,
+  flip: false,
   background: "",
   foreground: "",
   hasForm: false,
@@ -501,20 +514,64 @@ function dropRemovedLinks(html: string, links: DesignLink[]): string {
  * at-rule from scopeCss and silently kills every rule inside it. This string is emitted at render
  * rather than compiled, but the habit is the thing that broke sjc-2026's entire mobile layout.
  */
-function columnCss(id: string, columns?: number | null): string {
+function columnCss(
+  id: string,
+  columns?: number | null,
+  splitAfter?: number | null,
+  flip?: boolean
+): string {
   const n = typeof columns === "number" && columns >= 2 && columns <= 3 ? columns : 0;
-  if (!n || !id) return "";
+  if (!id || (!n && !flip)) return "";
   const at = `[data-sjc-cols="${id}"]`;
-  const grid = `display:grid;grid-template-columns:repeat(${n},minmax(0,1fr));gap:clamp(24px,4vw,56px);align-items:center`;
-  return (
-    // Shape A — the design wraps its content once. Grid the wrapper, keep its box.
-    `${at} > * > *:only-child{${grid}}` +
-    // Shape B — content sits straight in the section.
-    `${at} > *:not(:has(> *:only-child)){${grid}}` +
-    `@media (max-width:768px){` +
-    `${at} > * > *:only-child,${at} > *:not(:has(> *:only-child)){grid-template-columns:minmax(0,1fr)}` +
-    `}`
-  );
+
+  // The container whose CHILDREN become the columns: the section's wrapper if it has one, else the
+  // section itself. Verified against the live design — every band is
+  // `<section class="band…"><div class="wrap">…children…</div></section>`.
+  const box = `${at} > * > *:only-child, ${at} > *:not(:has(> *:only-child))`;
+  const kid = (sel: string) => `${at} > * > *:only-child ${sel}, ${at} > *:not(:has(> *:only-child)) ${sel}`;
+
+  const out: string[] = [];
+
+  if (n) {
+    out.push(`${box}{display:grid;grid-template-columns:repeat(${n},minmax(0,1fr));gap:clamp(24px,4vw,56px);align-items:center}`);
+
+    // ⛔ WITHOUT A SPLIT POINT THIS COLUMNS THE WRONG THING, AND THAT IS WHAT SHIPPED FIRST.
+    //
+    // Auto-flow puts ONE CHILD PER CELL, and a band's children are its eyebrow, its headline, its
+    // paragraph, its buttons and its photo. Asking for two columns therefore put the eyebrow on
+    // the left and the headline on the right — mechanically alive, and not once what anybody meant
+    // by "make this two columns".
+    //
+    // What a person means is "text on this side, the picture on that side" — a SPLIT, at a point
+    // only they can choose, because only they know which child the picture is. So the stepper
+    // names the break: everything up to it goes left, everything after goes right.
+    if (n === 2 && typeof splitAfter === "number" && splitAfter >= 1) {
+      out.push(`${kid(`> *:nth-child(-n+${splitAfter})`)}{grid-column:1}`);
+      out.push(`${kid(`> *:nth-child(n+${splitAfter + 1})`)}{grid-column:2}`);
+      // Each column packs its own items top-to-bottom instead of leaving holes opposite a tall one.
+      out.push(`${box}{align-items:start;grid-auto-rows:min-content}`);
+    }
+  }
+
+  // ⚠️ REVERSING WITHOUT KNOWING THE CHILD COUNT. `order` needs a number per child and nothing here
+  // knows how many there are. `direction:rtl` on the container flips the visual column order at any
+  // count; putting it back to ltr on the children keeps their text reading normally.
+  if (flip) out.push(`${box}{direction:rtl}` + `${kid("> *")}{direction:ltr}`);
+
+  // ⚠️ 960, NOT 768 — AND THE MISMATCH WAS A REAL BUG FOR ONE DAY.
+  //
+  // This rule now targets the SAME element the design's own grid targets, and ours is emitted in
+  // the body while the design's sheet is in the head, so ours wins every tie. That means our
+  // stacking breakpoint overrides theirs rather than sitting beside it. The design on the live site
+  // stacks at 960; at 800px ours said two columns and theirs said one, and ours won. Stacking
+  // EARLIER than the design is safe — a stacked band is never broken, an unstacked one is.
+  if (n) {
+    out.push(
+      `@media (max-width:960px){${box}{grid-template-columns:minmax(0,1fr)}` +
+        `${kid("> *")}{grid-column:auto}}`
+    );
+  }
+  return out.join("");
 }
 
 /**
@@ -694,6 +751,8 @@ export default function DesignSection(props: DesignSectionProps) {
     paddingTop,
     paddingBottom,
     columns,
+    splitAfter,
+    flip,
     background,
     foreground,
     hasForm,
@@ -713,7 +772,7 @@ export default function DesignSection(props: DesignSectionProps) {
   const fgValue = resolveColor(fgRole);
   const framing = frameCss(images);
   // Keyed to this block's own id — see the note on columnCss for why the sheet scope won't do.
-  const colStyling = columnCss(String(props.id || ""), columns);
+  const colStyling = columnCss(String(props.id || ""), columns, splitAfter, flip);
   // Buttons and pills. `data-sjc-link` is already on the element, so this reaches it without ever
   // guessing at the design's own class names.
   const linkStyling = (links || [])

@@ -62,6 +62,8 @@ type Props = {
     paddingTop: number | null;
     paddingBottom: number | null;
     columns: number | null;
+    splitAfter: number | null;
+    flip: boolean;
     background: string;
     foreground: string;
     hasForm: boolean;
@@ -854,6 +856,27 @@ const baseConfig: Config<Props, RootProps> = {
             { label: "3", value: 3 },
           ],
         },
+        splitAfter: {
+          type: "custom" as const,
+          label: "Where the split falls",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Items on the left"}
+              value={value as number}
+              onChange={onChange}
+              fallback={1}
+              step={1}
+              min={1}
+            clearable unsetLabel="letting the design flow" />
+          ),
+        },
+        flip: {
+          type: "radio" as const,
+          label: "Side to side",
+          options: [
+            { label: "As designed", value: false },
+            { label: "Swap left/right", value: true },
+          ],
+        },
         images: {
           type: "array" as const,
           label: "Photos on this section",
@@ -1086,7 +1109,7 @@ const baseConfig: Config<Props, RootProps> = {
       // that a field is not a control until something has been set on a page and LOOKED AT.
       // scripts/check-prop-bridge.mjs is the mechanical half of that and was too loose to catch
       // its own flagship case; it is tightened in the same commit as this fix.
-      render: ({ id, sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, columns, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
+      render: ({ id, sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, columns, splitAfter, flip, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
           // Marks each filled word so a click on the canvas can name its row. Editor only.
           editing={puck?.isEditing}
@@ -1103,6 +1126,8 @@ const baseConfig: Config<Props, RootProps> = {
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
           columns={columns}
+          splitAfter={splitAfter}
+          flip={flip}
           background={background}
           foreground={foreground}
           hasForm={hasForm}
