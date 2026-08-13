@@ -59,22 +59,98 @@ export function sampleFor(
   selectors: string[],
   blocks: { html?: string; text?: { key: string; value: string }[] }[]
 ): string {
-  for (const sel of selectors) {
+  // ⛔ CLASS SELECTORS ONLY, AND THAT IS A RETREAT MADE ON PURPOSE.
+  //
+  // Matching bare tags raised coverage from a third to three quarters and made the list WORSE: `p`
+  // matches the first paragraph on the site whichever rule is really winning, so four different
+  // sizes showed the same sentence. A row that shows words implies "change this and those words
+  // move" — and for three of those four it was false. The same promise `roleFor` keeps by
+  // returning "" instead of guessing.
+  //
+  // A class is the design naming its own thing (`.lede`, `.eyebrow`, `.btn`), so it identifies one
+  // decision. A tag identifies a category. Rows with only a tag get a ROLE and no sample, which is
+  // honest and still answers "what is this".
+  const withClass = selectors.filter((x) => /\.[A-Za-z0-9_-]+$/.test(x));
+  for (const sel of withClass) {
+    const tag = (sel.match(/^([a-z][a-z0-9]*)/i) || [])[1] || "[a-z][a-z0-9]*";
     const cls = (sel.match(/\.([A-Za-z0-9_-]+)$/) || [])[1];
     if (!cls) continue;
+    const open = new RegExp(`<(${tag})\\b[^>]*class="[^"]*\\b${cls}\\b[^"]*"[^>]*>`, "i");
+
     for (const b of blocks) {
       const html = String(b?.html || "");
       if (!html) continue;
-      const hit = new RegExp(`class="[^"]*\\b${cls}\\b[^"]*"[^>]*>\\s*([^<]{2,120})`, "i").exec(html);
-      if (!hit) continue;
-      const raw = hit[1].trim();
-      const token = /\{\{t:([a-z0-9]+)\}\}/i.exec(raw);
-      const words = token
-        ? (b.text || []).find((r) => r.key === token[1])?.value || ""
-        : raw.replace(/\{\{[^}]+\}\}/g, "").trim();
+      const m = open.exec(html);
+      if (!m) continue;
+
+      // ⚠️ STOP AT THE ELEMENT'S OWN CLOSING TAG. Taking a fixed window instead ran straight past
+      // it and swept in the rest of the page — rows came back reading "Steven James Consulting
+      // Menu <s" and "First name Last name <input id=". Counting depth on the real tag name costs
+      // nothing and cannot overrun.
+      const name = m[1].toLowerCase();
+      let i = m.index + m[0].length;
+      let depth = 1;
+      const openRe = new RegExp(`<${name}\\b`, "gi");
+      const closeRe = new RegExp(`</${name}\\s*>`, "gi");
+      openRe.lastIndex = i;
+      closeRe.lastIndex = i;
+      let end = html.length;
+      while (depth > 0) {
+        const c = closeRe.exec(html);
+        if (!c) break;
+        openRe.lastIndex = i;
+        let opens = 0;
+        let o: RegExpExecArray | null;
+        while ((o = openRe.exec(html)) && o.index < c.index) opens++;
+        depth += opens - 1;
+        i = c.index + c[0].length;
+        if (depth <= 0) end = c.index;
+      }
+      const inner = html.slice(m.index + m[0].length, end);
+
+      const token = /\{\{t:([a-z0-9]+)\}\}/i.exec(inner);
+      let words = "";
+      if (token) words = (b.text || []).find((r) => r.key === token[1])?.value || "";
+      if (!words) words = inner.replace(/<[^>]*>/g, " ").replace(/\{\{[^}]+\}\}/g, " ");
       const clean = words.replace(/\s+/g, " ").trim();
       if (clean.length >= 2) return clean.slice(0, 60);
     }
+  }
+  return "";
+}
+
+
+/**
+ * What this size IS, in words a person uses — the legend Steven asked for.
+ *
+ * *"I understand H1, H2, H3… but for this legend you're listing 40 different places here, and only
+ * about a third of them have a proper legend."* The sample line says WHERE it is on the page; this
+ * says WHAT IT IS, so the two together answer the question without knowing any HTML.
+ *
+ * ⚠️ Derived from the tag, which is the one thing that means the same in every design. A class
+ * called `.lede` means nothing outside the design that named it; `<p>` is body copy everywhere.
+ * Returns "" rather than guessing when the selector is only a class — the sample line carries it.
+ */
+export function roleFor(selectors: string[]): string {
+  const ROLES: Record<string, string> = {
+    h1: "Headline",
+    h2: "Section heading",
+    h3: "Sub-heading",
+    h4: "Small heading",
+    h5: "Small heading",
+    h6: "Small heading",
+    p: "Body text",
+    li: "List item",
+    a: "Link",
+    button: "Button",
+    small: "Fine print",
+    label: "Form label",
+    input: "Form field",
+    blockquote: "Quote",
+  };
+  for (const sel of selectors) {
+    const tag = (sel.match(/^([a-z][a-z0-9]*)/i) || [])[1];
+    if (tag && ROLES[tag.toLowerCase()]) return ROLES[tag.toLowerCase()];
   }
   return "";
 }

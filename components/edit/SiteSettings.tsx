@@ -21,7 +21,7 @@ type Props = {
   pages: { slug: string; title: string }[];
   brand: Brand;
   /** Every distinct text size this website's designs use, biggest first. See lib/typeScale. */
-  sizes: { value: string; rules: number; selectors: string[]; sample: string }[];
+  sizes: { value: string; rules: number; selectors: string[]; sample: string; role: string }[];
 };
 
 const TOKENS: [string, keyof Site["business"]][] = [
@@ -618,6 +618,8 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes }: P
                   {z.sample || z.selectors.slice(0, 3).join(", ") || "—"}
                 </span>
                 <span style={{ fontSize: 11.5, color: "var(--e-muted)" }}>
+                  {z.role ? <strong style={{ color: "var(--e-ink)" }}>{z.role}</strong> : null}
+                  {z.role ? " · " : ""}
                   {z.value} · {z.rules} place{z.rules === 1 ? "" : "s"}
                 </span>
               </span>

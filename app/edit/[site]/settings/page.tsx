@@ -4,7 +4,7 @@ import { findSite } from "@/lib/sites";
 import { readPages } from "@/lib/pageRegistry";
 import { readBrand } from "@/lib/brand";
 import { readPuckDraft, sheetsFor } from "@/lib/puckContent";
-import { sizesIn, sampleFor } from "@/lib/typeScale";
+import { sizesIn, sampleFor, roleFor } from "@/lib/typeScale";
 
 // Everything global to one website. Static segment, so it wins over /edit/[site]/[page] — which
 // is why "settings" is a reserved page slug (see lib/pageRegistry).
@@ -45,6 +45,7 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ s
   const sizes = sizesIn(await sheetsFor(allDocs)).map((z) => ({
     ...z,
     sample: sampleFor(z.selectors, blocks),
+    role: roleFor(z.selectors),
   }));
   return (
     <SiteSettings
