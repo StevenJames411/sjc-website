@@ -29,6 +29,75 @@ type PageItem = { slug: string; title: string; custom?: boolean };
  * Disabled rather than hidden at the ends. A control that vanishes reads as a bug; a greyed one
  * says "this is already the top".
  */
+
+/**
+ * Delete and duplicate, in the RIGHT PANEL, for whatever is selected.
+ *
+ * ⛔ THE ACTION BAR IS NOT REACHABLE ON EVERY BLOCK, AND COLUMNS IS THE PROOF.
+ *
+ * Puck's action bar — which carries duplicate and delete — appears when you HOVER the block. An
+ * empty `Columns` is almost entirely made of drop zones, so the pointer is over a SLOT rather than
+ * the block itself, and the bar never surfaces. Steven, having dropped one on the canvas: *"it
+ * doesn't surface a delete button that used to work."* The block was selected the whole time — the
+ * right panel said so — there was simply nowhere left to hover it.
+ *
+ * The selection is the thing that never has this problem: if the panel is showing a block's fields,
+ * that block is selected, full stop. So the two destructive-but-essential actions live here too.
+ * The action bar stays exactly as it was; this is a second door to the same place, not a move.
+ *
+ * ⚠️ NOT SHOWN FOR THE PAGE ITSELF. With nothing selected the panel shows the page's own settings,
+ * and "Delete" there would read as deleting the page — which is a different, guarded action in the
+ * ⋯ More menu.
+ */
+function FieldsPanel({ children }: { children: React.ReactNode }) {
+  const { appState, dispatch, selectedItem } = usePuck();
+  const sel = appState.ui.itemSelector;
+  const zone = sel?.zone ?? "default-zone";
+  const index = sel?.index ?? -1;
+
+  const act = (type: "remove" | "duplicate") => {
+    if (index < 0) return;
+    if (type === "remove") {
+      // Deselect FIRST. Removing the block the panel is rendering leaves the selector pointing at
+      // an index that no longer holds it, and the panel then renders the block that slid into its
+      // place — which reads as "delete removed the wrong one".
+      dispatch({ type: "setUi", ui: { itemSelector: null } });
+      dispatch({ type: "remove", index, zone });
+      return;
+    }
+    // ⚠️ Duplicate names its arguments differently from remove — sourceIndex/sourceZone, not
+    // index/zone. Typechecking is the only thing that says so.
+    dispatch({ type: "duplicate", sourceIndex: index, sourceZone: zone });
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ flex: "1 1 auto", minHeight: 0, overflow: "auto" }}>{children}</div>
+      {selectedItem && index >= 0 ? (
+        <div style={{ flex: "0 0 auto", borderTop: "1px solid var(--puck-color-grey-09, #e6e6e6)", padding: 12, display: "flex", gap: 8 }}>
+          <button type="button" onClick={() => act("duplicate")} style={panelBtn}>
+            Duplicate
+          </button>
+          <button type="button" onClick={() => act("remove")} style={{ ...panelBtn, color: "#b91c1c" }}>
+            Delete
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const panelBtn: React.CSSProperties = {
+  flex: 1,
+  padding: "9px 12px",
+  fontSize: 13,
+  fontWeight: 600,
+  borderRadius: 7,
+  border: "1px solid var(--puck-color-grey-09, #e6e6e6)",
+  background: "transparent",
+  cursor: "pointer",
+};
+
 function SectionActionBar({
   label,
   children,
@@ -1086,7 +1155,7 @@ export default function PuckEditor({
           //
           // Falls back to the label only when Website settings has no business name yet.
           headerTitle={`${businessName?.trim() || siteName} › ${title}`}
-          overrides={{ actionBar: SectionActionBar }}
+          overrides={{ actionBar: SectionActionBar, fields: FieldsPanel }}
           onChange={onChange}
           onPublish={async (d) => {
             await writeDraft(d);
