@@ -61,6 +61,17 @@ export type Brand = {
   designFamilyBody?: string;
   /** @font-face rules pointing at our own copies. Emitted by BrandStyle when a family is set. */
   designFontCss?: string;
+  /**
+   * TEXT SIZES, keyed by the design's ORIGINAL value: `{"13.5px": "15px"}`.
+   *
+   * ⛔ NOT A ROLE VOCABULARY, and that is deliberate — see lib/typeScale.ts. A bought design names
+   * its sizes in its own classes and the next one names different ones; mapping them to Headline /
+   * Body / Caption means guessing, and a wrong guess resizes the wrong text with nothing to see.
+   * The design's own stylesheet already holds the decisions, so the list IS its distinct values.
+   *
+   * ⚠️ Empty object = untouched, which is the do-nothing default every Brand field must have.
+   */
+  typeScale?: Record<string, string>;
   accent: string;      // links, badges, eyebrows — the "brand" color
   accentHover: string;
   secondary: string;   // second accent — confirmations, "open now", the softer of two buttons
@@ -102,6 +113,7 @@ export const BRAND_DEFAULTS: Brand = {
   designFamilyHeading: "",
   designFamilyBody: "",
   designFontCss: "",
+  typeScale: {},
   accent: "#2563eb",
   accentHover: "#1d4fd7",
   // Nothing on the live site uses these yet, so any value is safe; these are sane starting

@@ -10,6 +10,7 @@ import { defaultChrome } from "@/lib/siteChrome";
 import { SJC } from "@/lib/siteKeys";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
+import { applyTypeScale } from "@/lib/typeScale";
 
 // The builder for one page of one website: /edit/<site>/<page>.
 //
@@ -61,7 +62,7 @@ export default async function EditPage({
   const chrome = await Promise.all(
     ["nav", "footer"].map((slug) => readPuckDraft(slug, siteId))
   );
-  const designCss = await sheetsFor([await readPuckDraft(entry.slug, siteId), ...chrome]);
+  const designCssRaw = await sheetsFor([await readPuckDraft(entry.slug, siteId), ...chrome]);
 
   // ⛔ THE CANVAS WAS PAINTING EVERY CLIENT'S PAGE IN SJC'S COLOURS AND SJC'S FONT.
   //
@@ -83,6 +84,10 @@ export default async function EditPage({
   // :root tie on document order and an imported section's own scoped rules still win over both —
   // exactly the cascade the public page produces.
   const brand = await readBrand(true, siteId);
+  // The canvas gets the same sized sheet the public page does, or the size controls would appear to
+  // do nothing in the one place the work is done — the exact failure this file already carries two
+  // comments about.
+  const designCss = applyTypeScale(designCssRaw, brand?.typeScale);
 
   return (
     <>

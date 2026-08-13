@@ -3,6 +3,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
 import { readPuckPublished, sheetsFor } from "@/lib/puckContent";
+import { applyTypeScale } from "@/lib/typeScale";
 import { resolveFormPointers } from "@/lib/formPointer";
 import { readForms } from "@/lib/forms";
 import { findPageMeta, readPages } from "@/lib/pageRegistry";
@@ -351,7 +352,13 @@ export async function SitePageBody({
   //   podcast referenced 894d8686 (its own) and b9433d90 (the nav's); only 894d8686 was emitted.
   //
   // Gathering all three is what the rule always meant: emit exactly what the rendered page names.
-  const designCss = await sheetsFor([data, chrome.nav, chrome.footer].filter(Boolean));
+  // ⚠️ THE SIZES ARE APPLIED TO THE SHEET ON ITS WAY OUT, never to the stored copy — which is
+  // content-addressed, immutable and shared by every page referencing it. Clearing the map restores
+  // the design byte-for-byte with nothing to recompile. See lib/typeScale.
+  const designCss = applyTypeScale(
+    await sheetsFor([data, chrome.nav, chrome.footer].filter(Boolean)),
+    brand?.typeScale
+  );
 
   // ── ⛔ THE FOOTER CAN MIRROR THE HEADER'S LINKS ──────────────────────────────────────────────
   // Steven, after rewriting every menu description in the studio and finding the footer unchanged:

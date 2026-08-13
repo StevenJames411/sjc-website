@@ -20,6 +20,8 @@ type Props = {
   pageCount: number;
   pages: { slug: string; title: string }[];
   brand: Brand;
+  /** Every distinct text size this website's designs use, biggest first. See lib/typeScale. */
+  sizes: { value: string; rules: number }[];
 };
 
 const TOKENS: [string, keyof Site["business"]][] = [
@@ -33,7 +35,7 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.reviewUrl}}", "reviewUrl"],
 ];
 
-export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
+export default function SiteSettings({ site, pageCount, pages, brand, sizes }: Props) {
   const router = useRouter();
   const [s, setS] = useState<Site>(site);
   const [busy, setBusy] = useState(false);
@@ -107,6 +109,57 @@ export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
         setFontMsg((e as Error).message);
       }
     }, 500);
+  }
+
+  /**
+   * One text size, changed everywhere it is used.
+   *
+   * ⛔ THE COMPLAINT THIS ANSWERS, VERBATIM: *"I have to go back through this website, this 10-page
+   * website that has six sections per page, and match everything. That'll take me all fucking
+   * day."* Three merged designs left 36 distinct sizes on four pages — 13px, 13.5px, 14.5px, 15px
+   * and 15.5px all doing the same job. Each was editable one text row, one section, one page at a
+   * time. This is the same decision made once.
+   *
+   * Keyed by the design's ORIGINAL value, so "everything that was 13.5px is now 15px" — which is
+   * how he described it: *"some of these sections share the font size."*
+   */
+  const sizeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function pickSize(original: string, next: string) {
+    const scale = { ...(fonts.typeScale || {}) };
+    // Back to the design's own value = REMOVE the key, never store a self-mapping. A stored
+    // `{"15px":"15px"}` reads as "somebody chose this" forever and survives the design changing.
+    if (!next || next === original) delete scale[original];
+    else scale[original] = next;
+    const nextBrand = { ...fonts, typeScale: scale } as Brand;
+    setFonts(nextBrand);
+    setFontMsg("Saving…");
+    if (sizeTimer.current) clearTimeout(sizeTimer.current);
+    sizeTimer.current = setTimeout(async () => {
+      try {
+        const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, {
+          credentials: "same-origin",
+        }).then((x) => x.json());
+        const merged = { ...(cur?.brand || {}), typeScale: scale };
+        const put = await fetch("/api/brand", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, brand: merged }),
+        }).then((x) => x.json());
+        if (!put.ok) throw new Error(put.error || "Couldn't save the size.");
+        const pub = await fetch("/api/brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, action: "publish-sizes" }),
+        }).then((x) => x.json());
+        if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+        setFontMsg("Live on the website.");
+        router.refresh();
+      } catch (e) {
+        setFontMsg((e as Error).message);
+      }
+    }, 600);
   }
 
   async function pickSet(key: string) {
@@ -533,6 +586,48 @@ export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
         </p>
         {sweepMsg ? <p style={{ ...hint, margin: "6px 0 0", color: "var(--e-ok-ink)" }}>{sweepMsg}</p> : null}
       </div>
+
+      <h2 style={sec}>Text sizes</h2>
+      <p style={hint}>
+        Every size this website uses, biggest first. Change one and it changes everywhere it is
+        used — every page, every section. Blank the box to put the design's own size back.
+      </p>
+      <div style={{ display: "grid", gap: 6 }}>
+        {sizes.map((z) => {
+          const override = (fonts.typeScale || {})[z.value] || "";
+          const px = /^-?[\d.]+px$/.test(z.value);
+          return (
+            <div key={z.value} style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid var(--e-line)", borderRadius: 8, padding: "7px 10px" }}>
+              {/* The size, drawn AT that size — capped so a 68px headline doesn't take the screen.
+                  A number tells you nothing; the shape of the letters is the decision. */}
+              <span style={{ fontSize: `min(${z.value}, 30px)`, lineHeight: 1, flex: "0 0 auto", minWidth: 44 }}>Aa</span>
+              <span style={{ fontSize: 12.5, color: "var(--e-muted)", flex: "1 1 auto" }}>
+                {z.value} · {z.rules} place{z.rules === 1 ? "" : "s"}
+              </span>
+              {px ? (
+                <input
+                  type="number"
+                  min={6}
+                  step={0.5}
+                  value={override ? parseFloat(override) : parseFloat(z.value)}
+                  onChange={(e) => pickSize(z.value, e.target.value ? `${e.target.value}px` : "")}
+                  style={{ width: 74, padding: "5px 7px", fontSize: 13, borderRadius: 6, border: `1px solid ${override ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit" }}
+                />
+              ) : (
+                // clamp(), 80%, inherit — editable as text, because retyping a clamp by hand is
+                // still better than the alternative, which is that it is not on the screen at all.
+                <input
+                  type="text"
+                  value={override || z.value}
+                  onChange={(e) => pickSize(z.value, e.target.value.trim())}
+                  style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${override ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit" }}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {!sizes.length ? <p style={hint}>No imported designs on this website yet.</p> : null}
 
       <h2 style={sec}>Colours</h2>
       <p style={hint}>

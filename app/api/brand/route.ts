@@ -94,6 +94,14 @@ export async function POST(req: Request) {
     return Response.json({ ok, site, brand: next });
   }
 
+  // Sizes, same contract again: only this control's own field goes live.
+  if (body.action === "publish-sizes") {
+    const draft = await readBrand(false, site);
+    const live = await readBrand(true, site);
+    const ok = await writeBrand({ ...live, typeScale: draft.typeScale }, true, site);
+    return Response.json({ ok, site, brand: { ...live, typeScale: draft.typeScale } });
+  }
+
   if (body.action === "publish-fonts") {
     const draft = await readBrand(false, site);
     const live = await readBrand(true, site);
