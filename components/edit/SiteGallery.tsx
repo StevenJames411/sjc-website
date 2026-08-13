@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RETENTION_DAYS, daysLeft, statusOf, leadWiring, type Site } from "@/lib/sitesShared";
+import { RETENTION_DAYS, daysLeft, statusOf, leadWiring, reachability, type Site } from "@/lib/sitesShared";
 import type { IntakeSummary } from "@/lib/intakeShared";
 import { publicUrlFor, onboardUrlFor } from "@/lib/hostShared";
 import IntakeAnswers from "./IntakeAnswers";
@@ -159,6 +159,33 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
         body: JSON.stringify({ site: s.id, status, dryRun: false }),
+      }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error || "Couldn't change it.");
+      router.refresh();
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Couldn't change it.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /**
+   * ⛔ THE LAUNCH SWITCH, ON THE SURFACE.
+   *
+   * Steven, finding it two clicks deep in Website settings: *"there's no reason to bury shit. Put
+   * it on the surface so I don't even have to look inside the feature card."* He is right, and the
+   * reason is stronger than convenience: this is the single control that decides whether a finished
+   * website is findable at all. Buried, the failure mode is a site that has been live for three
+   * weeks and invisible to Google the whole time, with nothing on any screen saying so.
+   */
+  async function setIndexing(s: Site, hold: boolean) {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/sites", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ id: s.id, holdIndexing: hold }),
       }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error || "Couldn't change it.");
       router.refresh();
@@ -415,6 +442,47 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
                     {s.chloe?.attached
                       ? chip2(!!s.chloe.on, s.chloe.on ? "Chloe on" : `Chloe off${s.chloe.offReason ? ` — ${s.chloe.offReason}` : ""}`)
                       : null}
+
+                    {/* ── SEARCH: THE ONE CHIP ON THIS ROW YOU CAN PRESS ────────────────────────
+                        Everything else here REPORTS a destination. This one reports AND flips,
+                        because it is the launch switch and it was buried in Website settings.
+
+                        ⛔ "Indexed" — Steven's word, and the more precise one. Not "Google" (the
+                        setting blocks AI crawlers too, so Google is narrower than the truth) and
+                        not "SEO" (a discipline, not a state). Indexed is the actual mechanism: in
+                        the index means findable, out of it means invisible. It also inverts
+                        cleanly, which a chip needs — Indexed / Not indexed.
+
+                        ⚠️ THE DOT REPORTS REALITY, NOT THE CHECKBOX. `indexable` also needs the
+                        site published and on its own domain, so a Draft site reads Hidden even
+                        with the box unticked — which is true, and is exactly the lie worth
+                        avoiding: "I turned Google on three weeks ago" while the site was never
+                        published. The tooltip names whichever thing is actually holding it. */}
+                    {(() => {
+                      const r = reachability(s);
+                      const held = !!s.holdIndexing;
+                      const why = held
+                        ? "Held out of the index on purpose. Press to let search engines and AI crawlers in."
+                        : !r.onDomain
+                          ? `Indexing is allowed, but this site is ${statusOf(s)} and has no domain of its own — nothing to index yet.`
+                          : "Google and AI crawlers can find this site. Press to pull it back out.";
+                      return (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => setIndexing(s, !held)}
+                          title={why}
+                          style={{
+                            ...(r.indexable ? wiredOn : wiredOff),
+                            border: "none",
+                            font: "inherit",
+                            cursor: busy ? "default" : "pointer",
+                          }}
+                        >
+                          {r.indexable ? "● Indexed" : "○ Not indexed"}
+                        </button>
+                      );
+                    })()}
                   </div>
                 );
               })()

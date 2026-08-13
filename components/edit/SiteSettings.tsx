@@ -235,7 +235,7 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
           style={{ marginTop: 3 }}
         />
         <span>
-          <strong>Keep this site out of Google until launch</strong>
+          <strong>Not indexed until launch</strong>
           <span style={{ display: "block", ...hint, marginBottom: 0, marginTop: 3 }}>
             Point the domain now, let the world in later. While this is on, the site tells search
             engines and AI crawlers to stay away and publishes no sitemap — even on its own domain.

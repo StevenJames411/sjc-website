@@ -42,13 +42,22 @@ type Brand = {
 };
 
 const BRANDS: Record<BrandKey, Brand> = {
+  // ⛔ THE DESIGNS BRAND IS RETIRED — THE KEY IS NOT (2026-08-13). Website sales folded into an SJC
+  // offering and `stevenjamesdesigns.com` is PARKED (detached from the project; it 404s). The name
+  // and URL here move to Consulting; the cyan palette STAYS, because it is what the live site
+  // actually uses — switching to the `consulting` entry's purple would make the onboarding pages
+  // the only surface wearing a colour scheme nothing else does.
+  //
+  // The `designs` KEY survives on purpose: it is the default in this file and is named at three
+  // call sites (the client onboarding pages). Renaming it is a refactor with no visible payoff —
+  // what a client sees is the fields below, and they are correct now.
   designs: {
-    name: "Steven James Designs",
+    name: "Steven James Consulting",
     mark: "</>",
     blurb:
       "Building websites that win everywhere — mobile-first, Google-optimized, and ready for the AI search era.",
-    site: "https://stevenjamesdesigns.com",
-    siteLabel: "stevenjamesdesigns.com",
+    site: "https://stevenjamesconsulting.com",
+    siteLabel: "stevenjamesconsulting.com",
     accent: "#4fd2f7",
     accentSoft: "#7fe3ff",
     markInk: "#06263a",

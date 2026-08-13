@@ -59,7 +59,10 @@ const DIAL_PROPS = new Set(["phone", "tel"]);
  * Call-now button that does nothing when tapped. Deciding by prop NAME alone was only ever right
  * for our own blocks; imported markup puts the whole URL in the value.
  */
-const isDialString = (s: string) => /tel:\s*$|^\s*tel:/i.test(s);
+// ⚠️ `sms:` TOO — the counterpart of the same fix in lib/businessTokens. A number written into an
+// `sms:` href needs the dialable form exactly as much as a `tel:` one; missing it here is what put
+// `sms:(210) 851-4906` on the live home page. These two rules must stay in step.
+const isDialString = (s: string) => /(tel|sms):\s*$|^\s*(tel|sms):/i.test(s);
 
 /**
  * Apply the rules to every string in a page, counting what changed.

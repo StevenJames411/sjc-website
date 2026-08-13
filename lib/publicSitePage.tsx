@@ -315,10 +315,23 @@ export async function SitePageBody({
       ? doc
       : null;
 
+  // ⛔ CHROME GETS THE TOKEN PASS TOO — IT DID NOT, AND THAT SHIPPED RAW TOKENS TO THE PUBLIC SITE.
+  //
+  // The page body is run through fillBusinessTokens up in `pageData`. The header and footer are
+  // loaded HERE, separately, and were handed to the renderer untouched. Nobody noticed because
+  // chrome held literal phone numbers — until the site was tokenized, at which point every page
+  // rendered `{{business.phone}}` raw in a title attribute, an `sms:` href and visible text.
+  //
+  // ⚠️ IT LOOKED LIKE A PAGE BUG AND WAS NOT. The leak count was IDENTICAL on every page — 14 on
+  // the home page, 14 on /about, 14 on /careers — which is the tell: content that does not vary
+  // per page is not coming from the page. One shared surface, missed once, wrong everywhere.
+  const fillChrome = <T,>(doc: T): T =>
+    site ? fillBusinessTokens(doc, site.business, site.domain ? `https://${site.domain}` : "") : doc;
+
   const chrome = isClientSite
     ? {
-        nav: usable(await readPuckPublished("nav", siteId)) || fallback?.nav || null,
-        footer: usable(await readPuckPublished("footer", siteId)) || fallback?.footer || null,
+        nav: fillChrome(usable(await readPuckPublished("nav", siteId)) || fallback?.nav || null),
+        footer: fillChrome(usable(await readPuckPublished("footer", siteId)) || fallback?.footer || null),
       }
     : { nav: null, footer: null };
 

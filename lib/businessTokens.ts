@@ -36,13 +36,30 @@ const dialable = (b: BusinessFacts) => {
  * every phone token to the dialable form.
  */
 export function fillTokens(s: string, b: BusinessFacts, url = ""): string {
-  const isTelHref = /^\s*tel:/i.test(s);
-  return s.replace(TOKEN, (_m, key: string) => {
+  // ⛔ DIALABLE IS DECIDED PER MATCH, NOT PER STRING — and the difference is the whole bug.
+  //
+  // This used to be `/^\s*tel:/i.test(s)`: does the WHOLE STRING start with `tel:`. That works for
+  // a bare prop like `SiteFooter.phone`, and is useless for the case that actually matters — an
+  // imported design, where `s` is a multi-kilobyte blob of markup with `href="sms:{{business.
+  // phone}}"` somewhere in the middle. The blob does not start with `sms:`, so the number rendered
+  // in its readable form and the live home page shipped `sms:(210) 851-4906`: a text-us button
+  // that looks right and does nothing when tapped.
+  //
+  // It hid because the `tel:` links beside it were fine — but for an unrelated reason. Tokenize had
+  // already written `{{business.phoneDial}}` for those, which is dialable in any context. Only the
+  // `sms:` one relied on this check, and only that one was wrong.
+  //
+  // ⚠️ TWO PLACES KNOW ABOUT DIAL CONTEXT and they must agree: this, and `isDialString` in
+  // lib/tokenizePage. Fixing it here is what makes it retroactive — pages already tokenized and
+  // published render correctly without rewriting a single stored document.
+  const dialAt = (at: number): boolean => /(tel|sms):\s*$/i.test(s.slice(Math.max(0, at - 10), at));
+  const isTelHref = /^\s*(tel|sms):/i.test(s);
+  return s.replace(TOKEN, (_m, key: string, offset: number) => {
     const k = key.toLowerCase();
     if (k === "url") return url;
     if (k === "phonedial") return dialable(b);
     if (k === "phone" || k === "phonedisplay") {
-      return isTelHref ? dialable(b) : b.phoneDisplay || b.phone || "";
+      return isTelHref || dialAt(offset) ? dialable(b) : b.phoneDisplay || b.phone || "";
     }
     const map: Record<string, string> = {
       name: b.name,
@@ -60,7 +77,23 @@ export function fillTokens(s: string, b: BusinessFacts, url = ""): string {
 /** Walk saved page data and fill every token in every string. Returns a new object. */
 export function fillBusinessTokens<T>(data: T, b: BusinessFacts, url = ""): T {
   const walk = (v: unknown): unknown => {
-    if (typeof v === "string") return TOKEN.test(v) ? fillTokens(v, b, url) : v;
+    // ⛔ NO `TOKEN.test(v)` GUARD HERE, AND THAT IS THE FIX (2026-08-12).
+    //
+    // It used to read `TOKEN.test(v) ? fillTokens(...) : v` with a single `TOKEN.lastIndex = 0`
+    // before the walk. TOKEN is a GLOBAL regex, and `.test()` on a global regex ADVANCES
+    // lastIndex — so resetting once only ever fixed the first string. Every string after it was
+    // tested from wherever the previous match ended, and roughly every other one returned false
+    // for a value that plainly contained a token. The old comment named the hazard exactly and
+    // then put the reset where it could not help.
+    //
+    // What that looked like live: `{{business.phone}}` rendered raw on the public site — in a
+    // title attribute, in an `sms:` href, and in visible text — while other copies of the SAME
+    // token on the SAME page resolved fine. Invisible until pages actually contained tokens,
+    // which is why tokenizing exposed it rather than caused it.
+    //
+    // `String.replace` with a global regex starts at 0 and resets on its own, so calling
+    // fillTokens unconditionally is both correct and cheaper than getting the guard right.
+    if (typeof v === "string") return v.includes("{{") ? fillTokens(v, b, url) : v;
     if (Array.isArray(v)) return v.map(walk);
     if (v && typeof v === "object") {
       const o: Record<string, unknown> = {};
@@ -69,8 +102,6 @@ export function fillBusinessTokens<T>(data: T, b: BusinessFacts, url = ""): T {
     }
     return v;
   };
-  // The regex is global, so lastIndex has to be reset or every other .test() returns false.
-  TOKEN.lastIndex = 0;
   return walk(data) as T;
 }
 
