@@ -352,6 +352,23 @@ export async function POST(req: Request) {
       false,
       siteId
     );
+    // ⛔ AND PUBLISH IT. THE DRAFT ALONE MEANT THE DESIGN NEVER ARRIVED (fixed 2026-08-13).
+    //
+    // This wrote the detected fonts and accent to the DRAFT only, and the public render reads the
+    // PUBLISHED brand — which, being untouched, equalled BRAND_DEFAULTS, so BrandStyle emitted
+    // nothing at all and the site went live in Lexend. Meanwhile stripFontFamily had already
+    // removed the design's own family from its compiled sheet, precisely so the brand would decide
+    // typography. Net effect: a customer's brand-new site rendered in a typeface nobody chose, and
+    // the design they actually paid for appeared only if somebody happened to open Settings and
+    // click a font set.
+    //
+    // Nothing errored, and every screen agreed with itself. Steven spent a morning on the symptom.
+    //
+    // ⚠️ SAFE BECAUSE IT IS A BRAND-NEW SITE. This branch is the `else` of `intoExisting` — there
+    // is no existing palette to overwrite and nobody has chosen anything yet. Publishing what the
+    // design shipped with is the most faithful possible starting state.
+    const seeded = await readBrand(false, siteId);
+    await writeBrand(seeded, true, siteId);
   } else {
     const p = result.palette as unknown as Record<string, string>;
     await writeBrand(

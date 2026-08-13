@@ -132,6 +132,31 @@ export const BRAND_DEFAULTS: Brand = {
  * cleanly would render the picker's sample in the wrong face while saving the right value, and a
  * control that lies about what it is showing is worse than no preview at all.
  */
+
+/**
+ * The colours a site owns, in the order a person thinks about them.
+ *
+ * ⛔ LIVES HERE SO THERE IS ONE LIST. `app/edit/brand/page.tsx:11-18` already records that three
+ * colours shipped unreachable because adding a role means touching SEVEN places and two were
+ * missed. A second screen with its own copy of this array would guarantee the same bug again — the
+ * two would drift, and the one a customer happened to open would decide what they could change.
+ */
+export const SWATCHES: { key: keyof Brand; label: string; help: string }[] = [
+  { key: "accent",     label: "Accent",             help: "Links, small labels, number badges — the brand colour" },
+  { key: "accentHover",label: "Accent (hover)",     help: "Slightly darker version of the accent" },
+  { key: "secondary",  label: "Second accent",      help: "The other brand colour — confirmations, 'open now', the softer button" },
+  { key: "highlight",  label: "Highlight",          help: "Warm third accent — star ratings, underline swipes, small emphasis" },
+  { key: "ink",        label: "Headline text",      help: "Headings and dark body text" },
+  { key: "mute",       label: "Body text",          help: "Paragraphs and supporting copy" },
+  { key: "line",       label: "Lines & borders",    help: "Hairlines, card edges, dividers" },
+  { key: "bandSoft",   label: "Light band",         help: "Background of the pale sections" },
+  { key: "bandDark",   label: "Dark band",          help: "Background of the dark sections" },
+  { key: "bandDarker", label: "Dark band (deeper)", help: "The second, darker tone — collapsing them flattens the page" },
+  { key: "bandHeader", label: "Header bar",         help: "The bar across the top. Blank means it follows the deeper dark band." },
+  { key: "cta",        label: "Button",             help: "The main call-to-action button" },
+  { key: "ctaHover",   label: "Button (hover)",     help: "Button colour on hover" },
+];
+
 export const FONT_VAR: Record<BrandFont, string> = {
   lexend: "--font-lexend",
   inter: "--font-inter",

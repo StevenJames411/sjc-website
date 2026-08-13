@@ -8,6 +8,8 @@ import { SiteProvider } from "@/components/blocks/SiteContext";
 import { isChrome } from "@/lib/puckPages";
 import { defaultChrome } from "@/lib/siteChrome";
 import { SJC } from "@/lib/siteKeys";
+import BrandStyle from "@/components/BrandStyle";
+import { readBrand } from "@/lib/brand";
 
 // The builder for one page of one website: /edit/<site>/<page>.
 //
@@ -61,8 +63,30 @@ export default async function EditPage({
   );
   const designCss = await sheetsFor([await readPuckDraft(entry.slug, siteId), ...chrome]);
 
+  // ⛔ THE CANVAS WAS PAINTING EVERY CLIENT'S PAGE IN SJC'S COLOURS AND SJC'S FONT.
+  //
+  // BrandStyle ran in exactly two places: the root layout, always with SJC's brand, and
+  // lib/publicSitePage with the site's. The builder went near neither — so a client's page was
+  // edited under Steven's palette and typeface and published in theirs. What you see was simply
+  // not what you get, in the one place the work is actually done.
+  //
+  // That is the same class of failure the two comments above describe (the design's stylesheet
+  // missing, `{{business.phone}}` rendering raw) and it is the worst of the three, because a
+  // colour is not obviously wrong the way a raw token is — you just judge a design against the
+  // wrong palette all day and never know.
+  //
+  // ⚠️ THE PUBLISHED BRAND, NOT THE DRAFT. The canvas's job is to agree with what a visitor gets.
+  // The brand screen owns previewing an unpublished palette; the builder must not quietly show a
+  // third state that exists nowhere else.
+  //
+  // Emitted AFTER the layout's SJC block and before the design sheet, so the site's values win the
+  // :root tie on document order and an imported section's own scoped rules still win over both —
+  // exactly the cascade the public page produces.
+  const brand = await readBrand(true, siteId);
+
   return (
     <>
+      <BrandStyle brand={brand} id="site-brand" />
       {designCss ? (
         <style id="design-css" dangerouslySetInnerHTML={{ __html: designCss }} />
       ) : null}

@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { reachability, type Site } from "@/lib/sitesShared";
-import { FONT_SETS, FONT_VAR, fontsForSet, type Brand, type BrandFont } from "@/lib/brandShared";
+import { FONT_SETS, FONT_VAR, SWATCHES, fontsForSet, type Brand, type BrandFont } from "@/lib/brandShared";
 import { publicUrlFor } from "@/lib/hostShared";
 
 // EVERYTHING GLOBAL TO ONE WEBSITE, ON ONE SCREEN.
@@ -64,6 +64,51 @@ export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
    * behaves that way — a phone number typed here is live when it saves — and a control that
    * behaves differently from its neighbours is the thing that teaches nobody to trust it.
    */
+  /**
+   * Same contract as the fonts above: merge onto the DRAFT, publish only what this control owns.
+   *
+   * ⛔ WHY COLOURS MOVED HERE. `/edit/<site>/brand` was never linked from anywhere in the studio,
+   * and the back-office rail's "Brand" entry carries no site parameter — so opening it from inside
+   * a client's builder edited STEVEN'S palette. A client's colours had no reachable editor at all:
+   * they could be stored and they could be rendered, and there was nowhere to set them.
+   *
+   * Debounced because a colour input fires continuously while the swatch is dragged; without it a
+   * single pick is dozens of publishes.
+   */
+  const colourTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function pickColour(key: keyof Brand, value: string) {
+    const next = { ...fonts, [key]: value } as Brand;
+    setFonts(next);
+    setFontMsg("Saving…");
+    if (colourTimer.current) clearTimeout(colourTimer.current);
+    colourTimer.current = setTimeout(async () => {
+      try {
+        const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, {
+          credentials: "same-origin",
+        }).then((x) => x.json());
+        const merged = { ...(cur?.brand || {}), ...pickOnly(next, SWATCHES.map((w) => w.key)) };
+        const put = await fetch("/api/brand", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, brand: merged }),
+        }).then((x) => x.json());
+        if (!put.ok) throw new Error(put.error || "Couldn't save the colour.");
+        const pub = await fetch("/api/brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, action: "publish-colours" }),
+        }).then((x) => x.json());
+        if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+        setFontMsg("Live on the website.");
+        router.refresh();
+      } catch (e) {
+        setFontMsg((e as Error).message);
+      }
+    }, 500);
+  }
+
   async function pickSet(key: string) {
     const pair = fontsForSet(key, fonts);
     await pickFont({ ...fonts, ...pair, fontSet: key });
@@ -144,6 +189,58 @@ export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
       setSweepMsg(`Linked ${n} value${n === 1 ? "" : "s"}. Open each page and Publish to put it live.`);
     } catch {
       setSweepMsg("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /**
+   * "Make every page obey these settings" — the recompile, with a button on it.
+   *
+   * ⛔ THIS WAS A CURL WITH A BEARER TOKEN, AND IT IS THE FIX FOR THE BUG THAT COST A MORNING.
+   *
+   * An imported design's stylesheet is compiled once, at import, and stored immutably. Sections
+   * imported before the compiler learned to leave typography to the brand keep their own
+   * font-family forever — so a font picked here changed the pages that had been recompiled and no
+   * others. Steven: *"it updated the home page… when I go to another page, it's serving up the
+   * design that we imported in the first place."*
+   *
+   * The route existed the whole time and had no caller anywhere in the UI. A capability behind a
+   * terminal is a capability the product does not have.
+   *
+   * ⚠️ publish: true — it repoints the PUBLISHED pages, not just the drafts. That is the whole
+   * point: this is a global setting being applied, and the alternative is publishing ten pages by
+   * hand and shipping whatever half-finished drafts sit in them. It changes only which stylesheet
+   * each page loads — never its content.
+   */
+  async function applyEverywhere() {
+    setBusy(true);
+    setSweepMsg("");
+    try {
+      const call = (dryRun: boolean) =>
+        fetch("/api/admin/recompile-css", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, dryRun, publish: true }),
+        }).then((r) => r.json());
+
+      const look = await call(true);
+      if (!look?.ok) throw new Error(look?.error || "Couldn't check this website.");
+      const n = (look.sheets || []).length;
+      if (!n) {
+        setSweepMsg("Every page is already following your settings — nothing to do.");
+        return;
+      }
+      const pageNames = [...new Set((look.sheets || []).flatMap((x: { pages?: string[] }) => x.pages || []))];
+      if (!window.confirm(`Bring ${pageNames.length} page(s) onto your current fonts and colours?\n\n${pageNames.join(", ")}\n\nThis changes only how they are styled, not what they say.`))
+        return;
+      const done = await call(false);
+      if (!done?.ok) throw new Error(done?.error || "Couldn't apply it.");
+      setSweepMsg(`Done — ${(done.livePages || []).length} page(s) now follow your settings.`);
+      router.refresh();
+    } catch (e) {
+      setSweepMsg((e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -424,6 +521,45 @@ export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
       </div>
       {fontMsg ? <p style={{ ...hint, margin: "10px 0 0" }}>{fontMsg}</p> : null}
 
+      {/* ⚠️ THE ONE PAGE-TOUCHING ACTION ON THIS SCREEN, so it says what it does before it does it.
+          Imported sections that predate the current compiler keep their own fonts until this runs. */}
+      <div style={{ marginTop: 14 }}>
+        <button type="button" onClick={applyEverywhere} disabled={busy} style={ghost}>
+          {busy ? "Working…" : "Make every page follow these settings"}
+        </button>
+        <p style={{ ...hint, margin: "8px 0 0" }}>
+          Only needed for pages built from an imported design before these controls existed. Safe to
+          press any time — it changes how pages are styled, never what they say.
+        </p>
+        {sweepMsg ? <p style={{ ...hint, margin: "6px 0 0", color: "var(--e-ok-ink)" }}>{sweepMsg}</p> : null}
+      </div>
+
+      <h2 style={sec}>Colours</h2>
+      <p style={hint}>
+        Set once, used everywhere — every page, every section. Each one applies as you pick it.
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))", gap: 10 }}>
+        {SWATCHES.map((w) => {
+          const v = String((fonts as Record<string, unknown>)[w.key as string] || "");
+          return (
+            <label key={String(w.key)} title={w.help} style={{ display: "flex", alignItems: "center", gap: 9, border: "1px solid var(--e-line)", borderRadius: 9, padding: "8px 10px" }}>
+              <input
+                type="color"
+                value={/^#[0-9a-f]{6}$/i.test(v) ? v : "#000000"}
+                onChange={(e) => pickColour(w.key, e.target.value)}
+                style={{ width: 30, height: 30, border: "none", background: "none", padding: 0, cursor: "pointer", flex: "0 0 auto" }}
+              />
+              <span style={{ fontSize: 12.5, lineHeight: 1.25 }}>
+                {w.label}
+                {/* Blank is meaningful on Header bar — it means "follow the deeper dark band" —
+                    so it is stated rather than shown as an arbitrary colour. */}
+                {!v ? <span style={{ color: "var(--e-muted)" }}> · following</span> : null}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
       <Field label="Preview text" v={s.seo.description} on={(v) => seo("description", v)} ph="What this business does, in one sentence." area />
@@ -483,6 +619,14 @@ const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
  * headlines silently stay behind. Blank means FOLLOW, which is what BrandStyle already treats it
  * as, and blank is what every brand saved before today holds.
  */
+
+/** Copy just the named keys off a brand — so a save can touch only what its control owns. */
+function pickOnly(b: Brand, keys: (keyof Brand)[]): Partial<Brand> {
+  const out: Record<string, unknown> = {};
+  for (const k of keys) out[k as string] = (b as Record<string, unknown>)[k as string];
+  return out as Partial<Brand>;
+}
+
 const page: React.CSSProperties = { maxWidth: 680, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
 const back: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" };

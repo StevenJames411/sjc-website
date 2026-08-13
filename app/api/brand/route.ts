@@ -15,6 +15,7 @@
 //
 // Defaults to SJC when no site is named, so the existing /edit/brand screen keeps working.
 import { readBrand, writeBrand, normalize, BRAND_DEFAULTS } from "@/lib/brand";
+import { SWATCHES } from "@/lib/brandShared";
 import { SJC } from "@/lib/siteKeys";
 
 import { siteOr } from "@/lib/siteAccess";
@@ -81,6 +82,18 @@ export async function POST(req: Request) {
   //
   // So the narrow action: copy ONLY the typography fields from draft to published. Colours stay
   // exactly as published until somebody presses Publish on the screen that owns them.
+
+  // The colour half of the same idea. Each action publishes ONLY the fields its own control
+  // touched, so neither can carry the other's unapproved work live.
+  if (body.action === "publish-colours") {
+    const draft = await readBrand(false, site);
+    const live = await readBrand(true, site);
+    const next = { ...live } as Record<string, unknown>;
+    for (const { key } of SWATCHES) next[key as string] = (draft as Record<string, unknown>)[key as string];
+    const ok = await writeBrand(next as typeof live, true, site);
+    return Response.json({ ok, site, brand: next });
+  }
+
   if (body.action === "publish-fonts") {
     const draft = await readBrand(false, site);
     const live = await readBrand(true, site);
