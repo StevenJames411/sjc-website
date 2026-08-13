@@ -44,6 +44,23 @@ export type Brand = {
    */
   designFont?: BrandFont | "";
   designHeadingFont?: BrandFont | "";
+  /**
+   * THE DESIGN'S REAL TYPEFACE — the actual family name, copied onto our own storage at import.
+   *
+   * ⛔ THIS IS WHAT "AS DESIGNED" IS SUPPOSED TO MEAN. designFont/designHeadingFont above are the
+   * NEAREST of our eight, which is a rounding: a design built in Outfit came out as Space Grotesk,
+   * close enough to look deliberate and wrong enough that Steven spotted it on his own hero. These
+   * three fields carry the genuine article — the family names plus the @font-face rules that serve
+   * the files from our Blob storage rather than from Google.
+   *
+   * ⚠️ ALL THREE BLANK IS THE NORMAL, WORKING STATE. Capture is best-effort and must never fail an
+   * import, so a design whose font isn't hosted anywhere simply keeps the rounded pair. Blank here
+   * means "we didn't get it", never "something broke".
+   */
+  designFamilyHeading?: string;
+  designFamilyBody?: string;
+  /** @font-face rules pointing at our own copies. Emitted by BrandStyle when a family is set. */
+  designFontCss?: string;
   accent: string;      // links, badges, eyebrows — the "brand" color
   accentHover: string;
   secondary: string;   // second accent — confirmations, "open now", the softer of two buttons
@@ -82,6 +99,9 @@ export const BRAND_DEFAULTS: Brand = {
   fontSet: "",
   designFont: "",
   designHeadingFont: "",
+  designFamilyHeading: "",
+  designFamilyBody: "",
+  designFontCss: "",
   accent: "#2563eb",
   accentHover: "#1d4fd7",
   // Nothing on the live site uses these yet, so any value is safe; these are sane starting
