@@ -750,10 +750,15 @@ export default function PuckEditor({
     timer.current = setTimeout(() => writeDraft(d), 800);
   };
 
-  if (!data) {
-    return <div style={{ padding: 40, fontFamily: "sans-serif" }}>Loading editor…</div>;
-  }
-
+  // ⛔ ABOVE THE `if (!data)` GUARD BELOW, AND THAT IS NOT A STYLE CHOICE.
+  //
+  // These three hooks were inserted after it and took the builder down with "Rendered more hooks
+  // than during the previous render": the first pass returns the loading state before reaching
+  // them, the second pass — once the draft arrives — runs them, and React counts a different
+  // number of hooks between renders. The page did not error visibly, it simply failed to load.
+  //
+  // Every hook in this component has to sit above every early return. There is no version of this
+  // that is fine "because the guard almost never fires".
   /**
    * ONE SIZE, CHANGED EVERYWHERE IT IS USED — from the panel, without leaving the page.
    *
@@ -820,6 +825,11 @@ export default function PuckEditor({
     }),
     [sizeIndex, scale, scaleMsg, siteId, router]
   );
+
+  if (!data) {
+    return <div style={{ padding: 40, fontFamily: "sans-serif" }}>Loading editor…</div>;
+  }
+
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
