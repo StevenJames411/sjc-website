@@ -21,7 +21,7 @@ type Props = {
   pages: { slug: string; title: string }[];
   brand: Brand;
   /** Every distinct text size this website's designs use, biggest first. See lib/typeScale. */
-  sizes: { value: string; rules: number }[];
+  sizes: { value: string; rules: number; selectors: string[]; sample: string }[];
 };
 
 const TOKENS: [string, keyof Site["business"]][] = [
@@ -600,9 +600,26 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes }: P
             <div key={z.value} style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid var(--e-line)", borderRadius: 8, padding: "7px 10px" }}>
               {/* The size, drawn AT that size — capped so a 68px headline doesn't take the screen.
                   A number tells you nothing; the shape of the letters is the decision. */}
-              <span style={{ fontSize: `min(${z.value}, 30px)`, lineHeight: 1, flex: "0 0 auto", minWidth: 44 }}>Aa</span>
-              <span style={{ fontSize: 12.5, color: "var(--e-muted)", flex: "1 1 auto" }}>
-                {z.value} · {z.rules} place{z.rules === 1 ? "" : "s"}
+              {/* ⛔ THE WORDS, NOT THE NUMBER. A row reading "clamp(40px,6vw,68px) · 10 places"
+                  names nothing anyone can point at on their own website. Showing the actual
+                  sentence this size sets — at that size — is the whole difference between a list
+                  that can be used and one that gets closed again. */}
+              <span style={{ flex: "1 1 auto", minWidth: 0 }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: `min(${z.value}, 19px)`,
+                    lineHeight: 1.2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {z.sample || z.selectors.slice(0, 3).join(", ") || "—"}
+                </span>
+                <span style={{ fontSize: 11.5, color: "var(--e-muted)" }}>
+                  {z.value} · {z.rules} place{z.rules === 1 ? "" : "s"}
+                </span>
               </span>
               {px ? (
                 <input

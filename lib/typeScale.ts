@@ -36,6 +36,49 @@
 // and shared by every page that references it. This transforms the string on its way out, so
 // clearing the map restores the design byte-for-byte and nothing has to be recompiled.
 
+/**
+ * A line of the site's own words, rendered at each size, so the list can be read.
+ *
+ * ⛔ THE LIST WITHOUT THIS IS UNUSABLE, and Steven said so the moment he opened it: *"How in the
+ * fuck do I know in the global panel what I'm adjusting."* Thirty-six rows reading
+ * `clamp(40px,6vw,68px) · 10 places` and `30px · 20 places` name nothing a person can see. A number
+ * is not a label.
+ *
+ * The selector is the bridge. The sheet says `h1.big{font-size:clamp(40px,6vw,68px)}`; the markup
+ * says `<h1 class="big">{{t:t3}}</h1>`; the block's text rows say `t3` is "Grow Your Business". So
+ * the row can show the actual headline, set at the actual size.
+ *
+ * ⚠️ MATCHED BY CLASS, NOT BY RESOLVING THE CASCADE. Working out which rule truly wins for a given
+ * element means implementing CSS specificity over a 30KB sheet, server-side, on a settings page.
+ * These designs write single-class selectors (`.eyebrow`, `.lede`, `.btn`, `h1.big`), so matching
+ * the last class in the selector against `class="…"` in the markup finds the right text nearly
+ * always — and when it misses it returns nothing rather than the WRONG words, which is the only
+ * failure mode that would matter.
+ */
+export function sampleFor(
+  selectors: string[],
+  blocks: { html?: string; text?: { key: string; value: string }[] }[]
+): string {
+  for (const sel of selectors) {
+    const cls = (sel.match(/\.([A-Za-z0-9_-]+)$/) || [])[1];
+    if (!cls) continue;
+    for (const b of blocks) {
+      const html = String(b?.html || "");
+      if (!html) continue;
+      const hit = new RegExp(`class="[^"]*\\b${cls}\\b[^"]*"[^>]*>\\s*([^<]{2,120})`, "i").exec(html);
+      if (!hit) continue;
+      const raw = hit[1].trim();
+      const token = /\{\{t:([a-z0-9]+)\}\}/i.exec(raw);
+      const words = token
+        ? (b.text || []).find((r) => r.key === token[1])?.value || ""
+        : raw.replace(/\{\{[^}]+\}\}/g, "").trim();
+      const clean = words.replace(/\s+/g, " ").trim();
+      if (clean.length >= 2) return clean.slice(0, 60);
+    }
+  }
+  return "";
+}
+
 /** `font-size: 13.5px` — the declaration, wherever it appears, including inside @media. */
 const FONT_SIZE = /font-size\s*:\s*([^;}]+)/gi;
 
@@ -46,15 +89,28 @@ const FONT_SIZE = /font-size\s*:\s*([^;}]+)/gi;
  * `small{font-size:80%}` is why fine print is fine print — and hiding them would leave a size the
  * list claims to cover but silently does not. They sort to the bottom; the UI can decide.
  */
-export function sizesIn(css: string): { value: string; rules: number }[] {
+export function sizesIn(css: string): { value: string; rules: number; selectors: string[] }[] {
   const counts = new Map<string, number>();
-  for (const m of String(css || "").matchAll(FONT_SIZE)) {
+  const sels = new Map<string, Set<string>>();
+  // Rule-by-rule, so a size can be traced back to the selectors that set it — which is what turns
+  // "30px · 20 places" into something a person can identify.
+  for (const rule of String(css || "").matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const body = rule[2];
+    if (!/font-size/i.test(body)) continue;
+    const m = /font-size\s*:\s*([^;}]+)/i.exec(body);
+    if (!m) continue;
     const v = m[1].trim().replace(/\s+/g, " ");
     if (!v) continue;
     counts.set(v, (counts.get(v) || 0) + 1);
+    const set = sels.get(v) || new Set<string>();
+    for (const one of rule[1].split(",")) {
+      const t = one.trim().split(/\s+/).pop() || "";
+      if (t && !t.startsWith("@")) set.add(t);
+    }
+    sels.set(v, set);
   }
   return [...counts.entries()]
-    .map(([value, rules]) => ({ value, rules }))
+    .map(([value, rules]) => ({ value, rules, selectors: [...(sels.get(value) || [])].slice(0, 6) }))
     // Biggest first, so the headline sizes are at the top where somebody looking for "the big one"
     // will start. Anything without a px number (inherit, 1em, 80%) sorts last.
     .sort((a, b) => (pxOf(b.value) - pxOf(a.value)) || a.value.localeCompare(b.value));

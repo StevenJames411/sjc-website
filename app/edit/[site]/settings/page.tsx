@@ -4,7 +4,7 @@ import { findSite } from "@/lib/sites";
 import { readPages } from "@/lib/pageRegistry";
 import { readBrand } from "@/lib/brand";
 import { readPuckDraft, sheetsFor } from "@/lib/puckContent";
-import { sizesIn } from "@/lib/typeScale";
+import { sizesIn, sampleFor } from "@/lib/typeScale";
 
 // Everything global to one website. Static segment, so it wins over /edit/[site]/[page] — which
 // is why "settings" is a reserved page slug (see lib/pageRegistry).
@@ -29,7 +29,23 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ s
   // ⚠️ DRAFTS, because that is what the builder edits and what he is looking at while he decides.
   const chromeDocs = await Promise.all(["nav", "footer"].map((sl) => readPuckDraft(sl, id)));
   const pageDocs = await Promise.all(pages.map((pg) => readPuckDraft(pg.slug, id)));
-  const sizes = sizesIn(await sheetsFor([...pageDocs, ...chromeDocs].filter(Boolean)));
+  const allDocs = [...pageDocs, ...chromeDocs].filter(Boolean);
+  // Every imported block on the whole website, so a size can be shown with the words it sets.
+  const blocks: { html?: string; text?: { key: string; value: string }[] }[] = [];
+  const collect = (n: unknown) => {
+    if (Array.isArray(n)) return n.forEach(collect);
+    if (!n || typeof n !== "object") return;
+    const o = n as Record<string, unknown> & { props?: Record<string, unknown>; type?: string };
+    if (o.type === "DesignSection" && o.props) {
+      blocks.push(o.props as { html?: string; text?: { key: string; value: string }[] });
+    }
+    for (const k of ["content", "zones", "props"]) if (o[k as keyof typeof o]) collect(o[k as keyof typeof o]);
+  };
+  allDocs.forEach(collect);
+  const sizes = sizesIn(await sheetsFor(allDocs)).map((z) => ({
+    ...z,
+    sample: sampleFor(z.selectors, blocks),
+  }));
   return (
     <SiteSettings
       site={site}
