@@ -85,6 +85,27 @@ export const BRAND_DEFAULTS: Brand = {
 
 // The curated set. next/font is BUILD-time, so the list must be fixed — arbitrary runtime
 // font loading isn't worth the layout shift or the third-party request on every page.
+
+/**
+ * Which next/font CSS variable each family is registered under in app/layout.
+ *
+ * ⚠️ LIVES HERE SO NOBODY DERIVES IT TWICE. The settings picker needs the same mapping BrandStyle
+ * uses, and deriving it from the key (`spaceGrotesk` -> `--font-space-grotesk`) happens to work
+ * for all eight today — which is the problem. The ninth family whose key does not transform
+ * cleanly would render the picker's sample in the wrong face while saving the right value, and a
+ * control that lies about what it is showing is worse than no preview at all.
+ */
+export const FONT_VAR: Record<BrandFont, string> = {
+  lexend: "--font-lexend",
+  inter: "--font-inter",
+  poppins: "--font-poppins",
+  montserrat: "--font-montserrat",
+  merriweather: "--font-merriweather",
+  playfair: "--font-playfair",
+  sourceSans: "--font-source-sans",
+  spaceGrotesk: "--font-space-grotesk",
+};
+
 export const FONTS: { value: BrandFont; label: string; note: string }[] = [
   { value: "lexend",       label: "Lexend",           note: "Current — clean, highly readable" },
   { value: "inter",        label: "Inter",            note: "Neutral, modern, very safe" },

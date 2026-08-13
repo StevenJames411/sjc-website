@@ -4,19 +4,9 @@
 // --font-sans. Re-point those and the entire site re-skins — no block has to change.
 //
 // Rendered server-side in the root layout, so there's no flash of the old palette.
-import { BRAND_DEFAULTS, type Brand, type BrandFont } from "@/lib/brandShared";
+import { BRAND_DEFAULTS, type Brand, type BrandFont, FONT_VAR } from "@/lib/brandShared";
 
 // Font var names must match what layout.tsx registers with next/font.
-const FONT_VAR: Record<BrandFont, string> = {
-  lexend: "--font-lexend",
-  inter: "--font-inter",
-  poppins: "--font-poppins",
-  montserrat: "--font-montserrat",
-  merriweather: "--font-merriweather",
-  playfair: "--font-playfair",
-  sourceSans: "--font-source-sans",
-  spaceGrotesk: "--font-space-grotesk",
-};
 
 const FALLBACK_STACK =
   'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { reachability, type Site } from "@/lib/sitesShared";
+import { FONTS, FONT_VAR, type Brand, type BrandFont } from "@/lib/brandShared";
 import { publicUrlFor } from "@/lib/hostShared";
 
 // EVERYTHING GLOBAL TO ONE WEBSITE, ON ONE SCREEN.
@@ -14,7 +15,12 @@ import { publicUrlFor } from "@/lib/hostShared";
 // Fill this in once and the whole website can use it: any text on any block can carry a token
 // like {{business.phone}} and it resolves at render. Change the number here, every page updates.
 
-type Props = { site: Site; pageCount: number; pages: { slug: string; title: string }[] };
+type Props = {
+  site: Site;
+  pageCount: number;
+  pages: { slug: string; title: string }[];
+  brand: Brand;
+};
 
 const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.name}}", "name"],
@@ -27,13 +33,64 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.reviewUrl}}", "reviewUrl"],
 ];
 
-export default function SiteSettings({ site, pageCount, pages }: Props) {
+export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
   const router = useRouter();
   const [s, setS] = useState<Site>(site);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [sweepMsg, setSweepMsg] = useState("");
+  const [fonts, setFonts] = useState<Brand>(brand);
+  const [fontMsg, setFontMsg] = useState("");
+
+  /**
+   * ONE CLICK. Pick a face and the live website is wearing it — no draft, no second Publish.
+   *
+   * ⛔ THE THREE SIDESTEPS THIS DELETES, AND WHY EACH ONE HAD TO GO (Steven, 2026-08-13:
+   * *"just like a customer, I set my own website to what I like and I'm done with it… with one
+   * click they change the damn font family. We don't have to do three side steps in between."*)
+   *
+   *   1. A SEPARATE SCREEN AT A URL WITH NO LINK TO IT. The picker lived at /edit/<site>/brand and
+   *      nothing in the studio pointed there, so the honest summary was that it did not exist:
+   *      *"obviously I can't get to something I can't see."*
+   *   2. A DRAFT THAT LOOKED SAVED. Picking wrote a draft; publishing was a separate button on
+   *      that same invisible screen. sjc-2026 sat with Space Grotesk saved and Lexend live for
+   *      weeks — the screen agreed with him and the website disagreed, with nothing on either to
+   *      say so.
+   *   3. AN IMPORTED SECTION IGNORING THE ANSWER ANYWAY, until stripFontFamily (lib/designCss)
+   *      stopped the design's compiled sheet from out-ranking the brand.
+   *
+   * So this writes the draft and publishes in the same click. The rest of this screen already
+   * behaves that way — a phone number typed here is live when it saves — and a control that
+   * behaves differently from its neighbours is the thing that teaches nobody to trust it.
+   */
+  async function pickFont(next: Brand) {
+    const before = fonts;
+    setFonts(next); // optimistic: the sample text below re-renders in the new face immediately
+    setFontMsg("Saving…");
+    try {
+      const put = await fetch("/api/brand", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ site: s.id, brand: next }),
+      }).then((x) => x.json());
+      if (!put.ok) throw new Error(put.error || "Couldn't save the font.");
+      const pub = await fetch("/api/brand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ site: s.id, action: "publish" }),
+      }).then((x) => x.json());
+      if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+      setFontMsg("Live on the website.");
+      router.refresh();
+    } catch (e) {
+      // ⚠️ PUT THE PICKER BACK. Leaving it on the face that failed to save is the same lie as #2.
+      setFonts(before);
+      setFontMsg((e as Error).message);
+    }
+  }
 
   /** Catch-up sweep: link every page of this website to the fields above. */
   async function sweep() {
@@ -297,6 +354,24 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
         tier without a CRM &mdash; the email and the sheet still get the lead.
       </p>
 
+      <h2 style={sec}>Fonts</h2>
+      <p style={hint}>
+        Pick a face and the website is wearing it — every page, every section, including the
+        imported ones. There is nothing else to press.
+      </p>
+      <FontPicker
+        label="Headlines"
+        value={fonts.headingFont || ""}
+        follow="Same as body text"
+        onPick={(v) => pickFont({ ...fonts, headingFont: v as BrandFont | "" })}
+      />
+      <FontPicker
+        label="Body text"
+        value={fonts.font}
+        onPick={(v) => pickFont({ ...fonts, font: v as BrandFont })}
+      />
+      {fontMsg ? <p style={{ ...hint, margin: "2px 0 0" }}>{fontMsg}</p> : null}
+
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
       <Field label="Preview text" v={s.seo.description} on={(v) => seo("description", v)} ph="What this business does, in one sentence." area />
@@ -342,6 +417,65 @@ function Field({
 }
 
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+
+/**
+ * The eight faces, each drawn in ITSELF.
+ *
+ * ⚠️ A FONT NAME IS NOT A FONT. "Merriweather" set in the UI's own face tells you nothing about
+ * what the website will look like, so every option renders in the family it names — the decision
+ * is visual and the control has to be too. The families are already loaded by app/layout, so this
+ * costs no extra request.
+ *
+ * ⛔ "Same as body text" IS THE EMPTY STRING, NEVER A COPY OF THE BODY FONT'S VALUE. Copying it in
+ * freezes the headlines the first time the body face changes — pick a new body font and the
+ * headlines silently stay behind. Blank means FOLLOW, which is what BrandStyle already treats it
+ * as, and blank is what every brand saved before today holds.
+ */
+function FontPicker({
+  label,
+  value,
+  follow,
+  onPick,
+}: {
+  label: string;
+  value: string;
+  follow?: string;
+  onPick: (v: string) => void;
+}) {
+  const opts = follow ? [{ value: "", label: follow, note: "" }, ...FONTS] : FONTS;
+  return (
+    <div style={{ margin: "0 0 18px" }}>
+      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>{label}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {opts.map((f) => {
+          const on = value === f.value;
+          return (
+            <button
+              key={f.value || "follow"}
+              type="button"
+              onClick={() => onPick(f.value)}
+              title={f.note}
+              style={{
+                fontFamily: f.value ? `var(${FONT_VAR[f.value as BrandFont]})` : "inherit",
+                fontSize: 15,
+                padding: "9px 14px",
+                borderRadius: 8,
+                cursor: "pointer",
+                border: `1px solid ${on ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`,
+                background: on ? "var(--e-accent, #3b82f6)" : "transparent",
+                color: on ? "#fff" : "inherit",
+                fontWeight: on ? 700 : 500,
+              }}
+            >
+              {f.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 const page: React.CSSProperties = { maxWidth: 680, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
 const back: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" };
