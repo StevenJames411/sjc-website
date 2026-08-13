@@ -88,7 +88,13 @@ export default async function EditPage({
   // ORIGINAL declared values, which is what the override map (`brand.typeScale`) is keyed by.
   // Indexing the already-overridden sheet would key new edits by an edited value, and the
   // mapping would drift a little further from the design every time someone used it.
-  const sizeIndex = sizesIn(designCssRaw);
+  // ⛔ EVERY PAGE'S SHEETS, NOT THIS PAGE'S — because the control says "everywhere" and has to mean
+  // it. Indexed from this page alone, the hero pill reported "4 places" on a ten-page site where
+  // every page carries one: the number was this page's selector count, so the label was wrong in
+  // both directions at once. The override itself was always site-wide (applyTypeScale runs on every
+  // page); only the count lied.
+  const allPageDocs = await Promise.all((await readPages(siteId)).map((pg) => readPuckDraft(pg.slug, siteId)));
+  const sizeIndex = sizesIn(await sheetsFor([...allPageDocs, ...chrome].filter(Boolean)));
   // The canvas gets the same sized sheet the public page does, or the size controls would appear to
   // do nothing in the one place the work is done — the exact failure this file already carries two
   // comments about.

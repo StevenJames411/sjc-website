@@ -205,7 +205,7 @@ function SectionActionBar({
 //                                 needed for pages built before that existed; the sweep moved to
 //                                 the settings screen, beside the fields it uses
 // Each survives as an API route with no button — maintenance, not a feature.
-type SaveState = "idle" | "saving" | "saved" | "failed";
+type SaveState = "idle" | "dirty" | "saving" | "saved" | "failed";
 
 export default function PuckEditor({
   siteId,
@@ -744,10 +744,35 @@ export default function PuckEditor({
   }, [page, title, siteId, fallbackData]);
 
   // Debounced auto-save on every edit.
+  /**
+   * ⛔ NO AUTOSAVE. ONE SAVE BUTTON, PRESSED ON PURPOSE (Steven's call, 2026-08-13).
+   *
+   * This used to write the draft 800ms after every keystroke and every click between sections. He
+   * hit it twice: *"it gets janky"*, and then plainly — *"I don't want auto save, I want one save
+   * like the publish button."*
+   *
+   * He is right for this product and not for the reason autosave is usually argued about. He is
+   * editing a page that ten other pages inherit from; a save that happens while he is still
+   * deciding means he cannot look at two options and keep the first. Autosave is a safety net for
+   * work you are afraid to lose. This is work he is afraid to CHANGE.
+   *
+   * ⚠️ SO THE SAFETY NET MOVES, IT DOES NOT DISAPPEAR. Edits live in component state and the tab
+   * warns before it closes on unsaved work (see below). Nothing writes to storage until Save.
+   */
   const onChange = (d: Data) => {
     if (timer.current) clearTimeout(timer.current);
-    setSave("saving");
-    timer.current = setTimeout(() => writeDraft(d), 800);
+    setSave(dirtyRef.current === false ? "dirty" : "dirty");
+    dirtyRef.current = true;
+    pending.current = d;
+  };
+
+  /** The edits made since the last Save, held in memory only. */
+  const saveNow = async () => {
+    const d = pending.current;
+    if (!d) return;
+    await writeDraft(d);
+    dirtyRef.current = false;
+    pending.current = null;
   };
 
   // ⛔ ABOVE THE `if (!data)` GUARD BELOW, AND THAT IS NOT A STYLE CHOICE.
@@ -776,6 +801,23 @@ export default function PuckEditor({
    * local map moves first and the refresh confirms it. A failure puts the old value back rather
    * than leaving the panel claiming a change the website never took.
    */
+  // Unsaved edits, and whether there are any. Refs rather than state: neither should re-render the
+  // canvas, and the beforeunload handler must read the CURRENT value, not the one captured when it
+  // was registered.
+  const pending = useRef<Data | null>(null);
+  const dirtyRef = useRef(false);
+
+  // ⚠️ THE TAB MUST NOT CLOSE QUIETLY ON UNSAVED WORK, now that nothing writes on its own.
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, []);
+
   const [scale, setScale] = useState<Record<string, string>>(typeScale);
   const [scaleMsg, setScaleMsg] = useState("");
   useEffect(() => setScale(typeScale), [typeScale]);
@@ -784,8 +826,7 @@ export default function PuckEditor({
     () => ({
       index: sizeIndex,
       scale,
-      places: (declared: string) =>
-        sizeIndex.find((z) => z.value === declared)?.selectors.length || 0,
+      places: (declared: string) => sizeIndex.find((z) => z.value === declared)?.rules || 0,
       status: scaleMsg,
       setGlobal: async (declared: string, next: string) => {
         const before = scale;
@@ -947,6 +988,28 @@ export default function PuckEditor({
             </>
           ) : null}
         </div>
+        {/* ⛔ A SAVE BUTTON, BECAUSE NOTHING SAVES ON ITS OWN ANY MORE. It only appears once there
+            is something to save, so the toolbar does not carry a permanently-lit button that does
+            nothing — and when it appears it is the loudest thing on the bar, because unsaved work
+            is the one state here that can cost somebody an afternoon. */}
+        {save === "dirty" || save === "failed" ? (
+          <button
+            type="button"
+            onClick={() => void saveNow()}
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              padding: "7px 15px",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              background: save === "failed" ? "#dc2626" : "#111827",
+              color: "#fff",
+            }}
+          >
+            {save === "failed" ? "Save again" : "Save"}
+          </button>
+        ) : null}
         <span
           title={saveError || undefined}
           style={{
@@ -961,7 +1024,9 @@ export default function PuckEditor({
               ? "Saved"
               : save === "failed"
                 ? `NOT SAVED — ${saveError || "unknown error"}`
-                : ""}
+                : save === "dirty"
+                  ? "Unsaved changes"
+                  : ""}
         </span>
         {/* The live address, the way every other builder shows it. A dot for whether anything is
             actually published there, so a link that would 404 says so before you click it. */}
@@ -1243,7 +1308,12 @@ export default function PuckEditor({
           overrides={{ actionBar: SectionActionBar, fields: FieldsPanel }}
           onChange={onChange}
           onPublish={async (d) => {
+            // ⚠️ PUBLISH IS ALSO A SAVE, and it has to clear the unsaved flag or the tab warns on
+            // close straight after a successful publish — the one moment somebody is most certain
+            // their work is safe.
             await writeDraft(d);
+            dirtyRef.current = false;
+            pending.current = null;
             await fetch(`/api/puck?page=${encodeURIComponent(page)}&site=${encodeURIComponent(siteId)}&action=publish`, {
               method: "POST",
               credentials: "same-origin",

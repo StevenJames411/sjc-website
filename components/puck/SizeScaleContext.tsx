@@ -19,14 +19,20 @@ import { createContext, useContext } from "react";
 // fields outside the site builder. A missing provider must degrade to "no global controls", never
 // to a crashed panel — the per-line size control has to keep working either way.
 
-export type SizeIndex = { value: string; selectors: string[] }[];
+export type SizeIndex = { value: string; rules: number; selectors: string[] }[];
 
 export type SizeScale = {
   /** Every size the site's stylesheets declare, with the selectors that declare it. */
   index: SizeIndex;
   /** The site's current overrides, keyed by the design's ORIGINAL declared value. */
   scale: Record<string, string>;
-  /** How many rules across the whole website use this declared value. */
+  /**
+   * How many rules across the whole website use this declared value.
+   *
+   * ⚠️ RULES, NOT SELECTORS. The first version returned `selectors.length` and told Steven the hero
+   * pill lived in "4 places" on a ten-page site where every page has one. A selector is how the
+   * design NAMES a decision; a rule is each place it is applied.
+   */
   places: (declared: string) => number;
   /**
    * Change one declared size everywhere it is used, and publish it.
