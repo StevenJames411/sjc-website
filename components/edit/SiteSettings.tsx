@@ -21,10 +21,23 @@ type Props = {
   pages: { slug: string; title: string }[];
   brand: Brand;
   /** Every distinct text size this website's designs use, biggest first. See lib/typeScale. */
+  /**
+   * The home page, in the order it is read — header, hero, down the page, footer. One entry per
+   * element, named by the words on it. See the note in app/edit/[site]/settings/page.tsx.
+   */
   sizes: {
-    /** The size this row actually renders at now. */
+    declared: string;
     effective: string;
-    /** Every original declared value that lands on it — one when nothing was collapsed. */
+    members: string[];
+    rules: number;
+    role: string;
+    sample: string;
+    where: string;
+    changed: boolean;
+  }[];
+  /** Sizes that appear only on pages with more sections than the home page. */
+  elsewhere: {
+    effective: string;
     members: string[];
     absorbed: string[];
     changed: boolean;
@@ -46,7 +59,7 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.reviewUrl}}", "reviewUrl"],
 ];
 
-export default function SiteSettings({ site, pageCount, pages, brand, sizes }: Props) {
+export default function SiteSettings({ site, pageCount, pages, brand, sizes, elsewhere }: Props) {
   const router = useRouter();
   const [s, setS] = useState<Site>(site);
   const [busy, setBusy] = useState(false);
@@ -620,68 +633,51 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes }: P
 
       <h2 style={sec}>Text sizes</h2>
       <p style={hint}>
-        Every size this website uses, biggest first. Change one and it changes everywhere it is
-        used — every page, every section. Blank the box to put the design's own size back.
+        Your header, home page and footer, in the order they are read. Set a size once here and
+        every other page follows — they are built from the same elements.
       </p>
       <div style={{ display: "grid", gap: 6 }}>
-        {sizes.map((z) => {
-          const px = /^-?[\d.]+px$/.test(z.effective);
-          return (
-            <div key={z.effective} style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${z.changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, borderRadius: 8, padding: "7px 10px" }}>
-              <span style={{ flex: "1 1 auto", minWidth: 0 }}>
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: `min(${z.effective}, 19px)`,
-                    lineHeight: 1.2,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {z.sample || z.selectors.slice(0, 3).join(", ") || "—"}
-                </span>
-                <span style={{ fontSize: 11.5, color: "var(--e-muted)" }}>
-                  {z.role ? <strong style={{ color: "var(--e-ink)" }}>{z.role}</strong> : null}
-                  {z.role ? " · " : ""}
-                  {z.effective} · {z.rules} place{z.rules === 1 ? "" : "s"}
-                  {/* ⚠️ SAY WHAT WAS COLLAPSED INTO THIS ROW. Without it the only sign that 12,
-                      12.5, 13 and 13.5 became one decision is a coloured border nobody can read. */}
-                  {z.absorbed.length ? (
-                    <span style={{ color: "var(--e-accent, #3b82f6)" }}>
-                      {" · was "}
-                      {z.absorbed.join(", ")}
-                    </span>
-                  ) : null}
-                </span>
-              </span>
-              {px ? (
-                <input
-                  type="number"
-                  min={6}
-                  step={0.5}
-                  value={parseFloat(z.effective)}
-                  onChange={(e) => pickSizeGroup(z.members, e.target.value ? `${e.target.value}px` : "")}
-                  style={{ width: 74, padding: "5px 7px", fontSize: 13, borderRadius: 6, border: `1px solid ${z.changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit" }}
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={z.effective}
-                  onChange={(e) => pickSizeGroup(z.members, e.target.value.trim())}
-                  style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${z.changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit" }}
-                />
-              )}
-              {z.changed ? (
-                <button type="button" onClick={() => pickSizeGroup(z.members, "")} title="Put the designs' own sizes back" style={{ fontSize: 11, background: "none", border: "none", textDecoration: "underline", cursor: "pointer", color: "var(--e-muted)" }}>
-                  undo
-                </button>
-              ) : null}
-            </div>
-          );
-        })}
+        {sizes.map((z) => (
+          <SizeRow
+            key={z.effective}
+            label={z.sample || z.role || z.effective}
+            role={z.role}
+            where={z.where}
+            effective={z.effective}
+            rules={z.rules}
+            changed={z.changed}
+            onSet={(v) => pickSizeGroup(z.members, v)}
+          />
+        ))}
       </div>
       {!sizes.length ? <p style={hint}>No imported designs on this website yet.</p> : null}
+
+      {elsewhere.length ? (
+        <>
+          {/* ⚠️ HIS OWN CAVEAT, GIVEN A HOME: "the only difference is when one page has more
+              sections than the home page." Those sizes are real and have to be reachable, but they
+              are not what the panel is for, so they sit underneath rather than diluting it. */}
+          <p style={{ ...hint, marginTop: 18, fontWeight: 600, color: "var(--e-ink)" }}>
+            Used only on other pages
+          </p>
+          <div style={{ display: "grid", gap: 6 }}>
+            {elsewhere.map((z) => (
+              <SizeRow
+                key={z.effective}
+                label={z.sample || z.selectors.slice(0, 3).join(", ") || z.effective}
+                role={z.role}
+                where=""
+                effective={z.effective}
+                rules={z.rules}
+                changed={z.changed}
+                onSet={(v) => pickSizeGroup(z.members, v)}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
+      {fontMsg ? <p style={{ ...hint, margin: "8px 0 0" }}>{fontMsg}</p> : null}
+
 
       <h2 style={sec}>Colours</h2>
       <p style={hint}>
@@ -774,6 +770,59 @@ function pickOnly(b: Brand, keys: (keyof Brand)[]): Partial<Brand> {
   const out: Record<string, unknown> = {};
   for (const k of keys) out[k as string] = (b as Record<string, unknown>)[k as string];
   return out as Partial<Brand>;
+}
+
+
+/** One editable size, drawn at its own size and named by the words it sets. */
+function SizeRow({
+  label,
+  role,
+  where,
+  effective,
+  rules,
+  changed,
+  onSet,
+}: {
+  label: string;
+  role: string;
+  where: string;
+  effective: string;
+  rules: number;
+  changed: boolean;
+  onSet: (v: string) => void;
+}) {
+  const px = /^-?[\d.]+px$/.test(effective);
+  const border = changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${border}`, borderRadius: 8, padding: "7px 10px" }}>
+      <span style={{ flex: "1 1 auto", minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: `min(${effective}, 19px)`, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {label}
+        </span>
+        <span style={{ fontSize: 11.5, color: "var(--e-muted)" }}>
+          {where ? <strong style={{ color: "var(--e-ink)" }}>{where}</strong> : null}
+          {where && role ? " · " : ""}
+          {role}
+          {role || where ? " · " : ""}
+          {effective} · {rules} place{rules === 1 ? "" : "s"}
+        </span>
+      </span>
+      {px ? (
+        <input type="number" min={6} step={0.5} value={parseFloat(effective)}
+          onChange={(e) => onSet(e.target.value ? `${e.target.value}px` : "")}
+          style={{ width: 74, padding: "5px 7px", fontSize: 13, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+      ) : (
+        <input type="text" value={effective} onChange={(e) => onSet(e.target.value.trim())}
+          style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+      )}
+      {changed ? (
+        <button type="button" onClick={() => onSet("")} title="Put the design's own size back"
+          style={{ fontSize: 11, background: "none", border: "none", textDecoration: "underline", cursor: "pointer", color: "var(--e-muted)" }}>
+          undo
+        </button>
+      ) : null}
+    </div>
+  );
 }
 
 const page: React.CSSProperties = { maxWidth: 680, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
