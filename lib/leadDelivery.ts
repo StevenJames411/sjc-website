@@ -67,31 +67,34 @@ const RESEND = "https://api.resend.com/emails";
  * this makes the mail align, it does not make it fully authenticated. See _CHECKPOINT.
  */
 export const DEFAULT_LEAD_FROM =
-  process.env.LEAD_FROM || "leads@send.stevenjamesdesigns.com";
+  process.env.LEAD_FROM || "leads@send.stevenjamesconsulting.com";
 
-// ⛔ STILL DESIGNS, AND NOT BY CHOICE — REVERTED 2026-08-12, MINUTES AFTER THE SWITCH ABOVE.
+// ⛔ CONSULTING AT LAST — 2026-08-12, and the road here is worth keeping.
 //
-// Pointing this at Consulting broke every outgoing email instantly:
+// Mail went out from the DESIGNS subdomain months after the brands merged. Every sign-in link
+// Resend reported as "Delivered" landed in Steven's SPAM folder — ten of them — while ordinary
+// lead alerts from the SAME sender reached the inbox. The difference is not authentication: the
+// headers showed `signed-by: send.stevenjamesdesigns.com` and SPF/DKIM both passing. It is that a
+// message branded "Steven James Consulting", carrying a login button, arriving from a
+// stevenjamesdesigns.com domain Google has no relationship with, is phishing-shaped. Auth-link
+// email is where a mismatched sending domain stops being cosmetic.
 //
-//   resend 403 — "The send.stevenjamesconsulting.com domain is not verified."
+// ⚠️ RESEND'S FREE PLAN IS ONE DOMAIN. That single fact explains the whole mess: the consulting
+// subdomain HAD been set up before, hit the cap, and was deleted to make room — leaving its DKIM,
+// SPF and bounce MX records orphaned in DNS, resolving perfectly, proving nothing. Which is why an
+// earlier attempt to switch to it broke every outgoing email with `resend 403 — not verified`.
 //
-// THE TWO SETUPS ARE FIGHTING EACH OTHER, exactly as Steven guessed. `resend._domainkey.send.
-// stevenjamesconsulting.com` RESOLVES — the DKIM record is published and looks healthy from the
-// outside — but the domain is NOT registered in Resend. It was deleted there (see the note above
-// about the consulting domain being removed the same day) and the DNS record was left behind. So
-// DNS says verified and Resend says unknown, and only Resend gets a vote.
+// ⛔ RESEND IS THE AUTHORITY ON WHO MAY SEND, NOT `dig`. A resolving DKIM record means somebody
+// once configured it, not that it works today.
 //
-// ⚠️ DIAGNOSING THIS FROM `dig` ALONE WOULD HAVE CONFIRMED THE WRONG THING. Every record you can
-// see from outside said the consulting subdomain was the better sender. The authority is the
-// Resend domains list, not the zone.
+// The swap: delete Designs (freeing the one slot), re-add Consulting. Every orphaned record turned
+// out to still be valid — the reissued DKIM key was byte-identical to the one already published —
+// so DNS verified with nothing to change at GoDaddy.
 //
-// Sequence to finish it, in this order and no other:
-//   1. Add send.stevenjamesconsulting.com in Resend; take the records IT gives (DKIM, SPF, and the
-//      region-specific SES bounce MX — do not guess the region).
-//   2. Publish them; wait for Resend to show Verified.
-//   3. THEN flip this constant back to consulting.
-// Flipping first is what this comment exists to stop somebody doing twice.
-
+// ⚠️ DNS FOR THE TWO BRANDS LIVES IN DIFFERENT PLACES, and that is deliberate, not drift:
+//   stevenjamesdesigns.com     -> Vercel nameservers   (Claude can publish records directly)
+//   stevenjamesconsulting.com  -> GoDaddy              (needs Steven, and it carries Workspace MX)
+//
 export async function sendAlert(opts: {
   to: string;
   from: string;
