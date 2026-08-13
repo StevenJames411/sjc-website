@@ -184,6 +184,99 @@ export function scopeCss(css: string, scope = DESIGN_SCOPE): string {
  */
 
 /**
+ * TAKE THE TYPEFACE OUT OF THE SHEET SO THE SITE CAN OWN IT.
+ *
+ * ⛔ THE PROBLEM THIS EXISTS FOR. Steven folded three bought designs into one site and got three
+ * typefaces on one page, with nothing in the product able to fix it. Every explanation of the
+ * brand layer says the site "re-skins — not one block changed", and that is true of OUR blocks and
+ * false of an imported one:
+ *
+ *   - scopeCss rewrites a design's `:root`/`html`/`body` rules onto that section's own wrapper, so
+ *     Tailwind's preflight `html,:host{font-family:…}` compiles to `.sjc-design-<hash>{…}` —
+ *     specificity (0,1,0) against BrandStyle's `:root` (0,0,0) and `h1,h2,h3,h4` (0,0,1);
+ *   - the design sheet is emitted AFTER BrandStyle, so it also wins every tie on document order.
+ *
+ * The brand screen therefore had no reach inside an imported section, and no setting anywhere
+ * could have. Removing the declaration is what hands control back — the section then inherits
+ * `--font-sans` for body copy and takes BrandStyle's rule for headings.
+ *
+ * ⚠️ THE DESIGN'S OWN TYPEFACE IS NOT LOST. `detectFonts()` already reads it at import and writes
+ * it into the site's brand via `nearestFont()`. This moves the face from a place nobody can edit
+ * to the one screen built to edit it, which is Steven's standing law: *fonts and colours are
+ * per-SITE decisions, never per-section.*
+ *
+ * ⛔ FOUR THINGS THIS MUST NOT BREAK, each learned the hard way elsewhere in this file:
+ *
+ * 1. **@font-face keeps its font-family.** There the declaration NAMES the face rather than
+ *    applying it; stripping it destroys the definition and the face silently never loads.
+ * 2. **Font custom properties go too.** A design that shipped `:root{--font-sans:…}` or
+ *    `--default-font-family` gets those scoped onto its wrapper, where they SHADOW BrandStyle's
+ *    values for everything inside the section — the same override wearing a different hat. Left
+ *    behind, the visible bug survives with the obvious declaration gone, which is worse than not
+ *    fixing it.
+ * 3. **The `font:` SHORTHAND is left alone on purpose.** It carries size, weight and line-height
+ *    in the same declaration, so removing it to win the family would silently collapse the type
+ *    scale — the one thing a bought design is bought for. Tailwind never emits it.
+ * 4. **font-size, weight, spacing and the whole scale are untouched.** Only which typeface paints
+ *    the words changes; every gradient, glass, shadow and measurement compiles byte-identical.
+ *
+ * Applied inside compileDesignCss, so it reaches existing sites the sanctioned way — bump
+ * DESIGN_PIPELINE_REV and run app/api/admin/recompile-css, never by patching a stored sheet (see
+ * the tombstone above).
+ */
+export function stripFontFamily(css: string): string {
+  if (!css) return "";
+
+  // Declarations to remove wherever they appear OUTSIDE an @font-face block. The custom-property
+  // arm is not optional — see note 2 above.
+  const DROP = /(^|[;{])([^;{}]*?)(font-family|--font-[\w-]*|--default-font-family)\s*:[^;{}]*(;|(?=\s*}))/gi;
+
+  // ⚠️ RUN TO A FIXED POINT, because the pattern CONSUMES the `;` that separates it from the next
+  // declaration. `{font-family:a;font-family:b}` matched once, ate the separator, and left the
+  // second one with no delimiter in front of it to match against — so a rule that set the family
+  // twice kept the second, which is the one that was winning anyway.
+  const dropAll = (s: string) => {
+    for (let pass = 0; pass < 8; pass++) {
+      const next = s.replace(DROP, (m, pre, mid) => ((mid || "").trim() ? m : pre));
+      if (next === s) return s;
+      s = next;
+    }
+    return s;
+  };
+
+  // @font-face is passed through verbatim. Walking to the matching brace rather than regexing the
+  // block keeps a nested-looking value from ending it early.
+  let out = "";
+  let i = 0;
+  while (i < css.length) {
+    const at = css.toLowerCase().indexOf("@font-face", i);
+    if (at === -1) {
+      out += dropAll(css.slice(i));
+      break;
+    }
+    out += dropAll(css.slice(i, at));
+    const open = css.indexOf("{", at);
+    if (open === -1) {
+      out += css.slice(at);
+      break;
+    }
+    let depth = 1;
+    let j = open + 1;
+    while (j < css.length && depth > 0) {
+      if (css[j] === "{") depth++;
+      else if (css[j] === "}") depth--;
+      j++;
+    }
+    out += css.slice(at, j); // the whole @font-face, untouched
+    i = j;
+  }
+
+  // A rule whose only declaration was the font is now empty. Left in, thousands of `.x{}` husks
+  // accumulate in a 55KB sheet for no reason.
+  return out.replace(/[^{}]+\{\s*\}/g, "").replace(/\n{3,}/g, "\n\n");
+}
+
+/**
  * The one kind of "hidden" that must STAY hidden.
  *
  * ⚠️ THIS EXACT RULE BURIED A LIVE SITE. revealHiddenStates() (below) un-hides anything parked at
@@ -337,5 +430,5 @@ export async function compileDesignCss(
   }
 
   const utilities = build(candidates);
-  return scopeCss(`${utilities}\n${revealHiddenStates(extraCss)}`, scope);
+  return stripFontFamily(scopeCss(`${utilities}\n${revealHiddenStates(extraCss)}`, scope));
 }

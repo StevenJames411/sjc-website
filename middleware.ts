@@ -255,7 +255,32 @@ export async function middleware(req: NextRequest) {
   // 302 says "look over there for now" and costs nothing, because nothing here needs SEO credit
   // to move: the domain was never given out or linked.
   const moved = studioRedirect(req);
-  if (moved) return NextResponse.redirect(moved, 302);
+  if (moved) {
+    // ⛔ ROBOTS.TXT ANSWERS HERE — IT IS THE ONE PATH THAT MUST NOT BE REDIRECTED.
+    //
+    // A crawler asks for /robots.txt BEFORE it asks for anything else. Redirecting that request to
+    // an HTML page means the crawler never receives a robots file at all, and the standard reading
+    // of "no robots.txt" is ALLOW EVERYTHING. So the redirect that was meant to retire this domain
+    // was quietly leaving it wide open.
+    //
+    // Answered in middleware rather than by app/robots.ts on purpose: nothing in the registry
+    // claims this host, so `resolveHost` reports `sjc` for it and robots.ts would hand back the
+    // allow-all SJC rules. Keeping the refusal next to the redirect means the two can't disagree.
+    if (pathname === "/robots.txt") {
+      return new NextResponse("User-Agent: *\nDisallow: /\n", {
+        status: 200,
+        headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex" },
+      });
+    }
+    const res = NextResponse.redirect(moved, 302);
+    // ⚠️ THE HEADER IS WHAT MAKES 302 SAFE HERE. A permanent 301/308 drops the old URL out of the
+    // index by itself; a TEMPORARY redirect does not — it says "this address is coming back", so
+    // the designs URL can stay indexed. `noindex` states the intent outright instead of relying on
+    // a side effect of the status code, which is what lets the redirect stay reclaimable AND
+    // uncrawled. Honoured on a 3xx: crawlers read response headers before following.
+    res.headers.set("X-Robots-Tag", "noindex");
+    return res;
+  }
 
   const authed = isOwner(req, pathname);
 
