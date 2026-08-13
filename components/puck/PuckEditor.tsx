@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Puck, ActionBar, usePuck, type Data } from "@measured/puck";
+import { SizeScaleContext, type SizeIndex, type SizeScale } from "./SizeScaleContext";
 import { requestTextFocus } from "@/lib/designFocus";
 import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
@@ -216,8 +217,14 @@ export default function PuckEditor({
   pages,
   siteDomain,
   fallbackData,
+  sizeIndex = [],
+  typeScale = {},
 }: {
   siteId: string;
+  /** Every text size the site's stylesheets declare — see components/puck/SizeScaleContext. */
+  sizeIndex?: SizeIndex;
+  /** The site's current size overrides, keyed by the design's original declared value. */
+  typeScale?: Record<string, string>;
   siteName: string;
   /** The BUSINESS's name from Website settings — what the header shows. See below. */
   businessName?: string;
@@ -747,6 +754,73 @@ export default function PuckEditor({
     return <div style={{ padding: 40, fontFamily: "sans-serif" }}>Loading editor…</div>;
   }
 
+  /**
+   * ONE SIZE, CHANGED EVERYWHERE IT IS USED — from the panel, without leaving the page.
+   *
+   * ⛔ THE MODEL THIS SERVES IS STEVEN'S, and it is simpler than the one I built first: *"the home
+   * page always gets built first. I set the home page from top to bottom, the rest of the pages
+   * should follow… instead of drilling into individual pages, you have one edit canvas that lives
+   * on top of the entire website."*
+   *
+   * The per-line Size stepper writes `row.size`, an inline style on ONE line, in ONE section, on
+   * ONE page — with no idea the same size governs nine other pages. That disconnect is why a
+   * global list of thirty-six numbers existed at all, and why it was unreadable: he was being
+   * asked to identify text by its font size instead of by pointing at it.
+   *
+   * ⚠️ OPTIMISTIC, THEN CORRECTED. The canvas restyles from the returned sheet on refresh, so the
+   * local map moves first and the refresh confirms it. A failure puts the old value back rather
+   * than leaving the panel claiming a change the website never took.
+   */
+  const [scale, setScale] = useState<Record<string, string>>(typeScale);
+  const [scaleMsg, setScaleMsg] = useState("");
+  useEffect(() => setScale(typeScale), [typeScale]);
+
+  const sizeScale: SizeScale = useMemo(
+    () => ({
+      index: sizeIndex,
+      scale,
+      places: (declared: string) =>
+        sizeIndex.find((z) => z.value === declared)?.selectors.length || 0,
+      status: scaleMsg,
+      setGlobal: async (declared: string, next: string) => {
+        const before = scale;
+        const nextScale = { ...scale };
+        // Back to the design's own value = REMOVE the key. A stored self-mapping reads as a
+        // deliberate choice forever and survives the design changing underneath it.
+        if (!next || next === declared) delete nextScale[declared];
+        else nextScale[declared] = next;
+        setScale(nextScale);
+        setScaleMsg("Saving…");
+        try {
+          const cur = await fetch(`/api/brand?site=${encodeURIComponent(siteId)}`, {
+            credentials: "same-origin",
+          }).then((x) => x.json());
+          const merged = { ...(cur?.brand || {}), typeScale: nextScale };
+          const put = await fetch("/api/brand", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ site: siteId, brand: merged }),
+          }).then((x) => x.json());
+          if (!put.ok) throw new Error(put.error || "Couldn't save the size.");
+          const pub = await fetch("/api/brand", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ site: siteId, action: "publish-sizes" }),
+          }).then((x) => x.json());
+          if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+          setScaleMsg("Changed everywhere.");
+          router.refresh();
+        } catch (e) {
+          setScale(before);
+          setScaleMsg((e as Error).message);
+        }
+      },
+    }),
+    [sizeIndex, scale, scaleMsg, siteId, router]
+  );
+
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={bar}>
@@ -1129,6 +1203,7 @@ export default function PuckEditor({
           if (key) requestTextFocus(key);
         }}
       >
+        <SizeScaleContext.Provider value={sizeScale}>
         <Puck
           key={page}
           config={config}
@@ -1177,6 +1252,7 @@ export default function PuckEditor({
             }
           }}
         />
+        </SizeScaleContext.Provider>
       </div>
     </div>
   );

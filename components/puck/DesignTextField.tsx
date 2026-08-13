@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DesignText } from "@/components/blocks/DesignSection";
+import { useSizeScale, type SizeIndex } from "./SizeScaleContext";
 import { onTextFocus, takePendingFocus } from "@/lib/designFocus";
 import ColorField from "./ColorField";
 import SizeStepper from "./SizeStepper";
@@ -71,6 +72,127 @@ function buildGroups(rows: DesignText[]): RowGroup[] {
 function groupKeyFor(rows: DesignText[], key: string): string | null {
   const groups = buildGroups(rows);
   return groups.find((g) => g.rows.some((r) => r.key === key))?.key ?? null;
+}
+
+
+/**
+ * Which SITE-WIDE size governs this line — asked of the canvas, not of the markup.
+ *
+ * ⛔ THE BROWSER HAS ALREADY DONE THE HARD PART. Working out which rule wins for an element means
+ * implementing CSS specificity over a 30KB stylesheet; the canvas has a real DOM where that is
+ * already resolved. So this walks UP from the marked span and matches ancestors against the size
+ * index — the same shape as lib/typeScaleMap.governingSize, but on real elements with real classes
+ * instead of a string, which is both simpler and more accurate.
+ *
+ * ⚠️ CLASS BEFORE TAG, at every level. A design names its own decisions in classes (`.big`,
+ * `.eyebrow`, `.lede`); a bare `p` rule is the category default underneath them. Checking the tag
+ * first would report the fallback and quietly resize every paragraph on the website when the
+ * person meant one headline.
+ *
+ * Returns "" when nothing matches, and the panel then offers only the per-line control — the same
+ * promise made everywhere else here: no guess is better than a wrong one.
+ */
+function governingSizeInCanvas(key: string, index: SizeIndex): string {
+  if (typeof document === "undefined" || !key || !index.length) return "";
+  const start = document.querySelector(`[data-sjc-text="${CSS.escape(key)}"]`);
+  if (!start) return "";
+
+  const matches = (el: Element, sel: string): boolean => {
+    const cls = (sel.match(/\.([A-Za-z0-9_-]+)$/) || [])[1];
+    const tag = (sel.match(/^([a-z][a-z0-9]*)/i) || [])[1];
+    if (tag && el.tagName.toLowerCase() !== tag.toLowerCase()) return false;
+    if (cls && !el.classList.contains(cls)) return false;
+    return !!(tag || cls);
+  };
+
+  for (let el: Element | null = start; el; el = el.parentElement) {
+    // Never leave this section — the wrapper carries the design's scope class.
+    if (el.hasAttribute?.("data-sjc-sheet")) break;
+    for (const pass of [true, false]) {
+      for (const z of index) {
+        for (const sel of z.selectors) {
+          const hasClass = /\.[A-Za-z0-9_-]+$/.test(sel);
+          if (hasClass !== pass) continue;
+          if (matches(el, sel)) return z.value;
+        }
+      }
+    }
+  }
+  return "";
+}
+
+
+/**
+ * "…and everywhere else this size is used." The other half of the size control.
+ *
+ * ⛔ WHY THIS EXISTS AT ALL. The stepper above writes an inline style on ONE line, in ONE section,
+ * on ONE page. On a ten-page site built from imported designs the same size governs the same band
+ * on all ten — so matching a headline meant repeating the edit sixty times, which is what Steven
+ * was staring down: *"I have to go back through this website… that'll take me all fucking day."*
+ *
+ * The global list built first solved the propagation and not the identification: thirty-six rows of
+ * numbers, and *"how in the fuck do I know in the global panel what I'm adjusting."* The answer is
+ * to stop asking him to identify text by its font size and let him point at it. His model, which is
+ * better than mine: *"I set the home page from top to bottom, the rest of the pages should follow."*
+ *
+ * So: click the words on the canvas, and change that size for the whole website from right here.
+ *
+ * ⚠️ SHOWS NOTHING WHEN THE GOVERNING SIZE CANNOT BE RESOLVED. A control that silently edits the
+ * wrong size is worse than one that is absent — the per-line stepper above still works, and it is
+ * the honest fallback.
+ */
+function GlobalSize({ textKey }: { textKey: string }) {
+  const { index, scale, setGlobal, status, places } = useSizeScale();
+  const [declared, setDeclared] = useState("");
+
+  // Resolved after paint: the canvas has to have rendered this section for the DOM walk to find
+  // the marked span. Re-runs when the panel opens a different row.
+  useEffect(() => {
+    setDeclared(governingSizeInCanvas(textKey, index));
+  }, [textKey, index]);
+
+  if (!declared) return null;
+  const current = scale[declared] || declared;
+  const px = /^-?[\d.]+px$/.test(current);
+  const n = places(declared);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", padding: "6px 0 2px" }}>
+      <span style={{ fontSize: 11.5, color: "var(--color-sjc-mute)" }}>
+        Everywhere{n > 1 ? ` · ${n} places` : ""}
+      </span>
+      {px ? (
+        <input
+          type="number"
+          min={6}
+          step={1}
+          value={parseFloat(current)}
+          onChange={(e) => setGlobal(declared, e.target.value ? `${e.target.value}px` : "")}
+          style={{ width: 68, padding: "4px 6px", fontSize: 12.5, borderRadius: 6, border: "1px solid var(--color-sjc-line)" }}
+        />
+      ) : (
+        // clamp() and friends stay editable as text — a responsive headline is exactly the size
+        // somebody most wants to change, and hiding it because it is not a plain number would put
+        // the biggest text on the page out of reach.
+        <input
+          type="text"
+          value={current}
+          onChange={(e) => setGlobal(declared, e.target.value.trim())}
+          style={{ width: 168, padding: "4px 6px", fontSize: 11.5, borderRadius: 6, border: "1px solid var(--color-sjc-line)" }}
+        />
+      )}
+      {scale[declared] ? (
+        <button
+          type="button"
+          onClick={() => setGlobal(declared, "")}
+          style={{ fontSize: 11, background: "none", border: "none", textDecoration: "underline", cursor: "pointer", color: "var(--color-sjc-mute)" }}
+        >
+          reset
+        </button>
+      ) : null}
+      {status ? <span style={{ fontSize: 11, color: "var(--color-sjc-mute)" }}>{status}</span> : null}
+    </div>
+  );
 }
 
 export default function DesignTextField({
@@ -199,13 +321,14 @@ export default function DesignTextField({
                   }}
                 />
                 <SizeStepper
-                  label="Size"
+                  label="Size — this line only"
                   value={row.size || 0}
                   onChange={(v) => set(row.key, { size: v as number })}
                   fallback={0}
                   step={2}
                   min={0}
                 />
+                <GlobalSize textKey={row.key} />
                 <ColorField value={row.color} onChange={(v) => set(row.key, { color: v })} />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {[
