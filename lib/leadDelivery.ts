@@ -43,7 +43,59 @@ const RESEND = "https://api.resend.com/emails";
  * the afternoon before real prospects start filling these forms in. Two call sites, one of which
  * is proven. Consolidate when there's a reason to touch it anyway.
  */
-async function sendAlert(opts: {
+// Exported since 2026-08-12 for the magic-link sign-in, which needs to send one email and has no
+// business owning a second copy of the Resend call — one sender, one place a failure is handled.
+/**
+ * WHO SJC's MAIL COMES FROM. One constant, because it was written out by hand in four places and
+ * three of them were the wrong brand.
+ *
+ * ⛔ CONSULTING, NOT DESIGNS (changed 2026-08-12). The brands merged and the domain moved to
+ * stevenjamesconsulting.com on 08-11; the sender did not follow, so Consulting enquiries arrived
+ * from a Designs address — and worse than off-brand, it did not AUTHENTICATE:
+ *
+ *   send.stevenjamesdesigns.com     DKIM only. No SPF. No DMARC on it or on its root.
+ *   send.stevenjamesconsulting.com  DKIM, under a root `p=quarantine; adkim=r` — so DKIM ALIGNS
+ *                                   and the mail actually passes DMARC rather than merely being
+ *                                   signed by somebody.
+ *
+ * How it surfaced: a lead alert arrived fine and a magic-link email vanished — not spam, gone —
+ * from the SAME sender. A "new enquiry" from a weakly-authenticated domain squeaks by on
+ * reputation; "Your sign-in link" with a login button is the most phishing-shaped mail there is
+ * and Gmail refused it. Auth-link email is where a missing SPF record stops being cosmetic.
+ *
+ * ⚠️ STILL NOT FINISHED. SPF and the SES bounce MX are missing on the consulting subdomain too;
+ * this makes the mail align, it does not make it fully authenticated. See _CHECKPOINT.
+ */
+export const DEFAULT_LEAD_FROM =
+  process.env.LEAD_FROM || "leads@send.stevenjamesconsulting.com";
+
+// ⛔ CONSULTING AT LAST — 2026-08-12, and the road here is worth keeping.
+//
+// Mail went out from the DESIGNS subdomain months after the brands merged. Every sign-in link
+// Resend reported as "Delivered" landed in Steven's SPAM folder — ten of them — while ordinary
+// lead alerts from the SAME sender reached the inbox. The difference is not authentication: the
+// headers showed `signed-by: send.stevenjamesdesigns.com` and SPF/DKIM both passing. It is that a
+// message branded "Steven James Consulting", carrying a login button, arriving from a
+// stevenjamesdesigns.com domain Google has no relationship with, is phishing-shaped. Auth-link
+// email is where a mismatched sending domain stops being cosmetic.
+//
+// ⚠️ RESEND'S FREE PLAN IS ONE DOMAIN. That single fact explains the whole mess: the consulting
+// subdomain HAD been set up before, hit the cap, and was deleted to make room — leaving its DKIM,
+// SPF and bounce MX records orphaned in DNS, resolving perfectly, proving nothing. Which is why an
+// earlier attempt to switch to it broke every outgoing email with `resend 403 — not verified`.
+//
+// ⛔ RESEND IS THE AUTHORITY ON WHO MAY SEND, NOT `dig`. A resolving DKIM record means somebody
+// once configured it, not that it works today.
+//
+// The swap: delete Designs (freeing the one slot), re-add Consulting. Every orphaned record turned
+// out to still be valid — the reissued DKIM key was byte-identical to the one already published —
+// so DNS verified with nothing to change at GoDaddy.
+//
+// ⚠️ DNS FOR THE TWO BRANDS LIVES IN DIFFERENT PLACES, and that is deliberate, not drift:
+//   stevenjamesdesigns.com     -> Vercel nameservers   (Claude can publish records directly)
+//   stevenjamesconsulting.com  -> GoDaddy              (needs Steven, and it carries Workspace MX)
+//
+export async function sendAlert(opts: {
   to: string;
   from: string;
   fromName: string;
@@ -334,7 +386,7 @@ export async function deliverLead(
     if (fallbackTo) {
       await sendAlert({
         to: fallbackTo,
-        from: process.env.LEAD_FROM || "leads@send.stevenjamesdesigns.com",
+        from: DEFAULT_LEAD_FROM,
         fromName: "SJC lead alarm",
         subject: `⚠ Lead with nowhere to go — ${business}`,
         html:
@@ -370,10 +422,7 @@ export async function deliverLead(
   //
   // Only the part after the @ is fixed. The name the client reads is his own business (below), so
   // one domain serves everyone. site.leadFrom is the seam for the day a second brand needs its own.
-  const from =
-    (site?.leadFrom || "").trim() ||
-    process.env.LEAD_FROM ||
-    "leads@send.stevenjamesdesigns.com";
+  const from = (site?.leadFrom || "").trim() || DEFAULT_LEAD_FROM;
   if (!key) {
     problems.push("RESEND_API_KEY not set — the owner's copy could NOT be sent");
     return { toOwner: false, toRecord, toSheet, toGhl, problems };

@@ -18,6 +18,7 @@
 // form's `source`, the tag deciding whose inbox an enquiry lands in. Saving strips it, the same
 // way make-template does, rather than trusting whoever clicks Save to have checked.
 import { createKvStore } from "@/lib/kvStateStore";
+import { ownerOnly } from "@/lib/siteAccess";
 import { findSite } from "@/lib/sites";
 import { scrubForTransfer } from "@/lib/transferScrub";
 import { getClient } from "@/lib/store";
@@ -54,6 +55,11 @@ function blankLeadSources(node: unknown): void {
 }
 
 export async function GET(req: Request) {
+  // ⛔ OWNER ONLY — this surface is shared across every website, so there is no site to scope it
+  // to. A client reaching it would be editing what every other client's builder offers, or
+  // reading a list of other people's sites. See ownerOnly() in lib/siteAccess.
+  const denied = await ownerOnly();
+  if (denied) return denied;
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
   const all = await readAll();
@@ -74,6 +80,11 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  // ⛔ OWNER ONLY — this surface is shared across every website, so there is no site to scope it
+  // to. A client reaching it would be editing what every other client's builder offers, or
+  // reading a list of other people's sites. See ownerOnly() in lib/siteAccess.
+  const denied = await ownerOnly();
+  if (denied) return denied;
   let body: { name?: string; block?: Record<string, unknown>; site?: string };
   try {
     body = await req.json();
@@ -128,6 +139,11 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  // ⛔ OWNER ONLY — this surface is shared across every website, so there is no site to scope it
+  // to. A client reaching it would be editing what every other client's builder offers, or
+  // reading a list of other people's sites. See ownerOnly() in lib/siteAccess.
+  const denied = await ownerOnly();
+  if (denied) return denied;
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return Response.json({ ok: false, error: "which section?" }, { status: 400 });
   const all = await readAll();

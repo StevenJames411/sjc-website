@@ -193,16 +193,16 @@ function normalizeAltSuccess(
   const base = current.altSuccess;
   if (!base) return undefined; // A form without a rule can't grow one from a request.
   if (!incoming) return base;
-  const url = String(incoming.buttonUrl || "").trim();
   return {
     fieldId: base.fieldId,
     values: base.values,
     heading: String(incoming.heading ?? base.heading),
     body: String(incoming.body ?? base.body),
     buttonLabel: String(incoming.buttonLabel ?? base.buttonLabel ?? ""),
-    // ⚠️ http(s) ONLY. This becomes an href on a page a client's customer opens; a `javascript:`
-    // or `data:` URL pasted in here would run in their browser under the client's own domain.
-    buttonUrl: /^https?:\/\//i.test(url) ? url : "",
+    // ⛔ NO buttonUrl. It is not a field on a form any more — see FormDef.altSuccess. This used to
+    // read `/^https?:\/\//.test(url) ? url : ""`, which let a literal link through and destroyed
+    // the `{{business.reviewUrl}}` token seeded in code, because a token is not an http URL. The
+    // XSS concern that rule existed for is gone with the field: nothing here becomes an href.
   };
 }
 
@@ -248,13 +248,10 @@ export async function createForm(opts: {
     // Carried like the questions are: copying a long one-question-per-screen form and getting
     // back a fifteen-field wall is not what "make a copy" means.
     ...(source?.oneQuestionPerScreen ? { oneQuestionPerScreen: true } : {}),
-    // ⚠️ THE RULE IS COPIED; THE LINK IS NOT. Copying the Review survey for a second client and
-    // inheriting the first client's Google review link would send her customers to somebody
-    // else's review page — the same failure as a phone number baked into a template, and just as
-    // invisible. The copy asks for its own link.
-    ...(source?.altSuccess
-      ? { altSuccess: { ...source.altSuccess, buttonUrl: "" } }
-      : {}),
+    // The rule copies whole. There is no link left on it to leak — the destination moved to each
+    // website's own settings, so a copy is safe by construction rather than by this line
+    // remembering to blank a field.
+    ...(source?.altSuccess ? { altSuccess: { ...source.altSuccess } } : {}),
   };
 
   // Saved presets only. A built-in is implicit and must never be written as a plain row, or

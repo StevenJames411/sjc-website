@@ -18,6 +18,7 @@
 // import into SJC's own page list — one flat drawer holding every client's work, and the reason
 // "clone" used to mean "clone Steven James Consulting".
 import type { Data } from "@measured/puck";
+import { siteOr, ownerOnly } from "@/lib/siteAccess";
 import { importHtml } from "@/lib/importHtml";
 import { importDesign, detectFonts, detectAccent } from "@/lib/importDesign";
 import { createSite, updateSite, readSites } from "@/lib/sites";
@@ -233,12 +234,18 @@ export async function POST(req: Request) {
   const intoExisting = String(body?.siteId || "").trim();
   let siteId: string;
   if (intoExisting) {
-    const sites = await readSites();
-    if (!sites.some((s) => s.id === intoExisting)) {
-      return Response.json({ ok: false, error: `No website with id "${intoExisting}".` }, { status: 400 });
-    }
-    siteId = intoExisting;
+    // ⛔ SCOPED. It already checked the site EXISTS, which is a different question from whether
+    // this caller may import a whole page into it — and importing into somebody else's site is
+    // about as loud as a cross-tenant write gets.
+    const { site: __s, deny } = await siteOr(intoExisting, req);
+    if (deny) return deny;
+    siteId = __s.id;
   } else {
+    // ⛔ OWNER ONLY. This branch CREATES A WEBSITE. There is no site to scope against yet, and a
+    // client who can mint new sites can mint themselves access to sites that did not exist when
+    // their session was signed.
+    const denied = await ownerOnly();
+    if (denied) return denied;
     const site = await createSite({ name: businessName, kind: "client" });
     if (!site.ok || !site.id) return Response.json(site, { status: 400 });
     siteId = site.id;

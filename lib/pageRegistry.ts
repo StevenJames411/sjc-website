@@ -275,11 +275,45 @@ export async function deletePage(
 
   const ok = await store(siteId).write({ ...blob, custom, hidden: [...hidden] });
 
-  // purge the page's Puck content (draft + published) so its URL 404s
+  // ⛔ purge(), NOT write({}) — AND THE DIFFERENCE IS THE WHOLE BUG.
+  //
+  // This used to write an empty object over both keys. The write guard in pgClient refuses saves
+  // that look like data loss, and `{}` over a full page is the most data-loss-shaped write there
+  // is, so it was REFUSED EVERY SINGLE TIME. kvStateStore's own header says so in as many words
+  // — that is exactly why `purge()` was added, and this caller never got switched over.
+  //
+  // What it cost: deleting a page removed its registry entry, so the URL 404d and the delete
+  // looked like it worked. The content was still sitting there, `_pub` marker intact. Create a
+  // page with the same title later — same slug — and the "new blank page" came up as the old
+  // deleted one, already published, live at that URL. The page you thought you threw away
+  // reappears, and nothing on screen explains why.
+  //
+  // ⚠️ ALSO PURGE THE LEGACY PER-PAGE DESIGN KEYS. Sheets are content-addressed and global now
+  // (props.sheet), so a fresh page cannot inherit a dead design's styling any more — but sites
+  // built before that still carry `-designcss-<slug>` / `-designsrc-<slug>` blobs, and leaving
+  // them behind is how a purged site fails "scan the store for its id".
   const client = getClient();
   const k = siteKeys(siteId);
-  await createKvStore(client, k.puck(s)).write({});
-  await createKvStore(client, k.puck(s, true)).write({});
+  const purges = await Promise.all([
+    createKvStore(client, k.puck(s)).purge(),
+    createKvStore(client, k.puck(s, true)).purge(),
+    createKvStore(client, k.designSrc(s)).purge(),
+    createKvStore(client, k.designCss(s, false)).purge(),
+    createKvStore(client, k.designCss(s, true)).purge(),
+  ]);
+
+  // Say so when the content outlived the registry entry. Silence here is what let the bug above
+  // survive: the page vanished from the switcher, so the delete read as complete.
+  const failed = purges.filter((r) => !r.ok).map((r) => r.reason || "unknown");
+  if (failed.length) {
+    return {
+      ok: false,
+      error:
+        `Removed "${s}" from the site, but couldn't erase its content: ${failed.join("; ")}. ` +
+        `Don't re-use that page name until this is sorted — a new page with the same name would ` +
+        `pick up the old content.`,
+    };
+  }
 
   return ok ? { ok } : { ok: false, error: "Couldn't save the change." };
 }

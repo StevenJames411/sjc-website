@@ -162,6 +162,20 @@ export type Site = {
    */
   leadEmail?: string;
   /**
+   * WHO MAY SIGN IN AND EDIT THIS WEBSITE. Lower-cased addresses; a magic link to any of them opens
+   * this site and nothing else.
+   *
+   * ⛔ DELIBERATELY NOT `leadEmail`. It is tempting to reuse it — it is usually the same person —
+   * and it would be wrong twice over. Where a lead GOES is a delivery setting a client changes at
+   * will, sometimes to a shared inbox, an assistant, or a CRM address nobody reads; who may EDIT
+   * is a permission. Wiring the two together means changing where enquiries land silently hands
+   * or revokes access to the website, and the screen gives no hint that it did.
+   *
+   * Absent or empty means nobody but the owner — which is the right default for every site Steven
+   * builds before a client is invited to it.
+   */
+  ownerEmails?: string[];
+  /**
    * WHAT ADDRESS THE OWNER'S ALERT IS SENT *FROM* — the part after the @.
    *
    * Almost always blank, and blank is correct: it falls back to LEAD_FROM, then to the one
@@ -332,6 +346,18 @@ export function leadWiring(
   hasEmail: boolean;
   hasSheet: boolean;
   hasGhl: boolean;
+  /**
+   * ⛔ THE ONE THAT ENDS A RETAINER. True when SOMEONE gets told a lead arrived.
+   *
+   * This is `notifiedSomeone` from lib/leadDelivery, lifted so the board and the delivery path
+   * cannot grade the same site differently. A sheet is a RECORD, not a notification: a site with a
+   * sheet but no inbox and no CRM files every enquiry perfectly and tells nobody. Verified live on
+   * 2026-08-06 — a Marbleford enquiry landed in the sheet and not one person was told.
+   *
+   * So it is deliberately NOT `missing.length === 0`. Missing a sheet is a gap. Missing this is
+   * silence, and the two must never be the same colour on a board.
+   */
+  notifiesSomeone: boolean;
   missing: string[];
   collidesWith: string | null;
 } {
@@ -356,6 +382,9 @@ export function leadWiring(
     hasEmail: !!email,
     hasSheet: !!sheet,
     hasGhl: !!ghl,
+    // GHL counts as notified: for a $97 client that inbox IS the notification. Same rule as
+    // leadDelivery's runtime check, which is the point of putting it here.
+    notifiesSomeone: !!email || !!ghl,
     missing,
     collidesWith: clash ? clash.name : null,
   };

@@ -363,8 +363,12 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
             {s.kind !== "sjc" ? (
               (() => {
                 const w = leadWiring(s, sites);
-                const chip2 = (ok: boolean, label: string) => (
-                  <span key={label} style={ok ? wiredOn : wiredOff} title={ok ? `${label} is set` : `No ${label} yet`}>
+                const chip2 = (ok: boolean, label: string, full?: string) => (
+                  <span
+                    key={label}
+                    style={ok ? wiredOn : wiredOff}
+                    title={`${full || label}${ok ? " — set" : " — not set yet"}`}
+                  >
                     {ok ? "●" : "○"} {label}
                   </span>
                 );
@@ -393,7 +397,11 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
                       chip2(false, "Client inbox")
                     )}
                     {chip2(w.hasSheet, "Sheet")}
-                    {chip2(w.hasGhl, "GoHighLevel")}
+                    {/* GHL, not "GoHighLevel" — the card is a narrow column and the full name was
+                        pushing "Google review" onto a second line on its own. The abbreviation is
+                        what Steven says out loud anyway; the `title` carries the full name for
+                        anyone who doesn't know it. */}
+                    {chip2(w.hasGhl, "GHL", "GoHighLevel — leads posted to their CRM")}
                     {/* ⚠️ NOT PART OF leadWiring, DELIBERATELY. The three above are where a LEAD
                         goes — the board checks them as one joint, and a collision between two
                         clients there is a red alarm. This is where a happy CUSTOMER is sent, which

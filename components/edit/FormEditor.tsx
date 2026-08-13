@@ -552,16 +552,19 @@ export default function FormEditor({
             on={(v) => setF({ ...f, altSuccess: { ...f.altSuccess!, buttonLabel: v } })}
             ph="Leave a Google review"
           />
-          <Field
-            label="Where the button goes — THIS CLIENT'S Google review link"
-            v={f.altSuccess.buttonUrl || ""}
-            on={(v) => setF({ ...f, altSuccess: { ...f.altSuccess!, buttonUrl: v } })}
-            ph="https://g.page/r/…/review"
-          />
-          {!f.altSuccess.buttonUrl?.trim() ? (
+          {/* ⛔ THE REVIEW LINK IS NOT A FIELD HERE ANY MORE, AND THIS PANEL IS WHY.
+              It used to be, labelled "THIS CLIENT'S Google review link" — on a form that several
+              websites point at. Whichever link got typed in first was shown to every one of those
+              businesses' happy customers. The fix wasn't a better warning; it was moving the
+              destination to the only place that has a client: the website. */}
+          <p style={hint}>
+            The button goes to <strong>whichever website the form is on</strong> — each one carries
+            its own Google review link in <strong>Website settings</strong>. One review form serves
+            every client, and nobody&apos;s customers can be sent to somebody else&apos;s page.
+          </p>
+          {!f.altSuccess.buttonLabel?.trim() ? (
             <p style={warnLine}>
-              No link yet, so no button shows — they just get the thank-you. Paste this
-              client&apos;s own review link before you send the form out.
+              No button text, so no button shows — they just get the thank-you.
             </p>
           ) : null}
         </>

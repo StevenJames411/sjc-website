@@ -18,11 +18,11 @@
 // build is available on the next. Which is exactly why the scrub below is not optional.
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
-import { findSite } from "@/lib/sites";
 import { readPuckDraft, readPuckPublished, sheetIdsIn } from "@/lib/puckContent";
 import { scrubForTransfer, transferLeftovers } from "@/lib/transferScrub";
 import { placePage } from "@/lib/placePage";
 import { pageLibraryEntry, PAGE_LIBRARY_INDEX } from "@/lib/siteKeys";
+import { siteOr, ownerOnly } from "@/lib/siteAccess";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -56,6 +56,11 @@ function dropBlockIds(node: unknown): void {
 }
 
 export async function GET(req: Request) {
+  // ⛔ OWNER ONLY — one library shared by every website, so it has no site to scope to and its
+  // listing names pages from other people's builds. Same call as /api/sections.
+  const denied = await ownerOnly();
+  if (denied) return denied;
+
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
 
@@ -87,11 +92,14 @@ export async function POST(req: Request) {
 
   // ── INSERT: drop a saved page onto a website ────────────────────────────────────────────────
   if (body?.id) {
-    const toSite = String(body.toSite || "").trim();
     const toPage = String(body.toPage || "").trim();
-    if (!toSite || !toPage) {
+    if (!body.toSite || !toPage) {
       return Response.json({ ok: false, error: "toSite and toPage are required" }, { status: 400 });
     }
+    // ⛔ SCOPED — this drops a whole page onto the named website.
+    const { site: __to, deny: __d } = await siteOr(String(body.toSite).trim(), req);
+    if (__d) return __d;
+    const toSite = __to.id;
 
     const stored = await createKvStore(getClient(), pageLibraryEntry(body.id)).read<{
       data?: Record<string, unknown>;
@@ -126,8 +134,9 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "site and page are required" }, { status: 400 });
   }
 
-  const site = await findSite(siteId);
-  if (!site) return Response.json({ ok: false, error: "No such website." }, { status: 404 });
+  // ⛔ SCOPED — reading a page out of a site, and the entry then becomes visible to every build.
+  const { site, deny: denySrc } = await siteOr(siteId, req);
+  if (denySrc) return denySrc;
 
   // The published copy is what was signed off; fall back to the draft so a page never published can
   // still be saved.
@@ -206,6 +215,10 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  // Removing a shared entry changes what every other build can reach.
+  const denied = await ownerOnly();
+  if (denied) return denied;
+
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return Response.json({ ok: false, error: "which page?" }, { status: 400 });
 

@@ -116,7 +116,35 @@ export async function POST(req: Request) {
 
   // 4. only now, retire the original. deletePage tombstones a built-in and purges its content, so
   //    the page stops appearing in the old site's list and its old keys stop serving.
+  //
+  // ⚠️ THAT SECOND HALF WAS FALSE UNTIL 2026-08-12. deletePage wrote `{}` instead of calling
+  // purge(), and the write guard refuses an empty write over a full page — so every split left the
+  // ORIGINAL page's content behind under the old slug in the old site. The URL 404d because the
+  // registry entry was gone, which is why nobody noticed. Fixed in lib/pageRegistry.
   const removed = await deletePage(slug, fromSite);
+
+  // ⛔ A SPLIT THAT COULD NOT RETIRE THE ORIGINAL IS NOT A MOVE — IT IS A FORK, and the caller has
+  // to know which one they got. Both copies now exist and both are editable; edit the wrong one and
+  // the work goes nowhere visible. This used to ride out as `removedFromOldSite: false` inside an
+  // `ok: true` response, which nothing reads and no human sees.
+  //
+  // The new site is NOT torn down here, deliberately: its content verified above, so it is the good
+  // copy. Deleting it to "clean up" would throw away the half that worked.
+  if (!removed.ok) {
+    return Response.json(
+      {
+        ok: false,
+        id,
+        page: home.slug,
+        blocks,
+        error:
+          `Moved ${blocks} blocks into the new website, but couldn't retire "${slug}" from ` +
+          `${fromSite}: ${removed.error || "unknown"}. Both copies exist right now — edit the new ` +
+          `one, and remove the old page by hand.`,
+      },
+      { status: 500 }
+    );
+  }
 
   await updateSite(id, { description: `Moved out of ${fromSite} — ${blocks} blocks.` });
 

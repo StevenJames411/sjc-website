@@ -15,6 +15,7 @@
 // Runs against the DRAFT and the PUBLISHED copy together, so a published page can't be left
 // pointing at the old host after the draft has been fixed.
 import { put } from "@vercel/blob";
+import { siteOr } from "@/lib/siteAccess";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey } from "@/lib/puckContent";
@@ -116,8 +117,11 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
   }
   const slug = String(body?.slug || "").trim();
-  // Defaults to SJC so the editor's existing button keeps working unchanged.
-  const siteId = String(body?.siteId || SJC).trim() || SJC;
+  // ⛔ SCOPED. It still defaults to SJC so the editor's existing button keeps working — but the
+  // default is now CHECKED like any other value, so it is a convenience rather than a way in.
+  const { site: __s, deny } = await siteOr(String(body?.siteId || SJC).trim() || SJC, req);
+  if (deny) return deny;
+  const siteId = __s.id;
   if (!slug) return Response.json({ ok: false, error: "Which page?" }, { status: 400 });
   if (!(await findPageMeta(slug, siteId))) {
     return Response.json({ ok: false, error: "No such page." }, { status: 404 });

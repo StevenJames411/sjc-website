@@ -17,6 +17,8 @@
 import { readBrand, writeBrand, normalize, BRAND_DEFAULTS } from "@/lib/brand";
 import { SJC } from "@/lib/siteKeys";
 
+import { siteOr } from "@/lib/siteAccess";
+
 export const dynamic = "force-dynamic";
 
 const siteFrom = (v: unknown) => String(v || "").trim() || SJC;
@@ -24,7 +26,11 @@ const siteFrom = (v: unknown) => String(v || "").trim() || SJC;
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const pub = url.searchParams.get("pub") === "1";
-  const site = siteFrom(url.searchParams.get("site"));
+  // ⛔ SCOPED. Without this the caller names the site and the route believes them — and `siteFrom`
+  // FALLS BACK TO SJC, so an omitted parameter reached the flagship site rather than failing.
+  const { site: __s, deny } = await siteOr(siteFrom(url.searchParams.get("site")), req);
+  if (deny) return deny;
+  const site = __s.id;
   return Response.json({ ok: true, site, brand: await readBrand(pub, site), defaults: BRAND_DEFAULTS });
 }
 
@@ -34,7 +40,11 @@ export async function PUT(req: Request) {
   try { body = await req.json(); }
   catch { return Response.json({ ok: false, error: "bad json" }, { status: 400 }); }
 
-  const site = siteFrom((body as { site?: unknown })?.site);
+  // ⛔ SCOPED. Without this the caller names the site and the route believes them — and `siteFrom`
+  // FALLS BACK TO SJC, so an omitted parameter reached the flagship site rather than failing.
+  const { site: __s, deny } = await siteOr(siteFrom((body as { site?: unknown })?.site), req);
+  if (deny) return deny;
+  const site = __s.id;
   const ok = await writeBrand(normalize((body as { brand?: unknown })?.brand), false, site);
   return Response.json({ ok, site, error: ok ? undefined : "could not save — storage unreachable" });
 }
@@ -44,7 +54,11 @@ export async function PUT(req: Request) {
 export async function POST(req: Request) {
   let body: { action?: string; site?: string } = {};
   try { body = await req.json(); } catch { /* no body → treated as unknown action */ }
-  const site = siteFrom(body.site);
+  // ⛔ SCOPED. Without this the caller names the site and the route believes them — and `siteFrom`
+  // FALLS BACK TO SJC, so an omitted parameter reached the flagship site rather than failing.
+  const { site: __s, deny } = await siteOr(siteFrom(body.site), req);
+  if (deny) return deny;
+  const site = __s.id;
 
   if (body.action === "publish") {
     const draft = await readBrand(false, site);

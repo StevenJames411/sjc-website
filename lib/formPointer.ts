@@ -20,7 +20,7 @@
 // label, the small print and the thank-you wording are page-specific (the same form on a contact
 // page and in a footer wants different words), so a non-empty value on the block wins and a blank
 // one falls back to the library's.
-import { CHOICE_TYPES, type FormDef } from "./formsShared";
+import { CHOICE_TYPES, type FormDef , REVIEW_BUTTON_URL} from "./formsShared";
 
 /** The props a LeadForm block carries. Only the ones this touches. */
 type LeadFormProps = {
@@ -116,7 +116,14 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
       // a page is entitled to phrase its own way. This decides WHO GETS SENT TO GOOGLE, and a
       // page quietly holding a stale copy of that rule is a client's customers being sent to the
       // wrong review page. It belongs to the form or nowhere.
-      if (form.altSuccess) props.altSuccess = form.altSuccess;
+      // The destination is stamped here, not stored on the form, and it is the SAME reference for
+      // every site — `{{business.reviewUrl}}` resolves from whichever website is being rendered.
+      // That is what makes one shared Review survey safe on ten clients.
+      if (form.altSuccess) {
+        props.altSuccess = form.altSuccess.buttonLabel
+          ? { ...form.altSuccess, buttonUrl: REVIEW_BUTTON_URL }
+          : form.altSuccess;
+      }
       out.props = props;
     }
 
