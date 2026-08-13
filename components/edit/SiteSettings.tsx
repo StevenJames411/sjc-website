@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { reachability, type Site } from "@/lib/sitesShared";
-import { FONTS, FONT_VAR, type Brand, type BrandFont } from "@/lib/brandShared";
+import { FONT_SETS, FONT_VAR, fontsForSet, type Brand, type BrandFont } from "@/lib/brandShared";
 import { publicUrlFor } from "@/lib/hostShared";
 
 // EVERYTHING GLOBAL TO ONE WEBSITE, ON ONE SCREEN.
@@ -64,6 +64,11 @@ export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
    * behaves that way — a phone number typed here is live when it saves — and a control that
    * behaves differently from its neighbours is the thing that teaches nobody to trust it.
    */
+  async function pickSet(key: string) {
+    const pair = fontsForSet(key, fonts);
+    await pickFont({ ...fonts, ...pair, fontSet: key });
+  }
+
   async function pickFont(next: Brand) {
     const before = fonts;
     setFonts(next); // optimistic: the sample text below re-renders in the new face immediately
@@ -356,21 +361,48 @@ export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
 
       <h2 style={sec}>Fonts</h2>
       <p style={hint}>
-        Pick a face and the website is wearing it — every page, every section, including the
-        imported ones. There is nothing else to press.
+        One choice, and the whole website follows — every page, every section. The pairings are
+        already matched, so there is nothing to line up.
       </p>
-      <FontPicker
-        label="Headlines"
-        value={fonts.headingFont || ""}
-        follow="Same as body text"
-        onPick={(v) => pickFont({ ...fonts, headingFont: v as BrandFont | "" })}
-      />
-      <FontPicker
-        label="Body text"
-        value={fonts.font}
-        onPick={(v) => pickFont({ ...fonts, font: v as BrandFont })}
-      />
-      {fontMsg ? <p style={{ ...hint, margin: "2px 0 0" }}>{fontMsg}</p> : null}
+      <div style={{ display: "grid", gap: 8 }}>
+        {FONT_SETS.map((set) => {
+          const pair = fontsForSet(set.key, fonts);
+          const on = (fonts.fontSet || "asDesigned") === set.key;
+          return (
+            <button
+              key={set.key}
+              type="button"
+              onClick={() => pickSet(set.key)}
+              style={{
+                textAlign: "left",
+                padding: "13px 15px",
+                borderRadius: 10,
+                cursor: "pointer",
+                border: `1px solid ${on ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`,
+                background: on ? "rgba(59,130,246,.07)" : "transparent",
+                color: "inherit",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>{set.label}</span>
+                <span style={{ fontSize: 12, color: "var(--e-muted)" }}>{set.note}</span>
+                {on ? <span style={{ fontSize: 12, color: "var(--e-accent, #3b82f6)", fontWeight: 700 }}>· in use</span> : null}
+              </div>
+              {/* ⚠️ THE SAMPLE IS THE CONTROL. A set called "Editorial" means nothing until you see
+                  it — so each row draws a real headline over real body copy in its own two faces. */}
+              <div style={{ marginTop: 7 }}>
+                <div style={{ fontFamily: `var(${FONT_VAR[(pair.headingFont || pair.font) as BrandFont]})`, fontSize: 21, fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.15 }}>
+                  Grow your business
+                </div>
+                <div style={{ fontFamily: `var(${FONT_VAR[pair.font as BrandFont]})`, fontSize: 13, color: "var(--e-muted)", marginTop: 3 }}>
+                  Owners hire us to run paid traffic and fix what is draining it.
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      {fontMsg ? <p style={{ ...hint, margin: "10px 0 0" }}>{fontMsg}</p> : null}
 
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
@@ -431,51 +463,6 @@ const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
  * headlines silently stay behind. Blank means FOLLOW, which is what BrandStyle already treats it
  * as, and blank is what every brand saved before today holds.
  */
-function FontPicker({
-  label,
-  value,
-  follow,
-  onPick,
-}: {
-  label: string;
-  value: string;
-  follow?: string;
-  onPick: (v: string) => void;
-}) {
-  const opts = follow ? [{ value: "", label: follow, note: "" }, ...FONTS] : FONTS;
-  return (
-    <div style={{ margin: "0 0 18px" }}>
-      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>{label}</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {opts.map((f) => {
-          const on = value === f.value;
-          return (
-            <button
-              key={f.value || "follow"}
-              type="button"
-              onClick={() => onPick(f.value)}
-              title={f.note}
-              style={{
-                fontFamily: f.value ? `var(${FONT_VAR[f.value as BrandFont]})` : "inherit",
-                fontSize: 15,
-                padding: "9px 14px",
-                borderRadius: 8,
-                cursor: "pointer",
-                border: `1px solid ${on ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`,
-                background: on ? "var(--e-accent, #3b82f6)" : "transparent",
-                color: on ? "#fff" : "inherit",
-                fontWeight: on ? 700 : 500,
-              }}
-            >
-              {f.label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 const page: React.CSSProperties = { maxWidth: 680, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
 const back: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" };

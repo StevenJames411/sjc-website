@@ -27,7 +27,7 @@ import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey, writeDesignSheet } from "@/lib/puckContent";
 import { siteKeys } from "@/lib/siteKeys";
-import { writeBrand } from "@/lib/brand";
+import { readBrand, writeBrand } from "@/lib/brand";
 import type { BrandFont } from "@/lib/brandShared";
 import { applyTokens, tokenRules } from "@/lib/tokenizePage";
 
@@ -319,7 +319,20 @@ export async function POST(req: Request) {
   // re-deriving it per page means the LAST page imported silently decides the whole site's fonts
   // and accent. Page ten is not a better source than page one.
   if (intoExisting) {
-    // nothing — the site already has its brand
+    // ⛔ NOT QUITE NOTHING ANY MORE. The active brand is still left alone for the reason above —
+    // page ten must not redecide the site. But the pair this design arrived with is RECORDED if
+    // nothing has recorded one yet, because that is what the "As designed" button resolves to and
+    // without it the button is an empty promise on every site built by importing a second page.
+    // Only ever written when blank, so page one keeps the claim.
+    const prev = await readBrand(false, siteId);
+    if (mode !== "blocks" && !prev.designFont) {
+      const fonts = result.fonts ?? detectFonts(html);
+      await writeBrand(
+        { ...prev, designFont: fonts.bodyFont, designHeadingFont: fonts.headingFont },
+        false,
+        siteId
+      );
+    }
   } else if (mode !== "blocks") {
     const fonts = result.fonts ?? detectFonts(html);
     const accent = result.accent ?? detectAccent(html);
@@ -327,6 +340,13 @@ export async function POST(req: Request) {
       {
         font: fonts.bodyFont,
         headingFont: fonts.headingFont,
+        // ⚠️ THE SAME PAIR, KEPT TWICE ON PURPOSE. font/headingFont are the LIVE choice and get
+        // overwritten the moment a customer tries another set; these two are the RECORD of what
+        // the design shipped with, so "As designed" can always come back. Copying at import is the
+        // only moment both are knowably identical.
+        designFont: fonts.bodyFont,
+        designHeadingFont: fonts.headingFont,
+        fontSet: "asDesigned",
         ...(accent ? { accent, cta: accent } : {}),
       },
       false,

@@ -30,6 +30,20 @@ export type Brand = {
    * page. Blank keeps the old single-font behaviour.
    */
   headingFont?: BrandFont | "";
+  /**
+   * Which named set is active. "" = a site set before sets existed, or a hand-picked pair.
+   * ⚠️ Additive and blank by default — BrandStyle never reads it, so an existing site is unmoved.
+   */
+  fontSet?: string;
+  /**
+   * THE PAIR THE DESIGN ARRIVED WITH, kept so "As designed" survives someone trying the others.
+   *
+   * ⛔ WITHOUT THIS, "As designed" IS A ONE-WAY DOOR. font/headingFont are overwritten the moment
+   * a customer tries Editorial, so the pairing they actually bought would be gone with no way back
+   * — the single most likely click on this control, and it would be the destructive one.
+   */
+  designFont?: BrandFont | "";
+  designHeadingFont?: BrandFont | "";
   accent: string;      // links, badges, eyebrows — the "brand" color
   accentHover: string;
   secondary: string;   // second accent — confirmations, "open now", the softer of two buttons
@@ -65,6 +79,9 @@ export const BRAND_DEFAULTS: Brand = {
   // BrandStyle only emits when the brand differs from these defaults, so this must stay the
   // do-nothing value.
   headingFont: "",
+  fontSet: "",
+  designFont: "",
+  designHeadingFont: "",
   accent: "#2563eb",
   accentHover: "#1d4fd7",
   // Nothing on the live site uses these yet, so any value is safe; these are sane starting
@@ -105,6 +122,64 @@ export const FONT_VAR: Record<BrandFont, string> = {
   sourceSans: "--font-source-sans",
   spaceGrotesk: "--font-space-grotesk",
 };
+
+
+/**
+ * FONT SETS — one button, not three fields.
+ *
+ * ⛔ WHY THIS REPLACED THE SEPARATE PICKERS, in Steven's words (2026-08-13): *"I just want one
+ * button. I like the design, let's keep it everywhere. Instead of everything getting separated,
+ * too many choices are not what people want. If that trio goes together nicely, great — you pick
+ * it."*
+ *
+ * He is right about who the control is for. A contractor is not going to audition a headline face
+ * against a body face; handed two lists he will either pick the same font twice or pair two that
+ * fight. Pairing is a design decision, so it gets made HERE, once, by someone who can make it —
+ * and the customer makes the only choice that is really theirs: which of these feels like them.
+ *
+ * ⚠️ "AS DESIGNED" IS FIRST AND IT IS NOT DECORATION. Every bought design arrives with a real
+ * pairing already in its stylesheet, and detectFonts() reads it at import. That pairing is what
+ * the customer actually paid for and looked at before buying. Anything else on this list is an
+ * alternative to it, never the starting point.
+ *
+ * Each set is a REAL PAIR someone would ship, not every combination the eight families allow —
+ * that would be 64 and is exactly the menu this exists to avoid.
+ */
+export type FontSet = {
+  key: string;
+  label: string;
+  note: string;
+  /** Blank on `asDesigned` only — it resolves per site, from what the import detected. */
+  heading?: BrandFont;
+  body?: BrandFont;
+};
+
+export const FONT_SETS: FontSet[] = [
+  { key: "asDesigned",  label: "As designed",  note: "The pairing this website's design came with" },
+  { key: "modern",      label: "Modern",       note: "Techy and confident",        heading: "spaceGrotesk", body: "inter" },
+  { key: "editorial",   label: "Editorial",    note: "High-end, magazine",         heading: "playfair",     body: "sourceSans" },
+  { key: "friendly",    label: "Friendly",     note: "Warm and approachable",      heading: "poppins",      body: "inter" },
+  { key: "corporate",   label: "Corporate",    note: "Established and solid",      heading: "montserrat",   body: "sourceSans" },
+  { key: "classic",     label: "Classic",      note: "Traditional, trustworthy",   heading: "merriweather", body: "inter" },
+];
+
+/**
+ * The two faces a set actually applies to a given site.
+ *
+ * `asDesigned` is the only one that needs the site: it reads the pair recorded at import. A site
+ * imported before that was recorded falls back to whatever it is wearing now, which is the honest
+ * answer — there is nothing else to know about it.
+ */
+export function fontsForSet(key: string, brand: Brand): { font: BrandFont; headingFont: BrandFont | "" } {
+  const set = FONT_SETS.find((f) => f.key === key);
+  if (!set || set.key === "asDesigned") {
+    return {
+      font: brand.designFont || brand.font,
+      headingFont: brand.designHeadingFont ?? brand.headingFont ?? "",
+    };
+  }
+  return { font: set.body as BrandFont, headingFont: (set.heading as BrandFont) || "" };
+}
 
 export const FONTS: { value: BrandFont; label: string; note: string }[] = [
   { value: "lexend",       label: "Lexend",           note: "Current — clean, highly readable" },
