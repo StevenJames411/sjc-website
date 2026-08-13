@@ -60,6 +60,7 @@ const PUBLIC_API = [
 // The owner-only surfaces: the whole editor, plus every API route not explicitly made public.
 function isProtected(pathname: string): boolean {
   if (pathname === "/edit" || pathname.startsWith("/edit/")) return true;
+  if (pathname === "/account" || pathname.startsWith("/account/")) return true;
   if (!pathname.startsWith("/api/")) return false; // public pages stay public
   return !PUBLIC_API.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
@@ -287,6 +288,22 @@ export async function middleware(req: NextRequest) {
   // existed; the route simply did not use it. This makes that irrelevant for the whole prefix.
   if (pathname.startsWith("/api/admin/") && !authed) {
     return NextResponse.json({ ok: false, error: "not found" }, { status: 404 });
+  }
+
+  // ⛔ TWO FRONT DOORS, AND THEY ARE NOT THE SAME DOOR.
+  //
+  // /edit is the STUDIO — Steven's workbench. It lists websites, imports designs, runs sweeps and
+  // manages the library. Its APIs are scoped now, so a client landing there would see only their
+  // own site, but that is not the point: the studio is the machinery, and the whole offer is that
+  // a contractor never sees the machinery. Showing him a builder full of controls that mostly are
+  // not his is how "done for you" starts feeling like homework.
+  //
+  // /account is HIS door — his business details, his leads, his photos. Nothing else.
+  //
+  // So a signed-in client asking for /edit is not an error, it is someone at the wrong door: send
+  // them to theirs rather than showing a 404 to a paying customer.
+  if (identity && identity.sites !== "*" && (pathname === "/edit" || pathname.startsWith("/edit/"))) {
+    return NextResponse.redirect(new URL("/account", req.url), { status: 302 });
   }
 
   // The owner, or a client with a live magic-link session. `assertSiteAccess` is what decides

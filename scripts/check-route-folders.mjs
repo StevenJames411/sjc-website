@@ -27,7 +27,14 @@ const APP = path.join(process.cwd(), "app");
 
 // The control plane. Not content, never resolved per-tenant, and safe to own globally.
 // `[slug]` IS the dynamic route itself.
-const CONTROL_PLANE = new Set(["api", "edit", "[slug]", "i", "share"]);
+// ⚠️ EVERY NAME IN HERE IS BURNED FOR EVERY CUSTOMER SITE, FOREVER. A static folder beats
+// app/[slug] on every hostname, so "account" can never be a page on a contractor's own website.
+//
+// `account` was added 2026-08-12 for the client sign-in area. This check caught it: the folder was
+// first written as `client`, which would have answered at /client on every customer's domain —
+// their visitors landing on SJC's login. `account` was chosen over `client` precisely because a
+// trades website plausibly has a "clients" page and never has an "account" one.
+const CONTROL_PLANE = new Set(["api", "edit", "account", "[slug]", "i", "share"]);
 
 const problems = [];
 
