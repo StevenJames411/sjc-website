@@ -21,7 +21,18 @@ type Props = {
   pages: { slug: string; title: string }[];
   brand: Brand;
   /** Every distinct text size this website's designs use, biggest first. See lib/typeScale. */
-  sizes: { value: string; rules: number; selectors: string[]; sample: string; role: string }[];
+  sizes: {
+    /** The size this row actually renders at now. */
+    effective: string;
+    /** Every original declared value that lands on it — one when nothing was collapsed. */
+    members: string[];
+    absorbed: string[];
+    changed: boolean;
+    rules: number;
+    selectors: string[];
+    sample: string;
+    role: string;
+  }[];
 };
 
 const TOKENS: [string, keyof Site["business"]][] = [
@@ -124,12 +135,32 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes }: P
    * how he described it: *"some of these sections share the font size."*
    */
   const sizeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /**
+   * Set one ROW — which may be several original sizes that were collapsed together.
+   *
+   * ⚠️ EVERY MEMBER, NOT JUST THE ONE THE ROW IS NAMED AFTER. A row reading "13px · was 12, 12.5,
+   * 13.5" is four declared values pointing at one number; writing only the first would silently
+   * split the group back apart the moment somebody nudged it.
+   */
+  function pickSizeGroup(members: string[], next: string) {
+    const scale = { ...(fonts.typeScale || {}) };
+    for (const m of members) {
+      if (!next || next === m) delete scale[m];
+      else scale[m] = next;
+    }
+    commitScale(scale);
+  }
+
   function pickSize(original: string, next: string) {
     const scale = { ...(fonts.typeScale || {}) };
     // Back to the design's own value = REMOVE the key, never store a self-mapping. A stored
     // `{"15px":"15px"}` reads as "somebody chose this" forever and survives the design changing.
     if (!next || next === original) delete scale[original];
     else scale[original] = next;
+    commitScale(scale);
+  }
+
+  function commitScale(scale: Record<string, string>) {
     const nextBrand = { ...fonts, typeScale: scale } as Brand;
     setFonts(nextBrand);
     setFontMsg("Saving…");
@@ -594,21 +625,14 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes }: P
       </p>
       <div style={{ display: "grid", gap: 6 }}>
         {sizes.map((z) => {
-          const override = (fonts.typeScale || {})[z.value] || "";
-          const px = /^-?[\d.]+px$/.test(z.value);
+          const px = /^-?[\d.]+px$/.test(z.effective);
           return (
-            <div key={z.value} style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid var(--e-line)", borderRadius: 8, padding: "7px 10px" }}>
-              {/* The size, drawn AT that size — capped so a 68px headline doesn't take the screen.
-                  A number tells you nothing; the shape of the letters is the decision. */}
-              {/* ⛔ THE WORDS, NOT THE NUMBER. A row reading "clamp(40px,6vw,68px) · 10 places"
-                  names nothing anyone can point at on their own website. Showing the actual
-                  sentence this size sets — at that size — is the whole difference between a list
-                  that can be used and one that gets closed again. */}
+            <div key={z.effective} style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${z.changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, borderRadius: 8, padding: "7px 10px" }}>
               <span style={{ flex: "1 1 auto", minWidth: 0 }}>
                 <span
                   style={{
                     display: "block",
-                    fontSize: `min(${z.value}, 19px)`,
+                    fontSize: `min(${z.effective}, 19px)`,
                     lineHeight: 1.2,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -620,7 +644,15 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes }: P
                 <span style={{ fontSize: 11.5, color: "var(--e-muted)" }}>
                   {z.role ? <strong style={{ color: "var(--e-ink)" }}>{z.role}</strong> : null}
                   {z.role ? " · " : ""}
-                  {z.value} · {z.rules} place{z.rules === 1 ? "" : "s"}
+                  {z.effective} · {z.rules} place{z.rules === 1 ? "" : "s"}
+                  {/* ⚠️ SAY WHAT WAS COLLAPSED INTO THIS ROW. Without it the only sign that 12,
+                      12.5, 13 and 13.5 became one decision is a coloured border nobody can read. */}
+                  {z.absorbed.length ? (
+                    <span style={{ color: "var(--e-accent, #3b82f6)" }}>
+                      {" · was "}
+                      {z.absorbed.join(", ")}
+                    </span>
+                  ) : null}
                 </span>
               </span>
               {px ? (
@@ -628,20 +660,23 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes }: P
                   type="number"
                   min={6}
                   step={0.5}
-                  value={override ? parseFloat(override) : parseFloat(z.value)}
-                  onChange={(e) => pickSize(z.value, e.target.value ? `${e.target.value}px` : "")}
-                  style={{ width: 74, padding: "5px 7px", fontSize: 13, borderRadius: 6, border: `1px solid ${override ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit" }}
+                  value={parseFloat(z.effective)}
+                  onChange={(e) => pickSizeGroup(z.members, e.target.value ? `${e.target.value}px` : "")}
+                  style={{ width: 74, padding: "5px 7px", fontSize: 13, borderRadius: 6, border: `1px solid ${z.changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit" }}
                 />
               ) : (
-                // clamp(), 80%, inherit — editable as text, because retyping a clamp by hand is
-                // still better than the alternative, which is that it is not on the screen at all.
                 <input
                   type="text"
-                  value={override || z.value}
-                  onChange={(e) => pickSize(z.value, e.target.value.trim())}
-                  style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${override ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit" }}
+                  value={z.effective}
+                  onChange={(e) => pickSizeGroup(z.members, e.target.value.trim())}
+                  style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${z.changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit" }}
                 />
               )}
+              {z.changed ? (
+                <button type="button" onClick={() => pickSizeGroup(z.members, "")} title="Put the designs' own sizes back" style={{ fontSize: 11, background: "none", border: "none", textDecoration: "underline", cursor: "pointer", color: "var(--e-muted)" }}>
+                  undo
+                </button>
+              ) : null}
             </div>
           );
         })}
