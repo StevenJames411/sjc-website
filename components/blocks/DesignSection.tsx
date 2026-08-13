@@ -138,6 +138,16 @@ export type DesignSectionProps = {
    * Absent on a block imported before 2026-08-12, until admin/backfill-sheets stamps it.
    */
   sheet?: string;
+  /**
+   * This block's own id — set by the importer as `design-1`, `design-2`, … and by Puck for a
+   * dragged one. It was always on the props and simply never declared here.
+   *
+   * ⚠️ LOAD-BEARING FOR ANY PER-BLOCK RULE. `sheetScope()` is shared by every section from the
+   * same design, so a rule scoped that way hits every band on the page at once. Puck also treats
+   * two blocks with the same id as one node and renders the last one's content in all of them
+   * (lib/importDesign.ts) — so this is the only value that identifies one section.
+   */
+  id?: string;
   /** The section's markup, with {{t:…}} / {{i:…}} where the editable bits were. */
   html?: string;
   text?: DesignText[];
@@ -170,6 +180,21 @@ export type DesignSectionProps = {
   sticky?: boolean;
   paddingTop?: number | null;
   paddingBottom?: number | null;
+  /**
+   * Lay this section's content out in 2 or 3 columns. `null` = leave the design alone.
+   *
+   * ⛔ THE ONE THING A SEALED SECTION COULD NEVER DO — AND THE REASON THIS EXISTS.
+   * `project_sealed_design_full_editing` locked the trade on 2026-07-31: every word, photo, link,
+   * colour and space is editable, and *"the only thing you cannot do in a sealed section is MOVE
+   * elements"* — a different layout meant buying another design. That was the right call for
+   * arbitrary rearrangement and the wrong one for the case that actually keeps coming up: a
+   * single-column band that should read as two.
+   *
+   * Steven, on being offered a hand-edit per customer: *"I certainly don't want to go to you for
+   * hard-coded solutions per customer."* So it is a control, once, for every site — not markup
+   * surgery on his.
+   */
+  columns?: number | null;
   /**
    * Band colours for an IMPORTED section. Blank = keep whatever the design shipped with.
    *
@@ -250,6 +275,9 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   sticky: false,
   paddingTop: null,
   paddingBottom: null,
+  // ⚠️ NULL, and it has to be. Any new field must default to the DO-NOTHING value or every
+  // untouched section on every site starts emitting layout it never had.
+  columns: null,
   background: "",
   foreground: "",
   hasForm: false,
@@ -439,6 +467,57 @@ function dropRemovedLinks(html: string, links: DesignLink[]): string {
  * photo can't touch the phone mockup. Images with nothing set are not rewritten at all.
  */
 /**
+ * Lay a section's content out in N columns, without touching a byte of the design's markup.
+ *
+ * ── WHICH ELEMENT BECOMES THE GRID ────────────────────────────────────────────────────────────
+ * This is the whole problem, and it cannot be answered by parsing: stripDangerous() deliberately
+ * works by regex so node-html-parser never reaches the browser bundle, so there is no tree here to
+ * walk. It has to be decided in CSS, from the shape of the markup.
+ *
+ * Generated sections come in two shapes, and the rules below cover both:
+ *
+ *   A  <section><div class="container">  h1, p, video  </div></section>   ← the common one
+ *   B  <section>  h1, p, video  </section>
+ *
+ * ⛔ THE GRID GOES ON THE CONTAINER IN SHAPE A, NEVER ON THE SECTION. Putting it on the section
+ * lays out the section's ONE child and nothing visibly happens — a control that appears to do
+ * nothing. `display:contents` on that child would promote its children instead, and that was
+ * rejected: it destroys the container's own box, so the design's max-width and centring go with
+ * it and the content runs edge to edge. Keeping the container and gridding IT preserves both.
+ *
+ * `:only-child` is what distinguishes the two shapes, and it is honest about the failure case: a
+ * section wrapping its content twice gets shape A's rule applied one level too high. That reads as
+ * "columns did less than expected" rather than as a broken page.
+ *
+ * ── SCOPED PER BLOCK, NOT PER SHEET ───────────────────────────────────────────────────────────
+ * ⚠️ `sheetScope()` is shared by every section imported from the SAME design, so scoping this the
+ * usual way would column every band on the page at once. The selector keys off `data-sjc-cols`,
+ * which carries this block's own id.
+ *
+ * ── MOBILE ────────────────────────────────────────────────────────────────────────────────────
+ * Columns are a desktop decision. Two-canvas doctrine: the phone earns the click and the laptop
+ * earns the money, and they are separate targets — so this stacks below 768px, always.
+ * ⚠️ NO COMMENT ABOVE THE @media BLOCK. In a stored sheet a comment in the prelude hides the
+ * at-rule from scopeCss and silently kills every rule inside it. This string is emitted at render
+ * rather than compiled, but the habit is the thing that broke sjc-2026's entire mobile layout.
+ */
+function columnCss(id: string, columns?: number | null): string {
+  const n = typeof columns === "number" && columns >= 2 && columns <= 3 ? columns : 0;
+  if (!n || !id) return "";
+  const at = `[data-sjc-cols="${id}"]`;
+  const grid = `display:grid;grid-template-columns:repeat(${n},minmax(0,1fr));gap:clamp(24px,4vw,56px);align-items:center`;
+  return (
+    // Shape A — the design wraps its content once. Grid the wrapper, keep its box.
+    `${at} > * > *:only-child{${grid}}` +
+    // Shape B — content sits straight in the section.
+    `${at} > *:not(:has(> *:only-child)){${grid}}` +
+    `@media (max-width:768px){` +
+    `${at} > * > *:only-child,${at} > *:not(:has(> *:only-child)){grid-template-columns:minmax(0,1fr)}` +
+    `}`
+  );
+}
+
+/**
  * Size the GLASS, and make the photo fill it.
  *
  * ⚠️ THE GLASS IS THE IMG'S PARENT, AND WE NEVER PARSE THE TREE HERE — styleImages() rewrites the
@@ -614,6 +693,7 @@ export default function DesignSection(props: DesignSectionProps) {
     boxes,
     paddingTop,
     paddingBottom,
+    columns,
     background,
     foreground,
     hasForm,
@@ -632,6 +712,8 @@ export default function DesignSection(props: DesignSectionProps) {
   const fgRole = String(foreground || "").trim();
   const fgValue = resolveColor(fgRole);
   const framing = frameCss(images);
+  // Keyed to this block's own id — see the note on columnCss for why the sheet scope won't do.
+  const colStyling = columnCss(String(props.id || ""), columns);
   // Buttons and pills. `data-sjc-link` is already on the element, so this reaches it without ever
   // guessing at the design's own class names.
   const linkStyling = (links || [])
@@ -727,6 +809,8 @@ export default function DesignSection(props: DesignSectionProps) {
       // id, or did the sheet fail to load" — and without this the two are indistinguishable from
       // the outside. `none` means the prop never arrived.
       data-sjc-sheet={sheet || "none"}
+      // Only present when columns are actually set, so an untouched section's markup is unchanged.
+      {...(colStyling ? { "data-sjc-cols": String(props.id || "") } : {})}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
       {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
       {...(fgRole ? { "data-sjc-fg": fgRole } : {})}
@@ -741,6 +825,7 @@ export default function DesignSection(props: DesignSectionProps) {
       style={sticky ? { position: "sticky", top: 0, zIndex: 40 } : undefined}
     >
       {framing ? <style dangerouslySetInnerHTML={{ __html: framing }} /> : null}
+      {colStyling ? <style dangerouslySetInnerHTML={{ __html: colStyling }} /> : null}
       {linkStyling || boxStyling || boxLinkCss ? (
         <style
           dangerouslySetInnerHTML={{

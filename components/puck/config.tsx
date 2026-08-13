@@ -61,6 +61,7 @@ type Props = {
     boxes: DesignBoxGroup[];
     paddingTop: number | null;
     paddingBottom: number | null;
+    columns: number | null;
     background: string;
     foreground: string;
     hasForm: boolean;
@@ -836,6 +837,22 @@ const baseConfig: Config<Props, RootProps> = {
               min={0}
             clearable unsetLabel="keeping the design\'s own spacing" />
           ),
+        },
+        // ⛔ THE ONE THING A SEALED SECTION COULD NEVER DO. The 07-31 trade — every word, photo,
+        // colour and space editable, but *"you cannot MOVE elements"* — sent every layout change
+        // back to the design tool. Right for arbitrary rearrangement; wrong for the case that
+        // keeps recurring, a single-column band that should read as two.
+        //
+        // Sits with the spacing steppers because it is the same kind of control and works the same
+        // way: injected at render, never markup surgery, and blank restores the design exactly.
+        columns: {
+          type: "radio" as const,
+          label: "Columns",
+          options: [
+            { label: "As designed", value: 0 },
+            { label: "2", value: 2 },
+            { label: "3", value: 3 },
+          ],
         },
         images: {
           type: "array" as const,
