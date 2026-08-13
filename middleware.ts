@@ -193,6 +193,32 @@ m.onsubmit=async function(e){e.preventDefault();
  * is a change of address rather than a broken link.
  */
 const LEGACY_HOST = "stevenjamesdesigns.com";
+
+/**
+ * ⛔ EVERY PATH LANDS ON ONE PAGE — NOT MAPPED PATH-FOR-PATH (his call, 2026-08-13).
+ *
+ * This used to keep the pathname and only swap the host, which was right while the two brands were
+ * two websites with matching page trees. They are not any more: website sales folded into a single
+ * SJC offering that lives at ONE page, so `/pricing` on the old domain has no counterpart to map to
+ * and would have 404'd on arrival — a redirect into a dead end is worse than no redirect.
+ *
+ * Steven, deciding it: *"I haven't given the domain name out to anybody… let's redirect it to the
+ * dedicated page that talks about building the websites. So that's kind of parked and a little
+ * easier to clean up."* PARKED, not retired — he likes the name and it is one word off the
+ * Consulting brand, so it stays pointed somewhere sensible until he wants it for something.
+ *
+ * ⚠️ WHY NOT DELETE THE DOMAIN INSTEAD: Vercel refuses (409) while the registrar's nameservers
+ * point at `ns*.vercel-dns.com` — deleting would leave the NS records aimed at a zone Vercel no
+ * longer serves. Getting to a truly unresolvable domain means changing nameservers at the
+ * registrar first. A redirect to a real page beats a `DEPLOYMENT_NOT_FOUND` error screen anyway.
+ *
+ * ⚠️ APEX ONLY BY DESIGN. `www.` is attached to the project and Vercel redirects it to the apex
+ * before middleware ever runs, so it arrives here as the apex and is caught. The WILDCARD is
+ * deliberately NOT attached — old `<id>-demo.stevenjamesdesigns.com` links stay dead, because
+ * demos live on the Consulting domain now and reviving a second demo address is the duplicate
+ * `HostKind.gone` exists to kill.
+ */
+const LEGACY_LANDING = "/custom-websites";
 function studioRedirect(req: NextRequest): URL | null {
   const here = normalizeHost(
     req.headers.get("x-forwarded-host") || req.headers.get("host") || ""
@@ -208,6 +234,9 @@ function studioRedirect(req: NextRequest): URL | null {
   url.protocol = "https:";
   url.port = "";
   url.host = to;
+  // ⛔ THE PATH IS DISCARDED, AND SO IS THE QUERY STRING. Everything arrives at the one page.
+  url.pathname = LEGACY_LANDING;
+  url.search = "";
   return url;
 }
 
@@ -216,8 +245,17 @@ export async function middleware(req: NextRequest) {
 
   // Before anything else — a change of address, not a decision about who's allowed in. The
   // builder is still gated once it lands on the studio host; this only decides WHICH host.
+  // ⚠️ 302, NOT 308 — AND THE DIFFERENCE IS THE WHOLE POINT OF "PARKED" (changed 2026-08-13).
+  //
+  // A 308 is PERMANENT: browsers cache it more or less forever and search engines treat it as the
+  // old address surrendering its identity. That was correct when this was a retirement. It is
+  // wrong now that the domain is parked and Steven expects to want it back — reclaiming it would
+  // mean fighting every browser that ever followed the redirect, on a domain he still likes.
+  //
+  // 302 says "look over there for now" and costs nothing, because nothing here needs SEO credit
+  // to move: the domain was never given out or linked.
   const moved = studioRedirect(req);
-  if (moved) return NextResponse.redirect(moved, 308);
+  if (moved) return NextResponse.redirect(moved, 302);
 
   const authed = isOwner(req, pathname);
 
