@@ -229,7 +229,13 @@ export function stripFontFamily(css: string): string {
 
   // Declarations to remove wherever they appear OUTSIDE an @font-face block. The custom-property
   // arm is not optional — see note 2 above.
-  const DROP = /(^|[;{])([^;{}]*?)(font-family|--font-[\w-]*|--default-font-family)\s*:[^;{}]*(;|(?=\s*}))/gi;
+  // ⛔ THE NEGATIVE LOOKAHEAD IS THE WHOLE SAFETY OF THIS. `--font-[\w-]*` also matches
+  // `--font-weight-bold: 700`, which Tailwind v4 emits as a theme token and every `.font-bold`
+  // rule then reads through `var(--font-weight-bold)`. Measured on real compiled output: 2 of 6
+  // weight tokens destroyed, so every bold headline on the site renders at normal weight — and
+  // the page still looks finished, which is how it would have shipped. Only FAMILY tokens go.
+  const DROP =
+    /(^|[;{])([^;{}]*?)(font-family|--default-font-family|--font-(?!weight|size|style|feature|variation|stretch|smoothing|synthesis)[\w-]*)\s*:[^;{}]*(;|(?=\s*}))/gi;
 
   // ⚠️ RUN TO A FIXED POINT, because the pattern CONSUMES the `;` that separates it from the next
   // declaration. `{font-family:a;font-family:b}` matched once, ate the separator, and left the

@@ -28,7 +28,50 @@
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
-const src = readFileSync(new URL("../components/puck/config.tsx", import.meta.url), "utf8");
+// Optional path argument so this can be run against an OLD config (git show <rev>:path > /tmp/x)
+// and proved to fail where it should. A guard nobody has watched fail is not known to work.
+const CONFIG = process.argv[2] || new URL("../components/puck/config.tsx", import.meta.url);
+const src = readFileSync(CONFIG, "utf8");
+
+// ⛔ THE WORD-GREP BELOW WAS TOO LOOSE TO CATCH THIS CHECK'S OWN FLAGSHIP CASE (fixed 2026-08-13).
+//
+// `DesignSection.columns` was declared as a field, typed, defaulted, given a CSS generator and read
+// by the component — and never forwarded by the bridge. The control saved, said "Saved", and moved
+// nothing. This script ran clean, because `usedIn("columns")` found the word in thirty unrelated
+// files (`grid-template-columns`, a SQL column, a Columns block) and filed it under "eyeball this".
+//
+// A name that common can never be evidence. The precise question is not "does this word appear
+// somewhere" but "does the component this bridge feeds ASK FOR this prop" — and if it does, and the
+// bridge does not pass it, that is a dead control with no judgement call left in it.
+const componentSrc = new Map();
+/** The props the receiving component actually declares, read from its own file. */
+function declaredBy(tag) {
+  if (!tag) return null;
+  if (componentSrc.has(tag)) return componentSrc.get(tag);
+  const found = spawnSync("grep", ["-rl", `^export default function ${tag}\\b\\|^function ${tag}\\b`, "--include=*.tsx", "components"], { encoding: "utf8" });
+  const file = (found.stdout || "").split("\n").filter(Boolean)[0];
+  let props = null;
+  if (file) {
+    const text = readFileSync(file, "utf8");
+    props = new Set();
+    // A prop declared in a type/props object: `columns?: number | null;`
+    for (const m of text.matchAll(/^\s{2}(\w+)\??:\s/gm)) props.add(m[1]);
+    // …or destructured straight out of props in the signature.
+    for (const m of text.matchAll(/^\s{2}(\w+),?\s*$/gm)) props.add(m[1]);
+  }
+  componentSrc.set(tag, props);
+  return props;
+}
+
+/** Read off the stored data server-side (`n.props.formId`) rather than passed as a prop. */
+function readFromStoredProps(name) {
+  const out = spawnSync(
+    "grep",
+    ["-rnE", `props[?]?\\.${name}\\b`, "lib", "app"],
+    { encoding: "utf8" }
+  );
+  return (out.stdout || "").split("\n").filter((l) => /\.tsx?:/.test(l));
+}
 
 /** Every file outside the config that mentions this prop name. */
 function usedIn(name) {
@@ -70,7 +113,33 @@ for (let i = 0; i < starts.length; i++) {
       .filter(Boolean)
   );
 
+  // Which component this bridge feeds — the first JSX tag after render().
+  const tag = body.slice(body.indexOf(render[0]))?.match(/<([A-Z]\w+)/)?.[1] || null;
+  const wants = declaredBy(tag);
+
   for (const f of fieldNames.filter((x) => !taken.has(x))) {
+    // THE UNAMBIGUOUS CASE: the receiving component declares this prop and the bridge drops it.
+    // No judgement call — the component asked, and it will get `undefined` forever.
+    if (wants && wants.has(f)) {
+      // ⚠️ UNLESS IT IS RESOLVED OFF THE STORED DATA. lib/formPointer rewrites `props.formId` into
+      // real fields before render ever runs, so that prop is CORRECTLY not forwarded — and a check
+      // that cried wolf on it would be turned off within a week.
+      //
+      // `props.<name>` is the precise test, and it is precise where a word-grep is useless: the
+      // word `columns` appears in ten lib/app files (a SQL column, a grid column, a form column)
+      // and `props.columns` appears in none.
+      const server = readFromStoredProps(f);
+      if (server.length) {
+        review.push(`${name}.${f}  ->  resolved server-side: ${server[0].split(":")[0]}`);
+        continue;
+      }
+      dead++;
+      console.error(
+        `\n⛔ ${name}.${f} — <${tag}> declares this prop and render() never forwards it.` +
+          `\n   The control saves and does nothing. Add it to the destructure AND the forward.`
+      );
+      continue;
+    }
     const where = usedIn(f);
     if (!where.length) {
       dead++;

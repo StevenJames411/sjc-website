@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Lexend, Inter, Poppins, Montserrat, Merriweather, Playfair_Display, Source_Sans_3,
-  Space_Grotesk,
-} from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
 import BrandStyle from "@/components/BrandStyle";
@@ -11,9 +8,18 @@ import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
 import { resolveHost } from "@/lib/host";
 import { SJC } from "@/lib/siteKeys";
 
-const lexend = Lexend({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+// Self-hosted from app/fonts/ (latin subset woff2, fetched from Google Fonts) instead of
+// next/font/google, which downloads from Google at BUILD time and intermittently fails with
+// "Module not found: .../internal/font/google/font" — self-hosting removes the network dependency.
+const lexend = localFont({
+  src: [
+    { path: "./fonts/lexend-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/lexend-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/lexend-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/lexend-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/lexend-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/lexend-800.woff2", weight: "800", style: "normal" },
+  ],
   variable: "--font-lexend",
   display: "swap",
 });
@@ -21,14 +27,85 @@ const lexend = Lexend({
 // The curated brand fonts. next/font is build-time, so the set is fixed on purpose —
 // arbitrary runtime font loading isn't worth the layout shift. All are registered; the
 // published brand decides which one --font-sans actually points at (components/BrandStyle).
-const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], variable: "--font-inter", display: "swap" });
-const poppins = Poppins({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-poppins", display: "swap" });
-const montserrat = Montserrat({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], variable: "--font-montserrat", display: "swap" });
-const merriweather = Merriweather({ subsets: ["latin"], weight: ["300", "400", "700"], variable: "--font-merriweather", display: "swap" });
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-playfair", display: "swap" });
-const sourceSans = Source_Sans_3({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], variable: "--font-source-sans", display: "swap" });
+const inter = localFont({
+  src: [
+    { path: "./fonts/inter-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/inter-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/inter-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/inter-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/inter-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/inter-800.woff2", weight: "800", style: "normal" },
+  ],
+  variable: "--font-inter",
+  display: "swap",
+});
+const poppins = localFont({
+  src: [
+    { path: "./fonts/poppins-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/poppins-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/poppins-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/poppins-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/poppins-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-poppins",
+  display: "swap",
+});
+const montserrat = localFont({
+  src: [
+    { path: "./fonts/montserrat-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/montserrat-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/montserrat-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/montserrat-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/montserrat-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/montserrat-800.woff2", weight: "800", style: "normal" },
+  ],
+  variable: "--font-montserrat",
+  display: "swap",
+});
+const merriweather = localFont({
+  src: [
+    { path: "./fonts/merriweather-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/merriweather-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/merriweather-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-merriweather",
+  display: "swap",
+});
+const playfair = localFont({
+  src: [
+    { path: "./fonts/playfair-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/playfair-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/playfair-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/playfair-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/playfair-800.woff2", weight: "800", style: "normal" },
+  ],
+  variable: "--font-playfair",
+  display: "swap",
+});
+const sourceSans = localFont({
+  src: [
+    { path: "./fonts/source-sans-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/source-sans-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/source-sans-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/source-sans-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/source-sans-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/source-sans-800.woff2", weight: "800", style: "normal" },
+  ],
+  variable: "--font-source-sans",
+  display: "swap",
+});
 // Added for bought designs, which routinely pair a display face with a plain body face.
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-space-grotesk", display: "swap" });
+const spaceGrotesk = localFont({
+  src: [
+    { path: "./fonts/space-grotesk-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/space-grotesk-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/space-grotesk-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/space-grotesk-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/space-grotesk-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
 
 const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans, spaceGrotesk]
   .map((f) => f.variable).join(" ");

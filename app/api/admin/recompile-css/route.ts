@@ -75,6 +75,10 @@ export async function POST(req: Request) {
 
   const site = String(body?.site || SJC).trim() || SJC;
   const dryRun = body?.dryRun !== false;
+  // ⚠️ OPT-IN, and it stays that way. Repointing published content changes what the PUBLIC sees the
+  // moment it runs, with no publish step in between — right for a global setting the operator just
+  // chose, wrong as a default for a maintenance route.
+  const doPublish = body?.publish === true;
 
   const client = getClient();
   const pages = await readPages(site);
@@ -91,9 +95,40 @@ export async function POST(req: Request) {
     for (const id of sheetIdsIn(data)) users.set(id, [...(users.get(id) || []), page.slug]);
   }
 
+  // ⛔ THE PUBLISHED COPIES, READ SEPARATELY — AND `publish` USED TO BE A DEAD FLAG.
+  //
+  // It was in this route's signature and its doc comment from the start and was never implemented,
+  // so the only way to take a recompile live was "publish each page". For a fix to ONE page's
+  // content that is correct. For a SITE-WIDE change it is wrong twice over:
+  //
+  //   • it ships whatever else is sitting in that page's draft, which on a site being actively
+  //     built is unfinished work — the operator has to choose between a global setting and their
+  //     own half-done edits;
+  //   • and until every page is published the site is INCONSISTENT. Steven picked a font, saw the
+  //     home page change and /about not: *"it's serving up the design that we imported in the
+  //     first place… we have to get the design studio making these global choices on all the
+  //     pages."* Ten pages meant ten publishes to apply one setting.
+  //
+  // So `publish` repoints `props.sheet` in the PUBLISHED content directly. That value names which
+  // stylesheet to load and nothing else — no copy, no layout, no draft. It is the narrowest write
+  // that makes a global setting global.
+  //
+  // ⚠️ READ SEPARATELY BECAUSE THE TWO CAN NAME DIFFERENT SHEETS. A page edited since its last
+  // publish has a draft pointing at one id and a published copy pointing at an older one. Mapping
+  // the published copy with the DRAFT's id would silently skip exactly those pages — the ones most
+  // likely to be mid-work, which is the case this is for.
+  const published = new Map<string, Record<string, unknown>>();
+  for (const page of pages) {
+    const data = await createKvStore(client, puckKey(page.slug, true, site)).read<Record<string, unknown>>();
+    if (!data) continue;
+    published.set(page.slug, data);
+    for (const id of sheetIdsIn(data)) users.set(id, [...new Set([...(users.get(id) || []), page.slug])]);
+  }
+
   const report: { from: string; to: string; bytes: number; before: number; pages: string[] }[] = [];
   const missing: string[] = [];
   const unchanged: string[] = [];
+  const livePages: string[] = [];
 
   for (const [oldId, slugs] of users) {
     const html = await readDesignSource(oldId);
@@ -130,9 +165,14 @@ export async function POST(req: Request) {
       // reference it until they are published again, and an immutable sheet costs only bytes.
       for (const slug of slugs) {
         const data = drafts.get(slug);
-        if (!data) continue;
-        if (repoint(data, oldId, newId) > 0) {
+        if (data && repoint(data, oldId, newId) > 0) {
           await createKvStore(client, puckKey(slug, false, site)).write(data);
+        }
+        if (!doPublish) continue;
+        const live = published.get(slug);
+        if (live && repoint(live, oldId, newId) > 0) {
+          await createKvStore(client, puckKey(slug, true, site)).write(live);
+          if (!livePages.includes(slug)) livePages.push(slug);
         }
       }
     }
@@ -146,8 +186,11 @@ export async function POST(req: Request) {
     sheets: report,
     unchanged,
     missing,
+    livePages,
     note: dryRun
       ? "Dry run. Nothing written."
-      : "Drafts repointed. Publish each page to take the recompiled stylesheet live.",
+      : doPublish
+        ? `Drafts repointed, and ${livePages.length} published page(s) moved onto the new stylesheet. Nothing else about those pages changed.`
+        : "Drafts repointed. Publish each page, or re-run with publish:true, to take it live.",
   });
 }

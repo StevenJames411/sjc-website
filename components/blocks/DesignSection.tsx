@@ -138,6 +138,16 @@ export type DesignSectionProps = {
    * Absent on a block imported before 2026-08-12, until admin/backfill-sheets stamps it.
    */
   sheet?: string;
+  /**
+   * This block's own id — set by the importer as `design-1`, `design-2`, … and by Puck for a
+   * dragged one. It was always on the props and simply never declared here.
+   *
+   * ⚠️ LOAD-BEARING FOR ANY PER-BLOCK RULE. `sheetScope()` is shared by every section from the
+   * same design, so a rule scoped that way hits every band on the page at once. Puck also treats
+   * two blocks with the same id as one node and renders the last one's content in all of them
+   * (lib/importDesign.ts) — so this is the only value that identifies one section.
+   */
+  id?: string;
   /** The section's markup, with {{t:…}} / {{i:…}} where the editable bits were. */
   html?: string;
   text?: DesignText[];
@@ -170,6 +180,32 @@ export type DesignSectionProps = {
   sticky?: boolean;
   paddingTop?: number | null;
   paddingBottom?: number | null;
+  /**
+   * Lay this section's content out in 2 or 3 columns. `null` = leave the design alone.
+   *
+   * ⛔ THE ONE THING A SEALED SECTION COULD NEVER DO — AND THE REASON THIS EXISTS.
+   * `project_sealed_design_full_editing` locked the trade on 2026-07-31: every word, photo, link,
+   * colour and space is editable, and *"the only thing you cannot do in a sealed section is MOVE
+   * elements"* — a different layout meant buying another design. That was the right call for
+   * arbitrary rearrangement and the wrong one for the case that actually keeps coming up: a
+   * single-column band that should read as two.
+   *
+   * Steven, on being offered a hand-edit per customer: *"I certainly don't want to go to you for
+   * hard-coded solutions per customer."* So it is a control, once, for every site — not markup
+   * surgery on his.
+   */
+  columns?: number | null;
+  /**
+   * WHICH CHILD THE COLUMN BREAK FALLS AFTER. Blank = the design's own flow.
+   *
+   * ⛔ THE CONTROL THAT MAKES `columns` MEAN ANYTHING. Two columns with auto-flow puts one child per
+   * cell, so a band's eyebrow landed left and its headline right. Nobody has ever wanted that. What
+   * "two columns" means to a person is text on one side and the picture on the other — a split, at
+   * a point only they can pick, because only they know which child the picture is.
+   */
+  splitAfter?: number | null;
+  /** Swap the columns left-to-right. For when the picture is the FIRST child, not the last. */
+  flip?: boolean;
   /**
    * Band colours for an IMPORTED section. Blank = keep whatever the design shipped with.
    *
@@ -250,6 +286,11 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   sticky: false,
   paddingTop: null,
   paddingBottom: null,
+  // ⚠️ NULL, and it has to be. Any new field must default to the DO-NOTHING value or every
+  // untouched section on every site starts emitting layout it never had.
+  columns: null,
+  splitAfter: null,
+  flip: false,
   background: "",
   foreground: "",
   hasForm: false,
@@ -439,6 +480,101 @@ function dropRemovedLinks(html: string, links: DesignLink[]): string {
  * photo can't touch the phone mockup. Images with nothing set are not rewritten at all.
  */
 /**
+ * Lay a section's content out in N columns, without touching a byte of the design's markup.
+ *
+ * ── WHICH ELEMENT BECOMES THE GRID ────────────────────────────────────────────────────────────
+ * This is the whole problem, and it cannot be answered by parsing: stripDangerous() deliberately
+ * works by regex so node-html-parser never reaches the browser bundle, so there is no tree here to
+ * walk. It has to be decided in CSS, from the shape of the markup.
+ *
+ * Generated sections come in two shapes, and the rules below cover both:
+ *
+ *   A  <section><div class="container">  h1, p, video  </div></section>   ← the common one
+ *   B  <section>  h1, p, video  </section>
+ *
+ * ⛔ THE GRID GOES ON THE CONTAINER IN SHAPE A, NEVER ON THE SECTION. Putting it on the section
+ * lays out the section's ONE child and nothing visibly happens — a control that appears to do
+ * nothing. `display:contents` on that child would promote its children instead, and that was
+ * rejected: it destroys the container's own box, so the design's max-width and centring go with
+ * it and the content runs edge to edge. Keeping the container and gridding IT preserves both.
+ *
+ * `:only-child` is what distinguishes the two shapes, and it is honest about the failure case: a
+ * section wrapping its content twice gets shape A's rule applied one level too high. That reads as
+ * "columns did less than expected" rather than as a broken page.
+ *
+ * ── SCOPED PER BLOCK, NOT PER SHEET ───────────────────────────────────────────────────────────
+ * ⚠️ `sheetScope()` is shared by every section imported from the SAME design, so scoping this the
+ * usual way would column every band on the page at once. The selector keys off `data-sjc-cols`,
+ * which carries this block's own id.
+ *
+ * ── MOBILE ────────────────────────────────────────────────────────────────────────────────────
+ * Columns are a desktop decision. Two-canvas doctrine: the phone earns the click and the laptop
+ * earns the money, and they are separate targets — so this stacks below 768px, always.
+ * ⚠️ NO COMMENT ABOVE THE @media BLOCK. In a stored sheet a comment in the prelude hides the
+ * at-rule from scopeCss and silently kills every rule inside it. This string is emitted at render
+ * rather than compiled, but the habit is the thing that broke sjc-2026's entire mobile layout.
+ */
+function columnCss(
+  id: string,
+  columns?: number | null,
+  splitAfter?: number | null,
+  flip?: boolean
+): string {
+  const n = typeof columns === "number" && columns >= 2 && columns <= 3 ? columns : 0;
+  if (!id || (!n && !flip)) return "";
+  const at = `[data-sjc-cols="${id}"]`;
+
+  // The container whose CHILDREN become the columns: the section's wrapper if it has one, else the
+  // section itself. Verified against the live design — every band is
+  // `<section class="band…"><div class="wrap">…children…</div></section>`.
+  const box = `${at} > * > *:only-child, ${at} > *:not(:has(> *:only-child))`;
+  const kid = (sel: string) => `${at} > * > *:only-child ${sel}, ${at} > *:not(:has(> *:only-child)) ${sel}`;
+
+  const out: string[] = [];
+
+  if (n) {
+    out.push(`${box}{display:grid;grid-template-columns:repeat(${n},minmax(0,1fr));gap:clamp(24px,4vw,56px);align-items:center}`);
+
+    // ⛔ WITHOUT A SPLIT POINT THIS COLUMNS THE WRONG THING, AND THAT IS WHAT SHIPPED FIRST.
+    //
+    // Auto-flow puts ONE CHILD PER CELL, and a band's children are its eyebrow, its headline, its
+    // paragraph, its buttons and its photo. Asking for two columns therefore put the eyebrow on
+    // the left and the headline on the right — mechanically alive, and not once what anybody meant
+    // by "make this two columns".
+    //
+    // What a person means is "text on this side, the picture on that side" — a SPLIT, at a point
+    // only they can choose, because only they know which child the picture is. So the stepper
+    // names the break: everything up to it goes left, everything after goes right.
+    if (n === 2 && typeof splitAfter === "number" && splitAfter >= 1) {
+      out.push(`${kid(`> *:nth-child(-n+${splitAfter})`)}{grid-column:1}`);
+      out.push(`${kid(`> *:nth-child(n+${splitAfter + 1})`)}{grid-column:2}`);
+      // Each column packs its own items top-to-bottom instead of leaving holes opposite a tall one.
+      out.push(`${box}{align-items:start;grid-auto-rows:min-content}`);
+    }
+  }
+
+  // ⚠️ REVERSING WITHOUT KNOWING THE CHILD COUNT. `order` needs a number per child and nothing here
+  // knows how many there are. `direction:rtl` on the container flips the visual column order at any
+  // count; putting it back to ltr on the children keeps their text reading normally.
+  if (flip) out.push(`${box}{direction:rtl}` + `${kid("> *")}{direction:ltr}`);
+
+  // ⚠️ 960, NOT 768 — AND THE MISMATCH WAS A REAL BUG FOR ONE DAY.
+  //
+  // This rule now targets the SAME element the design's own grid targets, and ours is emitted in
+  // the body while the design's sheet is in the head, so ours wins every tie. That means our
+  // stacking breakpoint overrides theirs rather than sitting beside it. The design on the live site
+  // stacks at 960; at 800px ours said two columns and theirs said one, and ours won. Stacking
+  // EARLIER than the design is safe — a stacked band is never broken, an unstacked one is.
+  if (n) {
+    out.push(
+      `@media (max-width:960px){${box}{grid-template-columns:minmax(0,1fr)}` +
+        `${kid("> *")}{grid-column:auto}}`
+    );
+  }
+  return out.join("");
+}
+
+/**
  * Size the GLASS, and make the photo fill it.
  *
  * ⚠️ THE GLASS IS THE IMG'S PARENT, AND WE NEVER PARSE THE TREE HERE — styleImages() rewrites the
@@ -614,6 +750,9 @@ export default function DesignSection(props: DesignSectionProps) {
     boxes,
     paddingTop,
     paddingBottom,
+    columns,
+    splitAfter,
+    flip,
     background,
     foreground,
     hasForm,
@@ -632,6 +771,8 @@ export default function DesignSection(props: DesignSectionProps) {
   const fgRole = String(foreground || "").trim();
   const fgValue = resolveColor(fgRole);
   const framing = frameCss(images);
+  // Keyed to this block's own id — see the note on columnCss for why the sheet scope won't do.
+  const colStyling = columnCss(String(props.id || ""), columns, splitAfter, flip);
   // Buttons and pills. `data-sjc-link` is already on the element, so this reaches it without ever
   // guessing at the design's own class names.
   const linkStyling = (links || [])
@@ -727,6 +868,8 @@ export default function DesignSection(props: DesignSectionProps) {
       // id, or did the sheet fail to load" — and without this the two are indistinguishable from
       // the outside. `none` means the prop never arrived.
       data-sjc-sheet={sheet || "none"}
+      // Only present when columns are actually set, so an untouched section's markup is unchanged.
+      {...(colStyling ? { "data-sjc-cols": String(props.id || "") } : {})}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
       {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
       {...(fgRole ? { "data-sjc-fg": fgRole } : {})}
@@ -741,6 +884,7 @@ export default function DesignSection(props: DesignSectionProps) {
       style={sticky ? { position: "sticky", top: 0, zIndex: 40 } : undefined}
     >
       {framing ? <style dangerouslySetInnerHTML={{ __html: framing }} /> : null}
+      {colStyling ? <style dangerouslySetInnerHTML={{ __html: colStyling }} /> : null}
       {linkStyling || boxStyling || boxLinkCss ? (
         <style
           dangerouslySetInnerHTML={{

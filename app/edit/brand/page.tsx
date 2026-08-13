@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FONTS, BRAND_DEFAULTS, type Brand, type BrandFont } from "@/lib/brandShared";
+import { FONTS, BRAND_DEFAULTS, type Brand, type BrandFont, SWATCHES } from "@/lib/brandShared";
 import { useNavTitle } from "@/components/edit/navContext";
 
 // The one screen that sets a whole site's look. Font + colors, once, and every page follows.
@@ -16,21 +16,6 @@ import { useNavTitle } from "@/components/edit/navContext";
 // control that had never been built.
 //
 // A missing swatch is worse than an ugly one. Add a colour to `Brand`, add it here.
-const SWATCHES: { key: keyof Brand; label: string; help: string }[] = [
-  { key: "accent",     label: "Accent",            help: "Links, small labels, number badges — the brand colour" },
-  { key: "accentHover",label: "Accent (hover)",    help: "Slightly darker version of the accent" },
-  { key: "secondary",  label: "Second accent",     help: "The other brand colour — confirmations, 'open now', the softer button. On SJC this is the green in the headlines." },
-  { key: "highlight",  label: "Highlight",         help: "Warm third accent — star ratings, underline swipes, small emphasis" },
-  { key: "ink",        label: "Headline text",     help: "Headings and dark body text" },
-  { key: "mute",       label: "Body text",         help: "Paragraphs and supporting copy" },
-  { key: "line",       label: "Lines & borders",   help: "Hairlines, card edges, dividers" },
-  { key: "bandSoft",   label: "Light band",        help: "Background of the pale sections" },
-  { key: "bandDark",   label: "Dark band",         help: "Background of the dark sections" },
-  { key: "bandDarker", label: "Dark band (deeper)",help: "The second, darker tone — a design usually has two, and collapsing them flattens the page" },
-  { key: "bandHeader", label: "Header bar",         help: "The bar across the top, on its own. Blank means it follows the deeper dark band." },
-  { key: "cta",        label: "Button",            help: "The main call-to-action button" },
-  { key: "ctaHover",   label: "Button (hover)",    help: "Button colour on hover" },
-];
 
 // ⚠️ THIS SCREEN USES THE EDITOR'S PALETTE (--e-ink / --e-muted / --e-accent), NOT THE PUBLIC
 // SITE'S (--color-sjc-*), AND THE DIFFERENCE IS NOT COSMETIC.

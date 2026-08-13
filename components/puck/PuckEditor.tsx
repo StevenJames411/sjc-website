@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Puck, ActionBar, usePuck, type Data } from "@measured/puck";
+import { SizeScaleContext, type SizeIndex, type SizeScale } from "./SizeScaleContext";
 import { requestTextFocus } from "@/lib/designFocus";
 import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
@@ -29,6 +30,75 @@ type PageItem = { slug: string; title: string; custom?: boolean };
  * Disabled rather than hidden at the ends. A control that vanishes reads as a bug; a greyed one
  * says "this is already the top".
  */
+
+/**
+ * Delete and duplicate, in the RIGHT PANEL, for whatever is selected.
+ *
+ * ⛔ THE ACTION BAR IS NOT REACHABLE ON EVERY BLOCK, AND COLUMNS IS THE PROOF.
+ *
+ * Puck's action bar — which carries duplicate and delete — appears when you HOVER the block. An
+ * empty `Columns` is almost entirely made of drop zones, so the pointer is over a SLOT rather than
+ * the block itself, and the bar never surfaces. Steven, having dropped one on the canvas: *"it
+ * doesn't surface a delete button that used to work."* The block was selected the whole time — the
+ * right panel said so — there was simply nowhere left to hover it.
+ *
+ * The selection is the thing that never has this problem: if the panel is showing a block's fields,
+ * that block is selected, full stop. So the two destructive-but-essential actions live here too.
+ * The action bar stays exactly as it was; this is a second door to the same place, not a move.
+ *
+ * ⚠️ NOT SHOWN FOR THE PAGE ITSELF. With nothing selected the panel shows the page's own settings,
+ * and "Delete" there would read as deleting the page — which is a different, guarded action in the
+ * ⋯ More menu.
+ */
+function FieldsPanel({ children }: { children: React.ReactNode }) {
+  const { appState, dispatch, selectedItem } = usePuck();
+  const sel = appState.ui.itemSelector;
+  const zone = sel?.zone ?? "default-zone";
+  const index = sel?.index ?? -1;
+
+  const act = (type: "remove" | "duplicate") => {
+    if (index < 0) return;
+    if (type === "remove") {
+      // Deselect FIRST. Removing the block the panel is rendering leaves the selector pointing at
+      // an index that no longer holds it, and the panel then renders the block that slid into its
+      // place — which reads as "delete removed the wrong one".
+      dispatch({ type: "setUi", ui: { itemSelector: null } });
+      dispatch({ type: "remove", index, zone });
+      return;
+    }
+    // ⚠️ Duplicate names its arguments differently from remove — sourceIndex/sourceZone, not
+    // index/zone. Typechecking is the only thing that says so.
+    dispatch({ type: "duplicate", sourceIndex: index, sourceZone: zone });
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ flex: "1 1 auto", minHeight: 0, overflow: "auto" }}>{children}</div>
+      {selectedItem && index >= 0 ? (
+        <div style={{ flex: "0 0 auto", borderTop: "1px solid var(--puck-color-grey-09, #e6e6e6)", padding: 12, display: "flex", gap: 8 }}>
+          <button type="button" onClick={() => act("duplicate")} style={panelBtn}>
+            Duplicate
+          </button>
+          <button type="button" onClick={() => act("remove")} style={{ ...panelBtn, color: "#b91c1c" }}>
+            Delete
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const panelBtn: React.CSSProperties = {
+  flex: 1,
+  padding: "9px 12px",
+  fontSize: 13,
+  fontWeight: 600,
+  borderRadius: 7,
+  border: "1px solid var(--puck-color-grey-09, #e6e6e6)",
+  background: "transparent",
+  cursor: "pointer",
+};
+
 function SectionActionBar({
   label,
   children,
@@ -135,7 +205,7 @@ function SectionActionBar({
 //                                 needed for pages built before that existed; the sweep moved to
 //                                 the settings screen, beside the fields it uses
 // Each survives as an API route with no button — maintenance, not a feature.
-type SaveState = "idle" | "saving" | "saved" | "failed";
+type SaveState = "idle" | "dirty" | "saving" | "saved" | "failed";
 
 export default function PuckEditor({
   siteId,
@@ -147,8 +217,14 @@ export default function PuckEditor({
   pages,
   siteDomain,
   fallbackData,
+  sizeIndex = [],
+  typeScale = {},
 }: {
   siteId: string;
+  /** Every text size the site's stylesheets declare — see components/puck/SizeScaleContext. */
+  sizeIndex?: SizeIndex;
+  /** The site's current size overrides, keyed by the design's original declared value. */
+  typeScale?: Record<string, string>;
   siteName: string;
   /** The BUSINESS's name from Website settings — what the header shows. See below. */
   businessName?: string;
@@ -668,15 +744,133 @@ export default function PuckEditor({
   }, [page, title, siteId, fallbackData]);
 
   // Debounced auto-save on every edit.
+  /**
+   * ⛔ NO AUTOSAVE. ONE SAVE BUTTON, PRESSED ON PURPOSE (Steven's call, 2026-08-13).
+   *
+   * This used to write the draft 800ms after every keystroke and every click between sections. He
+   * hit it twice: *"it gets janky"*, and then plainly — *"I don't want auto save, I want one save
+   * like the publish button."*
+   *
+   * He is right for this product and not for the reason autosave is usually argued about. He is
+   * editing a page that ten other pages inherit from; a save that happens while he is still
+   * deciding means he cannot look at two options and keep the first. Autosave is a safety net for
+   * work you are afraid to lose. This is work he is afraid to CHANGE.
+   *
+   * ⚠️ SO THE SAFETY NET MOVES, IT DOES NOT DISAPPEAR. Edits live in component state and the tab
+   * warns before it closes on unsaved work (see below). Nothing writes to storage until Save.
+   */
   const onChange = (d: Data) => {
     if (timer.current) clearTimeout(timer.current);
-    setSave("saving");
-    timer.current = setTimeout(() => writeDraft(d), 800);
+    setSave(dirtyRef.current === false ? "dirty" : "dirty");
+    dirtyRef.current = true;
+    pending.current = d;
   };
+
+  /** The edits made since the last Save, held in memory only. */
+  const saveNow = async () => {
+    const d = pending.current;
+    if (!d) return;
+    await writeDraft(d);
+    dirtyRef.current = false;
+    pending.current = null;
+  };
+
+  // ⛔ ABOVE THE `if (!data)` GUARD BELOW, AND THAT IS NOT A STYLE CHOICE.
+  //
+  // These three hooks were inserted after it and took the builder down with "Rendered more hooks
+  // than during the previous render": the first pass returns the loading state before reaching
+  // them, the second pass — once the draft arrives — runs them, and React counts a different
+  // number of hooks between renders. The page did not error visibly, it simply failed to load.
+  //
+  // Every hook in this component has to sit above every early return. There is no version of this
+  // that is fine "because the guard almost never fires".
+  /**
+   * ONE SIZE, CHANGED EVERYWHERE IT IS USED — from the panel, without leaving the page.
+   *
+   * ⛔ THE MODEL THIS SERVES IS STEVEN'S, and it is simpler than the one I built first: *"the home
+   * page always gets built first. I set the home page from top to bottom, the rest of the pages
+   * should follow… instead of drilling into individual pages, you have one edit canvas that lives
+   * on top of the entire website."*
+   *
+   * The per-line Size stepper writes `row.size`, an inline style on ONE line, in ONE section, on
+   * ONE page — with no idea the same size governs nine other pages. That disconnect is why a
+   * global list of thirty-six numbers existed at all, and why it was unreadable: he was being
+   * asked to identify text by its font size instead of by pointing at it.
+   *
+   * ⚠️ OPTIMISTIC, THEN CORRECTED. The canvas restyles from the returned sheet on refresh, so the
+   * local map moves first and the refresh confirms it. A failure puts the old value back rather
+   * than leaving the panel claiming a change the website never took.
+   */
+  // Unsaved edits, and whether there are any. Refs rather than state: neither should re-render the
+  // canvas, and the beforeunload handler must read the CURRENT value, not the one captured when it
+  // was registered.
+  const pending = useRef<Data | null>(null);
+  const dirtyRef = useRef(false);
+
+  // ⚠️ THE TAB MUST NOT CLOSE QUIETLY ON UNSAVED WORK, now that nothing writes on its own.
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, []);
+
+  const [scale, setScale] = useState<Record<string, string>>(typeScale);
+  const [scaleMsg, setScaleMsg] = useState("");
+  useEffect(() => setScale(typeScale), [typeScale]);
+
+  const sizeScale: SizeScale = useMemo(
+    () => ({
+      index: sizeIndex,
+      scale,
+      places: (declared: string) => sizeIndex.find((z) => z.value === declared)?.rules || 0,
+      status: scaleMsg,
+      setGlobal: async (declared: string, next: string) => {
+        const before = scale;
+        const nextScale = { ...scale };
+        // Back to the design's own value = REMOVE the key. A stored self-mapping reads as a
+        // deliberate choice forever and survives the design changing underneath it.
+        if (!next || next === declared) delete nextScale[declared];
+        else nextScale[declared] = next;
+        setScale(nextScale);
+        setScaleMsg("Saving…");
+        try {
+          const cur = await fetch(`/api/brand?site=${encodeURIComponent(siteId)}`, {
+            credentials: "same-origin",
+          }).then((x) => x.json());
+          const merged = { ...(cur?.brand || {}), typeScale: nextScale };
+          const put = await fetch("/api/brand", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ site: siteId, brand: merged }),
+          }).then((x) => x.json());
+          if (!put.ok) throw new Error(put.error || "Couldn't save the size.");
+          const pub = await fetch("/api/brand", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ site: siteId, action: "publish-sizes" }),
+          }).then((x) => x.json());
+          if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+          setScaleMsg("Changed everywhere.");
+          router.refresh();
+        } catch (e) {
+          setScale(before);
+          setScaleMsg((e as Error).message);
+        }
+      },
+    }),
+    [sizeIndex, scale, scaleMsg, siteId, router]
+  );
 
   if (!data) {
     return <div style={{ padding: 40, fontFamily: "sans-serif" }}>Loading editor…</div>;
   }
+
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -794,6 +988,28 @@ export default function PuckEditor({
             </>
           ) : null}
         </div>
+        {/* ⛔ A SAVE BUTTON, BECAUSE NOTHING SAVES ON ITS OWN ANY MORE. It only appears once there
+            is something to save, so the toolbar does not carry a permanently-lit button that does
+            nothing — and when it appears it is the loudest thing on the bar, because unsaved work
+            is the one state here that can cost somebody an afternoon. */}
+        {save === "dirty" || save === "failed" ? (
+          <button
+            type="button"
+            onClick={() => void saveNow()}
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              padding: "7px 15px",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              background: save === "failed" ? "#dc2626" : "#111827",
+              color: "#fff",
+            }}
+          >
+            {save === "failed" ? "Save again" : "Save"}
+          </button>
+        ) : null}
         <span
           title={saveError || undefined}
           style={{
@@ -808,7 +1024,9 @@ export default function PuckEditor({
               ? "Saved"
               : save === "failed"
                 ? `NOT SAVED — ${saveError || "unknown error"}`
-                : ""}
+                : save === "dirty"
+                  ? "Unsaved changes"
+                  : ""}
         </span>
         {/* The live address, the way every other builder shows it. A dot for whether anything is
             actually published there, so a link that would 404 says so before you click it. */}
@@ -1060,6 +1278,7 @@ export default function PuckEditor({
           if (key) requestTextFocus(key);
         }}
       >
+        <SizeScaleContext.Provider value={sizeScale}>
         <Puck
           key={page}
           config={config}
@@ -1086,10 +1305,15 @@ export default function PuckEditor({
           //
           // Falls back to the label only when Website settings has no business name yet.
           headerTitle={`${businessName?.trim() || siteName} › ${title}`}
-          overrides={{ actionBar: SectionActionBar }}
+          overrides={{ actionBar: SectionActionBar, fields: FieldsPanel }}
           onChange={onChange}
           onPublish={async (d) => {
+            // ⚠️ PUBLISH IS ALSO A SAVE, and it has to clear the unsaved flag or the tab warns on
+            // close straight after a successful publish — the one moment somebody is most certain
+            // their work is safe.
             await writeDraft(d);
+            dirtyRef.current = false;
+            pending.current = null;
             await fetch(`/api/puck?page=${encodeURIComponent(page)}&site=${encodeURIComponent(siteId)}&action=publish`, {
               method: "POST",
               credentials: "same-origin",
@@ -1108,6 +1332,7 @@ export default function PuckEditor({
             }
           }}
         />
+        </SizeScaleContext.Provider>
       </div>
     </div>
   );

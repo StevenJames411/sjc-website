@@ -53,4 +53,4 @@ export const sheetScope = (sheetId: string) =>
  * live. Bumping it gives the recompile a new id to move pages onto — which is what makes the fix
  * reach sites already in the database, and is the entire reason the source archive exists.
  */
-export const DESIGN_PIPELINE_REV = "2026-08-12.1";
+export const DESIGN_PIPELINE_REV = "2026-08-13.1";

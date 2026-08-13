@@ -8,6 +8,9 @@ import { SiteProvider } from "@/components/blocks/SiteContext";
 import { isChrome } from "@/lib/puckPages";
 import { defaultChrome } from "@/lib/siteChrome";
 import { SJC } from "@/lib/siteKeys";
+import BrandStyle from "@/components/BrandStyle";
+import { readBrand } from "@/lib/brand";
+import { applyTypeScale, sizesIn } from "@/lib/typeScale";
 
 // The builder for one page of one website: /edit/<site>/<page>.
 //
@@ -59,10 +62,47 @@ export default async function EditPage({
   const chrome = await Promise.all(
     ["nav", "footer"].map((slug) => readPuckDraft(slug, siteId))
   );
-  const designCss = await sheetsFor([await readPuckDraft(entry.slug, siteId), ...chrome]);
+  const designCssRaw = await sheetsFor([await readPuckDraft(entry.slug, siteId), ...chrome]);
+
+  // ⛔ THE CANVAS WAS PAINTING EVERY CLIENT'S PAGE IN SJC'S COLOURS AND SJC'S FONT.
+  //
+  // BrandStyle ran in exactly two places: the root layout, always with SJC's brand, and
+  // lib/publicSitePage with the site's. The builder went near neither — so a client's page was
+  // edited under Steven's palette and typeface and published in theirs. What you see was simply
+  // not what you get, in the one place the work is actually done.
+  //
+  // That is the same class of failure the two comments above describe (the design's stylesheet
+  // missing, `{{business.phone}}` rendering raw) and it is the worst of the three, because a
+  // colour is not obviously wrong the way a raw token is — you just judge a design against the
+  // wrong palette all day and never know.
+  //
+  // ⚠️ THE PUBLISHED BRAND, NOT THE DRAFT. The canvas's job is to agree with what a visitor gets.
+  // The brand screen owns previewing an unpublished palette; the builder must not quietly show a
+  // third state that exists nowhere else.
+  //
+  // Emitted AFTER the layout's SJC block and before the design sheet, so the site's values win the
+  // :root tie on document order and an imported section's own scoped rules still win over both —
+  // exactly the cascade the public page produces.
+  const brand = await readBrand(true, siteId);
+  // ⚠️ INDEXED FROM THE RAW SHEET, BEFORE applyTypeScale — this is the map of the design's
+  // ORIGINAL declared values, which is what the override map (`brand.typeScale`) is keyed by.
+  // Indexing the already-overridden sheet would key new edits by an edited value, and the
+  // mapping would drift a little further from the design every time someone used it.
+  // ⛔ EVERY PAGE'S SHEETS, NOT THIS PAGE'S — because the control says "everywhere" and has to mean
+  // it. Indexed from this page alone, the hero pill reported "4 places" on a ten-page site where
+  // every page carries one: the number was this page's selector count, so the label was wrong in
+  // both directions at once. The override itself was always site-wide (applyTypeScale runs on every
+  // page); only the count lied.
+  const allPageDocs = await Promise.all((await readPages(siteId)).map((pg) => readPuckDraft(pg.slug, siteId)));
+  const sizeIndex = sizesIn(await sheetsFor([...allPageDocs, ...chrome].filter(Boolean)));
+  // The canvas gets the same sized sheet the public page does, or the size controls would appear to
+  // do nothing in the one place the work is done — the exact failure this file already carries two
+  // comments about.
+  const designCss = applyTypeScale(designCssRaw, brand?.typeScale);
 
   return (
     <>
+      <BrandStyle brand={brand} id="site-brand" />
       {designCss ? (
         <style id="design-css" dangerouslySetInnerHTML={{ __html: designCss }} />
       ) : null}
@@ -100,6 +140,11 @@ export default async function EditPage({
           // Decides whether the toolbar's live link points at the studio's demo address or at the
           // client's own domain. Same input the server uses to decide what to serve.
           siteDomain={site.domain}
+          // Every distinct text size the design declares, keyed by its original value, so a
+          // sidebar control can offer "change this size everywhere" against the same map
+          // applyTypeScale reads above.
+          sizeIndex={sizeIndex}
+          typeScale={brand?.typeScale || {}}
         />
       </SiteProvider>
     </>

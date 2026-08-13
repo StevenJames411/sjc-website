@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { reachability, type Site } from "@/lib/sitesShared";
+import { FONT_SETS, FONT_VAR, SWATCHES, fontsForSet, type Brand, type BrandFont } from "@/lib/brandShared";
 import { publicUrlFor } from "@/lib/hostShared";
 
 // EVERYTHING GLOBAL TO ONE WEBSITE, ON ONE SCREEN.
@@ -14,7 +15,38 @@ import { publicUrlFor } from "@/lib/hostShared";
 // Fill this in once and the whole website can use it: any text on any block can carry a token
 // like {{business.phone}} and it resolves at render. Change the number here, every page updates.
 
-type Props = { site: Site; pageCount: number; pages: { slug: string; title: string }[] };
+type Props = {
+  site: Site;
+  pageCount: number;
+  pages: { slug: string; title: string }[];
+  brand: Brand;
+  /** Every distinct text size this website's designs use, biggest first. See lib/typeScale. */
+  /**
+   * The home page, in the order it is read — header, hero, down the page, footer. One entry per
+   * element, named by the words on it. See the note in app/edit/[site]/settings/page.tsx.
+   */
+  sizes: {
+    declared: string;
+    effective: string;
+    members: string[];
+    rules: number;
+    role: string;
+    sample: string;
+    where: string;
+    changed: boolean;
+  }[];
+  /** Sizes that appear only on pages with more sections than the home page. */
+  elsewhere: {
+    effective: string;
+    members: string[];
+    absorbed: string[];
+    changed: boolean;
+    rules: number;
+    selectors: string[];
+    sample: string;
+    role: string;
+  }[];
+};
 
 const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.name}}", "name"],
@@ -27,13 +59,205 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.reviewUrl}}", "reviewUrl"],
 ];
 
-export default function SiteSettings({ site, pageCount, pages }: Props) {
+export default function SiteSettings({ site, pageCount, pages, brand, sizes, elsewhere }: Props) {
   const router = useRouter();
   const [s, setS] = useState<Site>(site);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [sweepMsg, setSweepMsg] = useState("");
+  const [fonts, setFonts] = useState<Brand>(brand);
+  const [fontMsg, setFontMsg] = useState("");
+
+  /**
+   * ONE CLICK. Pick a face and the live website is wearing it — no draft, no second Publish.
+   *
+   * ⛔ THE THREE SIDESTEPS THIS DELETES, AND WHY EACH ONE HAD TO GO (Steven, 2026-08-13:
+   * *"just like a customer, I set my own website to what I like and I'm done with it… with one
+   * click they change the damn font family. We don't have to do three side steps in between."*)
+   *
+   *   1. A SEPARATE SCREEN AT A URL WITH NO LINK TO IT. The picker lived at /edit/<site>/brand and
+   *      nothing in the studio pointed there, so the honest summary was that it did not exist:
+   *      *"obviously I can't get to something I can't see."*
+   *   2. A DRAFT THAT LOOKED SAVED. Picking wrote a draft; publishing was a separate button on
+   *      that same invisible screen. sjc-2026 sat with Space Grotesk saved and Lexend live for
+   *      weeks — the screen agreed with him and the website disagreed, with nothing on either to
+   *      say so.
+   *   3. AN IMPORTED SECTION IGNORING THE ANSWER ANYWAY, until stripFontFamily (lib/designCss)
+   *      stopped the design's compiled sheet from out-ranking the brand.
+   *
+   * So this writes the draft and publishes in the same click. The rest of this screen already
+   * behaves that way — a phone number typed here is live when it saves — and a control that
+   * behaves differently from its neighbours is the thing that teaches nobody to trust it.
+   */
+  /**
+   * Same contract as the fonts above: merge onto the DRAFT, publish only what this control owns.
+   *
+   * ⛔ WHY COLOURS MOVED HERE. `/edit/<site>/brand` was never linked from anywhere in the studio,
+   * and the back-office rail's "Brand" entry carries no site parameter — so opening it from inside
+   * a client's builder edited STEVEN'S palette. A client's colours had no reachable editor at all:
+   * they could be stored and they could be rendered, and there was nowhere to set them.
+   *
+   * Debounced because a colour input fires continuously while the swatch is dragged; without it a
+   * single pick is dozens of publishes.
+   */
+  const colourTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function pickColour(key: keyof Brand, value: string) {
+    const next = { ...fonts, [key]: value } as Brand;
+    setFonts(next);
+    setFontMsg("Saving…");
+    if (colourTimer.current) clearTimeout(colourTimer.current);
+    colourTimer.current = setTimeout(async () => {
+      try {
+        const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, {
+          credentials: "same-origin",
+        }).then((x) => x.json());
+        const merged = { ...(cur?.brand || {}), ...pickOnly(next, SWATCHES.map((w) => w.key)) };
+        const put = await fetch("/api/brand", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, brand: merged }),
+        }).then((x) => x.json());
+        if (!put.ok) throw new Error(put.error || "Couldn't save the colour.");
+        const pub = await fetch("/api/brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, action: "publish-colours" }),
+        }).then((x) => x.json());
+        if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+        setFontMsg("Live on the website.");
+        router.refresh();
+      } catch (e) {
+        setFontMsg((e as Error).message);
+      }
+    }, 500);
+  }
+
+  /**
+   * One text size, changed everywhere it is used.
+   *
+   * ⛔ THE COMPLAINT THIS ANSWERS, VERBATIM: *"I have to go back through this website, this 10-page
+   * website that has six sections per page, and match everything. That'll take me all fucking
+   * day."* Three merged designs left 36 distinct sizes on four pages — 13px, 13.5px, 14.5px, 15px
+   * and 15.5px all doing the same job. Each was editable one text row, one section, one page at a
+   * time. This is the same decision made once.
+   *
+   * Keyed by the design's ORIGINAL value, so "everything that was 13.5px is now 15px" — which is
+   * how he described it: *"some of these sections share the font size."*
+   */
+  const sizeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /**
+   * Set one ROW — which may be several original sizes that were collapsed together.
+   *
+   * ⚠️ EVERY MEMBER, NOT JUST THE ONE THE ROW IS NAMED AFTER. A row reading "13px · was 12, 12.5,
+   * 13.5" is four declared values pointing at one number; writing only the first would silently
+   * split the group back apart the moment somebody nudged it.
+   */
+  function pickSizeGroup(members: string[], next: string) {
+    const scale = { ...(fonts.typeScale || {}) };
+    for (const m of members) {
+      if (!next || next === m) delete scale[m];
+      else scale[m] = next;
+    }
+    commitScale(scale);
+  }
+
+  function pickSize(original: string, next: string) {
+    const scale = { ...(fonts.typeScale || {}) };
+    // Back to the design's own value = REMOVE the key, never store a self-mapping. A stored
+    // `{"15px":"15px"}` reads as "somebody chose this" forever and survives the design changing.
+    if (!next || next === original) delete scale[original];
+    else scale[original] = next;
+    commitScale(scale);
+  }
+
+  function commitScale(scale: Record<string, string>) {
+    const nextBrand = { ...fonts, typeScale: scale } as Brand;
+    setFonts(nextBrand);
+    setFontMsg("Saving…");
+    if (sizeTimer.current) clearTimeout(sizeTimer.current);
+    sizeTimer.current = setTimeout(async () => {
+      try {
+        const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, {
+          credentials: "same-origin",
+        }).then((x) => x.json());
+        const merged = { ...(cur?.brand || {}), typeScale: scale };
+        const put = await fetch("/api/brand", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, brand: merged }),
+        }).then((x) => x.json());
+        if (!put.ok) throw new Error(put.error || "Couldn't save the size.");
+        const pub = await fetch("/api/brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, action: "publish-sizes" }),
+        }).then((x) => x.json());
+        if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+        setFontMsg("Live on the website.");
+        router.refresh();
+      } catch (e) {
+        setFontMsg((e as Error).message);
+      }
+    }, 600);
+  }
+
+  async function pickSet(key: string) {
+    const pair = fontsForSet(key, fonts);
+    await pickFont({ ...fonts, ...pair, fontSet: key });
+  }
+
+  async function pickFont(next: Brand) {
+    const before = fonts;
+    setFonts(next); // optimistic: the sample text below re-renders in the new face immediately
+    setFontMsg("Saving…");
+    try {
+      // ⛔ MERGE ONTO THE DRAFT — NEVER PUT THIS SCREEN'S COPY OVER IT.
+      //
+      // This screen is loaded with the PUBLISHED brand, because what it shows has to be what the
+      // public sees. Writing that object back as the draft would silently discard every unpublished
+      // colour change made on the brand screen — a second door quietly reverting the first door's
+      // work, with a green "Live on the website" on top of it.
+      //
+      // So: read the draft, lay ONLY the typography over it, and publish only those fields.
+      const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, {
+        credentials: "same-origin",
+      }).then((x) => x.json());
+      const draft = (cur?.brand || {}) as Brand;
+      const merged: Brand = {
+        ...draft,
+        font: next.font,
+        headingFont: next.headingFont,
+        fontSet: next.fontSet,
+        designFont: next.designFont,
+        designHeadingFont: next.designHeadingFont,
+      };
+      const put = await fetch("/api/brand", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ site: s.id, brand: merged }),
+      }).then((x) => x.json());
+      if (!put.ok) throw new Error(put.error || "Couldn't save the font.");
+      const pub = await fetch("/api/brand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ site: s.id, action: "publish-fonts" }),
+      }).then((x) => x.json());
+      if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+      setFontMsg("Live on the website.");
+      router.refresh();
+    } catch (e) {
+      // ⚠️ PUT THE PICKER BACK. Leaving it on the face that failed to save is the same lie as #2.
+      setFonts(before);
+      setFontMsg((e as Error).message);
+    }
+  }
 
   /** Catch-up sweep: link every page of this website to the fields above. */
   async function sweep() {
@@ -62,6 +286,58 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
       setSweepMsg(`Linked ${n} value${n === 1 ? "" : "s"}. Open each page and Publish to put it live.`);
     } catch {
       setSweepMsg("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /**
+   * "Make every page obey these settings" — the recompile, with a button on it.
+   *
+   * ⛔ THIS WAS A CURL WITH A BEARER TOKEN, AND IT IS THE FIX FOR THE BUG THAT COST A MORNING.
+   *
+   * An imported design's stylesheet is compiled once, at import, and stored immutably. Sections
+   * imported before the compiler learned to leave typography to the brand keep their own
+   * font-family forever — so a font picked here changed the pages that had been recompiled and no
+   * others. Steven: *"it updated the home page… when I go to another page, it's serving up the
+   * design that we imported in the first place."*
+   *
+   * The route existed the whole time and had no caller anywhere in the UI. A capability behind a
+   * terminal is a capability the product does not have.
+   *
+   * ⚠️ publish: true — it repoints the PUBLISHED pages, not just the drafts. That is the whole
+   * point: this is a global setting being applied, and the alternative is publishing ten pages by
+   * hand and shipping whatever half-finished drafts sit in them. It changes only which stylesheet
+   * each page loads — never its content.
+   */
+  async function applyEverywhere() {
+    setBusy(true);
+    setSweepMsg("");
+    try {
+      const call = (dryRun: boolean) =>
+        fetch("/api/admin/recompile-css", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, dryRun, publish: true }),
+        }).then((r) => r.json());
+
+      const look = await call(true);
+      if (!look?.ok) throw new Error(look?.error || "Couldn't check this website.");
+      const n = (look.sheets || []).length;
+      if (!n) {
+        setSweepMsg("Every page is already following your settings — nothing to do.");
+        return;
+      }
+      const pageNames = [...new Set((look.sheets || []).flatMap((x: { pages?: string[] }) => x.pages || []))];
+      if (!window.confirm(`Bring ${pageNames.length} page(s) onto your current fonts and colours?\n\n${pageNames.join(", ")}\n\nThis changes only how they are styled, not what they say.`))
+        return;
+      const done = await call(false);
+      if (!done?.ok) throw new Error(done?.error || "Couldn't apply it.");
+      setSweepMsg(`Done — ${(done.livePages || []).length} page(s) now follow your settings.`);
+      router.refresh();
+    } catch (e) {
+      setSweepMsg((e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -297,6 +573,138 @@ export default function SiteSettings({ site, pageCount, pages }: Props) {
         tier without a CRM &mdash; the email and the sheet still get the lead.
       </p>
 
+      <h2 style={sec}>Fonts</h2>
+      <p style={hint}>
+        One choice, and the whole website follows — every page, every section. The pairings are
+        already matched, so there is nothing to line up.
+      </p>
+      <div style={{ display: "grid", gap: 8 }}>
+        {FONT_SETS.map((set) => {
+          const pair = fontsForSet(set.key, fonts);
+          const on = (fonts.fontSet || "asDesigned") === set.key;
+          return (
+            <button
+              key={set.key}
+              type="button"
+              onClick={() => pickSet(set.key)}
+              style={{
+                textAlign: "left",
+                padding: "13px 15px",
+                borderRadius: 10,
+                cursor: "pointer",
+                border: `1px solid ${on ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`,
+                background: on ? "rgba(59,130,246,.07)" : "transparent",
+                color: "inherit",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>{set.label}</span>
+                <span style={{ fontSize: 12, color: "var(--e-muted)" }}>{set.note}</span>
+                {on ? <span style={{ fontSize: 12, color: "var(--e-accent, #3b82f6)", fontWeight: 700 }}>· in use</span> : null}
+              </div>
+              {/* ⚠️ THE SAMPLE IS THE CONTROL. A set called "Editorial" means nothing until you see
+                  it — so each row draws a real headline over real body copy in its own two faces. */}
+              <div style={{ marginTop: 7 }}>
+                <div style={{ fontFamily: `var(${FONT_VAR[(pair.headingFont || pair.font) as BrandFont]})`, fontSize: 21, fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.15 }}>
+                  Grow your business
+                </div>
+                <div style={{ fontFamily: `var(${FONT_VAR[pair.font as BrandFont]})`, fontSize: 13, color: "var(--e-muted)", marginTop: 3 }}>
+                  Owners hire us to run paid traffic and fix what is draining it.
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      {fontMsg ? <p style={{ ...hint, margin: "10px 0 0" }}>{fontMsg}</p> : null}
+
+      {/* ⚠️ THE ONE PAGE-TOUCHING ACTION ON THIS SCREEN, so it says what it does before it does it.
+          Imported sections that predate the current compiler keep their own fonts until this runs. */}
+      <div style={{ marginTop: 14 }}>
+        <button type="button" onClick={applyEverywhere} disabled={busy} style={ghost}>
+          {busy ? "Working…" : "Make every page follow these settings"}
+        </button>
+        <p style={{ ...hint, margin: "8px 0 0" }}>
+          Only needed for pages built from an imported design before these controls existed. Safe to
+          press any time — it changes how pages are styled, never what they say.
+        </p>
+        {sweepMsg ? <p style={{ ...hint, margin: "6px 0 0", color: "var(--e-ok-ink)" }}>{sweepMsg}</p> : null}
+      </div>
+
+      <h2 style={sec}>Text sizes</h2>
+      <p style={hint}>
+        Your header, home page and footer, in the order they are read. Set a size once here and
+        every other page follows — they are built from the same elements.
+      </p>
+      <div style={{ display: "grid", gap: 6 }}>
+        {sizes.map((z) => (
+          <SizeRow
+            key={z.effective}
+            label={z.sample || z.role || z.effective}
+            role={z.role}
+            where={z.where}
+            effective={z.effective}
+            rules={z.rules}
+            changed={z.changed}
+            onSet={(v) => pickSizeGroup(z.members, v)}
+          />
+        ))}
+      </div>
+      {!sizes.length ? <p style={hint}>No imported designs on this website yet.</p> : null}
+
+      {elsewhere.length ? (
+        <>
+          {/* ⚠️ HIS OWN CAVEAT, GIVEN A HOME: "the only difference is when one page has more
+              sections than the home page." Those sizes are real and have to be reachable, but they
+              are not what the panel is for, so they sit underneath rather than diluting it. */}
+          <p style={{ ...hint, marginTop: 18, fontWeight: 600, color: "var(--e-ink)" }}>
+            Used only on other pages
+          </p>
+          <div style={{ display: "grid", gap: 6 }}>
+            {elsewhere.map((z) => (
+              <SizeRow
+                key={z.effective}
+                label={z.sample || z.selectors.slice(0, 3).join(", ") || z.effective}
+                role={z.role}
+                where=""
+                effective={z.effective}
+                rules={z.rules}
+                changed={z.changed}
+                onSet={(v) => pickSizeGroup(z.members, v)}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
+      {fontMsg ? <p style={{ ...hint, margin: "8px 0 0" }}>{fontMsg}</p> : null}
+
+
+      <h2 style={sec}>Colours</h2>
+      <p style={hint}>
+        Set once, used everywhere — every page, every section. Each one applies as you pick it.
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))", gap: 10 }}>
+        {SWATCHES.map((w) => {
+          const v = String((fonts as Record<string, unknown>)[w.key as string] || "");
+          return (
+            <label key={String(w.key)} title={w.help} style={{ display: "flex", alignItems: "center", gap: 9, border: "1px solid var(--e-line)", borderRadius: 9, padding: "8px 10px" }}>
+              <input
+                type="color"
+                value={/^#[0-9a-f]{6}$/i.test(v) ? v : "#000000"}
+                onChange={(e) => pickColour(w.key, e.target.value)}
+                style={{ width: 30, height: 30, border: "none", background: "none", padding: 0, cursor: "pointer", flex: "0 0 auto" }}
+              />
+              <span style={{ fontSize: 12.5, lineHeight: 1.25 }}>
+                {w.label}
+                {/* Blank is meaningful on Header bar — it means "follow the deeper dark band" —
+                    so it is stated rather than shown as an arbitrary colour. */}
+                {!v ? <span style={{ color: "var(--e-muted)" }}> · following</span> : null}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
       <Field label="Preview text" v={s.seo.description} on={(v) => seo("description", v)} ph="What this business does, in one sentence." area />
@@ -342,6 +750,81 @@ function Field({
 }
 
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+
+/**
+ * The eight faces, each drawn in ITSELF.
+ *
+ * ⚠️ A FONT NAME IS NOT A FONT. "Merriweather" set in the UI's own face tells you nothing about
+ * what the website will look like, so every option renders in the family it names — the decision
+ * is visual and the control has to be too. The families are already loaded by app/layout, so this
+ * costs no extra request.
+ *
+ * ⛔ "Same as body text" IS THE EMPTY STRING, NEVER A COPY OF THE BODY FONT'S VALUE. Copying it in
+ * freezes the headlines the first time the body face changes — pick a new body font and the
+ * headlines silently stay behind. Blank means FOLLOW, which is what BrandStyle already treats it
+ * as, and blank is what every brand saved before today holds.
+ */
+
+/** Copy just the named keys off a brand — so a save can touch only what its control owns. */
+function pickOnly(b: Brand, keys: (keyof Brand)[]): Partial<Brand> {
+  const out: Record<string, unknown> = {};
+  for (const k of keys) out[k as string] = (b as Record<string, unknown>)[k as string];
+  return out as Partial<Brand>;
+}
+
+
+/** One editable size, drawn at its own size and named by the words it sets. */
+function SizeRow({
+  label,
+  role,
+  where,
+  effective,
+  rules,
+  changed,
+  onSet,
+}: {
+  label: string;
+  role: string;
+  where: string;
+  effective: string;
+  rules: number;
+  changed: boolean;
+  onSet: (v: string) => void;
+}) {
+  const px = /^-?[\d.]+px$/.test(effective);
+  const border = changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${border}`, borderRadius: 8, padding: "7px 10px" }}>
+      <span style={{ flex: "1 1 auto", minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: `min(${effective}, 19px)`, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {label}
+        </span>
+        <span style={{ fontSize: 11.5, color: "var(--e-muted)" }}>
+          {where ? <strong style={{ color: "var(--e-ink)" }}>{where}</strong> : null}
+          {where && role ? " · " : ""}
+          {role}
+          {role || where ? " · " : ""}
+          {effective} · {rules} place{rules === 1 ? "" : "s"}
+        </span>
+      </span>
+      {px ? (
+        <input type="number" min={6} step={0.5} value={parseFloat(effective)}
+          onChange={(e) => onSet(e.target.value ? `${e.target.value}px` : "")}
+          style={{ width: 74, padding: "5px 7px", fontSize: 13, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+      ) : (
+        <input type="text" value={effective} onChange={(e) => onSet(e.target.value.trim())}
+          style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+      )}
+      {changed ? (
+        <button type="button" onClick={() => onSet("")} title="Put the design's own size back"
+          style={{ fontSize: 11, background: "none", border: "none", textDecoration: "underline", cursor: "pointer", color: "var(--e-muted)" }}>
+          undo
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 const page: React.CSSProperties = { maxWidth: 680, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
 const back: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", borderRadius: 8, padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 20 };
 const h1: React.CSSProperties = { fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" };

@@ -21,13 +21,14 @@ import type { Data } from "@measured/puck";
 import { siteOr, ownerOnly } from "@/lib/siteAccess";
 import { importHtml } from "@/lib/importHtml";
 import { importDesign, detectFonts, detectAccent } from "@/lib/importDesign";
+import { detectFontFamilies, captureDesignFonts } from "@/lib/designFonts";
 import { createSite, updateSite, readSites } from "@/lib/sites";
 import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { puckKey, writeDesignSheet } from "@/lib/puckContent";
 import { siteKeys } from "@/lib/siteKeys";
-import { writeBrand } from "@/lib/brand";
+import { readBrand, writeBrand } from "@/lib/brand";
 import type { BrandFont } from "@/lib/brandShared";
 import { applyTokens, tokenRules } from "@/lib/tokenizePage";
 
@@ -319,7 +320,20 @@ export async function POST(req: Request) {
   // re-deriving it per page means the LAST page imported silently decides the whole site's fonts
   // and accent. Page ten is not a better source than page one.
   if (intoExisting) {
-    // nothing — the site already has its brand
+    // ⛔ NOT QUITE NOTHING ANY MORE. The active brand is still left alone for the reason above —
+    // page ten must not redecide the site. But the pair this design arrived with is RECORDED if
+    // nothing has recorded one yet, because that is what the "As designed" button resolves to and
+    // without it the button is an empty promise on every site built by importing a second page.
+    // Only ever written when blank, so page one keeps the claim.
+    const prev = await readBrand(false, siteId);
+    if (mode !== "blocks" && !prev.designFont) {
+      const fonts = result.fonts ?? detectFonts(html);
+      await writeBrand(
+        { ...prev, designFont: fonts.bodyFont, designHeadingFont: fonts.headingFont },
+        false,
+        siteId
+      );
+    }
   } else if (mode !== "blocks") {
     const fonts = result.fonts ?? detectFonts(html);
     const accent = result.accent ?? detectAccent(html);
@@ -327,11 +341,64 @@ export async function POST(req: Request) {
       {
         font: fonts.bodyFont,
         headingFont: fonts.headingFont,
+        // ⚠️ THE SAME PAIR, KEPT TWICE ON PURPOSE. font/headingFont are the LIVE choice and get
+        // overwritten the moment a customer tries another set; these two are the RECORD of what
+        // the design shipped with, so "As designed" can always come back. Copying at import is the
+        // only moment both are knowably identical.
+        designFont: fonts.bodyFont,
+        designHeadingFont: fonts.headingFont,
+        fontSet: "asDesigned",
         ...(accent ? { accent, cta: accent } : {}),
       },
       false,
       siteId
     );
+    // ⛔ AND PUBLISH IT. THE DRAFT ALONE MEANT THE DESIGN NEVER ARRIVED (fixed 2026-08-13).
+    //
+    // This wrote the detected fonts and accent to the DRAFT only, and the public render reads the
+    // PUBLISHED brand — which, being untouched, equalled BRAND_DEFAULTS, so BrandStyle emitted
+    // nothing at all and the site went live in Lexend. Meanwhile stripFontFamily had already
+    // removed the design's own family from its compiled sheet, precisely so the brand would decide
+    // typography. Net effect: a customer's brand-new site rendered in a typeface nobody chose, and
+    // the design they actually paid for appeared only if somebody happened to open Settings and
+    // click a font set.
+    //
+    // Nothing errored, and every screen agreed with itself. Steven spent a morning on the symptom.
+    //
+    // ⚠️ SAFE BECAUSE IT IS A BRAND-NEW SITE. This branch is the `else` of `intoExisting` — there
+    // is no existing palette to overwrite and nobody has chosen anything yet. Publishing what the
+    // design shipped with is the most faithful possible starting state.
+    const seeded = await readBrand(false, siteId);
+
+    // ⛔ AND KEEP THE DESIGN'S ACTUAL TYPEFACE, not the nearest of our eight.
+    //
+    // detectFonts above rounds through nearestFont() because next/font was build-time and a bought
+    // design could never bring its own file. Steven caught that rounding on his own hero: *"since
+    // I'm paying for a design to be brought in, we need to be able to keep it. Everybody I build
+    // for, AI is going to throw a different font at me. If the customer wants it, we need to keep
+    // it."* lib/designFonts copies the real files onto our own Blob and returns @font-face rules
+    // pointing at us, so there is no third-party request on a customer's page.
+    //
+    // ⚠️ BEST EFFORT, ALWAYS. A family Google does not host, a network blip, a design naming a
+    // system font — every one returns null and the site keeps the rounded pair, which is exactly
+    // what it would have had. Same law as nearestFont: *a design in the wrong typeface is one
+    // dropdown from right; a design that refuses to import is not.*
+    let withFace = seeded;
+    try {
+      const real = await captureDesignFonts(detectFontFamilies(html));
+      if (real) {
+        withFace = {
+          ...seeded,
+          designFamilyHeading: real.heading || "",
+          designFamilyBody: real.body || "",
+          designFontCss: real.css,
+        };
+        await writeBrand(withFace, false, siteId);
+      }
+    } catch {
+      /* keeps the rounded pair */
+    }
+    await writeBrand(withFace, true, siteId);
   } else {
     const p = result.palette as unknown as Record<string, string>;
     await writeBrand(
