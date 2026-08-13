@@ -25,25 +25,57 @@ export default function BrandStyle({ brand, id = "sjc-brand" }: { brand: Brand; 
   // Blank heading font = headings share the body font, which is how this behaved before pairing.
   const headVar = (brand.headingFont && FONT_VAR[brand.headingFont]) || bodyVar;
 
-  const css = `:root{
---color-sjc-blue:${brand.accent};
---color-sjc-blue-hover:${brand.accentHover};
---color-sjc-ink:${brand.ink};
---color-sjc-mute:${brand.mute};
---color-sjc-line:${brand.line};
---color-sjc-bg-soft:${brand.bandSoft};
---color-sjc-navy:${brand.bandDark};
---color-sjc-green:${brand.cta};
---color-sjc-green-hover:${brand.ctaHover};
---color-sjc-navy-deep:${brand.bandDarker};
---color-sjc-band-header:${brand.bandHeader || brand.bandDarker};
---color-sjc-secondary:${brand.secondary};
---color-sjc-highlight:${brand.highlight};
---font-sans:var(${bodyVar}), ${FALLBACK_STACK};
---font-body:var(${bodyVar}), ${FALLBACK_STACK};
---font-heading:var(${headVar}), ${FALLBACK_STACK};
-}
-h1,h2,h3,h4{font-family:var(--font-heading);}`;
+  /**
+   * ⛔ ONLY WHAT WAS ACTUALLY CHANGED. THIS FILE USED TO EMIT ALL SIXTEEN, ALWAYS.
+   *
+   * The all-or-nothing test above is right at the extremes and wrong everywhere between them: a
+   * brand that differs by ONE field emitted the entire block, so thirteen SHIPPED-DEFAULT colours
+   * were pushed onto a site that had never chosen any of them.
+   *
+   * ⚠️ HOW IT SURFACED, AND WHY IT WOULD HAVE HIT EVERY CUSTOMER. Steven picked a FONT on sjc-2026.
+   * The brand stopped being default, so this emitted `--color-sjc-green:#22c55e` — the shipped CTA
+   * default — and the glow behind his hero image turned GREEN on a design built in blue. Nothing
+   * errored, nothing said a colour had been set, and the only thing he had touched was typography:
+   * *"changing the font family changed the glow behind the hero section image container for some
+   * reason."*
+   *
+   * On an imported design the damage is worse than a wrong colour, because the design's own CSS is
+   * scoped to its section while this is `:root` — so a default leaks into every band that reads a
+   * variable, and the further a customer's palette is from ours the more of their design it eats.
+   *
+   * A field left at its default now emits NOTHING, so it keeps inheriting whatever the design
+   * shipped with. One control changes one thing.
+   */
+  const decl: string[] = [];
+  const put = (k: keyof Brand, cssVar: string, value?: string) => {
+    if (brand[k] === BRAND_DEFAULTS[k]) return;
+    decl.push(`${cssVar}:${value ?? brand[k]};`);
+  };
+
+  put("accent", "--color-sjc-blue");
+  put("accentHover", "--color-sjc-blue-hover");
+  put("ink", "--color-sjc-ink");
+  put("mute", "--color-sjc-mute");
+  put("line", "--color-sjc-line");
+  put("bandSoft", "--color-sjc-bg-soft");
+  put("bandDark", "--color-sjc-navy");
+  put("cta", "--color-sjc-green");
+  put("ctaHover", "--color-sjc-green-hover");
+  put("bandDarker", "--color-sjc-navy-deep");
+  put("bandHeader", "--color-sjc-band-header", brand.bandHeader || brand.bandDarker);
+  put("secondary", "--color-sjc-secondary");
+  put("highlight", "--color-sjc-highlight");
+
+  // ⚠️ THE FONTS ARE NOT SUBJECT TO THE SAME TEST, and the asymmetry is deliberate. A colour left
+  // at its default means "the design's colour"; a FONT left at its default means Lexend, which is
+  // a real choice this file has to state — stripFontFamily removed the design's own family from
+  // its sheet precisely so the brand would be the one place typography is decided.
+  const fontDecl =
+    `--font-sans:var(${bodyVar}), ${FALLBACK_STACK};` +
+    `--font-body:var(${bodyVar}), ${FALLBACK_STACK};` +
+    `--font-heading:var(${headVar}), ${FALLBACK_STACK};`;
+
+  const css = `:root{${decl.join("")}${fontDecl}}h1,h2,h3,h4{font-family:var(--font-heading);}`;
 
   return <style id={id} dangerouslySetInnerHTML={{ __html: css }} />;
 }
