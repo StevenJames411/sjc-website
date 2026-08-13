@@ -329,16 +329,16 @@ if __name__ == "__main__":
             st, res = api("PUT", "/api/puck", {"page": page, "site": SITE_ID, "data": payload})
             print(f"  {label} -> {st} {res}")
             ok = ok and st < 300
-        print(f"\nedit page:   https://stevenjamesdesigns.com/edit/{SITE_ID}/{SLUG}")
-        print(f"edit nav:    https://stevenjamesdesigns.com/edit/{SITE_ID}/nav")
-        print(f"edit footer: https://stevenjamesdesigns.com/edit/{SITE_ID}/footer")
+        print(f"\nedit page:   https://www.stevenjamesconsulting.com/edit/{SITE_ID}/{SLUG}")
+        print(f"edit nav:    https://www.stevenjamesconsulting.com/edit/{SITE_ID}/nav")
+        print(f"edit footer: https://www.stevenjamesconsulting.com/edit/{SITE_ID}/footer")
         sys.exit(0 if ok else 1)
 
     if "--rewrite" in sys.argv:
         print(f"rewriting {SITE_ID}/{SLUG} (no site or page created)…")
         st, res = api("PUT", "/api/puck", {"page": SLUG, "site": SITE_ID, "data": DATA})
         print("  ", st, res)
-        print(f"\nedit: https://stevenjamesdesigns.com/edit/{SITE_ID}/{SLUG}")
+        print(f"\nedit: https://www.stevenjamesconsulting.com/edit/{SITE_ID}/{SLUG}")
         sys.exit(0 if st < 300 else 1)
 
     print("creating the website…")
@@ -358,4 +358,4 @@ if __name__ == "__main__":
     print("writing the page…")
     print("  ", api("PUT", "/api/puck", {"page": slug, "site": site, "data": DATA}))
     print(f"\nsite id: {site}")
-    print(f"edit:    https://stevenjamesdesigns.com/edit/{site}/{slug}")
+    print(f"edit:    https://www.stevenjamesconsulting.com/edit/{site}/{slug}")

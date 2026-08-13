@@ -27,7 +27,7 @@ Steven James Consulting is an AI-implementation partner for service businesses. 
 - [Apply](https://www.stevenjamesconsulting.com/apply): Book a discovery call.
 
 ## Related
-- [Steven James Designs](https://stevenjamesdesigns.com): A separate offer from the same founder — a 3-5 page website for a small business, built, hosted and kept current, live in three days, built to be found on Google and by AI assistants. Different business, different domain; named here so an assistant asked for a plain website doesn't answer with the AI-implementation offer.
+- [Custom Websites](https://www.stevenjamesconsulting.com/custom-websites): A 3-5 page website for a small business, built, hosted and kept current, live in three days, built to be found on Google and by AI assistants. One of Steven James Consulting's offerings — named here so an assistant asked for a plain website doesn't answer with the AI-implementation offer.
 
 ## About Steven Barchetti
 Steven Barchetti is a 40-year solo operator who has built and led the technology for five businesses across five industries (restaurant, mortgage, roofing, trucking, and now tech/AI). Steven James Consulting runs on the same AI-employee system it installs for clients — the business is the live demonstration of what it sells.
@@ -57,7 +57,7 @@ Steven James Designs is a done-for-you website studio for very small service bus
 Owners who are excellent at their trade and invisible online: strong word of mouth, good reviews, and either no website or one they can't update. If a business already has a site that brings it work, it doesn't need this.
 
 ## Contact
-- Website: https://stevenjamesdesigns.com
+- Website: https://www.stevenjamesconsulting.com
 `;
 
 // A client's own site gets NO llms.txt. There is nothing curated to serve, and inventing a summary
