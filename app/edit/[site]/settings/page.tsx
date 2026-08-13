@@ -124,10 +124,16 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ s
     for (const b of found) {
       for (const row of b.text || []) {
         const declared = governingSize(String(b.html || ""), row.key, raw);
-        if (!declared || seenSize.has(declared)) continue;
+        if (!declared) continue;
         const g = groups.get(scale[declared] || declared);
         if (!g) continue;
-        seenSize.add(declared);
+        // ⚠️ DEDUPE ON THE COLLAPSED SIZE, NOT THE DECLARED ONE. Deduping by `declared` while
+        // DISPLAYING `effective` put the same row on screen twice the moment two originals were
+        // collapsed together — "Book a Call · 15px · 130 places" listed twice, identical, because
+        // one line was declared 14.5px and the other 15px and both now render at 15. One row per
+        // size the page actually shows.
+        if (seenSize.has(g.effective)) continue;
+        seenSize.add(g.effective);
         ordered.push({
           declared,
           effective: g.effective,
