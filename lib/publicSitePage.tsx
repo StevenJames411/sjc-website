@@ -255,7 +255,6 @@ export async function SitePageBody({
   // to any sibling page's sheet when a page had none, so a band could silently wear a different
   // design's stylesheet. A page now emits exactly what its blocks name, and a page with no design
   // blocks emits nothing at all.
-  const designCss = await sheetsFor(data);
 
   // THIS BUSINESS'S OWN STRUCTURED DATA.
   //
@@ -334,6 +333,25 @@ export async function SitePageBody({
         footer: fillChrome(usable(await readPuckPublished("footer", siteId)) || fallback?.footer || null),
       }
     : { nav: null, footer: null };
+
+  // ⛔ THE HEADER AND FOOTER HAVE THEIR OWN STYLESHEETS, AND THIS USED TO EMIT ONLY THE PAGE'S.
+  //
+  // A page emits exactly what its blocks name — correct, and the reason a band can no longer
+  // silently wear a different design's sheet. But the header and footer are not in `data`: they
+  // are separate documents (`nav` / `footer`, lifted there on 2026-08-11), read a few lines above
+  // and rendered around the page. Their sheet was never gathered.
+  //
+  // ⚠️ IT WAS HIDDEN BY A COINCIDENCE, WHICH IS WHY IT SURVIVED. Each page's ORIGINAL imported
+  // sheet was compiled from markup that still contained the header, so the page's own stylesheet
+  // happened to carry the header's rules. Chrome was styled by a sheet that had no idea it was
+  // doing it. The moment sheets were recompiled from the archived source, that accident ended and
+  // every page except the one whose sheet the nav shares rendered a NAKED header — raw link text
+  // and an unstyled hamburger, on the live site:
+  //
+  //   podcast referenced 894d8686 (its own) and b9433d90 (the nav's); only 894d8686 was emitted.
+  //
+  // Gathering all three is what the rule always meant: emit exactly what the rendered page names.
+  const designCss = await sheetsFor([data, chrome.nav, chrome.footer].filter(Boolean));
 
   // ── ⛔ THE FOOTER CAN MIRROR THE HEADER'S LINKS ──────────────────────────────────────────────
   // Steven, after rewriting every menu description in the studio and finding the footer unchanged:
