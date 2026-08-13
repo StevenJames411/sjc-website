@@ -1074,10 +1074,25 @@ const baseConfig: Config<Props, RootProps> = {
       // with no per-sheet class — harmless while every sheet was scoped under the shared class, and
       // fatal for the next import, which compiles scoped to `.sjc-design-<id>` and would have come
       // out completely unstyled with every receipt green.
-      render: ({ sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
+      // ⛔ AND IT HAPPENED AGAIN, TO `columns`, THE DAY THE WARNING ABOVE WAS SITTING RIGHT HERE
+      // (2026-08-13). The field was declared, the type was declared, the default was declared, the
+      // CSS generator was written and the component read the prop — and this bridge forwarded
+      // neither `columns` nor `id`, which columnCss() needs to scope the rule to one block. So the
+      // control appeared in the panel, saved, showed "Saved", and moved nothing. It typechecked,
+      // because the bridge is where the two halves stop being type-connected. Shipped in d491b9b
+      // and announced as working.
+      //
+      // ⚠️ THE LESSON IS NOT "BE MORE CAREFUL" — this comment already said to be careful. It is
+      // that a field is not a control until something has been set on a page and LOOKED AT.
+      // scripts/check-prop-bridge.mjs is the mechanical half of that and was too loose to catch
+      // its own flagship case; it is tightened in the same commit as this fix.
+      render: ({ id, sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, columns, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
         <DesignSection
           // Marks each filled word so a click on the canvas can name its row. Editor only.
           editing={puck?.isEditing}
+          // Scopes the columns rule to THIS block — sheetScope() is shared by every section from
+          // the same design, so without the id one setting would column every band on the page.
+          id={id}
           sheet={sheet}
           html={html}
           text={text}
@@ -1087,6 +1102,7 @@ const baseConfig: Config<Props, RootProps> = {
           sticky={sticky}
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
+          columns={columns}
           background={background}
           foreground={foreground}
           hasForm={hasForm}

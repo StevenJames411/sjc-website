@@ -74,18 +74,38 @@ export default function SiteSettings({ site, pageCount, pages, brand }: Props) {
     setFonts(next); // optimistic: the sample text below re-renders in the new face immediately
     setFontMsg("Saving…");
     try {
+      // ⛔ MERGE ONTO THE DRAFT — NEVER PUT THIS SCREEN'S COPY OVER IT.
+      //
+      // This screen is loaded with the PUBLISHED brand, because what it shows has to be what the
+      // public sees. Writing that object back as the draft would silently discard every unpublished
+      // colour change made on the brand screen — a second door quietly reverting the first door's
+      // work, with a green "Live on the website" on top of it.
+      //
+      // So: read the draft, lay ONLY the typography over it, and publish only those fields.
+      const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, {
+        credentials: "same-origin",
+      }).then((x) => x.json());
+      const draft = (cur?.brand || {}) as Brand;
+      const merged: Brand = {
+        ...draft,
+        font: next.font,
+        headingFont: next.headingFont,
+        fontSet: next.fontSet,
+        designFont: next.designFont,
+        designHeadingFont: next.designHeadingFont,
+      };
       const put = await fetch("/api/brand", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ site: s.id, brand: next }),
+        body: JSON.stringify({ site: s.id, brand: merged }),
       }).then((x) => x.json());
       if (!put.ok) throw new Error(put.error || "Couldn't save the font.");
       const pub = await fetch("/api/brand", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ site: s.id, action: "publish" }),
+        body: JSON.stringify({ site: s.id, action: "publish-fonts" }),
       }).then((x) => x.json());
       if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
       setFontMsg("Live on the website.");

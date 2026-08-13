@@ -65,6 +65,36 @@ export async function POST(req: Request) {
     const ok = await writeBrand(draft, true, site);
     return Response.json({ ok, site, brand: draft });
   }
+
+  // ⛔ PUBLISH THE TYPEFACE AND NOTHING ELSE — because the fonts live on TWO screens and the
+  // colours only on one (added 2026-08-13).
+  //
+  // Website settings applies a font on one click, deliberately: it sits beside the phone number,
+  // which is live when it saves. The brand screen is draft-then-publish, and owns all 13 colours.
+  // One record, two save semantics.
+  //
+  // A plain `publish` from the settings screen therefore had two ways to lie. It shipped whatever
+  // half-finished palette was sitting in the draft — the operator picks a font and a colour
+  // experiment they never approved goes live — and the settings screen, which loads the PUBLISHED
+  // brand, would PUT that stale copy back over the draft first and erase the experiment entirely.
+  // Either way somebody's work moved without being asked.
+  //
+  // So the narrow action: copy ONLY the typography fields from draft to published. Colours stay
+  // exactly as published until somebody presses Publish on the screen that owns them.
+  if (body.action === "publish-fonts") {
+    const draft = await readBrand(false, site);
+    const live = await readBrand(true, site);
+    const next = {
+      ...live,
+      font: draft.font,
+      headingFont: draft.headingFont,
+      fontSet: draft.fontSet,
+      designFont: draft.designFont,
+      designHeadingFont: draft.designHeadingFont,
+    };
+    const ok = await writeBrand(next, true, site);
+    return Response.json({ ok, site, brand: next });
+  }
   if (body.action === "reset") {
     // The way back. Whatever a brand experiment did, this returns the site to as-shipped.
     const a = await writeBrand(BRAND_DEFAULTS, false, site);

@@ -62,7 +62,20 @@ export default function BrandStyle({ brand, id = "sjc-brand" }: { brand: Brand; 
   put("cta", "--color-sjc-green");
   put("ctaHover", "--color-sjc-green-hover");
   put("bandDarker", "--color-sjc-navy-deep");
-  put("bandHeader", "--color-sjc-band-header", brand.bandHeader || brand.bandDarker);
+
+  // ⛔ THE ONE FIELD THAT CANNOT USE put(), AND I BROKE IT BY MAKING IT (2026-08-13).
+  //
+  // `bandHeader` is documented in three places as "blank = follow the deeper dark band" — the type
+  // (lib/brandShared), the brand screen's help text, and NavView, which paints the header with
+  // `background || "bandHeader"`. Its default IS blank, so put()'s "skip anything at its default"
+  // test returned before emitting and the fallback never fired: change Dark band (deeper) and the
+  // header bar sat there, contradicting all three.
+  //
+  // The test has to run on the RESOLVED value, not the raw field. Blank is not "unset" here; it is
+  // an instruction to inherit, and inheriting from a customised value is itself a customisation.
+  const headerBand = brand.bandHeader || brand.bandDarker;
+  const headerBandDefault = BRAND_DEFAULTS.bandHeader || BRAND_DEFAULTS.bandDarker;
+  if (headerBand !== headerBandDefault) decl.push(`--color-sjc-band-header:${headerBand};`);
   put("secondary", "--color-sjc-secondary");
   put("highlight", "--color-sjc-highlight");
 
