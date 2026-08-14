@@ -21,7 +21,8 @@ import type { Data } from "@measured/puck";
 import { siteOr, ownerOnly } from "@/lib/siteAccess";
 import { importHtml } from "@/lib/importHtml";
 import { importDesign, detectFonts, detectAccent } from "@/lib/importDesign";
-import { detectFontFamilies, captureDesignFonts } from "@/lib/designFonts";
+import { FONTS } from "@/lib/brandShared";
+import { detectFontFamilies, captureDesignFonts, familiesIn, facesToPin } from "@/lib/designFonts";
 import { createSite, updateSite, readSites } from "@/lib/sites";
 import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
@@ -385,13 +386,26 @@ export async function POST(req: Request) {
     // dropdown from right; a design that refuses to import is not.*
     let withFace = seeded;
     try {
-      const real = await captureDesignFonts(detectFontFamilies(html));
+      const pair = detectFontFamilies(html);
+      // ⛔ EVERY FACE, NOT TWO. A design routinely uses a third — Steven's set its wordmark in
+      // Playfair Display over Space Grotesk headlines and Inter body, and because the brand holds
+      // only Headline and Body it vanished on import and rendered in the body face. Two selectors
+      // out of twenty-two, and it was his company name.
+      const all = familiesIn(html);
+      const extra = all.map((f) => f.family).filter((f) => f !== pair.heading && f !== pair.body);
+      const real = await captureDesignFonts(pair, extra);
       if (real) {
         withFace = {
           ...seeded,
           designFamilyHeading: real.heading || "",
           designFamilyBody: real.body || "",
           designFontCss: real.css,
+          // Pin the extra faces back onto the exact selectors that declared them, so the site
+          // renders identical to what was bought AND every face is a control.
+          faceFor: {
+            ...(seeded.faceFor || {}),
+            ...facesToPin(all, pair.heading, pair.body, real.captured || [], FONTS),
+          },
         };
         await writeBrand(withFace, false, siteId);
       }

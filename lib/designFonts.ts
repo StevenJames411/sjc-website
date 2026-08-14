@@ -85,6 +85,95 @@ const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 
 /**
+ * Every distinct font-family a design's own stylesheet declares, most-used first.
+ *
+ * ── WHY THIS EXISTS ────────────────────────────────────────────────────────────────────────────
+ * `detectFontFamilies` only reads three places: the h1–h6 rule, the body rule, and the Google
+ * Fonts link. Steven's own design loaded three families —
+ *
+ *   family=Space+Grotesk & family=Inter & family=Playfair+Display
+ *   .mark__2 { font-family: 'Playfair Display', Georgia, serif }   ← the wordmark
+ *
+ * — and the importer strips every font-family from the markup so the brand's Headline + Body
+ * govern typography. The brand only HOLDS two slots, so Playfair Display had nowhere to go and the
+ * wordmark silently rendered in the rounded body face instead. Steven noticed on sight: *"the main
+ * noticeable difference is where my company name is. That font is not the same design as I
+ * purchased."* `.mark__2` never touches an h1–h6 tag and isn't the `body` rule, so it was invisible
+ * to the two-family read — this walks every rule in the sheet instead of guessing which three
+ * matter.
+ *
+ * ⚠️ SELECTOR, NOT ROLE. Same retreat as `sizesIn` in lib/typeScale.ts: a class like `.mark__2`
+ * means nothing without the rule it came from, so each family carries the selectors that declared
+ * it rather than a guessed label.
+ */
+export function familiesIn(html: string, css?: string): { family: string; selectors: string[]; rules: number }[] {
+  const styleBlocks = [...String(html || "").matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]);
+  const sheet = [styleBlocks.join("\n"), css || ""].join("\n");
+
+  const counts = new Map<string, number>();
+  const sels = new Map<string, Set<string>>();
+  for (const rule of sheet.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const body = rule[2];
+    if (!/font-family/i.test(body)) continue;
+    const m = /font-family\s*:\s*([^;}]+)/i.exec(body);
+    const name = firstFamily(m?.[1]);
+    if (!name) continue; // a fallback stack entry (ui-sans-serif, serif, var(...)) is not a face
+
+    counts.set(name, (counts.get(name) || 0) + 1);
+    const set = sels.get(name) || new Set<string>();
+    for (const one of rule[1].split(",")) {
+      const t = one.trim().split(/\s+/).pop() || "";
+      if (t && !t.startsWith("@")) set.add(t);
+    }
+    sels.set(name, set);
+  }
+
+  return [...counts.entries()]
+    .map(([family, rules]) => ({ family, selectors: [...(sels.get(family) || [])], rules }))
+    .sort((a, b) => b.rules - a.rules);
+}
+
+
+/**
+ * Which selectors need a face of their own, and what to put on them.
+ *
+ * ⛔ THE STEP THAT WOULD HAVE SAVED THE WORDMARK. The importer strips every font-family so the
+ * brand governs typography, and the brand holds exactly two — Headline and Body. A design using a
+ * third face therefore loses it silently, and the page still looks finished, which is what makes it
+ * dangerous: Steven's `.mark__2 { font-family: 'Playfair Display' }` was 2 selectors out of 22, and
+ * it was his company name.
+ *
+ * So every family that is NEITHER the heading nor the body face gets pinned back onto the exact
+ * selectors that declared it. Nothing is lost, and each face becomes a control rather than frozen
+ * CSS.
+ *
+ * ⚠️ PREFER OUR OWN KEY ON AN EXACT NAME MATCH. If the design's third face happens to be one of the
+ * eight we self-host, storing the key means it renders from our own files and survives even if the
+ * copy to Blob failed. Only a family we do not stock is stored by name, where the captured
+ * @font-face is what makes it resolve.
+ */
+export function facesToPin(
+  families: { family: string; selectors: string[] }[],
+  heading: string,
+  body: string,
+  captured: string[],
+  ourFonts: { value: string; label: string }[]
+): Record<string, string> {
+  const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  const out: Record<string, string> = {};
+  for (const f of families) {
+    if (!f.family) continue;
+    if (same(f.family, heading) || same(f.family, body)) continue;
+    const ours = ourFonts.find((o) => same(o.label, f.family))?.value;
+    // A family we neither stock nor managed to copy cannot render — pinning it would swap a
+    // working fallback for an invisible one.
+    if (!ours && !captured.some((c) => same(c, f.family))) continue;
+    for (const sel of f.selectors) if (sel) out[sel] = ours || f.family;
+  }
+  return out;
+}
+
+/**
  * Copy one family onto our own storage and return @font-face CSS pointing at it.
  *
  * Returns null for anything that doesn't work out — not a Google family, network down, a name that
@@ -156,15 +245,22 @@ function dropForeignSubsets(css: string): string {
 }
 
 /**
- * Capture both faces of a design. Returns the CSS and the family names that actually made it.
+ * Capture every face of a design. Returns the CSS and the family names that actually made it.
  *
- * ⚠️ ONE STYLESHEET, DEDUPED. A design using one family for both would otherwise store it twice
- * and emit two identical @font-face sets.
+ * `extra` is any family beyond heading/body — the wordmark's Playfair Display, an eyebrow's own
+ * face, whatever `familiesIn` found that the brand's two slots don't cover. The signature stays
+ * callable with just `fams` (`app/api/import-html/route.ts` and `app/api/admin/capture-fonts/
+ * route.ts` both still call it that way) so a third face is additive, not a breaking change.
+ *
+ * ⚠️ ONE STYLESHEET, DEDUPED. `wanted` is a Set built from heading + body + extra together, so a
+ * family named twice — the wordmark reusing the heading face, or `extra` overlapping `fams` — is
+ * still fetched and stored exactly once.
  */
 export async function captureDesignFonts(
-  fams: DesignFamilies
-): Promise<{ css: string; heading: string; body: string } | null> {
-  const wanted = [...new Set([fams.heading, fams.body].map(firstFamily).filter(Boolean))];
+  fams: DesignFamilies,
+  extra: string[] = []
+): Promise<{ css: string; heading: string; body: string; captured: string[] } | null> {
+  const wanted = [...new Set([fams.heading, fams.body, ...extra].map(firstFamily).filter(Boolean))];
   if (!wanted.length) return null;
 
   const parts: string[] = [];
@@ -181,8 +277,12 @@ export async function captureDesignFonts(
   return {
     css: parts.join("\n"),
     // A family that failed to copy reports back as blank, so the caller can round THAT ONE to the
-    // nearest of the eight while the other keeps its real face.
+    // nearest of the eight while the others keep their real face.
     heading: got.has(firstFamily(fams.heading)) ? firstFamily(fams.heading) : "",
     body: got.has(firstFamily(fams.body)) ? firstFamily(fams.body) : "",
+    // Every family that copied, so the caller can seed per-element faces (`.mark__2` etc.) for
+    // anything beyond heading/body — the caller decides what to do with a face the brand has no
+    // slot for; this just reports what is actually sitting in `css`.
+    captured: [...got],
   };
 }

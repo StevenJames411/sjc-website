@@ -26,7 +26,8 @@ import { getClient } from "@/lib/store";
 import { readPages } from "@/lib/pageRegistry";
 import { readDesignSource, sheetIdsIn, puckKey } from "@/lib/puckContent";
 import { readBrand, writeBrand } from "@/lib/brand";
-import { detectFontFamilies, captureDesignFonts } from "@/lib/designFonts";
+import { detectFontFamilies, captureDesignFonts, familiesIn, facesToPin } from "@/lib/designFonts";
+import { FONTS } from "@/lib/brandShared";
 import { SJC } from "@/lib/siteKeys";
 
 export const dynamic = "force-dynamic";
@@ -63,6 +64,7 @@ export async function POST(req: Request) {
   // looked at when they bought it — the same rule import-html uses when refusing to let page ten
   // redecide a site's fonts.
   let families = { heading: "", body: "" };
+  let all: { family: string; selectors: string[]; rules: number }[] = [];
   let from = "";
   for (const id of ids) {
     const html = await readDesignSource(id);
@@ -70,6 +72,7 @@ export async function POST(req: Request) {
     const f = detectFontFamilies(html);
     if (f.heading || f.body) {
       families = f;
+      all = familiesIn(html);
       from = id;
       break;
     }
@@ -78,7 +81,9 @@ export async function POST(req: Request) {
     return Response.json({ ok: true, site, note: "No named font families in the archived designs." });
   }
 
-  const got = await captureDesignFonts(families);
+  // Every face the design declares, not just the pair — see facesToPin.
+  const extra = all.map((f) => f.family).filter((f) => f !== families.heading && f !== families.body);
+  const got = await captureDesignFonts(families, extra);
   if (!got) {
     return Response.json({
       ok: true,
@@ -95,6 +100,8 @@ export async function POST(req: Request) {
     from,
     asked: families,
     got: { heading: got.heading, body: got.body },
+    alsoCaptured: (got.captured || []).filter((c) => c !== got.heading && c !== got.body),
+    pinned: facesToPin(all, families.heading, families.body, got.captured || [], FONTS),
     bytes: got.css.length,
     // Self-hosted: nothing in the emitted CSS may still point at Google, or the third-party request
     // this exists to remove is still on every customer's page.
@@ -108,6 +115,10 @@ export async function POST(req: Request) {
     designFamilyHeading: got.heading || "",
     designFamilyBody: got.body || "",
     designFontCss: got.css,
+    faceFor: {
+      ...(brand.faceFor || {}),
+      ...facesToPin(all, families.heading, families.body, got.captured || [], FONTS),
+    },
   };
   const okDraft = await writeBrand(next, false, site);
   // Published too: the whole point is the LIVE site wearing the typeface it was bought with, and
