@@ -72,6 +72,20 @@ export type Brand = {
    * ⚠️ Empty object = untouched, which is the do-nothing default every Brand field must have.
    */
   typeScale?: Record<string, string>;
+  /**
+   * A TYPEFACE FOR ONE ELEMENT, keyed by the design's own selector: `{".mark__2": "playfair"}`.
+   *
+   * ⛔ THE THIRD FACE, WHICH THE BRAND HAD NO SLOT FOR. A brand carries Headline and Body, and a
+   * bought design routinely uses a third for its wordmark — Steven's LandingSite design sets the
+   * logo in a serif over a geometric sans everywhere else. stripFontFamily collapsed that into the
+   * heading font, and he spotted it immediately: *"the main noticeable difference is where my
+   * company name is. That font is not the same design as I purchased."*
+   *
+   * Deliberately NOT a `logoFont` field. A logo is just the first element that needed its own face;
+   * the next design will want it on a price, a badge, a pull-quote. Keyed by selector, any element
+   * the panel can name can have one, and nothing has to be added to the brand for the next case.
+   */
+  faceFor?: Record<string, string>;
   accent: string;      // links, badges, eyebrows — the "brand" color
   accentHover: string;
   secondary: string;   // second accent — confirmations, "open now", the softer of two buttons
@@ -114,6 +128,7 @@ export const BRAND_DEFAULTS: Brand = {
   designFamilyBody: "",
   designFontCss: "",
   typeScale: {},
+  faceFor: {},
   accent: "#2563eb",
   accentHover: "#1d4fd7",
   // Nothing on the live site uses these yet, so any value is safe; these are sane starting

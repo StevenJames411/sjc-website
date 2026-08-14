@@ -114,9 +114,20 @@ export default function BrandStyle({ brand, id = "sjc-brand" }: { brand: Brand; 
   // browser silently skips over to the next in the stack, which would look exactly like the
   // rounding this exists to remove.
   const faces = (realBody || realHead) && brand.designFontCss ? String(brand.designFontCss) : "";
+
+  // Per-element typefaces. Emitted AFTER :root so they beat the inherited body/heading face, and
+  // unscoped because these selectors are the design's own class names — they exist nowhere else.
+  const perElement = Object.entries(brand.faceFor || {})
+    .map(([sel, key]) => {
+      const v = FONT_VAR[key as BrandFont];
+      return v && sel ? `${sel}{font-family:var(${v}), ${FALLBACK_STACK};}` : "";
+    })
+    .filter(Boolean)
+    .join("");
   const css =
     faces +
-    `:root{${decl.join("")}${fontDecl}}h1,h2,h3,h4{font-family:var(--font-heading);}`;
+    `:root{${decl.join("")}${fontDecl}}h1,h2,h3,h4{font-family:var(--font-heading);}` +
+    perElement;
 
   return <style id={id} dangerouslySetInnerHTML={{ __html: css }} />;
 }
