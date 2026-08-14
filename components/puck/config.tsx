@@ -590,6 +590,41 @@ const hideWhenBare = ((data: { props?: Record<string, unknown> }, { fields }: { 
     ? dropFields(fields, ["surface", "surfaceColor", "surfaceOpacity", "borderColor", "hoverBorderColor", "shadowColor", "radius"])
     : fields) as unknown as ComponentConfig<Props["Card"]>["resolveFields"];
 
+/**
+ * WHAT AN IMPORTED SECTION'S PANEL ACTUALLY SHOWS.
+ *
+ * ⛔ TWENTY-ONE FIELDS, AND ON A TYPICAL BAND MORE THAN HALF WERE NOISE. Steven, after a day of
+ * hunting controls in it: *"the right sidebar where I edit all of the website pages should be
+ * cleaned up… tell me if there's multiple stuff in the sidebar that needs deleted."*
+ *
+ * Three removals, each a different kind of wrong:
+ *
+ * 1. THE SIX FORM FIELDS ON A SECTION WITH NO FORM. Contact form, the library link, the button
+ *    label, both thank-you fields and the imported questions showed on every band — a hero, a
+ *    services row, a footer. They are meaningless unless the section contains a form, and
+ *    `hasForm` already knows. That alone is most of the clutter.
+ *
+ * 2. MACHINERY THAT WAS NEVER A CONTROL. `sheet` renders nothing at all — it is the stylesheet id.
+ *    `hasForm` and `formFields` are stamped at import and labelled "leave this alone". A control
+ *    somebody must not touch should not be in the panel: leaving it there teaches people that
+ *    parts of this screen are booby-trapped, which is how they stop trusting the rest of it.
+ *
+ * 3. `sticky` ON A SECTION THAT CANNOT USE IT. It only means anything on the header — a band in the
+ *    middle of a page has nowhere to stick to (see the note on the wrapper in DesignSection.tsx).
+ *
+ * ⚠️ `html` STAYS. It is the escape hatch — the only way to change a sealed layout by hand — and
+ * taking it away would close the one door that exists.
+ */
+const designSectionPanel = ((data: { props?: Record<string, unknown> }, { fields }: { fields: Record<string, unknown> }) => {
+  const p = data?.props || {};
+  const drop = ["sheet", "hasForm", "formFields"];
+  if (!p.hasForm) drop.push("useRealForm", "formId", "formButton", "successHeading", "successBody");
+  // The importer stamps ids `design-1`, `design-2`… in document order, so only the first block on a
+  // page can be the header — the one place `sticky` does anything.
+  if (String(p.id || "") !== "design-1") drop.push("sticky");
+  return dropFields(fields, drop);
+}) as unknown as ComponentConfig<Props["DesignSection"]>["resolveFields"];
+
 const hideBandInColumn = ((data: { props?: Record<string, unknown> }, { fields }: { fields: Record<string, unknown> }) =>
   data?.props?.inColumn
     ? dropFields(fields, ["background", "paddingTop", "paddingBottom", "bandPadding"])
@@ -1106,6 +1141,7 @@ const baseConfig: Config<Props, RootProps> = {
         },
       },
       defaultProps: DESIGNSECTION_DEFAULTS as Props["DesignSection"],
+      resolveFields: designSectionPanel,
       // ⚠️ THIS IS AN EXPLICIT PROP BRIDGE, NOT A SPREAD — every prop has to be named TWICE, in the
       // destructure and again below. A prop declared in the Props map, given a field and given a
       // default still reaches the component as `undefined` if it is missing from these two lists,
