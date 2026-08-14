@@ -39,7 +39,16 @@ type Align = "left" | "center" | "right";
 // The props each block carries. Puck uses this to type the field editors AND the render
 // functions (so `content` below is handed back as a render component for the nested slot).
 type Props = {
-  Section: { background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; grid: string; gradientTo: string; gradientAngle: number; content: Slot };
+  Section: {
+    background: string; maxWidth: string; paddingTop: number; paddingBottom: number; decor: string; grid: string; gradientTo: string; gradientAngle: number;
+    /** Blank = no photo, band renders byte-identical to every Section saved before this shipped. */
+    bgImage: string;
+    /** 0–90, darkening scrim so text over the photo stays readable. See the render for why it defaults on. */
+    bgOverlay: number;
+    /** Reuses the Image block's exact 9-position vocabulary — one "what stays in view" language across the builder. */
+    bgFocus: string;
+    content: Slot;
+  };
   /** One section of a bought design, kept verbatim. Words, photos and vertical spacing editable. */
   DesignSection: {
     /**
@@ -121,7 +130,7 @@ type Props = {
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
   Booking: { src: string; height: number };
-  Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
+  Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
@@ -2415,21 +2424,99 @@ const baseConfig: Config<Props, RootProps> = {
             <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
+        // ── Background photo. The single most-used control in every competing builder (Wix,
+        // Squarespace, Webflow, GHL) and, until now, missing here entirely. Blank = no photo,
+        // so every Section already saved renders byte-identical — same rule as gradientTo/decor/grid.
+        bgImage: {
+          type: "custom" as const,
+          label: "Background photo (blank = none)",
+          render: ({ onChange, value }) => (
+            <ImageUpload value={(value as string) || ""} onChange={onChange} />
+          ),
+        },
+        // ⚠️ NOT OPTIONAL POLISH. White (or dark) text sat straight on top of an arbitrary photo is
+        // unreadable, and that's exactly the failure mode of a builder that ships a photo field
+        // without a scrim. Defaults to 45 so the FIRST photo someone drops in already reads —
+        // nobody has to discover this control before their hero looks broken.
+        bgOverlay: {
+          type: "custom" as const,
+          label: "Darken photo for readability, 0–90%",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Darken photo for readability, 0–90%"} value={value as number} onChange={onChange} fallback={45} step={5} min={0} unit="%" />
+          ),
+        },
+        // Same 9-position vocabulary as the Image block's "Keep in view" field, verbatim — one
+        // language for "what stays in view" across the whole builder, not a second one invented here.
+        bgFocus: {
+          type: "select" as const,
+          label: "Photo focus — what stays in view",
+          options: [
+            { label: "Centre", value: "center" },
+            { label: "Top", value: "top" },
+            { label: "Bottom", value: "bottom" },
+            { label: "Left", value: "left" },
+            { label: "Right", value: "right" },
+            { label: "Top left", value: "left top" },
+            { label: "Top right", value: "right top" },
+            { label: "Bottom left", value: "left bottom" },
+            { label: "Bottom right", value: "right bottom" },
+          ],
+        },
         content: { type: "slot" as const },
       },
-      defaultProps: { background: "white", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", grid: "", gradientTo: "", gradientAngle: 135, content: [] },
-      render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, grid, gradientTo, gradientAngle, content: Content }) => (
+      defaultProps: { background: "white", maxWidth: "48rem", paddingTop: 64, paddingBottom: 64, decor: "", grid: "", gradientTo: "", gradientAngle: 135, bgImage: "", bgOverlay: 45, bgFocus: "center", content: [] },
+      render: ({ id, background, maxWidth, paddingTop, paddingBottom, decor, grid, gradientTo, gradientAngle, bgImage, bgOverlay, bgFocus, content: Content }) => {
+        // ⛔ MUST NOT OVERWRITE THE EXISTING GRADIENT. `backgroundImage` is a single CSS property —
+        // setting it to `url(photo)` here would silently replace `linear-gradient(...)` whenever
+        // both are present, instead of erroring, so the bug would only show up as "my gradient
+        // disappeared" on whichever band someone happened to add a photo to first.
+        //
+        // CSS multiple backgrounds solve this: comma-separate layers in ONE backgroundImage, and
+        // the FIRST-listed layer paints on TOP. So the gradient (if set) stays layer one — visibly
+        // on top of the photo, same as the brief asks — the darkening scrim sits under that, and
+        // the photo itself is the bottom layer. background-size/position are comma-lists too, and
+        // must line up index-for-index with the layers, or the browser applies them to the wrong one.
+        const layers: string[] = [];
+        const sizes: string[] = [];
+        const positions: string[] = [];
+        if (gradientTo) {
+          layers.push(
+            `linear-gradient(${typeof gradientAngle === "number" ? gradientAngle : 135}deg, ${resolveColor(background)} 0%, ${resolveColor(gradientTo)} 100%)`
+          );
+          sizes.push("auto");
+          positions.push("0 0");
+        }
+        if (bgImage) {
+          // 0–90, clamped here rather than in the stepper (it has no hard max) — a typed 250 must
+          // not flip the scrim past "fully black" and hide the photo it exists to make readable.
+          const scrim = Math.min(90, Math.max(0, typeof bgOverlay === "number" ? bgOverlay : 45));
+          if (scrim > 0) {
+            layers.push(`linear-gradient(rgba(0,0,0,${scrim / 100}), rgba(0,0,0,${scrim / 100}))`);
+            sizes.push("auto");
+            positions.push("0 0");
+          }
+          layers.push(`url(${bgImage})`);
+          sizes.push("cover");
+          positions.push(bgFocus || "center");
+        }
+        const style: React.CSSProperties = layers.length
+          ? {
+              backgroundImage: layers.join(", "),
+              backgroundSize: sizes.join(", "),
+              backgroundPosition: positions.join(", "),
+              backgroundRepeat: "no-repeat",
+              // Fallback paint for any sliver the layers don't cover — matches the flat-colour
+              // path exactly when there's no photo or gradient at all.
+              backgroundColor: resolveColor(background),
+              // ⚠️ NOT background-attachment: fixed. That's the usual "parallax hero" trick and
+              // it's broken on iOS Safari (the layer detaches from the section and pins to the
+              // viewport instead), so every phone visitor — most of them — would see it break.
+            }
+          : { backgroundColor: resolveColor(background) };
+        return (
         <section
           id={typeof id === "string" ? id : undefined}
-          style={
-            gradientTo
-              ? {
-                  backgroundImage: `linear-gradient(${
-                    typeof gradientAngle === "number" ? gradientAngle : 135
-                  }deg, ${resolveColor(background)} 0%, ${resolveColor(gradientTo)} 100%)`,
-                }
-              : { backgroundColor: resolveColor(background) }
-          }
+          style={style}
           className={`w-full scroll-mt-20${decor || grid ? " relative overflow-hidden" : ""}`}
         >
           {grid ? (
@@ -2471,7 +2558,8 @@ const baseConfig: Config<Props, RootProps> = {
             <Content />
           </div>
         </section>
-      ),
+        );
+      },
     },
 
     Spacer: {

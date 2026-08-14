@@ -44,6 +44,15 @@ export type SiteSeo = {
   description: string;
   shareImage: string;
   titleSuffix: string;
+  /**
+   * The little icon in the browser tab. Blank = the platform default.
+   *
+   * ⚠️ LIVES WITH THE SHARE PREVIEW, NOT IN A NEW BLOCK. It is the same category of decision as the
+   * preview image and the title suffix — how this website identifies itself away from the page —
+   * and a fifth home for "how it looks when someone sees it elsewhere" is how a concept ends up
+   * editable in five places, which this codebase has already paid for once.
+   */
+  favicon?: string;
 };
 
 /**

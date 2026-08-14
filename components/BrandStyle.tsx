@@ -119,8 +119,18 @@ export default function BrandStyle({ brand, id = "sjc-brand" }: { brand: Brand; 
   // unscoped because these selectors are the design's own class names — they exist nowhere else.
   const perElement = Object.entries(brand.faceFor || {})
     .map(([sel, key]) => {
+      if (!sel || !key) return "";
+      // ⚠️ TWO KINDS OF VALUE, AND BOTH HAVE TO WORK.
+      //
+      // A value the OPERATOR picked from the dropdown is one of our eight, so it resolves to the
+      // self-hosted variable. A value SEEDED AT IMPORT is the design's own family name — which may
+      // be a font we have never shipped, because that is the entire point: the design gets to keep
+      // a face we do not stock. Its @font-face rules are emitted above from designFontCss, so the
+      // literal name resolves; without this branch a fourth face would land in the same hole the
+      // wordmark fell into, one layer deeper.
       const v = FONT_VAR[key as BrandFont];
-      return v && sel ? `${sel}{font-family:var(${v}), ${FALLBACK_STACK};}` : "";
+      const family = v ? `var(${v})` : `"${String(key).replace(/"/g, "")}"`;
+      return `${sel}{font-family:${family}, ${FALLBACK_STACK};}`;
     })
     .filter(Boolean)
     .join("");

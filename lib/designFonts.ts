@@ -133,6 +133,46 @@ export function familiesIn(html: string, css?: string): { family: string; select
     .sort((a, b) => b.rules - a.rules);
 }
 
+
+/**
+ * Which selectors need a face of their own, and what to put on them.
+ *
+ * ⛔ THE STEP THAT WOULD HAVE SAVED THE WORDMARK. The importer strips every font-family so the
+ * brand governs typography, and the brand holds exactly two — Headline and Body. A design using a
+ * third face therefore loses it silently, and the page still looks finished, which is what makes it
+ * dangerous: Steven's `.mark__2 { font-family: 'Playfair Display' }` was 2 selectors out of 22, and
+ * it was his company name.
+ *
+ * So every family that is NEITHER the heading nor the body face gets pinned back onto the exact
+ * selectors that declared it. Nothing is lost, and each face becomes a control rather than frozen
+ * CSS.
+ *
+ * ⚠️ PREFER OUR OWN KEY ON AN EXACT NAME MATCH. If the design's third face happens to be one of the
+ * eight we self-host, storing the key means it renders from our own files and survives even if the
+ * copy to Blob failed. Only a family we do not stock is stored by name, where the captured
+ * @font-face is what makes it resolve.
+ */
+export function facesToPin(
+  families: { family: string; selectors: string[] }[],
+  heading: string,
+  body: string,
+  captured: string[],
+  ourFonts: { value: string; label: string }[]
+): Record<string, string> {
+  const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  const out: Record<string, string> = {};
+  for (const f of families) {
+    if (!f.family) continue;
+    if (same(f.family, heading) || same(f.family, body)) continue;
+    const ours = ourFonts.find((o) => same(o.label, f.family))?.value;
+    // A family we neither stock nor managed to copy cannot render — pinning it would swap a
+    // working fallback for an invisible one.
+    if (!ours && !captured.some((c) => same(c, f.family))) continue;
+    for (const sel of f.selectors) if (sel) out[sel] = ours || f.family;
+  }
+  return out;
+}
+
 /**
  * Copy one family onto our own storage and return @font-face CSS pointing at it.
  *

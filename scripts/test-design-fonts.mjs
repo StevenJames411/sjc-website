@@ -39,9 +39,9 @@ function check(name, got, want) {
 {
   const got = familiesIn(`<style>${STYLESHEET}</style>`);
   check(
-    "ordering is by usage — Inter (4 rules) > Space Grotesk (2 rules) > Playfair Display (1 rule)",
+    "ordering is by usage — Inter (3 rules) > Space Grotesk (2 rules) > Playfair Display (1 rule)",
     got.map((f) => f.rules),
-    [4, 2, 1]
+    [3, 2, 1]
   );
 }
 
@@ -53,9 +53,9 @@ function check(name, got, want) {
 
   const spaceGrotesk = got.find((f) => f.family === "Space Grotesk");
   check(
-    "Space Grotesk's selectors are h3 and .eyebrow (last token of each rule's selector list)",
+    "Space Grotesk's selectors are h1, h2, h3, .eyebrow (every comma-separated selector, not just the rule count)",
     (spaceGrotesk?.selectors || []).slice().sort(),
-    ["h3", ".eyebrow"].slice().sort()
+    ["h1", "h2", "h3", ".eyebrow"].slice().sort()
   );
 }
 
