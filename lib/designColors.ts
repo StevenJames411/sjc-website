@@ -34,7 +34,14 @@
  * turns "#0f172a · 9 places" into "this one is text, that one is a background", so every match
  * records it instead of just counting occurrences.
  */
-const COLOR_PROP = /(color|background|background-color|border(?:-top|-right|-bottom|-left)?-color|border|outline-color|box-shadow|fill|stroke|text-decoration-color|caret-color)\s*:\s*([^;}]+)/gi;
+// ⚠️ THE BOUNDARY BEFORE THE ALTERNATION IS LOAD-BEARING. Without it, `text-decoration-color:
+// #fff` matches on the bare `color` branch (alternation finds a home for `color` starting mid-word
+// at the tail of `-decoration-color`, since JS alternation is leftmost-match, not longest-match),
+// silently losing the `text-decoration-` prefix. Requiring the property to start right after `{`,
+// `;`, or whitespace forces a real declaration boundary, so the longer, more specific names below
+// get first crack at it.
+const COLOR_PROP =
+  /(?:^|[{;\s])(text-decoration-color|caret-color|outline-color|border-(?:top|right|bottom|left)-color|border-color|background-color|box-shadow|border|background|outline|fill|stroke|color)\s*:\s*([^;}]+)/gi;
 
 /** `#fff`, `#ffffff`, `#ffffffcc` (with or without alpha), matched inside a declaration's value. */
 const HEX = /#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})\b/gi;

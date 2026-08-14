@@ -36,6 +36,16 @@ type Props = {
     changed: boolean;
     selectors: string[];
   }[];
+  /** Every colour the imported designs declare, most-used first. See lib/designColors. */
+  designColors: {
+    value: string;
+    rules: number;
+    props: string[];
+    selectors: string[];
+    dark: boolean;
+    current: string;
+    changed: boolean;
+  }[];
   /** Sizes that appear only on pages with more sections than the home page. */
   elsewhere: {
     effective: string;
@@ -60,7 +70,7 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.reviewUrl}}", "reviewUrl"],
 ];
 
-export default function SiteSettings({ site, pageCount, pages, brand, sizes, elsewhere }: Props) {
+export default function SiteSettings({ site, pageCount, pages, brand, sizes, elsewhere, designColors }: Props) {
   const router = useRouter();
   const [s, setS] = useState<Site>(site);
   const [busy, setBusy] = useState(false);
@@ -167,6 +177,47 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
    * a price or a badge. Keyed by the design's own selector, so any element the panel can name can
    * have one and nothing new has to be added for the next case.
    */
+  /**
+   * One of the DESIGN'S colours, changed everywhere it appears.
+   *
+   * ⛔ SEPARATE FROM THE THIRTEEN BRAND SWATCHES BELOW, AND IT HAS TO BE. Those set OUR variables,
+   * which our blocks paint from. A bought design paints from its own literal hex — 26 distinct
+   * values on this site, none of them pointing at a brand variable — so the brand swatches could
+   * never touch an imported band. This list is what the design actually declares.
+   */
+  const dcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function pickDesignColor(original: string, next: string) {
+    const map = { ...((fonts.colorMap as Record<string, string>) || {}) };
+    if (!next || next.toLowerCase() === original.toLowerCase()) delete map[original];
+    else map[original] = next;
+    setFonts({ ...fonts, colorMap: map } as Brand);
+    setFontMsg("Saving…");
+    if (dcTimer.current) clearTimeout(dcTimer.current);
+    dcTimer.current = setTimeout(async () => {
+      try {
+        const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, { credentials: "same-origin" }).then((x) => x.json());
+        const put = await fetch("/api/brand", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, brand: { ...(cur?.brand || {}), colorMap: map } }),
+        }).then((x) => x.json());
+        if (!put.ok) throw new Error(put.error || "Couldn't save the colour.");
+        const pub = await fetch("/api/brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, action: "publish-designcolors" }),
+        }).then((x) => x.json());
+        if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+        setFontMsg("Live on the website.");
+        router.refresh();
+      } catch (e) {
+        setFontMsg((e as Error).message);
+      }
+    }, 500);
+  }
+
   function pickFace(selectors: string[], font: string) {
     const faceFor = { ...((fonts.faceFor as Record<string, string>) || {}) };
     for (const sel of selectors) {
@@ -794,6 +845,41 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
       ) : null}
       {fontMsg ? <p style={{ ...hint, margin: "8px 0 0" }}>{fontMsg}</p> : null}
 
+
+      {designColors.length ? (
+        <>
+          <h2 style={sec}>The design&rsquo;s colours</h2>
+          <p style={hint}>
+            The palette your imported design was built with. Change one and it changes everywhere it
+            is used. Blank it to put the design&rsquo;s own colour back.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 8 }}>
+            {designColors.map((c) => (
+              <label
+                key={c.value}
+                title={c.selectors.slice(0, 6).join(", ")}
+                style={{ display: "flex", alignItems: "center", gap: 9, border: `1px solid ${c.changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, borderRadius: 9, padding: "8px 10px" }}
+              >
+                <input
+                  type="color"
+                  value={/^#[0-9a-f]{6}$/i.test(c.current) ? c.current : "#000000"}
+                  onChange={(e) => pickDesignColor(c.value, e.target.value)}
+                  style={{ width: 30, height: 30, border: "none", background: "none", padding: 0, cursor: "pointer", flex: "0 0 auto" }}
+                />
+                <span style={{ fontSize: 12, lineHeight: 1.3, minWidth: 0 }}>
+                  {/* ⚠️ THE PROPERTY IS THE LABEL. A hex tells nobody anything; "background, 14
+                      places" is how a person finds the one they mean. */}
+                  <span style={{ display: "block", fontWeight: 600 }}>{c.props.slice(0, 2).join(", ") || "colour"}</span>
+                  <span style={{ color: "var(--e-muted)" }}>
+                    {c.current}
+                    {c.changed ? ` (was ${c.value})` : ""} · {c.rules} place{c.rules === 1 ? "" : "s"}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </>
+      ) : null}
 
       <h2 style={sec}>Colours</h2>
       <p style={hint}>
