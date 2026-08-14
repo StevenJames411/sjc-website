@@ -103,6 +103,10 @@ type Props = {
     bottomSuffix: string;
     bottomNote: string;
     footnote: string;
+    onDark: boolean;
+    background: string;
+    textColor: string;
+    priceSize: number;
   };
   LeadForm: {
     source: string;
@@ -133,8 +137,8 @@ type Props = {
   Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
-  Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
-  Video: { src: string; caption: string; poster: string };
+  Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean; size: string; labelColor: string };
+  Video: { src: string; caption: string; poster: string; width: string; aspect: string; autoplay: boolean; loop: boolean; muted: boolean };
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
   Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
@@ -1581,9 +1585,28 @@ const baseConfig: Config<Props, RootProps> = {
         bottomSuffix: { type: "text" as const, label: "Suffix (e.g. /month)" },
         bottomNote: { type: "text" as const, label: "Line under the second price" },
         footnote: { type: "textarea" as const, label: "Small print underneath" },
+        onDark: {
+          type: "radio" as const,
+          label: "Sitting on",
+          // ⚠️ The studio is LIGHT-first: a block's text defaults to ink, which vanishes on a dark
+          // band. Every block that can sit on either ground has to be told which one it landed on.
+          options: [
+            { label: "A dark band", value: true },
+            { label: "A light band", value: false },
+          ],
+        },
+        background: { ...COLOR_FIELD, label: "Card background" },
+        textColor: { ...COLOR_FIELD, label: "Price colour" },
+        priceSize: {
+          type: "custom" as const,
+          label: "Price size (top figure; bottom scales with it)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Price size"} value={value as number} onChange={onChange} fallback={60} step={4} min={20} allowZero={false} />
+          ),
+        },
       },
       defaultProps: PRICEBOX_DEFAULTS as PriceBoxBlock,
-      render: ({ topAmount, topNote, bottomAmount, bottomSuffix, bottomNote, footnote }) => (
+      render: ({ topAmount, topNote, bottomAmount, bottomSuffix, bottomNote, footnote, onDark, background, textColor, priceSize }) => (
         <PriceBox
           topAmount={topAmount}
           topNote={topNote}
@@ -1591,6 +1614,10 @@ const baseConfig: Config<Props, RootProps> = {
           bottomSuffix={bottomSuffix}
           bottomNote={bottomNote}
           footnote={footnote}
+          onDark={onDark}
+          background={background}
+          textColor={textColor}
+          priceSize={priceSize}
         />
       ),
     },
@@ -3126,6 +3153,25 @@ const baseConfig: Config<Props, RootProps> = {
             { label: "Full width", value: true },
           ],
         },
+        size: {
+          type: "radio" as const,
+          label: "Size",
+          options: [
+            { label: "Small", value: "small" },
+            { label: "Medium", value: "" },
+            { label: "Large", value: "large" },
+          ],
+        },
+        labelColor: {
+          type: "custom" as const,
+          // ⚠️ THE FILLED VARIANT'S LABEL WAS HARDCODED #ffffff, so a pale brand colour (a light
+          // yellow, say) gave white-on-yellow with no way in the panel to fix it. Blank keeps
+          // that exact white — nothing already built moves.
+          label: "Label colour (filled style; blank = white)",
+          render: ({ field, onChange, value }) => (
+            <ColorField label={field?.label} value={value as string} onChange={onChange} />
+          ),
+        },
       },
       defaultProps: {
         title: "Book the Call",
@@ -3138,10 +3184,13 @@ const baseConfig: Config<Props, RootProps> = {
         color: "",
         align: "center" as Align,
         fullWidth: false,
+        size: "",
+        labelColor: "",
       },
-      render: ({ title, subtitle, href, newTab, icon, variant, shape, color, align, fullWidth }) => {
-        // No styling chosen => the original button, untouched.
-        if (!variant && !shape && !color && !icon) {
+      render: ({ title, subtitle, href, newTab, icon, variant, shape, color, align, fullWidth, size, labelColor }) => {
+        // No styling chosen => the original button, untouched. Size/label colour only mean
+        // anything on the styled anchor below, so they join the same gate.
+        if (!variant && !shape && !color && !icon && !size && !labelColor) {
           return (
             <div className="mt-8 flex justify-center">
               <CtaButton title={title} subtitle={subtitle || undefined} href={href} newTab={newTab} />
@@ -3151,6 +3200,9 @@ const baseConfig: Config<Props, RootProps> = {
         const accent = resolveColorOr(color, "var(--color-sjc-blue)");
         const outlined = variant === "outline";
         const justify = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
+        // "" (Medium) is the original px-8 py-4 with no explicit font size — the do-nothing value.
+        const sizeClass = size === "small" ? "px-5 py-2.5 text-sm" : size === "large" ? "px-10 py-5 text-lg" : "px-8 py-4";
+        const iconSize = size === "small" ? 16 : size === "large" ? 22 : 18;
         return (
           <div className="mt-6 flex" style={{ justifyContent: justify }}>
             <a
@@ -3159,19 +3211,19 @@ const baseConfig: Config<Props, RootProps> = {
               // through this anchor the moment anything is — wire one and the setting works on half
               // the buttons on the site, which is worse than not having it at all.
               {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              className={`inline-flex items-center justify-center gap-2 px-8 py-4 font-bold transition-all hover:-translate-y-0.5${
+              className={`inline-flex items-center justify-center gap-2 ${sizeClass} font-bold transition-all hover:-translate-y-0.5${
                 shape === "pill" ? " rounded-full" : " rounded-xl"
               }${fullWidth ? " w-full" : ""}`}
               style={
                 outlined
                   ? { border: `2px solid ${accent}`, color: accent, background: "transparent" }
-                  : { background: accent, color: "#ffffff", boxShadow: accent.startsWith("var(") ? "0 8px 20px -6px rgba(0,0,0,0.25)" : `0 8px 20px -6px ${accent}80` }
+                  : { background: accent, color: resolveColorOr(labelColor, "#ffffff"), boxShadow: accent.startsWith("var(") ? "0 8px 20px -6px rgba(0,0,0,0.25)" : `0 8px 20px -6px ${accent}80` }
               }
             >
               <span className="flex flex-col items-center leading-tight">
                 <span className="flex items-center gap-2">
                   {title}
-                  <Icon name={icon} size={18} />
+                  <Icon name={icon} size={iconSize} />
                 </span>
                 {subtitle ? <span className="text-xs font-medium opacity-80">{subtitle}</span> : null}
               </span>
@@ -3215,18 +3267,70 @@ const baseConfig: Config<Props, RootProps> = {
           ),
         },
         caption: { type: "textarea" as const, label: "Placeholder caption" },
+        width: { ...WIDTH_FIELD, label: "Width" },
+        aspect: {
+          type: "select" as const,
+          label: "Aspect ratio",
+          options: [
+            { label: "16:9 (widescreen)", value: "16/9" },
+            { label: "4:3", value: "4/3" },
+            { label: "1:1 (square)", value: "1/1" },
+            { label: "9:16 (vertical reel)", value: "9/16" },
+          ],
+        },
+        autoplay: {
+          type: "radio" as const,
+          label: "Autoplay",
+          options: [
+            { label: "Off — visitor presses play", value: false },
+            // ⚠️ AUTOPLAY MUST BE MUTED. Every browser blocks unmuted autoplay outright — turning
+            // this on with sound left off silently never plays, with nothing on screen saying why.
+            { label: "On — starts muted (browsers block unmuted autoplay)", value: true },
+          ],
+        },
+        loop: {
+          type: "radio" as const,
+          label: "Loop",
+          options: [
+            { label: "Off", value: false },
+            { label: "On", value: true },
+          ],
+        },
+        muted: {
+          type: "radio" as const,
+          label: "Start muted",
+          options: [
+            { label: "Off", value: false },
+            { label: "On", value: true },
+          ],
+        },
       },
-      defaultProps: { src: "", poster: "", caption: "2-minute teaser — coming" },
-      render: ({ src, caption, poster }) => {
+      defaultProps: { src: "", poster: "", caption: "2-minute teaser — coming", width: "48rem", aspect: "16/9", autoplay: false, loop: false, muted: false },
+      render: ({ src, caption, poster, width, aspect, autoplay, loop, muted }) => {
         const isFile = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src) || src.includes("blob.vercel-storage");
         // No poster set: append a #t=0.1 media fragment so Safari renders the first frame
         // instead of a black box (Chrome does this on its own; Safari needs the nudge).
         const videoSrc = poster || src.includes("#") ? src : `${src}#t=0.1`;
+        // Autoplay forces muted regardless of the saved `muted` value — see the ⚠️ on the field.
+        const effectiveMuted = autoplay ? true : !!muted;
         return (
-          <div className="mx-auto mt-9 aspect-video max-w-3xl overflow-hidden rounded-2xl border border-white/15 bg-black/40">
+          <div
+            className="mx-auto mt-9 overflow-hidden rounded-2xl border border-white/15 bg-black/40"
+            style={{ maxWidth: width === "none" ? undefined : width || "48rem", aspectRatio: aspect || "16/9" }}
+          >
             {src ? (
               isFile ? (
-                <video src={videoSrc} poster={poster || undefined} controls playsInline preload="metadata" className="h-full w-full" />
+                <video
+                  src={videoSrc}
+                  poster={poster || undefined}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  autoPlay={!!autoplay}
+                  loop={!!loop}
+                  muted={effectiveMuted}
+                  className="h-full w-full"
+                />
               ) : (
                 <iframe src={src} className="h-full w-full" allowFullScreen title="Video" />
               )
