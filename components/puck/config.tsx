@@ -130,7 +130,7 @@ type Props = {
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
   Booking: { src: string; height: number };
-  Columns: { columns: number; gap: number; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
+  Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean };
@@ -368,6 +368,12 @@ const WIDTH_FIELD = {
     { label: "Medium", value: "56rem" },
     { label: "Wide (card rows)", value: "64rem" },
     { label: "Full", value: "80rem" },
+    // ⛔ EDGE-TO-EDGE, WHICH THIS PRODUCT COULD NOT DO AT ALL. "Full" was 80rem — wide, but still a
+    // centred column with a gutter either side. A hero photo band, a colour block or a map touching
+    // both edges of the screen was simply not buildable, and it is a standard every mainstream
+    // builder ships. The side padding goes with it: keeping `px-6` at full bleed leaves a 24px
+    // stripe down each edge, which reads as a rendering bug rather than a choice.
+    { label: "Edge to edge (full bleed)", value: "none" },
   ],
 };
 
@@ -2547,10 +2553,12 @@ const baseConfig: Config<Props, RootProps> = {
             </>
           ) : null}
           <div
-            className={`mx-auto px-6${decor || grid ? " relative z-10" : ""}`}
+            // ⚠️ `px-6` IS DROPPED ONLY AT FULL BLEED. Every other width keeps it — a reading
+            // column hard against a phone's edge is unreadable, and that gutter is the difference.
+            className={`mx-auto${maxWidth === "none" ? "" : " px-6"}${decor || grid ? " relative z-10" : ""}`}
             style={{
               // Existing pages have no maxWidth saved — fall back to the old max-w-3xl so nothing shifts.
-              maxWidth: maxWidth || "48rem",
+              maxWidth: maxWidth === "none" ? undefined : maxWidth || "48rem",
               paddingTop: `${typeof paddingTop === "number" ? paddingTop : 64}px`,
               paddingBottom: `${typeof paddingBottom === "number" ? paddingBottom : 64}px`,
             }}
@@ -2684,42 +2692,125 @@ const baseConfig: Config<Props, RootProps> = {
             <SizeStepper label={"Gap between columns"} value={value as number} onChange={onChange} fallback={24} step={4} min={0} />
           ),
         },
+        // ── Unequal widths. "Text on the left two thirds, photo on the right third" is the single
+        // most common small-business layout and every mainstream builder (Wix, Squarespace,
+        // Webflow, GHL) has it; equal-only columns couldn't build it. Only reads at 2 or 3 columns
+        // — a ratio saved against 1 or 4 is simply ignored by render, never a crash or blank block.
+        // "Equal" is the default and is the exact behaviour this block already had, so nothing
+        // already built moves.
+        ratio: {
+          type: "select" as const,
+          label: "Column widths (2 or 3 columns only)",
+          options: [
+            { label: "Equal", value: "equal" },
+            { label: "2:1 — wide left", value: "2:1" },
+            { label: "1:2 — wide right", value: "1:2" },
+            { label: "3:1 — wide left", value: "3:1" },
+            { label: "1:3 — wide right", value: "1:3" },
+            { label: "2:1:1", value: "2:1:1" },
+            { label: "1:2:1", value: "1:2:1" },
+            { label: "1:1:2", value: "1:1:2" },
+          ],
+        },
+        // Grid's own default (`align-items: normal`, computed as stretch) is what every Columns
+        // block already has on the page — a photo column and a text column both fill the row's
+        // full height. "Top" reproduces that exactly by leaving align-items unset; only "Middle" /
+        // "Bottom" write a style at all, so a saved-blank block is untouched.
+        align: {
+          type: "select" as const,
+          label: "Vertical align",
+          options: [
+            { label: "Top", value: "top" },
+            { label: "Middle", value: "middle" },
+            { label: "Bottom", value: "bottom" },
+          ],
+        },
+        // A text-left/photo-right hero read top-to-bottom on a phone puts the photo LAST, which is
+        // backwards for the layout this field exists to unlock — the photo is what sells the scroll
+        // stop. "As laid out" keeps today's DOM order (default, byte-identical); "Reverse" only
+        // touches the mobile breakpoint this block already has (`max-md:`), never the desktop order.
+        mobileOrder: {
+          type: "select" as const,
+          label: "Mobile stacking order",
+          options: [
+            { label: "As laid out", value: "asLaid" },
+            { label: "Reverse on mobile", value: "reverse" },
+          ],
+        },
         col1: { type: "slot" as const },
         col2: { type: "slot" as const },
         col3: { type: "slot" as const },
         col4: { type: "slot" as const },
       },
-      defaultProps: { columns: 2, gap: 24, col1: [], col2: [], col3: [], col4: [] },
-      render: ({ columns, gap, col1: Col1, col2: Col2, col3: Col3, col4: Col4 }) => {
+      defaultProps: { columns: 2, gap: 24, ratio: "equal", align: "top", mobileOrder: "asLaid", col1: [], col2: [], col3: [], col4: [] },
+      render: ({ columns, gap, ratio, align, mobileOrder, col1: Col1, col2: Col2, col3: Col3, col4: Col4 }) => {
         const n = Number(columns) || 1;
-        // ⚠️ FOUR ACROSS GOES 1 -> 2 -> 4, NOT 1 -> 4. Four cards side by side on a phone are
+        const ratioKey = typeof ratio === "string" ? ratio : "equal";
+        // ⚠️ LITERAL CLASSES ONLY. Tailwind compiles class NAMES it can see verbatim in this file's
+        // source — `grid-cols-[${a}fr_${b}fr]` built from a variable would compile to nothing, the
+        // documented trap for this block. Every ratio below is a full literal string of its own, not
+        // assembled from ratioKey, matching the arbitrary-value grid syntax already used elsewhere
+        // in this codebase (see CostComparisonChart.tsx's `grid-cols-[1.6fr_1fr_1fr]`).
+        // FOUR ACROSS GOES 1 -> 2 -> 4, NOT 1 -> 4. Four cards side by side on a phone are
         // unreadable, and jumping straight to four at md crushes them on a tablet. A four-step
         // process reading as 2x2 on a tablet is the design's own intent, not a compromise.
-        const cls =
-          n >= 4
-            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-            : n === 3
-              ? "grid-cols-1 md:grid-cols-3"
-              : n === 2
-                ? "grid-cols-1 md:grid-cols-2"
-                : "grid-cols-1";
+        let cls: string;
+        if (n >= 4) {
+          cls = "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
+        } else if (n === 3) {
+          cls =
+            ratioKey === "2:1:1"
+              ? "grid-cols-1 md:grid-cols-[2fr_1fr_1fr]"
+              : ratioKey === "1:2:1"
+                ? "grid-cols-1 md:grid-cols-[1fr_2fr_1fr]"
+                : ratioKey === "1:1:2"
+                  ? "grid-cols-1 md:grid-cols-[1fr_1fr_2fr]"
+                  : "grid-cols-1 md:grid-cols-3";
+        } else if (n === 2) {
+          cls =
+            ratioKey === "2:1"
+              ? "grid-cols-1 md:grid-cols-[2fr_1fr]"
+              : ratioKey === "1:2"
+                ? "grid-cols-1 md:grid-cols-[1fr_2fr]"
+                : ratioKey === "3:1"
+                  ? "grid-cols-1 md:grid-cols-[3fr_1fr]"
+                  : ratioKey === "1:3"
+                    ? "grid-cols-1 md:grid-cols-[1fr_3fr]"
+                    : "grid-cols-1 md:grid-cols-2";
+        } else {
+          cls = "grid-cols-1";
+        }
+        const alignItems = align === "middle" ? "center" : align === "bottom" ? "end" : undefined;
+        // Reversing DOM order outright would flip the desktop layout too (text/photo swap sides);
+        // this only ever writes `max-md:order-*`, so nothing above the block's existing mobile
+        // breakpoint changes — no new breakpoint added, per the constraint.
+        const reverseMobile = mobileOrder === "reverse";
+        let orderClasses: [string, string, string, string] = ["", "", "", ""];
+        if (reverseMobile) {
+          if (n === 2) orderClasses = ["max-md:order-2", "max-md:order-1", "", ""];
+          else if (n === 3) orderClasses = ["max-md:order-3", "max-md:order-2", "max-md:order-1", ""];
+          else if (n >= 4) orderClasses = ["max-md:order-4", "max-md:order-3", "max-md:order-2", "max-md:order-1"];
+        }
         return (
-          <div className={`grid ${cls}`} style={{ gap: `${typeof gap === "number" ? gap : 24}px` }}>
-            <div>
+          <div
+            className={`grid ${cls}`}
+            style={{ gap: `${typeof gap === "number" ? gap : 24}px`, ...(alignItems ? { alignItems } : {}) }}
+          >
+            <div className={orderClasses[0] || undefined}>
               <Col1 />
             </div>
             {n >= 2 && (
-              <div>
+              <div className={orderClasses[1] || undefined}>
                 <Col2 />
               </div>
             )}
             {n >= 3 && (
-              <div>
+              <div className={orderClasses[2] || undefined}>
                 <Col3 />
               </div>
             )}
             {n >= 4 && (
-              <div>
+              <div className={orderClasses[3] || undefined}>
                 <Col4 />
               </div>
             )}

@@ -114,6 +114,21 @@ export async function resolvePage(
   if (isChrome(page)) return null;
 
   let meta = await findPageMeta(page, siteId);
+
+  // ⛔ AN OLD ADDRESS STILL HAS TO ANSWER. Changing a page's URL records a redirect
+  // (lib/pageRegistry.changeSlug), and without this the record was inert — the fix for a typo'd
+  // slug would silently break every link already texted, printed on a card or indexed by Google,
+  // which is worse than living with the typo. Resolved BEFORE the home fallback so a renamed page
+  // lands on itself rather than on the home page, which would look like it worked.
+  if (!meta) {
+    const { resolveRedirect } = await import("@/lib/pageRegistry");
+    const to = await resolveRedirect(page, siteId);
+    if (to && to !== page) {
+      const moved = await findPageMeta(to, siteId);
+      if (moved) meta = moved;
+    }
+  }
+
   if (!meta && homeFallback) {
     const { readPages } = await import("@/lib/pageRegistry");
     meta = (await readPages(siteId))[0];

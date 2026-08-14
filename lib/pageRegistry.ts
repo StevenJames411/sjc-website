@@ -4,12 +4,16 @@
 // behaving exactly as before while new code is explicit. The key itself comes from lib/siteKeys,
 // which is what keeps one client's page list out of another's.
 //
-// Blob shape: { custom: PuckPage[]; hidden: string[]; titles: Record<string,string> }
-//   custom  = pages created in the builder (served by the app/[slug] catch-all route).
-//   hidden  = slugs of BUILT-IN pages that were deleted (tombstones — a code-added built-in still
-//             appears automatically, but a deleted one stays gone).
-//   titles  = renames. A built-in's name lives in code, so a rename is stored here keyed by slug.
-//             The SLUG never changes — only the label — so no URL or saved content is affected.
+// Blob shape: { custom: PuckPage[]; hidden: string[]; titles: Record<string,string>;
+//               redirects: Record<string,string> }
+//   custom     = pages created in the builder (served by the app/[slug] catch-all route).
+//   hidden     = slugs of BUILT-IN pages that were deleted (tombstones — a code-added built-in
+//                still appears automatically, but a deleted one stays gone).
+//   titles     = renames. A built-in's name lives in code, so a rename is stored here keyed by
+//                slug. The SLUG never changes — only the label — so no URL or saved content is
+//                affected.
+//   redirects  = old slug -> new slug, left behind by `changeSlug` (an ADDRESS change, the
+//                opposite of `renamePage` above — this one moves the URL and the content).
 //
 // ⚠️ The built-in page list (lib/puckPages.ts) belongs to SJC ONLY. A client website starts with
 // whatever its template gave it and nothing else; inheriting SJC's About/Podcast/Apply pages into
@@ -25,7 +29,19 @@ export type PageEntry = PuckPage & { custom: boolean };
 // Site-wide pieces that can NEVER be deleted (deleting them would break every page).
 const SYSTEM = new Set(["home", "nav", "footer"]);
 
-type RegistryBlob = { custom?: PuckPage[]; hidden?: string[]; titles?: Record<string, string> };
+// Slugs whose ADDRESS can never move, on top of SYSTEM above. `home`/`nav`/`footer` are
+// load-bearing for every page on the site; `settings` isn't a page at all — it's the static route
+// segment at app/edit/[site]/settings — but a stray page slugged "settings" would be exactly the
+// EDITOR_SEGMENTS collision `reservedSlugs` already exists to prevent, so it's refused by name
+// here too rather than relying on that check alone to hold forever.
+const SLUG_LOCKED = new Set([...SYSTEM, "settings"]);
+
+type RegistryBlob = {
+  custom?: PuckPage[];
+  hidden?: string[];
+  titles?: Record<string, string>;
+  redirects?: Record<string, string>;
+};
 
 const store = (siteId: string) => createKvStore(getClient(), siteKeys(siteId).pages);
 const readBlob = async (siteId: string): Promise<RegistryBlob> =>
@@ -84,6 +100,10 @@ export async function allSlugsEver(siteId: string): Promise<string[]> {
   for (const p of blob.custom || []) out.add(p.slug);
   for (const s of blob.hidden || []) out.add(s);
   for (const s of Object.keys(blob.titles || {})) out.add(s);
+  // `changeSlug` moves a page's content off an old slug and leaves that slug as a fossil (a
+  // redirect entry, no live content). It still needs sweeping/renaming like any other dead slug —
+  // see the ⛔ note on `changeSlug` about the legacy per-slug design keys it does NOT move.
+  for (const s of Object.keys(blob.redirects || {})) out.add(s);
   return [...out];
 }
 
@@ -111,6 +131,135 @@ export async function renamePage(
     titles: { ...(blob.titles || {}), [s]: t },
   });
   return ok ? { ok } : { ok: false, error: "Couldn't save — storage is unavailable." };
+}
+
+/**
+ * Follow a page's redirect chain (old address -> ... -> current address).
+ *
+ * ⚠️ CHAINED, DELIBERATELY. Rename `/servcies` to `/services`, then later `/services` to
+ * `/our-services`, and `/servcies` must land on `/our-services`, not the dead middle slug — which
+ * can never come back as a live page anyway, see `allSlugsEver` in `changeSlug` below. Returns
+ * `undefined` when the slug has no redirect at all, so a caller can fall straight through to its
+ * normal 404 path without a special case for "no redirect record".
+ *
+ * ⛔ NOT WIRED INTO THE PUBLIC ROUTE YET. The catch-all in app/[slug] (or wherever the site's
+ * public page resolver lives) needs to call this on a miss and issue a redirect — that plumbing is
+ * OUT OF SCOPE here. Until it's added, an old link recorded by `changeSlug` still 404s; only the
+ * DATA survives.
+ */
+export async function resolveRedirect(slug: string, siteId: string): Promise<string | undefined> {
+  const blob = await readBlob(siteId);
+  const redirects = blob.redirects || {};
+  const start = String(slug || "").trim();
+  let cur = start;
+  const seen = new Set<string>();
+  while (redirects[cur] && !seen.has(redirects[cur])) {
+    seen.add(redirects[cur]);
+    cur = redirects[cur];
+  }
+  return cur !== start ? cur : undefined;
+}
+
+/**
+ * Change a page's WEB ADDRESS — the thing `renamePage` above explicitly refuses to do.
+ *
+ * ⚠️ WHY THIS EXISTS. `lib/pageRegistry.ts` used to say outright that a slug is permanent for the
+ * life of the site, and the editor repeated the same line in its Rename-page tooltip. A typo like
+ * `/servcies` was then stuck forever, with no redirect either — every mainstream page builder lets
+ * you fix a URL, and this one didn't.
+ *
+ * ⚠️ CUSTOM PAGES ONLY. A built-in's slug is a literal in `PUCK_PAGES` (lib/puckPages.ts) and its
+ * storage key is derived from that literal everywhere the app reads it — there is no single place
+ * to redirect a built-in's identity to a new one without touching code. `home`/`nav`/`footer` are
+ * additionally load-bearing for every page on the site (SYSTEM), and `settings` is a static route
+ * segment, not a page at all — see SLUG_LOCKED above and the reserved-slug note in `reservedSlugs`.
+ *
+ * ⚠️ THE NEW SLUG MUST NOT BE ONE THIS SITE HAS EVER USED — that's what `allSlugsEver` is for
+ * (its own docblock: "for accounting only", which this now also is). Content is keyed by slug
+ * (`puck(page, pub)`), so handing a live page a slug a DELETED page used to own would resurrect
+ * whatever content survived under that old key the moment the two collide — the exact bug
+ * `allSlugsEver` documents itself as existing to stop, applied here to the rename path instead of
+ * just the accounting/sweep paths that already called it.
+ *
+ * ⛔ WHAT THIS DOES NOT MOVE. Only the two Puck content keys (`puck(slug)` draft and
+ * `puck(slug, true)` published) move to the new slug. Legacy per-slug design keys
+ * (`designSrc`/`designCss` in lib/siteKeys.ts) stay under the OLD slug — `designCss` is dead code
+ * nothing writes any more, and `designSrc` is only ever read back by repair tooling
+ * (`admin/resplit`, `admin/backfill-sheets`) that already walks `allSlugsEver`, which now includes
+ * the old slug (see the note added to `allSlugsEver` above) — so that tooling can still find it,
+ * it just has to look under the fossil slug rather than the page's current one.
+ */
+export async function changeSlug(
+  fromSlug: string,
+  toSlug: string,
+  siteId: string
+): Promise<{ ok: boolean; slug?: string; error?: string }> {
+  const from = String(fromSlug || "").trim();
+  const to = slugify(toSlug);
+  if (!to) return { ok: false, error: "That address has no usable letters or numbers." };
+
+  if (SLUG_LOCKED.has(from) || SLUG_LOCKED.has(to)) {
+    return {
+      ok: false,
+      error: `"${SLUG_LOCKED.has(from) ? from : to}" is a fixed part of every site — its address can't be changed.`,
+    };
+  }
+
+  const meta = await findPageMeta(from, siteId);
+  if (!meta) return { ok: false, error: "No such page." };
+  if (!meta.custom) {
+    return { ok: false, error: "Built-in pages can't have their address changed." };
+  }
+  if (to === from) return { ok: false, error: "That's already this page's address." };
+
+  // Same refusal `createPage` makes, for the same reason — see `collidesWithPublishedKey`.
+  if (collidesWithPublishedKey(to)) {
+    return {
+      ok: false,
+      error: `A page address can't end in "pub" — "${to}" would share storage with another page's published copy. Try another address.`,
+    };
+  }
+
+  const reserved = await reservedSlugs(siteId);
+  if (reserved.has(to)) {
+    return { ok: false, error: `"${to}" is already in use on this site.` };
+  }
+  const everUsed = new Set(await allSlugsEver(siteId));
+  if (everUsed.has(to)) {
+    return { ok: false, error: `"${to}" was used on this site before and can't be reused.` };
+  }
+
+  // Move the content first. If a write fails partway, the registry update below is skipped, so
+  // the page is left exactly as it was — findable at its OLD slug — rather than pointing a live
+  // page entry at a new key that never received its content.
+  const client = getClient();
+  const k = siteKeys(siteId);
+  let moved = 0;
+  for (const pub of [false, true]) {
+    const fromStore = createKvStore(client, k.puck(from, pub));
+    const data = await fromStore.read<Record<string, unknown>>();
+    if (!data) continue; // nothing published yet, say, is not a failure
+    const wrote = await createKvStore(client, k.puck(to, pub)).write(data);
+    if (!wrote) return { ok: false, error: "Couldn't move the page's content — storage is unavailable." };
+    moved++;
+    await fromStore.purge(); // old key emptied so it can never be published-from by accident
+  }
+  if (!moved) {
+    return { ok: false, error: "This page has no saved content to move yet — nothing to change." };
+  }
+
+  const blob = await readBlob(siteId);
+  const custom = (blob.custom || []).map((p) => (p.slug === from ? { ...p, slug: to } : p));
+  const titles = { ...(blob.titles || {}) };
+  if (titles[from] !== undefined) {
+    titles[to] = titles[from];
+    delete titles[from];
+  }
+  const redirects = { ...(blob.redirects || {}), [from]: to };
+
+  const ok = await store(siteId).write({ ...blob, custom, titles, redirects });
+  if (!ok) return { ok: false, error: "Content moved, but couldn't save the registry — try again." };
+  return { ok: true, slug: to };
 }
 
 // Top-level Next.js route folders.

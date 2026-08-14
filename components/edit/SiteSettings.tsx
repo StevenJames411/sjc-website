@@ -390,6 +390,60 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
     }
   }
 
+  /**
+   * "Fix the links on this website" — the highest-severity repair in the product, and it has had no
+   * button since the day it was written.
+   *
+   * ⛔ WHAT IT UNDOES. A generated design links between its pages BY FILENAME —
+   * `href="custom-websites.html"` — because it was built as a folder you open off a disk. We serve
+   * those as routes, so every one of those links 404s the moment the site is live.
+   *
+   * ⚠️ IT SURVIVES EVERY OBVIOUS CHECK, which is why it needs a button rather than vigilance. The
+   * pages import, publish and load perfectly when you TYPE their address. The only broken thing is
+   * getting there by CLICKING — which is the only way a visitor ever does it. On sjc-2026 that was
+   * the entire nav and the entire footer, on all ten pages, while every page reported healthy.
+   *
+   * The importer normalises this now; this is for the sites imported before it did, where
+   * re-importing would discard every page built out since.
+   */
+  async function fixLinks() {
+    setBusy(true);
+    setSweepMsg("");
+    try {
+      const call = (dryRun: boolean) =>
+        fetch("/api/admin/repair-links", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, dryRun, publish: true }),
+        }).then((r) => r.json());
+
+      const look = await call(true);
+      if (!look?.ok) throw new Error(look?.error || "Couldn't check the links.");
+      const total = Number(look.total || 0);
+      if (!total) {
+        setSweepMsg("Every link on this website already points at a real page.");
+        return;
+      }
+      const unmatched = (look.unmatched || []).length;
+      if (
+        !window.confirm(
+          `Repoint ${total} link${total === 1 ? "" : "s"} to the pages this website actually serves?` +
+            (unmatched ? `\n\n${unmatched} link(s) name a page that does not exist here and will be left alone.` : "")
+        )
+      )
+        return;
+      const done = await call(false);
+      if (!done?.ok) throw new Error(done?.error || "Couldn't fix them.");
+      setSweepMsg(`Fixed ${done.total || total} link${(done.total || total) === 1 ? "" : "s"}.`);
+      router.refresh();
+    } catch (e) {
+      setSweepMsg((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const biz = (k: keyof Site["business"], v: string) =>
     setS({ ...s, business: { ...s.business, [k]: v } });
   const seo = (k: keyof Site["seo"], v: string) => setS({ ...s, seo: { ...s.seo, [k]: v } });
@@ -679,6 +733,15 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
           Only needed for pages built from an imported design before these controls existed. Safe to
           press any time — it changes how pages are styled, never what they say.
         </p>
+        <button type="button" onClick={fixLinks} disabled={busy} style={{ ...ghost, marginLeft: 8 }}>
+          {busy ? "Working…" : "Fix the links on this website"}
+        </button>
+        <p style={{ ...hint, margin: "8px 0 0" }}>
+          Only needed for a site built from an imported design. A design links between its pages by
+          filename, which 404s once the site is live — and it only breaks when somebody CLICKS,
+          never when you type the address.
+        </p>
+
         {sweepMsg ? <p style={{ ...hint, margin: "6px 0 0", color: "var(--e-ok-ink)" }}>{sweepMsg}</p> : null}
       </div>
 

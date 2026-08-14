@@ -609,6 +609,42 @@ export default function PuckEditor({
     }
   };
 
+  // Change the current page's WEB ADDRESS — the opposite of onRenamePage above, which only ever
+  // touches the label. Moves the saved content (draft + published) to the new slug server-side
+  // and records the old slug as a redirect; see lib/pageRegistry:changeSlug for the full guard
+  // list (locked slugs, built-ins refused, no reusing a slug this site has ever had before).
+  //
+  // ⛔ THE PUBLIC REDIRECT ISN'T LIVE YET. changeSlug records old-slug -> new-slug, but nothing in
+  // the public route resolver reads that record — so today, until that's wired up, the OLD link
+  // 404s instead of forwarding. Said plainly in the tooltip below rather than promised in copy
+  // that isn't true yet.
+  const onChangeSlug = async () => {
+    const next = window.prompt(
+      `Change this page's web address from "/${page}" to:`,
+      page
+    );
+    if (next === null) return;
+    const trimmed = next.trim();
+    if (!trimmed) return window.alert("A web address is required.");
+    if (trimmed === page) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pages", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ slug: page, newSlug: trimmed, site: siteId }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't change the address.");
+      router.push(`/edit/${siteId}/${j.slug}`);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Delete the current page: pulls it from the builder and takes its page down. Home / nav /
   // footer are site-wide and can't be deleted.
   const canDelete = !["home", "nav", "footer"].includes(page);
@@ -955,6 +991,7 @@ export default function PuckEditor({
                   { label: "Save as template", onClick: onSaveAsTemplate, title: "Strip the business details and save this layout as a reusable template" },
                   { label: "Save page to library", onClick: onSaveToLibrary, title: "Keep this whole page so you can drop it onto another website" },
                   { label: "Rename page", onClick: onRenamePage, title: "Changes the name in the list only — the web address and the page are untouched" },
+                  { label: "Change address (URL)", onClick: onChangeSlug, title: "Changes the web address the page lives at — content moves with it. Old links don't redirect yet, so save the new address wherever the old one was shared." },
                   { label: "Versions", onClick: openVersions, title: "Every time you pressed Publish — restore an earlier one" },
                 ].map((m) => (
                   <button
