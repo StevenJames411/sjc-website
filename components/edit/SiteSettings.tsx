@@ -417,6 +417,10 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
           ghlWebhookUrl: (s.ghlWebhookUrl || "").trim(),
           business: s.business,
           seo: s.seo,
+          // ⚠️ IN THE PAYLOAD OR IT IS NOT SAVED. This screen has shipped a field that typed, looked
+          // saved and dropped its value on the floor before — ghlWebhookUrl, 2026-08-12. The worst
+          // version of a bug, because the screen agrees with you.
+          accounts: s.accounts || {},
         }),
       }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error || "Couldn't save.");
@@ -756,9 +760,33 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
 
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
+      <Field
+        label="Browser tab icon (favicon) — a square PNG, 512×512 is plenty"
+        v={s.seo.favicon || ""}
+        on={(v) => seo("favicon" as keyof Site["seo"], v)}
+        ph="https://…/icon.png"
+      />
       <Field label="Preview text" v={s.seo.description} on={(v) => seo("description", v)} ph="What this business does, in one sentence." area />
       <Field label="Preview image URL" v={s.seo.shareImage} on={(v) => seo("shareImage", v)} ph="https://…" />
       <Field label="Title suffix" v={s.seo.titleSuffix} on={(v) => seo("titleSuffix", v)} ph="| Your Business Name" />
+
+      <h2 style={sec}>Tracking</h2>
+      <p style={hint}>
+        Paste the ids and they go live on every page of this website. Leave them blank and nothing
+        is added — no scripts, no cookies.
+      </p>
+      <Field
+        label="Google Analytics — measurement id"
+        v={(s.accounts || {}).gaId || ""}
+        on={(v) => setS({ ...s, accounts: { ...(s.accounts || {}), gaId: v } })}
+        ph="G-XXXXXXXXXX"
+      />
+      <Field
+        label="Meta pixel id"
+        v={(s.accounts || {}).metaPixelId || ""}
+        on={(v) => setS({ ...s, accounts: { ...(s.accounts || {}), metaPixelId: v } })}
+        ph="1234567890123456"
+      />
 
       <h2 style={sec}>In your list</h2>
       <Field label="Website name" v={s.name} on={(v) => setS({ ...s, name: v })} ph="What you call it in your list" />

@@ -270,7 +270,7 @@ export default function LeadForm(props: LeadFormProps) {
     ? "mb-2 block text-xs font-medium uppercase tracking-wider text-slate-300"
     : "mb-2 block text-sm font-semibold text-[color:var(--color-sjc-ink)]";
   const inputCls = dark
-    ? "w-full rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-[#00D9FF]"
+    ? "w-full rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-[color:var(--color-sjc-blue)]"
     : "w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-[color:var(--color-sjc-ink)] outline-none transition focus:border-[color:var(--color-sjc-blue)] focus:ring-2 focus:ring-[color:var(--color-sjc-blue)]/20";
   const noteCls = dark
     ? "mt-5 text-center text-sm text-slate-400"
@@ -496,10 +496,10 @@ export default function LeadForm(props: LeadFormProps) {
             rel="noopener noreferrer"
             className={
               dark
-                ? "mt-6 inline-block rounded-xl bg-[#00D9FF] px-6 py-4 text-lg font-bold text-[#0A0E27] shadow-lg"
+                ? "mt-6 inline-block rounded-xl bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-[color:var(--color-sjc-white)] shadow-lg"
                 : "mt-6 inline-block rounded-lg bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-white shadow-sm hover:bg-[color:var(--color-sjc-green)]"
             }
-            style={!dark && buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
+            style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
           >
             {alt.buttonLabel}
           </a>
@@ -531,11 +531,7 @@ export default function LeadForm(props: LeadFormProps) {
               className="h-full rounded-full transition-all duration-500 ease-out"
               style={{
                 width: `${((at + 1) / screens.length) * 100}%`,
-                backgroundColor: dark
-                  ? "#00D9FF"
-                  : buttonColor
-                    ? resolveColor(buttonColor)
-                    : "var(--color-sjc-blue)",
+                backgroundColor: buttonColor ? resolveColor(buttonColor) : "var(--color-sjc-blue)",
               }}
             />
           </div>
@@ -661,14 +657,14 @@ export default function LeadForm(props: LeadFormProps) {
           disabled={state === "sending"}
           className={
             dark
-              ? "w-full rounded-xl bg-[#00D9FF] px-6 py-4 text-lg font-bold text-[#0A0E27] shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[#00D9FF]/50 disabled:opacity-60"
+              ? "w-full rounded-xl bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-[color:var(--color-sjc-white)] shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[color:var(--color-sjc-blue)]/50 disabled:opacity-60"
               : `w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
                   buttonColor
                     ? " hover:opacity-90"
                     : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
                 }`
           }
-          style={!dark && buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
+          style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
         >
           {state === "sending" ? "Sending…" : lastScreen ? buttonLabel : "Next →"}
         </button>

@@ -179,9 +179,20 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
         ...(ogImage ? { images: [ogImage] } : {}),
       };
 
+  // ⛔ THE FAVICON. Every client site has shipped wearing whatever the platform default is, because
+  // there has never been a control — grep for "favicon" across this codebase before today returns
+  // nothing. Wix, Squarespace and GoHighLevel all put this in step one of setup; it is the small
+  // thing a business owner notices immediately when they open their own site in a tab beside their
+  // competitors'.
+  //
+  // ⚠️ CLIENT SITES ONLY. SJC's own favicon is a file in the repo; overriding it from a site record
+  // would let a settings screen change the studio's own identity.
+  const favicon = isClient ? String(site.seo?.favicon || "").trim() : "";
+
   return {
     ...(title ? { title: { absolute: title } } : {}),
     ...(isClient || description ? { description } : {}),
+    ...(favicon ? { icons: { icon: favicon, shortcut: favicon, apple: favicon } } : {}),
     openGraph,
     twitter: {
       card: ogImage ? ("summary_large_image" as const) : ("summary" as const),
@@ -223,6 +234,58 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
  * The root layout still emits SJC's own brand. This one comes later in document order and both
  * target :root, so the site's own values win on its own pages. SJC's pages never reach here.
  */
+/**
+ * Analytics and ad pixels, emitted from the ids already stored against this website.
+ *
+ * ⛔ THE FIELD THAT SAVED AND NEVER FIRED. `metaPixelId` has lived on the Site record since the
+ * account list existed — a customer could type their pixel into the studio, see it saved, and
+ * nothing was ever emitted onto their website. That is worse than not offering the field at all: a
+ * business believes its ad spend is being measured while nothing is measuring it, and there is no
+ * symptom until somebody goes looking months later.
+ *
+ * ⚠️ READ FROM `site.accounts`, NOT A NEW FIELD. Adding a second place to type a pixel id would mean
+ * two homes for one fact and a customer guessing which one the website reads — the exact disease
+ * this codebase has already paid for with eight entry points to a form. `accounts` is deliberately
+ * open, so a Google Analytics id needs no schema change either.
+ *
+ * ⚠️ IDS ARE VALIDATED, NOT TRUSTED. They are typed by hand into a settings box and land inside a
+ * <script>. Anything that is not the shape of a real id is refused rather than escaped — there is
+ * no legitimate analytics id containing a quote or an angle bracket.
+ *
+ * ⚠️ NO CONSENT BANNER, AND SOMEBODY SHOULD DECIDE THAT ON PURPOSE. This fires on load for every
+ * visitor, which is what these businesses expect and what every competitor does. A customer selling
+ * into the EU would need to revisit it. Flagged, not solved.
+ */
+function SiteTracking({ accounts }: { accounts?: Record<string, string> }) {
+  const ga = String(accounts?.gaId || "").trim();
+  const pixel = String(accounts?.metaPixelId || "").trim();
+  const safeGa = /^(G|UA|AW|GT)-[A-Z0-9-]{4,20}$/i.test(ga) ? ga : "";
+  const safePixel = /^\d{6,20}$/.test(pixel) ? pixel : "";
+  if (!safeGa && !safePixel) return null;
+
+  return (
+    <>
+      {safeGa ? (
+        <>
+          <script async src={`https://www.googletagmanager.com/gtag/js?id=${safeGa}`} />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${safeGa}');`,
+            }}
+          />
+        </>
+      ) : null}
+      {safePixel ? (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${safePixel}');fbq('track','PageView');`,
+          }}
+        />
+      ) : null}
+    </>
+  );
+}
+
 export async function SitePageBody({
   data,
   siteId,
@@ -431,6 +494,9 @@ export async function SitePageBody({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       ) : null}
+      {/* Only on a client's own site, and only from an id somebody deliberately stored. Nothing is
+          injected onto a page whose owner has not asked for it. */}
+      {isClientSite ? <SiteTracking accounts={site?.accounts} /> : null}
       {brand ? <BrandStyle brand={brand} id="site-brand" /> : null}
       {designCss ? (
         <style id="site-design" dangerouslySetInnerHTML={{ __html: designCss }} />
