@@ -91,11 +91,16 @@ export async function GET(req: Request) {
 
     // The verdict. Deliberately narrow — the whole point is that MOST things come back FREE.
     //
-    // ⚠️ WIRING IS NOT A CUSTOMER. The first cut protected any client site with lead delivery
-    // configured, and on its first real run that marked `steven-james-designs` PROTECTED — a brand
-    // Steven parked the day before, with zero leads and no domain, sitting on his own delete list.
-    // Config existing is not evidence anybody uses it, and treating it as evidence rebuilds the
-    // exact over-protection this endpoint exists to end. Reachability and real leads are evidence.
+    // ⚠️ A CLIENT COUNTS AS A CLIENT EVEN IN DRAFT — Steven's call, 2026-08-14. This briefly
+    // required a client site to be REACHABLE before protecting it, which flipped
+    // `steven-james-designs` to FREE. He overruled it: *"It's okay if it files a customer in a
+    // draft state like it's a customer, because I have so few customers… don't get carried away
+    // with tightening shit up just yet."*
+    //
+    // He is right about the asymmetry. At this headcount a false PROTECTED costs one confirmation;
+    // a false FREE costs a real client's work. The FREE list is still doing its job — the demo and
+    // draft sites, which are the bulk, come back FREE regardless. Revisit only when the client
+    // count makes the extra confirmations actually cost something.
     let verdict: Row["verdict"] = "FREE";
     let why = "draft/demo, no real leads — change, rename, delete or rebuild freely";
     if (leads > 0) {
@@ -108,9 +113,11 @@ export async function GET(req: Request) {
     } else if (reach.onDomain && reach.indexable) {
       verdict = "PROTECTED";
       why = `live at ${s.domain} and indexable — the public can find it`;
-    } else if (s.kind === "client" && reach.onDomain) {
+    } else if (s.kind === "client" && (reach.onDomain || wiring.notifiesSomeone)) {
       verdict = "PROTECTED";
-      why = `a client site reachable at ${s.domain} — it is their business, indexed or not`;
+      why = reach.onDomain
+        ? `a client site reachable at ${s.domain} — it is their business, indexed or not`
+        : "a client site with lead delivery wired — a client counts even in draft";
     } else if (reach.onDomain) {
       why = `on ${s.domain} but noindex and zero leads — reachable, but nobody is looking`;
     }
