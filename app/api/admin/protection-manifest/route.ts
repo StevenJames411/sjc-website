@@ -90,6 +90,12 @@ export async function GET(req: Request) {
     if (s.chloe?.attached) surfaces.push("chloe");
 
     // The verdict. Deliberately narrow — the whole point is that MOST things come back FREE.
+    //
+    // ⚠️ WIRING IS NOT A CUSTOMER. The first cut protected any client site with lead delivery
+    // configured, and on its first real run that marked `steven-james-designs` PROTECTED — a brand
+    // Steven parked the day before, with zero leads and no domain, sitting on his own delete list.
+    // Config existing is not evidence anybody uses it, and treating it as evidence rebuilds the
+    // exact over-protection this endpoint exists to end. Reachability and real leads are evidence.
     let verdict: Row["verdict"] = "FREE";
     let why = "draft/demo, no real leads — change, rename, delete or rebuild freely";
     if (leads > 0) {
@@ -102,9 +108,9 @@ export async function GET(req: Request) {
     } else if (reach.onDomain && reach.indexable) {
       verdict = "PROTECTED";
       why = `live at ${s.domain} and indexable — the public can find it`;
-    } else if (s.kind === "client" && wiring.notifiesSomeone) {
+    } else if (s.kind === "client" && reach.onDomain) {
       verdict = "PROTECTED";
-      why = "a client site with live lead delivery wired";
+      why = `a client site reachable at ${s.domain} — it is their business, indexed or not`;
     } else if (reach.onDomain) {
       why = `on ${s.domain} but noindex and zero leads — reachable, but nobody is looking`;
     }
