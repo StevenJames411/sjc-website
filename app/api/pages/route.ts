@@ -3,11 +3,12 @@
 //   GET    /api/pages?site=<id>              -> { pages }
 //   POST   /api/pages { title, site }        -> { ok, slug }   new blank page
 //   POST   /api/pages { title, from, site }  -> { ok, slug }   duplicate a page WITHIN this site
-//   PATCH  /api/pages { slug, title, site }  -> { ok }         rename (label only)
+//   PATCH  /api/pages { slug, title, site }   -> { ok }         rename (label only)
+//   PATCH  /api/pages { slug, newSlug, site } -> { ok, slug }   change the page's WEB ADDRESS
 //   DELETE /api/pages { slug, site }         -> { ok }         delete + purge its content
 //
 // Standing up a new CLIENT is POST /api/sites, not this.
-import { readPages, createPage, duplicatePage, deletePage, renamePage } from "@/lib/pageRegistry";
+import { readPages, createPage, duplicatePage, deletePage, renamePage, changeSlug } from "@/lib/pageRegistry";
 import { siteOr } from "@/lib/siteAccess";
 import { SJC } from "@/lib/siteKeys";
 
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  let body: { slug?: string; title?: string; site?: string };
+  let body: { slug?: string; title?: string; newSlug?: string; site?: string };
   try {
     body = await req.json();
   } catch {
@@ -49,7 +50,13 @@ export async function PATCH(req: Request) {
   }
   const { site, deny } = await siteOr(siteOf(body?.site), req);
   if (deny) return deny;
-  const res = await renamePage(body?.slug || "", body?.title || "", site.id);
+  // `newSlug` present -> changing the page's WEB ADDRESS (lib/pageRegistry:changeSlug), which
+  // moves stored content and leaves the old slug redirecting. Otherwise -> the existing
+  // label-only rename. Same verb, different field on purpose — the two have very different blast
+  // radii, and `body.from` on POST above is the same "extra field picks the operation" pattern.
+  const res = body?.newSlug
+    ? await changeSlug(body?.slug || "", body.newSlug, site.id)
+    : await renamePage(body?.slug || "", body?.title || "", site.id);
   return Response.json(res, { status: res.ok ? 200 : 400 });
 }
 

@@ -586,6 +586,49 @@ export default function PuckEditor({
 
   // Rename the current page. LABEL ONLY — the slug, the URL, and everything saved on the page
   // stay exactly as they are, so renaming can never break a link or lose content.
+  /**
+   * DUPLICATE THIS PAGE. Every builder on earth has this and this one did not.
+   *
+   * ⛔ THE ROUTE HAS EXISTED THE WHOLE TIME. `admin/clone-page` copies a page's content — and since
+   * 2026-08-12 the blocks carry their own stylesheet id, so a clone is styled the moment it lands.
+   * It had no caller anywhere in the UI, which meant "make me another one like this" was a message
+   * to the operator. Steven's own reason for the route, from its header: *"why can't we clone
+   * Steven James' design in our own library and then change all the shit we want?"*
+   *
+   * Same site to same site is the ordinary case — a services page becomes the second services
+   * page — so the destination site is this one and only the new address is asked for.
+   */
+  const onDuplicatePage = async () => {
+    const raw = window.prompt(
+      `Duplicate "${title}" — what should the new page's web address be?`,
+      `${page}-copy`
+    );
+    if (raw === null) return;
+    const slug = raw.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
+    if (!slug) return window.alert("A web address is required.");
+    if (slug === page) return window.alert("That is this page's address. Pick a different one.");
+    setBusy(true);
+    try {
+      const r = await fetch("/api/admin/clone-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ fromSite: siteId, fromPage: page, toSite: siteId, toPage: slug }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't duplicate the page.");
+      // ⚠️ A DRAFT, NOT LIVE. The copy lands unpublished on purpose — a duplicate is a starting
+      // point, and publishing it automatically would put a page reading exactly like another one
+      // onto a customer's website the moment they pressed Duplicate.
+      window.alert(`Duplicated to /${slug}. It is a draft — open it, change it, then Publish.`);
+      router.push(`/edit/${siteId}/${slug}`);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const onRenamePage = async () => {
     const name = window.prompt("Rename this page (this changes the name in the list only — the web address and the page itself don't change):", title);
     if (name === null) return;
@@ -602,6 +645,42 @@ export default function PuckEditor({
       const j = await r.json();
       if (!j.ok) return window.alert(j.error || "Couldn't rename the page.");
       router.refresh();
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Change the current page's WEB ADDRESS — the opposite of onRenamePage above, which only ever
+  // touches the label. Moves the saved content (draft + published) to the new slug server-side
+  // and records the old slug as a redirect; see lib/pageRegistry:changeSlug for the full guard
+  // list (locked slugs, built-ins refused, no reusing a slug this site has ever had before).
+  //
+  // ⛔ THE PUBLIC REDIRECT ISN'T LIVE YET. changeSlug records old-slug -> new-slug, but nothing in
+  // the public route resolver reads that record — so today, until that's wired up, the OLD link
+  // 404s instead of forwarding. Said plainly in the tooltip below rather than promised in copy
+  // that isn't true yet.
+  const onChangeSlug = async () => {
+    const next = window.prompt(
+      `Change this page's web address from "/${page}" to:`,
+      page
+    );
+    if (next === null) return;
+    const trimmed = next.trim();
+    if (!trimmed) return window.alert("A web address is required.");
+    if (trimmed === page) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pages", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ slug: page, newSlug: trimmed, site: siteId }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't change the address.");
+      router.push(`/edit/${siteId}/${j.slug}`);
     } catch {
       window.alert("Couldn't reach the server. Try again in a moment.");
     } finally {
@@ -954,7 +1033,9 @@ export default function PuckEditor({
                   { label: "Adopt images", onClick: onAdoptImages, title: "Copy this page's images onto our own storage so nothing depends on whoever generated the design" },
                   { label: "Save as template", onClick: onSaveAsTemplate, title: "Strip the business details and save this layout as a reusable template" },
                   { label: "Save page to library", onClick: onSaveToLibrary, title: "Keep this whole page so you can drop it onto another website" },
+                  { label: "Duplicate page", onClick: onDuplicatePage, title: "Make a copy of this page at a new address, as a draft" },
                   { label: "Rename page", onClick: onRenamePage, title: "Changes the name in the list only — the web address and the page are untouched" },
+                  { label: "Change address (URL)", onClick: onChangeSlug, title: "Changes the web address the page lives at — content moves with it. Old links don't redirect yet, so save the new address wherever the old one was shared." },
                   { label: "Versions", onClick: openVersions, title: "Every time you pressed Publish — restore an earlier one" },
                 ].map((m) => (
                   <button
