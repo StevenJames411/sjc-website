@@ -495,6 +495,98 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
     }
   }
 
+  /**
+   * "Use this design's header and footer on every page" — the button that makes an IMPORTED site
+   * behave the way a built one already does.
+   *
+   * ⛔ WHAT IT UNDOES. A bought design is split into one section per top-level element, so its
+   * <header> and <footer> land INSIDE each page like any other band. Import a design and every
+   * page carries its own copy; a page created afterwards gets none. Steven: *"the whole concept of
+   * the header navigation and footer being global is so you don't have to do it manually six,
+   * seven, eight times."* Exactly — and until this runs, on an imported site you do.
+   *
+   * ⚠️ THE PAGE COUNT IS NOT PART OF THE CONCEPT. Three pages, four, ten — nothing here counts. A
+   * one-page site still lifts, which is what makes page two wear the header the day it is made.
+   *
+   * ⚠️ publish: true, for the same reason applyEverywhere does it — this is a site-wide structural
+   * change, and the alternative is publishing every page by hand and shipping whatever half-built
+   * drafts happen to be sitting in them.
+   */
+  async function liftChromeNow() {
+    setBusy(true);
+    setSweepMsg("");
+    try {
+      const call = (dryRun: boolean, overwrite = false) =>
+        fetch("/api/admin/lift-chrome", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, dryRun, publish: true, overwrite }),
+        }).then((r) => r.json());
+
+      const look = await call(true);
+      if (!look?.ok) throw new Error(look?.error || "Couldn't check this website.");
+
+      if (!look.source) {
+        setSweepMsg("This website's header and footer are already global — nothing to do.");
+        return;
+      }
+
+      // ⛔ NEVER SILENTLY REPLACE A HEADER SOMEBODY BUILT HERE. The operator gets told what is
+      // already there and chooses; the old script could assume the documents were empty because it
+      // only ever ran against one known site.
+      let overwrite = false;
+      if ((look.existingChrome || []).length) {
+        const which = (look.existingChrome as string[])
+          .map((c) => (c === "nav" ? "header" : "footer"))
+          .join(" and ");
+        if (
+          !window.confirm(
+            `This website already has a ${which} of its own.\n\nReplace it with the one from the imported design?`
+          )
+        )
+          return;
+        overwrite = true;
+      }
+
+      // ⚠️ THE DRIFT WARNING IS THE WHOLE REASON THIS ASKS BEFORE IT ACTS. If the copies are not
+      // identical, "global" picks a winner and the odd pages out change appearance.
+      const drift = (look.drift || []) as { slug: string }[];
+      const pageCount = (look.strippedPages || []).length;
+      if (
+        !window.confirm(
+          `Use the header and footer from "${look.source}" on every page of this website?\n\n` +
+            `${pageCount} page(s) currently carry their own copy, which will be removed so nothing shows twice.\n\n` +
+            (drift.length
+              ? `⚠️ ${drift.length} page(s) have a header or footer that DIFFERS from "${look.source}": ` +
+                `${drift.map((d) => d.slug).join(", ")}. Those pages will take "${look.source}"'s and will look different afterwards.\n\n`
+              : `Every page's copy is identical, so nothing changes visually.\n\n`) +
+            `After this, editing the header once changes all of them.`
+        )
+      )
+        return;
+
+      const done = await call(false, overwrite);
+      if (!done?.ok) throw new Error(done?.error || "Couldn't apply it.");
+      if ((done.refused || []).length) {
+        setSweepMsg(
+          `Partly done — ${(done.refused || []).length} change(s) were refused: ` +
+            (done.refused as { reason: string }[]).map((r) => r.reason).join("; ")
+        );
+        return;
+      }
+      setSweepMsg(
+        `Done — one header and one footer now serve all ${(done.pages || []).length} page(s). ` +
+          `Edit them once and every page follows.`
+      );
+      router.refresh();
+    } catch (e) {
+      setSweepMsg((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const biz = (k: keyof Site["business"], v: string) =>
     setS({ ...s, business: { ...s.business, [k]: v } });
   const seo = (k: keyof Site["seo"], v: string) => setS({ ...s, seo: { ...s.seo, [k]: v } });
@@ -791,6 +883,15 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
           Only needed for a site built from an imported design. A design links between its pages by
           filename, which 404s once the site is live — and it only breaks when somebody CLICKS,
           never when you type the address.
+        </p>
+
+        <button type="button" onClick={liftChromeNow} disabled={busy} style={{ ...ghost, marginLeft: 8 }}>
+          {busy ? "Working…" : "Use this design's header and footer on every page"}
+        </button>
+        <p style={{ ...hint, margin: "8px 0 0" }}>
+          Only needed for a site built from an imported design. The design gives every page its own
+          copy of the header and footer, so changing one changes one page. This makes them global:
+          edit the header once and every page follows, and a page you add later already has it.
         </p>
 
         {sweepMsg ? <p style={{ ...hint, margin: "6px 0 0", color: "var(--e-ok-ink)" }}>{sweepMsg}</p> : null}
