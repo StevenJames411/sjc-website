@@ -109,6 +109,7 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ s
     sample: string;
     where: string;
     changed: boolean;
+    selectors: string[];
   }[] = [];
   const seenSize = new Set<string>();
   const walk = (doc: unknown, where: string) => {
@@ -143,6 +144,7 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ s
           sample: (row.value || "").replace(/\s+/g, " ").trim().slice(0, 60),
           where,
           changed: g.members.some((m) => !!scale[m]),
+          selectors: g.selectors,
         });
       }
     }

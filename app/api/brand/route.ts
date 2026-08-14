@@ -95,6 +95,15 @@ export async function POST(req: Request) {
   }
 
   // Sizes, same contract again: only this control's own field goes live.
+  // Per-element typefaces, same contract: only this control's own field goes live.
+  if (body.action === "publish-faces") {
+    const draft = await readBrand(false, site);
+    const live = await readBrand(true, site);
+    const next = { ...live, faceFor: draft.faceFor };
+    const ok = await writeBrand(next, true, site);
+    return Response.json({ ok, site, brand: next });
+  }
+
   if (body.action === "publish-sizes") {
     const draft = await readBrand(false, site);
     const live = await readBrand(true, site);

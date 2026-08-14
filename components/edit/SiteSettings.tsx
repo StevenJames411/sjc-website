@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { reachability, type Site } from "@/lib/sitesShared";
-import { FONT_SETS, FONT_VAR, SWATCHES, fontsForSet, type Brand, type BrandFont } from "@/lib/brandShared";
+import { FONTS as FONT_VAR_KEYS, FONT_SETS, FONT_VAR, SWATCHES, fontsForSet, type Brand, type BrandFont } from "@/lib/brandShared";
 import { publicUrlFor } from "@/lib/hostShared";
 
 // EVERYTHING GLOBAL TO ONE WEBSITE, ON ONE SCREEN.
@@ -34,6 +34,7 @@ type Props = {
     sample: string;
     where: string;
     changed: boolean;
+    selectors: string[];
   }[];
   /** Sizes that appear only on pages with more sections than the home page. */
   elsewhere: {
@@ -155,6 +156,52 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
    * 13.5" is four declared values pointing at one number; writing only the first would silently
    * split the group back apart the moment somebody nudged it.
    */
+  /**
+   * A typeface for ONE element — the wordmark, a badge, a pull-quote.
+   *
+   * ⛔ WHY THIS ISN'T A "LOGO FONT" FIELD. Steven's design sets its wordmark in a serif over a
+   * geometric sans everywhere else, and the brand had two slots — Headline and Body — so stripping
+   * the design's own font collapsed the logo into the heading face: *"the main noticeable
+   * difference is where my company name is. That font is not the same design as I purchased."*
+   * A logo is simply the first element that needed a third face; the next design will want one on
+   * a price or a badge. Keyed by the design's own selector, so any element the panel can name can
+   * have one and nothing new has to be added for the next case.
+   */
+  function pickFace(selectors: string[], font: string) {
+    const faceFor = { ...((fonts.faceFor as Record<string, string>) || {}) };
+    for (const sel of selectors) {
+      if (!font) delete faceFor[sel];
+      else faceFor[sel] = font;
+    }
+    const next = { ...fonts, faceFor } as Brand;
+    setFonts(next);
+    setFontMsg("Saving…");
+    void (async () => {
+      try {
+        const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, { credentials: "same-origin" }).then((x) => x.json());
+        const merged = { ...(cur?.brand || {}), faceFor };
+        const put = await fetch("/api/brand", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, brand: merged }),
+        }).then((x) => x.json());
+        if (!put.ok) throw new Error(put.error || "Couldn't save the font.");
+        const pub = await fetch("/api/brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, action: "publish-faces" }),
+        }).then((x) => x.json());
+        if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+        setFontMsg("Live on the website.");
+        router.refresh();
+      } catch (e) {
+        setFontMsg((e as Error).message);
+      }
+    })();
+  }
+
   function pickSizeGroup(members: string[], next: string) {
     const scale = { ...(fonts.typeScale || {}) };
     for (const m of members) {
@@ -647,6 +694,8 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
             rules={z.rules}
             changed={z.changed}
             onSet={(v) => pickSizeGroup(z.members, v)}
+            face={((fonts.faceFor as Record<string, string>) || {})[z.selectors[0]] || ""}
+            onFace={(f) => pickFace(z.selectors, f)}
           />
         ))}
       </div>
@@ -782,6 +831,8 @@ function SizeRow({
   rules,
   changed,
   onSet,
+  face,
+  onFace,
 }: {
   label: string;
   role: string;
@@ -790,6 +841,9 @@ function SizeRow({
   rules: number;
   changed: boolean;
   onSet: (v: string) => void;
+  /** A typeface just for this element. "" = follow the site's headline/body face. */
+  face?: string;
+  onFace?: (f: string) => void;
 }) {
   const px = /^-?[\d.]+px$/.test(effective);
   const border = changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)";
@@ -815,6 +869,20 @@ function SizeRow({
         <input type="text" value={effective} onChange={(e) => onSet(e.target.value.trim())}
           style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
       )}
+      {onFace ? (
+        <select
+          value={face || ""}
+          onChange={(e) => onFace(e.target.value)}
+          title="A typeface just for this element"
+          style={{ fontSize: 11.5, padding: "5px 6px", borderRadius: 6, border: `1px solid ${face ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, background: "transparent", color: "inherit", maxWidth: 128 }}
+        >
+          <option value="">Site font</option>
+          {FONT_SETS.length ? null : null}
+          {FONT_VAR_KEYS.map((k) => (
+            <option key={k.value} value={k.value}>{k.label}</option>
+          ))}
+        </select>
+      ) : null}
       {changed ? (
         <button type="button" onClick={() => onSet("")} title="Put the design's own size back"
           style={{ fontSize: 11, background: "none", border: "none", textDecoration: "underline", cursor: "pointer", color: "var(--e-muted)" }}>
