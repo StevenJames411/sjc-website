@@ -83,12 +83,40 @@ export default function BrandStyle({ brand, id = "sjc-brand" }: { brand: Brand; 
   // at its default means "the design's colour"; a FONT left at its default means Lexend, which is
   // a real choice this file has to state — stripFontFamily removed the design's own family from
   // its sheet precisely so the brand would be the one place typography is decided.
-  const fontDecl =
-    `--font-sans:var(${bodyVar}), ${FALLBACK_STACK};` +
-    `--font-body:var(${bodyVar}), ${FALLBACK_STACK};` +
-    `--font-heading:var(${headVar}), ${FALLBACK_STACK};`;
+  /**
+   * ⛔ THE DESIGN'S REAL TYPEFACE, WHEN WE HAVE A COPY OF IT.
+   *
+   * `nearestFont()` rounds a bought design's font to the closest of the eight we ship, because
+   * next/font was build-time and a design could never bring its own file. Steven caught the
+   * rounding on his own hero and named the cost: *"since I'm paying for a design to be brought in,
+   * we need to be able to keep it. Everybody I build for, AI is going to throw a different font at
+   * me."*
+   *
+   * lib/designFonts copies the actual font files onto our own Blob storage at import and stores
+   * @font-face rules pointing at them. If those exist, they win — the family named in them is the
+   * genuine article rather than the nearest match.
+   *
+   * ⚠️ ONLY WHILE THE SITE IS ON "AS DESIGNED". The moment somebody picks Editorial or Friendly
+   * they have chosen one of ours, and quietly serving the design's font underneath that choice
+   * would make the picker a liar.
+   */
+  const asDesigned = (brand.fontSet || "asDesigned") === "asDesigned";
+  const realBody = asDesigned ? String(brand.designFamilyBody || "").trim() : "";
+  const realHead = asDesigned ? String(brand.designFamilyHeading || "").trim() : "";
+  const q = (f: string) => `"${f.replace(/"/g, "")}"`;
 
-  const css = `:root{${decl.join("")}${fontDecl}}h1,h2,h3,h4{font-family:var(--font-heading);}`;
+  const fontDecl =
+    `--font-sans:${realBody ? `${q(realBody)}, ` : ""}var(${bodyVar}), ${FALLBACK_STACK};` +
+    `--font-body:${realBody ? `${q(realBody)}, ` : ""}var(${bodyVar}), ${FALLBACK_STACK};` +
+    `--font-heading:${realHead ? `${q(realHead)}, ` : ""}var(${headVar}), ${FALLBACK_STACK};`;
+
+  // The @font-face rules come FIRST — a family referenced before it is defined is a family the
+  // browser silently skips over to the next in the stack, which would look exactly like the
+  // rounding this exists to remove.
+  const faces = (realBody || realHead) && brand.designFontCss ? String(brand.designFontCss) : "";
+  const css =
+    faces +
+    `:root{${decl.join("")}${fontDecl}}h1,h2,h3,h4{font-family:var(--font-heading);}`;
 
   return <style id={id} dangerouslySetInnerHTML={{ __html: css }} />;
 }

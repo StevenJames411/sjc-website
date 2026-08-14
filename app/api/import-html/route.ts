@@ -21,6 +21,7 @@ import type { Data } from "@measured/puck";
 import { siteOr, ownerOnly } from "@/lib/siteAccess";
 import { importHtml } from "@/lib/importHtml";
 import { importDesign, detectFonts, detectAccent } from "@/lib/importDesign";
+import { detectFontFamilies, captureDesignFonts } from "@/lib/designFonts";
 import { createSite, updateSite, readSites } from "@/lib/sites";
 import { createPage } from "@/lib/pageRegistry";
 import { createKvStore } from "@/lib/kvStateStore";
@@ -368,7 +369,36 @@ export async function POST(req: Request) {
     // is no existing palette to overwrite and nobody has chosen anything yet. Publishing what the
     // design shipped with is the most faithful possible starting state.
     const seeded = await readBrand(false, siteId);
-    await writeBrand(seeded, true, siteId);
+
+    // ⛔ AND KEEP THE DESIGN'S ACTUAL TYPEFACE, not the nearest of our eight.
+    //
+    // detectFonts above rounds through nearestFont() because next/font was build-time and a bought
+    // design could never bring its own file. Steven caught that rounding on his own hero: *"since
+    // I'm paying for a design to be brought in, we need to be able to keep it. Everybody I build
+    // for, AI is going to throw a different font at me. If the customer wants it, we need to keep
+    // it."* lib/designFonts copies the real files onto our own Blob and returns @font-face rules
+    // pointing at us, so there is no third-party request on a customer's page.
+    //
+    // ⚠️ BEST EFFORT, ALWAYS. A family Google does not host, a network blip, a design naming a
+    // system font — every one returns null and the site keeps the rounded pair, which is exactly
+    // what it would have had. Same law as nearestFont: *a design in the wrong typeface is one
+    // dropdown from right; a design that refuses to import is not.*
+    let withFace = seeded;
+    try {
+      const real = await captureDesignFonts(detectFontFamilies(html));
+      if (real) {
+        withFace = {
+          ...seeded,
+          designFamilyHeading: real.heading || "",
+          designFamilyBody: real.body || "",
+          designFontCss: real.css,
+        };
+        await writeBrand(withFace, false, siteId);
+      }
+    } catch {
+      /* keeps the rounded pair */
+    }
+    await writeBrand(withFace, true, siteId);
   } else {
     const p = result.palette as unknown as Record<string, string>;
     await writeBrand(
