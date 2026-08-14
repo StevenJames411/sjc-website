@@ -1042,6 +1042,24 @@ function SizeRow({
         <input type="number" min={6} step={0.5} value={parseFloat(effective)}
           onChange={(e) => onSet(e.target.value ? `${e.target.value}px` : "")}
           style={{ width: 74, padding: "5px 7px", fontSize: 13, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+      ) : clampParts(effective) ? (
+        /* ⛔ A RESPONSIVE SIZE, SHOWN AS THE TWO NUMBERS IT ACTUALLY MEANS.
+           `clamp(32px,5vw,42px)` is "32 on a phone, up to 42 on a laptop" — Steven, reasonably:
+           *"some of these font sizes don't have a pixel, they've got like a raw code… why are some
+           expressed in code and some aren't."* Showing the raw function is unreadable; collapsing
+           it to ONE number would silently throw away the phone size and wrap a headline badly on
+           the screen most visitors arrive on. So: two boxes, and the vw scaling rate in the middle
+           is preserved untouched — it is the rate of change between them, not a third size. */
+        <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ fontSize: 10.5, color: "var(--e-muted)" }}>phone</span>
+          <input type="number" min={6} step={1} value={clampParts(effective)!.min}
+            onChange={(e) => onSet(rebuildClamp(effective, e.target.value, null))}
+            style={{ width: 58, padding: "5px 6px", fontSize: 12.5, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+          <span style={{ fontSize: 10.5, color: "var(--e-muted)" }}>laptop</span>
+          <input type="number" min={6} step={1} value={clampParts(effective)!.max}
+            onChange={(e) => onSet(rebuildClamp(effective, null, e.target.value))}
+            style={{ width: 58, padding: "5px 6px", fontSize: 12.5, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+        </span>
       ) : (
         <input type="text" value={effective} onChange={(e) => onSet(e.target.value.trim())}
           style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
@@ -1068,6 +1086,32 @@ function SizeRow({
       ) : null}
     </div>
   );
+}
+
+
+/** `clamp(32px,5vw,42px)` -> { min: 32, rate: "5vw", max: 42 }, or null if it is not a clamp. */
+function clampParts(v: string): { min: number; rate: string; max: number } | null {
+  const m = /^clamp\(\s*([\d.]+)px\s*,\s*([^,]+?)\s*,\s*([\d.]+)px\s*\)$/i.exec(String(v || "").trim());
+  return m ? { min: Number(m[1]), rate: m[2].trim(), max: Number(m[3]) } : null;
+}
+
+/**
+ * Put a clamp back together after one end was edited.
+ *
+ * ⚠️ THE MIDDLE TERM IS CARRIED THROUGH UNCHANGED. It is the RATE the size grows at between the two
+ * ends, not a third size — recomputing it from the new min/max would quietly re-tune how the
+ * headline behaves at every width in between, which is not what somebody typing "40" asked for.
+ */
+function rebuildClamp(v: string, min: string | null, max: string | null): string {
+  const p = clampParts(v);
+  if (!p) return v;
+  const lo = min === null ? p.min : Number(min);
+  const hi = max === null ? p.max : Number(max);
+  if (!lo || !hi) return v;
+  // A phone size above the laptop size is a typo, not an instruction — swap rather than emit a
+  // clamp the browser will read backwards.
+  const [a, b] = lo <= hi ? [lo, hi] : [hi, lo];
+  return `clamp(${a}px,${p.rate},${b}px)`;
 }
 
 const page: React.CSSProperties = { maxWidth: 680, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };
