@@ -38,6 +38,48 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
   const [typed, setTyped] = useState("");
   const [deleting, setDeleting] = useState("");
   const [delErr, setDelErr] = useState("");
+  // Which card's zip is mid-download, so a slow export can't be double-clicked.
+  const [exporting, setExporting] = useState("");
+
+  /**
+   * The exit hatch, pressable — see app/api/admin/export/route.ts for the reasoning. A `fetch` +
+   * blob rather than a plain `<a href>` for two reasons: the confirm has to land BEFORE anything
+   * downloads (so a client sees the forms warning, not just the fine print in the zip), and a
+   * failed export (a Draft site, nothing reachable) needs to surface as a message instead of the
+   * browser silently saving a JSON error as if it were the file.
+   */
+  async function downloadSite(s: Site) {
+    if (
+      !window.confirm(
+        `This zip is a working copy of ${s.business?.name?.trim() || s.name} — every page, image and style, openable straight from the folder.\n\nWhat it can't do: the forms. They post to this app, which isn't in the zip, so a form will still look right but won't send anywhere until it's pointed at a new handler.\n\nDownload it?`
+      )
+    ) {
+      return;
+    }
+    setExporting(s.id);
+    try {
+      const res = await fetch(`/api/admin/export?site=${encodeURIComponent(s.id)}`, {
+        credentials: "same-origin",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Couldn't export it.");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${s.id}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Couldn't export it.");
+    } finally {
+      setExporting("");
+    }
+  }
 
   /**
    * Delete a website and everything under it.
@@ -666,6 +708,18 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
                   onClick={() => router.push(`/edit/${s.id}/settings`)}
                 >
                   ⚙
+                </button>
+                {/* THE EXIT HATCH, ON THE CARD. Demo/Published only — a Draft export comes back
+                    empty and downloadSite() reports why instead of saving a broken zip. */}
+                <button
+                  type="button"
+                  style={gearBtn}
+                  title="Download a working copy of this website as a zip"
+                  aria-label={`Download ${s.name}`}
+                  disabled={exporting === s.id}
+                  onClick={() => downloadSite(s)}
+                >
+                  {exporting === s.id ? "…" : "⭳"}
                 </button>
                 {/* Not offered for SJC's own site — deleteSite() refuses it anyway, and a button
                     that always fails is worse than no button. */}
