@@ -112,6 +112,14 @@ export type LeadFormProps = {
   heading?: string;
   subheading?: string;
   headingColor?: string;
+  /**
+   * Link target for this form, e.g. "book" so any button anywhere can point at `/#book`.
+   *
+   * ⛔ EVERY CTA ON THE SITE WAS ALREADY AIMING AT ONE THAT DID NOT EXIST. Ten pages linked to
+   * `#book`; no element on the site carried that id, so the button did nothing on all ten —
+   * including the page the form is on. A dead anchor throws no error, so it survived unnoticed.
+   */
+  anchor?: string;
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
@@ -171,6 +179,7 @@ export default function LeadForm(props: LeadFormProps) {
     successBody = LEADFORM_DEFAULTS.successBody,
     buttonColor,
     inColumn,
+    anchor = "",
     theme = "light",
     altSuccess,
     background = "",
@@ -212,6 +221,18 @@ export default function LeadForm(props: LeadFormProps) {
     // exists. Rendered even without a band, where it simply sits above the card.
     const titled = (
       <>
+        {/* ⛔ THE ANCHOR EVERY "BOOK A CALL" BUTTON WAS ALREADY AIMING AT (2026-08-16).
+            Ten pages linked to `#book` and NOTHING on the site carried that id — not even the home
+            page the form lives on, so the button did nothing everywhere, silently. A dead anchor
+            has no error state, which is why it survived: the page just sits there.
+            Offset by the sticky header's height so the heading is not hidden under it on arrival. */}
+        {anchor ? (
+          <span
+            id={anchor}
+            aria-hidden="true"
+            style={{ display: "block", position: "relative", top: -96, visibility: "hidden" }}
+          />
+        ) : null}
         {withTitle && (heading || subheading) ? (
           <div
             className={`mb-8 ${inColumn ? "text-left" : "mx-auto max-w-xl text-center"}`}

@@ -130,6 +130,7 @@ type Props = {
     heading: string;
     subheading: string;
     headingColor: string;
+    anchor: string;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
@@ -1687,6 +1688,11 @@ const baseConfig: Config<Props, RootProps> = {
         // started below the heading and the section looked broken.
         heading: { type: "text" as const, label: "Heading the customer sees (optional)" },
         subheading: { type: "textarea" as const, label: "Line under the heading (optional)" },
+        // One word, no "#". Buttons anywhere on the site then link to /#<word> and land here.
+        anchor: {
+          type: "text" as const,
+          label: 'Link name — type "book" and any button can point at /#book',
+        },
         headingColor: {
           ...COLOR_FIELD,
           label: "Heading colour (blank = the page's own)",
