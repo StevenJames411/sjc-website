@@ -1795,8 +1795,12 @@ const baseConfig: Config<Props, RootProps> = {
        * would drag the database client into the editor bundle.
        */
       resolveData: resolveLeadFormPreset,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, paddingTop, paddingBottom, bandPadding, heading, subheading, headingColor }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, paddingTop, paddingBottom, bandPadding, heading, subheading, headingColor, anchor }) => (
         <LeadForm
+          // ⚠️ EVERY PROP HAS TO BE LISTED HERE OR IT IS SILENTLY DROPPED. This render destructures
+          // explicitly, so `anchor` was set on the block, saved, published — and never reached the
+          // component. The id simply did not render and every "Book a Call" kept going nowhere.
+          anchor={anchor}
           source={source}
           fields={fields}
           buttonLabel={buttonLabel}
