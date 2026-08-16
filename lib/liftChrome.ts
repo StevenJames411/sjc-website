@@ -53,7 +53,28 @@ const tagOf = (html: unknown) =>
 // elements it cannot rename — which is what makes this work on a design nobody has seen.
 const isHeaderBlock = (b: Block) => b?.type === "DesignSection" && tagOf(b?.props?.html) === "header";
 const isFooterBlock = (b: Block) => b?.type === "DesignSection" && tagOf(b?.props?.html) === "footer";
-const isChromeBlock = (b: Block) => isHeaderBlock(b) || isFooterBlock(b);
+
+// ⛔ THE TAG RULE IS NOT ENOUGH, AND SJC PROVED IT (2026-08-16). A design's MOBILE MENU OVERLAY is
+// chrome by every meaning of the word — it holds the nav links, it is hidden until the header's
+// button fires, it belongs on every page — but its root element is a `<div>`, so `<header>`/
+// `<footer>` matching walked straight past it. sjc-2026 ended up with ten embedded copies of its
+// DIVISIONS menu: one label change cost ten edits, and one page quietly disagreed for weeks.
+//
+// The honest signal is not the tag, it is DUPLICATION. Page content differs between pages by
+// definition; a band that is byte-identical on EVERY page was put there by the importer, not by an
+// author. Two guards keep that from eating real content:
+//   1. it must not be a content band — `<section>`/`<main>/`<article>` are what importDesign emits
+//      for the page's own bands, so anything wearing those tags is left alone no matter what;
+//   2. the site must have at least two pages, or "identical on every page" is trivially true.
+// A one-page site therefore still lifts its header and footer by tag, and simply has no evidence
+// yet for anything else — which is correct, not a miss.
+const BAND_TAGS = new Set(["section", "main", "article"]);
+const couldBeExtraChrome = (b: Block) =>
+  b?.type === "DesignSection" &&
+  !isHeaderBlock(b) &&
+  !isFooterBlock(b) &&
+  !BAND_TAGS.has(tagOf(b?.props?.html)) &&
+  String(b?.props?.html || "").trim().length > 0;
 
 export type DriftRow = {
   slug: string;
@@ -74,6 +95,12 @@ export type LiftReport = {
   existingChrome: ("nav" | "footer")[];
   liftedHeader: boolean;
   liftedFooter: boolean;
+  /**
+   * Non-header/footer blocks that were identical on every page and therefore chrome — a mobile
+   * menu overlay, an announcement bar, a cookie strip. Appended to `nav`, never overwriting it.
+   * Each entry is a short human description so a dry run reads as a sentence, not an id.
+   */
+  liftedExtras: string[];
   /** How many per-page chrome blocks would be / were removed. */
   removed: number;
   /** Pages whose copies were stripped. */
@@ -114,6 +141,7 @@ export async function liftChrome({
     existingChrome: [],
     liftedHeader: false,
     liftedFooter: false,
+    liftedExtras: [],
     removed: 0,
     strippedPages: [],
     refused,
@@ -151,7 +179,29 @@ export async function liftChrome({
     pages.find((s) => carries(s).header && carries(s).footer) ||
     pages.find((s) => carries(s).header || carries(s).footer);
 
-  if (!sourceSlug) {
+  // ── 1b. THE EXTRAS ─────────────────────────────────────────────────────────────────────────
+  // Anything that is not a content band and is byte-identical on every page. See the note on
+  // `couldBeExtraChrome`. Needs two or more pages before "on every page" means anything.
+  //
+  // ⚠️ Computed from ALL pages, independently of whether a header was found. sjc-2026 is exactly
+  // the case that demands it: its header had already been lifted by an earlier run, so the header
+  // search came up empty and the old code returned "nothing to do" while ten menu overlays sat
+  // there untouched.
+  const extraHtmls = new Map<string, string>(); // html -> short description
+  if (pages.length > 1) {
+    const first = pages[0];
+    for (const blk of (drafts.get(first)?.content || []).filter(couldBeExtraChrome)) {
+      const html = String(blk.props?.html || "");
+      const onEveryPage = pages.every((s) =>
+        (drafts.get(s)?.content || []).some((b) => couldBeExtraChrome(b) && String(b.props?.html || "") === html),
+      );
+      if (!onEveryPage) continue;
+      const cls = (html.match(/class="([^"]{0,40})"/) || [, ""])[1];
+      extraHtmls.set(html, `<${tagOf(html)}${cls ? ` class="${cls}"` : ""}> on all ${pages.length} pages`);
+    }
+  }
+
+  if (!sourceSlug && !extraHtmls.size) {
     // Not an error worth a 500 — it is the normal answer for a site built in the builder rather
     // than imported, and for one this has already run on. Idempotent by construction.
     return {
@@ -163,7 +213,9 @@ export async function liftChrome({
   }
   report.source = sourceSlug;
 
-  const { header: headerBlk, footer: footerBlk } = carries(sourceSlug);
+  const { header: headerBlk, footer: footerBlk } = sourceSlug
+    ? carries(sourceSlug)
+    : { header: undefined, footer: undefined };
 
   // ── 2. DOES EVERY PAGE ACTUALLY AGREE? ─────────────────────────────────────────────────────
   // ⚠️ CHECKED OUT LOUD, NEVER ASSUMED. If the copies differ, "global" silently picks a winner and
@@ -197,7 +249,12 @@ export async function liftChrome({
     const existing = await read(slug, false);
     if (existing?.content?.length && !overwrite) report.existingChrome.push(slug);
   }
-  if (report.existingChrome.length && !overwrite) {
+  // ⚠️ THE GUARD STOPS THE OVERWRITE, NOT THE WHOLE RUN. Appending an overlay to `nav` destroys
+  // nothing, so hand-built chrome is no reason to leave menu copies duplicated across the site.
+  // Before this split, sjc-2026 could never be fixed by the tool: its `nav` already held a header,
+  // so the guard fired and the run ended before the overlays were even looked at.
+  const doHeaderFooter = !(report.existingChrome.length && !overwrite);
+  if (!doHeaderFooter && !extraHtmls.size) {
     return { ...report, ok: true, error: undefined };
   }
 
@@ -210,13 +267,36 @@ export async function liftChrome({
     return ok;
   };
 
-  for (const { slug, block } of pending) {
-    if (!block) continue;
-    const okDraft = await write(puckKey(slug, false, site), doc(block));
-    const okPub = publish ? await write(puckKey(slug, true, site), { ...doc(block), _pub: 1 }) : true;
-    if (okDraft && okPub) {
-      if (slug === "nav") report.liftedHeader = true;
-      else report.liftedFooter = true;
+  if (doHeaderFooter) {
+    for (const { slug, block } of pending) {
+      if (!block) continue;
+      const okDraft = await write(puckKey(slug, false, site), doc(block));
+      const okPub = publish ? await write(puckKey(slug, true, site), { ...doc(block), _pub: 1 }) : true;
+      if (okDraft && okPub) {
+        if (slug === "nav") report.liftedHeader = true;
+        else report.liftedFooter = true;
+      }
+    }
+  }
+
+  // ── 4b. APPEND THE EXTRAS TO `nav` ─────────────────────────────────────────────────────────
+  // They ride with the header: an overlay is opened by the header's button and must share its
+  // document, or the button and the thing it opens live in different places. Append rather than
+  // replace, and de-dupe by html so a second run is a no-op.
+  if (extraHtmls.size) {
+    const blocksFor = (from?: PuckDoc) =>
+      (from?.content || []).filter((b) => extraHtmls.has(String(b.props?.html || "")));
+    const source = pages.find((s) => blocksFor(drafts.get(s)).length);
+    const extras = blocksFor(drafts.get(source || pages[0]));
+
+    for (const pub of publish ? [false, true] : [false]) {
+      const key = puckKey("nav", pub, site);
+      const navDoc = (await read("nav", pub)) || { root: { props: {} }, content: [], zones: {} };
+      const have = new Set((navDoc.content || []).map((b) => String(b.props?.html || "")));
+      const add = extras.filter((b) => !have.has(String(b.props?.html || "")));
+      if (!add.length) continue;
+      const next = { ...navDoc, content: [...(navDoc.content || []), ...add], ...(pub ? { _pub: 1 } : {}) };
+      if (await write(key, next) && !pub) report.liftedExtras = [...extraHtmls.values()];
     }
   }
 
@@ -229,7 +309,16 @@ export async function liftChrome({
       const key = puckKey(slug, pub, site);
       const d = pub ? await read(slug, true) : drafts.get(slug) || null;
       if (!Array.isArray(d?.content)) continue;
-      const next = { ...d, content: d.content.filter((b) => !isChromeBlock(b)) };
+      // Strip what was actually lifted — never the header/footer when the overwrite guard stopped
+      // us from lifting them, or the page loses chrome that now lives nowhere.
+      const next = {
+        ...d,
+        content: d.content.filter(
+          (b) =>
+            !(doHeaderFooter && (isHeaderBlock(b) || isFooterBlock(b))) &&
+            !extraHtmls.has(String(b.props?.html || "")),
+        ),
+      };
       const removed = d.content.length - next.content.length;
       if (!removed) continue;
       if (await write(key, next)) {
