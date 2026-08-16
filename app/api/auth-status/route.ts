@@ -20,6 +20,7 @@ import { cookies } from "next/headers";
 import { resolveHost } from "@/lib/host";
 import { readPages, resolveRedirect } from "@/lib/pageRegistry";
 import { SJC } from "@/lib/siteKeys";
+import { isChrome } from "@/lib/puckPages";
 
 const COOKIE_NAME = "sjc_site_auth";
 
@@ -40,10 +41,14 @@ async function editHrefFor(path: string): Promise<string | null> {
   if (h.kind === "studio") return seg ? `/edit/${seg}` : null;
 
   const site = h.kind === "client" ? h.site.id : SJC;
-  const pages = await readPages(site);
+  // ⛔ CHROME IS NOT A PAGE, AND IT SORTS FIRST. readPages returns `nav` and `footer` ahead of the
+  // real pages, so taking [0] for the site root sent "Edit this page" on the home page into the
+  // NAVIGATION document — a canvas showing a bare header, which reads exactly like the wrong-site
+  // bug this function was written to fix.
+  const pages = (await readPages(site)).filter((p) => !isChrome(p.slug));
   if (!pages.length) return null;
 
-  if (!seg) return `/edit/${site}/${pages[0].slug}`;
+  if (!seg) return `/edit/${site}/${pages.find((p) => p.slug === "home")?.slug || pages[0].slug}`;
   if (pages.some((p) => p.slug === seg)) return `/edit/${site}/${seg}`;
 
   // A renamed page: the old URL still answers publicly (resolvePage follows the redirect), so the
