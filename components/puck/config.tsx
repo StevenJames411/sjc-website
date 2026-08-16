@@ -136,7 +136,7 @@ type Props = {
   Divider: { color: string; thickness: number; spacing: number };
   Booking: { src: string; height: number; anchor: string };
   Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
-  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
+  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string; anchor: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean; size: string; labelColor: string };
   Video: { src: string; caption: string; poster: string; width: string; aspect: string; autoplay: boolean; loop: boolean; muted: boolean };
@@ -2962,9 +2962,14 @@ const baseConfig: Config<Props, RootProps> = {
             <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
+        // Same "Link name" dial the lead form and the calendar have.
+        anchor: {
+          type: "text" as const,
+          label: 'Link name — type "book" and any button can point at /#book',
+        },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "ink", underline: "", highlight: "", highlightColor: "", highlightFade: "" },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor, highlightFade }) => {
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "ink", underline: "", highlight: "", highlightColor: "", highlightFade: "", anchor: "" },
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor, highlightFade, anchor }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
 
         // The marker swipe. A straight rule reads like a border; this reads like someone drew it.
@@ -3025,8 +3030,13 @@ const baseConfig: Config<Props, RootProps> = {
         }
         return (
           <h2
+            // A heading can be a link target, so a button anywhere can point at /#<name>. Landing
+            // on the HEADING rather than on the thing below it is the point: arrive at a calendar
+            // and you cannot see what you are looking at.
+            id={anchor || undefined}
             className="font-bold leading-tight tracking-tight"
             style={{
+              ...(anchor ? { scrollMarginTop: 96 } : {}),
               fontSize: `${px}px`,
               textAlign: align,
               color: resolveColorOr(color, "var(--color-sjc-ink)"),
