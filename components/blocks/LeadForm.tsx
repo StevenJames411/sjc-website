@@ -34,6 +34,10 @@ export type LeadFormField = {
   options?: string[];
   /** True for `multi` — more than one answer allowed. Stored comma-separated. */
   multi?: boolean;
+  /** Draw a `choice` as a real <select> instead of buttons. Opt-in — see where it renders. */
+  dropdown?: boolean;
+  /** The greyed first row of a dropdown, e.g. "Select a service". */
+  placeholder?: string;
 };
 export type LeadFormProps = {
   source?: string;
@@ -596,7 +600,25 @@ export default function LeadForm(props: LeadFormProps) {
               {/* BUTTONS, NOT A DROPDOWN. This is answered on a phone, and a five-option rating
                   behind a tap-and-scroll picker is the difference between a review and a closed
                   tab. It also puts the whole scale on screen, which is the question. */}
-              {f?.options?.length ? (
+              {f?.options?.length && f?.dropdown ? (
+                /* ⚠️ OPT-IN, NOT THE DEFAULT. Buttons stay right for a rating scale — see the note
+                   above. A dropdown is right when the options are a MENU the visitor is choosing
+                   from rather than a scale they are reading: SJC's five services, where the list is
+                   long enough that buttons push the name and phone fields off a phone screen. */
+                <select
+                  id={`lf-${k}`}
+                  value={values[k] || ""}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [k]: e.target.value }))}
+                  className={inputCls}
+                >
+                  <option value="">{f.placeholder || "Select one…"}</option>
+                  {f.options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              ) : f?.options?.length ? (
                 <div className="flex flex-col gap-2">
                   {f.options.map((opt) => {
                     // ⚠️ MULTI STORES A COMMA-SEPARATED LIST IN ONE CELL, which is what a "pick
