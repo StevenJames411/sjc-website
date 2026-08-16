@@ -134,7 +134,7 @@ type Props = {
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
-  Booking: { src: string; height: number };
+  Booking: { src: string; height: number; anchor: string };
   Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
@@ -2687,14 +2687,24 @@ const baseConfig: Config<Props, RootProps> = {
             <SizeStepper label={"Height"} value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
           ),
         },
+        // Same dial the lead form has, so whichever block is the place people book, a button
+        // anywhere on the site can point at it.
+        anchor: {
+          type: "text" as const,
+          label: 'Link name — type "book" and any button can point at /#book',
+        },
       },
-      defaultProps: { src: "", height: 620 },
-      render: ({ src, height }) => {
+      defaultProps: { src: "", height: 620, anchor: "" },
+      render: ({ src, height, anchor }) => {
         const h = typeof height === "number" ? height : 620;
         const raw = String(src || "").trim();
         const url = !raw ? "" : /[?&]gv=true/.test(raw) ? raw : `${raw}${raw.includes("?") ? "&" : "?"}gv=true`;
         return (
-          <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div
+            id={anchor || undefined}
+            className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm"
+            style={anchor ? { scrollMarginTop: 96 } : undefined}
+          >
             {url ? (
               <iframe
                 src={url}
