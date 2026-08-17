@@ -18,6 +18,12 @@ import NavView from "@/components/NavView";
 import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
+import CalEmbed from "@/components/blocks/CalEmbed";
+import { calLinkFrom } from "@/lib/calLink";
+
+// ⛔ Cal's auto-resize embed is PARKED behind this flag — see the note at the Booking render.
+// Typed `boolean`, not `false`, so the branch still type-checks while it is off.
+const CAL_EMBED_ENABLED: boolean = true;
 import ChainStrip, { CHAINSTRIP_DEFAULTS } from "@/components/blocks/ChainStrip";
 import SelfCheck, { SELFCHECK_DEFAULTS } from "@/components/blocks/SelfCheck";
 import Stats, { STATS_DEFAULTS, type StatItem } from "@/components/blocks/Stats";
@@ -134,7 +140,7 @@ type Props = {
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
-  Booking: { src: string; height: number; width: string; anchor: string };
+  Booking: { src: string; title: string; subtitle: string; height: number; width: string; anchor: string };
   Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string; anchor: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
@@ -2674,15 +2680,22 @@ const baseConfig: Config<Props, RootProps> = {
      * trusting the paste.
      */
     Booking: {
-      label: "Booking (Google Calendar appointment schedule)",
+      label: "Booking calendar (Cal.com or Google)",
       fields: {
         src: {
           type: "text" as const,
-          label: "Schedule URL — Google Calendar ▸ your appointment schedule ▸ Share ▸ copy link",
+          label: "Schedule URL — Cal.com event link, or a Google appointment schedule",
         },
+        // ⛔ THE TITLE LIVES HERE SO THERE IS NO SEPARATE HEADING BLOCK ABOVE THE CALENDAR.
+        // It used to take a Heading block plus a thin Section just to put words over the widget,
+        // which meant the gap above the calendar was set in one block and the calendar in another —
+        // so tightening the spacing meant editing two things and watching the iframe re-render each
+        // time. One block owns the words, the calendar and the space between them.
+        title: { type: "text" as const, label: "Title above the calendar (leave blank for none)" },
+        subtitle: { type: "text" as const, label: "Line under the title (optional)" },
         height: {
           type: "custom" as const,
-          label: "Height on desktop (− / +) — phones get 320px more automatically",
+          label: "Reserved height (− / +) — Cal.com resizes itself; this only holds space while it loads",
           render: ({ onChange, value }) => (
             <SizeStepper label={"Height"} value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
           ),
@@ -2705,15 +2718,25 @@ const baseConfig: Config<Props, RootProps> = {
           label: 'Link name — type "book" and any button can point at /#book',
         },
       },
-      defaultProps: { src: "", height: 620, width: "80rem", anchor: "" },
-      render: ({ src, height, width, anchor }) => {
+      defaultProps: { src: "", title: "", subtitle: "", height: 620, width: "80rem", anchor: "" },
+      render: ({ src, title, subtitle, height, width, anchor }) => {
         const h = typeof height === "number" ? height : 620;
         const raw = String(src || "").trim();
-        const url = !raw ? "" : /[?&]gv=true/.test(raw) ? raw : `${raw}${raw.includes("?") ? "&" : "?"}gv=true`;
+        const calLink = calLinkFrom(raw);
+        // ⚠️ `gv=true` IS A GOOGLE FLAG AND ONLY A GOOGLE FLAG. It was being appended to whatever was
+        // pasted, so Cal.com links carried a meaningless query string. Google's share dialog hands
+        // you a link WITHOUT it, and that link renders a whole calendar UI instead of the booking
+        // widget — plausible enough to ship — which is why it is still added for Google.
+        const isGoogle = /(^|\.)calendar\.google\.com$/i.test((() => {
+          try { return new URL(raw).hostname; } catch { return ""; }
+        })());
+        const url = !raw || !isGoogle || /[?&]gv=true/.test(raw)
+          ? raw
+          : `${raw}${raw.includes("?") ? "&" : "?"}gv=true`;
         return (
           <div
             id={anchor || undefined}
-            className="mx-auto w-full overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm"
+            className="mx-auto w-full"
             style={{
               // Pages saved before this field existed have no width — keep them on the old 48rem so
               // nothing silently reflows underneath someone.
@@ -2721,29 +2744,46 @@ const baseConfig: Config<Props, RootProps> = {
               ...(anchor ? { scrollMarginTop: 96 } : {}),
             }}
           >
-            {url ? (
-              /* ⛔ ONE FIXED HEIGHT CANNOT SERVE BOTH LAYOUTS. Wide enough for Cal's three columns,
-                 the widget is SHORT; on a phone the same widget stacks those columns and runs far
-                 taller. A single height either leaves a slab of white on desktop or puts the phone
-                 into an inner scrollbar — and the inner scrollbar is the one that reads as broken.
-                 So: the dial below is the DESKTOP height, and anything under `lg` gets +320px. */
-              <iframe
-                src={url}
-                style={{ ["--bk-h" as string]: `${h}px`, ["--bk-h-sm" as string]: `${h + 320}px` }}
-                className="w-full border-0 h-[var(--bk-h-sm)] lg:h-[var(--bk-h)]"
-                title="Book a call"
-                loading="lazy"
-              />
-            ) : (
-              <div
-                className="flex flex-col items-center justify-center gap-2 p-8 text-center text-sm"
-                style={{ minHeight: 220, color: "var(--color-sjc-muted, #6b7280)" }}
+            {title ? (
+              <h2
+                className="text-center text-3xl font-bold sm:text-4xl"
+                style={{ color: "var(--color-sjc-ink)" }}
               >
-                <span className="text-2xl">📅</span>
-                <span>Paste your Google Calendar appointment-schedule link.</span>
-                <span className="text-xs opacity-70">Calendar → your schedule → Share → copy link</span>
-              </div>
-            )}
+                {title}
+              </h2>
+            ) : null}
+            {subtitle ? (
+              <p className="mt-3 text-center text-base" style={{ color: "var(--color-sjc-mute)" }}>
+                {subtitle}
+              </p>
+            ) : null}
+            <div
+              className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm"
+              style={{ marginTop: title || subtitle ? 28 : 0 }}
+            >
+              {/* Cal sizes its own iframe — see CalEmbed for why a fixed height cannot work, and why the
+                  namespaced init in there must not be simplified. */}
+              {calLink && CAL_EMBED_ENABLED ? (
+                <CalEmbed calLink={calLink} minHeight={h} />
+              ) : url ? (
+                <iframe
+                  src={url}
+                  style={{ ["--bk-h" as string]: `${h}px`, ["--bk-h-sm" as string]: `${h + 320}px` }}
+                  className="w-full border-0 h-[var(--bk-h-sm)] lg:h-[var(--bk-h)]"
+                  title="Book a call"
+                  loading="lazy"
+                />
+              ) : (
+                <div
+                  className="flex flex-col items-center justify-center gap-2 p-8 text-center text-sm"
+                  style={{ minHeight: 220, color: "var(--color-sjc-muted, #6b7280)" }}
+                >
+                  <span className="text-2xl">📅</span>
+                  <span>Paste your Cal.com event link or Google appointment-schedule link.</span>
+                  <span className="text-xs opacity-70">Cal.com → your event → copy link</span>
+                </div>
+              )}
+            </div>
           </div>
         );
       },
