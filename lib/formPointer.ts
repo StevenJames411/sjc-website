@@ -104,7 +104,7 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
           // options travel and LeadForm draws them.
           inputType: CHOICE_TYPES.includes(f.type) ? "text" : f.type,
           ...(CHOICE_TYPES.includes(f.type) && f.options?.length
-            ? { options: f.options, multi: f.type === "multi" }
+            ? { options: f.options, multi: f.type === "multi", dropdown: Boolean(f.dropdown), placeholder: f.placeholder }
             : {}),
           required: f.required,
         }));

@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
 import { readPuckPublished, sheetsFor } from "@/lib/puckContent";
 import { applyTypeScale } from "@/lib/typeScale";
+import { applyColorMap } from "@/lib/designColors";
 import { resolveFormPointers } from "@/lib/formPointer";
 import { readForms } from "@/lib/forms";
 import { findPageMeta, readPages } from "@/lib/pageRegistry";
@@ -433,9 +434,11 @@ export async function SitePageBody({
   // ⚠️ THE SIZES ARE APPLIED TO THE SHEET ON ITS WAY OUT, never to the stored copy — which is
   // content-addressed, immutable and shared by every page referencing it. Clearing the map restores
   // the design byte-for-byte with nothing to recompile. See lib/typeScale.
-  const designCss = applyTypeScale(
-    await sheetsFor([data, chrome.nav, chrome.footer].filter(Boolean)),
-    brand?.typeScale
+  // Sizes then colours, both rewritten on the sheet's way out — the stored copy is immutable and
+  // shared, so clearing either map restores the design byte-for-byte. See lib/typeScale.
+  const designCss = applyColorMap(
+    applyTypeScale(await sheetsFor([data, chrome.nav, chrome.footer].filter(Boolean)), brand?.typeScale),
+    brand?.colorMap
   );
 
   // ── ⛔ THE FOOTER CAN MIRROR THE HEADER'S LINKS ──────────────────────────────────────────────

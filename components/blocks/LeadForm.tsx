@@ -34,6 +34,10 @@ export type LeadFormField = {
   options?: string[];
   /** True for `multi` — more than one answer allowed. Stored comma-separated. */
   multi?: boolean;
+  /** Draw a `choice` as a real <select> instead of buttons. Opt-in — see where it renders. */
+  dropdown?: boolean;
+  /** The greyed first row of a dropdown, e.g. "Select a service". */
+  placeholder?: string;
 };
 export type LeadFormProps = {
   source?: string;
@@ -112,6 +116,14 @@ export type LeadFormProps = {
   heading?: string;
   subheading?: string;
   headingColor?: string;
+  /**
+   * Link target for this form, e.g. "book" so any button anywhere can point at `/#book`.
+   *
+   * ⛔ EVERY CTA ON THE SITE WAS ALREADY AIMING AT ONE THAT DID NOT EXIST. Ten pages linked to
+   * `#book`; no element on the site carried that id, so the button did nothing on all ten —
+   * including the page the form is on. A dead anchor throws no error, so it survived unnoticed.
+   */
+  anchor?: string;
 };
 
 export const LEADFORM_DEFAULTS: LeadFormProps = {
@@ -171,6 +183,7 @@ export default function LeadForm(props: LeadFormProps) {
     successBody = LEADFORM_DEFAULTS.successBody,
     buttonColor,
     inColumn,
+    anchor = "",
     theme = "light",
     altSuccess,
     background = "",
@@ -212,6 +225,18 @@ export default function LeadForm(props: LeadFormProps) {
     // exists. Rendered even without a band, where it simply sits above the card.
     const titled = (
       <>
+        {/* ⛔ THE ANCHOR EVERY "BOOK A CALL" BUTTON WAS ALREADY AIMING AT (2026-08-16).
+            Ten pages linked to `#book` and NOTHING on the site carried that id — not even the home
+            page the form lives on, so the button did nothing everywhere, silently. A dead anchor
+            has no error state, which is why it survived: the page just sits there.
+            Offset by the sticky header's height so the heading is not hidden under it on arrival. */}
+        {anchor ? (
+          <span
+            id={anchor}
+            aria-hidden="true"
+            style={{ display: "block", position: "relative", top: -96, visibility: "hidden" }}
+          />
+        ) : null}
         {withTitle && (heading || subheading) ? (
           <div
             className={`mb-8 ${inColumn ? "text-left" : "mx-auto max-w-xl text-center"}`}
@@ -575,7 +600,25 @@ export default function LeadForm(props: LeadFormProps) {
               {/* BUTTONS, NOT A DROPDOWN. This is answered on a phone, and a five-option rating
                   behind a tap-and-scroll picker is the difference between a review and a closed
                   tab. It also puts the whole scale on screen, which is the question. */}
-              {f?.options?.length ? (
+              {f?.options?.length && f?.dropdown ? (
+                /* ⚠️ OPT-IN, NOT THE DEFAULT. Buttons stay right for a rating scale — see the note
+                   above. A dropdown is right when the options are a MENU the visitor is choosing
+                   from rather than a scale they are reading: SJC's five services, where the list is
+                   long enough that buttons push the name and phone fields off a phone screen. */
+                <select
+                  id={`lf-${k}`}
+                  value={values[k] || ""}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [k]: e.target.value }))}
+                  className={inputCls}
+                >
+                  <option value="">{f.placeholder || "Select one…"}</option>
+                  {f.options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              ) : f?.options?.length ? (
                 <div className="flex flex-col gap-2">
                   {f.options.map((opt) => {
                     // ⚠️ MULTI STORES A COMMA-SEPARATED LIST IN ONE CELL, which is what a "pick

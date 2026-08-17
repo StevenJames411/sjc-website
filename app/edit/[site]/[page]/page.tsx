@@ -11,6 +11,7 @@ import { SJC } from "@/lib/siteKeys";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { applyTypeScale, sizesIn } from "@/lib/typeScale";
+import { applyColorMap } from "@/lib/designColors";
 
 // The builder for one page of one website: /edit/<site>/<page>.
 //
@@ -98,7 +99,7 @@ export default async function EditPage({
   // The canvas gets the same sized sheet the public page does, or the size controls would appear to
   // do nothing in the one place the work is done — the exact failure this file already carries two
   // comments about.
-  const designCss = applyTypeScale(designCssRaw, brand?.typeScale);
+  const designCss = applyColorMap(applyTypeScale(designCssRaw, brand?.typeScale), brand?.colorMap);
 
   return (
     <>

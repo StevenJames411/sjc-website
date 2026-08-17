@@ -2,20 +2,17 @@
 import { useEffect, useState } from "react";
 
 // Owner-only floating "Edit this page" button. Lives on every public page (added once in the
-// root layout). Maps the current path to its builder slug and links straight to /edit/<slug>,
-// so the owner never has to type the URL. Hidden for non-owners and on the builder itself.
-const PATH_TO_SLUG: Record<string, string> = {
-  "/": "home",
-  "/about": "about",
-  "/podcast": "podcast",
-  "/faqs": "faqs",
-  "/apply": "apply",
-  "/guest": "guest",
-  "/websites": "websites",
-};
-
+// root layout). Hidden for non-owners and on the builder itself.
+//
+// ⛔ IT DOES NOT WORK OUT ITS OWN DESTINATION, AND MUST NOT TRY (2026-08-16). This used to hold a
+// hardcoded path→slug map and link to `/edit/<slug>` with no site segment — which resolved to the
+// LEGACY `sjc` site, so the button opened a different website than the one you were looking at.
+// The map was also stale: /custom-websites, /booked-appointments, /speed-to-lead, /portfolio and
+// /careers were not in it, so the button simply did not appear on half the site.
+//
+// Which site owns a host is a server fact, so /api/auth-status now returns the finished href.
 export default function EditLink() {
-  const [slug, setSlug] = useState<string | null>(null);
+  const [editHref, setEditHref] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
   // ⚠️ NOT ON /edit. The back-office rail carries its own Sign out now, and this one is
   // position:fixed — two sign-out buttons on the same screen, one of them floating over the page.
@@ -24,11 +21,13 @@ export default function EditLink() {
 
   useEffect(() => {
     const raw = window.location.pathname.replace(/\/+$/, "") || "/";
-    setSlug(PATH_TO_SLUG[raw] ?? null);
     setInBackOffice(raw === "/edit" || raw.startsWith("/edit/"));
-    fetch("/api/auth-status")
+    fetch(`/api/auth-status?path=${encodeURIComponent(raw)}`)
       .then((r) => r.json())
-      .then((j) => setAuthed(Boolean(j && j.authed)))
+      .then((j) => {
+        setAuthed(Boolean(j && j.authed));
+        setEditHref((j && j.editHref) || null);
+      })
       .catch(() => {});
   }, []);
 
@@ -58,9 +57,9 @@ export default function EditLink() {
         gap: 8,
       }}
     >
-      {slug && (
+      {editHref && (
         <a
-          href={`/edit/${slug}`}
+          href={editHref}
           style={{
             background: "#2563eb",
             color: "#fff",

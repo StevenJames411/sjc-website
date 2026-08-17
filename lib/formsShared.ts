@@ -124,6 +124,8 @@ export type FormField = {
    * on the way past would have been a redesign smuggled in as a refactor.
    */
   step?: string;
+  /** Draw this `choice` as a real dropdown instead of buttons. Opt-in per question. */
+  dropdown?: boolean;
 };
 
 /**

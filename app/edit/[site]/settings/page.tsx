@@ -5,6 +5,7 @@ import { readPages } from "@/lib/pageRegistry";
 import { readBrand } from "@/lib/brand";
 import { readPuckDraft, sheetsFor } from "@/lib/puckContent";
 import { sizesIn, sampleFor, roleFor } from "@/lib/typeScale";
+import { colorsIn, isDark } from "@/lib/designColors";
 import { governingSize } from "@/lib/typeScaleMap";
 
 // Everything global to one website. Static segment, so it wins over /edit/[site]/[page] — which
@@ -53,7 +54,17 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ s
   // Grouping by the EFFECTIVE value makes the screen say what actually happened: one row per size
   // the website really uses, carrying the originals it absorbed. 36 rows become 21, which is the
   // change itself finally being visible.
-  const raw = sizesIn(await sheetsFor(allDocs));
+  const rawSheet = await sheetsFor(allDocs);
+  const raw = sizesIn(rawSheet);
+  // ⛔ THE DESIGN'S OWN PALETTE. Thirteen brand swatches could never reach an imported section:
+  // its colours are literal hex inside its own stylesheet, 26 distinct on this site, none pointing
+  // at a brand variable. Same treatment as the sizes — list what the design actually declares.
+  const designColors = colorsIn(rawSheet).map((c) => ({
+    ...c,
+    dark: isDark(c.value),
+    current: (brand?.colorMap || {})[c.value] || c.value,
+    changed: !!(brand?.colorMap || {})[c.value],
+  }));
   const scale = brand?.typeScale || {};
   const groups = new Map<string, { effective: string; members: string[]; rules: number; selectors: string[] }>();
   for (const z of raw) {
@@ -164,6 +175,7 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ s
       brand={brand}
       sizes={ordered}
       elsewhere={elsewhere}
+      designColors={designColors}
     />
   );
 }

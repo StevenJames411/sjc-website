@@ -36,6 +36,16 @@ type Props = {
     changed: boolean;
     selectors: string[];
   }[];
+  /** Every colour the imported designs declare, most-used first. See lib/designColors. */
+  designColors: {
+    value: string;
+    rules: number;
+    props: string[];
+    selectors: string[];
+    dark: boolean;
+    current: string;
+    changed: boolean;
+  }[];
   /** Sizes that appear only on pages with more sections than the home page. */
   elsewhere: {
     effective: string;
@@ -60,7 +70,7 @@ const TOKENS: [string, keyof Site["business"]][] = [
   ["{{business.reviewUrl}}", "reviewUrl"],
 ];
 
-export default function SiteSettings({ site, pageCount, pages, brand, sizes, elsewhere }: Props) {
+export default function SiteSettings({ site, pageCount, pages, brand, sizes, elsewhere, designColors }: Props) {
   const router = useRouter();
   const [s, setS] = useState<Site>(site);
   const [busy, setBusy] = useState(false);
@@ -167,6 +177,47 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
    * a price or a badge. Keyed by the design's own selector, so any element the panel can name can
    * have one and nothing new has to be added for the next case.
    */
+  /**
+   * One of the DESIGN'S colours, changed everywhere it appears.
+   *
+   * ⛔ SEPARATE FROM THE THIRTEEN BRAND SWATCHES BELOW, AND IT HAS TO BE. Those set OUR variables,
+   * which our blocks paint from. A bought design paints from its own literal hex — 26 distinct
+   * values on this site, none of them pointing at a brand variable — so the brand swatches could
+   * never touch an imported band. This list is what the design actually declares.
+   */
+  const dcTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function pickDesignColor(original: string, next: string) {
+    const map = { ...((fonts.colorMap as Record<string, string>) || {}) };
+    if (!next || next.toLowerCase() === original.toLowerCase()) delete map[original];
+    else map[original] = next;
+    setFonts({ ...fonts, colorMap: map } as Brand);
+    setFontMsg("Saving…");
+    if (dcTimer.current) clearTimeout(dcTimer.current);
+    dcTimer.current = setTimeout(async () => {
+      try {
+        const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, { credentials: "same-origin" }).then((x) => x.json());
+        const put = await fetch("/api/brand", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, brand: { ...(cur?.brand || {}), colorMap: map } }),
+        }).then((x) => x.json());
+        if (!put.ok) throw new Error(put.error || "Couldn't save the colour.");
+        const pub = await fetch("/api/brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, action: "publish-designcolors" }),
+        }).then((x) => x.json());
+        if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+        setFontMsg("Live on the website.");
+        router.refresh();
+      } catch (e) {
+        setFontMsg((e as Error).message);
+      }
+    }, 500);
+  }
+
   function pickFace(selectors: string[], font: string) {
     const faceFor = { ...((fonts.faceFor as Record<string, string>) || {}) };
     for (const sel of selectors) {
@@ -436,6 +487,98 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
       const done = await call(false);
       if (!done?.ok) throw new Error(done?.error || "Couldn't fix them.");
       setSweepMsg(`Fixed ${done.total || total} link${(done.total || total) === 1 ? "" : "s"}.`);
+      router.refresh();
+    } catch (e) {
+      setSweepMsg((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /**
+   * "Use this design's header and footer on every page" — the button that makes an IMPORTED site
+   * behave the way a built one already does.
+   *
+   * ⛔ WHAT IT UNDOES. A bought design is split into one section per top-level element, so its
+   * <header> and <footer> land INSIDE each page like any other band. Import a design and every
+   * page carries its own copy; a page created afterwards gets none. Steven: *"the whole concept of
+   * the header navigation and footer being global is so you don't have to do it manually six,
+   * seven, eight times."* Exactly — and until this runs, on an imported site you do.
+   *
+   * ⚠️ THE PAGE COUNT IS NOT PART OF THE CONCEPT. Three pages, four, ten — nothing here counts. A
+   * one-page site still lifts, which is what makes page two wear the header the day it is made.
+   *
+   * ⚠️ publish: true, for the same reason applyEverywhere does it — this is a site-wide structural
+   * change, and the alternative is publishing every page by hand and shipping whatever half-built
+   * drafts happen to be sitting in them.
+   */
+  async function liftChromeNow() {
+    setBusy(true);
+    setSweepMsg("");
+    try {
+      const call = (dryRun: boolean, overwrite = false) =>
+        fetch("/api/admin/lift-chrome", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, dryRun, publish: true, overwrite }),
+        }).then((r) => r.json());
+
+      const look = await call(true);
+      if (!look?.ok) throw new Error(look?.error || "Couldn't check this website.");
+
+      if (!look.source) {
+        setSweepMsg("This website's header and footer are already global — nothing to do.");
+        return;
+      }
+
+      // ⛔ NEVER SILENTLY REPLACE A HEADER SOMEBODY BUILT HERE. The operator gets told what is
+      // already there and chooses; the old script could assume the documents were empty because it
+      // only ever ran against one known site.
+      let overwrite = false;
+      if ((look.existingChrome || []).length) {
+        const which = (look.existingChrome as string[])
+          .map((c) => (c === "nav" ? "header" : "footer"))
+          .join(" and ");
+        if (
+          !window.confirm(
+            `This website already has a ${which} of its own.\n\nReplace it with the one from the imported design?`
+          )
+        )
+          return;
+        overwrite = true;
+      }
+
+      // ⚠️ THE DRIFT WARNING IS THE WHOLE REASON THIS ASKS BEFORE IT ACTS. If the copies are not
+      // identical, "global" picks a winner and the odd pages out change appearance.
+      const drift = (look.drift || []) as { slug: string }[];
+      const pageCount = (look.strippedPages || []).length;
+      if (
+        !window.confirm(
+          `Use the header and footer from "${look.source}" on every page of this website?\n\n` +
+            `${pageCount} page(s) currently carry their own copy, which will be removed so nothing shows twice.\n\n` +
+            (drift.length
+              ? `⚠️ ${drift.length} page(s) have a header or footer that DIFFERS from "${look.source}": ` +
+                `${drift.map((d) => d.slug).join(", ")}. Those pages will take "${look.source}"'s and will look different afterwards.\n\n`
+              : `Every page's copy is identical, so nothing changes visually.\n\n`) +
+            `After this, editing the header once changes all of them.`
+        )
+      )
+        return;
+
+      const done = await call(false, overwrite);
+      if (!done?.ok) throw new Error(done?.error || "Couldn't apply it.");
+      if ((done.refused || []).length) {
+        setSweepMsg(
+          `Partly done — ${(done.refused || []).length} change(s) were refused: ` +
+            (done.refused as { reason: string }[]).map((r) => r.reason).join("; ")
+        );
+        return;
+      }
+      setSweepMsg(
+        `Done — one header and one footer now serve all ${(done.pages || []).length} page(s). ` +
+          `Edit them once and every page follows.`
+      );
       router.refresh();
     } catch (e) {
       setSweepMsg((e as Error).message);
@@ -742,6 +885,15 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
           never when you type the address.
         </p>
 
+        <button type="button" onClick={liftChromeNow} disabled={busy} style={{ ...ghost, marginLeft: 8 }}>
+          {busy ? "Working…" : "Use this design's header and footer on every page"}
+        </button>
+        <p style={{ ...hint, margin: "8px 0 0" }}>
+          Only needed for a site built from an imported design. The design gives every page its own
+          copy of the header and footer, so changing one changes one page. This makes them global:
+          edit the header once and every page follows, and a page you add later already has it.
+        </p>
+
         {sweepMsg ? <p style={{ ...hint, margin: "6px 0 0", color: "var(--e-ok-ink)" }}>{sweepMsg}</p> : null}
       </div>
 
@@ -794,6 +946,41 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
       ) : null}
       {fontMsg ? <p style={{ ...hint, margin: "8px 0 0" }}>{fontMsg}</p> : null}
 
+
+      {designColors.length ? (
+        <>
+          <h2 style={sec}>The design&rsquo;s colours</h2>
+          <p style={hint}>
+            The palette your imported design was built with. Change one and it changes everywhere it
+            is used. Blank it to put the design&rsquo;s own colour back.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 8 }}>
+            {designColors.map((c) => (
+              <label
+                key={c.value}
+                title={c.selectors.slice(0, 6).join(", ")}
+                style={{ display: "flex", alignItems: "center", gap: 9, border: `1px solid ${c.changed ? "var(--e-accent, #3b82f6)" : "var(--e-line)"}`, borderRadius: 9, padding: "8px 10px" }}
+              >
+                <input
+                  type="color"
+                  value={/^#[0-9a-f]{6}$/i.test(c.current) ? c.current : "#000000"}
+                  onChange={(e) => pickDesignColor(c.value, e.target.value)}
+                  style={{ width: 30, height: 30, border: "none", background: "none", padding: 0, cursor: "pointer", flex: "0 0 auto" }}
+                />
+                <span style={{ fontSize: 12, lineHeight: 1.3, minWidth: 0 }}>
+                  {/* ⚠️ THE PROPERTY IS THE LABEL. A hex tells nobody anything; "background, 14
+                      places" is how a person finds the one they mean. */}
+                  <span style={{ display: "block", fontWeight: 600 }}>{c.props.slice(0, 2).join(", ") || "colour"}</span>
+                  <span style={{ color: "var(--e-muted)" }}>
+                    {c.current}
+                    {c.changed ? ` (was ${c.value})` : ""} · {c.rules} place{c.rules === 1 ? "" : "s"}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </>
+      ) : null}
 
       <h2 style={sec}>Colours</h2>
       <p style={hint}>
@@ -956,6 +1143,24 @@ function SizeRow({
         <input type="number" min={6} step={0.5} value={parseFloat(effective)}
           onChange={(e) => onSet(e.target.value ? `${e.target.value}px` : "")}
           style={{ width: 74, padding: "5px 7px", fontSize: 13, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+      ) : clampParts(effective) ? (
+        /* ⛔ A RESPONSIVE SIZE, SHOWN AS THE TWO NUMBERS IT ACTUALLY MEANS.
+           `clamp(32px,5vw,42px)` is "32 on a phone, up to 42 on a laptop" — Steven, reasonably:
+           *"some of these font sizes don't have a pixel, they've got like a raw code… why are some
+           expressed in code and some aren't."* Showing the raw function is unreadable; collapsing
+           it to ONE number would silently throw away the phone size and wrap a headline badly on
+           the screen most visitors arrive on. So: two boxes, and the vw scaling rate in the middle
+           is preserved untouched — it is the rate of change between them, not a third size. */
+        <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ fontSize: 10.5, color: "var(--e-muted)" }}>phone</span>
+          <input type="number" min={6} step={1} value={clampParts(effective)!.min}
+            onChange={(e) => onSet(rebuildClamp(effective, e.target.value, null))}
+            style={{ width: 58, padding: "5px 6px", fontSize: 12.5, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+          <span style={{ fontSize: 10.5, color: "var(--e-muted)" }}>laptop</span>
+          <input type="number" min={6} step={1} value={clampParts(effective)!.max}
+            onChange={(e) => onSet(rebuildClamp(effective, null, e.target.value))}
+            style={{ width: 58, padding: "5px 6px", fontSize: 12.5, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
+        </span>
       ) : (
         <input type="text" value={effective} onChange={(e) => onSet(e.target.value.trim())}
           style={{ width: 170, padding: "5px 7px", fontSize: 12, borderRadius: 6, border: `1px solid ${border}`, background: "transparent", color: "inherit" }} />
@@ -982,6 +1187,32 @@ function SizeRow({
       ) : null}
     </div>
   );
+}
+
+
+/** `clamp(32px,5vw,42px)` -> { min: 32, rate: "5vw", max: 42 }, or null if it is not a clamp. */
+function clampParts(v: string): { min: number; rate: string; max: number } | null {
+  const m = /^clamp\(\s*([\d.]+)px\s*,\s*([^,]+?)\s*,\s*([\d.]+)px\s*\)$/i.exec(String(v || "").trim());
+  return m ? { min: Number(m[1]), rate: m[2].trim(), max: Number(m[3]) } : null;
+}
+
+/**
+ * Put a clamp back together after one end was edited.
+ *
+ * ⚠️ THE MIDDLE TERM IS CARRIED THROUGH UNCHANGED. It is the RATE the size grows at between the two
+ * ends, not a third size — recomputing it from the new min/max would quietly re-tune how the
+ * headline behaves at every width in between, which is not what somebody typing "40" asked for.
+ */
+function rebuildClamp(v: string, min: string | null, max: string | null): string {
+  const p = clampParts(v);
+  if (!p) return v;
+  const lo = min === null ? p.min : Number(min);
+  const hi = max === null ? p.max : Number(max);
+  if (!lo || !hi) return v;
+  // A phone size above the laptop size is a typo, not an instruction — swap rather than emit a
+  // clamp the browser will read backwards.
+  const [a, b] = lo <= hi ? [lo, hi] : [hi, lo];
+  return `clamp(${a}px,${p.rate},${b}px)`;
 }
 
 const page: React.CSSProperties = { maxWidth: 680, margin: "0 auto", padding: "32px 24px 100px", fontFamily: font };

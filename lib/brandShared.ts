@@ -86,6 +86,19 @@ export type Brand = {
    * the panel can name can have one, and nothing has to be added to the brand for the next case.
    */
   faceFor?: Record<string, string>;
+  /**
+   * THE DESIGN'S OWN COLOURS, keyed by the value it declared: `{"#0a0e27": "#101a3d"}`.
+   *
+   * ⛔ THE COLOUR HALF OF THE SAME HOLE THE TYPE SCALE FILLED. A bought design writes its palette as
+   * literal hex inside its own compiled stylesheet — measured on the live site: 31 literal colours
+   * across 26 distinct values, and ZERO references to `var(--color-sjc-*)`. So the thirteen brand
+   * swatches could not reach an imported section at all: change the palette and the page ignores
+   * you, exactly as it ignored the font picker before stripFontFamily.
+   *
+   * Keyed by the declared VALUE for the same reason sizes are: a design names its colours in its
+   * own classes, and mapping them to roles means guessing which hex is "the accent".
+   */
+  colorMap?: Record<string, string>;
   accent: string;      // links, badges, eyebrows — the "brand" color
   accentHover: string;
   secondary: string;   // second accent — confirmations, "open now", the softer of two buttons
@@ -129,6 +142,7 @@ export const BRAND_DEFAULTS: Brand = {
   designFontCss: "",
   typeScale: {},
   faceFor: {},
+  colorMap: {},
   accent: "#2563eb",
   accentHover: "#1d4fd7",
   // Nothing on the live site uses these yet, so any value is safe; these are sane starting

@@ -130,12 +130,13 @@ type Props = {
     heading: string;
     subheading: string;
     headingColor: string;
+    anchor: string;
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
-  Booking: { src: string; height: number };
+  Booking: { src: string; height: number; width: string; anchor: string };
   Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
-  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string };
+  Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string; anchor: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
   Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean; size: string; labelColor: string };
   Video: { src: string; caption: string; poster: string; width: string; aspect: string; autoplay: boolean; loop: boolean; muted: boolean };
@@ -1687,6 +1688,11 @@ const baseConfig: Config<Props, RootProps> = {
         // started below the heading and the section looked broken.
         heading: { type: "text" as const, label: "Heading the customer sees (optional)" },
         subheading: { type: "textarea" as const, label: "Line under the heading (optional)" },
+        // One word, no "#". Buttons anywhere on the site then link to /#<word> and land here.
+        anchor: {
+          type: "text" as const,
+          label: 'Link name — type "book" and any button can point at /#book',
+        },
         headingColor: {
           ...COLOR_FIELD,
           label: "Heading colour (blank = the page's own)",
@@ -1789,8 +1795,12 @@ const baseConfig: Config<Props, RootProps> = {
        * would drag the database client into the editor bundle.
        */
       resolveData: resolveLeadFormPreset,
-      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, paddingTop, paddingBottom, bandPadding, heading, subheading, headingColor }) => (
+      render: ({ source, fields, buttonLabel, note, successHeading, successBody, buttonColor, inColumn, theme, background, paddingTop, paddingBottom, bandPadding, heading, subheading, headingColor, anchor }) => (
         <LeadForm
+          // ⚠️ EVERY PROP HAS TO BE LISTED HERE OR IT IS SILENTLY DROPPED. This render destructures
+          // explicitly, so `anchor` was set on the block, saved, published — and never reached the
+          // component. The id simply did not render and every "Book a Call" kept going nowhere.
+          anchor={anchor}
           source={source}
           fields={fields}
           buttonLabel={buttonLabel}
@@ -2672,24 +2682,55 @@ const baseConfig: Config<Props, RootProps> = {
         },
         height: {
           type: "custom" as const,
-          label: "Height (− / +)",
+          label: "Height on desktop (− / +) — phones get 320px more automatically",
           render: ({ onChange, value }) => (
             <SizeStepper label={"Height"} value={value as number} onChange={onChange} fallback={620} step={20} min={320} />
           ),
         },
+        // ⛔ WIDTH IS NOT COSMETIC ON A BOOKING WIDGET — IT CHANGES THE LAYOUT.
+        // Cal.com's booker is responsive: given room it renders THREE COLUMNS side by side
+        // (details | month grid | time slots); squeezed under ~1024px it stacks them vertically and
+        // the whole thing turns into a long scroll. The old hardcoded `max-w-3xl` (48rem/768px) was
+        // under that threshold, so the desktop embed always looked like the phone layout while the
+        // same URL opened standalone looked right — which reads as "Cal.com is broken," not "the
+        // column is narrow." Anything 64rem+ clears it.
+        width: {
+          ...WIDTH_FIELD,
+          label: "Width — Cal.com needs 64rem+ to lay out side by side instead of stacking",
+        },
+        // Same dial the lead form has, so whichever block is the place people book, a button
+        // anywhere on the site can point at it.
+        anchor: {
+          type: "text" as const,
+          label: 'Link name — type "book" and any button can point at /#book',
+        },
       },
-      defaultProps: { src: "", height: 620 },
-      render: ({ src, height }) => {
+      defaultProps: { src: "", height: 620, width: "80rem", anchor: "" },
+      render: ({ src, height, width, anchor }) => {
         const h = typeof height === "number" ? height : 620;
         const raw = String(src || "").trim();
         const url = !raw ? "" : /[?&]gv=true/.test(raw) ? raw : `${raw}${raw.includes("?") ? "&" : "?"}gv=true`;
         return (
-          <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div
+            id={anchor || undefined}
+            className="mx-auto w-full overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm"
+            style={{
+              // Pages saved before this field existed have no width — keep them on the old 48rem so
+              // nothing silently reflows underneath someone.
+              maxWidth: width === "none" ? undefined : (width as string) || "48rem",
+              ...(anchor ? { scrollMarginTop: 96 } : {}),
+            }}
+          >
             {url ? (
+              /* ⛔ ONE FIXED HEIGHT CANNOT SERVE BOTH LAYOUTS. Wide enough for Cal's three columns,
+                 the widget is SHORT; on a phone the same widget stacks those columns and runs far
+                 taller. A single height either leaves a slab of white on desktop or puts the phone
+                 into an inner scrollbar — and the inner scrollbar is the one that reads as broken.
+                 So: the dial below is the DESKTOP height, and anything under `lg` gets +320px. */
               <iframe
                 src={url}
-                style={{ height: `${h}px` }}
-                className="w-full border-0"
+                style={{ ["--bk-h" as string]: `${h}px`, ["--bk-h-sm" as string]: `${h + 320}px` }}
+                className="w-full border-0 h-[var(--bk-h-sm)] lg:h-[var(--bk-h)]"
                 title="Book a call"
                 loading="lazy"
               />
@@ -2942,9 +2983,14 @@ const baseConfig: Config<Props, RootProps> = {
             <ColorField label={field?.label} value={value as string} onChange={onChange} />
           ),
         },
+        // Same "Link name" dial the lead form and the calendar have.
+        anchor: {
+          type: "text" as const,
+          label: 'Link name — type "book" and any button can point at /#book',
+        },
       },
-      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "ink", underline: "", highlight: "", highlightColor: "", highlightFade: "" },
-      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor, highlightFade }) => {
+      defaultProps: { text: "New heading", fontSize: 0, spaceAbove: 0, spaceBelow: 12, align: "left" as const, color: "ink", underline: "", highlight: "", highlightColor: "", highlightFade: "", anchor: "" },
+      render: ({ text, fontSize, spaceAbove, spaceBelow, align, color, underline, highlight, highlightColor, highlightFade, anchor }) => {
         const px = fontSize && fontSize > 0 ? fontSize : 32;
 
         // The marker swipe. A straight rule reads like a border; this reads like someone drew it.
@@ -3005,8 +3051,13 @@ const baseConfig: Config<Props, RootProps> = {
         }
         return (
           <h2
+            // A heading can be a link target, so a button anywhere can point at /#<name>. Landing
+            // on the HEADING rather than on the thing below it is the point: arrive at a calendar
+            // and you cannot see what you are looking at.
+            id={anchor || undefined}
             className="font-bold leading-tight tracking-tight"
             style={{
+              ...(anchor ? { scrollMarginTop: 96 } : {}),
               fontSize: `${px}px`,
               textAlign: align,
               color: resolveColorOr(color, "var(--color-sjc-ink)"),
