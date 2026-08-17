@@ -140,7 +140,7 @@ type Props = {
   };
   Spacer: { height: number };
   Divider: { color: string; thickness: number; spacing: number };
-  Booking: { src: string; title: string; subtitle: string; height: number; width: string; anchor: string };
+  Booking: { src: string; title: string; subtitle: string; spaceAbove: number; spaceBelow: number; height: number; width: string; anchor: string };
   Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
   Heading: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; underline: string; highlight: string; highlightColor: string; highlightFade: string; anchor: string };
   Text: { text: string; fontSize: number; spaceAbove: number; spaceBelow: number; align: Align; color: string; pill: string; pillBorder: string; icon: string; iconColor: string };
@@ -2693,6 +2693,24 @@ const baseConfig: Config<Props, RootProps> = {
         // time. One block owns the words, the calendar and the space between them.
         title: { type: "text" as const, label: "Title above the calendar (leave blank for none)" },
         subtitle: { type: "text" as const, label: "Line under the title (optional)" },
+        // ⛔ THE SPACING DIALS COME WITH THE TITLE — MOVING THE WORDS WITHOUT THEM IS A DOWNGRADE.
+        // The title used to live in a Heading block, which carries Space above / Space below. Folding
+        // it in here without these would have quietly taken away the two controls Steven reaches for
+        // most, and made the layout feel like it had been buried in code. Same stepper, same steps.
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={4} min={0} />
+          ),
+        },
         height: {
           type: "custom" as const,
           label: "Reserved height (− / +) — Cal.com resizes itself; this only holds space while it loads",
@@ -2718,8 +2736,8 @@ const baseConfig: Config<Props, RootProps> = {
           label: 'Link name — type "book" and any button can point at /#book',
         },
       },
-      defaultProps: { src: "", title: "", subtitle: "", height: 620, width: "80rem", anchor: "" },
-      render: ({ src, title, subtitle, height, width, anchor }) => {
+      defaultProps: { src: "", title: "", subtitle: "", spaceAbove: 0, spaceBelow: 0, height: 620, width: "80rem", anchor: "" },
+      render: ({ src, title, subtitle, spaceAbove, spaceBelow, height, width, anchor }) => {
         const h = typeof height === "number" ? height : 620;
         const raw = String(src || "").trim();
         const calLink = calLinkFrom(raw);
@@ -2738,6 +2756,8 @@ const baseConfig: Config<Props, RootProps> = {
             id={anchor || undefined}
             className="mx-auto w-full"
             style={{
+              paddingTop: `${typeof spaceAbove === "number" ? spaceAbove : 0}px`,
+              paddingBottom: `${typeof spaceBelow === "number" ? spaceBelow : 0}px`,
               // Pages saved before this field existed have no width — keep them on the old 48rem so
               // nothing silently reflows underneath someone.
               maxWidth: width === "none" ? undefined : (width as string) || "48rem",
