@@ -330,6 +330,8 @@ export default function LeadForm(props: LeadFormProps) {
   const list = (Array.isArray(fields) && fields.length ? fields : LEADFORM_DEFAULTS.fields) || [];
 
   const [values, setValues] = useState<Record<string, string>>({});
+
+  const [uploading, setUploading] = useState<Record<string, string>>({});
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [trap, setTrap] = useState("");
 
@@ -651,6 +653,43 @@ export default function LeadForm(props: LeadFormProps) {
                       </button>
                     );
                   })}
+                </div>
+              ) : f?.inputType === "file" ? (
+                /* ⚠️ THE FIELD HOLDS A URL, NOT A FILE. The upload happens on pick, and what lands
+                   in `values[k]` is the stored link — so the submit path, the spreadsheet column
+                   and the notification email all stay plain text and need no special case. A
+                   failed upload leaves the field empty and says so, rather than silently
+                   submitting a form that looks complete. */
+                <div>
+                  <input
+                    id={`lf-${k}`}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploading((u) => ({ ...u, [k]: "Uploading…" }));
+                      try {
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        const r = await fetch("/api/careers/upload", { method: "POST", body: fd });
+                        const j = await r.json();
+                        if (!j?.ok) throw new Error(j?.error || "upload failed");
+                        setValues((prev) => ({ ...prev, [k]: j.url }));
+                        setUploading((u) => ({ ...u, [k]: `Attached: ${j.name}` }));
+                      } catch (err) {
+                        setValues((prev) => ({ ...prev, [k]: "" }));
+                        setUploading((u) => ({
+                          ...u,
+                          [k]: err instanceof Error ? err.message : "Upload failed",
+                        }));
+                      }
+                    }}
+                    className={inputCls}
+                  />
+                  {uploading[k] && (
+                    <p className="mt-1 text-sm opacity-80">{uploading[k]}</p>
+                  )}
                 </div>
               ) : (
                 <input
