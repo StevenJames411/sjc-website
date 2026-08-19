@@ -174,6 +174,9 @@ function normalizeFields(incoming: FormField[], previous: FormField[] = []): For
       // from named keys, so a flag that is not listed is dropped on save — silently, and the
       // question quietly falls back to buttons. Only meaningful on a choice question.
       ...(CHOICE_TYPES.includes(type) && f?.dropdown ? { dropdown: true } : {}),
+      // Same whitelist trap as `dropdown` above, and it caught me the same way: the screen break
+      // was set, saved, and silently vanished on the way through here.
+      ...(f?.newScreen ? { newScreen: true } : {}),
       ...(SATISFIED_BY_CHOICES.some((c) => c.path === satisfiedBy) ? { satisfiedBy } : {}),
       ...(f?.step ? { step: String(f.step) } : {}),
     });

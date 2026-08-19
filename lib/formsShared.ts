@@ -105,6 +105,22 @@ export type FormField = {
   placeholder?: string;
   required?: boolean;
   /**
+   * START A NEW SCREEN AT THIS QUESTION.
+   *
+   * ⚠️ WHY AN EXPLICIT BREAK EXISTS AT ALL. Without one the split is purely by weight, so the
+   * boundary follows the content: move a question up and the divider moves with it, and a fourth
+   * question can never reach screen one no matter how many times you press the arrow. Steven, on
+   * the careers form: *"it just replaces the one above it, so it never moves to the first page,
+   * you just keep toggling back and forth."* He was right, and no amount of reordering could have
+   * fixed it.
+   *
+   * ⚠️ NOT `step`. That field is a screen TITLE and it renders as a heading, so using it to force
+   * a break prints "1" and "2" on the customer's form. This carries no words.
+   *
+   * Unset on every existing question, so nothing that works today changes shape.
+   */
+  newScreen?: boolean;
+  /**
    * A dotted path on the Site record that ALREADY ANSWERS THIS. If that field has a value, the
    * question never appears.
    *
@@ -215,6 +231,18 @@ export function surveyScreensOf<
   if (!list.length) return [];
   if (list.some((f) => String(f?.step || "").trim())) {
     return stepsOf(list as unknown as FormField[]) as unknown as { title: string; fields: T[] }[];
+  }
+  // AUTHORED BREAKS WIN OVER THE WEIGHT MACHINE. One question marked `newScreen` means the author
+  // has said where the screens go, so the balancing below stops guessing entirely — a half-guessed
+  // layout is worse than either.
+  if (list.some((f) => (f as { newScreen?: boolean })?.newScreen)) {
+    const out: { title: string; fields: T[] }[] = [];
+    for (const f of list) {
+      const brk = (f as { newScreen?: boolean })?.newScreen;
+      if (!out.length || brk) out.push({ title: "", fields: [f] });
+      else out[out.length - 1].fields.push(f);
+    }
+    return out;
   }
   if (list.length < SURVEY_MIN) return [{ title: "", fields: list }];
 

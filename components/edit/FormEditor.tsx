@@ -400,6 +400,21 @@ export default function FormEditor({
               ))}
             </select>
 
+            {i > 0 ? (
+              /* An AUTHORED break, which stops the weight-balancer guessing. Without it the
+                 divider follows the content — move a question up and the boundary comes with it,
+                 so a fourth question can never reach screen one however many times you press the
+                 arrow. */
+              <label style={checkLbl} title="Push this question, and everything after it, onto a new screen">
+                <input
+                  type="checkbox"
+                  checked={!!x.newScreen}
+                  onChange={(e) => patchField(i, { newScreen: e.target.checked })}
+                />
+                Start a new screen here
+              </label>
+            ) : null}
+
             <label style={checkLbl}>
               <input
                 type="checkbox"
