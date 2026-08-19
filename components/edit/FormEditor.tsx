@@ -22,6 +22,7 @@ import {
   SATISFIED_BY_CHOICES,
   STANDARD_FIELDS,
   stepsOf,
+  surveyScreensOf,
   type FormDef,
   type FormField,
   type FormFieldType,
@@ -169,6 +170,21 @@ export default function FormEditor({
   // A form built out of titled screens — /apply is the one that is. Everything else is a flat
   // list and shouldn't grow a heading box on every row it will never use.
   const usesSteps = f.fields.some((x) => !!x.step);
+
+  // Where the LIVE form will break, computed with its own function so the two can never
+  // disagree. Steven, looking at this screen: *"there's nowhere on the form that I could tell
+  // what page it shows up on."* He could reorder questions but not see the consequence, which
+  // makes the split feel arbitrary. A second implementation of the rule here would drift and lie.
+  const screens = surveyScreensOf(f.fields || []);
+  const screenCount = screens.length;
+  const pageStarts = new Map<number, number>();
+  if (screenCount > 1) {
+    let n = 0;
+    screens.forEach((sc, si) => {
+      pageStarts.set(n, si);
+      n += sc.fields.length;
+    });
+  }
 
   return (
     <div style={page}>
@@ -329,7 +345,17 @@ export default function FormEditor({
       </p>
 
       {f.fields.map((x, i) => (
-        <div key={`${x.fieldId || "new"}-${i}`} style={row}>
+        <div key={`${x.fieldId || "new"}-${i}`}>
+        {pageStarts.has(i) ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "26px 0 14px" }}>
+            <div style={{ flex: 1, height: 1, background: "#2a3140" }} />
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "#7f8ea3", whiteSpace: "nowrap" }}>
+              Screen {(pageStarts.get(i) ?? 0) + 1} of {screenCount}
+            </span>
+            <div style={{ flex: 1, height: 1, background: "#2a3140" }} />
+          </div>
+        ) : null}
+        <div style={row}>
           <div style={rowHead}>
             <input
               value={x.label}
@@ -446,6 +472,7 @@ export default function FormEditor({
               ))}
             </select>
           </label>
+        </div>
         </div>
       ))}
 
