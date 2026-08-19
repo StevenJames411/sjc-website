@@ -771,15 +771,16 @@ export default function LeadForm(props: LeadFormProps) {
                change colour, they don't swell, they don't do anything. They work, but you get used
                to them having some kind of activity so you know they're going to work."*
 
-               So the hover now uses the `-hover` token, which is a genuinely darker blue, and adds
-               a lift and a press. A brand whose two tokens happen to match can no longer produce a
-               dead button, because the movement does not depend on the colour at all. */
+               The hover goes to the CTA token (blue -> green), which is the original intent, plus
+               a lift and a press. ⚠️ THE MOVEMENT IS THE REAL FIX: it does not depend on the
+               palette, so a brand whose two colours happen to match still gets a live button
+               instead of a dead one. */
             dark
-              ? "w-full rounded-xl bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-[color:var(--color-sjc-white)] shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-[color:var(--color-sjc-blue-hover)] hover:shadow-xl active:translate-y-0 active:scale-[0.99] disabled:translate-y-0 disabled:opacity-60"
+              ? "w-full rounded-xl bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-[color:var(--color-sjc-white)] shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-[color:var(--color-sjc-green)] hover:shadow-xl active:translate-y-0 active:scale-[0.99] disabled:translate-y-0 disabled:opacity-60"
               : `w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.99] disabled:translate-y-0 disabled:opacity-60${
                   buttonColor
                     ? " hover:brightness-95"
-                    : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-blue-hover)]"
+                    : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
                 }`
           }
           style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
