@@ -395,7 +395,15 @@ export default function LeadForm(props: LeadFormProps) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (trap) return; // honeypot caught a bot — silently do nothing
+    // ⚠️ THE TRAP ONLY GUARDS THE REAL SUBMIT, NEVER THE STEP NAVIGATION. Blocking Next made a
+    // misfire indistinguishable from a broken page — see the honeypot note below for how that
+    // actually happened. Navigation is free; the send is what a bot wants.
+    if (trap && lastScreen) {
+      // A bot gets a page that looks like it worked. Anything that reaches here and is NOT a bot
+      // has already been let through the steps, so nobody is trapped behind a dead button.
+      setState("done");
+      return;
+    }
 
     // Mid-survey the button is Next, not Send. Only this screen's answers are checked, so nobody
     // is blocked by a question they haven't been shown yet.
@@ -705,12 +713,29 @@ export default function LeadForm(props: LeadFormProps) {
         })}
       </div>
 
-      {/* honeypot — off-screen for people, irresistible to bots */}
+      {/* ── HONEYPOT ──────────────────────────────────────────────────────────────────────────
+          Off-screen for people, irresistible to bots.
+
+          ⚠️ IT MUST BE INVISIBLE TO PASSWORD MANAGERS TOO, AND autoComplete="off" IS NOT ENOUGH.
+          Steven hit this on his own careers form: LastPass filled this box with his email address,
+          `trap` went truthy, and submit() returned silently — so the Next button did nothing, with
+          no error, forever. A real applicant with autofill would have hit exactly the same wall and
+          simply left.
+
+          So it now says no in every dialect a manager reads (LastPass, 1Password, Dashlane,
+          Bitwarden), carries a name nothing would map to a person, and is hidden from the
+          accessibility tree AND from layout — `left:-9999px` alone still leaves a fillable field. */}
       <input
         type="text"
+        name="fax-confirm"
+        id="lf-fax-confirm"
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
+        data-lpignore="true"
+        data-1p-ignore=""
+        data-bwignore="true"
+        data-form-type="other"
         value={trap}
         onChange={(e) => setTrap(e.target.value)}
         className="absolute left-[-9999px]"
