@@ -36,6 +36,8 @@ export type LeadFormField = {
   multi?: boolean;
   /** Draw a `choice` as a real <select> instead of buttons. Opt-in — see where it renders. */
   dropdown?: boolean;
+  /** Start a new screen at this question — see FormField.newScreen in lib/formsShared. */
+  newScreen?: boolean;
   /** The greyed first row of a dropdown, e.g. "Select a service". */
   placeholder?: string;
 };
