@@ -144,7 +144,19 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
       //
       // Looking it up raw means the address is recognised as one we used to serve, so it can be
       // answered with `gone` instead of being mistaken for an unknown host.
-      const demo = (await readSitesRaw()).find((s) => s.id !== SJC && (s.id === bare || s.id === label));
+      // ⛔ `sjc` IS NOT EXCLUDED HERE, AND MUST NOT BE (fixed 2026-08-18).
+      //
+      // It used to be — copied from the domain lookup above, where the filter IS load-bearing.
+      // Here it was the opposite of protective: `sjc-demo.stevenjamesconsulting.com` matched
+      // nothing, skipped the reachability check entirely, and fell through to the SJC fallback at
+      // the bottom of this function. The retired brand's homepage and its two live intake forms
+      // were served publicly — and that host answered `Allow: /` to GPTBot and ClaudeBot while the
+      // real site was on `Disallow: /`. The dead brand was the only thing inviting crawlers.
+      //
+      // Matching it means `sjc` gets judged like every other site: Draft is reachable by nobody,
+      // so the address answers `gone`. The apex is still protected by the `s.id !== SJC` filter on
+      // the DOMAIN lookup above, which is a different question and stays exactly as it is.
+      const demo = (await readSitesRaw()).find((s) => s.id === bare || s.id === label);
       // A site in the bin, or archived, is reachable by nobody — `reachability` already says so,
       // but a deleted one has no status to consult, so it is refused here first.
       if (demo?.deletedAt) return { kind: "gone" };
