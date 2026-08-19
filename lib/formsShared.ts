@@ -51,7 +51,14 @@ export type FormFieldType =
   | "textarea"
   | "choice"
   | "multi"
-  | "photos";
+  | "photos"
+  /**
+   * A DOCUMENT, NOT A PICTURE. `photos` runs the onboarding image pipeline (HEIC→JPEG, resize,
+   * EXIF strip) and is onboarding-only; this is the public-form counterpart for a CV or a spec —
+   * uploaded to blob storage by /api/careers/upload, and what lands in the answer is the URL, so
+   * the spreadsheet column and the notification email stay plain text like every other field.
+   */
+  | "file";
 
 /** The single list every writer validates against. An unknown type falls back to `text`. */
 export const FORM_FIELD_TYPES: FormFieldType[] = [
@@ -63,6 +70,7 @@ export const FORM_FIELD_TYPES: FormFieldType[] = [
   "choice",
   "multi",
   "photos",
+  "file",
 ];
 
 /** Types that carry a list of options. One place, so a new one can't be half-added. */
@@ -574,4 +582,5 @@ export const FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   choice: "Pick one",
   multi: "Pick any",
   photos: "Photos",
+  file: "File upload",
 };
