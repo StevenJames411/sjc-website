@@ -754,8 +754,8 @@ export default function LeadForm(props: LeadFormProps) {
             onClick={() => go(at - 1)}
             className={
               dark
-                ? "shrink-0 rounded-xl border border-white/20 px-5 py-4 text-lg font-semibold text-slate-200 transition hover:bg-white/10"
-                : "shrink-0 rounded-lg border border-gray-300 px-5 py-4 text-lg font-semibold text-[color:var(--color-sjc-mute)] transition hover:bg-gray-50"
+                ? "shrink-0 rounded-xl border border-white/20 px-5 py-4 text-lg font-semibold text-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10 active:translate-y-0"
+                : "shrink-0 rounded-lg border border-gray-300 px-5 py-4 text-lg font-semibold text-[color:var(--color-sjc-mute)] transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:text-[color:var(--color-sjc-ink)] active:translate-y-0"
             }
           >
             ← Back
@@ -765,12 +765,21 @@ export default function LeadForm(props: LeadFormProps) {
           type="submit"
           disabled={state === "sending"}
           className={
+            /* ⚠️ THE HOVER USED TO BE A NO-OP, AND IT LOOKED DELIBERATE. The light button said
+               `bg-[--color-sjc-blue] hover:bg-[--color-sjc-green]` — and on SJC's palette both
+               tokens resolve to #38bdf8, so the colour changed to itself. Steven: *"they don't
+               change colour, they don't swell, they don't do anything. They work, but you get used
+               to them having some kind of activity so you know they're going to work."*
+
+               So the hover now uses the `-hover` token, which is a genuinely darker blue, and adds
+               a lift and a press. A brand whose two tokens happen to match can no longer produce a
+               dead button, because the movement does not depend on the colour at all. */
             dark
-              ? "w-full rounded-xl bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-[color:var(--color-sjc-white)] shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[color:var(--color-sjc-blue)]/50 disabled:opacity-60"
-              : `w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
+              ? "w-full rounded-xl bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-[color:var(--color-sjc-white)] shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-[color:var(--color-sjc-blue-hover)] hover:shadow-xl active:translate-y-0 active:scale-[0.99] disabled:translate-y-0 disabled:opacity-60"
+              : `w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.99] disabled:translate-y-0 disabled:opacity-60${
                   buttonColor
-                    ? " hover:opacity-90"
-                    : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
+                    ? " hover:brightness-95"
+                    : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-blue-hover)]"
                 }`
           }
           style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
