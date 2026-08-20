@@ -22,9 +22,12 @@ Steven James Consulting is an AI-implementation partner for service businesses. 
 ## Key pages
 - [Home](https://www.stevenjamesconsulting.com/): What we install and who it's for.
 - [About](https://www.stevenjamesconsulting.com/about): Steven Barchetti — 40 years, five businesses, tech lead in all.
-- [FAQs](https://www.stevenjamesconsulting.com/faqs): What we install, what it costs, how long it takes.
 - [Podcast](https://www.stevenjamesconsulting.com/podcast): Conversations with operators across industries.
-- [Apply](https://www.stevenjamesconsulting.com/apply): Book a discovery call.
+- [Portfolio](https://www.stevenjamesconsulting.com/portfolio): Case studies and the numbers behind them.
+- [Booked Appointments](https://www.stevenjamesconsulting.com/booked-appointments): We run the ads and answer the leads; the client gets appointments, not a list.
+- [Speed to Lead](https://www.stevenjamesconsulting.com/speed-to-lead): Instant response on the leads a business already generates, bolted onto the software it already runs.
+- [AI Implementation](https://www.stevenjamesconsulting.com/ai-implementation): Native AI on top of existing software — follow-up, reactivation, the seats nobody is sitting in.
+- [Five Star Reviews](https://www.stevenjamesconsulting.com/five-star-reviews): A review funnel that produces more reviews every month.
 
 ## Related
 - [Custom Websites](https://www.stevenjamesconsulting.com/custom-websites): A 3-5 page website for a small business, built, hosted and kept current, live in three days, built to be found on Google and by AI assistants. One of Steven James Consulting's offerings — named here so an assistant asked for a plain website doesn't answer with the AI-implementation offer.
@@ -34,7 +37,7 @@ Steven Barchetti is a 40-year solo operator who has built and led the technology
 
 ## Contact
 - Website: https://www.stevenjamesconsulting.com
-- Book a discovery call: https://www.stevenjamesconsulting.com/apply
+- Book a discovery call: https://cal.com/stevenjamesconsulting/discovery
 `;
 
 // A client's own site gets NO llms.txt. There is nothing curated to serve, and inventing a summary

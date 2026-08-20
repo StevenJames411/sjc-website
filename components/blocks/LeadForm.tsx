@@ -36,6 +36,8 @@ export type LeadFormField = {
   multi?: boolean;
   /** Draw a `choice` as a real <select> instead of buttons. Opt-in — see where it renders. */
   dropdown?: boolean;
+  /** Start a new screen at this question — see FormField.newScreen in lib/formsShared. */
+  newScreen?: boolean;
   /** The greyed first row of a dropdown, e.g. "Select a service". */
   placeholder?: string;
 };
@@ -330,6 +332,8 @@ export default function LeadForm(props: LeadFormProps) {
   const list = (Array.isArray(fields) && fields.length ? fields : LEADFORM_DEFAULTS.fields) || [];
 
   const [values, setValues] = useState<Record<string, string>>({});
+
+  const [uploading, setUploading] = useState<Record<string, string>>({});
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [trap, setTrap] = useState("");
 
@@ -393,7 +397,15 @@ export default function LeadForm(props: LeadFormProps) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (trap) return; // honeypot caught a bot — silently do nothing
+    // ⚠️ THE TRAP ONLY GUARDS THE REAL SUBMIT, NEVER THE STEP NAVIGATION. Blocking Next made a
+    // misfire indistinguishable from a broken page — see the honeypot note below for how that
+    // actually happened. Navigation is free; the send is what a bot wants.
+    if (trap && lastScreen) {
+      // A bot gets a page that looks like it worked. Anything that reaches here and is NOT a bot
+      // has already been let through the steps, so nobody is trapped behind a dead button.
+      setState("done");
+      return;
+    }
 
     // Mid-survey the button is Next, not Send. Only this screen's answers are checked, so nobody
     // is blocked by a question they haven't been shown yet.
@@ -652,6 +664,43 @@ export default function LeadForm(props: LeadFormProps) {
                     );
                   })}
                 </div>
+              ) : f?.inputType === "file" ? (
+                /* ⚠️ THE FIELD HOLDS A URL, NOT A FILE. The upload happens on pick, and what lands
+                   in `values[k]` is the stored link — so the submit path, the spreadsheet column
+                   and the notification email all stay plain text and need no special case. A
+                   failed upload leaves the field empty and says so, rather than silently
+                   submitting a form that looks complete. */
+                <div>
+                  <input
+                    id={`lf-${k}`}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploading((u) => ({ ...u, [k]: "Uploading…" }));
+                      try {
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        const r = await fetch("/api/careers/upload", { method: "POST", body: fd });
+                        const j = await r.json();
+                        if (!j?.ok) throw new Error(j?.error || "upload failed");
+                        setValues((prev) => ({ ...prev, [k]: j.url }));
+                        setUploading((u) => ({ ...u, [k]: `Attached: ${j.name}` }));
+                      } catch (err) {
+                        setValues((prev) => ({ ...prev, [k]: "" }));
+                        setUploading((u) => ({
+                          ...u,
+                          [k]: err instanceof Error ? err.message : "Upload failed",
+                        }));
+                      }
+                    }}
+                    className={inputCls}
+                  />
+                  {uploading[k] && (
+                    <p className="mt-1 text-sm opacity-80">{uploading[k]}</p>
+                  )}
+                </div>
               ) : (
                 <input
                   id={`lf-${k}`}
@@ -666,12 +715,29 @@ export default function LeadForm(props: LeadFormProps) {
         })}
       </div>
 
-      {/* honeypot — off-screen for people, irresistible to bots */}
+      {/* ── HONEYPOT ──────────────────────────────────────────────────────────────────────────
+          Off-screen for people, irresistible to bots.
+
+          ⚠️ IT MUST BE INVISIBLE TO PASSWORD MANAGERS TOO, AND autoComplete="off" IS NOT ENOUGH.
+          Steven hit this on his own careers form: LastPass filled this box with his email address,
+          `trap` went truthy, and submit() returned silently — so the Next button did nothing, with
+          no error, forever. A real applicant with autofill would have hit exactly the same wall and
+          simply left.
+
+          So it now says no in every dialect a manager reads (LastPass, 1Password, Dashlane,
+          Bitwarden), carries a name nothing would map to a person, and is hidden from the
+          accessibility tree AND from layout — `left:-9999px` alone still leaves a fillable field. */}
       <input
         type="text"
+        name="fax-confirm"
+        id="lf-fax-confirm"
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
+        data-lpignore="true"
+        data-1p-ignore=""
+        data-bwignore="true"
+        data-form-type="other"
         value={trap}
         onChange={(e) => setTrap(e.target.value)}
         className="absolute left-[-9999px]"
@@ -688,8 +754,8 @@ export default function LeadForm(props: LeadFormProps) {
             onClick={() => go(at - 1)}
             className={
               dark
-                ? "shrink-0 rounded-xl border border-white/20 px-5 py-4 text-lg font-semibold text-slate-200 transition hover:bg-white/10"
-                : "shrink-0 rounded-lg border border-gray-300 px-5 py-4 text-lg font-semibold text-[color:var(--color-sjc-mute)] transition hover:bg-gray-50"
+                ? "shrink-0 rounded-xl border border-white/20 px-5 py-4 text-lg font-semibold text-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10 active:translate-y-0"
+                : "shrink-0 rounded-lg border border-gray-300 px-5 py-4 text-lg font-semibold text-[color:var(--color-sjc-mute)] transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-400 hover:bg-gray-50 hover:text-[color:var(--color-sjc-ink)] active:translate-y-0"
             }
           >
             ← Back
@@ -699,11 +765,21 @@ export default function LeadForm(props: LeadFormProps) {
           type="submit"
           disabled={state === "sending"}
           className={
+            /* ⚠️ THE HOVER USED TO BE A NO-OP, AND IT LOOKED DELIBERATE. The light button said
+               `bg-[--color-sjc-blue] hover:bg-[--color-sjc-green]` — and on SJC's palette both
+               tokens resolve to #38bdf8, so the colour changed to itself. Steven: *"they don't
+               change colour, they don't swell, they don't do anything. They work, but you get used
+               to them having some kind of activity so you know they're going to work."*
+
+               The hover goes to the CTA token (blue -> green), which is the original intent, plus
+               a lift and a press. ⚠️ THE MOVEMENT IS THE REAL FIX: it does not depend on the
+               palette, so a brand whose two colours happen to match still gets a live button
+               instead of a dead one. */
             dark
-              ? "w-full rounded-xl bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-[color:var(--color-sjc-white)] shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[color:var(--color-sjc-blue)]/50 disabled:opacity-60"
-              : `w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition disabled:opacity-60${
+              ? "w-full rounded-xl bg-[color:var(--color-sjc-blue)] px-6 py-4 text-lg font-bold text-[color:var(--color-sjc-white)] shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-[color:var(--color-sjc-green)] hover:shadow-xl active:translate-y-0 active:scale-[0.99] disabled:translate-y-0 disabled:opacity-60"
+              : `w-full rounded-lg px-6 py-4 text-lg font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.99] disabled:translate-y-0 disabled:opacity-60${
                   buttonColor
-                    ? " hover:opacity-90"
+                    ? " hover:brightness-95"
                     : " bg-[color:var(--color-sjc-blue)] hover:bg-[color:var(--color-sjc-green)]"
                 }`
           }

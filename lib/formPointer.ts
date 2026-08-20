@@ -107,6 +107,12 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
             ? { options: f.options, multi: f.type === "multi", dropdown: Boolean(f.dropdown), placeholder: f.placeholder }
             : {}),
           required: f.required,
+          // ⚠️ THE SCREEN BREAK HAS TO CROSS THIS BOUNDARY TOO. This mapper rebuilds every question
+          // from named keys, exactly like normalizeFields — so a flag missing here is set in the
+          // library, saved correctly, shown correctly on the editor's dividers, and then ignored by
+          // the live page, which is the most confusing failure available: the screen that says it
+          // is right and the page that isn't.
+          ...(f.newScreen ? { newScreen: true } : {}),
         }));
       props.buttonLabel = prefer(n.props?.buttonLabel, form.buttonLabel);
       props.note = prefer(n.props?.note, form.note);
