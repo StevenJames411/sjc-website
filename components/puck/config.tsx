@@ -10,6 +10,7 @@ import SizeStepper from "@/components/puck/SizeStepper";
 import ColorField from "@/components/puck/ColorField";
 import type { DesignBoxGroup } from "@/lib/designHtml";
 import DesignTextField from "@/components/puck/DesignTextField";
+import DesignSectionLive from "@/components/puck/DesignSectionLive";
 import FormPicker from "@/components/puck/FormPicker";
 import FormLink from "@/components/puck/FormLink";
 import ImageUpload from "@/components/puck/ImageUpload";
@@ -1172,7 +1173,10 @@ const baseConfig: Config<Props, RootProps> = {
       // scripts/check-prop-bridge.mjs is the mechanical half of that and was too loose to catch
       // its own flagship case; it is tightened in the same commit as this fix.
       render: ({ id, sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, columns, splitAfter, flip, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
-        <DesignSection
+        // ⛔ DesignSectionLive, NOT DesignSection — it resolves {{business.*}} for DISPLAY so the
+        // canvas shows the phone number instead of the token. Storage keeps the token; nothing is
+        // written. Pass-through when not editing. See components/puck/DesignSectionLive.tsx.
+        <DesignSectionLive
           // Marks each filled word so a click on the canvas can name its row. Editor only.
           editing={puck?.isEditing}
           // Scopes the columns rule to THIS block — sheetScope() is shared by every section from
