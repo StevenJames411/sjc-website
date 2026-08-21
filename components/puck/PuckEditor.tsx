@@ -652,6 +652,60 @@ export default function PuckEditor({
     }
   };
 
+  /**
+   * PUBLISH EVERY PAGE, ONCE.
+   *
+   * Publish has always been per page — right for a single edit, wrong for the thing that actually
+   * happens: a pass over the whole site. After one of those, ten pages sit in draft and the only
+   * way to ship them is to open each one and press the same button.
+   *
+   * Steven, 2026-08-21: *"I do not want to open 12 fucking individual pages and publish one at a
+   * time… Nobody wants to manually do shit unless they have to."*
+   *
+   * ⚠️ THE OPEN PAGE'S UNSAVED EDITS GO FIRST. Since autosave was removed, what is on screen lives
+   * in memory until Save — so publishing without flushing it would ship every page EXCEPT the one
+   * being looked at, which is the worst possible version of this button.
+   *
+   * ⛔ CONFIRMED, BECAUSE IT IS OUTWARD. Per-page Publish ships one page someone is looking at;
+   * this makes the whole site public at once. It says how many, and waits for a yes.
+   */
+  const onPublishAll = async () => {
+    const targets = pages.map((p) => p.slug);
+    if (!targets.length) return;
+    if (
+      !window.confirm(
+        `Publish all ${targets.length} pages?\n\nEvery draft on this site goes live, including the one open now. ` +
+          `Each page keeps its own version history, so any single page can still be rolled back on its own.`
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      if (dirtyRef.current) await saveNow();
+      const failed: string[] = [];
+      for (const slug of targets) {
+        try {
+          const r = await fetch(
+            `/api/puck?page=${encodeURIComponent(slug)}&site=${encodeURIComponent(siteId)}&action=publish`,
+            { method: "POST" }
+          );
+          if (!r.ok) failed.push(slug);
+        } catch {
+          failed.push(slug);
+        }
+      }
+      // ⛔ NAME THE FAILURES. "Published 8 of 10" with no names sends somebody hunting, and a
+      // partial publish that reports success is how one stale page survives a whole-site pass.
+      window.alert(
+        failed.length
+          ? `Published ${targets.length - failed.length} of ${targets.length}.\n\nStill draft: ${failed.join(", ")}`
+          : `Published all ${targets.length} pages.`
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Change the current page's WEB ADDRESS — the opposite of onRenamePage above, which only ever
   // touches the label. Moves the saved content (draft + published) to the new slug server-side
   // and records the old slug as a redirect; see lib/pageRegistry:changeSlug for the full guard
@@ -1036,6 +1090,7 @@ export default function PuckEditor({
                   { label: "Duplicate page", onClick: onDuplicatePage, title: "Make a copy of this page at a new address, as a draft" },
                   { label: "Rename page", onClick: onRenamePage, title: "Changes the name in the list only — the web address and the page are untouched" },
                   { label: "Change address (URL)", onClick: onChangeSlug, title: "Changes the web address the page lives at — content moves with it. Old links don't redirect yet, so save the new address wherever the old one was shared." },
+                  { label: "Publish ALL pages", onClick: onPublishAll, title: "Ships every draft on this site live in one go, including this page. Use it after a pass over the whole website instead of opening each page to press Publish." },
                   { label: "Versions", onClick: openVersions, title: "Every time you pressed Publish — restore an earlier one" },
                 ].map((m) => (
                   <button
