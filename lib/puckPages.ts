@@ -13,9 +13,13 @@ export const PUCK_PAGES: PuckPage[] = [
   { slug: "footer", title: "Footer (site-wide)" },
   { slug: "about", title: "About" },
   { slug: "podcast", title: "Podcast" },
-  { slug: "faqs", title: "FAQs" },
-  { slug: "apply", title: "Apply (intake form)" },
-  { slug: "guest", title: "Podcast Guest Intake" },
+  // ⛔ REMOVED 2026-08-21: faqs · apply · guest. All three were listed here and 404 to visitors —
+  // no draft content, no published content, and nothing on the site linked to them. They sat in
+  // the builder's page dropdown looking like real pages. /guest is redundant besides: the podcast
+  // page now carries the guest intake form itself, which is where somebody pitching the show
+  // already is. Nothing was lost — there was nothing in them to lose.
+  // ⚠️ Found by auditing the LIVE site, not this file. The registry had drifted and no read of it
+  // would ever have said so.
   { slug: "websites", title: "Websites ($795 offer)" },
   // /websites carries its OWN header + footer, not the site-wide ones — the global nav's DIY
   // link points at the free community that teaches exactly what that page sells.

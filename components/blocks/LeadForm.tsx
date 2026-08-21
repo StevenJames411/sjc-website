@@ -140,9 +140,17 @@ export const LEADFORM_DEFAULTS: LeadFormProps = {
     { label: "Best phone number", inputType: "tel" },
     { label: "What kind of work do you do?", inputType: "text" },
   ],
-  buttonLabel: "Send Me My Website",
-  note: "No obligation, and nothing gets built until you say so. Rather just talk? Call (210) 851-4906.",
-  successHeading: "Got it. I'll call you today.",
+  // ⛔ SAME BUG AS `source` ABOVE, THREE LINES LATER, AND IT SURVIVED THAT FIX (found 2026-08-21).
+  // These three defaulted to ONE offer's copy — the $795 website offer — and every form that left
+  // them blank inherited it silently. A podcast guest pitch, a careers application and an AI
+  // enquiry all ended on a button reading "Send Me My Website", under a promise that nothing gets
+  // built until you say so, followed by "I'll call you today" whether a call was on offer or not.
+  // Nobody chose any of it. A blank field in the builder shows the author nothing, so the wrong
+  // copy is invisible until it is on the live site.
+  // ⚠️ A DEFAULT MUST BE TRUE FOR EVERY FORM, or it is a bug waiting on the next one somebody makes.
+  buttonLabel: "Send",
+  note: "",
+  successHeading: "Got it — thanks. I'll be in touch.",
   buttonColor: "",
   inColumn: false,
   theme: "light",
