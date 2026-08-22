@@ -80,6 +80,23 @@ export type LeadFormProps = {
     buttonUrl?: string;
   };
   /**
+   * A LINK ON THE ORDINARY THANK-YOU — which is what stops a survey funnel from gating reviews.
+   *
+   * ⛔ THE SHAPE THIS EXISTS TO PREVENT. Until now only `altSuccess` could carry a button, and it
+   * fires on the HAPPY answers. So a five-star funnel could send pleased customers to Google and
+   * had no way to offer the same door to anyone else — the unhappy branch structurally dead-ended
+   * at a private form. That is the arrangement Google calls review gating, and it is the one
+   * arrangement that puts a client's profile at risk.
+   *
+   * Steven's ruling, 2026-08-21: survey everyone, fix what needs fixing, and then still invite
+   * them. *"That's not gating, that's giving the highest level of customer service."* Which is
+   * only buildable if the ordinary ending can hold a link.
+   *
+   * Blank on every existing form, so no thank-you anywhere grows a button it didn't have.
+   */
+  successButtonLabel?: string;
+  successButtonUrl?: string;
+  /**
    * A FULL-WIDTH BAND BEHIND THE FORM — so the white card sits ON something.
    *
    * Steven: *"is it possible that I could add some color to the page so that just the form, which
@@ -196,6 +213,8 @@ export default function LeadForm(props: LeadFormProps) {
     anchor = "",
     theme = "light",
     altSuccess,
+    successButtonLabel,
+    successButtonUrl,
     background = "",
     bandPadding,
     paddingTop,
@@ -567,9 +586,16 @@ export default function LeadForm(props: LeadFormProps) {
             literal braces). Either way there is no page to send anyone to, and a "Leave a Google
             review" button that goes nowhere is worse than no button at the moment someone is
             pleased enough to press it. */}
-        {alt?.buttonUrl && !alt.buttonUrl.includes("{{") && alt.buttonLabel ? (
+        {/* ⚠️ ONE BUTTON, TWO SOURCES. The happy branch uses altSuccess; every other branch falls
+            back to the form's own success link. Both are token-resolved per site and both are
+            suppressed when empty, so a business with no review URL shows no button on either
+            path rather than a dead one on the friendlier path. */}
+        {(() => {
+          const href = (alt?.buttonUrl || successButtonUrl || "").trim();
+          const label = (alt?.buttonUrl ? alt.buttonLabel : successButtonLabel) || "";
+          return href && !href.includes("{{") && label ? (
           <a
-            href={alt.buttonUrl}
+            href={href}
             target="_blank"
             rel="noopener noreferrer"
             className={
@@ -579,9 +605,10 @@ export default function LeadForm(props: LeadFormProps) {
             }
             style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
           >
-            {alt.buttonLabel}
+            {label}
           </a>
-        ) : null}
+          ) : null;
+        })()}
       </div>,
       false
     );

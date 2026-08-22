@@ -313,6 +313,10 @@ export async function updateForm(
     // junk `action` would fall through every branch in LeadForm and render a button that does
     // nothing — the exact silent failure `dropdown` and `newScreen` were both bitten by.
     endings: "endings" in patch ? normalizeEndings(patch.endings) : current.endings,
+    successButtonLabel:
+      "successButtonLabel" in patch ? String(patch.successButtonLabel || "") : current.successButtonLabel,
+    successButtonUrl:
+      "successButtonUrl" in patch ? String(patch.successButtonUrl || "") : current.successButtonUrl,
   };
 
   // Built-ins are persisted as an override row the first time one is edited, then merged back

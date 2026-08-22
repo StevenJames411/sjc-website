@@ -420,6 +420,12 @@ export type FormDef = {
    */
   endings?: Record<string, ScreenEnding>;
   /**
+   * THE REVIEW INVITATION ON THE ORDINARY ENDING — the half that keeps a survey funnel compliant.
+   * `{{business.reviewUrl}}` resolves per client, so one form serves every site.
+   */
+  successButtonLabel?: string;
+  successButtonUrl?: string;
+  /**
    * PUT AWAY, NOT DESTROYED — how you "delete" a built-in.
    *
    * ⚠️ A BUILT-IN CANNOT ACTUALLY BE DELETED. Its questions live in code, so removing the saved

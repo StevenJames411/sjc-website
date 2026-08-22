@@ -129,6 +129,10 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
       // QUESTION SET (a review form ends at a review profile wherever it is dropped), while the
       // block owns wording. Same split as the questions themselves.
       if (form.endings) props.endings = form.endings;
+      // The review invitation on the ordinary ending. Belongs to the QUESTION SET for the same
+      // reason altSuccess does — a survey form ends at a review profile wherever it is dropped.
+      if (form.successButtonLabel) props.successButtonLabel = form.successButtonLabel;
+      if (form.successButtonUrl) props.successButtonUrl = form.successButtonUrl;
       props.successHeading = prefer(n.props?.successHeading, form.successHeading);
       props.successBody = prefer(n.props?.successBody, form.successBody);
       // ⚠️ THE FORM ALWAYS WINS ON THIS ONE — no page override. The other four are wording, which
