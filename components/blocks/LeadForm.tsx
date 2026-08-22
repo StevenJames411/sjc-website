@@ -97,6 +97,17 @@ export type LeadFormProps = {
   successButtonLabel?: string;
   successButtonUrl?: string;
   /**
+   * PER-SCREEN ENDINGS, keyed by screen title. Today only `action: "submit"` is honoured, and it
+   * means one thing: THE FORM ENDS HERE.
+   *
+   * ⛔ WITHOUT IT, TWO BRANCHES CANNOT BOTH BE TERMINAL. Routing sends the visitor to screen 3 or
+   * screen 4; whichever sits earlier in the list then falls through into the other, so someone who
+   * answered "I have a website" gets asked what their new one should do. The bug is invisible in
+   * the editor — the screens look right, the rules look right, and only walking the un-routed
+   * answer finds it.
+   */
+  endings?: Record<string, { action: string; url?: string; label?: string }>;
+  /**
    * A FULL-WIDTH BAND BEHIND THE FORM — so the white card sits ON something.
    *
    * Steven: *"is it possible that I could add some color to the page so that just the form, which
@@ -215,6 +226,7 @@ export default function LeadForm(props: LeadFormProps) {
     altSuccess,
     successButtonLabel,
     successButtonUrl,
+    endings,
     background = "",
     bandPadding,
     paddingTop,
@@ -398,6 +410,9 @@ export default function LeadForm(props: LeadFormProps) {
   const nextFrom = (i: number): number => {
     const cur = screens[i];
     if (!cur) return i + 1;
+    // A declared ending stops the walk. Checked BEFORE the rules so a terminal screen can still
+    // carry a choice question without that question's routes dragging the visitor onward.
+    if (endings?.[cur.title]?.action === "submit") return screens.length;
     for (const f of cur.fields) {
       const rules = (f as { routes?: { when: string; goTo: string }[] }).routes;
       if (!rules?.length) continue;
