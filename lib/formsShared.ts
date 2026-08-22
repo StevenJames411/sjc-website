@@ -150,6 +150,26 @@ export type FormField = {
   step?: string;
   /** Draw this `choice` as a real dropdown instead of buttons. Opt-in per question. */
   dropdown?: boolean;
+  /**
+   * ANSWER LOGIC — where this answer sends them next.
+   *
+   * ⛔ THE ONE THING A SURVEY FUNNEL CANNOT BE BUILT WITHOUT, and the reason the form engine
+   * stopped at "clumsy but fine" for everything else. A five-star funnel is one question with two
+   * destinations: happy goes to the review profile, unhappy goes to a screen that asks what went
+   * wrong. Without routing, every visitor walks the same corridor and the product does not exist.
+   *
+   * Rules are checked IN ORDER and the first match wins; no match falls through to the next screen
+   * exactly as it does today. `goTo` names a screen by its `step` title.
+   *
+   * ⚠️ SCREEN-LEVEL, NOT FIELD-LEVEL, ON PURPOSE. Show/hide per question is the more general
+   * feature and the worse one to build first: it multiplies the states a form can be in, and it
+   * cannot express "these two answers lead to genuinely different conversations", which is the
+   * only thing being asked for here.
+   *
+   * ⚠️ ONLY MEANINGFUL ON `choice`. A free-text answer has nothing to match against, and a `multi`
+   * has several — both are refused by the sanitiser rather than half-working.
+   */
+  routes?: { when: string; goTo: string }[];
 };
 
 /**
@@ -344,6 +364,27 @@ export function mergeSections(saved?: Partial<Record<SectionKey, string>>): Reco
  */
 export const REVIEW_BUTTON_URL = "{{business.reviewUrl}}";
 
+export type ScreenEnding = {
+  /**
+   * What the button on this screen DOES.
+   *   submit   — the behaviour every form has today: save, show the thank-you.
+   *   redirect — save, then send them to `url`. This is the review profile.
+   *   tel      — save, then dial. A sales page's "call now" ending.
+   *   book     — save, then show the booking calendar.
+   *
+   * ⛔ EVERY ENDING SAVES FIRST. A redirect that skips the write loses the answer that decided the
+   * redirect — you would send someone to Google and never know you did.
+   */
+  action: "submit" | "redirect" | "tel" | "book";
+  /** Where `redirect` goes. `{{business.reviewUrl}}` resolves per client, so one form serves every site. */
+  url?: string;
+  /** Button wording for this screen only. Blank falls back to the form's. */
+  label?: string;
+  /** Shown for a beat before a redirect fires, so the jump isn't jarring. */
+  heading?: string;
+  body?: string;
+};
+
 export type FormDef = {
   id: string;
   name: string;
@@ -367,6 +408,17 @@ export type FormDef = {
    * onboarding form is Steven chasing somebody by text. That is what this exists to prevent.
    */
   oneQuestionPerScreen?: boolean;
+  /**
+   * WHAT HAPPENS AT THE END OF EACH SCREEN, keyed by that screen's `step` title.
+   *
+   * A screen with no entry here behaves exactly as it always has: Next if there are more
+   * questions, Send on the last one. So every existing form is untouched.
+   *
+   * ⚠️ KEYED BY TITLE RATHER THAN INDEX because questions get reordered and screens get renamed
+   * far less often than they get moved. An index would silently re-point the review redirect at
+   * whatever screen drifted into that slot — a failure that looks like nothing at all.
+   */
+  endings?: Record<string, ScreenEnding>;
   /**
    * PUT AWAY, NOT DESTROYED — how you "delete" a built-in.
    *

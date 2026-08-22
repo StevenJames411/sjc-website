@@ -363,7 +363,40 @@ export default function LeadForm(props: LeadFormProps) {
   const [screen, setScreen] = useState(0);
   const at = Math.min(screen, Math.max(0, screens.length - 1));
   const shown = stepped ? screens[at]?.fields || [] : list;
-  const lastScreen = !stepped || at >= screens.length - 1;
+
+  /**
+   * WHERE THIS SCREEN LEADS — the answer-logic engine, and it is deliberately this small.
+   *
+   * Rules live on the question that was asked, are checked in order, and the first match wins.
+   * No rule, no answer, or a `goTo` naming a screen that doesn't exist all fall through to "the
+   * next one", which is exactly what every form did before routing existed. So a form without
+   * rules cannot behave differently than it does today.
+   *
+   * ⚠️ AN UNKNOWN `goTo` FALLS THROUGH RATHER THAN THROWING. A screen gets renamed and the rule
+   * pointing at it goes stale; the visitor should walk the ordinary path, not hit a dead end on
+   * the client's live page. The editor is where a stale rule should be surfaced, not the customer.
+   */
+  const nextFrom = (i: number): number => {
+    const cur = screens[i];
+    if (!cur) return i + 1;
+    for (const f of cur.fields) {
+      const rules = (f as { routes?: { when: string; goTo: string }[] }).routes;
+      if (!rules?.length) continue;
+      const answer = (values[keyFor(f, list.indexOf(f))] || "").trim();
+      if (!answer) continue;
+      const hit = rules.find((r) => r.when === answer);
+      if (!hit) continue;
+      const idx = screens.findIndex((sc) => sc.title === hit.goTo);
+      if (idx >= 0) return idx;
+    }
+    return i + 1;
+  };
+
+  // ⛔ "LAST" IS NOW A ROUTING QUESTION, NOT AN INDEX ONE. A branch can end the form from the
+  // middle — the happy path on a review funnel is screen 2 of 4 — so the button has to read Send
+  // there, not Next. Comparing `at` to `screens.length - 1` would show Next on a screen with
+  // nowhere left to go.
+  const lastScreen = !stepped || nextFrom(at) >= screens.length;
 
   // Answered-or-not for the questions ON THIS SCREEN. Checked on Next, because being told on the
   // last screen about a blank on the first is the version people abandon.
@@ -422,7 +455,7 @@ export default function LeadForm(props: LeadFormProps) {
         setState("error");
         return;
       }
-      go(at + 1);
+      go(nextFrom(at));
       return;
     }
 

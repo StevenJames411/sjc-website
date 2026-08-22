@@ -21,6 +21,7 @@ import {
   type FormField,
   type FormFieldType,
   type FormKind,
+  type ScreenEnding,
   type SectionKey,
 } from "./formsShared";
 import { ONBOARDING_FORM } from "./intakeShared";
@@ -174,6 +175,18 @@ function normalizeFields(incoming: FormField[], previous: FormField[] = []): For
       // from named keys, so a flag that is not listed is dropped on save — silently, and the
       // question quietly falls back to buttons. Only meaningful on a choice question.
       ...(CHOICE_TYPES.includes(type) && f?.dropdown ? { dropdown: true } : {}),
+      // ⛔ ROUTES ONLY ON A SINGLE `choice`, and refused everywhere else rather than half-applied.
+      // A `multi` answer is a set, so "when === value" has no single truth to test; free text has
+      // nothing to match at all. Accepting either would produce a rule that silently never fires,
+      // which reads exactly like a form that simply doesn't branch — the failure this whole
+      // sanitiser exists to make impossible.
+      ...(type === "choice" && Array.isArray(f?.routes)
+        ? {
+            routes: (f.routes as { when?: unknown; goTo?: unknown }[])
+              .map((r) => ({ when: String(r?.when ?? ""), goTo: String(r?.goTo ?? "") }))
+              .filter((r) => r.when && r.goTo),
+          }
+        : {}),
       // Same whitelist trap as `dropdown` above, and it caught me the same way: the screen break
       // was set, saved, and silently vanished on the way through here.
       ...(f?.newScreen ? { newScreen: true } : {}),
@@ -295,6 +308,11 @@ export async function updateForm(
         ? patch.oneQuestionPerScreen === true
         : !!current.oneQuestionPerScreen,
     altSuccess: "altSuccess" in patch ? normalizeAltSuccess(patch.altSuccess, current) : current.altSuccess,
+    // ⛔ REBUILT FROM NAMED KEYS, same as every question above, and for the same reason: a shape
+    // that arrives from raw JSON and is stored as-is is a shape nobody validated. An ending with a
+    // junk `action` would fall through every branch in LeadForm and render a button that does
+    // nothing — the exact silent failure `dropdown` and `newScreen` were both bitten by.
+    endings: "endings" in patch ? normalizeEndings(patch.endings) : current.endings,
   };
 
   // Built-ins are persisted as an override row the first time one is edited, then merged back
@@ -360,4 +378,28 @@ export async function unhideForm(id: string): Promise<{ ok: boolean; error?: str
     .map((f) => (f.id === key ? { ...f, hidden: false } : f));
   const res = await writeForms(rows);
   return res.ok ? { ok: true } : { ok: false, error: res.reason || "Couldn't save." };
+}
+
+/** Rebuild the per-screen endings from raw JSON. Unknown actions are dropped, not stored. */
+function normalizeEndings(raw: unknown): Record<string, ScreenEnding> | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const ACTIONS = ["submit", "redirect", "tel", "book"] as const;
+  const out: Record<string, ScreenEnding> = {};
+  for (const [screen, v] of Object.entries(raw as Record<string, unknown>)) {
+    const e = (v || {}) as Record<string, unknown>;
+    const action = String(e.action || "");
+    if (!ACTIONS.includes(action as (typeof ACTIONS)[number])) continue;
+    // ⛔ A redirect with no destination is the worst of the three states — it looks configured,
+    // passes review, and dead-ends the customer at the moment you were sending them to Google.
+    const url = String(e.url || "").trim();
+    if (action === "redirect" && !url) continue;
+    out[screen] = {
+      action: action as ScreenEnding["action"],
+      ...(url ? { url } : {}),
+      ...(e.label ? { label: String(e.label) } : {}),
+      ...(e.heading ? { heading: String(e.heading) } : {}),
+      ...(e.body ? { body: String(e.body) } : {}),
+    };
+  }
+  return Object.keys(out).length ? out : undefined;
 }
