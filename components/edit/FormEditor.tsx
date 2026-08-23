@@ -153,6 +153,15 @@ export default function FormEditor({
           successBody: f.successBody,
           oneQuestionPerScreen: !!f.oneQuestionPerScreen,
           altSuccess: f.altSuccess,
+          // ⛔ SEND EVERY FORM-LEVEL FIELD OR SAVING SILENTLY DELETES IT. This payload is the whole
+          // record as far as the route is concerned, so a key missing here is not "left alone" —
+          // it is cleared. `endings` decides which screens finish the form; drop it and a branched
+          // form's terminal screens vanish the next time somebody opens it to fix a typo, and every
+          // visitor falls through into the wrong branch. Same trap as `dropdown` and `newScreen` in
+          // the field sanitiser, one level up.
+          endings: f.endings,
+          successButtonLabel: f.successButtonLabel,
+          successButtonUrl: f.successButtonUrl,
         }),
       });
       const body = await res.json();
@@ -170,6 +179,21 @@ export default function FormEditor({
   // A form built out of titled screens — /apply is the one that is. Everything else is a flat
   // list and shouldn't grow a heading box on every row it will never use.
   const usesSteps = f.fields.some((x) => !!x.step);
+  /**
+   * THE SCREENS, IN ORDER, as the live form will walk them.
+   *
+   * ⛔ ORDER IS THE LOGIC, which is the one thing about branching that is not self-evident. When no
+   * rule matches, the form runs THE NEXT SCREEN — so the fall-through branch has to sit directly
+   * after the question that forks, and only the exceptions carry rules. Reorder two branch screens
+   * and the fork inverts silently: every rule still points where it says, and everyone who did not
+   * trigger one lands on the wrong path. The read-back under each rule exists so that is visible
+   * here instead of being discovered by a customer.
+   */
+  const screenNames = f.fields.reduce<string[]>((acc, x) => {
+    const t = (x.step || "").trim();
+    if (t && !acc.includes(t)) acc.push(t);
+    return acc;
+  }, []);
 
   // Where the LIVE form will break, computed with its own function so the two can never
   // disagree. Steven, looking at this screen: *"there's nowhere on the form that I could tell
@@ -470,6 +494,55 @@ export default function FormEditor({
             </label>
           ) : null}
 
+          {/* ── ANSWER LOGIC ──────────────────────────────────────────────────────────────────
+              The fork, on the question that asks it. Only on a single `choice`: a `multi` answer
+              is a set, so "when the answer is X" has no single truth to test, and free text has
+              nothing to match — the sanitiser refuses both rather than storing a rule that never
+              fires.
+              ⚠️ BOTH SIDES ARE DROPDOWNS. A typed option or a typed screen name is a rule that
+              looks configured and silently never matches, which is the exact failure the
+              satisfiedBy control below was built as a dropdown to avoid. */}
+          {x.type === "choice" && screenNames.length > 1 && (x.options || []).length ? (
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px dashed var(--e-line)" }}>
+              <div style={{ fontSize: 12, color: "var(--e-muted)", marginBottom: 6 }}>
+                Answer logic — send them to a different screen
+              </div>
+              {(x.options || []).map((opt) => {
+                const rules = x.routes || [];
+                const hit = rules.find((r) => r.when === opt);
+                const fallThrough = screenNames[screenNames.indexOf((x.step || "").trim()) + 1] || "";
+                return (
+                  <label key={opt} style={{ ...skipRow, alignItems: "center" }}>
+                    <span style={{ fontSize: 12, minWidth: 190, color: "var(--e-muted)" }}>
+                      {opt}
+                    </span>
+                    <span style={{ fontSize: 12, color: "var(--e-muted)" }}>&rarr;</span>
+                    <select
+                      value={hit?.goTo || ""}
+                      onChange={(e) => {
+                        const goTo = e.target.value;
+                        const kept = rules.filter((r) => r.when !== opt);
+                        patchField(i, {
+                          routes: goTo ? [...kept, { when: opt, goTo }] : kept,
+                        });
+                      }}
+                      style={{ ...input, width: 240, fontSize: 13, padding: "6px 9px" }}
+                    >
+                      <option value="">
+                        {fallThrough ? `Carry on to \u201C${fallThrough}\u201D` : "Carry on"}
+                      </option>
+                      {screenNames.map((n) => (
+                        <option key={n} value={n}>
+                          Jump to &ldquo;{n}&rdquo;
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                );
+              })}
+            </div>
+          ) : null}
+
           {/* SKIP-WHAT-WE-ALREADY-KNOW. A dropdown, never a typed path: a wrong path reads as an
               empty value, which looks identical to a question that simply always gets asked. */}
           <label style={skipRow}>
@@ -510,6 +583,59 @@ export default function FormEditor({
       </div>
 
       <h2 style={sec}>How it&apos;s laid out</h2>
+
+      {/* ── WHERE THE FORM ENDS, AND WHAT THE FORK ACTUALLY DOES ────────────────────────────────
+          Two branches cannot both finish unless a screen can say so: routing sends the visitor to
+          screen 3 or screen 4, and whichever sits earlier otherwise falls straight through into
+          the other. Someone answering "yes, I have a website" gets asked what their new one should
+          do — and nothing on this page would have shown it. */}
+      {screenNames.length > 1 ? (
+        <div style={{ marginBottom: 18 }}>
+          <p style={{ fontSize: 13, color: "var(--e-muted)", margin: "0 0 8px" }}>
+            Tick a screen that <strong>finishes</strong> the form. Anything not ticked runs the next
+            screen down.
+          </p>
+          {screenNames.map((n) => (
+            <label key={n} style={checkLbl}>
+              <input
+                type="checkbox"
+                checked={f.endings?.[n]?.action === "submit"}
+                onChange={(e) => {
+                  const next = { ...(f.endings || {}) };
+                  if (e.target.checked) next[n] = { action: "submit" };
+                  else delete next[n];
+                  setF({ ...f, endings: Object.keys(next).length ? next : undefined });
+                }}
+              />
+              &ldquo;{n}&rdquo; ends the form
+            </label>
+          ))}
+
+          {/* THE READ-BACK. A fork is three settings on three different rows; this is the only
+              place it can be read as one sentence, which is what makes a wrong one obvious. */}
+          {(() => {
+            const lines: string[] = [];
+            f.fields.forEach((x) => {
+              (x.routes || []).forEach((r) => {
+                lines.push(`\u201C${r.when}\u201D \u2192 ${r.goTo}`);
+              });
+            });
+            const gate = f.fields.find((x) => (x.routes || []).length);
+            const fall = gate
+              ? screenNames[screenNames.indexOf((gate.step || "").trim()) + 1]
+              : "";
+            if (!lines.length) return null;
+            return (
+              <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.6, color: "var(--e-muted)" }}>
+                <strong style={{ color: "var(--e-ink)" }}>What happens:</strong>
+                <div>{lines.join(" \u00b7 ")}</div>
+                {fall ? <div>Every other answer &rarr; {fall}</div> : null}
+              </div>
+            );
+          })()}
+        </div>
+      ) : null}
+
       {usesSteps ? (
         <p style={hint}>
           This form moves a <strong>screen</strong> at a time. Its screens, in order:{" "}

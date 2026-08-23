@@ -1,0 +1,1144 @@
+<title>Tadin Growth Proposal</title>
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --paper:      #FBFBF8;
+  --surface:    #FFFFFF;
+  --surface-2:  #F3F4F1;
+  --ink:        #181B19;
+  --ink-2:      #4E5652;
+  --ink-3:      #79817C;
+  --rule:       #DEE2DD;
+  --rule-2:     #EBEEE9;
+  --accent:     #1E4D42;
+  --accent-2:   #2E6E5E;
+  --accent-soft:#E6EFEB;
+  --flag:       #8A4B1E;
+  --flag-soft:  #FBEFE4;
+
+  --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --f-body:    "Libre Franklin", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --f-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:      #101312;
+    --surface:    #171B19;
+    --surface-2:  #1D2220;
+    --ink:        #E9EDE9;
+    --ink-2:      #A8B2AD;
+    --ink-3:      #7E8883;
+    --rule:       #2B322F;
+    --rule-2:     #222825;
+    --accent:     #79BCA8;
+    --accent-2:   #9AD1C0;
+    --accent-soft:#1A2724;
+    --flag:       #D69A6A;
+    --flag-soft:  #2A2018;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper:      #101312;
+  --surface:    #171B19;
+  --surface-2:  #1D2220;
+  --ink:        #E9EDE9;
+  --ink-2:      #A8B2AD;
+  --ink-3:      #7E8883;
+  --rule:       #2B322F;
+  --rule-2:     #222825;
+  --accent:     #79BCA8;
+  --accent-2:   #9AD1C0;
+  --accent-soft:#1A2724;
+  --flag:       #D69A6A;
+  --flag-soft:  #2A2018;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 812px;
+  margin: 0 auto;
+  padding: 0 28px 120px;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead {
+  padding: 68px 0 40px;
+  border-bottom: 2px solid var(--ink);
+}
+.growth {
+  font-family: var(--f-mono);
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  margin: 0 0 26px;
+  line-height: 1;
+}
+.masthead h1 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(30px, 4.6vw, 44px);
+  line-height: 1.16;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+  margin: 0 0 22px;
+}
+.deck {
+  font-family: var(--f-display);
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 58ch;
+  margin: 0 0 26px;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 34px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.meta b { color: var(--ink-2); font-weight: 500; }
+
+/* ---------- sections ---------- */
+
+section { padding-top: 56px; }
+
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 12px;
+}
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(25px, 3.3vw, 32px);
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  margin: 0 0 20px;
+}
+
+h3 {
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.002em;
+  margin: 34px 0 10px;
+}
+
+p { margin: 0 0 18px; max-width: 68ch; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+.lede {
+  font-family: var(--f-display);
+  font-size: 21px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+
+ul, ol { max-width: 68ch; padding-left: 20px; margin: 0 0 18px; }
+li { margin-bottom: 9px; padding-left: 4px; }
+li::marker { color: var(--ink-3); }
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 52px 0 0;
+}
+
+/* ---------- pull quote / thesis ---------- */
+
+.thesis {
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 26px;
+  margin: 30px 0;
+  max-width: 64ch;
+}
+.thesis p {
+  font-family: var(--f-display);
+  font-size: 22px;
+  line-height: 1.5;
+  margin: 0;
+  color: var(--ink);
+}
+
+/* ---------- tables ---------- */
+
+.tablewrap { overflow-x: auto; margin: 26px 0 30px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  min-width: 520px;
+}
+th {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: left;
+  padding: 0 16px 9px 0;
+  border-bottom: 1px solid var(--ink);
+  vertical-align: bottom;
+}
+td {
+  padding: 12px 16px 12px 0;
+  border-bottom: 1px solid var(--rule-2);
+  vertical-align: top;
+  line-height: 1.5;
+}
+td:last-child, th:last-child { padding-right: 0; }
+.num {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  white-space: nowrap;
+}
+tr.total td {
+  border-top: 1px solid var(--ink);
+  border-bottom: none;
+  font-weight: 600;
+  padding-top: 13px;
+}
+.phase-tag {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ---------- phase cards ---------- */
+
+.phase {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--accent);
+  padding: 30px 32px 34px;
+  margin: 26px 0;
+}
+.phase-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 24px;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--rule-2);
+}
+.phase-n {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 5px;
+}
+.phase-head h3 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: 27px;
+  letter-spacing: -0.008em;
+  margin: 0;
+}
+.price {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 25px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.price span {
+  font-family: var(--f-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+  letter-spacing: 0;
+}
+.phase p:last-child { margin-bottom: 0; }
+.phase ul:last-child { margin-bottom: 0; }
+
+.trigger {
+  font-size: 15px;
+  color: var(--ink-2);
+  margin: 0 0 20px;
+}
+.trigger b {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 3px;
+}
+
+/* ---------- the math block ---------- */
+
+.math {
+  background: var(--accent-soft);
+  padding: 22px 26px 24px;
+  margin: 24px 0 0;
+}
+.math .eyebrow { color: var(--accent); margin-bottom: 14px; }
+.math ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.math li {
+  margin: 0;
+  padding: 0 0 0 0;
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  font-size: 15.5px;
+  line-height: 1.45;
+}
+.math li .k {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 52px;
+  flex-shrink: 0;
+  font-size: 15px;
+}
+.math .close {
+  margin: 18px 0 0;
+  padding-top: 15px;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  font-size: 15.5px;
+  line-height: 1.55;
+  max-width: none;
+}
+
+/* ---------- callout ---------- */
+
+.note {
+  border: 1px solid var(--rule);
+  background: var(--surface-2);
+  padding: 20px 24px;
+  margin: 26px 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+.note p { margin: 0; max-width: none; }
+.note p + p { margin-top: 12px; }
+
+.tofill {
+  background: var(--flag-soft);
+  border-bottom: 2px solid var(--flag);
+  color: var(--flag);
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 1px 5px;
+}
+
+/* ---------- Q&A ---------- */
+
+.qa { border-top: 1px solid var(--rule); padding-top: 26px; margin-top: 30px; }
+.qa:first-of-type { border-top: none; padding-top: 6px; margin-top: 0; }
+.q {
+  font-family: var(--f-display);
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.006em;
+  margin: 0 0 16px;
+  max-width: 62ch;
+  text-wrap: balance;
+}
+.q .qn {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  vertical-align: 4px;
+  margin-right: 10px;
+}
+
+.stage {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 26px 0 8px;
+}
+
+/* ---------- sign-off ---------- */
+
+.signoff {
+  margin-top: 60px;
+  padding-top: 30px;
+  border-top: 2px solid var(--ink);
+}
+.signoff .name {
+  font-family: var(--f-display);
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0 0 3px;
+}
+.signoff .co {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:focus-visible, :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (max-width: 640px) {
+  body { font-size: 16.5px; }
+  .wrap { padding: 0 20px 90px; }
+  .growth { font-size: 30px; }
+  .phase { padding: 24px 20px 26px; }
+  .math { padding: 20px 18px 22px; }
+  .math li { flex-direction: column; gap: 2px; }
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="growth">GROWTH</p>
+  <h1>Fractional Growth &amp; Marketing Manager</h1>
+  <p class="deck">Applying for the role exactly as you wrote it — with a three-phase structure that starts where you can start, and hands you assets you own at every step.</p>
+  <div class="meta">
+    <span>Prepared for <b>Savannah Tadin, MSN, APRN</b> · Savannah Tadin Aesthetics, San Diego, CA</span>
+    <span>From <b>Steven Barchetti</b> · Steven James Consulting</span>
+  </div>
+</header>
+
+<section id="walkthrough" style="padding-top:44px">
+  <p class="eyebrow">Start here — 4 minutes</p>
+  <h2>I walked your funnel before I wrote any of this</h2>
+  <p>Rather than describe what I found, it's faster to show you. This is your own booking flow and your own membership screen, recorded as a new patient would meet them. Everything written below is the plan that came out of it.</p>
+  <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border:1px solid var(--rule);background:var(--surface-2);margin:26px 0 0">
+    <iframe src="https://www.loom.com/embed/LOOM_ID_GOES_HERE"
+            frameborder="0" allowfullscreen
+            style="position:absolute;top:0;left:0;width:100%;height:100%"
+            title="Savannah Tadin Aesthetics — funnel walkthrough"></iframe>
+  </div>
+</section>
+
+<hr>
+
+<section>
+  <p class="lede">I'm applying for the position as written: a hands-on fractional growth and marketing manager, working inside the budget of a growing small business, who thinks strategically and then goes and does the work. Not an agency, not a social media manager. Every item on your list is work I've done before.</p>
+
+  <p>So rather than spend this document telling you I can do it, I'll spend it on the two places where my answer will differ from most of the proposals in your inbox: <strong>what I would do first</strong>, and <strong>how I would price it.</strong></p>
+
+  <h3>What I'd do first</h3>
+
+  <p>Before I wrote a word of this, I went through your booking flow the way a new patient would — from the ad they'd never seen, to the website, to the point where they'd try to give you money. What I found there is the reason this proposal doesn't open with advertising.</p>
+
+  <p>I'll say it up front, because it's the whole reason I'm bidding: <strong>your next quarter of revenue isn't in Meta ads.</strong> It's in the six memberships you already built and never merchandised, and in three years of patients who already know you and have never been asked for anything.</p>
+
+  <p>To be clear about what that is and isn't: <strong>I run Meta ads for a living</strong> — campaigns, creative, budget, and the server-side conversion tracking underneath them, which is the part most people skip. Your ads get built and run, and your ad account and pixel stay in your Business Manager rather than mine.</p>
+
+  <div class="thesis">
+    <p>I'm not sequencing your advertising into month four because I don't run ads. I'm sequencing it there because I do — and I know exactly what a cold account with no pixel history does in its first six weeks.</p>
+  </div>
+
+  <p>Ads come after, and they'll work better for having waited. I'll show you exactly why further down.</p>
+
+  <h3>How I'd price it — starting with the part almost everyone skips</h3>
+
+  <p>There are <strong>two completely different costs</strong> buried in your posting, and nearly everyone bidding on this will quote them to you as one number. Pulling them apart is probably the most useful thing I can do for you in this document, so I'm going to do it before I quote you anything.</p>
+
+  <p><strong>The first cost is building the machine.</strong> A membership program a patient can understand and buy. Pages that convert. Reactivation sequences. A review engine. A booking path that doesn't lose strangers. An ad account with tracking that reports real numbers instead of guesses.</p>
+
+  <p><strong>None of that exists at your practice today</strong> — and I mean that as an observation, not a criticism. You have six memberships built and every single "Read More" link under them is dead. That isn't carelessness. That's a clinician who started the right things and ran out of the one resource nobody can buy more of. Your posting says as much, plainly, which is the reason I'm writing this proposal instead of a generic one.</p>
+
+  <p><strong>The second cost is running the machine.</strong> Every day, indefinitely: answering every inquiry within minutes, filling the gaps, launching the programs, watching the numbers, changing what isn't working. That is what the three salaries in the table further down actually pay for.</p>
+
+  <p>And here is the trap that stalls practices at exactly your stage: <strong>hiring solves the second cost and does nothing about the first.</strong> You could put a marketing manager and a patient coordinator on payroll for well over two hundred thousand dollars a year, and on their first Monday they will walk in and ask where the membership program is, where the reactivation sequences are, where the ad account is. The machine they were hired to operate doesn't exist yet. So you either pay them full salary while they slowly build it, or you pay an agency separately to build it — and own nothing when that relationship ends.</p>
+
+  <div class="thesis">
+    <p>Either way you pay twice, and you own it once. If that.</p>
+  </div>
+
+  <p>What I'm proposing collapses both jobs into one fee.</p>
+
+  <p>The role as you've fully described it — owning patient acquisition, filling a second provider's schedule, launching your memberships and wellness programs, running paid advertising, and reporting on what actually produced revenue — is a <strong>$10,000-a-month seat</strong> once the machine exists and is being operated. That's what the running job is worth, and I suspect you already know it. It's part of why you wrote "fractional" instead of posting a salaried role.</p>
+
+  <p>I also don't think that's where a practice at your stage starts, and I'm not going to dress it up as something cheaper than it is. <strong>So we start at $5,000 and stair-step to it.</strong></p>
+
+  <div class="thesis">
+    <p>At $5,000 a month you're paying roughly half of what one marketing manager costs you fully loaded — the very seat you advertised for. And during those months the machine gets built <em>and</em> run at the same time. Two jobs, half of one wage.</p>
+  </div>
+
+  <p>Three phases, all three prices agreed at signing so nothing gets renegotiated later, and each step triggered by an event on your own calendar rather than by time passing or by me deciding it's time.</p>
+
+  <p>The compounding part is that <strong>every month hands you an asset you own outright</strong> — your membership program, your pages, your reactivation sequences, your ad account, your patient data — with a campaign running against it the same month it's built. If we parted ways in a year you'd keep all of it, and it would keep working.</p>
+
+  <p>Which means that by the time this engagement reaches $10,000 a month, you're paying roughly what one of those three people genuinely costs — and <strong>you already own the machine they would have needed, because you bought it on the way here.</strong></p>
+
+  <p>There is no separate build fee at the end of this. There was never going to be one.</p>
+
+  <p>That's the proposal. The rest of this document is the evidence for it: what I found in your funnel, every item on your list mapped to a phase, exactly how many patients cover each step, and your seven questions answered in order.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">What I found</p>
+  <h2>Six products, built and shipped to nobody</h2>
+
+  <p>You have six memberships live in Aesthetic Record right now:</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Membership</th><th>Price</th><th>What a patient can learn about it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Beauty Bank</td><td class="num">$149 / mo</td><td>Nothing</td></tr>
+        <tr><td>Glow</td><td class="num">$149 / mo</td><td>Nothing</td></tr>
+        <tr><td>Energy</td><td class="num">$160 / mo</td><td>Nothing</td></tr>
+        <tr><td>Longevity</td><td class="num">$249 / mo</td><td>Nothing</td></tr>
+        <tr><td>Elite Regenerative</td><td class="num">$399 / mo</td><td>Nothing</td></tr>
+        <tr><td>Lifetime Smooth</td><td class="num">$18,000 / yr</td><td>Nothing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Every one of those cards has a <em>Read More</em> link underneath it. <strong>None of them do anything when you click.</strong> There is no description on the card, none on your website, and no membership page in your site's index at all — the <em>Membership</em> item in your navigation doesn't resolve to a page.</p>
+
+  <p>So a patient looking at that screen sees six prices ranging from $149 a month to $18,000 a year, three of them within eleven dollars of each other, and has no way to find out what a single one of them includes. Then she closes the tab.</p>
+
+  <div class="thesis">
+    <p>That's not a marketing problem. You built six products and never opened the door to any of them.</p>
+  </div>
+
+  <p>And there's a structural issue underneath it. Look at those names again — Beauty Bank, Glow, Energy, Longevity, Elite Regenerative. Those aren't <em>levels</em>, they're <em>categories.</em> Three of them sit within eleven dollars of each other.</p>
+
+  <p><strong>You built a menu where you needed a ladder.</strong> A menu asks the patient to diagnose herself — <em>am I a Glow person or an Energy person?</em> — and nobody can answer that about themselves, so she picks nothing. A ladder asks her one question: how far in do you want to go. Three rungs, each obviously more than the one below it, for an obviously different person.</p>
+
+  <p>Six options with no wrong answer produce no answer at all. That is fixable, and it's the first thing I'd fix.</p>
+
+  <p>Two more things worth knowing, both from walking it as a patient:</p>
+
+  <p><strong>Your booking flow asks for two decisions before it shows anyone a service.</strong> First screen: "Choose Your Preferred Location" — the clinic, or a second card labeled <em>Botox Party</em>, marked <em>Closed</em>. Second screen: six tiles. Someone who already loves you will push through that. Someone who found you thirty seconds ago will not, and that's the exact person paid advertising delivers.</p>
+
+  <p><strong>You are the only bookable provider in the system.</strong> Your staff page lists one name. That's the founder-dependency you described in your posting, except it isn't a brand question — it's on the calendar, today.</p>
+
+  <p>And the thing that told me the timing is right: <strong>you have never run a Meta ad.</strong> Your Ad Library is empty, active and all-time. That's not a criticism, it's an advantage — nobody has spent money teaching the platform the wrong things about your business.</p>
+
+  <h3>Your website is misquoting your own prices</h3>
+
+  <p>Your service menu reads <strong>"Dysport or Xeomin ($11/unit)"</strong> — one number for both.</p>
+
+  <p>Those two don't dose the same. Xeomin runs roughly one-to-one with Botox; Dysport takes about two and a half to three units to do the same work. You clearly know this, because your own social posts price them apart — I saw <strong>$8 Xeomin and $3 Dysport</strong> in one of your event promotions. That's correct, conversion-aware pricing.</p>
+
+  <p>Your website doesn't say that. It quotes one flat number for both, which means a patient reading your menu and doing the arithmetic on a Dysport treatment arrives at a figure two or three times what you'd actually charge her. Some of them won't call to find out.</p>
+
+  <p>That's a small fix with an outsized effect, and it's a symptom of the real problem: <strong>your website has drifted away from your actual business.</strong> Every page on it was last touched on the same day in July.</p>
+
+  <h3>And the room doesn't match the price</h3>
+
+  <p>I've seen the inside of your studio — the living wall, the backlit signage, the finishes. That is a premium build-out. Somebody spent real money making a patient feel a specific way the moment she walks in.</p>
+
+  <div class="thesis">
+    <p>The room is priced like a premium practice. The menu is not.</p>
+  </div>
+
+  <p>That gap is expensive in a way that doesn't show up on any report: a patient who books on price and then walks into that space has just learned she could have paid more. And the patient who would happily have paid more never came, because nothing she could find online suggested the room existed.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">The number this rests on</p>
+  <h2>One member covers the first quarter</h2>
+
+  <p>Your top membership is <strong>$18,000 a year</strong>. Somebody at your practice sat down and decided that product should exist, priced it at eighteen thousand dollars, and then it went and sat on a card next to a $149-a-month plan with a broken link under it.</p>
+
+  <p>Nobody has ever been invited into it. Not once. That is what I mean when I say the money is already at your feet.</p>
+
+  <p>You'll see that number again in a minute, because it's what makes the first phase of this engagement pay for itself out of patients you have already acquired and already paid for.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">Before any of the fixes</p>
+  <h2>You were right about all of it</h2>
+
+  <p>I've just handed you a page of things that are wrong, so let me say the more important thing plainly.</p>
+
+  <p><strong>Every hard decision in this business, you already made correctly.</strong></p>
+
+  <p>You picked the right city. You picked the right patient — women with money who have decided their health is worth spending it on. You are moving into regenerative, hormones, peptides and metabolic health, which is the most durable direction in consumer health and the one that carries the highest margins. You built a premium room that makes a patient feel something the moment she walks in. You built memberships before anyone told you to. And you earned <strong>seventy-eight five-star reviews</strong>, which is the only thing on this list that money genuinely cannot buy.</p>
+
+  <p>Those are the decisions that can't be undone, outsourced, or bought later. You have all of them.</p>
+
+  <div class="thesis">
+    <p>What's missing isn't vision. It's execution — and specifically, a long list of very small executions.</p>
+  </div>
+
+  <p>Look back at what I actually found. A link that doesn't open. A price that's wrong on one page. Six products that need names and an order. A page that doesn't exist. A category unticked on a Google profile. Two extra screens in a booking flow. A second brand name that should be pointing at the first one.</p>
+
+  <p><strong>Not one of those is a rebuild.</strong> Each is an afternoon. Some are ten minutes. But together they are the entire gap between the practice you actually built and the revenue it ought to be producing — because a premium business leaks out the back end one small unfinished thing at a time, and none of them ever shows up on a report.</p>
+
+  <p>That gap is the whole of what I do, every day. You've done the part that requires judgment. What's left is the part that requires someone whose only job is to finish things.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">Your posting, line by line</p>
+  <h2>Everything you asked for, and where it lands</h2>
+
+  <p>You listed eighteen things across three headings. I'm not going to tell you I "specialize" in them. Here is each one, and the phase it gets built in — so you can see nothing was skipped and nothing was over-promised for month one.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th style="width:62%">What you asked for</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Consistent strategies for qualified local leads</td><td class="phase-tag">Phase 1 → 2</td></tr>
+        <tr><td>Launch strategy for your incoming RN</td><td class="phase-tag">Phase 1 → 2</td></tr>
+        <tr><td>Campaigns designed to fill provider schedules</td><td class="phase-tag">Phase 2</td></tr>
+        <tr><td>Campaigns for underutilized treatments and open capacity</td><td class="phase-tag">Phase 1</td></tr>
+        <tr><td>Better conversion from website, social, email/SMS into booked appointments</td><td class="phase-tag">Phase 1</td></tr>
+        <tr><td>Patient reactivation and referral campaigns</td><td class="phase-tag">Phase 1</td></tr>
+        <tr><td>Strategic local partnerships and community acquisition</td><td class="phase-tag">Phase 2</td></tr>
+        <tr><td>Launch plans for memberships and treatment packages</td><td class="phase-tag">Phase 1</td></tr>
+        <tr><td>Launches for hormones, wellness, peptides, metabolic programs</td><td class="phase-tag">Phase 2</td></tr>
+        <tr><td>Seasonal and new-service campaigns</td><td class="phase-tag">Phase 2 → 3</td></tr>
+        <tr><td>Recurring revenue and retention strategy</td><td class="phase-tag">Phase 1</td></tr>
+        <tr><td>Marketing that isn't built on constant discounting</td><td class="phase-tag">All three</td></tr>
+        <tr><td>Transition strategy from founder-led to brand-led</td><td class="phase-tag">Phase 1 → 3</td></tr>
+        <tr><td>Demand for providers other than the founder</td><td class="phase-tag">Phase 2</td></tr>
+        <tr><td>Campaigns that introduce new clinicians to your existing audience</td><td class="phase-tag">Phase 2</td></tr>
+        <tr><td>Marketing systems that don't need you to drive every campaign</td><td class="phase-tag">Phase 1 → 3</td></tr>
+        <tr><td>Where founder visibility helps vs. where brand should lead</td><td class="phase-tag">Phase 1</td></tr>
+        <tr><td>A recognizable brand experience across providers and services</td><td class="phase-tag">Phase 2 → 3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>All eighteen. The only thing I've done is put them in the order that lets each one pay for the next.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">Your experience checklist</p>
+  <h2>The ten things you asked for</h2>
+
+  <p>You also listed ten areas of experience. Straight down the list, with something specific under each rather than a yes.</p>
+
+  <h3>1 · Med spas, aesthetics, wellness, healthcare or local appointment-based businesses</h3>
+  <p>Yes — see question two below. Med spa and medically-supervised weight loss, run end to end for over a year.</p>
+
+  <h3>2 · Local lead generation and patient acquisition</h3>
+  <p>This is the whole of what I do. Single-location, appointment-based, local-radius businesses where the entire job is turning a stranger within driving distance into someone sitting in a chair on a specific Tuesday.</p>
+
+  <h3>3 · Meta advertising and/or paid acquisition</h3>
+  <p>Built and ran Meta campaigns end to end for a med spa — campaign structure, creative, video and testimonial ads, statewide targeting, budget management.</p>
+  <p>I also built the <strong>server-side conversion tracking</strong>. That means conversions are reported back to Meta from the server rather than relying only on the browser pixel. It matters more every year as browsers block tracking — without it you're optimizing on partial data, and the cost-per-lead number you get shown is closer to fiction than reporting.</p>
+  <p>One thing I'll flag now because it always comes up later: <strong>the ad account and the pixel belong in your Business Manager, not mine.</strong> Plenty of operators run client campaigns out of their own account, and when the relationship ends the client loses the history, the audiences and everything the platform learned. Yours stays yours, from day one, whether or not you keep working with me.</p>
+
+  <div class="thesis">
+    <p>I'm not sequencing ads into month four because I don't run ads. I'm sequencing them there because I do — and I know exactly what a cold account with no pixel history does in its first six weeks.</p>
+  </div>
+
+  <h3>4 · Email and SMS campaigns</h3>
+  <p>The entire follow-up engine at my last engagement ran on email and SMS: new-inquiry response, nurture sequences, appointment reminders, no-show recovery, and reactivation. Around the clock, seven days a week. You already have this capability sitting in Aesthetic Record and it is mostly unused.</p>
+
+  <h3>5 · Database reactivation</h3>
+  <p>The centerpiece of your first ninety days, for reasons laid out above and below. This is the single most underused asset in almost every practice I look at, and yours has three years in it.</p>
+
+  <h3>6 · Service and membership launches</h3>
+  <p>Six memberships that need names, descriptions, a ladder and a reason to move up — then launched to a warm list rather than announced to an empty room. Plus your hormone, peptide and metabolic programs in Phase Two.</p>
+
+  <h3>7 · Funnels and conversion optimization</h3>
+  <p>Custom landing pages built per offer, and the booking path rebuilt so it stops asking two decisions before it shows a service. Conversion work is the cheapest revenue in any engagement because it's traffic you already paid for.</p>
+
+  <h3>8 · Referral and retention strategies</h3>
+  <p>Retention <em>is</em> the membership ladder — recurring revenue is only recurring if people stay, which means the program has to be worth staying in rather than just cheap to join. Referral works best in the days right after a visible result, which means it has to be triggered by the treatment, not sent out in a monthly newsletter.</p>
+
+  <h3>9 · Building demand for multiple providers rather than one personality</h3>
+  <p>Answered in full at question four. Short version: the mechanism is your memberships, not a content calendar — and I've made this exact transition before for a founder-led practice.</p>
+
+  <h3>10 · Measuring CAC, conversion, bookings and attributable revenue</h3>
+  <p>Full metric set at question six. On <em>attributable</em> revenue specifically — the hard one, and the reason the tracking work in point three matters. Connecting a booked appointment back to the ad, email or campaign that actually produced it requires the conversion data to reach the platform in the first place. I've built that. Most people who report a return-on-ad-spend number to you are reporting whatever the browser pixel happened to catch that month.</p>
+
+  <h3>Two gates that stop most of this before it starts</h3>
+
+  <p>Neither of these is in your posting, and both will land on your desk in month one. They're also most of the reason this kind of work costs what it costs.</p>
+
+  <p><strong>A2P 10DLC registration.</strong> Business texting in the United States is gated behind carrier approval — you register a brand, register each campaign, and get vetted before a single message is allowed to deliver. Get any of it wrong and your texts don't bounce, they just quietly stop arriving, and you often don't find out for weeks. This is where practices that try to run their own SMS follow-up stall out, and it's why "just turn on texting in the CRM" is rarely as simple as it sounds. I do these routinely.</p>
+
+  <p><strong>HIPAA.</strong> You're a medical practice, and you're expanding further into it — hormones, peptides, metabolic health. Patient information will cross the CRM, the messaging, the reporting and whatever handles the follow-up. That means Business Associate Agreements, and it means knowing which vendors will actually sign one, who signs with whom, and how to keep patient detail out of the systems that don't need to see it in the first place.</p>
+
+  <p>I'm not a lawyer and I won't pretend the paperwork is my call to make. What I will do is build the chain correctly and hand your attorney something coherent to review, rather than discovering the question after patient data is already moving. <strong>Most marketers you talk to will not raise this at all.</strong></p>
+
+  <h3>On the "major plus" list — where I'm strong and where I'm not</h3>
+
+  <p>You named injectables, laser and device treatments, hormone optimization, GLP-1 and weight management, and women's wellness. Everyone bidding on this will tell you they have all five. Here's the honest version, because you'll find out in week two anyway:</p>
+
+  <ul>
+    <li><strong>GLP-1 and weight management — deep.</strong> Semaglutide and tirzepatide programs were the core of my last engagement. I've written the ads, the objection handling and the follow-up for the most price-sensitive patient in this entire category.</li>
+    <li><strong>Peptides and wellness injections — yes.</strong> Peptide protocols and B12 were part of the same practice.</li>
+    <li><strong>Hormone optimization — adjacent, not deep.</strong> I've worked around it, not led marketing for it. I'd be learning your protocols and your patient objections in the first month, and I'd rather say so now.</li>
+    <li><strong>Injectables, lasers and devices — not my clinical background.</strong> I've marketed the practice, not the syringe. What I know is how a patient decides, how they book, and what makes them come back.</li>
+  </ul>
+
+  <p>Which lands somewhere convenient for both of us: <strong>the direction you're expanding in — regenerative, peptides, hormones, metabolic health — is the exact category I've already marketed.</strong> The injectables side is where I'd be leaning on your expertise, which is how it should be. You're the clinician. I'm not going to pretend to be one.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">Scope and fee</p>
+  <h2>One engagement, three phases, priced up front</h2>
+
+  <p>You run protocols, so I'll describe it as one. <strong>This is a six-month protocol with a third phase it graduates into</strong> — a defined sequence, in a deliberate order, where each step is only started because the one before it worked.</p>
+
+  <p>It is not a build fee followed by a maintenance retainer. It's one ongoing engagement where <strong>every month you receive an asset you own outright</strong> and a campaign running against it. You are never paying me to build something and then paying me again to use it.</p>
+
+  <p>All three prices are written down now, at the start, so nothing gets renegotiated later. Each step up is triggered by <strong>an event on your calendar that you control</strong> — not by time passing, and not by my say-so.</p>
+
+  <p>And each phase is paid for by a different pocket of your business, in the order you can actually reach them.</p>
+
+  <div class="phase">
+    <div class="phase-head">
+      <div>
+        <p class="phase-n">Phase One · Months 1–3</p>
+        <h3>Build &amp; Harvest</h3>
+      </div>
+      <div class="price">$5,000<span> / month</span></div>
+    </div>
+
+    <p class="trigger"><b>Begins</b> On signing.</p>
+
+    <p><strong>Sequenced by leverage — the biggest money for the least effort goes first, not the most impressive-looking thing:</strong></p>
+    <ol>
+      <li><strong>Pricing and the menu that misstates it.</strong> Costs nothing, touches every transaction you do from that day forward, and lands in week one. Nothing else in this engagement has that ratio.</li>
+      <li><strong>Your Google profile.</strong> You're listed as a medical spa and nothing else. Adding the wellness and weight-management categories takes minutes, costs nothing, and puts a 5.0 with seventy-eight reviews in front of every metabolic and GLP-1 search in your radius — where you currently do not appear at all.</li>
+      <li><strong>The membership ladder.</strong> Six products become three rungs a patient can understand, with names, descriptions, a reason to climb, and a top rung that finally has a story behind it — plus the pages on your own website where they can actually be found and bought.</li>
+      <li><strong>The review engine</strong>, so your existing patient flow produces five-star reviews steadily instead of occasionally. This one compounds, and it makes every advertising click in month four cheaper than it would have been in month one.</li>
+      <li><strong>The reactivation campaign</strong> against your existing database — every past patient contacted, in sequence, with something worth responding to. This is the cash event of the quarter.</li>
+      <li><strong>The booking path</strong>, rebuilt so it stops asking strangers for two decisions before it shows them a service. Must be done before a dollar of paid traffic touches it.</li>
+      <li><strong>Every inquiry answered fast</strong>, seven days a week, so the leads you already get stop going cold — with <strong>A2P 10DLC registered and approved</strong> so those messages actually deliver, and the HIPAA chain mapped before patient data starts moving.</li>
+    </ol>
+
+    <p>That order is deliberate and I'll hold to it in every phase: <strong>whatever moves the most money for the least effort comes first.</strong> In month one that is almost never advertising — it's pricing, packaging, and the people who already know you.</p>
+
+    <p><strong>What I am deliberately not doing:</strong> spending your advertising budget. Not for ninety days.</p>
+
+    <div class="math">
+      <p class="eyebrow">Who pays for this phase</p>
+      <p style="margin:0 0 14px;font-size:15.5px;max-width:none;">Three months at $5,000 is <strong>$15,000</strong>. Here is what covers it, in your own posted prices:</p>
+      <ul>
+        <li><span class="k">1</span><span><strong>Lifetime Smooth member</strong> — $18,000. One. Covers the entire phase and leaves you $3,000 ahead.</span></li>
+        <li><span class="k">4</span><span><strong>Elite Regenerative members</strong> — $399/mo, or $19,152 a year between them.</span></li>
+        <li><span class="k">9</span><span><strong>Glow or Beauty Bank members</strong> — $149/mo, or $16,092 a year between them.</span></li>
+        <li><span class="k">38</span><span><strong>treatment appointments</strong> over ninety days — fewer than thirteen a month.</span></li>
+      </ul>
+      <p class="close">Any one of those four rows pays for the phase. Out of a three-year patient database and seventy-eight people who already went out of their way to review you publicly, <strong>nine members is not an ambitious number. It's a Tuesday.</strong></p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head">
+      <div>
+        <p class="phase-n">Phase Two · Months 4–6</p>
+        <h3>The RN Launch</h3>
+      </div>
+      <div class="price">$7,500<span> / month</span></div>
+    </div>
+
+    <p class="trigger"><b>Trigger</b> Your new RN injector's start date — a date you choose, on your calendar, that you can see coming months in advance.</p>
+
+    <p><strong>What changes:</strong> there is now a second calendar to fill and a second clinician to introduce, and the scope genuinely doubles.</p>
+    <ul>
+      <li>Your RN gets her own bookable identity in the system before day one — profile, bio, photos, her own service menu, her own availability</li>
+      <li>Campaigns that introduce her to your existing audience, so she arrives known rather than unknown</li>
+      <li>Pre-booking her calendar in the weeks before she starts, so she does not walk in on day one to an empty book</li>
+      <li>Meta advertising turned on for the first time — pointed at a booking path that has already proven, on your own patients, that it converts</li>
+      <li>Launches for hormones, peptides, and the metabolic programs, now that there's capacity to deliver them</li>
+    </ul>
+
+    <div class="math">
+      <p class="eyebrow">Who pays for this phase</p>
+      <p style="margin:0 0 14px;font-size:15.5px;max-width:none;">Three months at $7,500 is <strong>$22,500</strong>. This one is paid by the RN — a revenue line that did not exist in Phase One.</p>
+      <ul>
+        <li><span class="k">19</span><span><strong>appointments a month</strong> on her calendar — roughly one per working day.</span></li>
+        <li><span class="k">~20%</span><span><strong>of one injector's capacity.</strong> A full-time injector has room for ninety to a hundred appointments a month. Filling a fifth of her book pays for the entire phase.</span></li>
+        <li><span class="k">5</span><span><strong>Elite Regenerative members</strong> — $23,940 a year between them.</span></li>
+      </ul>
+      <p class="close">Put the other way round: <strong>the expensive problem in month four is not this fee.</strong> It's a six-figure clinician sitting with an empty afternoon. The step from $5,000 to $7,500 costs less than one week of that.</p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head">
+      <div>
+        <p class="phase-n">Phase Three · Month 7 onward</p>
+        <h3>The Standing Seat</h3>
+      </div>
+      <div class="price">$10,000<span> / month</span></div>
+    </div>
+
+    <p class="trigger"><b>Trigger</b> Advertising running, and your RN's book at the utilization target we set together in Phase Two. If those aren't true, we don't move.</p>
+
+    <p><strong>What it is:</strong> the ongoing seat. Advertising, the patient database, every inquiry answered, memberships, retention, and demand built across two providers instead of one. You own the assets and manage none of it.</p>
+
+    <div class="math">
+      <p class="eyebrow">Who pays for this phase</p>
+      <p style="margin:0 0 14px;font-size:15.5px;max-width:none;">$10,000 a month is <strong>$120,000 a year</strong>. Paid by new patient acquisition — the third pocket, and the first one that grows without you.</p>
+      <ul>
+        <li><span class="k">7</span><span><strong>Lifetime Smooth members</strong> a year. Across a two-provider practice.</span></li>
+        <li><span class="k">25</span><span><strong>Elite Regenerative members</strong> — $119,700 a year between them.</span></li>
+        <li><span class="k">25</span><span><strong>appointments a month</strong> across two providers — about three a week each.</span></li>
+      </ul>
+      <p class="close">Here's the part worth sitting with. At $5,000 a month with one provider, the fee costs you roughly <strong>thirteen appointments a month.</strong> At $10,000 a month with two providers, it costs you twenty-five — which is <strong>twelve and a half per provider.</strong> The fee doubles and the cost per chair stays flat. That's the whole point of building systems instead of hiring people.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <p><strong>On the arithmetic above.</strong> I've used your own published prices throughout — $11 per unit of neurotoxin, $250 VI Peels, $399 per Liquid Lipo area, and your six membership rates. For appointment counts I've assumed a working average of about $400 per treatment visit, which is conservative against a 30–50 unit tox appointment at your posted rate. <strong>You know your real average ticket and I don't.</strong> Tell me what it actually is and every number on this page gets recalculated in front of you.</p>
+  </div>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">What this replaces</p>
+  <h2>Three jobs, roughly one salary</h2>
+
+  <p>You said twice in your posting that you're not looking for a large agency or a large agency retainer, so let me deal with that before the numbers.</p>
+
+  <p><strong>You wouldn't be hiring one.</strong> Steven James Consulting is a US-based company in San Antonio, Texas — there's a team behind the work so nothing stops when one person is sick or on a plane, and <strong>I'm personally on your account.</strong> Not a salesperson who closes you and hands you to a junior, not a shared pool of account managers, not a monthly report generated by someone who has never seen your booking flow. You'd be talking to the person doing the work, which is what "small operator" is supposed to mean and often doesn't.</p>
+
+  <p>One practical note while we're on it: we're on Central time, two hours ahead of you, which works out better than it sounds. <strong>Your 8 to 5 is our 10 to 7.</strong> There's no hour of your business day when we're offline, and we're still at our desks after you close — which is when a good share of aesthetics inquiries actually arrive.</p>
+
+  <p>The other thing that separates this from an agency retainer: an agency rents you activity. This engagement hands you <strong>assets you own</strong> — your membership program, your pages, your reactivation sequences, your ad account, your pixel, your data. If we part ways in a year, you keep all of it and it keeps working. That's a deliberate choice and it's how I finished my last engagement.</p>
+
+  <p>Now the numbers. You used the word "fractional," which tells me you've already done this math once. Let me finish it, because it's the most honest way to look at what you're buying.</p>
+
+  <p>To get everything in this proposal from employees, you'd be hiring three people, and San Diego rates are San Diego rates. These are market ranges you can verify on any job board in ten minutes:</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th style="width:46%">The seat</th><th>Base salary</th><th>Real cost to you</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Growth / marketing manager</strong><br><span style="color:var(--ink-2);font-size:14.5px;">Strategy, campaigns, advertising, launches</span></td>
+          <td class="num">$85,000 – 110,000</td>
+          <td class="num">$110,000 – 143,000</td>
+        </tr>
+        <tr>
+          <td><strong>Patient coordinator</strong><br><span style="color:var(--ink-2);font-size:14.5px;">Answering every inquiry, rebooking, waitlist, no-show recovery</span></td>
+          <td class="num">$45,000 – 60,000</td>
+          <td class="num">$58,000 – 78,000</td>
+        </tr>
+        <tr>
+          <td><strong>Retention coordinator</strong><br><span style="color:var(--ink-2);font-size:14.5px;">Database reactivation, reviews, membership outreach</span></td>
+          <td class="num">$45,000 – 55,000</td>
+          <td class="num">$58,000 – 71,000</td>
+        </tr>
+        <tr class="total">
+          <td>Three people on your payroll</td>
+          <td class="num">$175,000 – 225,000</td>
+          <td class="num">$226,000 – 292,000</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The right-hand column is the one that matters and the one most owners forget. Base salary is never the cost — you add employer payroll taxes, workers' comp, benefits, paid time off, equipment, software seats, and the recruiting fee to find each of them. That's roughly thirty percent on top, before anyone has done a day of work.</p>
+
+  <p>And that column still doesn't include the two most expensive parts: <strong>you'd be managing all three of them</strong>, and if one leaves in eighteen months you start over.</p>
+
+  <p>It also doesn't include the thing I raised on the first page, which is worth repeating here where the numbers are in front of you. <strong>Every figure in that table buys operating labor only. Not one dollar of it builds the machine.</strong> Those three people arrive to run a membership program, a reactivation system, a converting booking path and a tracked ad account — and at your practice, today, none of those four things exist. The salaries are the cost of driving. Somebody still has to build the car.</p>
+
+  <div class="thesis">
+    <p>At the top of this ladder you're paying $120,000 a year — roughly what one of those three people costs you fully loaded — and getting all three functions, plus a machine you already own outright because it was built in the first two phases.</p>
+  </div>
+
+  <p>That's the two-for-one, and it runs the whole length of the engagement. In Phase One you pay about half of one marketing manager and the asset gets built <em>and</em> operated. In Phase Two you're still under one loaded salary while a second provider's launch gets built <em>and</em> operated. By Phase Three the fee has reached genuine staff cost — and the build is already behind you, already yours, already producing.</p>
+
+  <p>No payroll taxes. No benefits. No PTO. No equipment. No recruiting. No management. No turnover risk. And you start at $5,000, not at $10,000, so you're carrying a fraction of even that while the first assets get built.</p>
+
+  <h3>The obvious question: how does one seat cover three jobs?</h3>
+
+  <p>Because most of what those three people do all day is the same work repeated. The same follow-up message to a new inquiry. The same review request after a treatment. The same rebooking reminder at week eleven. The same membership invitation to the right patient at the right moment.</p>
+
+  <p>A person does that by typing it out, one at a time, between other duties — which is why in practice it stops happening by Wednesday. It can instead be built once and run continuously, every hour of every day, in your voice and by your rules. Technology handles the repetition; a person designs it, watches it, and changes it when the business changes. That person is me.</p>
+
+  <p>What that buys you specifically is the thing you can't buy from an employee at any price: <strong>every single inquiry answered within minutes, at ten at night and on a Sunday.</strong> That alone is usually the difference between the leads you have now and the appointments you want.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">Your seven questions</p>
+  <h2>Answered in order</h2>
+
+  <div class="qa">
+    <p class="q"><span class="qn">01</span>What local service businesses have you helped grow, and what were the measurable results?</p>
+    <p>My most relevant engagement is <strong>Alamo Slim Clinic</strong> — a med spa and medically-supervised weight-loss practice. It's the closest thing to a mirror of your posting I could hand you.</p>
+    <p>What I built there, end to end: rebuilt the website, built custom landing pages for individual offers, ran the Meta advertising, ran the CRM and the calendar, and put a system in place that answered every single inbound lead around the clock — including the ones that came in at eleven at night, which in that business was a lot of them.</p>
+    <p><strong>Results:</strong> in a single month, the follow-up alone recovered <strong>27 appointments</strong> from leads that had already gone quiet — machine-tagged, so they could be told apart from what the front desk booked. Those are appointments that would simply not have existed; nobody was going back to those people.</p>
+    <p>But the number I'd actually point to is this one: <strong>a booking that came in during week five cost the same as a booking from week one</strong>, because the system never stopped following up. Almost nobody gets paid on week-five leads, for the simple reason that almost nobody is still talking to them. That's the difference between an ad budget that dies on Friday and one that keeps working for a month.</p>
+    <p>The part I'd point to as most relevant to you: when I finished, <strong>I migrated the entire system onto the client's own accounts and handed it over.</strong> It has run since without me touching it. I build things that keep working when I'm not in the room — which is the same requirement you wrote into your posting when you said you want marketing systems that don't depend on one person.</p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="qn">02</span>Do you have med spa, aesthetics, wellness or healthcare experience?</p>
+    <p>Yes — and specifically at the hardest end of your category.</p>
+    <p>Alamo Slim's core business was GLP-1 and medically-supervised weight loss: thin margins, high volume, and the single most price-shopping patient in aesthetics. Every inquiry opened with "how much." Building something that converted <em>that</em> patient into a booked, kept, paying appointment took a year of tuning.</p>
+    <p>Your patient is an easier version of the same conversation, not a harder one. Someone considering a $399-a-month regenerative membership is asking about outcomes and trust, not hunting for the cheapest semaglutide in the county. Everything I learned downmarket works better up here.</p>
+    <p>Where I'm strong and where I'm not, by clinical category, is set out plainly in the checklist section above — I'd rather you know in advance than find out in week two.</p>
+    <p>On systems: I've run <strong>GoHighLevel</strong> in production for a med spa, so I know both what you left behind and why practices leave it. I've now walked your <strong>Aesthetic Record</strong> setup end to end. I'm not proposing you migrate anything. Whatever you're running is what we build on — the last thing a growing practice needs is a platform change and a staff retraining in the same quarter it adds a provider.</p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="qn">03</span>If we hired an RN injector with an initially empty schedule, what would you do during the 30 days before their start date and their first 60 days?</p>
+    <p>This is the real question in your posting, so I'll be specific.</p>
+    <p>First, what I would <em>not</em> do: promise to fill her book with new advertising. You've never run a Meta ad, which means there's no pixel history, no audience, and no proven cost per booking. Advertising launched cold takes weeks to stabilize — it would still be finding its feet the week she starts. Anyone who tells you otherwise is selling you a learning period and calling it a launch.</p>
+    <p>The only assets that can put appointments on a brand-new calendar on day one are the patients you already have and the inquiries you already receive.</p>
+
+    <p><strong>And one question I'd want answered before I plan any of it,</strong> because I think it changes the whole shape of the launch: <em>who performs the good-faith exam, and what happens to your calendar when the RN's fills up?</em></p>
+
+    <p>In California an RN can't initiate treatment on her own — the exam and the patient-specific order have to come from you, and the 2026 tightening around standing orders has made that stricter, not looser. You're an APRN, so you can do it without a medical director, which is an advantage a lot of practices your size don't have. But it does mean <strong>the RN's schedule and yours are coupled.</strong> Every appointment that lands on her calendar draws down some of your minutes.</p>
+
+    <p>If nobody plans for that, hiring a second injector doesn't relieve the bottleneck — it moves it onto you and makes it worse. So the goal isn't just "fill her book." It's fill her book with the appointments that need the least of you: <strong>established patients, existing treatment plans, and members on a known program.</strong> Which is one more reason the memberships come first — a member on a defined program is the lowest-friction appointment a second provider can take.</p>
+
+    <p>You'll know your own constraints here far better than I do, and I'd want to hear them before committing to a plan. But it's the first thing I'd ask.</p>
+
+    <p class="stage">The 30 days before she starts</p>
+    <ul>
+      <li><strong>Fix the path first.</strong> Everything below dies at the location picker if we don't. This is week one, and it's the same work that serves your existing traffic anyway.</li>
+      <li><strong>Give her an identity in the system before she has a patient.</strong> Bookable profile, bio, photos, her own service list, her own hours. On day one a patient should be able to find and book her without asking whether she's new.</li>
+      <li><strong>Introduce her to your database — not as news, as an offer.</strong> Nobody cares that you hired someone. They care that the wait is shorter, that there are evening slots, that the treatment they've been putting off is now easier to get. That's the message.</li>
+      <li><strong>Open her calendar three weeks early and let existing patients claim it.</strong> The goal is blunt: <strong>she does not start with an empty book.</strong> She starts with a partly-full one, which changes her first month, her confidence, and how quickly she's contributing.</li>
+      <li><strong>Run the review harvest now</strong>, so she launches into a practice with visibly more social proof than it has today.</li>
+    </ul>
+
+    <p class="stage">Her first 30 days</p>
+    <ul>
+      <li>A new-patient offer built around <em>access</em>, not discount — new injector, new availability, evenings open. You said you don't want to be positioned on constant discounting, and this is where that discipline starts.</li>
+      <li>Every inquiry answered in minutes, seven days a week, routed to her calendar when it fits. In my experience this is where most of a new provider's book actually comes from — not from new demand, from demand that used to go unanswered.</li>
+      <li>Same-day gap filling. When she has a cancellation at 2pm, someone on the waitlist hears about it at 2:05, not never.</li>
+    </ul>
+
+    <p class="stage">Her second 30 days</p>
+    <ul>
+      <li>Membership invitations to every patient she has now seen once. A first visit with a new injector is the single best moment to offer a program, and it's the moment almost every practice lets pass.</li>
+      <li>A referral mechanic built off her first patients, while their result is fresh.</li>
+      <li><strong>Then</strong> paid acquisition — against a booking path that has already proven, on your own patients, that it converts. By this point the ads are pointed at a machine that works, which is the entire reason they were sequenced last.</li>
+    </ul>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="qn">04</span>How would you transition marketing from being dependent on the founder to building demand for the overall brand and multiple providers?</p>
+    <p>Most people will answer this with a content calendar. That's the wrong instrument, and it takes a year to find out.</p>
+    <p><strong>The real answer is your memberships.</strong> A patient who books a treatment is buying a syringe from Savannah. A patient who joins Longevity or Elite Regenerative is buying <em>a program from a practice</em> — and a program is delivered by whoever is qualified to deliver it. The moment someone is a member, the relationship is with the business, and a different provider performing the visit is normal rather than a downgrade.</p>
+    <p>That's why memberships are Phase One work and not a "nice to have later." They are the mechanism that de-personalizes the practice. You already built them. They just need to be sellable.</p>
+    <p>Three things stack on top of it:</p>
+    <ul>
+      <li><strong>The follow-up voice becomes the practice, not you.</strong> Right now every message a patient gets reads as coming from Savannah personally, which reinforces exactly the dependency you're trying to unwind. It should read as coming from the practice — warm, knowledgeable, unmistakably yours in tone, but not signed by one person's name. I've made this exact transition before with a founder-led practice and it is more of a relief than owners expect.</li>
+      <li><strong>Results and patient stories lead the marketing, not founder content.</strong> Outcomes are transferable between providers. A personality is not.</li>
+      <li><strong>Your visibility gets pointed where it's actually worth something.</strong> Which brings me to the part of your question most people skip.</li>
+    </ul>
+    <p><strong>Where founder visibility is strategically valuable:</strong> at the top — trust, education, the reason someone chooses your practice over the one four blocks away, and anything involving clinical judgment or a new offering. Sixteen years of nursing and an NP credential is a genuine advantage in a category full of people who don't have it. That should be loud.</p>
+    <p><strong>Where it should not be:</strong> booking, follow-up, reminders, membership sales, retention, and routine treatment marketing. Everywhere you are currently the bottleneck rather than the reason. That's most of the daily volume, and it's the part that makes a practice founder-dependent — not the brand, the operations.</p>
+    <p>You stay the face. You stop being the mechanism.</p>
+
+    <p class="stage">One concrete version of this problem, already live</p>
+
+    <p>You're running two brands. <strong>Savannah Tadin Aesthetics</strong> owns the website, the booking system and <strong>78 five-star Google reviews.</strong> <strong>The SoCal Injector</strong> owns Instagram and Facebook. They are not the same name, and reviews don't travel between them.</p>
+
+    <p>That costs you in a specific place: <strong>Meta ads run from a Facebook Page.</strong> Yours has 63 followers and no reviews on it, and it sends people to a site with a different name on the door. The strongest proof you own — seventy-eight people, five stars, unanimous — is invisible at exactly the moment a stranger is deciding whether you're real.</p>
+
+    <p>And there's a second problem with the name itself, which matters more the further you go down the road you described in your posting. <strong>"Injector" is a procedure, not an outcome</strong> — and it's singular. It describes one person doing one thing. Nobody looking for hormone support or metabolic health at forty-seven is searching for an injector, and when your RN starts, the name has no room in it for her.</p>
+
+    <p>You asked how to build demand for a brand rather than a personality. This is the version of that question you can act on in month one: <strong>decide which name the practice is, and put the reviews where the ads are.</strong></p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="qn">05</span>What would you prioritize in your first 30 days?</p>
+    <p>Three things, in this order:</p>
+    <ol>
+      <li><strong>Fix the booking path.</strong> Nothing else I do matters if patients are still meeting two decision screens and a card marked <em>Closed</em> before they see a service. This is the cheapest revenue in the entire engagement — it's traffic you're already paying for in one form or another.</li>
+      <li><strong>Make the six memberships legible and buyable.</strong> Names, descriptions, a ladder that leads somewhere, and a top rung with an actual story. Then put them on the website, where they currently do not appear at all.</li>
+      <li><strong>Turn on the database.</strong> Reviews first, then reactivation, then membership invitations. In that order, for a reason I'll explain in the next answer.</li>
+    </ol>
+    <p>Notice what isn't on the list. No ads, no rebrand, no new platform, no social media overhaul. Thirty days spent on things that produce revenue from assets you already own and already paid for.</p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="qn">06</span>What metrics would you use to determine whether our marketing is working?</p>
+    <p>In priority order, and deliberately not starting where most people start:</p>
+    <ul>
+      <li><strong>Leads to booked appointments.</strong> The one almost nobody measures, and the only one that pays rent. Every other marketer you talk to will report leads. Leads are not revenue; booked, kept appointments are.</li>
+      <li><strong>Speed to first response.</strong> Measured in minutes, not hours. This is the single biggest lever on the number above, and it's the one that improves fastest.</li>
+      <li><strong>Show rate.</strong> A booked appointment that doesn't walk in is a lead you paid for twice.</li>
+      <li><strong>New patient to member conversion.</strong> What percentage of first-time patients end up in a membership. This is your business-model metric — it's the difference between a practice and a brand.</li>
+      <li><strong>Membership retention, in months.</strong> Recurring revenue is only recurring if people stay.</li>
+      <li><strong>Revenue per patient, and revenue per provider.</strong> Per-provider is how you'll know the RN launch worked, and how you'll know when to hire the third one.</li>
+      <li><strong>Review velocity.</strong> New reviews per month. This compounds into everything else — it makes your advertising cheaper later, which is a real financial reason to do it first.</li>
+      <li><strong>Cost per acquired patient, and return on ad spend.</strong> Last on purpose. These only become meaningful once there's advertising to measure, and once everything above is working — otherwise you're optimizing the cost of pouring water into a leaking bucket.</li>
+    </ul>
+    <p>You'll get these monthly, in plain language, with what changed and what I'm doing about it. Not a dashboard you have to interpret.</p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="qn">07</span>What would you recommend as your monthly scope and fee?</p>
+    <p><strong>$5,000 per month to start</strong>, stepping to $7,500 when your RN starts, and $10,000 once advertising is running across two providers. One engagement, three phases, all prices agreed at the outset. The full breakdown is above, along with exactly how many patients cover each step.</p>
+    <p>You said you want to start lean, prove ROI, and expand as the business grows. That's precisely what this is — with the difference that the expansion points are written down in advance instead of becoming an awkward conversation in month five.</p>
+    <p>And for a sense of scale on "lean": <strong>$5,000 a month is roughly half of what one marketing manager costs you fully loaded</strong> — and a marketing manager is the seat you advertised for. You'd be starting at about a quarter of what the three seats in the table come to, having the machine built and operated at the same time, and the step-ups only happen once the business has grown enough to have caused them.</p>
+  </div>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">On price</p>
+  <h2>You have the right market and the right offer, priced like neither</h2>
+
+  <p>You're in <strong>San Diego</strong>, in one of the most expensive metros in the country, selling to women in their forties and fifties who have money and have decided that health is the thing worth spending it on. Regenerative aesthetics, hormones, metabolic health, longevity — that is about as durable as consumer spending gets, and it is not going anywhere.</p>
+
+  <p>Your positioning could hardly be better. Your pricing doesn't match it.</p>
+
+  <div class="thesis">
+    <p>With a premium buyer, a low price is not a bargain. It's a capability signal — and it reads the wrong way round.</p>
+  </div>
+
+  <p>The woman who is going to spend four figures a year on her face and her bloodwork is not hunting for the cheapest injector in San Diego. She's trying to work out who is <em>good.</em> Price is one of the few signals she has before she's ever met you, and if you come in under the practice down the street she doesn't conclude she found a deal. She concludes there's a reason.</p>
+
+  <p>That is the same reason your six memberships don't sell, incidentally. Nothing at $149 a month sounds like the answer to a problem someone is worried about.</p>
+
+  <h3>And I'd be telling you to do what I already do</h3>
+
+  <p>You have one provider, soon two. Your ceiling is hours in a day multiplied by injectors — which means <strong>volume is not available to you.</strong> Not as a strategy choice; as arithmetic. Revenue per patient is the only lever you actually have.</p>
+
+  <p>I have the identical constraint. I take a small number of clients at a time because the work is hands-on, so I can't grow by adding accounts either. I grow by being worth more to each one. <strong>We are running the same business model for the same reason.</strong></p>
+
+  <p>Which is why I'll say the uncomfortable part plainly: when I recommend you raise prices and build a real ladder, I'm not handing you advice I don't take myself. I'd be asking you to do the exact thing that keeps my own business alive.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">Above the scope you posted</p>
+  <h2>The ceiling is a lot higher than $18,000</h2>
+
+  <p>Everything above is the job you advertised, and I'd do it well. But I want to tell you why I'm actually interested in this engagement, because it isn't the scope you posted.</p>
+
+  <div class="thesis">
+    <p>I think you're pricing a category you haven't finished valuing yet.</p>
+  </div>
+
+  <p>Your top membership is $18,000 a year and nobody has ever been invited into it. Below that, six programs between $149 and $399 a month. Those are respectable numbers for an aesthetics membership. They are modest numbers for what you're actually assembling — hormones, peptides, regenerative protocols, metabolic health, aesthetics, and a real clinical credential standing behind all of it.</p>
+
+  <p>Consider what the market already pays for considerably less. Online fitness coaches and physique influencers routinely build seven-figure businesses selling a training program and a meal plan. No license. No prescribing authority. No labs, no hormones, no peptides, no ability to change a single measurable thing in someone's bloodwork. Packaging, positioning and demand — that's the entire product.</p>
+
+  <p>You have every one of the things they don't, inside one of the most valuable narratives in consumer health right now, and you're currently selling it in pieces starting at $149 a month.</p>
+
+  <p><strong>There is a genuinely high-end program to be built on top of everything in this proposal</strong> — diagnostics, protocol, ongoing management and aesthetics inside a single offer with a single price, sold to the patient who is already buying those things separately from four different places and would rather have one person accountable for the result.</p>
+
+  <p>You'd define what goes inside it, because you're the clinician and I am emphatically not. I'd handle what it's called, how it's positioned, who it's put in front of, and how demand for it gets built.</p>
+
+  <p>That is not month-one work and I won't pretend it is. It sits above Phase Three, once the fundamentals are running and there's a machine to launch it into. But it's the reason I read your posting twice.</p>
+
+  <div class="thesis">
+    <p>You wrote that you're looking for a long-term growth partner. That word only means anything if the partner is as interested in the ceiling as you are.</p>
+  </div>
+
+  <p>Which means I should say the other half of it plainly: <strong>this only works if you want it too.</strong> If what you need is someone to run Facebook ads and email a report on the first of the month, there will be cheaper proposals in your inbox and you should take one of them. If you're building something you intend to still be growing in five years — with providers you haven't hired yet and programs you haven't launched yet — then I'd like the seat.</p>
+</section>
+
+<hr>
+
+<section>
+  <p class="eyebrow">One more thing</p>
+  <h2>Why the sequence is the strategy</h2>
+
+  <p>If there's one idea in this proposal I'd want to survive, it's this.</p>
+
+  <p>Everyone bidding on this job is going to tell you they'll run ads and build funnels. Some of them will do it competently. What almost none of them will do is <strong>work your database before they spend your ad budget</strong> — because reactivation isn't glamorous, it doesn't produce a screenshot of a dashboard, and it doesn't justify a big monthly fee in month one.</p>
+
+  <p>But it's where your money is right now. Three years of patients. Seventy-eight people who liked you enough to write about it publicly. Six memberships nobody has ever been invited into. And an $18,000 product sitting behind a link that doesn't open.</p>
+
+  <p>Doing that work first isn't a delay before the real marketing starts. It does three things at once: it pays for the engagement out of revenue you've already earned the right to, it proves the booking path converts before a dollar of ad spend rides on it, and the reviews it generates make every advertising click in month four cheaper than it would have been in month one.</p>
+
+  <div class="thesis">
+    <p>Then we turn on the ads — pointed at a machine that we already know works, for a practice that now has two chairs to fill.</p>
+  </div>
+
+  <p>You wrote that you're interested in someone who understands the difference between building an audience and building a business. This is that difference. An audience is what you get from posting. A business is what you get when the thing you built keeps producing while you're seeing patients.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Next step</p>
+  <h2>Fifteen minutes</h2>
+
+  <p>I'd like to walk you through your own booking flow on a screen share — the location picker, the six tiles, the six broken <em>Read More</em> links — and then show you the 90-day plan for the RN launch against your real calendar dates.</p>
+
+  <p>Fifteen minutes is genuinely enough for you to decide whether I'm the right person for this. We can do it through Upwork's built-in video call, whenever suits you.</p>
+
+  <div class="signoff">
+    <p class="name">Steven Barchetti</p>
+    <p class="co">Steven James Consulting</p>
+  </div>
+</section>
+
+</div>

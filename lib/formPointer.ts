@@ -113,9 +113,26 @@ export function resolveFormPointers<T>(data: T, forms: FormDef[]): T {
           // the live page, which is the most confusing failure available: the screen that says it
           // is right and the page that isn't.
           ...(f.newScreen ? { newScreen: true } : {}),
+          // ⚠️ THE SAME TRAP, AND IT HAD ALREADY CLOSED ON `step`. surveyScreensOf() prefers named
+          // steps over the weight machine — but only if it can see them. Set on the question,
+          // saved correctly, drawn correctly in the editor, and dropped right here, so a form
+          // authored as "About you" / "Your reviews" arrived at the live page as two anonymous
+          // screens balanced by length. Nothing errored and nothing looked broken.
+          ...(f.step ? { step: f.step } : {}),
+          // Answer logic. Without this the rules are stored, listed in the editor, and never
+          // consulted by the page — a survey funnel that quietly walks everyone down one corridor.
+          ...(f.routes?.length ? { routes: f.routes } : {}),
         }));
       props.buttonLabel = prefer(n.props?.buttonLabel, form.buttonLabel);
       props.note = prefer(n.props?.note, form.note);
+      // Per-screen endings travel with the form, not the block: the redirect belongs to the
+      // QUESTION SET (a review form ends at a review profile wherever it is dropped), while the
+      // block owns wording. Same split as the questions themselves.
+      if (form.endings) props.endings = form.endings;
+      // The review invitation on the ordinary ending. Belongs to the QUESTION SET for the same
+      // reason altSuccess does — a survey form ends at a review profile wherever it is dropped.
+      if (form.successButtonLabel) props.successButtonLabel = form.successButtonLabel;
+      if (form.successButtonUrl) props.successButtonUrl = form.successButtonUrl;
       props.successHeading = prefer(n.props?.successHeading, form.successHeading);
       props.successBody = prefer(n.props?.successBody, form.successBody);
       // ⚠️ THE FORM ALWAYS WINS ON THIS ONE — no page override. The other four are wording, which

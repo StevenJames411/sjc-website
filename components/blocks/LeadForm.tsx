@@ -80,6 +80,34 @@ export type LeadFormProps = {
     buttonUrl?: string;
   };
   /**
+   * A LINK ON THE ORDINARY THANK-YOU — which is what stops a survey funnel from gating reviews.
+   *
+   * ⛔ THE SHAPE THIS EXISTS TO PREVENT. Until now only `altSuccess` could carry a button, and it
+   * fires on the HAPPY answers. So a five-star funnel could send pleased customers to Google and
+   * had no way to offer the same door to anyone else — the unhappy branch structurally dead-ended
+   * at a private form. That is the arrangement Google calls review gating, and it is the one
+   * arrangement that puts a client's profile at risk.
+   *
+   * Steven's ruling, 2026-08-21: survey everyone, fix what needs fixing, and then still invite
+   * them. *"That's not gating, that's giving the highest level of customer service."* Which is
+   * only buildable if the ordinary ending can hold a link.
+   *
+   * Blank on every existing form, so no thank-you anywhere grows a button it didn't have.
+   */
+  successButtonLabel?: string;
+  successButtonUrl?: string;
+  /**
+   * PER-SCREEN ENDINGS, keyed by screen title. Today only `action: "submit"` is honoured, and it
+   * means one thing: THE FORM ENDS HERE.
+   *
+   * ⛔ WITHOUT IT, TWO BRANCHES CANNOT BOTH BE TERMINAL. Routing sends the visitor to screen 3 or
+   * screen 4; whichever sits earlier in the list then falls through into the other, so someone who
+   * answered "I have a website" gets asked what their new one should do. The bug is invisible in
+   * the editor — the screens look right, the rules look right, and only walking the un-routed
+   * answer finds it.
+   */
+  endings?: Record<string, { action: string; url?: string; label?: string }>;
+  /**
    * A FULL-WIDTH BAND BEHIND THE FORM — so the white card sits ON something.
    *
    * Steven: *"is it possible that I could add some color to the page so that just the form, which
@@ -196,6 +224,9 @@ export default function LeadForm(props: LeadFormProps) {
     anchor = "",
     theme = "light",
     altSuccess,
+    successButtonLabel,
+    successButtonUrl,
+    endings,
     background = "",
     bandPadding,
     paddingTop,
@@ -363,7 +394,43 @@ export default function LeadForm(props: LeadFormProps) {
   const [screen, setScreen] = useState(0);
   const at = Math.min(screen, Math.max(0, screens.length - 1));
   const shown = stepped ? screens[at]?.fields || [] : list;
-  const lastScreen = !stepped || at >= screens.length - 1;
+
+  /**
+   * WHERE THIS SCREEN LEADS — the answer-logic engine, and it is deliberately this small.
+   *
+   * Rules live on the question that was asked, are checked in order, and the first match wins.
+   * No rule, no answer, or a `goTo` naming a screen that doesn't exist all fall through to "the
+   * next one", which is exactly what every form did before routing existed. So a form without
+   * rules cannot behave differently than it does today.
+   *
+   * ⚠️ AN UNKNOWN `goTo` FALLS THROUGH RATHER THAN THROWING. A screen gets renamed and the rule
+   * pointing at it goes stale; the visitor should walk the ordinary path, not hit a dead end on
+   * the client's live page. The editor is where a stale rule should be surfaced, not the customer.
+   */
+  const nextFrom = (i: number): number => {
+    const cur = screens[i];
+    if (!cur) return i + 1;
+    // A declared ending stops the walk. Checked BEFORE the rules so a terminal screen can still
+    // carry a choice question without that question's routes dragging the visitor onward.
+    if (endings?.[cur.title]?.action === "submit") return screens.length;
+    for (const f of cur.fields) {
+      const rules = (f as { routes?: { when: string; goTo: string }[] }).routes;
+      if (!rules?.length) continue;
+      const answer = (values[keyFor(f, list.indexOf(f))] || "").trim();
+      if (!answer) continue;
+      const hit = rules.find((r) => r.when === answer);
+      if (!hit) continue;
+      const idx = screens.findIndex((sc) => sc.title === hit.goTo);
+      if (idx >= 0) return idx;
+    }
+    return i + 1;
+  };
+
+  // ⛔ "LAST" IS NOW A ROUTING QUESTION, NOT AN INDEX ONE. A branch can end the form from the
+  // middle — the happy path on a review funnel is screen 2 of 4 — so the button has to read Send
+  // there, not Next. Comparing `at` to `screens.length - 1` would show Next on a screen with
+  // nowhere left to go.
+  const lastScreen = !stepped || nextFrom(at) >= screens.length;
 
   // Answered-or-not for the questions ON THIS SCREEN. Checked on Next, because being told on the
   // last screen about a blank on the first is the version people abandon.
@@ -422,7 +489,7 @@ export default function LeadForm(props: LeadFormProps) {
         setState("error");
         return;
       }
-      go(at + 1);
+      go(nextFrom(at));
       return;
     }
 
@@ -534,9 +601,16 @@ export default function LeadForm(props: LeadFormProps) {
             literal braces). Either way there is no page to send anyone to, and a "Leave a Google
             review" button that goes nowhere is worse than no button at the moment someone is
             pleased enough to press it. */}
-        {alt?.buttonUrl && !alt.buttonUrl.includes("{{") && alt.buttonLabel ? (
+        {/* ⚠️ ONE BUTTON, TWO SOURCES. The happy branch uses altSuccess; every other branch falls
+            back to the form's own success link. Both are token-resolved per site and both are
+            suppressed when empty, so a business with no review URL shows no button on either
+            path rather than a dead one on the friendlier path. */}
+        {(() => {
+          const href = (alt?.buttonUrl || successButtonUrl || "").trim();
+          const label = (alt?.buttonUrl ? alt.buttonLabel : successButtonLabel) || "";
+          return href && !href.includes("{{") && label ? (
           <a
-            href={alt.buttonUrl}
+            href={href}
             target="_blank"
             rel="noopener noreferrer"
             className={
@@ -546,9 +620,10 @@ export default function LeadForm(props: LeadFormProps) {
             }
             style={buttonColor ? { backgroundColor: resolveColor(buttonColor) } : undefined}
           >
-            {alt.buttonLabel}
+            {label}
           </a>
-        ) : null}
+          ) : null;
+        })()}
       </div>,
       false
     );
