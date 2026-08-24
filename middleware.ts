@@ -282,6 +282,27 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
+  // ── SPOKEN SHORTCUTS ────────────────────────────────────────────────────────────────────
+  // Cold calls send people to a page while Steven is still on the phone, and
+  // "slash custom hyphen websites" is not a sayable URL. These are the short forms he can read
+  // out loud. 302, not 308: the destination is a positioning decision and positioning moves —
+  // a permanent redirect would have to be fought back out of every browser cache.
+  //
+  // ⛔ The canonical page keeps its own address. This adds a way in, it does not rename anything.
+  const SPOKEN: Record<string, string> = {
+    "/websites": "/custom-websites",
+    "/website": "/custom-websites",
+    "/reviews": "/five-star-reviews",
+    "/ads": "/booked-appointments",
+    "/work": "/portfolio",
+  };
+  const spoken = SPOKEN[pathname.replace(/\/+$/, "").toLowerCase()];
+  if (spoken) {
+    const url = new URL(req.nextUrl);
+    url.pathname = spoken;
+    return NextResponse.redirect(url, 302);
+  }
+
   const authed = isOwner(req, pathname);
 
   // PREVIEW MODE (added 2026-07-30). `?preview=1` on any public URL renders the DRAFT through
