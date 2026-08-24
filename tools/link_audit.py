@@ -59,6 +59,7 @@ def anchor_text_keys(html: str) -> dict:
 def main() -> int:
     apply = "--apply" in sys.argv
     bad = 0
+    stale = 0
     for pg in st.get_pages(SITE):
         try:
             doc = st.get_doc(SITE, pg)
@@ -90,10 +91,25 @@ def main() -> int:
                     dirty = True
                     print(f"{pg}[{bi}].{ln.get('key')}: {href}  ->  {want}   « {words.strip()[:52]} »")
                     ln["href"] = want
+
+                # ── The link's own label, which is NOT the visible text and never follows it.
+                # It ships inside the page source, so a crawler — and any AI reading the page —
+                # sees the OLD service name long after the site stopped saying it. Steven's rule:
+                # wrong is wrong even where a human cannot see it. Rebuilt from the heading plus
+                # description the way the importer first built it.
+                want_label = "".join(vals.get(tk, "") for tk in keys)[:40].rstrip()
+                if want_label and (ln.get("label") or "") != want_label:
+                    stale += 1
+                    dirty = True
+                    if not apply:
+                        print(f"{pg}[{bi}].{ln.get('key')} label: {(ln.get('label') or '')[:34]!r}"
+                              f"  ->  {want_label[:34]!r}")
+                    ln["label"] = want_label
         if dirty and apply:
             st.put_doc(SITE, pg, doc)
             print(f"   ↳ draft saved: {pg}  (publish it)")
-    print(f"\n{bad} broken link(s)  {'APPLIED — now publish' if apply else '(report only)'}")
+    print(f"\n{bad} broken link(s), {stale} stale label(s)  "
+          f"{'APPLIED — now publish' if apply else '(report only)'}")
     return 1 if (bad and not apply) else 0
 
 if __name__ == "__main__":
