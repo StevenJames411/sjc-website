@@ -32,6 +32,31 @@ export * from "./hostShared";
 
 /** Env overrides so a rename, or testing on a preview URL, doesn't need a code change. */
 const studioHost = () => normalizeHost(process.env.STUDIO_DOMAIN || STUDIO_HOST);
+
+/**
+ * Every host a demo may arrive on. Demos are RECOGNISED on all of these; they are only
+ * GENERATED on `studioHost()` (see publicBaseFor in ./hostShared), so widening this list
+ * never renames a link anyone already has.
+ *
+ * ⛔ WHY stevenjamesdesigns.com IS HERE (2026-08-24) — IT IS THE ONE WITH A WILDCARD CERT.
+ * A wildcard certificate can only be issued by DNS-01 validation, which needs Vercel to
+ * control the domain's DNS. stevenjamesconsulting.com is on GoDaddy's nameservers and must
+ * stay there (its MX is Google Workspace — moving nameservers moves the mail), so every demo
+ * subdomain there needs its own certificate, registered one at a time. stevenjamesdesigns.com
+ * IS on Vercel's nameservers, so `*.stevenjamesdesigns.com` already holds a live wildcard and
+ * any subdomain works the moment a site exists — no registration, no waiting.
+ *
+ * ⚠️ ATTACHING THE WILDCARD IS NOT ENOUGH ON ITS OWN. With the domain attached and this list
+ * still naming only the consulting host, every name on it — including ones matching no site —
+ * fell through to the SJC fallback at the bottom of resolveHost and quietly served SJC's own
+ * homepage. That is the precise failure the note further down warns about, and it was briefly
+ * live. A host that can answer must also be a host that gets JUDGED.
+ */
+const demoHosts = () => {
+  const extra = (process.env.DEMO_DOMAINS || "stevenjamesdesigns.com")
+    .split(",").map((h) => normalizeHost(h.trim())).filter(Boolean);
+  return Array.from(new Set([studioHost(), ...extra]));
+};
 const sjcHost = () => normalizeHost(process.env.SJC_DOMAIN || SJC_HOST);
 
 export type HostKind =
@@ -127,8 +152,8 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
   //
   // The label is matched against the registry, never trusted: an unknown subdomain falls through
   // to SJC rather than rendering anything.
-  const studio = studioHost();
-  if (host.endsWith(`.${studio}`)) {
+  const studio = demoHosts().find((h) => host.endsWith(`.${h}`));
+  if (studio) {
     const label = host.slice(0, -(studio.length + 1));
     // Only one level. a.b.stevenjamesdesigns.com is not a demo.
     if (label && !label.includes(".")) {
