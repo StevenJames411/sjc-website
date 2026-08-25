@@ -27,6 +27,27 @@
  */
 export const STUDIO_HOST = "stevenjamesconsulting.com";
 
+/**
+ * Where DEMO addresses are generated. Deliberately separate from STUDIO_HOST.
+ *
+ * ⛔ DEMOS AND INVOICES CANNOT SHARE A HOST CONSTANT (2026-08-24). STUDIO_HOST also builds
+ * invoice and onboarding URLs. Pointing all three at stevenjamesdesigns.com in one move would
+ * have shipped broken invoices: the apex there 302s to
+ * stevenjamesconsulting.com/custom-websites AND DISCARDS THE PATH, so a customer opening his
+ * bill lands on a sales page. Verified, not assumed. Splitting the constant lets demos move to
+ * the domain that can serve them while money links stay where they already work.
+ *
+ * ⭐ WHY DEMOS GO HERE: stevenjamesdesigns.com is on Vercel's nameservers, so
+ * `*.stevenjamesdesigns.com` holds a live WILDCARD certificate — every demo address works the
+ * moment a site exists. stevenjamesconsulting.com is on GoDaddy (its MX is Google Workspace, so
+ * the nameservers must not move), which makes a wildcard cert impossible there and forces one
+ * registration per demo name. That registration was the hoop; this removes it.
+ *
+ * Both hosts are still RECOGNISED (see demoHosts in ./host.ts), so every link already sent
+ * keeps working.
+ */
+export const DEMO_HOST = "stevenjamesdesigns.com";
+
 /** SJC's own domain. Anything unrecognised resolves here — see lib/host.ts. */
 export const SJC_HOST = "stevenjamesconsulting.com";
 
@@ -66,7 +87,10 @@ export function publicBaseFor(site: { id: string; domain?: string }): {
   // The prefix stays empty: a demo is served at the ROOT of its subdomain, so its pages sit at
   // /services rather than /bobs/services. That's what makes the swap at sale free — no URL inside
   // the site changes, only the address in front of them.
-  return { origin: `https://${site.id}-demo.${STUDIO_HOST}`, prefix: "" };
+  const demoHost = normalizeHost(
+    process.env.NEXT_PUBLIC_DEMO_DOMAIN || process.env.DEMO_DOMAIN || DEMO_HOST
+  );
+  return { origin: `https://${site.id}-demo.${demoHost}`, prefix: "" };
 }
 
 /** The absolute public URL of one page. A site's FIRST page sits at its bare address. */
