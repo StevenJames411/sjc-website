@@ -38,7 +38,12 @@ jobs:
       - name: Ask the board whether anyone is still watching
         run: |
           set -uo pipefail
-          URL="https://www.stevenjamesconsulting.com/api/board-status"
+          # ⚠️ THE VERCEL ALIAS, NOT THE DOMAIN, ON PURPOSE (2026-08-25). This pointed at
+          # www.stevenjamesconsulting.com until the apex was moved to the LandingSite build; the
+          # board never went down, but every ping 404'd and the dead-man cried for hours. The board
+          # lives in the Vercel project, so the watchdog watches the Vercel project. A hostname
+          # Steven may repoint at a marketing site is not an address for a health check.
+          URL="https://sjc-website-mu.vercel.app/api/board-status"
 
           # ⚠️ UNREACHABLE AND STALE MUST FEEL THE SAME. "The board says nothing has been checked
           # in nine hours" and "the board did not answer at all" both mean nobody is watching, and
