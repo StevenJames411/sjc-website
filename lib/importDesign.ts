@@ -25,6 +25,7 @@ import {
 } from "./designHtml";
 import { compileDesignCss } from "./designCss";
 import { sheetScope, DESIGN_PIPELINE_REV } from "./designShared";
+import { inlineFontAwesomeIcons } from "./faIcons";
 import { nearestFont, type BrandFont } from "./brandShared";
 import { createHash } from "node:crypto";
 
@@ -85,7 +86,8 @@ const TW_VERSION: string = (() => {
  */
 export async function compileCssForDesign(html: string): Promise<string> {
   const icons = await inlineLucideIcons(html);
-  const withIcons = modernizeOpacityUtilities(icons.html);
+  const fa = await inlineFontAwesomeIcons(icons.html);
+  const withIcons = modernizeOpacityUtilities(fa.html);
   // Scoped to THIS design's own class, so two designs on one page don't overwrite each other's
   // identically-named utilities. The id is derived from the same `html` the caller hashes, so the
   // scope here and the `props.sheet` stamped on the blocks always agree.
@@ -173,8 +175,13 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
   // Icons first. A generated page ships empty <i data-lucide="…"> tags that a CDN script fills in
   // at runtime; we strip that script, so without this every icon in the design just never appears.
   const icons = await inlineLucideIcons(html);
-  const withIcons = modernizeOpacityUtilities(icons.html);
-  report.push(`${icons.inlined} icons inlined`);
+  // ⛔ FONT AWESOME TOO, AND AFTER LUCIDE, NOT INSTEAD OF IT. A page can carry both, so this runs
+  // over Lucide's output rather than the original. → lib/faIcons.ts for why these are inlined as
+  // SVG rather than linked to a CDN stylesheet.
+  const fa = await inlineFontAwesomeIcons(icons.html);
+  const withIcons = modernizeOpacityUtilities(fa.html);
+  report.push(`${icons.inlined + fa.inlined} icons inlined`);
+  if (fa.missing.length) report.push(`⚠️ Font Awesome icons not found: ${fa.missing.join(", ")}`);
   // Count what got rewritten so a design full of v3 opacity classes says so out loud rather than
   // shipping a page whose translucent panels are all solid. See modernizeOpacityUtilities().
   const deadOpacity = (icons.html.match(/-opacity-\d+/g) || []).length;
