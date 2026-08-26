@@ -436,5 +436,43 @@ export async function compileDesignCss(
   }
 
   const utilities = build(candidates);
-  return stripFontFamily(scopeCss(`${utilities}\n${revealHiddenStates(extraCss)}`, scope));
+  return stripFontFamily(
+    scopeCss(`${utilities}\n${fixV3GradientStops(revealHiddenStates(extraCss))}`, scope)
+  );
+}
+
+/**
+ * ── A v3 GRADIENT STOP IS INVALID CSS UNDER v4, AND THE BROWSER THROWS IT AWAY ────────────────
+ *
+ * Tailwind v4 REGISTERS the gradient variables:
+ *
+ *     @property --tw-gradient-from { syntax: "<color>"; initial-value: #0000 }
+ *
+ * A registered property only accepts values matching its syntax. v3 stylesheets — which is what a
+ * page built on another platform ships — declare the stop as a colour PLUS a position:
+ *
+ *     --tw-gradient-from: var(--primary-color) var(--tw-gradient-from-position);
+ *
+ * That is a `<color> <length-percentage>` pair, not a `<color>`. So it fails to parse, the browser
+ * discards it, and the variable silently falls back to its initial value: TRANSPARENT.
+ *
+ * ⛔ THE FAILURE LOOKS LIKE MISSING CONTENT, NOT LIKE A BROKEN COLOUR (found 2026-08-26 on the
+ * LandingSite import). Every branded band collapsed to white. The cards on those bands are
+ * `bg-white/25` and their text is `text-white` — so white-on-white, and eleven sections of copy
+ * that IS there rendered invisible. Steven read it as "about 90% came in"; the diff said 53 of 53
+ * headings and every word present. Nothing was missing. It could not be seen.
+ *
+ * The position half is redundant anyway: v4 registers `--tw-gradient-from-position` with its own
+ * initial value (0%), so dropping it changes nothing except making the declaration legal.
+ */
+function fixV3GradientStops(css: string): string {
+  return String(css || "")
+    // `--tw-gradient-from: <colour> var(--tw-gradient-*-position)` -> just the colour.
+    .replace(
+      /(--tw-gradient-(?:from|to|via)\s*:\s*[^;{}]*?)\s+var\(\s*--tw-gradient-(?:from|to|via)-position\s*\)/g,
+      "$1"
+    )
+    // v3 also emits the position vars EMPTY (`--tw-gradient-from-position: ;`), which is likewise
+    // invalid for a registered `<length-percentage>` and equally discarded. Drop them.
+    .replace(/--tw-gradient-(?:from|to|via)-position\s*:\s*;/g, "");
 }
