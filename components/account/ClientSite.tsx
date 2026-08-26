@@ -150,13 +150,22 @@ export default function ClientSite(props: {
           placeholder="Mon–Fri 8–5"
         />
 
-        <label style={label}>Your Google review link</label>
-        <input
-          style={input}
-          value={b.reviewUrl}
-          onChange={(e) => set("reviewUrl", e.target.value)}
-          placeholder="https://g.page/r/…/review"
-        />
+        {/* ⛔ THE GOOGLE REVIEW LINK IS NOT ON THIS PAGE, AND THAT IS THE POINT (Steven, 2026-08-26:
+            *"The Google Review link doesn't need to be here… we're going to make a custom survey
+            funnel that walks the customer through that, so the business owner doesn't have a clue
+            even how to get their Google review from their Google business page. That is all behind
+            the scenes that I handle for them."*)
+
+            It is a SETUP question, not a thing an owner changes between jobs — and asking it here
+            turns his one screen back into an intake form, which is the shape the offer is sold
+            against. It is collected in the survey funnel and set by Steven in the studio settings,
+            where it already lives.
+
+            ⚠️ reviewUrl STAYS IN `b` AND IN THE PAYLOAD, unread by anything on this screen.
+            updateSite merges `business` key by key, so omitting it would survive too — but the save
+            here sends the object whole, and a field that is in the payload with its real value
+            cannot be blanked by a future change to either side. Absent from the screen, carried
+            through untouched. */}
 
         <button
           onClick={save}
