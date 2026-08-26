@@ -1057,6 +1057,24 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
         on={(v) => seo("favicon" as keyof Site["seo"], v)}
         ph="https://…/icon.png"
       />
+      {/* ⛔ THE HEADLINE A LINK PREVIEW SHOWS, AND IT HAD NO CONTROL UNTIL NOW (2026-08-26).
+          Steven texted his own site and the card read "SJC LandingSite build" — the name typed at
+          import, which `metadataFor` falls back to when nothing better is set. It is the first
+          thing anyone sees when the link is shared, and the only way to change it was an API call.
+          Same rule as ghlWebhookUrl and "who may sign in": a setting only code can write makes the
+          person who writes code a single point of failure. */}
+      <Field
+        label="Link preview headline — what a text message or Facebook shows"
+        v={s.seo.title || ""}
+        on={(v) => seo("title" as keyof Site["seo"], v)}
+        ph="Steven James Consulting — Premium Smart Websites"
+      />
+      <Field
+        label="Business name for search &amp; sharing"
+        v={s.seo.businessName || ""}
+        on={(v) => seo("businessName" as keyof Site["seo"], v)}
+        ph="Blank uses the business name above"
+      />
       <Field label="Preview text" v={s.seo.description} on={(v) => seo("description", v)} ph="What this business does, in one sentence." area />
       <Field label="Preview image URL" v={s.seo.shareImage} on={(v) => seo("shareImage", v)} ph="https://…" />
       <Field label="Title suffix" v={s.seo.titleSuffix} on={(v) => seo("titleSuffix", v)} ph="| Your Business Name" />

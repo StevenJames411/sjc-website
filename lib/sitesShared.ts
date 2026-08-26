@@ -40,6 +40,15 @@ export type BusinessFacts = {
 
 /** What a link preview and a Google result show. Page-level settings override these. */
 export type SiteSeo = {
+  /**
+   * The headline a shared link shows — a text message, Facebook, LinkedIn — and the browser tab.
+   *
+   * ⛔ ADDED 2026-08-26 BECAUSE IT WAS ALREADY BEING READ AND COULD NOT BE WRITTEN. `metadataFor`
+   * has always preferred this over the site's name, and there was no field for it, so a shared
+   * link showed whatever the site was CALLED at import. Steven texted his own site and the card
+   * read "SJC LandingSite build".
+   */
+  title: string;
   businessName: string;
   description: string;
   shareImage: string;
@@ -416,6 +425,7 @@ export function daysLeft(site: Pick<Site, "deletedAt">, now = Date.now()): numbe
 }
 
 export const emptySeo = (): SiteSeo => ({
+  title: "",
   businessName: "",
   description: "",
   shareImage: "",
