@@ -79,6 +79,12 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
   const [sweepMsg, setSweepMsg] = useState("");
   const [fonts, setFonts] = useState<Brand>(brand);
   const [fontMsg, setFontMsg] = useState("");
+  /**
+   * ⛔ HELD AS RAW TEXT, PARSED ON SAVE — not split on every keystroke. Splitting as you type and
+   * dropping the empty entries means pressing Return to start the second address deletes the line
+   * you just made, so a second address can never be typed. The parse belongs at the save.
+   */
+  const [ownerText, setOwnerText] = useState((site.ownerEmails || []).join("\n"));
 
   /**
    * ONE CLICK. Pick a face and the live website is wearing it — no draft, no second Publish.
@@ -618,6 +624,12 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
           // saved and dropped its value on the floor before — ghlWebhookUrl, 2026-08-12. The worst
           // version of a bug, because the screen agrees with you.
           accounts: s.accounts || {},
+          // ⚠️ IN THE PAYLOAD OR IT IS NOT SAVED — see the two notes above. Lower-cased here
+          // because every check against it lower-cases the address it is comparing.
+          ownerEmails: ownerText
+            .split(/[\n,;]+/)
+            .map((x) => x.trim().toLowerCase())
+            .filter(Boolean),
         }),
       }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error || "Couldn't save.");
@@ -819,6 +831,35 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
         copy the URL it gives you. Every enquiry from this website is posted there as a contact, so
         it lands in the same inbox as their calls and texts. Blank is right for a demo and for the
         tier without a CRM &mdash; the email and the sheet still get the lead.
+      </p>
+
+      {/* ⛔ THE FIELD THAT FINISHES THE CLIENT SIGN-IN, ADDED 2026-08-26. The whole magic-link
+          flow was built and working — the route, the single-use token, the shoulder-tap when a
+          client can't get in, the /account page they land on — and NOTHING anywhere wrote the one
+          value it all reads. Not this screen, not the onboard-client route that runs when Steven
+          ticks "Sold". So a client who bought a website could not sign in to it, and the only way
+          in was an API call by hand.
+
+          Same lesson as ghlWebhookUrl above, one field over: a setting only code can write makes
+          the person who writes code a single point of failure. */}
+      <h2 style={sec}>Who may sign in</h2>
+      <p style={hint}>
+        The addresses that can open this website&apos;s own page — where the owner fixes their
+        phone number and reads who called. They never get a password: they type their address, we
+        email a link, and the link works once. Blank means nobody but you, which is right for a
+        demo. <strong>Put their address in the day they buy</strong> — this is the only thing that
+        lets them in.
+      </p>
+      <Field
+        label="Their email addresses — one per line"
+        v={ownerText}
+        on={setOwnerText}
+        ph="owner@theirbusiness.com"
+        area
+      />
+      <p style={hint}>
+        Use the address they actually read on their phone. If they type a different one, nothing
+        happens on their screen and you get a note saying which address they tried.
       </p>
 
       <h2 style={sec}>Fonts</h2>
