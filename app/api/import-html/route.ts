@@ -431,7 +431,18 @@ export async function POST(req: Request) {
     const origin = new URL(req.url).origin;
     const r = await fetch(`${origin}/api/adopt-images`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", cookie: req.headers.get("cookie") || "" },
+      // ⛔ FORWARD THE BEARER TOO, NOT JUST THE COOKIE (2026-08-26). This passed only `cookie`, so
+      // an import driven by SITE_EDIT_TOKEN — every scripted import, which is most of them — reached
+      // adopt-images with no credential at all and came back `{ok:false,error:"unauthorized"}`.
+      //
+      // ⚠️ AND IT FAILED QUIETLY IN THE WORST WAY. The site imports, the page looks perfect, and
+      // every photo is still being served BY THE PLATFORM WE ARE LEAVING. A live dependency on a
+      // third party, inside a site a client pays for, wearing the appearance of a finished job.
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.get("cookie") || "",
+        authorization: req.headers.get("authorization") || "",
+      },
       body: JSON.stringify({ slug: created.slug, siteId }),
     });
     images = await r.json();
