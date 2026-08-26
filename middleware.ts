@@ -169,10 +169,14 @@ function loginPage(error: boolean, openPassword: boolean): string {
 </div>
 </div>
 <script>
+// ⛔ GO BACK TO THE PAGE HE ASKED FOR, NOT TO '/'. Signing in at /edit used to land on the
+// PUBLIC home page — Steven: *"it dumps me on one of the old pages, the AI implementation page,
+// instead of the studio's home page."* Middleware serves this card AT the gated path, so the
+// path itself is already the right destination; only the ?e / ?steven markers come off.
 var f=document.getElementById('f'),err=document.getElementById('err');
 f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
   try{var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:f.password.value})});
-    if(r.ok){location.href='/';}else{err.style.display='block';f.password.value='';f.password.focus();}
+    if(r.ok){var u=new URL(location.href);u.searchParams.delete('e');u.searchParams.delete('steven');location.href=u.pathname+u.search;}else{err.style.display='block';f.password.value='';f.password.focus();}
   }catch(x){err.style.display='block';}
 };
 // ⛔ THE SAME MESSAGE WHATEVER HAPPENS. The route already answers ok for an unknown address so it
