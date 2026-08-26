@@ -249,8 +249,32 @@ export default function ClientSite(props: {
         )}
       </section>
 
-      <p style={{ textAlign: "center", fontSize: 13, color: "#9ca3af" }}>
-        Steven James Consulting · <a href="/api/logout" style={{ color: "#9ca3af" }}>Sign out</a>
+      {/* ⛔ SIGN OUT IS NOT A FOOTNOTE (Steven, 2026-08-26: *"I never signed out. We need to make
+          that a different colour so people see it."*)
+
+          It was #9ca3af on white at 13px, sitting inside a grey byline — the same colour as the
+          words around it, which is how you hide a control rather than place one. He missed it on
+          his own screen, and he knew it was there. A contractor reading this in a truck, in
+          sunlight, has no chance.
+
+          Its own colour, its own weight, its own line, and a tap target big enough for a thumb. */}
+      <p style={{ textAlign: "center", fontSize: 13, color: "#9ca3af", marginBottom: 10 }}>
+        Steven James Consulting
+      </p>
+      <p style={{ textAlign: "center" }}>
+        <a
+          href="/api/logout"
+          style={{
+            display: "inline-block",
+            color: "#1d4ed8",
+            fontSize: 15,
+            fontWeight: 600,
+            textDecoration: "underline",
+            padding: "10px 16px",
+          }}
+        >
+          Sign out
+        </a>
       </p>
     </main>
   );
