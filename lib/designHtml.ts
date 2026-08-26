@@ -85,6 +85,14 @@ export function sanitizeDesignHtml(html: string): string {
     // mounts the real LeadForm into it — the design's own layout, its own column, its own
     // spacing, with a form that actually delivers. Without a marker the only way to get a
     // working form was to delete the section and rebuild it.
+    // ⛔ THE CAL.COM PLACEHOLDER IS MARKED THE SAME WAY, AND FOR THE SAME REASON (2026-08-26).
+    // Cal's published snippet is an empty div plus a script. We strip every script — that is the
+    // only thing between a bought design and arbitrary JS on a client's site — so the calendar
+    // arrived as a hole in the middle of an otherwise perfect band. Marking the div lets the real
+    // CalEmbed mount into the design's own card. See components/blocks/DesignCalMount.tsx.
+    if (/^my-cal-inline/i.test(el.getAttribute("id") || "")) {
+      el.setAttribute("data-sjc-cal", "1");
+    }
     if (tag === FORM_TO_DIV) {
       el.rawTagName = "div";
       el.setAttribute("data-sjc-form", "1");
@@ -458,6 +466,8 @@ export function tokenizeSection(html: string, prefix = ""): {
   hasForm: boolean;
   formFields: { label: string; inputType: string }[];
   formButton: string;
+  /** The Cal.com booking link this section embedded, if it embedded one. */
+  calLink: string;
 } {
   const root = parse(sanitizeDesignHtml(html), { comment: false });
   const text: DesignText[] = [];
@@ -592,6 +602,11 @@ export function tokenizeSection(html: string, prefix = ""): {
   // ⚠️ READ THE FORM BEFORE WALKING. walk() replaces every text node with a token, so reading
   // the field labels afterwards returned "{{t:t18}}" instead of "Your Name" — the swap would have
   // mounted a form asking three questions named after their own placeholders.
+  // ⚠️ READ THE CAL LINK OFF THE ORIGINAL HTML, NOT OFF `root`. sanitizeDesignHtml has already
+  // stripped the script that carries it — `calLink: "stevenjamesconsulting/discovery"` — so by the
+  // time we hold a parsed tree the only evidence the calendar ever existed is the empty div.
+  const calLink = (String(html || "").match(/calLink\s*:\s*["']([^"']+)["']/) || [])[1] || "";
+
   const formEl = root.querySelector("[data-sjc-form]");
   const formFields = formEl
     ? formEl
@@ -629,6 +644,7 @@ export function tokenizeSection(html: string, prefix = ""): {
     hasForm: !!formEl,
     formFields,
     formButton,
+    calLink,
   };
 }
 

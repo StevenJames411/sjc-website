@@ -83,6 +83,7 @@ type Props = {
     background: string;
     foreground: string;
     hasForm: boolean;
+    calLink: string;
     useRealForm: boolean;
     formFields: { label: string; inputType: string }[];
     /** A LIVE link to a library form — see the note on DesignSectionProps.formId. */
@@ -626,6 +627,10 @@ const hideWhenBare = ((data: { props?: Record<string, unknown> }, { fields }: { 
 const designSectionPanel = ((data: { props?: Record<string, unknown> }, { fields }: { fields: Record<string, unknown> }) => {
   const p = data?.props || {};
   const drop = ["sheet", "hasForm", "formFields"];
+  // ⚠️ `calLink` STAYS VISIBLE when the section has one — it is the single thing Steven would want
+  // to change about a booking band (a different event type, a client's own Cal account), and a
+  // value only the importer can write is the failure this codebase keeps re-learning.
+  if (!p.calLink) drop.push("calLink");
   if (!p.hasForm) drop.push("useRealForm", "formId", "formButton", "successHeading", "successBody");
   // The importer stamps ids `design-1`, `design-2`… in document order, so only the first block on a
   // page can be the header — the one place `sticky` does anything.
@@ -1139,6 +1144,10 @@ const baseConfig: Config<Props, RootProps> = {
             },
           },
         },
+        calLink: {
+          type: "text" as const,
+          label: "Booking calendar — your Cal.com link",
+        },
         hasForm: {
           type: "radio" as const,
           label: "Section contains a form (imported — leave this alone)",
@@ -1172,7 +1181,7 @@ const baseConfig: Config<Props, RootProps> = {
       // that a field is not a control until something has been set on a page and LOOKED AT.
       // scripts/check-prop-bridge.mjs is the mechanical half of that and was too loose to catch
       // its own flagship case; it is tightened in the same commit as this fix.
-      render: ({ id, sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, columns, splitAfter, flip, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, puck }) => (
+      render: ({ id, sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, columns, splitAfter, flip, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, calLink, puck }) => (
         // ⛔ DesignSectionLive, NOT DesignSection — it resolves {{business.*}} for DISPLAY so the
         // canvas shows the phone number instead of the token. Storage keeps the token; nothing is
         // written. Pass-through when not editing. See components/puck/DesignSectionLive.tsx.
@@ -1192,6 +1201,7 @@ const baseConfig: Config<Props, RootProps> = {
           paddingTop={paddingTop}
           paddingBottom={paddingBottom}
           columns={columns}
+          calLink={calLink}
           splitAfter={splitAfter}
           flip={flip}
           background={background}

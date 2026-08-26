@@ -198,7 +198,7 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
   if (!sections.length) throw new Error("No top-level sections found in that page.");
 
   const content = sections.map((section, i) => {
-    const { html: tokenized, text, images, links, boxes, hasForm, formFields, formButton } = tokenizeSection(section, `s${i + 1}`);
+    const { html: tokenized, text, images, links, boxes, hasForm, formFields, formButton, calLink } = tokenizeSection(section, `s${i + 1}`);
     // Seed the spacing control with what the design actually used, so the stepper opens at the
     // real number. The override is an inline style at render — the markup keeps its own classes,
     // so clearing the field restores the design's spacing exactly.
@@ -228,6 +228,8 @@ export async function importDesign(html: string, businessName = ""): Promise<Des
         // The real form goes in by default — see DesignSection's `useRealForm`.
         hasForm,
         useRealForm: hasForm,
+        // Empty for every section that never embedded a calendar, which is nearly all of them.
+        calLink,
         formFields,
         formButton,
       },
