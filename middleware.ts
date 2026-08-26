@@ -153,7 +153,7 @@ function isOwner(req: NextRequest, pathname: string): boolean {
  * "simplify" this back into two equal forms: they are not two equal doors, and the screen is read
  * far more often by someone who owns a handyman company than by the person who built it.
  */
-function loginPage(error: boolean): string {
+function loginPage(error: boolean, openPassword: boolean): string {
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Steven James Consulting — Sign in</title>
@@ -161,8 +161,8 @@ function loginPage(error: boolean): string {
 </head><body><div class="card"><h1>Steven James Consulting</h1><p>Private &middot; sign in to view &amp; edit</p>
 <form id="m"><label>Your email</label><input type="email" name="email" autocomplete="email" placeholder="you@yourbusiness.com" autofocus required><button type="submit">Email me a sign-in link</button></form>
 <div class="sent" id="sent">Check your email. If that address is on a website of ours, a link is on its way \u2014 it works once, for the next 15 minutes.</div>
-<div class="owner${error ? " hidden" : ""}"><button type="button" id="showpw">Steven?</button></div>
-<div id="pw" class="${error ? "" : "hidden"}">
+<div class="owner${error || openPassword ? " hidden" : ""}"><button type="button" id="showpw">Steven?</button></div>
+<div id="pw" class="${error || openPassword ? "" : "hidden"}">
 <div class="sep"><span>or</span></div>
 <div class="error" id="err">Incorrect password.</div>
 <form id="f"><label>Password</label><input type="password" name="password" autocomplete="current-password" required><button type="submit" class="ghost">Enter</button></form>
@@ -422,7 +422,19 @@ export async function middleware(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
   const showError = req.nextUrl.searchParams.get("e") === "1";
-  return new NextResponse(loginPage(showError), {
+  /**
+   * ⛔ THE OWNER'S DOOR NEEDS AN ADDRESS, NOT JUST A CONTROL (2026-08-26). Folding the password
+   * behind "Steven?" is right for the client, and it left Steven unable to reach his own studio —
+   * twice, on his own machine, having been told where to click. A toggle he cannot find is a
+   * locked door.
+   *
+   * `?steven=1` renders the card with the password box already open. Bookmarkable, sayable out
+   * loud, and it survives any future restyling of the link. It reveals a FORM, never a session —
+   * the password is still the only thing that gets anyone in, so this is worth nothing to a
+   * stranger who guesses it.
+   */
+  const openPassword = req.nextUrl.searchParams.get("steven") === "1";
+  return new NextResponse(loginPage(showError, openPassword), {
     status: 401,
     headers: { "Content-Type": "text/html" },
   });
