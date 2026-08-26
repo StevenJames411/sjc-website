@@ -1051,11 +1051,12 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
 
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
-      <Field
+      <ImageField
         label="Browser tab icon (favicon) — a square PNG, 512×512 is plenty"
         v={s.seo.favicon || ""}
         on={(v) => seo("favicon" as keyof Site["seo"], v)}
         ph="https://…/icon.png"
+        hintText="Square works best — anything else gets squashed into a 16-pixel box."
       />
       {/* ⛔ THE HEADLINE A LINK PREVIEW SHOWS, AND IT HAD NO CONTROL UNTIL NOW (2026-08-26).
           Steven texted his own site and the card read "SJC LandingSite build" — the name typed at
@@ -1076,7 +1077,13 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
         ph="Blank uses the business name above"
       />
       <Field label="Preview text" v={s.seo.description} on={(v) => seo("description", v)} ph="What this business does, in one sentence." area />
-      <Field label="Preview image URL" v={s.seo.shareImage} on={(v) => seo("shareImage", v)} ph="https://…" />
+      <ImageField
+        label="Preview image — the picture on a shared link"
+        v={s.seo.shareImage}
+        on={(v) => seo("shareImage", v)}
+        ph="https://…"
+        hintText="Blank uses the first photo on the page."
+      />
       <Field label="Title suffix" v={s.seo.titleSuffix} on={(v) => seo("titleSuffix", v)} ph="| Your Business Name" />
 
       <h2 style={sec}>Tracking</h2>
@@ -1288,3 +1295,73 @@ const primary: React.CSSProperties = { background: "var(--e-ink)", color: "var(-
 const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
 const okBox: React.CSSProperties = { marginTop: 16, background: "var(--e-ok-bg)", border: "1px solid var(--e-ok-line)", color: "var(--e-ok-ink)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+
+/**
+ * A URL box with a real "Choose a file" beside it.
+ *
+ * ⛔ WHY THIS EXISTS (2026-08-26). The favicon and the share image were URL-ONLY, so setting either
+ * one meant hosting the picture somewhere else first and pasting a link — for a control whose whole
+ * job is "put this picture here". Steven, looking at the favicon field: *"If I want to upload
+ * another image, I don't see where to upload an image so I could replace it."*
+ *
+ * The upload endpoint already existed for the page builder; only the settings screen had no way to
+ * reach it. Same shape as every other gap found today: the capability was there, the control wasn't.
+ */
+function ImageField({
+  label, v, on, ph, hintText,
+}: { label: string; v: string; on: (v: string) => void; ph?: string; hintText?: string }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  return (
+    <label style={{ display: "block", marginBottom: 14 }}>
+      <span style={lbl}>{label}</span>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <input value={v} onChange={(e) => on(e.target.value)} placeholder={ph} style={{ ...input, flex: 1 }} />
+        <span
+          style={{
+            border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 13px",
+            fontSize: 13, whiteSpace: "nowrap", cursor: busy ? "default" : "pointer",
+            opacity: busy ? 0.6 : 1,
+          }}
+        >
+          {busy ? "Uploading…" : "Choose a file"}
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            disabled={busy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setBusy(true); setErr("");
+              try {
+                const form = new FormData();
+                form.append("file", file);
+                const r = await fetch("/api/upload", {
+                  method: "POST", body: form, credentials: "same-origin",
+                }).then((x) => x.json());
+                if (!r?.url) throw new Error(r?.error || "That didn't upload.");
+                on(r.url);
+              } catch (x) {
+                setErr((x as Error).message);
+              } finally {
+                setBusy(false);
+                e.target.value = "";
+              }
+            }}
+          />
+        </span>
+      </div>
+      {v ? (
+        // Seeing it is the only way to know the URL points at what you think it does.
+        <img
+          src={v}
+          alt=""
+          style={{ marginTop: 8, height: 44, width: "auto", borderRadius: 6, border: "1px solid var(--e-line)" }}
+        />
+      ) : null}
+      {err ? <span style={{ ...hint, display: "block", marginTop: 6 }}>{err}</span> : null}
+      {hintText ? <span style={{ ...hint, display: "block", marginTop: 6 }}>{hintText}</span> : null}
+    </label>
+  );
+}
