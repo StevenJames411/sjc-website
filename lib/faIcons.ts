@@ -43,6 +43,24 @@ const STYLE_DIR: Record<string, string> = {
 const NOT_AN_ICON =
   /^fa-(solid|regular|brands|light|thin|duotone|sharp|fw|lg|sm|xs|xl|2xs|2xl|[0-9]+x|spin|spin-pulse|spin-reverse|pulse|beat|beat-fade|fade|bounce|shake|flip|flip-horizontal|flip-vertical|flip-both|rotate-(90|180|270|by)|border|inverse|stack|stack-1x|stack-2x|ul|li|pull-left|pull-right|layers|swap-opacity)$/;
 
+/**
+ * Pro-only icon names, mapped to the nearest FREE icon that reads the same at icon size.
+ *
+ * ⛔ STEVEN'S CALL, 2026-08-26: *"If the free one is good enough, I could live with a free version
+ * of that icon."* The alternative is a blank tile where the design clearly wanted a shield, or
+ * paying for a licence to draw one glyph.
+ *
+ * ⚠️ ONLY ADD A PAIR WHERE THE SUBSTITUTE CARRIES THE SAME MEANING. `shield-check` and
+ * `shield-halved` both read as "protected" in a 16px tile. A map that starts swapping in whatever
+ * is closest alphabetically produces a page of icons that are individually fine and collectively
+ * say nothing.
+ */
+const FREE_EQUIVALENT: Record<string, string> = {
+  "shield-check": "shield-halved",
+  "shield-alt": "shield-halved",
+  "circle-check-solid": "circle-check",
+};
+
 const iconCache = new Map<string, string | null>();
 
 /** The `<path>`s and `viewBox` out of one Font Awesome SVG file, or null if there is no such icon. */
@@ -95,7 +113,10 @@ export async function inlineFontAwesomeIcons(
     // the solid cut of the same glyph is indistinguishable at icon size. A name that exists in NO
     // weight is a genuinely missing icon and gets reported.
     const dir = STYLE_DIR[styleClass];
-    const file = (await loadIcon(dir, name)) ?? (dir === "solid" ? null : await loadIcon("solid", name));
+    const file =
+      (await loadIcon(dir, name)) ??
+      (dir === "solid" ? null : await loadIcon("solid", name)) ??
+      (FREE_EQUIVALENT[name] ? await loadIcon("solid", FREE_EQUIVALENT[name]) : null);
     if (!file) {
       missing.add(`${styleClass} ${nameClass}`);
       continue;
