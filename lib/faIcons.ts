@@ -57,6 +57,10 @@ const NOT_AN_ICON =
  */
 const FREE_EQUIVALENT: Record<string, string> = {
   "shield-check": "shield-halved",
+  // The firewood logo's flame. Free ships `fire`, which is the same glyph at icon size.
+  flame: "fire",
+  "fire-flame": "fire",
+  "fire-flame-simple": "fire",
   "shield-alt": "shield-halved",
   "circle-check-solid": "circle-check",
 };
