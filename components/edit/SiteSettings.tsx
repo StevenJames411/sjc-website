@@ -1313,11 +1313,16 @@ function ImageField({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   return (
-    <label style={{ display: "block", marginBottom: 14 }}>
+    // ⛔ A <div>, NOT A <label> — AND THIS WAS A REAL BUG (2026-08-26). Wrapping the whole field in
+    // a label sends every click inside it to the FIRST form control, which is the URL box. So
+    // "Choose a file" merely focused the text input and the picker never opened. Steven: *"When I
+    // click on upload from my computer, it doesn't work."* The only label here is the button
+    // itself, which is what makes a hidden file input clickable.
+    <div style={{ display: "block", marginBottom: 14 }}>
       <span style={lbl}>{label}</span>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <input value={v} onChange={(e) => on(e.target.value)} placeholder={ph} style={{ ...input, flex: 1 }} />
-        <span
+        <label
           style={{
             border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 13px",
             fontSize: 13, whiteSpace: "nowrap", cursor: busy ? "default" : "pointer",
@@ -1350,7 +1355,7 @@ function ImageField({
               }
             }}
           />
-        </span>
+        </label>
       </div>
       {v ? (
         // Seeing it is the only way to know the URL points at what you think it does.
@@ -1362,6 +1367,6 @@ function ImageField({
       ) : null}
       {err ? <span style={{ ...hint, display: "block", marginTop: 6 }}>{err}</span> : null}
       {hintText ? <span style={{ ...hint, display: "block", marginTop: 6 }}>{hintText}</span> : null}
-    </label>
+    </div>
   );
 }
