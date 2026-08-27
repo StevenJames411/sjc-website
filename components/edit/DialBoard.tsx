@@ -38,6 +38,7 @@ import {
   applyFilters,
   calendarHref,
   filterCounts,
+  flagLevel,
   isDefaultFilters,
   labelFor,
   normaliseStatus,
@@ -474,6 +475,20 @@ export default function DialBoard({
               />
               has a number
             </label>
+            {/* ⛔ ONLY APPEARS WHEN THERE IS SOMETHING TO HIDE, and it counts them out loud. A
+                permanently-present "hide flagged" box on a sheet with no flags reads as a promise
+                the recon has been run, on a list where it has not. The count is the tell that it
+                has. Only AVOID rows go — see applyFilters. */}
+            {counts.avoid ? (
+              <label style={mini} title={`${counts.avoid} flagged AVOID${counts.caution ? ` · ${counts.caution} more at caution, which stay` : ""}`}>
+                <input
+                  type="checkbox"
+                  checked={filters.hideFlagged}
+                  onChange={(e) => set({ hideFlagged: e.target.checked })}
+                />
+                hide {counts.avoid} flagged
+              </label>
+            ) : null}
             <select
               value={sortFor(filters)}
               onChange={(e) => set({ sort: e.target.value as Sort })}
@@ -638,6 +653,7 @@ function Card({
   const tone = toneFor(p.status);
   const tel = telHref(p.phone);
   const pitch = pitchLine(p);
+  const flag = flagLevel(p);
 
   // Open the notes block the moment something lands in it, so the save is visible where he is
   // looking instead of two seconds of banner at the top of the page.
@@ -646,7 +662,20 @@ function Card({
   }, [justSaved]);
 
   return (
-    <div style={{ ...card, ...cardTone(tone) }}>
+    <div style={{ ...card, ...cardTone(tone), ...(flag === "avoid" ? cardAvoid : null) }}>
+      {/* ⛔ ABOVE THE NAME, ABOVE THE CALL BUTTON, IN FULL AND NEVER COLLAPSED.
+          This is the one thing on the card that has to be read BEFORE the phone is dialled, and
+          everything the board has learned about hiding things applies in reverse here: a warning
+          behind a "▸ details" toggle is a warning he meets for the first time while it is ringing.
+          The whole quote renders — recon already cut it to ~260 characters centred on the
+          accusation, and a banner that says AVOID without the sentence that earned it is a
+          machine's verdict on a real man's business. He reads it, then he decides. */}
+      {p.flag ? (
+        <div style={flag === "avoid" ? avoidBox : cautionBox}>
+          <span style={flagChip}>{flag === "avoid" ? "⛔ AVOID" : "⚠️ CAUTION"}</span>
+          <span style={flagText}>{p.flag.replace(/^(AVOID|CAUTION)\s*—\s*/i, "")}</span>
+        </div>
+      ) : null}
       {/* ⛔ THE CALL BUTTON RIDES THE TITLE LINE, and the pitch is a chip rather than a banner.
           Steven: *"we're taking up an entire line with the call button… the same with the no
           website. That could be a tiny little button somewhere. I'm not blind. We just use too
@@ -692,6 +721,14 @@ function Card({
         {p.category ? <span> · {p.category}</span> : null}
         {p.address ? <span> · {p.address}</span> : null}
       </div>
+
+      {/* ⭐ THE HOOK — the one true, specific thing recon found, sitting where his eye already is
+          when the call connects. This is the whole reason recon_swarm exists, and until today it
+          finished as a .tsv on the laptop that nobody pasted anywhere. On the card face, uncollapsed
+          and unquoted, because he is reading it out loud in about four seconds.
+          ⚠️ SUPPRESSED UNDER AVOID by the tool, not by this component — a business we are telling
+          him to walk away from does not get an opener written for it. */}
+      {p.hook ? <div style={hookLine}>{p.hook}</div> : null}
 
       {/* ⛔ THE SAVE BUTTON ONLY EXISTS WHEN THERE IS SOMETHING TO SAVE, so an empty card stays as
           short as it was and a card with a typed note is visibly unfinished. Enter saves too —
@@ -928,6 +965,17 @@ const metaLine: React.CSSProperties = { fontSize: 12.5, color: "var(--e-muted)",
 const chipBase: React.CSSProperties = { fontSize: 10.5, fontWeight: 800, letterSpacing: ".04em", borderRadius: 5, padding: "2px 6px", marginRight: 4, whiteSpace: "nowrap" };
 const pitchSite: React.CSSProperties = { ...chipBase, color: "#fff", background: "var(--e-ok-dot)" };
 const pitchReviews: React.CSSProperties = { ...chipBase, color: "#fff", background: "var(--e-accent)" };
+/* ⛔ THE FLAG. Loud on purpose — this is the one thing on the wall that has to stop a scroll.
+   The AVOID card gets a red top edge as well as a banner, so it is findable at thumbnail size
+   while he is flicking down forty cards looking for the next one to dial. */
+const cardAvoid: React.CSSProperties = { borderTopColor: "var(--e-bad-line)", background: "var(--e-bad-bg)" };
+const flagBase: React.CSSProperties = { display: "flex", gap: 8, alignItems: "flex-start", borderRadius: 8, padding: "8px 10px", fontSize: 12.5, lineHeight: 1.5 };
+const avoidBox: React.CSSProperties = { ...flagBase, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-bad-ink)" };
+const cautionBox: React.CSSProperties = { ...flagBase, background: "var(--e-warn-bg)", border: "1px solid var(--e-warn-line)", color: "var(--e-warn-ink)" };
+const flagChip: React.CSSProperties = { flex: "0 0 auto", fontWeight: 800, fontSize: 11, letterSpacing: ".04em", whiteSpace: "nowrap", paddingTop: 1 };
+const flagText: React.CSSProperties = { minWidth: 0, overflowWrap: "anywhere" };
+/* The hook reads as something to SAY, so it gets quote-ish weight rather than muted-meta grey. */
+const hookLine: React.CSSProperties = { fontSize: 13, lineHeight: 1.5, color: "var(--e-ink)", borderLeft: "3px solid var(--e-accent)", paddingLeft: 9, overflowWrap: "anywhere" };
 /* The links, hard against the call button. nowrap because they are the thing that was wrapping. */
 const headLinks: React.CSSProperties = { flex: "0 0 auto", display: "flex", gap: 8, fontSize: 12.5, whiteSpace: "nowrap" };
 const callBtn: React.CSSProperties = { flex: "0 0 auto", background: "#16a34a", color: "#fff", borderRadius: 8, padding: "7px 13px", fontSize: 13.5, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" };

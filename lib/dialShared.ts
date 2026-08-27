@@ -72,6 +72,25 @@ export type Prospect = {
    */
   maps: string;
   reviewsUrl: string;
+  /**
+   * ⛔ WHY THIS BUSINESS MIGHT NOT BE WORTH SELLING TO — written by sjc-tools/recon_swarm.py.
+   *
+   * Steven, 2026-08-27, having opened C&S Elite Remodeling's reviews himself: *"His second or
+   * third review is basically taking half the customer's money as a deposit and never showing up
+   * again. So we want to flag customers like this and not work with them."*
+   *
+   * ⚠️ THE RATING COLUMN CANNOT CARRY THIS AND NEITHER CAN THE REVIEW COUNT. C&S is a 4.5★ with
+   * 15 reviews — on the card face it is one of the better-looking rows on the whole sheet. The
+   * accusation lives in the TEXT of one 1★, and thirteen five-stars average it out of existence.
+   * Nothing already on this card could have told him.
+   *
+   * The cell reads `AVOID — <why> · <n> of <m> reviews are 1–2★ · 1★ <date>: "<quote>"`, and the
+   * quote is not decoration: SJC would be building this man's front door and pointing leads at
+   * it. That is a decision worth four seconds of reading, and the tool is not allowed to make it.
+   */
+  flag: string;
+  /** The sayable sentence recon found. One line, his words, never a script. */
+  hook: string;
   /** Leftover columns from the CURATED part of the sheet. Shown on the card face. */
   extra: Cell[];
   /**
@@ -122,6 +141,12 @@ const FIELDS: Record<keyof Omit<Prospect, "row" | "extra" | "raw">, string[]> = 
   claimed: ["claimed", "verified"],
   category: ["category", "type", "industry", "niche"],
   address: ["address", "location", "street"],
+  // ⚠️ CLAIMED BEFORE `notes`, and both are written by recon_swarm.py past the sheet's own
+  // divider. That is fine and deliberate — the loop below searches the curated region first and
+  // then the raw one, so a column appended at BZ binds exactly like a column at C. Appending is
+  // what keeps the write off Steven's frozen A–V pane, which he sorts and reads by eye.
+  flag: ["red flag", "flag", "warning", "avoid"],
+  hook: ["hook", "opener", "recon", "recon hook"],
   notes: ["notes", "note"],
   status: ["status", "outcome", "result", "disposition"],
   lastCalled: ["last called", "called", "last call", "called at"],
@@ -236,10 +261,29 @@ export function toProspects(
     lastCalled: pick(cells, "lastCalled"),
     maps: pick(cells, "maps"),
     reviewsUrl: pick(cells, "reviewsUrl"),
+    flag: pick(cells, "flag"),
+    hook: pick(cells, "hook"),
     extra,
     raw,
     };
   });
+}
+
+/**
+ * How bad the flag is, off the front of the cell recon wrote.
+ *
+ * ⚠️ READ FROM THE TEXT, NOT A SEPARATE COLUMN, because Steven edits this sheet. He can type
+ * "AVOID — he stiffed my neighbour" into the cell by hand and the card goes red, and he can delete
+ * one he disagrees with and it goes away. A second machine-owned column holding the real answer
+ * would make his own edit look like it worked while the card ignored it.
+ */
+export type FlagLevel = "" | "caution" | "avoid";
+
+export function flagLevel(p: Prospect): FlagLevel {
+  const s = clean(p.flag).trim().toUpperCase();
+  if (!s) return "";
+  if (s.startsWith("AVOID")) return "avoid";
+  return "caution";
 }
 
 /** Has this one been dealt with? Drives the counters — it no longer hides anything. */
@@ -407,6 +451,16 @@ export type Filters = {
   minRating: number;
   minReviews: number;
   phoneOnly: boolean;
+  /**
+   * ⛔ HIDE THE ONES RECON SAYS TO AVOID — and it is a TOGGLE, not the default.
+   *
+   * Two reasons it does not just filter them out silently. A flag is a machine's reading of a
+   * stranger's review and it will sometimes be wrong, so the man who has to live with the decision
+   * has to be able to see what was hidden from him. And the flagged rows are the ones worth
+   * looking at deliberately once — "9 flagged" on screen is how he learns the rule works before he
+   * starts trusting it to remove people from his day.
+   */
+  hideFlagged: boolean;
   q: string;
   /** null = follow the pitch's own default. See sortFor(). */
   sort: Sort | null;
@@ -418,6 +472,7 @@ export const DEFAULT_FILTERS: Filters = {
   minRating: 0,
   minReviews: 0,
   phoneOnly: false,
+  hideFlagged: false,
   q: "",
   sort: null,
 };
@@ -425,7 +480,7 @@ export const DEFAULT_FILTERS: Filters = {
 export function isDefaultFilters(f: Filters): boolean {
   return (
     f.pitch === "all" && f.work === "all" && !f.minRating && !f.minReviews && !f.phoneOnly &&
-    !f.q.trim() && f.sort === null
+    !f.hideFlagged && !f.q.trim() && f.sort === null
   );
 }
 
@@ -471,6 +526,11 @@ export function applyFilters(ps: Prospect[], f: Filters): Prospect[] {
 
     if (f.phoneOnly && !telHref(p.phone)) return false;
 
+    // ⚠️ ONLY `avoid` GOES, NEVER `caution`. A caution is a no-show on one job — plenty of good
+    // trades have one, and hiding them would quietly delete sellable businesses off his day under
+    // a switch he read as "hide the crooks".
+    if (f.hideFlagged && flagLevel(p) === "avoid") return false;
+
     // Blank passes — see num().
     const r = num(p.rating);
     if (f.minRating && r !== null && r < f.minRating) return false;
@@ -509,6 +569,8 @@ export function filterCounts(ps: Prospect[]) {
     todo: ps.filter((p) => !p.status.trim()).length,
     done: ps.filter((p) => p.status.trim()).length,
     noPhone: ps.filter((p) => !telHref(p.phone)).length,
+    avoid: ps.filter((p) => flagLevel(p) === "avoid").length,
+    caution: ps.filter((p) => flagLevel(p) === "caution").length,
   };
 }
 
