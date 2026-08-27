@@ -150,13 +150,22 @@ export default function ClientSite(props: {
           placeholder="Mon–Fri 8–5"
         />
 
-        <label style={label}>Your Google review link</label>
-        <input
-          style={input}
-          value={b.reviewUrl}
-          onChange={(e) => set("reviewUrl", e.target.value)}
-          placeholder="https://g.page/r/…/review"
-        />
+        {/* ⛔ THE GOOGLE REVIEW LINK IS NOT ON THIS PAGE, AND THAT IS THE POINT (Steven, 2026-08-26:
+            *"The Google Review link doesn't need to be here… we're going to make a custom survey
+            funnel that walks the customer through that, so the business owner doesn't have a clue
+            even how to get their Google review from their Google business page. That is all behind
+            the scenes that I handle for them."*)
+
+            It is a SETUP question, not a thing an owner changes between jobs — and asking it here
+            turns his one screen back into an intake form, which is the shape the offer is sold
+            against. It is collected in the survey funnel and set by Steven in the studio settings,
+            where it already lives.
+
+            ⚠️ reviewUrl STAYS IN `b` AND IN THE PAYLOAD, unread by anything on this screen.
+            updateSite merges `business` key by key, so omitting it would survive too — but the save
+            here sends the object whole, and a field that is in the payload with its real value
+            cannot be blanked by a future change to either side. Absent from the screen, carried
+            through untouched. */}
 
         <button
           onClick={save}
@@ -240,8 +249,32 @@ export default function ClientSite(props: {
         )}
       </section>
 
-      <p style={{ textAlign: "center", fontSize: 13, color: "#9ca3af" }}>
-        Steven James Consulting · <a href="/api/logout" style={{ color: "#9ca3af" }}>Sign out</a>
+      {/* ⛔ SIGN OUT IS NOT A FOOTNOTE (Steven, 2026-08-26: *"I never signed out. We need to make
+          that a different colour so people see it."*)
+
+          It was #9ca3af on white at 13px, sitting inside a grey byline — the same colour as the
+          words around it, which is how you hide a control rather than place one. He missed it on
+          his own screen, and he knew it was there. A contractor reading this in a truck, in
+          sunlight, has no chance.
+
+          Its own colour, its own weight, its own line, and a tap target big enough for a thumb. */}
+      <p style={{ textAlign: "center", fontSize: 13, color: "#9ca3af", marginBottom: 10 }}>
+        Steven James Consulting
+      </p>
+      <p style={{ textAlign: "center" }}>
+        <a
+          href="/api/logout"
+          style={{
+            display: "inline-block",
+            color: "#1d4ed8",
+            fontSize: 15,
+            fontWeight: 600,
+            textDecoration: "underline",
+            padding: "10px 16px",
+          }}
+        >
+          Sign out
+        </a>
       </p>
     </main>
   );

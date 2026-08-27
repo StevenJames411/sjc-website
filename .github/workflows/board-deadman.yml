@@ -22,9 +22,16 @@ name: board dead-man
 
 on:
   schedule:
-    # Every 30 minutes. The board sweeps hourly, so a genuinely dead runner is noticed inside two
-    # cycles rather than one — long enough that a single slow sweep can't cry wolf.
-    - cron: "*/30 * * * *"
+    # ⛔ EVERY FOUR HOURS, AND THE REASON IS THE DATABASE BILL (2026-08-26). At 30 minutes this fired
+    # 48 times a day, and /api/board-status reads Neon. Neon bills COMPUTE-HOURS and sleeps after
+    # five idle minutes, so each ping bought five minutes of awake time it would not otherwise have
+    # had: ~4 hours a day from the watchdog alone, against a 100 CU-hour monthly allowance. The
+    # watchdog was eating the allowance of the thing it was watching.
+    #
+    # ⚠️ CHANGED IN LOCKSTEP WITH THE SWEEP AND THE THRESHOLD BELOW. A watchdog whose interval no
+    # longer matches what it is judging is worse than none: too tight and it cries wolf until it
+    # gets muted, taking the dead-man with it.
+    - cron: "0 */4 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -68,8 +75,9 @@ jobs:
             exit 1
           fi
 
-          # Hourly cron, so three hours is three missed sweeps — past any plausible slow run.
-          if [ "$AGE" -gt 10800 ]; then
+          # Four-hourly cron, so nine hours is two missed sweeps plus slack — past any plausible
+          # slow run, and still far inside "nobody has looked at this all day".
+          if [ "$AGE" -gt 32400 ]; then
             echo "DEAD-MAN: last sweep was ${AGE}s ago. The checks cron has stopped."
             exit 1
           fi

@@ -79,6 +79,12 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
   const [sweepMsg, setSweepMsg] = useState("");
   const [fonts, setFonts] = useState<Brand>(brand);
   const [fontMsg, setFontMsg] = useState("");
+  /**
+   * ⛔ HELD AS RAW TEXT, PARSED ON SAVE — not split on every keystroke. Splitting as you type and
+   * dropping the empty entries means pressing Return to start the second address deletes the line
+   * you just made, so a second address can never be typed. The parse belongs at the save.
+   */
+  const [ownerText, setOwnerText] = useState((site.ownerEmails || []).join("\n"));
 
   /**
    * ONE CLICK. Pick a face and the live website is wearing it — no draft, no second Publish.
@@ -618,6 +624,12 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
           // saved and dropped its value on the floor before — ghlWebhookUrl, 2026-08-12. The worst
           // version of a bug, because the screen agrees with you.
           accounts: s.accounts || {},
+          // ⚠️ IN THE PAYLOAD OR IT IS NOT SAVED — see the two notes above. Lower-cased here
+          // because every check against it lower-cases the address it is comparing.
+          ownerEmails: ownerText
+            .split(/[\n,;]+/)
+            .map((x) => x.trim().toLowerCase())
+            .filter(Boolean),
         }),
       }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error || "Couldn't save.");
@@ -821,6 +833,35 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
         tier without a CRM &mdash; the email and the sheet still get the lead.
       </p>
 
+      {/* ⛔ THE FIELD THAT FINISHES THE CLIENT SIGN-IN, ADDED 2026-08-26. The whole magic-link
+          flow was built and working — the route, the single-use token, the shoulder-tap when a
+          client can't get in, the /account page they land on — and NOTHING anywhere wrote the one
+          value it all reads. Not this screen, not the onboard-client route that runs when Steven
+          ticks "Sold". So a client who bought a website could not sign in to it, and the only way
+          in was an API call by hand.
+
+          Same lesson as ghlWebhookUrl above, one field over: a setting only code can write makes
+          the person who writes code a single point of failure. */}
+      <h2 style={sec}>Who may sign in</h2>
+      <p style={hint}>
+        The addresses that can open this website&apos;s own page — where the owner fixes their
+        phone number and reads who called. They never get a password: they type their address, we
+        email a link, and the link works once. Blank means nobody but you, which is right for a
+        demo. <strong>Put their address in the day they buy</strong> — this is the only thing that
+        lets them in.
+      </p>
+      <Field
+        label="Their email addresses — one per line"
+        v={ownerText}
+        on={setOwnerText}
+        ph="owner@theirbusiness.com"
+        area
+      />
+      <p style={hint}>
+        Use the address they actually read on their phone. If they type a different one, nothing
+        happens on their screen and you get a note saying which address they tried.
+      </p>
+
       <h2 style={sec}>Fonts</h2>
       <p style={hint}>
         One choice, and the whole website follows — every page, every section. The pairings are
@@ -1010,14 +1051,39 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
 
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>
-      <Field
+      <ImageField
         label="Browser tab icon (favicon) — a square PNG, 512×512 is plenty"
         v={s.seo.favicon || ""}
         on={(v) => seo("favicon" as keyof Site["seo"], v)}
         ph="https://…/icon.png"
+        hintText="Square works best — anything else gets squashed into a 16-pixel box."
+      />
+      {/* ⛔ THE HEADLINE A LINK PREVIEW SHOWS, AND IT HAD NO CONTROL UNTIL NOW (2026-08-26).
+          Steven texted his own site and the card read "SJC LandingSite build" — the name typed at
+          import, which `metadataFor` falls back to when nothing better is set. It is the first
+          thing anyone sees when the link is shared, and the only way to change it was an API call.
+          Same rule as ghlWebhookUrl and "who may sign in": a setting only code can write makes the
+          person who writes code a single point of failure. */}
+      <Field
+        label="Link preview headline — what a text message or Facebook shows"
+        v={s.seo.title || ""}
+        on={(v) => seo("title" as keyof Site["seo"], v)}
+        ph="Steven James Consulting — Premium Smart Websites"
+      />
+      <Field
+        label="Business name for search &amp; sharing"
+        v={s.seo.businessName || ""}
+        on={(v) => seo("businessName" as keyof Site["seo"], v)}
+        ph="Blank uses the business name above"
       />
       <Field label="Preview text" v={s.seo.description} on={(v) => seo("description", v)} ph="What this business does, in one sentence." area />
-      <Field label="Preview image URL" v={s.seo.shareImage} on={(v) => seo("shareImage", v)} ph="https://…" />
+      <ImageField
+        label="Preview image — the picture on a shared link"
+        v={s.seo.shareImage}
+        on={(v) => seo("shareImage", v)}
+        ph="https://…"
+        hintText="Blank uses the first photo on the page."
+      />
       <Field label="Title suffix" v={s.seo.titleSuffix} on={(v) => seo("titleSuffix", v)} ph="| Your Business Name" />
 
       <h2 style={sec}>Tracking</h2>
@@ -1229,3 +1295,78 @@ const primary: React.CSSProperties = { background: "var(--e-ink)", color: "var(-
 const ghost: React.CSSProperties = { background: "var(--e-panel)", color: "var(--e-ink)", border: "1px solid var(--e-line)", borderRadius: 8, padding: "10px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer" };
 const errBox: React.CSSProperties = { marginTop: 16, background: "var(--e-bad-bg)", border: "1px solid var(--e-bad-line)", color: "var(--e-danger)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
 const okBox: React.CSSProperties = { marginTop: 16, background: "var(--e-ok-bg)", border: "1px solid var(--e-ok-line)", color: "var(--e-ok-ink)", borderRadius: 8, padding: "9px 12px", fontSize: 13 };
+
+/**
+ * A URL box with a real "Choose a file" beside it.
+ *
+ * ⛔ WHY THIS EXISTS (2026-08-26). The favicon and the share image were URL-ONLY, so setting either
+ * one meant hosting the picture somewhere else first and pasting a link — for a control whose whole
+ * job is "put this picture here". Steven, looking at the favicon field: *"If I want to upload
+ * another image, I don't see where to upload an image so I could replace it."*
+ *
+ * The upload endpoint already existed for the page builder; only the settings screen had no way to
+ * reach it. Same shape as every other gap found today: the capability was there, the control wasn't.
+ */
+function ImageField({
+  label, v, on, ph, hintText,
+}: { label: string; v: string; on: (v: string) => void; ph?: string; hintText?: string }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  return (
+    // ⛔ A <div>, NOT A <label> — AND THIS WAS A REAL BUG (2026-08-26). Wrapping the whole field in
+    // a label sends every click inside it to the FIRST form control, which is the URL box. So
+    // "Choose a file" merely focused the text input and the picker never opened. Steven: *"When I
+    // click on upload from my computer, it doesn't work."* The only label here is the button
+    // itself, which is what makes a hidden file input clickable.
+    <div style={{ display: "block", marginBottom: 14 }}>
+      <span style={lbl}>{label}</span>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <input value={v} onChange={(e) => on(e.target.value)} placeholder={ph} style={{ ...input, flex: 1 }} />
+        <label
+          style={{
+            border: "1px solid var(--e-line)", borderRadius: 8, padding: "9px 13px",
+            fontSize: 13, whiteSpace: "nowrap", cursor: busy ? "default" : "pointer",
+            opacity: busy ? 0.6 : 1,
+          }}
+        >
+          {busy ? "Uploading…" : "Choose a file"}
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            disabled={busy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setBusy(true); setErr("");
+              try {
+                const form = new FormData();
+                form.append("file", file);
+                const r = await fetch("/api/upload", {
+                  method: "POST", body: form, credentials: "same-origin",
+                }).then((x) => x.json());
+                if (!r?.url) throw new Error(r?.error || "That didn't upload.");
+                on(r.url);
+              } catch (x) {
+                setErr((x as Error).message);
+              } finally {
+                setBusy(false);
+                e.target.value = "";
+              }
+            }}
+          />
+        </label>
+      </div>
+      {v ? (
+        // Seeing it is the only way to know the URL points at what you think it does.
+        <img
+          src={v}
+          alt=""
+          style={{ marginTop: 8, height: 44, width: "auto", borderRadius: 6, border: "1px solid var(--e-line)" }}
+        />
+      ) : null}
+      {err ? <span style={{ ...hint, display: "block", marginTop: 6 }}>{err}</span> : null}
+      {hintText ? <span style={{ ...hint, display: "block", marginTop: 6 }}>{hintText}</span> : null}
+    </div>
+  );
+}

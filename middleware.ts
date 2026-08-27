@@ -137,23 +137,46 @@ function isOwner(req: NextRequest, pathname: string): boolean {
   return bearerAuthorized(req, pathname);
 }
 
-function loginPage(error: boolean): string {
+/**
+ * ⛔ THE CLIENT'S DOOR IS THE ONLY DOOR ON THIS SCREEN (Steven, 2026-08-26: *"The only thing I want
+ * them to see is go to your email for your sign-in link and then sign into the back of the website.
+ * That's it."*)
+ *
+ * The password box used to sit at the top with autofocus, and the email box under an "or". So the
+ * first thing a contractor met on his own website was a password field for a password he does not
+ * have and will never be given — and the way in was the greyed-out button below it. Every one of
+ * those is a phone call to Steven, against an offer whose whole promise is that he never touches
+ * the machine.
+ *
+ * ⚠️ STEVEN'S DOOR IS NOT REMOVED, ONLY FOLDED. It is one click behind "Steven?", which costs the
+ * one person who knows it is there nothing, and costs the client the confusion entirely. Do not
+ * "simplify" this back into two equal forms: they are not two equal doors, and the screen is read
+ * far more often by someone who owns a handyman company than by the person who built it.
+ */
+function loginPage(error: boolean, openPassword: boolean): string {
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Steven James Consulting — Sign in</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0b1220;color:#e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{background:#111a2e;border:1px solid #1f2a44;border-radius:12px;padding:40px;width:100%;max-width:360px}h1{font-size:18px;font-weight:700;margin-bottom:6px;color:#f9fafb}p{font-size:14px;color:#93a4c4;margin-bottom:28px}label{display:block;font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:6px}input{width:100%;background:#0b1220;border:1px solid #2a3658;border-radius:6px;color:#e5e7eb;padding:10px 12px;font-size:15px;margin-bottom:16px;outline:none}input:focus{border-color:#3b82f6}button{width:100%;background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:11px;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px}button:hover{background:#2563eb}.sep{display:flex;align-items:center;gap:10px;margin:22px 0 18px;color:#5b6b8c;font-size:12px}.sep:before,.sep:after{content:'';flex:1;height:1px;background:#1f2a44}button.ghost{background:transparent;border:1px solid #2a3658;color:#cbd5e1}button.ghost:hover{background:#16203a}.sent{display:none;background:#10241a;border:1px solid #1e5138;border-radius:6px;padding:12px 14px;font-size:13px;color:#86efac;line-height:1.5}.error{display:${error ? "block" : "none"};background:#3f1515;border:1px solid #7f1d1d;border-radius:6px;padding:10px 12px;font-size:13px;color:#fca5a5;margin-bottom:16px}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0b1220;color:#e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{background:#111a2e;border:1px solid #1f2a44;border-radius:12px;padding:40px;width:100%;max-width:360px}h1{font-size:18px;font-weight:700;margin-bottom:6px;color:#f9fafb}p{font-size:14px;color:#93a4c4;margin-bottom:28px}label{display:block;font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:6px}input{width:100%;background:#0b1220;border:1px solid #2a3658;border-radius:6px;color:#e5e7eb;padding:10px 12px;font-size:15px;margin-bottom:16px;outline:none}input:focus{border-color:#3b82f6}button{width:100%;background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:11px;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px}button:hover{background:#2563eb}.sep{display:flex;align-items:center;gap:10px;margin:22px 0 18px;color:#5b6b8c;font-size:12px}.sep:before,.sep:after{content:'';flex:1;height:1px;background:#1f2a44}button.ghost{background:transparent;border:1px solid #2a3658;color:#cbd5e1}button.ghost:hover{background:#16203a}.sent{display:none;background:#10241a;border:1px solid #1e5138;border-radius:6px;padding:12px 14px;font-size:13px;color:#86efac;line-height:1.5}.owner{margin-top:20px;text-align:center}.owner button{width:auto;background:transparent;border:none;color:#93a4c4;font-size:14px;font-weight:600;padding:8px 14px;margin:0;text-decoration:underline}.owner button:hover{background:transparent;color:#93a4c4;text-decoration:underline}.hidden{display:none}.error{display:${error ? "block" : "none"};background:#3f1515;border:1px solid #7f1d1d;border-radius:6px;padding:10px 12px;font-size:13px;color:#fca5a5;margin-bottom:16px}</style>
 </head><body><div class="card"><h1>Steven James Consulting</h1><p>Private &middot; sign in to view &amp; edit</p>
-<div class="error" id="err">Incorrect password.</div>
-<form id="f"><label>Password</label><input type="password" name="password" autocomplete="current-password" autofocus required><button type="submit">Enter</button></form>
-<div class="sep"><span>or</span></div>
-<form id="m"><label>Your email</label><input type="email" name="email" autocomplete="email" placeholder="you@yourbusiness.com" required><button type="submit" class="ghost">Email me a sign-in link</button></form>
+<form id="m"><label>Your email</label><input type="email" name="email" autocomplete="email" placeholder="you@yourbusiness.com" autofocus required><button type="submit">Email me a sign-in link</button></form>
 <div class="sent" id="sent">Check your email. If that address is on a website of ours, a link is on its way \u2014 it works once, for the next 15 minutes.</div>
+<div class="owner${error || openPassword ? " hidden" : ""}"><button type="button" id="showpw">Steven?</button></div>
+<div id="pw" class="${error || openPassword ? "" : "hidden"}">
+<div class="sep"><span>or</span></div>
+<div class="error" id="err">Incorrect password.</div>
+<form id="f"><label>Password</label><input type="password" name="password" autocomplete="current-password" required><button type="submit" class="ghost">Enter</button></form>
+</div>
 </div>
 <script>
+// ⛔ GO BACK TO THE PAGE HE ASKED FOR, NOT TO '/'. Signing in at /edit used to land on the
+// PUBLIC home page — Steven: *"it dumps me on one of the old pages, the AI implementation page,
+// instead of the studio's home page."* Middleware serves this card AT the gated path, so the
+// path itself is already the right destination; only the ?e / ?steven markers come off.
 var f=document.getElementById('f'),err=document.getElementById('err');
 f.onsubmit=async function(e){e.preventDefault();err.style.display='none';
   try{var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:f.password.value})});
-    if(r.ok){location.href='/';}else{err.style.display='block';f.password.value='';f.password.focus();}
+    if(r.ok){var u=new URL(location.href);u.searchParams.delete('e');u.searchParams.delete('steven');location.href=u.pathname+u.search;}else{err.style.display='block';f.password.value='';f.password.focus();}
   }catch(x){err.style.display='block';}
 };
 // ⛔ THE SAME MESSAGE WHATEVER HAPPENS. The route already answers ok for an unknown address so it
@@ -164,7 +187,11 @@ m.onsubmit=async function(e){e.preventDefault();
   var b=m.querySelector('button');b.disabled=true;b.textContent='Sending\u2026';
   try{await fetch('/api/auth/magic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:m.email.value})});}catch(x){}
   m.style.display='none';sent.style.display='block';
+  var o=document.querySelector('.owner');if(o)o.style.display='none';
 };
+// Steven's own way in, one click behind a word only he is looking for.
+var sp=document.getElementById('showpw'),pw=document.getElementById('pw');
+sp.onclick=function(){pw.className='';sp.parentNode.style.display='none';pw.querySelector('input').focus();};
 </script>
 </body></html>`;
 }
@@ -399,7 +426,19 @@ export async function middleware(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
   const showError = req.nextUrl.searchParams.get("e") === "1";
-  return new NextResponse(loginPage(showError), {
+  /**
+   * ⛔ THE OWNER'S DOOR NEEDS AN ADDRESS, NOT JUST A CONTROL (2026-08-26). Folding the password
+   * behind "Steven?" is right for the client, and it left Steven unable to reach his own studio —
+   * twice, on his own machine, having been told where to click. A toggle he cannot find is a
+   * locked door.
+   *
+   * `?steven=1` renders the card with the password box already open. Bookmarkable, sayable out
+   * loud, and it survives any future restyling of the link. It reveals a FORM, never a session —
+   * the password is still the only thing that gets anyone in, so this is worth nothing to a
+   * stranger who guesses it.
+   */
+  const openPassword = req.nextUrl.searchParams.get("steven") === "1";
+  return new NextResponse(loginPage(showError, openPassword), {
     status: 401,
     headers: { "Content-Type": "text/html" },
   });

@@ -28,6 +28,7 @@ import { resolveColor } from "@/lib/brandColor";
 import { surfaceCss, wantsPulse, PULSE_KEYFRAMES, type Surface } from "@/lib/surfaceStyle";
 import type { DesignBoxGroup } from "@/lib/designHtml";
 import DesignFormMount from "./DesignFormMount";
+import DesignCalMount from "./DesignCalMount";
 import DesignMenu from "./DesignMenu";
 import type { LeadFormField } from "./LeadForm";
 
@@ -223,6 +224,8 @@ export type DesignSectionProps = {
   // ── THE FORM ────────────────────────────────────────────────────────────────────────────────
   /** True when the imported section contained a form shell (set at import). */
   hasForm?: boolean;
+  /** A Cal.com booking link captured at import — mounts the real calendar into the design's box. */
+  calLink?: string;
   /**
    * Put OUR working form where the design drew its fake one.
    *
@@ -294,6 +297,7 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   background: "",
   foreground: "",
   hasForm: false,
+  calLink: "",
   useRealForm: true,
   formFields: [],
   formId: "",
@@ -756,6 +760,7 @@ export default function DesignSection(props: DesignSectionProps) {
     background,
     foreground,
     hasForm,
+    calLink,
     useRealForm = true,
     formFields,
     formButton,
@@ -915,6 +920,10 @@ export default function DesignSection(props: DesignSectionProps) {
           }}
         />
       ) : null}
+      {/* ⛔ THE CALENDAR MOUNTS INTO THE DESIGN'S OWN CARD, exactly like the form above it. The
+          band, the heading and the white panel are the design's; only the empty box in the middle
+          is replaced. → components/blocks/DesignCalMount.tsx */}
+      {calLink ? <DesignCalMount calLink={calLink} /> : null}
       {swapForm ? (
         <style
           dangerouslySetInnerHTML={{
