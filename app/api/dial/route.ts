@@ -30,6 +30,19 @@ export async function GET(req: Request) {
     return Response.json({ ok: false, error: res.error }, { status: 502 });
   }
 
+  // ⛔ `ok:true` IS NOT PROOF THE ANSWER IS A CALL SHEET.
+  //
+  // Apps Script replies to a POST with a 302, and the GET that follows it can land on `doGet`
+  // rather than the cached POST result — `{ok:true, service:"sjc-sheets", version}`, truthy and
+  // header-less. That used to reach `toProspects` and throw, and a thrown route is an HTML 500,
+  // which the board could only render as "Couldn't reach the sheet." Name it instead.
+  if (!Array.isArray(res.headers) || !Array.isArray(res.rows)) {
+    return Response.json(
+      { ok: false, error: "sheets webhook answered without a sheet (redirect landed on doGet) — try again" },
+      { status: 502 }
+    );
+  }
+
   return Response.json({
     ok: true,
     list,

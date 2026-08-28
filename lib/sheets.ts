@@ -22,7 +22,11 @@ export const sheetsConfigured = () => Boolean(url() && secret());
 type Ok<T> = { ok: true } & T;
 type Err = { ok: false; error: string };
 
-async function call<T>(action: string, payload: Record<string, unknown>): Promise<Ok<T> | Err> {
+async function call<T>(
+  action: string,
+  payload: Record<string, unknown>,
+  attempt = 0
+): Promise<Ok<T> | Err> {
   if (!sheetsConfigured()) {
     return { ok: false, error: "SHEETS_WEBHOOK_URL / SHEETS_SECRET are not set" };
   }
@@ -42,6 +46,22 @@ async function call<T>(action: string, payload: Record<string, unknown>): Promis
     }
     const b = body as Record<string, unknown>;
     if (!b?.ok) return { ok: false, error: String(b?.error || "sheets webhook refused") };
+
+    // ⛔ `ok:true` WITH `service` ON IT IS doGet's ANSWER, NOT OURS — RETRY, DON'T RETURN IT.
+    //
+    // Apps Script replies to a POST with a 302, and the GET that follows sometimes lands on the
+    // /exec entry point instead of the cached POST result. doGet answers `{ok:true, service:
+    // "sjc-sheets", version}` — truthy, header-less, and utterly convincing to a caller checking
+    // only `ok`. It reached toProspects, `headers.map` threw, the route 500'd as HTML, and the
+    // dial board could only say "Couldn't reach the sheet" about a sheet that was fine.
+    // One retry clears it; the miss is a routing hiccup, not a refusal.
+    if (b.service === "sjc-sheets" && b.version !== undefined) {
+      if (attempt >= 1) {
+        return { ok: false, error: "sheets webhook kept answering with its health check, not the sheet" };
+      }
+      return call<T>(action, payload, attempt + 1);
+    }
+
     return b as Ok<T>;
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "sheets webhook unreachable" };
