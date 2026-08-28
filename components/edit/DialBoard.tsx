@@ -163,12 +163,25 @@ export default function DialBoard({
     setErr("");
     try {
       const r = await fetch(`/api/dial?list=${encodeURIComponent(id)}`, { cache: "no-store" });
-      const b = await r.json();
+      // ⛔ A NON-JSON ANSWER IS THE INTERESTING ONE — DON'T LET IT FALL INTO THE GENERIC CATCH.
+      //
+      // `r.json()` on an HTML 500 throws, and the catch below could only say "Couldn't reach the
+      // sheet" — which sent him to look at Google while the sheet was fine and the ROUTE was
+      // broken. Read the text first so the status still reaches the screen.
+      const text = await r.text();
+      let b: (Loaded & { ok?: boolean; error?: string }) | { ok?: boolean; error?: string };
+      try {
+        b = JSON.parse(text);
+      } catch {
+        setErr(`The dialer's own API answered ${r.status}, not a sheet. ${text.slice(0, 120)}`);
+        setData(null);
+        return;
+      }
       if (!b.ok) {
         setErr(b.error || "Couldn't read that sheet.");
         setData(null);
       } else {
-        setData(b);
+        setData(b as Loaded);
         setNotes({});
         // Filters belong to a list, not to the page — carrying "no website" across to a sheet with
         // different columns shows him an empty screen he did not ask for.

@@ -197,10 +197,19 @@ export function toProspects(
   headers: string[],
   rows: { row: number; cells: string[] }[]
 ): Prospect[] {
-  const lower = headers.map(headerKey);
+  // ⛔ NEVER TRUST THE SHAPE — THIS IS FED BY A GOOGLE APPS SCRIPT, NOT BY US.
+  //
+  // `headers.map` on an undefined `headers` is a 500, and a 500 is an HTML page, and an HTML page
+  // makes the board's `r.json()` throw — so the screen said "Couldn't reach the sheet" while the
+  // sheet was perfectly reachable. The reason never travelled. Apps Script answers a POST with a
+  // 302 whose GET can land on `doGet` instead of the cached POST result, and doGet returns
+  // `{ok:true, service, version}` — truthy `ok`, no `headers`. Coerce here; the route reports it.
+  const H = Array.isArray(headers) ? headers : [];
+  const R = Array.isArray(rows) ? rows : [];
+  const lower = H.map(headerKey);
   const at: Partial<Record<keyof typeof FIELDS, number>> = {};
   const claimed = new Set<number>();
-  const cut = splitAtDivider(headers);
+  const cut = splitAtDivider(H);
 
   for (const field of Object.keys(FIELDS) as (keyof typeof FIELDS)[]) {
     // ⚠️ SEARCHED BEFORE THE DIVIDER FIRST. The deck sheet has `name`, `phone`, `website` and 11
@@ -222,7 +231,7 @@ export function toProspects(
     const out: Cell[] = [];
     for (let i = from; i < to; i++) {
       if (claimed.has(i)) continue;
-      const label = String(headers[i] || "").trim();
+      const label = String(H[i] || "").trim();
       const value = clean(cells[i]);
       if (!label || !value) continue;
       // The duplicated columns carry duplicated VALUES. Printing "city  San Antonio" twice makes
@@ -240,12 +249,12 @@ export function toProspects(
     return i === undefined ? "" : clean(cells[i]);
   };
 
-  return rows.map(({ row, cells }) => {
+  return R.map(({ row, cells }) => {
     // Seeded with what the card already shows, so a leftover column holding the same value as the
     // business name or phone doesn't get printed underneath it a second time.
     const seen = new Set<string>();
     const extra = leftovers(cells, 0, cut, seen);
-    const raw = leftovers(cells, cut, headers.length, seen);
+    const raw = leftovers(cells, cut, H.length, seen);
     return {
     row,
     name: pick(cells, "name"),
