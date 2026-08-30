@@ -76,3 +76,37 @@ textarea { resize: vertical !important; min-height: 76px; }
 .sjc-hover-edge:hover {
   border-color: var(--sjc-hover-edge) !important;
 }
+
+/* ⭐ EVERY CALL-TO-ACTION ON EVERY SITE HOVERS FROM HERE — green-500 at 300ms, and it SWELLS.
+   Lives in the app, NOT in a content block: this site has no chrome document (header/footer are
+   empty), so the rule used to sit inside the first section of the home page, where any content
+   edit that replaced that block would have silently taken the hover off all 21 buttons.
+   A site-wide law belongs in code. Put `sjc-cta` on the anchor; that is the whole contract.
+
+   a.sjc-cta:hover is (0,2,1) so it out-ranks the sealed Tailwind sheet's own .bg-yellow-400 /
+   .text-white / .border-[…] rules, which are (0,2,0). ⛔ But a COMPILED hover: class is (0,3,0)
+   and beats this — strip `hover:bg-*` / `hover:text-*` off the markup, never fight it here. */
+.sjc-cta {
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease,
+              transform .3s ease, box-shadow .3s ease;
+}
+/* ⛔ hover:hover or a phone TAP sticks the green on until something else is tapped. */
+@media (hover: hover) {
+  a.sjc-cta:hover {
+    background: #22c55e;
+    color: #fff;
+    border-color: #22c55e;
+    transform: scale(1.045);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, .30);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  a.sjc-cta:hover { transform: none; }
+}
+
+/* Resting colours for the buttons whose background used to be an inline style (an inline style
+   beats any stylesheet, so the colour had to move out here for the hover to land at all). */
+.cta-navy   { background: #1c3a6e; color: #fff; }
+.cta-white  { background: #ffffff; color: #1c3a6e; }
+.cta-yellow { background: #FFEB3B; color: #12263f; }
+.pf-cta     { background: #12263f; color: #fff; }
