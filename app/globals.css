@@ -301,3 +301,25 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 [data-sjc-cal] {
   min-height: 570px;
 }
+
+/* ⭐ THE ACCENT RULE UNDER A HERO HEADLINE DRAWS ONCE, NOT ONCE PER LINE.
+   Steven, with /podcast and /about side by side on a phone: *"the hero section where the blue line
+   just doesn't sit right."*
+
+   ⛔ THE CAUSE IS `em` BEING INLINE, NOT THE BORDER ITSELF. Every sealed hero styles the cyan half
+   of the headline as `h1.big em { border-bottom: 3px solid …; padding-bottom: 6px }`. On a desktop
+   the phrase fits on one line and that reads as one clean rule. On a phone it wraps, and a border
+   on an INLINE box paints under EVERY line fragment — so the phrase gets a rule under each of its
+   two lines, and `padding-bottom` (which adds no height to an inline line box) drops the first one
+   into the top of the second line's text. Nothing is wrong with the copy or the width; the box was
+   simply the wrong kind.
+
+   `inline-block` makes the phrase one box that wraps INSIDE itself, so there is exactly one bottom
+   edge to draw and the padding finally reserves real space. Six of the ten pages already carried
+   `style="display:inline-block"` pasted onto the tag by hand; /podcast and /about were the two the
+   paste never reached, which is why only those two broke. One rule here is the fork — no page,
+   sealed or imported, can arrive without it again, and the six inline copies are now redundant
+   rather than load-bearing. */
+.sjc-design h1.big em {
+  display: inline-block;
+}
