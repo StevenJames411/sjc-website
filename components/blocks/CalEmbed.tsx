@@ -71,7 +71,7 @@ function ensureCal(onError: () => void): CalApi {
 
 export default function CalEmbed({
   calLink,
-  minHeight = 620,
+  minHeight = 570,
 }: {
   calLink: string;
   minHeight?: number;
@@ -117,16 +117,34 @@ export default function CalEmbed({
     if (failed) return;
     const el = document.getElementById(elId);
     if (!el) return;
+    // ⛔ RELEASE ON A SIZED IFRAME, NOT ON AN IFRAME EXISTING. THIS EXACT LINE WAS THE BUG.
+    // Cal mounts the <iframe> EMPTY, then loads its own app inside it, then that app postMessages
+    // its real height out and only THEN does Cal set the frame's height. Testing for mere presence
+    // fired on the empty frame: the floor dropped, the box collapsed to 0, and ~600px later the
+    // real height arrived and shoved everything below back down. Proved on the live page —
+    // inserting a zero-height iframe into the box takes it from 620px to 0px instantly.
+    //
+    // That collapse-then-regrow is what threw every `#section` link that lands below the calendar,
+    // and it is why the page visibly "jumps around before it settles."
+    const READY = 100; // px. Above any empty/placeholder frame, far below a real month view.
     const release = () => {
-      if (el.querySelector("iframe")) {
-        setReserved(false);
-        return true;
-      }
-      return false;
+      const frame = el.querySelector("iframe");
+      if (!frame || frame.getBoundingClientRect().height <= READY) return false;
+      setReserved(false);
+      // The CSS floor is on the PORTAL HOST, one level up, and it needs the same signal — see the
+      // `[data-sjc-cal]` rule in globals.css. Marking the element keeps the two in step instead of
+      // letting each guess separately.
+      el.closest("[data-sjc-cal]")?.setAttribute("data-cal-ready", "1");
+      return true;
     };
     if (release()) return;
-    const obs = new MutationObserver(() => release());
-    obs.observe(el, { childList: true, subtree: true });
+    // ⚠️ `attributes: true` IS LOAD-BEARING. Cal resizes by setting `style.height` ON the iframe —
+    // an ATTRIBUTE change. Watching childList alone fired once, on insertion, at exactly the wrong
+    // moment, and then never again.
+    const obs = new MutationObserver(() => {
+      if (release()) obs.disconnect();
+    });
+    obs.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "height"] });
     return () => obs.disconnect();
   }, [elId, failed]);
 

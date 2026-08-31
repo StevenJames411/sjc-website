@@ -43,7 +43,7 @@ export default function DesignCalMount({ calLink }: { calLink: string }) {
   return (
     <>
       <span ref={anchor} hidden aria-hidden="true" />
-      {host ? createPortal(<CalEmbed calLink={calLink} minHeight={620} />, host) : null}
+      {host ? createPortal(<CalEmbed calLink={calLink} minHeight={570} />, host) : null}
     </>
   );
 }

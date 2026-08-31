@@ -291,23 +291,30 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
 }
 
-/* ⭐ HOLD THE CALENDAR'S SPACE BEFORE IT LOADS, OR EVERY ANCHOR BELOW IT MISSES.
+/* ⭐ HOLD THE CALENDAR'S SPACE FOR THE WHOLE LOAD, OR EVERY ANCHOR BELOW IT MISSES.
    Steven: *"click pricing… it goes to the pricing section, and then jumps up into the calendar."*
 
-   ⛔ THE LINK WAS NEVER WRONG. `/#sl6o1yj` is correct and the target exists. The sequence is:
-   the router scrolls to the anchor using the SERVER-rendered page, and only then does React
-   hydrate and portal the 620px calendar in ABOVE it. Everything below shifts down ~646px; the
-   scroll position does not follow. Measured on the live page — anchor at 8348, browser parked
-   at 7702, calendar filling the screen.
+   ⛔ THE ARITHMETIC, BECAUSE GETTING IT WRONG COST HOURS AND TWO WRONG FIXES.
+   The pricing section carries `scroll-mt-20`, so a CORRECT landing is `anchor − 80`, not `anchor`.
+   Measured: anchor 8348, browser parked at 7702 — which looks like a 646px miss and is not. The
+   real miss is 646 − 80 = **566**. The Cal iframe measures **570**. Four pixels apart: the
+   calendar is the entire cause, on its own.
+   ⚠️ A direct address-bar load landing at 8268 was READ AS "it works when warm." It was the
+   browser obeying `scroll-mt-20` — 8348 − 80 — and had nothing to do with cache. Chasing that
+   false clue is what produced an image-sizing attempt that broke the header and a scroll-corrector
+   that made the page hop. Neither was needed. **Subtract the scroll-margin before believing a gap.**
 
-   ⚠️ CalEmbed ALREADY reserves this height, and that is not enough: its reservation is a React
-   inline style, so it exists only after hydration — after the scroll has happened. The space has
-   to be there in the first paint, which means CSS.
+   ⛔ AND THE RESERVATION HAS TO SURVIVE THE EMPTY FRAME. Cal mounts the `<iframe>` EMPTY, loads its
+   own app inside it, and only then sets the real height. The first version released on
+   `:not(:has(iframe))` — true the instant the empty frame appeared — so the floor dropped, the box
+   collapsed to 0, and the real height arriving shoved everything below back down. That collapse is
+   the shift. Proved on the live page: dropping a zero-height iframe into the box takes it from the
+   reserved height to 0px instantly. `data-cal-ready` is set by CalEmbed only once the frame HAS a
+   height, so the space is held for the whole load and released once, correctly.
 
-   ⛔ AND IT MUST RELEASE ITSELF, or it becomes the slab of white it was written to prevent. Cal
-   sizes its own iframe (570px live) and a fixed floor underneath would leave a gap. `:not(:has(
-   iframe))` drops the floor the instant the calendar arrives — no timer, no observer, nothing to
-   mis-sequence. → the same fork-not-bouncer reasoning as the band guard. */
-[data-sjc-cal]:not(:has(iframe)) {
-  min-height: 620px;
+   ⚠️ 570px IS MEASURED, NOT CHOSEN. The first value was 620 — 50px MORE than the widget, so the
+   page SHRANK when the calendar arrived. A reservation that is not the real height is a shift in
+   the other direction. */
+[data-sjc-cal]:not([data-cal-ready]) {
+  min-height: 570px;
 }
