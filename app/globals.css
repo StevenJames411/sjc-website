@@ -219,6 +219,32 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ⭐ EVERY PILL IS THE SAME PILL, WHATEVER SECTION IT LANDS IN.
+   Steven, with both in one screenshot: *"this screenshot shows you the two different pill sizes…
+   making everything the same."* He was right that they differed and right that it was not the text
+   — measured, both read 11px from the same sealed sheet with the same 9px/18px padding, yet the
+   capsules rendered 46px and 38px tall.
+
+   ⛔ THE CAUSE IS THE LINE BOX, NOT THE PILL. `.eyebrow` is `inline-flex`, so its height is set by
+   the strut of whatever line box it sits in — the hero band and the video band hand down different
+   ones. Nothing ON the pill was different, which is why every property comparison came back
+   identical and the difference was still there on screen.
+
+   `line-height: 1` cuts the pill loose from its surroundings: the content box becomes exactly the
+   font size, so the capsule is font-size + padding EVERYWHERE, in any band, on any imported design.
+   That is a fork, not a bouncer — there is no section left that can stretch it.
+
+   ⚠️ 14px, UP FROM THE SEALED 11px. The section label above it is now 24px; 11px underneath read as
+   a caption rather than a kicker, and 11px is where the capital-I problem was hardest to see. 14px
+   keeps the pill clearly subordinate to the 24px label while being readable on a phone. */
+.sjc-design .eyebrow.eyebrow {
+  font-size: 14px;
+  line-height: 1;
+}
+@media (max-width: 640px) {
+  .sjc-design .eyebrow.eyebrow { font-size: 12.5px; }
+}
+
 /* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
    two rules above, which would otherwise reach it through `.sjc-design`. */
 .sjc-design .sjc-mark span,
