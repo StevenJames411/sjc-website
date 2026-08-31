@@ -290,3 +290,24 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 #global-footer .sjc-mark span {
   font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
 }
+
+/* ⭐ HOLD THE CALENDAR'S SPACE BEFORE IT LOADS, OR EVERY ANCHOR BELOW IT MISSES.
+   Steven: *"click pricing… it goes to the pricing section, and then jumps up into the calendar."*
+
+   ⛔ THE LINK WAS NEVER WRONG. `/#sl6o1yj` is correct and the target exists. The sequence is:
+   the router scrolls to the anchor using the SERVER-rendered page, and only then does React
+   hydrate and portal the 620px calendar in ABOVE it. Everything below shifts down ~646px; the
+   scroll position does not follow. Measured on the live page — anchor at 8348, browser parked
+   at 7702, calendar filling the screen.
+
+   ⚠️ CalEmbed ALREADY reserves this height, and that is not enough: its reservation is a React
+   inline style, so it exists only after hydration — after the scroll has happened. The space has
+   to be there in the first paint, which means CSS.
+
+   ⛔ AND IT MUST RELEASE ITSELF, or it becomes the slab of white it was written to prevent. Cal
+   sizes its own iframe (570px live) and a fixed floor underneath would leave a gap. `:not(:has(
+   iframe))` drops the floor the instant the calendar arrives — no timer, no observer, nothing to
+   mis-sequence. → the same fork-not-bouncer reasoning as the band guard. */
+[data-sjc-cal]:not(:has(iframe)) {
+  min-height: 620px;
+}
