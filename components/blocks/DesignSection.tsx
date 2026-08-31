@@ -436,6 +436,22 @@ function stripDangerous(html: string): string {
  * carries an inline gradient background there, and overwriting it would drop the background to
  * change the padding.
  */
+/**
+ * Mark the design's OWN outer tag — the same element injectStyle writes to.
+ *
+ * ⛔ WHY A MARKER IS NEEDED AT ALL. The band's text rule must skip a card that paints its own
+ * background (and already has the right text colour on it), which `:not([class*="bg-"] *)` does.
+ * But the SECTION ROOT usually carries a `bg-` class too — this design's hero is
+ * `<section class="relative bg-[#e5e5e5] …">` — so that guard excluded every text node in the
+ * band and the copy stayed black on navy. Marking the root lets the guard say "any bg- ancestor
+ * EXCEPT this one".
+ */
+function markBandRoot(html: string): string {
+  const tag = html.match(/<([a-z][a-z0-9]*)\b[^>]*>/i);
+  if (!tag || /data-sjc-bandroot/.test(tag[0])) return html;
+  return html.replace(tag[0], tag[0].replace(/>$/, " data-sjc-bandroot>"));
+}
+
 export function injectStyle(html: string, decls: string): string {
   if (!decls) return html;
   const tag = html.match(/<([a-z][a-z0-9]*)\b[^>]*>/i);
@@ -619,7 +635,8 @@ function bandCss(id: string, band?: string): string {
   // ⛔ `:not([class*="bg-"] *)` IS LOAD-BEARING. An imported band routinely holds a card painting
   // its own background with the right text colour already on it — this site's feature band has one
   // on `bg-[#3b7fb8]`. Repainting the whole band would black that card's heading out.
-  const safe = ':not([class*="bg-"] *)';
+  // "a descendant of any bg- element OTHER than the band's own root"
+  const safe = ':not([class*="bg-"]:not([data-sjc-bandroot]) *)';
   return (
     `${at} :is(p,li,blockquote,span)${safe}{color:${def.body} !important}` +
     `${at} :is(h1,h2,h3,h4,strong,b)${safe}{color:${def.head} !important}`
@@ -939,6 +956,7 @@ export default function DesignSection(props: DesignSectionProps) {
     ),
     decls
   );
+  const marked = band ? markBandRoot(filled) : filled;
   // The scope class rides on the block so the design styles identically in the builder canvas,
   // in preview and on the live page — see lib/designShared.
   const swapForm = !!hasForm && useRealForm !== false;
@@ -1058,7 +1076,7 @@ export default function DesignSection(props: DesignSectionProps) {
           }}
         />
       ) : null}
-      <div dangerouslySetInnerHTML={{ __html: filled }} />
+      <div dangerouslySetInnerHTML={{ __html: marked }} />
       {/* The design's own <script> was stripped at import, so its hamburger has nothing wiring it
           to the panel. This does that one toggle in first-party code. Cheap and inert on a section
           with no menu — it looks for the pair, finds nothing, and stops. */}
