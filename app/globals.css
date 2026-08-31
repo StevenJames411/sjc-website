@@ -182,9 +182,24 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 .sjc-design h3,
 .sjc-design h4,
 .sjc-design .big,
-.sjc-design .eyebrow,
 .sjc-design .btn {
   font-family: var(--font-space-grotesk), "Space Grotesk", var(--font-inter), sans-serif;
+}
+
+/* ⭐ THE PILL IS PLAYFAIR, AND THE REASON IS ONE LETTER.
+   Steven, on "YOUR AI EMPLOYEE": *"the I could also pass for a capital letter L because the font
+   family gives no stylization on the letter I."* He is right, and it is not fixable by size or
+   weight — Space Grotesk, Inter, Lexend, Montserrat and Source Sans all draw the capital I as a
+   bare vertical bar, so "AI" reads as "AL" at a glance. Rendered side by side, only Playfair,
+   Merriweather, Verdana and Tahoma put crossbars on it.
+   Playfair wins on two counts: it is the face already carrying the wordmark he approved, so the
+   pill echoes the mark instead of introducing a fourth typeface; and Verdana/Tahoma would date the
+   page. `font-variant:small-caps` is deliberately NOT used here — the copy is already uppercase,
+   and small-caps on uppercase text does nothing. */
+.sjc-design .eyebrow,
+.sjc-design .eyebrow.eyebrow {
+  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+  letter-spacing: 0.14em;
 }
 /* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
    two rules above, which would otherwise reach it through `.sjc-design`. */
