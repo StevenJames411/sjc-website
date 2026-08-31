@@ -335,3 +335,45 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   border-bottom: 0;
   padding-bottom: 0;
 }
+
+/* ⭐ THE CUSTOM-WEBSITES HERO: WORDS GET THE ROOM, AND THE PHOTO IS AS TALL AS THEY ARE.
+   Steven: *"the two-column in the hero section needs adjusted so that the words fit the page
+   better on desktop"* — and then, with the text fixed: *"make the image container taller… you
+   could get rid of those three little pills."*
+
+   Two changes live here. The design ships `.split` as `1.05fr .95fr` — near-equal columns — and
+   the white headline line needs 691px to stay on one line at 42px. It was getting ~600 and
+   breaking three ways. `1.32fr` gives it 713px, which is the first ratio with real margin: 1.28fr
+   lands on 691.2px and one font-loading hiccup would wrap it.
+
+   And `align-items:center` left the photo floating at its natural height beside a much taller
+   column of text. Stretching the row and letting the image cover it makes the two columns finish
+   together.
+
+   ⛔ THIS WAS AN INLINE STYLE FOR AN HOUR AND THAT WAS A BUG — the reason it is a media query now.
+   An inline style beats a stylesheet rule, INCLUDING one inside a media query, so the sheet's own
+   `@media (max-width:960px){.split{grid-template-columns:1fr}}` never got to collapse the hero on
+   a phone. The hero stayed two squeezed columns on mobile, which is the one place Steven said the
+   layout did not matter because it stacks. A min-width query cannot make that mistake: below
+   961px this block simply does not apply and the design's own stacking takes over.
+
+   ⚠️ `:has(.shotwrap)` IS THE SCOPE, NOT A PAGE CLASS. The phone-in-hand shot is the only
+   `.shotwrap` on the whole site (checked across all ten pages), so this reaches exactly one hero
+   and cannot wander into another sealed design that happens to use `.split`. */
+@media (min-width: 961px) {
+  .sjc-design.sjc-design .split:has(.shotwrap) {
+    grid-template-columns: 1.32fr 0.68fr;
+    gap: 44px;
+    align-items: stretch;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) .shotwrap,
+  .sjc-design.sjc-design .split:has(.shotwrap) .shot {
+    height: 100%;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) .shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
