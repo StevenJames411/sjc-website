@@ -377,3 +377,26 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     object-fit: cover;
   }
 }
+
+/* ⭐ A HERO PARAGRAPH USES THE WHOLE PAGE. THE BODY OF THE PAGE STILL DOES NOT.
+   Steven, with two hero screenshots side by side: *"one page is acting like a double column with a
+   bunch of empty space… I think they both need to be single column so that the words use the whole
+   page on a desktop."*
+
+   ⛔ NEITHER HERO WAS EVER TWO COLUMNS — I checked the markup before changing anything, and both
+   are a plain `.wrap` with no `.split` in them. What differs is the HEADLINE: a long one runs the
+   full width and a short one leaves the right half empty, which reads as a column that lost its
+   partner. The thing actually stopping short is the paragraph — the design ships
+   `.lede{max-width:60ch}`, so it wraps at ~640px inside a ~1200px page and hangs a ragged edge
+   under a full-width headline.
+
+   ⚠️ SCOPED TO `.band--hero` ON PURPOSE. 60ch is the right measure for reading, and every `.lede`
+   further down the page keeps it. A hero paragraph is four or five lines that get scanned, not
+   read, and it sits directly under a headline whose width it should match. Lifting the cap
+   everywhere would turn the body of every page into 95-character lines.
+
+   ⚠️ IT DOES NOTHING ON A PHONE — the column is already narrower than 60ch there, so the cap was
+   never the binding constraint. */
+.sjc-design.sjc-design .band--hero .lede {
+  max-width: none;
+}
