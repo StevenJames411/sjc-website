@@ -446,3 +446,29 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ⭐ THE VIDEO HERO CENTRES BOTH COLUMNS, AND THE VIDEO GETS AIR UNDER THE HEADLINE.
+   Steven: *"since the two columns have such a small amount of real estate on the desktop, with the
+   words and elements being centered, it looks fine. And when they stack on a phone, same thing —
+   centered looks better than a wonky left-right justification."*
+
+   ⚠️ NO MEDIA QUERY HERE ON PURPOSE. Everything else in this file that touches a hero is desktop-
+   only, because the desktop is where the two-column layout exists. This one is the opposite: he
+   wants it centred in BOTH states, and the stacked phone view is half the reason.
+
+   ⚠️ `.btns` NEEDS ITS OWN LINE — it is `display:flex`, so `text-align` slides straight past it and
+   the button would sit left under centred words. `justify-content` is the flex spelling of the
+   same instruction.
+
+   ⚠️ THE 28px IS A GAP THAT DID NOT EXIST. Moving the video under the headline put the two flush
+   against each other: the h1 has no bottom margin and `.vsl video` had its own top margin zeroed
+   when it came out of the stacked section it used to live in. */
+.sjc-design.sjc-design .split:has(.vsl) {
+  text-align: center;
+}
+.sjc-design.sjc-design .split:has(.vsl) .btns {
+  justify-content: center;
+}
+.sjc-design.sjc-design .split:has(.vsl) .vsl {
+  margin-top: 28px;
+}
