@@ -419,3 +419,37 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   height: auto;
   margin-top: 0;
 }
+
+/* ⭐ AND ON A DESKTOP THE PLAYER BOX MATCHES THE WORDS BESIDE IT.
+   Steven: *"the video box [is] much smaller than the text box on the left side of the page, are you
+   able to make the video container taller."*
+
+   ⛔ THE VIDEO ITSELF CANNOT GET TALLER WITHOUT BEING CROPPED — that is arithmetic, not a setting.
+   The file is 1280×720, so to stand ~590px tall beside that paragraph it would have to be 1050px
+   WIDE, which is wider than the whole content area. `cover` would fix the height by slicing the
+   sides off the frame, and the frame is the thing he is selling.
+
+   So the BOX stretches and the picture sits inside it, whole. `.vsl video` already paints itself
+   `background:#000`, so the space above and below reads as a letterboxed player rather than as a
+   gap — the same shape any video app uses when the clip does not match the window.
+
+   ⚠️ `aspect-ratio: auto` DELIBERATELY UNDOES THE RULE ABOVE, and only here. That 16/9 exists to
+   reserve the shape while the file's header is in flight; once the box takes its height from the
+   column beside it there is nothing left to reserve, and leaving both on makes the two fight.
+
+   ⚠️ min-width, NOT max-width. Below 961px the sheet stacks the columns, and a video stretched to
+   the height of a paragraph it is no longer beside would be a tall black nothing on a phone. */
+@media (min-width: 961px) {
+  .sjc-design.sjc-design .band--hero .split { align-items: stretch; }
+  .sjc-design.sjc-design .band--hero .vsl {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .sjc-design.sjc-design .band--hero .vsl video {
+    height: 100%;
+    width: 100%;
+    aspect-ratio: auto;
+    object-fit: contain;
+  }
+}
