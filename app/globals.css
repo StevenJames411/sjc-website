@@ -420,36 +420,29 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   margin-top: 0;
 }
 
-/* ⭐ AND ON A DESKTOP THE PLAYER BOX MATCHES THE WORDS BESIDE IT.
-   Steven: *"the video box [is] much smaller than the text box on the left side of the page, are you
-   able to make the video container taller."*
+/* ⭐ THE PLAYER GETS WIDER, NOT TALLER — THAT IS WHAT KILLS THE BLACK BARS.
+   Steven, looking at the stretched box: *"Not sure how I feel about the stupid video container with
+   the black above it and below it… should we shrink the column down so the video doesn't look so
+   tiny in a large column."*
 
-   ⛔ THE VIDEO ITSELF CANNOT GET TALLER WITHOUT BEING CROPPED — that is arithmetic, not a setting.
-   The file is 1280×720, so to stand ~590px tall beside that paragraph it would have to be 1050px
-   WIDE, which is wider than the whole content area. `cover` would fix the height by slicing the
-   sides off the frame, and the frame is the thing he is selling.
+   ⛔ SHRINKING THE COLUMN IS THE WRONG DIRECTION. It clears the bars by making the picture smaller,
+   which is the complaint underneath the complaint. A 16:9 file only gains height by gaining WIDTH.
+   So the stretch comes off — that is what put black above and below it — and the video column grows
+   instead: equal halves, 507×285 → 572×322, no bars anywhere.
 
-   So the BOX stretches and the picture sits inside it, whole. `.vsl video` already paints itself
-   `background:#000`, so the space above and below reads as a letterboxed player rather than as a
-   gap — the same shape any video app uses when the clip does not match the window.
+   ⛔ THE FILE IS NOT HOSTED BY GOOGLE, whatever the player looks like. It sits on this account's own
+   Vercel Blob storage, and the controls are Chrome's built-in `<video>` UI. Nothing upstream picked
+   this size; every pixel of it came from this stylesheet.
 
-   ⚠️ `aspect-ratio: auto` DELIBERATELY UNDOES THE RULE ABOVE, and only here. That 16/9 exists to
-   reserve the shape while the file's header is in flight; once the box takes its height from the
-   column beside it there is nothing left to reserve, and leaving both on makes the two fight.
+   ⚠️ THE HEIGHT DIFFERENCE THAT REMAINS IS A COPY LENGTH, NOT A LAYOUT BUG. The hero paragraph runs
+   91 words. To stand level with it a 16:9 player would have to be 1076px wide — wider than the
+   page. Shorten the paragraph and the columns even up on their own.
 
-   ⚠️ min-width, NOT max-width. Below 961px the sheet stacks the columns, and a video stretched to
-   the height of a paragraph it is no longer beside would be a tall black nothing on a phone. */
+   ⚠️ `:has(.vsl)` KEEPS THIS OFF THE OTHER HERO. The websites hero is `:has(.shotwrap)` and still
+   stretches, because a photograph can be cropped to fill a box and a video meant to be watched
+   cannot. */
 @media (min-width: 961px) {
-  .sjc-design.sjc-design .band--hero .split { align-items: stretch; }
-  .sjc-design.sjc-design .band--hero .vsl {
-    height: 100%;
-    display: flex;
-    align-items: center;
-  }
-  .sjc-design.sjc-design .band--hero .vsl video {
-    height: 100%;
-    width: 100%;
-    aspect-ratio: auto;
-    object-fit: contain;
+  .sjc-design.sjc-design .split:has(.vsl) {
+    grid-template-columns: 1fr 1fr;
   }
 }
