@@ -507,13 +507,19 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    ⚠️ THE PHOTO AND BUTTON GO TO FULL WIDTH OF THEIR COLUMN, and that is not a second opinion — it
    is arithmetic. They ship as `w-1/2 mx-auto`, so in a quarter-width column they would render at
    an eighth of the page, about 144px. At 100% of the narrowed column they land near 280px, which
-   is a headshot rather than a thumbnail. */
+   is a headshot rather than a thumbnail.
+
+   ⛔ AND THE DOUBLED SCOPE CLASS IS NOT DECORATION — I SHIPPED THIS ONCE WITHOUT IT AND IT DID
+   NOTHING. A bare `[data-sjc-hero-split]` is (0,1,0) and Tailwind's `.lg\:grid-cols-2` is also
+   (0,1,0). Identical specificity means document order decides, and the design's sheet is injected
+   into the BODY, after this file is linked in the head. The rule loaded, the media query matched,
+   and the columns stayed 600/600. `.sjc-design.sjc-design` takes it to (0,3,0) and it wins. */
 @media (min-width: 1024px) {
-  [data-sjc-hero-split] {
+  .sjc-design.sjc-design [data-sjc-hero-split] {
     grid-template-columns: 3fr 1fr;
   }
-  [data-sjc-hero-split] img,
-  [data-sjc-hero-split] .sjc-cta {
+  .sjc-design.sjc-design [data-sjc-hero-split] img,
+  .sjc-design.sjc-design [data-sjc-hero-split] .sjc-cta {
     width: 100%;
   }
 }
