@@ -566,9 +566,9 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 0 22px 34px;
-    background: rgba(10, 14, 39, 0.62);
-    -webkit-backdrop-filter: blur(9px);
-    backdrop-filter: blur(9px);
+    background: rgba(10, 14, 39, 0.5);
+    -webkit-backdrop-filter: blur(7px);
+    backdrop-filter: blur(7px);
   }
   #global-header [data-landingsite-mobile-menu] > div {
     align-items: stretch;
@@ -583,10 +583,14 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     text-align: center;
     border: 1px solid rgba(255, 215, 0, 0.55);
     border-radius: 999px;
-    background: rgba(10, 14, 39, 0.45);
+    /* ⛔ NO FILL — Steven: *"I want to see the website under these buttons."* The capsule is the
+       outline and nothing else; the page runs straight through it. The shadow is what keeps gold
+       legible when a bright part of a photo passes underneath, since no fill is guaranteeing it. */
+    background: transparent;
     color: var(--accent2-color, #ffd700) !important;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.01em;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
     transition: background 0.2s, border-color 0.2s, color 0.2s;
   }
   #global-header [data-landingsite-mobile-menu] a:hover,
@@ -599,8 +603,12 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
      capsules look misaligned by 15px. */
   #global-header [data-landingsite-mobile-menu] a.sjc-sub { padding-left: 20px; }
   #global-header [data-landingsite-mobile-menu] .sjc-mgroup {
+    /* ⚠️ WAS 60% WHITE AND UNREADABLE over a blurred page — Steven: *"need to be a color you
+       could actually see."* Gold at full strength, matching the capsules it labels. */
     text-align: center;
-    padding: 18px 0 4px;
-    color: rgba(255, 255, 255, 0.6);
+    padding: 20px 0 6px;
+    color: var(--accent2-color, #ffd700);
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
   }
 }
