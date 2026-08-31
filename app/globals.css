@@ -291,39 +291,13 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
 }
 
-/* ⭐ HOLD THE CALENDAR'S SPACE FOR THE WHOLE LOAD, OR EVERY ANCHOR BELOW IT MISSES.
-   Steven: *"click pricing… it goes to the pricing section, and then jumps up into the calendar."*
-
-   ⛔ THE ARITHMETIC, BECAUSE GETTING IT WRONG COST HOURS AND TWO WRONG FIXES.
-   The pricing section carries `scroll-mt-20`, so a CORRECT landing is `anchor − 80`, not `anchor`.
-   Measured: anchor 8348, browser parked at 7702 — which looks like a 646px miss and is not. The
-   real miss is 646 − 80 = **566**. The Cal iframe measures **570**. Four pixels apart: the
-   calendar is the entire cause, on its own.
-   ⚠️ A direct address-bar load landing at 8268 was READ AS "it works when warm." It was the
-   browser obeying `scroll-mt-20` — 8348 − 80 — and had nothing to do with cache. Chasing that
-   false clue is what produced an image-sizing attempt that broke the header and a scroll-corrector
-   that made the page hop. Neither was needed. **Subtract the scroll-margin before believing a gap.**
-
-   ⛔ AND THE RESERVATION HAS TO SURVIVE THE EMPTY FRAME. Cal mounts the `<iframe>` EMPTY, loads its
-   own app inside it, and only then sets the real height. The first version released on
-   `:not(:has(iframe))` — true the instant the empty frame appeared — so the floor dropped, the box
-   collapsed to 0, and the real height arriving shoved everything below back down. That collapse is
-   the shift. Proved on the live page: dropping a zero-height iframe into the box takes it from the
-   reserved height to 0px instantly. `data-cal-ready` is set by CalEmbed only once the frame HAS a
-   height, so the space is held for the whole load and released once, correctly.
-
-   ⚠️ 570px IS MEASURED, NOT CHOSEN. The first value was 620 — 50px MORE than the widget, so the
-   page SHRANK when the calendar arrived. A reservation that is not the real height is a shift in
-   the other direction. */
-/* ⛔ THE FLOOR IS PERMANENT. IT IS NEVER RELEASED, AND THAT IS THE FIX.
-   Every released version of this rule shifted the page, because release means the box changes size
-   and anything below it moves. `:not(:has(iframe))` released on the EMPTY frame; released on
-   `data-cal-ready` it still stepped from the reserved figure to Cal's real one. The measurement
-   that ended it: the miss was EXACTLY 566px on every single load — warm, cold, clicked, typed.
-   A load-timing problem varies. A constant is deterministic, and 566 against the iframe's measured
-   570 is the calendar, full stop.
-   `min-height` only ever ADDS space, so a taller month view still grows the box normally — it can
-   never clip. 570px is the measured height of the live embed. */
+/* ⭐ HOLD THE CALENDAR'S SPACE. Cal mounts the iframe empty and sizes it later, so without a floor
+   the box is flat during load and everything under it moves when the real height lands.
+   ⚠️ 570px is MEASURED, not chosen. `min-height` only ever adds space, so a taller month view still
+   grows the box normally and can never be clipped.
+   ⛔ This is NOT what caused the #anchor bug — that was the font swap, see app/layout.tsx. Reserving
+   this was tried three ways against that bug and changed nothing. It is kept because it is correct
+   on its own merits, not as a fix for something else. */
 [data-sjc-cal] {
   min-height: 570px;
 }

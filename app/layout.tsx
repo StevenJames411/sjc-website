@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
-import HashAnchor from "@/components/HashAnchor";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
@@ -130,7 +129,22 @@ const ibmPlex = localFont({
   variable: "--font-ibm-plex",
   display: "swap",
   preload: true,
-  // ⛔ WITHOUT A METRIC-MATCHED FALLBACK, `swap` REFLOWS THE WHOLE PAGE.
+  // ⛔ THIS IS THE FIX FOR THE #ANCHOR BUG. Not the images, not the calendar — the FONT.
+  //
+  // Every character on this site is IBM Plex. The page was preloading five weights of Space
+  // Grotesk, which nothing draws in any more, and never preloading this. With `display: swap` the
+  // text drew in the system fallback, the browser jumped to the `#section` using THOSE line
+  // heights, then the real font arrived and re-flowed a 9,600px page. The anchor moved 566px out
+  // from under the landing and the scroll did not follow.
+  //
+  // ⚠️ THE TELL WAS THAT 566 NEVER VARIED — warm, cold, clicked, typed, fresh tab, cache-busted.
+  // A race varies; a deterministic reflow does not. Three hours went into images, the calendar and
+  // layout shift because that constancy was not taken as the clue it was.
+  //
+  // ⛔ SO: PRELOAD THE FONT THE SITE ACTUALLY USES, AND ONLY THAT ONE. Every other face here ships
+  // `preload: false`. If the site's typeface changes again, move the preload with it — a preload
+  // pointing at the old font is worse than none, because it spends the connection on bytes nothing
+  // renders while the real font waits.
   // Every character on this site is IBM Plex. On a cold load the text drew in the system
   // font, the browser jumped to the #anchor using THOSE line heights, then the real font
   // arrived and every line re-flowed — the page grew 566px above the target and the
@@ -263,7 +277,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         <EditLink />
-        <HashAnchor />
       </body>
     </html>
   );
