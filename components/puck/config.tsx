@@ -33,6 +33,7 @@ import LeadForm, { LEADFORM_DEFAULTS } from "@/components/blocks/LeadForm";
 import HeroImage, { HERO_IMAGE_DEFAULTS } from "@/components/blocks/HeroImage";
 import DesignSection, {
   DESIGNSECTION_DEFAULTS,
+  BAND_STYLES,
   type DesignText,
   type DesignImage,
   type DesignLink,
@@ -82,6 +83,8 @@ type Props = {
     flip: boolean;
     background: string;
     foreground: string;
+    /** A whole band in one choice — see BAND_STYLES in components/blocks/DesignSection. */
+    band: string;
     hasForm: boolean;
     calLink: string;
     useRealForm: boolean;
@@ -879,6 +882,17 @@ const baseConfig: Config<Props, RootProps> = {
         // re-banded the same way. Blank = keep the design's own colours.
         background: { ...DESIGN_BG_FIELD, label: "Background" },
         foreground: { ...DESIGN_FG_FIELD, label: "Text colour" },
+        // ⭐ ONE CHOICE FOR THE WHOLE BAND — colour, grid, glow and the text that has to move with
+        // them. Steven: "if the design studio had these seven or eight to pick from... I could
+        // just use whichever one I'd like." The two pickers above stay for a one-off colour.
+        band: {
+          type: "select" as const,
+          label: "Band style",
+          options: [
+            { label: "Keep the design's own", value: "" },
+            ...Object.entries(BAND_STYLES).map(([value, d]) => ({ label: d.label, value })),
+          ],
+        },
         // Same stepper as the native Section block, so imported and hand-built sections are
         // adjusted the same way. Blank = keep whatever spacing the design shipped with.
         paddingTop: {
@@ -1181,7 +1195,7 @@ const baseConfig: Config<Props, RootProps> = {
       // that a field is not a control until something has been set on a page and LOOKED AT.
       // scripts/check-prop-bridge.mjs is the mechanical half of that and was too loose to catch
       // its own flagship case; it is tightened in the same commit as this fix.
-      render: ({ id, sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, columns, splitAfter, flip, background, foreground, hasForm, useRealForm, formFields, formButton, successHeading, successBody, calLink, puck }) => (
+      render: ({ id, sheet, html, text, images, links, boxes, sticky, paddingTop, paddingBottom, columns, splitAfter, flip, background, foreground, band, hasForm, useRealForm, formFields, formButton, successHeading, successBody, calLink, puck }) => (
         // ⛔ DesignSectionLive, NOT DesignSection — it resolves {{business.*}} for DISPLAY so the
         // canvas shows the phone number instead of the token. Storage keeps the token; nothing is
         // written. Pass-through when not editing. See components/puck/DesignSectionLive.tsx.
@@ -1206,6 +1220,7 @@ const baseConfig: Config<Props, RootProps> = {
           flip={flip}
           background={background}
           foreground={foreground}
+          band={band}
           hasForm={hasForm}
           useRealForm={useRealForm}
           formFields={formFields}

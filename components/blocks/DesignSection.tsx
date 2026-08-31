@@ -220,6 +220,15 @@ export type DesignSectionProps = {
    */
   background?: string;
   foreground?: string;
+  /**
+   * A whole band in one choice — colour, grid, glow and the text colour that has to move with
+   * them. See BAND_STYLES. Blank keeps the design's own, which is the default and always will be.
+   *
+   * ⚠️ THIS DOES NOT REPLACE `background`/`foreground`. Those stay the escape hatch for a one-off
+   * colour a preset does not cover; the preset is for the four-properties-at-once case, which is
+   * the only case that actually makes a band look expensive.
+   */
+  band?: string;
 
   // ── THE FORM ────────────────────────────────────────────────────────────────────────────────
   /** True when the imported section contained a form shell (set at import). */
@@ -296,6 +305,9 @@ export const DESIGNSECTION_DEFAULTS: DesignSectionProps = {
   flip: false,
   background: "",
   foreground: "",
+  // ⚠️ BLANK = keep the design's own band. Any new field must default to the do-nothing value
+  // or every untouched section on every site starts emitting a look it never had.
+  band: "",
   hasForm: false,
   calLink: "",
   useRealForm: true,
@@ -424,6 +436,22 @@ function stripDangerous(html: string): string {
  * carries an inline gradient background there, and overwriting it would drop the background to
  * change the padding.
  */
+/**
+ * Mark the design's OWN outer tag — the same element injectStyle writes to.
+ *
+ * ⛔ WHY A MARKER IS NEEDED AT ALL. The band's text rule must skip a card that paints its own
+ * background (and already has the right text colour on it), which `:not([class*="bg-"] *)` does.
+ * But the SECTION ROOT usually carries a `bg-` class too — this design's hero is
+ * `<section class="relative bg-[#e5e5e5] …">` — so that guard excluded every text node in the
+ * band and the copy stayed black on navy. Marking the root lets the guard say "any bg- ancestor
+ * EXCEPT this one".
+ */
+function markBandRoot(html: string): string {
+  const tag = html.match(/<([a-z][a-z0-9]*)\b[^>]*>/i);
+  if (!tag || /data-sjc-bandroot/.test(tag[0])) return html;
+  return html.replace(tag[0], tag[0].replace(/>$/, " data-sjc-bandroot>"));
+}
+
 export function injectStyle(html: string, decls: string): string {
   if (!decls) return html;
   const tag = html.match(/<([a-z][a-z0-9]*)\b[^>]*>/i);
@@ -518,6 +546,103 @@ function dropRemovedLinks(html: string, links: DesignLink[]): string {
  * at-rule from scopeCss and silently kills every rule inside it. This string is emitted at render
  * rather than compiled, but the habit is the thing that broke sjc-2026's entire mobile layout.
  */
+/**
+ * ── BAND STYLES: ONE CHOICE THAT SETS THE WHOLE BAND ────────────────────────────────────────
+ *
+ * Steven, 2026-08-30, after a page was re-banded by hand: *"What would be lovely is if the design
+ * studio had these seven or eight to pick from in the choices, and I could just use whichever one
+ * I'd like."*
+ *
+ * `background` and `foreground` already existed and remain the escape hatch for a one-off colour.
+ * What they could not do is the thing that separates a cheap band from an expensive one, because
+ * it is never one property: a colour, PLUS a grid, PLUS a glow, PLUS the text colour that has to
+ * move with them. Four settings that are only ever correct together, so they ship as one choice.
+ *
+ * Values are the SiteDrop band system, measured off the migrated pages rather than invented.
+ * `--primary-color` / `--accent3-color` are used where a design declares them, so a re-skin still
+ * carries — a literal hex would be invisible to one.
+ */
+type BandDef = {
+  label: string;
+  /** Flat colour underneath, covering whatever a gradient does not. */
+  base: string;
+  /** Layers, outermost first — the order CSS paints them. */
+  bg: string;
+  size?: string;
+  /** Text belonging to the band itself. Never applied to a card that paints its own background. */
+  head: string;
+  body: string;
+};
+
+const GRID_LIGHT =
+  "linear-gradient(rgba(30,61,145,.05) 1px,transparent 1px)," +
+  "linear-gradient(90deg,rgba(30,61,145,.05) 1px,transparent 1px)";
+const GRID_DARK =
+  "linear-gradient(rgba(148,197,255,.055) 1px,transparent 1px)," +
+  "linear-gradient(90deg,rgba(148,197,255,.055) 1px,transparent 1px)";
+const INK_FADE = "linear-gradient(180deg,#0d1530 0%,#0A0E27 62%,#070B1C 100%)";
+const GLOW = "radial-gradient(900px 520px at 78% 14%,rgba(0,217,255,.16),transparent 62%)";
+const ON_DARK = { head: "#ffffff", body: "rgba(255,255,255,.86)" };
+const ON_LIGHT = { head: "#0A0E27", body: "#3E4B63" };
+
+export const BAND_STYLES: Record<string, BandDef> = {
+  ink: { label: "Deep ink", base: "#0A0E27", bg: INK_FADE, ...ON_DARK },
+  "ink-grid": { label: "Deep ink + grid", base: "#0A0E27",
+    bg: `${GRID_DARK},${INK_FADE}`, size: "64px 64px,64px 64px,auto", ...ON_DARK },
+  "ink-glow": { label: "Deep ink + glow", base: "#0A0E27",
+    bg: `${GLOW},${GRID_DARK},${INK_FADE}`, size: "auto,64px 64px,64px 64px,auto", ...ON_DARK },
+  brand: { label: "Brand solid", base: "var(--primary-color,#1e3d91)", bg: "", ...ON_DARK },
+  "brand-fade": { label: "Brand gradient", base: "var(--primary-color,#1e3d91)",
+    bg: "linear-gradient(to bottom right,var(--primary-color,#1e3d91),var(--accent3-color,#00a8cc))", ...ON_DARK },
+  mist: { label: "Mist (light grey)", base: "#EEF2F7", bg: "", ...ON_LIGHT },
+  "mist-grid": { label: "Mist + grid", base: "#EEF2F7", bg: GRID_LIGHT, size: "64px 64px,64px 64px", ...ON_LIGHT },
+  paper: { label: "Paper (white)", base: "#FFFFFF", bg: "", ...ON_LIGHT },
+  "paper-grid": { label: "Paper + grid", base: "#FFFFFF", bg: GRID_LIGHT, size: "64px 64px,64px 64px", ...ON_LIGHT },
+};
+
+/** The band's own paint, injected INTO the design's outer tag by injectStyle(). */
+function bandDecls(band?: string): string {
+  const def = BAND_STYLES[String(band || "").trim()];
+  if (!def) return "";
+  return [
+    `background-color:${def.base}`,
+    def.bg ? `background-image:${def.bg}` : "background-image:none",
+    def.size ? `background-size:${def.size}` : "",
+    "background-repeat:repeat",
+  ].filter(Boolean).join(";");
+}
+
+/**
+ * The band's TEXT colours. Only the text — the paint goes through bandDecls above.
+ *
+ * ⛔ THE PAINT CANNOT BE DONE FROM HERE, AND A STRONGER SELECTOR IS NOT THE FIX. The first attempt
+ * styled `[data-sjc-band] > *`, which looked right and moved nothing: the design's own tag is not
+ * a direct child. The real shape is
+ *     div[data-sjc-band] > div > section.band
+ * so `> *` painted the middle div and the section painted straight over it. Raising specificity
+ * made a losing selector lose more precisely. `injectStyle` already puts declarations on the
+ * design's own tag — it is how the `background` prop has always worked — so the band uses it too.
+ *
+ * ⚠️ The text rules stay here because they are DESCENDANT selectors, which are unaffected by the
+ * extra wrapper.
+ */
+function bandCss(id: string, band?: string): string {
+  const def = BAND_STYLES[String(band || "").trim()];
+  if (!id || !def) return "";
+  // Repeated to clear the design's own scoped utilities, which ship as
+  // `.sjc-design-<id> .text-black` — specificity (0,2,0). One attribute selector is (0,1,0).
+  const at = `[data-sjc-band="${id}"][data-sjc-band][data-sjc-band]`;
+  // ⛔ `:not([class*="bg-"] *)` IS LOAD-BEARING. An imported band routinely holds a card painting
+  // its own background with the right text colour already on it — this site's feature band has one
+  // on `bg-[#3b7fb8]`. Repainting the whole band would black that card's heading out.
+  // "a descendant of any bg- element OTHER than the band's own root"
+  const safe = ':not([class*="bg-"]:not([data-sjc-bandroot]) *)';
+  return (
+    `${at} :is(p,li,blockquote,span)${safe}{color:${def.body} !important}` +
+    `${at} :is(h1,h2,h3,h4,strong,b)${safe}{color:${def.head} !important}`
+  );
+}
+
 function columnCss(
   id: string,
   columns?: number | null,
@@ -759,6 +884,7 @@ export default function DesignSection(props: DesignSectionProps) {
     flip,
     background,
     foreground,
+    band,
     hasForm,
     calLink,
     useRealForm = true,
@@ -778,6 +904,7 @@ export default function DesignSection(props: DesignSectionProps) {
   const framing = frameCss(images);
   // Keyed to this block's own id — see the note on columnCss for why the sheet scope won't do.
   const colStyling = columnCss(String(props.id || ""), columns, splitAfter, flip);
+  const bandStyling = bandCss(String(props.id || ""), band);
   // Buttons and pills. `data-sjc-link` is already on the element, so this reaches it without ever
   // guessing at the design's own class names.
   const linkStyling = (links || [])
@@ -810,6 +937,9 @@ export default function DesignSection(props: DesignSectionProps) {
     typeof paddingBottom === "number" ? `padding-bottom:${paddingBottom}px` : "",
     // `background`, not `background-color`: a generated section routinely carries an inline
     // gradient, and picking a flat colour has to beat it rather than sit behind it.
+    // The band preset paints first; an explicit `background` below still overrides it, which is
+    // what makes the two controls compose instead of fight.
+    bandDecls(band),
     resolveColor(background) ? `background:${resolveColor(background)}` : "",
     resolveColor(foreground) ? `color:${resolveColor(foreground)}` : "",
   ]
@@ -826,6 +956,7 @@ export default function DesignSection(props: DesignSectionProps) {
     ),
     decls
   );
+  const marked = band ? markBandRoot(filled) : filled;
   // The scope class rides on the block so the design styles identically in the builder canvas,
   // in preview and on the live page — see lib/designShared.
   const swapForm = !!hasForm && useRealForm !== false;
@@ -875,6 +1006,7 @@ export default function DesignSection(props: DesignSectionProps) {
       data-sjc-sheet={sheet || "none"}
       // Only present when columns are actually set, so an untouched section's markup is unchanged.
       {...(colStyling ? { "data-sjc-cols": String(props.id || "") } : {})}
+      {...(bandStyling ? { "data-sjc-band": String(props.id || "") } : {})}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
       {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
       {...(fgRole ? { "data-sjc-fg": fgRole } : {})}
@@ -890,6 +1022,7 @@ export default function DesignSection(props: DesignSectionProps) {
     >
       {framing ? <style dangerouslySetInnerHTML={{ __html: framing }} /> : null}
       {colStyling ? <style dangerouslySetInnerHTML={{ __html: colStyling }} /> : null}
+      {bandStyling ? <style dangerouslySetInnerHTML={{ __html: bandStyling }} /> : null}
       {linkStyling || boxStyling || boxLinkCss ? (
         <style
           dangerouslySetInnerHTML={{
@@ -943,7 +1076,7 @@ export default function DesignSection(props: DesignSectionProps) {
           }}
         />
       ) : null}
-      <div dangerouslySetInnerHTML={{ __html: filled }} />
+      <div dangerouslySetInnerHTML={{ __html: marked }} />
       {/* The design's own <script> was stripped at import, so its hamburger has nothing wiring it
           to the panel. This does that one toggle in first-party code. Cheap and inert on a section
           with no menu — it looks for the pair, finds nothing, and stops. */}

@@ -76,3 +76,137 @@ textarea { resize: vertical !important; min-height: 76px; }
 .sjc-hover-edge:hover {
   border-color: var(--sjc-hover-edge) !important;
 }
+
+/* ⭐ EVERY CALL-TO-ACTION ON EVERY SITE HOVERS FROM HERE — green-500 at 300ms, and it SWELLS.
+   Lives in the app, NOT in a content block: this site has no chrome document (header/footer are
+   empty), so the rule used to sit inside the first section of the home page, where any content
+   edit that replaced that block would have silently taken the hover off all 21 buttons.
+   A site-wide law belongs in code. Put `sjc-cta` on the anchor; that is the whole contract.
+
+   a.sjc-cta:hover is (0,2,1) so it out-ranks the sealed Tailwind sheet's own .bg-yellow-400 /
+   .text-white / .border-[…] rules, which are (0,2,0). ⛔ But a COMPILED hover: class is (0,3,0)
+   and beats this — strip `hover:bg-*` / `hover:text-*` off the markup, never fight it here. */
+.sjc-cta {
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease,
+              transform .3s ease, box-shadow .3s ease;
+}
+/* ⛔ hover:hover or a phone TAP sticks the green on until something else is tapped. */
+@media (hover: hover) {
+  a.sjc-cta:hover {
+    background: #22c55e;
+    color: #fff;
+    border-color: #22c55e;
+    transform: scale(1.045);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, .30);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  a.sjc-cta:hover { transform: none; }
+}
+
+/* Resting colours for the buttons whose background used to be an inline style (an inline style
+   beats any stylesheet, so the colour had to move out here for the hover to land at all).
+
+   ⛔ WRITTEN AS `a.sjc-cta.cta-*`, NOT `.cta-*`, AND THAT IS THE WHOLE FIX (2026-08-30).
+   A bare class is (0,1,0). The sealed design sheet is SCOPED at import, so every one of its
+   utilities ships as `.sjc-design-<id> .something` — (0,2,0) — and quietly out-ranked the colour
+   set here. The $97 card's button therefore drew its navy BACKGROUND from this rule while taking
+   its TEXT colour from the sheet: near-black lettering on a dark navy button, unreadable, and
+   live on the published page. Steven: "two dark colors don't work."
+
+   ⚠️ The background never showed the problem because nothing else was setting one. Only the
+   colour lost, so the bug looked like a design choice rather than a specificity loss.
+   (0,3,0) clears the scoped utility, and matches the reasoning already written above for
+   `a.sjc-cta:hover`. */
+a.sjc-cta.cta-navy   { background: #1c3a6e; color: #fff; }
+a.sjc-cta.cta-white  { background: #ffffff; color: #1c3a6e; }
+a.sjc-cta.cta-yellow { background: #FFEB3B; color: #12263f; }
+a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
+/* Kept for any non-anchor element carrying the class — same values, lower rank. */
+.cta-navy   { background: #1c3a6e; color: #fff; }
+.cta-white  { background: #ffffff; color: #1c3a6e; }
+.cta-yellow { background: #FFEB3B; color: #12263f; }
+.pf-cta     { background: #12263f; color: #fff; }
+
+/* ⭐ THE SECTION LABEL — the line that opens a topic ("Start here", "The problem", "How it works").
+   The bought design shipped it at 11px/400, sitting directly on top of a 41px heading. Steven,
+   looking at it: *"the start here is like fucking 10 font on top of an H1 tag… so I don't have to
+   manually go to ten pages and change it in five sections."*
+
+   ⛔ A SITE-WIDE LAW BELONGS IN CODE, NOT IN 59 CONTENT FIELDS. There are 59 of these across nine
+   pages; setting a size on each one by hand would leave the next imported page wrong again and give
+   the next person 59 places to disagree with each other.
+
+   ⚠️ `.label.label` IS DELIBERATE — the class is repeated to reach (0,3,0). Each design's sheet is
+   SCOPED at import, so its own rule ships as `.sjc-design-<id> .label` = (0,2,0); a single class
+   here is (0,1,0) and loses silently, which is exactly how the CTA text colour was lost above.
+
+   ⚠️ `.eyebrow` IS NOT TOUCHED. That is the pill in the hero, and Steven ruled the pill size fine.
+   Letter-spacing drops from the design's 0.24em to 0.06em because tracking that reads as "small
+   caps label" at 11px reads as broken word-spacing at 24px. */
+.sjc-design .label.label {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+@media (max-width: 640px) {
+  .sjc-design .label.label { font-size: 19px; }
+}
+
+/* ⭐ THE BOUGHT DESIGN'S OWN TYPEFACES — Space Grotesk for headings, Inter for body.
+   Steven: *"whatever we pulled in from SiteDrop had the font that I liked."* He was right that it
+   changed, and it was not a choice anybody made.
+
+   ⛔ WHY THEY WENT MISSING. The design declared its fonts in the ORIGINAL PAGE'S <head> — a Google
+   Fonts <link> plus `font-family:'Space Grotesk'` / `'Inter'` rules. lib/importDesign keeps the
+   markup and compiles the stylesheet, but a <head> never survives an import, so the pages came
+   across with no typeface of their own and quietly inherited the app's Lexend/Lato/Poppins.
+
+   ⚠️ AND THAT IS WHAT MADE THE CAPITAL I AMBIGUOUS. Steven, on the "YOUR AI EMPLOYEE" pill: *"the
+   I could also pass for a capital letter L because the font family gives no stylization."* Lato and
+   Poppins both draw a bare vertical bar. Space Grotesk's I is narrower and sits in a distinctly
+   tighter, more mechanical face, which is the look he bought.
+
+   Both faces are already loaded by app/layout.tsx (--font-space-grotesk, --font-inter) — nothing new
+   is fetched. Scoped to `.sjc-design` so the LandingSite home page keeps its own type. */
+.sjc-design,
+.sjc-design p,
+.sjc-design li,
+.sjc-design .lede,
+.sjc-design .label {
+  font-family: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+.sjc-design h1,
+.sjc-design h2,
+.sjc-design h3,
+.sjc-design h4,
+.sjc-design .big,
+.sjc-design .btn {
+  font-family: var(--font-space-grotesk), "Space Grotesk", var(--font-inter), sans-serif;
+}
+
+/* ⭐ THE PILL IS PLAYFAIR, AND THE REASON IS ONE LETTER.
+   Steven, on "YOUR AI EMPLOYEE": *"the I could also pass for a capital letter L because the font
+   family gives no stylization on the letter I."* He is right, and it is not fixable by size or
+   weight — Space Grotesk, Inter, Lexend, Montserrat and Source Sans all draw the capital I as a
+   bare vertical bar, so "AI" reads as "AL" at a glance. Rendered side by side, only Playfair,
+   Merriweather, Verdana and Tahoma put crossbars on it.
+   Playfair wins on two counts: it is the face already carrying the wordmark he approved, so the
+   pill echoes the mark instead of introducing a fourth typeface; and Verdana/Tahoma would date the
+   page. `font-variant:small-caps` matches the wordmark exactly — it is the alphabet, not just the
+   family, that gives the mark its look, and the pill now echoes it without any copy changing. */
+.sjc-design .eyebrow,
+.sjc-design .eyebrow.eyebrow {
+  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+  font-variant: small-caps;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+}
+/* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
+   two rules above, which would otherwise reach it through `.sjc-design`. */
+.sjc-design .sjc-mark span,
+#global-header .sjc-mark span,
+#global-footer .sjc-mark span {
+  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+}
