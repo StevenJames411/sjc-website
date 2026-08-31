@@ -154,36 +154,45 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   .sjc-design .label.label { font-size: 19px; }
 }
 
-/* ⭐ THE BOUGHT DESIGN'S OWN TYPEFACES — Space Grotesk for headings, Inter for body.
-   Steven: *"whatever we pulled in from SiteDrop had the font that I liked."* He was right that it
-   changed, and it was not a choice anybody made.
+/* ⭐ THE WHOLE SEALED PAGE IS IBM PLEX SANS, AND IT IS STILL THE SAME ONE LETTER.
+   Steven, on his third pass over the same defect: *"we still have not addressed the font family.
+   These two sections have the capital I with no crossbars."* He was pointing at an H2 ("You will
+   not be replaced by AI.") and at body copy ("businesses implementing AI now") — a heading and a
+   paragraph, not the pill and not the label.
 
-   ⛔ WHY THEY WENT MISSING. The design declared its fonts in the ORIGINAL PAGE'S <head> — a Google
-   Fonts <link> plus `font-family:'Space Grotesk'` / `'Inter'` rules. lib/importDesign keeps the
-   markup and compiles the stylesheet, but a <head> never survives an import, so the pages came
-   across with no typeface of their own and quietly inherited the app's Lexend/Lato/Poppins.
+   ⛔ THE EARLIER FIXES WERE TOO NARROW, AND THAT IS THE LESSON. The pill got fixed, then the
+   section label got fixed, and each time the word "AI" simply reappeared in the next element that
+   had not been named. `.eyebrow` and `.label` were never the problem — the WORD is, and it appears
+   in every kind of text on the page.
 
-   ⚠️ AND THAT IS WHAT MADE THE CAPITAL I AMBIGUOUS. Steven, on the "YOUR AI EMPLOYEE" pill: *"the
-   I could also pass for a capital letter L because the font family gives no stylization."* Lato and
-   Poppins both draw a bare vertical bar. Space Grotesk's I is narrower and sits in a distinctly
-   tighter, more mechanical face, which is the look he bought.
+   ⛔ THE TRADE IS REAL AND IT HAS NO MIDDLE. Space Grotesk (the bought design's headings) and Inter
+   (its body) BOTH draw the capital I as a bare vertical post. No weight, size or tracking changes
+   that; it is how the glyph is drawn. So the page can keep Space Grotesk headlines OR it can read
+   "AI" unambiguously — not both. Steven raised the I three times and the headline face once, so
+   the letter wins.
 
-   Both faces are already loaded by app/layout.tsx (--font-space-grotesk, --font-inter) — nothing new
-   is fetched. Scoped to `.sjc-design` so the LandingSite home page keeps its own type. */
+   ⚠️ THIS REPLACES the earlier split (Space Grotesk headings + Inter body) that was restored on
+   08-30 to recover the SiteDrop look. That restoration was correct at the time and is superseded
+   here on his explicit, repeated instruction — not quietly reverted.
+
+   Scoped to `.sjc-design` so any non-sealed page keeps the app's own type. One rule covers all ten
+   imported sheets, and any design imported later. */
 .sjc-design,
 .sjc-design p,
 .sjc-design li,
+.sjc-design a,
+.sjc-design b,
+.sjc-design strong,
 .sjc-design .lede,
-.sjc-design .label {
-  font-family: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
-}
+.sjc-design .big,
+.sjc-design .btn,
 .sjc-design h1,
 .sjc-design h2,
 .sjc-design h3,
 .sjc-design h4,
-.sjc-design .big,
-.sjc-design .btn {
-  font-family: var(--font-space-grotesk), "Space Grotesk", var(--font-inter), sans-serif;
+.sjc-design h5,
+.sjc-design h6 {
+  font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ⭐ THE PILL AND THE SECTION LABEL ARE IBM PLEX SANS, AND THE REASON IS ONE LETTER.
