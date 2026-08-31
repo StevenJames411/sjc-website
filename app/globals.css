@@ -153,3 +153,43 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 @media (max-width: 640px) {
   .sjc-design .label.label { font-size: 19px; }
 }
+
+/* ⭐ THE BOUGHT DESIGN'S OWN TYPEFACES — Space Grotesk for headings, Inter for body.
+   Steven: *"whatever we pulled in from SiteDrop had the font that I liked."* He was right that it
+   changed, and it was not a choice anybody made.
+
+   ⛔ WHY THEY WENT MISSING. The design declared its fonts in the ORIGINAL PAGE'S <head> — a Google
+   Fonts <link> plus `font-family:'Space Grotesk'` / `'Inter'` rules. lib/importDesign keeps the
+   markup and compiles the stylesheet, but a <head> never survives an import, so the pages came
+   across with no typeface of their own and quietly inherited the app's Lexend/Lato/Poppins.
+
+   ⚠️ AND THAT IS WHAT MADE THE CAPITAL I AMBIGUOUS. Steven, on the "YOUR AI EMPLOYEE" pill: *"the
+   I could also pass for a capital letter L because the font family gives no stylization."* Lato and
+   Poppins both draw a bare vertical bar. Space Grotesk's I is narrower and sits in a distinctly
+   tighter, more mechanical face, which is the look he bought.
+
+   Both faces are already loaded by app/layout.tsx (--font-space-grotesk, --font-inter) — nothing new
+   is fetched. Scoped to `.sjc-design` so the LandingSite home page keeps its own type. */
+.sjc-design,
+.sjc-design p,
+.sjc-design li,
+.sjc-design .lede,
+.sjc-design .label {
+  font-family: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+.sjc-design h1,
+.sjc-design h2,
+.sjc-design h3,
+.sjc-design h4,
+.sjc-design .big,
+.sjc-design .eyebrow,
+.sjc-design .btn {
+  font-family: var(--font-space-grotesk), "Space Grotesk", var(--font-inter), sans-serif;
+}
+/* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
+   two rules above, which would otherwise reach it through `.sjc-design`. */
+.sjc-design .sjc-mark span,
+#global-header .sjc-mark span,
+#global-footer .sjc-mark span {
+  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+}
