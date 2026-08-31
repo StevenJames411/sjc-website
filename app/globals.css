@@ -17,7 +17,11 @@
   --color-sjc-highlight: #f59e0b;
   --color-sjc-white: #ffffff;
 
-  --font-sans: var(--font-lexend), ui-sans-serif, system-ui, -apple-system,
+  /* ⭐ ONE FACE FOR THE WHOLE SITE. Steven: *"the company name stays one look. All the other
+     font goes to the other one."* Was Lexend, whose capital I is a bare vertical post — the same
+     defect that took three passes to chase out of the sealed pages. Setting it HERE means a page
+     built later inherits the right face instead of becoming the fourth place to fix. */
+  --font-sans: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -252,6 +256,22 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 }
 @media (max-width: 640px) {
   .sjc-design .eyebrow.eyebrow { font-size: 12.5px; }
+}
+
+/* ⛔ THE HEADER AND FOOTER ARE THEIR OWN DOCUMENTS AND DO NOT INHERIT FROM body.
+   They render through lib/publicSitePage.tsx with their own scoped sheet, so the app-wide
+   --font-sans above never reached them — the nav items were still drawing in Inter while every
+   page under them had moved. The `*` is deliberate: the chrome's sheet sets a face on its own
+   inner classes, and a bare `#global-header` would be inherited-over rather than winning.
+
+   ⚠️ THE WORDMARK RULE BELOW MUST OUTRANK THIS, AND IT DOES BY CONSTRUCTION.
+   `#global-header .sjc-mark span` is (1,1,1); `#global-header *` is (1,0,0). The id is equal, the
+   class breaks the tie, so the mark keeps Playfair without needing !important. */
+#global-header,
+#global-header *,
+#global-footer,
+#global-footer * {
+  font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
