@@ -584,35 +584,43 @@ export const BAND_STYLES: Record<string, BandDef> = {
   "paper-grid": { label: "Paper + grid", base: "#FFFFFF", bg: GRID_LIGHT, size: "64px 64px,64px 64px", ...ON_LIGHT },
 };
 
+/** The band's own paint, injected INTO the design's outer tag by injectStyle(). */
+function bandDecls(band?: string): string {
+  const def = BAND_STYLES[String(band || "").trim()];
+  if (!def) return "";
+  return [
+    `background-color:${def.base}`,
+    def.bg ? `background-image:${def.bg}` : "background-image:none",
+    def.size ? `background-size:${def.size}` : "",
+    "background-repeat:repeat",
+  ].filter(Boolean).join(";");
+}
+
+/**
+ * The band's TEXT colours. Only the text — the paint goes through bandDecls above.
+ *
+ * ⛔ THE PAINT CANNOT BE DONE FROM HERE, AND A STRONGER SELECTOR IS NOT THE FIX. The first attempt
+ * styled `[data-sjc-band] > *`, which looked right and moved nothing: the design's own tag is not
+ * a direct child. The real shape is
+ *     div[data-sjc-band] > div > section.band
+ * so `> *` painted the middle div and the section painted straight over it. Raising specificity
+ * made a losing selector lose more precisely. `injectStyle` already puts declarations on the
+ * design's own tag — it is how the `background` prop has always worked — so the band uses it too.
+ *
+ * ⚠️ The text rules stay here because they are DESCENDANT selectors, which are unaffected by the
+ * extra wrapper.
+ */
 function bandCss(id: string, band?: string): string {
   const def = BAND_STYLES[String(band || "").trim()];
   if (!id || !def) return "";
-  // ⛔ THE ATTRIBUTE IS REPEATED THREE TIMES, AND THAT IS NOT A TYPO.
-  //
-  // The design's compiled sheet is SCOPED at import (lib/designShared:scopeCss), so every one of
-  // its utilities ships as `.sjc-design-<id> .bg-\[\#e5e5e5\]` — specificity (0,2,0). A single
-  // attribute selector is (0,1,0), so `!important` here met `!important` there, lost the tie on
-  // specificity, and the band silently did nothing: the attribute was on the element, the rule was
-  // in the document, and the colour never moved. Repeating the attribute costs nothing and takes
-  // this to (0,3,0), which clears the scoped utility with room to spare.
-  //
-  // ⚠️ `>*` ADDS NOTHING TO SPECIFICITY — the universal selector is worth zero — so the child rule
-  // needs the same tripling as the parent, not one less.
+  // Repeated to clear the design's own scoped utilities, which ship as
+  // `.sjc-design-<id> .text-black` — specificity (0,2,0). One attribute selector is (0,1,0).
   const at = `[data-sjc-band="${id}"][data-sjc-band][data-sjc-band]`;
-  // The design's own tag sits INSIDE this wrapper and paints its own background, so painting the
-  // wrapper alone would leave the band exactly as it was. Both are set.
-  const paint =
-    `background-color:${def.base} !important;` +
-    (def.bg ? `background-image:${def.bg} !important;` : "background-image:none !important;") +
-    (def.size ? `background-size:${def.size} !important;` : "") +
-    `background-repeat:repeat !important;`;
-  // ⛔ `:not([class*="bg-"] *)` IS THE LOAD-BEARING PART. An imported band routinely holds a card
-  // that paints its own background and already has the right text colour on it — this site's
-  // feature band has one on `bg-[#3b7fb8]`. Repainting text across the whole band would black out
-  // that card's heading. This excludes every descendant of anything carrying its own background.
+  // ⛔ `:not([class*="bg-"] *)` IS LOAD-BEARING. An imported band routinely holds a card painting
+  // its own background with the right text colour already on it — this site's feature band has one
+  // on `bg-[#3b7fb8]`. Repainting the whole band would black that card's heading out.
   const safe = ':not([class*="bg-"] *)';
   return (
-    `${at},${at}>*{${paint}}` +
     `${at} :is(p,li,blockquote,span)${safe}{color:${def.body} !important}` +
     `${at} :is(h1,h2,h3,h4,strong,b)${safe}{color:${def.head} !important}`
   );
@@ -912,6 +920,9 @@ export default function DesignSection(props: DesignSectionProps) {
     typeof paddingBottom === "number" ? `padding-bottom:${paddingBottom}px` : "",
     // `background`, not `background-color`: a generated section routinely carries an inline
     // gradient, and picking a flat colour has to beat it rather than sit behind it.
+    // The band preset paints first; an explicit `background` below still overrides it, which is
+    // what makes the two controls compose instead of fight.
+    bandDecls(band),
     resolveColor(background) ? `background:${resolveColor(background)}` : "",
     resolveColor(foreground) ? `color:${resolveColor(foreground)}` : "",
   ]
