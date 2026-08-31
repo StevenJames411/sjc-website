@@ -40,18 +40,26 @@ import { useEffect } from "react";
  * nothing producing no scroll at all. It is not proven, because this tooling cannot observe the
  * load window.
  *
- * ⛔ CORRECT ONCE, WHEN THE PAGE HAS STOPPED MOVING — NEVER ON A TIMER. The first version
- * re-scrolled at 0/350/1200/2500ms; it reached the right place and hopped visibly getting there.
- * Steven: *"it jumps around before it settles in, and that shouldn't be doing that."* This watches
- * the height, does nothing while it is changing, and moves once when it holds still.
+ * ⛔ CORRECT ONCE, AND LATE. The first version re-scrolled at 0/350/1200/2500ms — right place,
+ * visible hopping. Steven: *"it jumps around before it settles in."* The second watched the page
+ * height and moved when it went quiet, which is quiet at ~120ms and therefore BEFORE the culprit:
+ * measured still 566px out after it had run and disarmed. Timing it off the height is the wrong
+ * signal because the geometry never changes. So it waits past the event and moves exactly once.
  *
  * ⛔ IT MUST YIELD TO THE PERSON. Any wheel, touch, key or mouse press and it stops for good.
  */
 
-/** The page must hold this height, unchanged, before the scroll is considered safe to make. */
-const QUIET_MS = 120;
-/** Hard stop, so a widget that never settles cannot leave this armed. */
-const GIVE_UP_MS = 3000;
+/**
+ * ⛔ ONE CORRECTION, AND IT MUST BE LATE. THIS NUMBER IS THE WHOLE FIX.
+ * A quiet-settle at 120ms corrected, disarmed, and THEN the page moved — measured: still 566px out
+ * after it had already run and finished. Whatever scrolls the calendar to the top acts around a
+ * second in. The original four-nudge version "worked" only because one of its nudges was late; the
+ * other three were the visible hopping. So: wait past the culprit, then move exactly once.
+ * ⚠️ 1400ms is chosen from measurement, not taste — the Cal embed's own resize lands at ~1376ms.
+ */
+const CORRECT_AT_MS = 1400;
+/** A second pass, far enough out to catch a slow connection. No-op when the first one was right. */
+const BACKSTOP_MS = 2800;
 
 export default function HashAnchor() {
   useEffect(() => {
@@ -63,19 +71,16 @@ export default function HashAnchor() {
     const EVENTS = ["wheel", "touchstart", "keydown", "mousedown"] as const;
 
     let done = false;
-    let quiet: number | undefined;
-    let lastHeight = document.documentElement.scrollHeight;
+    const timers: number[] = [];
 
     const finish = () => {
       if (done) return;
       done = true;
-      clearTimeout(quiet);
-      clearTimeout(giveUp);
-      obs.disconnect();
+      timers.forEach(clearTimeout);
       for (const ev of EVENTS) window.removeEventListener(ev, finish);
     };
 
-    const settle = () => {
+    const settle = (isLast: boolean) => {
       if (done) return;
       const el = document.getElementById(id);
       if (!el) return finish();
@@ -86,29 +91,17 @@ export default function HashAnchor() {
       const want = Math.max(0, el.getBoundingClientRect().top + window.scrollY - marginTop);
       // Only correct a real miss — a few pixels is not worth a movement the eye can catch.
       if (Math.abs(window.scrollY - want) > 8) window.scrollTo({ top: want, behavior: "auto" });
-      finish();
+      if (isLast) finish();
     };
 
-    const armQuiet = () => {
-      clearTimeout(quiet);
-      quiet = window.setTimeout(settle, QUIET_MS);
-    };
-
-    // Any DOM change can change the height. Re-measure rather than trust the mutation.
-    const obs = new MutationObserver(() => {
-      if (done) return;
-      const h = document.documentElement.scrollHeight;
-      if (h === lastHeight) return;
-      lastHeight = h;
-      armQuiet();
-    });
-    obs.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
-
-    const giveUp = window.setTimeout(settle, GIVE_UP_MS);
     for (const ev of EVENTS) window.addEventListener(ev, finish, { once: true, passive: true });
 
-    // A fully cached page fires no mutation at all, so start the clock immediately.
-    armQuiet();
+    // Two passes only. The first is after the culprit; the second is a no-op unless the connection
+    // was slow enough that the first one still landed too early. Two moves at most, and in practice
+    // one — nothing like the four-nudge version that hopped.
+    const first = window.setTimeout(() => settle(false), CORRECT_AT_MS);
+    const giveUp = window.setTimeout(() => settle(true), BACKSTOP_MS);
+    timers.push(first, giveUp);
 
     return finish;
   }, []);
