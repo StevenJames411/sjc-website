@@ -95,8 +95,17 @@ textarea { resize: vertical !important; min-height: 76px; }
               transform .3s ease, box-shadow .3s ease;
 }
 /* ⛔ hover:hover or a phone TAP sticks the green on until something else is tapped. */
+/* ⛔ `.sjc-cta` IS REPEATED, AND WITHOUT IT THE HOVER SILENTLY LOST (2026-08-31).
+   `a.sjc-cta:hover` is (0,2,1) — `:hover` is a pseudo-CLASS and counts in the class column, so it
+   ties EXACTLY with the resting colours below (`a.sjc-cta.cta-navy`, `a.sjc-cta.pf-cta`). A tie is
+   broken by source order, and those sit later in this file, so every button carrying a colour class
+   kept its resting background on hover. The portfolio cards were the visible case: green on the old
+   home page, dead navy once they moved to /custom-websites, because the moved markup picked up
+   `pf-cta`. Doubling the class makes this (0,3,1) and puts the hover back on top.
+   ⚠️ A COMPILED `hover:bg-*` utility is still (0,3,0) + pseudo and beats even this — strip those
+   off the markup rather than escalating here again. */
 @media (hover: hover) {
-  a.sjc-cta:hover {
+  a.sjc-cta.sjc-cta:hover {
     background: #22c55e;
     color: #fff;
     border-color: #22c55e;
@@ -105,7 +114,7 @@ textarea { resize: vertical !important; min-height: 76px; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  a.sjc-cta:hover { transform: none; }
+  a.sjc-cta.sjc-cta:hover { transform: none; }
 }
 
 /* Resting colours for the buttons whose background used to be an inline style (an inline style
