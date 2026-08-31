@@ -127,3 +127,29 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 .cta-white  { background: #ffffff; color: #1c3a6e; }
 .cta-yellow { background: #FFEB3B; color: #12263f; }
 .pf-cta     { background: #12263f; color: #fff; }
+
+/* ⭐ THE SECTION LABEL — the line that opens a topic ("Start here", "The problem", "How it works").
+   The bought design shipped it at 11px/400, sitting directly on top of a 41px heading. Steven,
+   looking at it: *"the start here is like fucking 10 font on top of an H1 tag… so I don't have to
+   manually go to ten pages and change it in five sections."*
+
+   ⛔ A SITE-WIDE LAW BELONGS IN CODE, NOT IN 59 CONTENT FIELDS. There are 59 of these across nine
+   pages; setting a size on each one by hand would leave the next imported page wrong again and give
+   the next person 59 places to disagree with each other.
+
+   ⚠️ `.label.label` IS DELIBERATE — the class is repeated to reach (0,3,0). Each design's sheet is
+   SCOPED at import, so its own rule ships as `.sjc-design-<id> .label` = (0,2,0); a single class
+   here is (0,1,0) and loses silently, which is exactly how the CTA text colour was lost above.
+
+   ⚠️ `.eyebrow` IS NOT TOUCHED. That is the pill in the hero, and Steven ruled the pill size fine.
+   Letter-spacing drops from the design's 0.24em to 0.06em because tracking that reads as "small
+   caps label" at 11px reads as broken word-spacing at 24px. */
+.sjc-design .label.label {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+@media (max-width: 640px) {
+  .sjc-design .label.label { font-size: 19px; }
+}
