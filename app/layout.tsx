@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
+import HashAnchor from "@/components/HashAnchor";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
@@ -129,7 +130,8 @@ const ibmPlex = localFont({
   variable: "--font-ibm-plex",
   display: "swap",
   preload: true,
-  // ⛔ THIS IS THE FIX FOR THE #ANCHOR BUG. Not the images, not the calendar — the FONT.
+  // ⛔ THE SITE PRELOADED THE WRONG FONT. This is worth fixing on its own merits; it did NOT
+  // fix the #anchor bug, which is corrected in components/HashAnchor.tsx and still unexplained.
   //
   // Every character on this site is IBM Plex. The page was preloading five weights of Space
   // Grotesk, which nothing draws in any more, and never preloading this. With `display: swap` the
@@ -277,6 +279,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         <EditLink />
+        <HashAnchor />
       </body>
     </html>
   );
