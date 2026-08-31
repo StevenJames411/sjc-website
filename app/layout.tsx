@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
+import HashAnchor from "@/components/HashAnchor";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
@@ -107,7 +108,23 @@ const spaceGrotesk = localFont({
   display: "swap",
 });
 
-const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans, spaceGrotesk]
+// ⭐ THE PILL AND THE SECTION LABEL FONT — chosen for ONE letter. Steven, on "YOUR AI EMPLOYEE":
+// *"the I could also pass for a capital letter L."* Space Grotesk, Inter, Lexend, Montserrat and
+// Source Sans all draw the capital I as a bare vertical post, so "AI" reads as "AL" at a glance.
+// Playfair fixes the letter but was rejected on sight at 11px: *"it's hard to read the words,
+// so I don't want to go that direction."* IBM Plex Sans is the resolution — a plain modern sans
+// that is readable small AND puts crossbars top and bottom on the capital I.
+//
+// ⚠️ ONE FILE, WEIGHT RANGE "400 700" — this is a VARIABLE font. Google's css2 endpoint hands back
+// the SAME woff2 for every weight you ask for (all four downloads were byte-identical by md5).
+// Listing it four times would ship the same 40KB four times over.
+const ibmPlex = localFont({
+  src: [{ path: "./fonts/ibm-plex-sans.woff2", weight: "400 700", style: "normal" }],
+  variable: "--font-ibm-plex",
+  display: "swap",
+});
+
+const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans, spaceGrotesk, ibmPlex]
   .map((f) => f.variable).join(" ");
 
 // The site-wide safety net. Every real page now builds its own metadata from its Page Settings
@@ -230,6 +247,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         <EditLink />
+        <HashAnchor />
       </body>
     </html>
   );

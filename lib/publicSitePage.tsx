@@ -60,6 +60,10 @@ export function propOf(node: unknown, type: string, prop: string): string | null
 }
 
 /** First absolute photo on the page — the link-preview image when none was chosen. */
+// A share card needs a picture file, not merely an absolute URL. Query strings are common on
+// blob/CDN links, so the extension is matched before any `?`.
+const IMAGE_FILE = /\.(jpe?g|png|webp|gif|avif)(\?|#|$)/i;
+
 export function firstImage(node: unknown): string | null {
   if (Array.isArray(node)) {
     for (const child of node) {
@@ -74,7 +78,17 @@ export function firstImage(node: unknown): string | null {
     const src = props.src;
     // Absolute only — a preview card is fetched by Apple/Google/Meta, not by the browser, so a
     // relative path resolves against nothing and the card comes back blank.
-    if (typeof src === "string" && /^https?:\/\//.test(src)) return src;
+    //
+    // ⛔ AND IT MUST ACTUALLY BE AN IMAGE FILE. `src` is not unique to images: a Cal.com booking
+    // embed carries one too, and it sat above the first real picture on /about — so the share card
+    // for that page pointed at https://cal.com/stevenjamesconsulting/discovery, an HTML page. Every
+    // scraper asked for an image, got a web page, and rendered a link with no picture: the preview
+    // that reads as spam. Nothing on the page was wrong and nothing reported it, because a share
+    // card is only ever seen by whoever pastes the link somewhere else.
+    //
+    // ⚠️ KEEP SCANNING, DON'T JUST REJECT. Returning null here would have stopped at the embed and
+    // skipped the real photograph further down the same page.
+    if (typeof src === "string" && /^https?:\/\//.test(src) && IMAGE_FILE.test(src)) return src;
     for (const value of Object.values(props)) {
       const hit = firstImage(value);
       if (hit) return hit;

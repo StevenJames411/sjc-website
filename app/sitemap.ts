@@ -3,6 +3,7 @@ import { resolveHost, publicUrlFor } from "@/lib/host";
 import { reachability } from "@/lib/sitesShared";
 import { readPages } from "@/lib/pageRegistry";
 import { readPuckPublished } from "@/lib/puckContent";
+import { isChrome } from "@/lib/puckPages";
 import { SJC_HOST } from "@/lib/hostShared";
 
 // /sitemap.xml — the map crawlers (and AI indexers) use to find every page worth reading.
@@ -48,8 +49,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // ("home-2", left behind by a re-import) into the sitemap — inviting Google to index an
     // address that serves nothing. A page exists in the builder long before it's meant to be
     // found, and the sitemap is a list of what IS findable.
+    // ⛔ CHROME IS NOT A PAGE, AND IT POISONED THE WHOLE LIST — not just its own row.
+    // The registry begins with `nav` and `footer`. Both are published (they have to be, to render
+    // around every page), so both passed the published filter and took the first two slots. The
+    // `i === 0` front-door rule then handed the bare address to NAV, `/footer` was published to
+    // Google as a real page — it answers 404, because `resolvePage` refuses chrome — and the
+    // actual home page got pushed down to `/home`, a second indexable copy of the front page
+    // competing with it.
+    //
+    // ⚠️ ONE CAUSE, THREE SYMPTOMS. It reads as three separate SEO defects and is a single missing
+    // filter. `resolvePage` has always refused chrome; the sitemap simply never asked.
     const published = await Promise.all(
-      pages.map(async (p) => ((await readPuckPublished(p.slug, h.site.id)) ? p : null))
+      pages
+        .filter((p) => !isChrome(p.slug))
+        .map(async (p) => ((await readPuckPublished(p.slug, h.site.id)) ? p : null))
     );
 
     return published

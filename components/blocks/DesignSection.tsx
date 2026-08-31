@@ -446,10 +446,53 @@ function stripDangerous(html: string): string {
  * band and the copy stayed black on navy. Marking the root lets the guard say "any bg- ancestor
  * EXCEPT this one".
  */
+// Elements that never nest, so the depth counter must not treat them as opening a level.
+const VOID_TAGS = new Set([
+  "area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr",
+]);
+
 function markBandRoot(html: string): string {
-  const tag = html.match(/<([a-z][a-z0-9]*)\b[^>]*>/i);
-  if (!tag || /data-sjc-bandroot/.test(tag[0])) return html;
-  return html.replace(tag[0], tag[0].replace(/>$/, " data-sjc-bandroot>"));
+  let first = true;
+  let rootDepth = -1;
+  let depth = 0;
+  // ⛔ STAMP THE ELEMENTS, DO NOT MAKE CSS GUESS THEM. The previous guard was a nested
+  // `:not([class*="bg-"]:not([data-sjc-bandroot]) *)` — it had to work out, in CSS, which
+  // background-painting ancestor was the band's own root. That is one selector doing two jobs and
+  // it failed both ways round: too greedy and every word on the page was skipped (copy stayed
+  // black on navy), too narrow and a card's own heading was blacked out. Marking each element
+  // here leaves the selector with nothing to infer.
+  return html.replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, (tag, name: string) => {
+    const closing = tag.startsWith("</");
+    const selfClosing = /\/>$/.test(tag) || VOID_TAGS.has(name.toLowerCase());
+
+    if (closing) {
+      depth -= 1;
+      return tag;
+    }
+
+    let out = tag;
+    if (first) {
+      first = false;
+      rootDepth = depth;
+      if (!/data-sjc-bandroot/.test(tag)) out = tag.replace(/\/?>$/, (e) => ` data-sjc-bandroot${e}`);
+    } else if (
+      depth > rootDepth &&
+      // ⛔ A CLASS IS ONLY HALF OF IT. The pricing tiers paint themselves from an INLINE style
+      // (`style="background:#1c3a6e"`), not a `bg-` utility, so a class-only test walked straight
+      // past them: the band repainted their text to its own colour and Tier 2 and Tier 3 lost
+      // their words into their own card. Checked live on 2026-08-31 — contrast 1.27:1.
+      (/class\s*=\s*(["'])[^"']*\bbg-/i.test(tag) ||
+        /style\s*=\s*(["'])[^"']*background(-color)?\s*:/i.test(tag))
+    ) {
+      // ⚠️ Anything BELOW the root that paints its own background is a card, a callout or a
+      // pricing tier. It already carries text colours chosen against that background, so the
+      // band must not repaint inside it — that is how white text landed on white cards.
+      if (!/data-sjc-ownbg/.test(tag)) out = tag.replace(/\/?>$/, (e) => ` data-sjc-ownbg${e}`);
+    }
+
+    if (!selfClosing) depth += 1;
+    return out;
+  });
 }
 
 export function injectStyle(html: string, decls: string): string {
@@ -632,11 +675,13 @@ function bandCss(id: string, band?: string): string {
   // Repeated to clear the design's own scoped utilities, which ship as
   // `.sjc-design-<id> .text-black` — specificity (0,2,0). One attribute selector is (0,1,0).
   const at = `[data-sjc-band="${id}"][data-sjc-band][data-sjc-band]`;
-  // ⛔ `:not([class*="bg-"] *)` IS LOAD-BEARING. An imported band routinely holds a card painting
-  // its own background with the right text colour already on it — this site's feature band has one
-  // on `bg-[#3b7fb8]`. Repainting the whole band would black that card's heading out.
-  // "a descendant of any bg- element OTHER than the band's own root"
-  const safe = ':not([class*="bg-"]:not([data-sjc-bandroot]) *)';
+  // ⛔ SKIP ANYTHING THAT PAINTS ITS OWN BACKGROUND. An imported band routinely holds a card with
+  // its own background and its own text colours already correct — pricing tiers and portfolio
+  // cards both do. Repainting inside one puts white text on a white card and the words disappear;
+  // that is why this feature was switched off between 08-31 and now.
+  // `markBandRoot` stamps those elements `data-sjc-ownbg`, so the selector states a fact instead
+  // of inferring one: skip the element itself and everything under it.
+  const safe = ':not([data-sjc-ownbg]):not([data-sjc-ownbg] *)';
   return (
     `${at} :is(p,li,blockquote,span)${safe}{color:${def.body} !important}` +
     `${at} :is(h1,h2,h3,h4,strong,b)${safe}{color:${def.head} !important}`

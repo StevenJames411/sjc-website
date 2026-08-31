@@ -17,7 +17,11 @@
   --color-sjc-highlight: #f59e0b;
   --color-sjc-white: #ffffff;
 
-  --font-sans: var(--font-lexend), ui-sans-serif, system-ui, -apple-system,
+  /* ⭐ ONE FACE FOR THE WHOLE SITE. Steven: *"the company name stays one look. All the other
+     font goes to the other one."* Was Lexend, whose capital I is a bare vertical post — the same
+     defect that took three passes to chase out of the sealed pages. Setting it HERE means a page
+     built later inherits the right face instead of becoming the fourth place to fix. */
+  --font-sans: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -91,8 +95,17 @@ textarea { resize: vertical !important; min-height: 76px; }
               transform .3s ease, box-shadow .3s ease;
 }
 /* ⛔ hover:hover or a phone TAP sticks the green on until something else is tapped. */
+/* ⛔ `.sjc-cta` IS REPEATED, AND WITHOUT IT THE HOVER SILENTLY LOST (2026-08-31).
+   `a.sjc-cta:hover` is (0,2,1) — `:hover` is a pseudo-CLASS and counts in the class column, so it
+   ties EXACTLY with the resting colours below (`a.sjc-cta.cta-navy`, `a.sjc-cta.pf-cta`). A tie is
+   broken by source order, and those sit later in this file, so every button carrying a colour class
+   kept its resting background on hover. The portfolio cards were the visible case: green on the old
+   home page, dead navy once they moved to /custom-websites, because the moved markup picked up
+   `pf-cta`. Doubling the class makes this (0,3,1) and puts the hover back on top.
+   ⚠️ A COMPILED `hover:bg-*` utility is still (0,3,0) + pseudo and beats even this — strip those
+   off the markup rather than escalating here again. */
 @media (hover: hover) {
-  a.sjc-cta:hover {
+  a.sjc-cta.sjc-cta:hover {
     background: #22c55e;
     color: #fff;
     border-color: #22c55e;
@@ -101,7 +114,7 @@ textarea { resize: vertical !important; min-height: 76px; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  a.sjc-cta:hover { transform: none; }
+  a.sjc-cta.sjc-cta:hover { transform: none; }
 }
 
 /* Resting colours for the buttons whose background used to be an inline style (an inline style
@@ -154,59 +167,147 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   .sjc-design .label.label { font-size: 19px; }
 }
 
-/* ⭐ THE BOUGHT DESIGN'S OWN TYPEFACES — Space Grotesk for headings, Inter for body.
-   Steven: *"whatever we pulled in from SiteDrop had the font that I liked."* He was right that it
-   changed, and it was not a choice anybody made.
+/* ⭐ THE WHOLE SEALED PAGE IS IBM PLEX SANS, AND IT IS STILL THE SAME ONE LETTER.
+   Steven, on his third pass over the same defect: *"we still have not addressed the font family.
+   These two sections have the capital I with no crossbars."* He was pointing at an H2 ("You will
+   not be replaced by AI.") and at body copy ("businesses implementing AI now") — a heading and a
+   paragraph, not the pill and not the label.
 
-   ⛔ WHY THEY WENT MISSING. The design declared its fonts in the ORIGINAL PAGE'S <head> — a Google
-   Fonts <link> plus `font-family:'Space Grotesk'` / `'Inter'` rules. lib/importDesign keeps the
-   markup and compiles the stylesheet, but a <head> never survives an import, so the pages came
-   across with no typeface of their own and quietly inherited the app's Lexend/Lato/Poppins.
+   ⛔ THE EARLIER FIXES WERE TOO NARROW, AND THAT IS THE LESSON. The pill got fixed, then the
+   section label got fixed, and each time the word "AI" simply reappeared in the next element that
+   had not been named. `.eyebrow` and `.label` were never the problem — the WORD is, and it appears
+   in every kind of text on the page.
 
-   ⚠️ AND THAT IS WHAT MADE THE CAPITAL I AMBIGUOUS. Steven, on the "YOUR AI EMPLOYEE" pill: *"the
-   I could also pass for a capital letter L because the font family gives no stylization."* Lato and
-   Poppins both draw a bare vertical bar. Space Grotesk's I is narrower and sits in a distinctly
-   tighter, more mechanical face, which is the look he bought.
+   ⛔ THE TRADE IS REAL AND IT HAS NO MIDDLE. Space Grotesk (the bought design's headings) and Inter
+   (its body) BOTH draw the capital I as a bare vertical post. No weight, size or tracking changes
+   that; it is how the glyph is drawn. So the page can keep Space Grotesk headlines OR it can read
+   "AI" unambiguously — not both. Steven raised the I three times and the headline face once, so
+   the letter wins.
 
-   Both faces are already loaded by app/layout.tsx (--font-space-grotesk, --font-inter) — nothing new
-   is fetched. Scoped to `.sjc-design` so the LandingSite home page keeps its own type. */
+   ⚠️ THIS REPLACES the earlier split (Space Grotesk headings + Inter body) that was restored on
+   08-30 to recover the SiteDrop look. That restoration was correct at the time and is superseded
+   here on his explicit, repeated instruction — not quietly reverted.
+
+   Scoped to `.sjc-design` so any non-sealed page keeps the app's own type. One rule covers all ten
+   imported sheets, and any design imported later. */
 .sjc-design,
 .sjc-design p,
 .sjc-design li,
+.sjc-design a,
+.sjc-design b,
+.sjc-design strong,
 .sjc-design .lede,
-.sjc-design .label {
-  font-family: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
-}
+.sjc-design .big,
+.sjc-design .btn,
 .sjc-design h1,
 .sjc-design h2,
 .sjc-design h3,
 .sjc-design h4,
-.sjc-design .big,
-.sjc-design .btn {
-  font-family: var(--font-space-grotesk), "Space Grotesk", var(--font-inter), sans-serif;
+.sjc-design h5,
+.sjc-design h6 {
+  font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ⭐ THE PILL IS PLAYFAIR, AND THE REASON IS ONE LETTER.
-   Steven, on "YOUR AI EMPLOYEE": *"the I could also pass for a capital letter L because the font
-   family gives no stylization on the letter I."* He is right, and it is not fixable by size or
-   weight — Space Grotesk, Inter, Lexend, Montserrat and Source Sans all draw the capital I as a
-   bare vertical bar, so "AI" reads as "AL" at a glance. Rendered side by side, only Playfair,
-   Merriweather, Verdana and Tahoma put crossbars on it.
-   Playfair wins on two counts: it is the face already carrying the wordmark he approved, so the
-   pill echoes the mark instead of introducing a fourth typeface; and Verdana/Tahoma would date the
-   page. `font-variant:small-caps` matches the wordmark exactly — it is the alphabet, not just the
-   family, that gives the mark its look, and the pill now echoes it without any copy changing. */
+/* ⭐ THE PILL AND THE SECTION LABEL ARE IBM PLEX SANS, AND THE REASON IS ONE LETTER.
+   Steven, on the "YOUR AI EMPLOYEE" pill: *"the I could also pass for a capital letter L because
+   the font family gives no stylization on the letter I."* He is right, and it cannot be fixed with
+   size, weight or tracking — Space Grotesk, Inter, Lexend, Montserrat and Source Sans ALL draw the
+   capital I as a bare vertical post, so "AI" reads as "AL" at a glance.
+
+   ⛔ THE OBVIOUS FIX IS THE WRONG ONE. Playfair — the wordmark's own face — puts crossbars on the I
+   and shipped for about ten minutes. Steven, looking at it live: *"when you put that font in the
+   pill, whatever that is, it's hard to read the words, so I don't want to go that direction. All
+   the fancy fonts make the letters too small."* A serif at 11px buys the letter and loses the word.
+
+   ⭐ THE TRADE IS REAL AND IT DOES NOT HAVE A WINNER ON BOTH SIDES: matching the wordmark means a
+   serif, and a serif is unreadable at this size. So the mark stays serif and the page stays sans —
+   which is what a logo is SUPPOSED to do. IBM Plex Sans is the sans that gets closest: plain,
+   modern, readable at 11px, and its capital I carries crossbars top and bottom. Those crossbars
+   are themselves a serif detail, which is why it sits under the Playfair mark without clashing.
+
+   ⚠️ .label IS INCLUDED ON PURPOSE, NOT AS A BONUS. The pill is `.eyebrow`; the section opener
+   ("ARTIFICIAL INTELLIGENCE ADOPTION") is `.label` — a different class, so the first attempt fixed
+   the pill and left the label wrong, which is exactly what Steven spotted in the screenshot. Both
+   are set here, in one place, because the alternative is 59 content fields across ten pages:
+   *"so I don't have to manually go to ten pages and change it in five sections."*
+
+   ⚠️ THE CLASS IS DOUBLED (`.label.label`, `.eyebrow.eyebrow`) TO REACH (0,3,0). Each design's
+   sheet is SCOPED at import, so its own rule ships as `.sjc-design-<id> .label` = (0,2,0); a single
+   class here is (0,1,0) and loses SILENTLY. That is the same specificity loss that ate the CTA text
+   colour further up this file. */
 .sjc-design .eyebrow,
-.sjc-design .eyebrow.eyebrow {
-  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
-  font-variant: small-caps;
-  font-weight: 600;
-  letter-spacing: 0.09em;
+.sjc-design .eyebrow.eyebrow,
+.sjc-design .label.label {
+  font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
+
+/* ⭐ EVERY PILL IS THE SAME PILL, WHATEVER SECTION IT LANDS IN.
+   Steven, with both in one screenshot: *"this screenshot shows you the two different pill sizes…
+   making everything the same."* He was right that they differed and right that it was not the text
+   — measured, both read 11px from the same sealed sheet with the same 9px/18px padding, yet the
+   capsules rendered 46px and 38px tall.
+
+   ⛔ THE CAUSE IS THE LINE BOX, NOT THE PILL. `.eyebrow` is `inline-flex`, so its height is set by
+   the strut of whatever line box it sits in — the hero band and the video band hand down different
+   ones. Nothing ON the pill was different, which is why every property comparison came back
+   identical and the difference was still there on screen.
+
+   `line-height: 1` cuts the pill loose from its surroundings: the content box becomes exactly the
+   font size, so the capsule is font-size + padding EVERYWHERE, in any band, on any imported design.
+   That is a fork, not a bouncer — there is no section left that can stretch it.
+
+   ⚠️ 14px, UP FROM THE SEALED 11px. The section label above it is now 24px; 11px underneath read as
+   a caption rather than a kicker, and 11px is where the capital-I problem was hardest to see. 14px
+   keeps the pill clearly subordinate to the 24px label while being readable on a phone. */
+.sjc-design .eyebrow.eyebrow {
+  font-size: 14px;
+  line-height: 1;
+}
+@media (max-width: 640px) {
+  .sjc-design .eyebrow.eyebrow { font-size: 12.5px; }
+}
+
+/* ⛔ THE HEADER AND FOOTER ARE THEIR OWN DOCUMENTS AND DO NOT INHERIT FROM body.
+   They render through lib/publicSitePage.tsx with their own scoped sheet, so the app-wide
+   --font-sans above never reached them — the nav items were still drawing in Inter while every
+   page under them had moved. The `*` is deliberate: the chrome's sheet sets a face on its own
+   inner classes, and a bare `#global-header` would be inherited-over rather than winning.
+
+   ⚠️ THE WORDMARK RULE BELOW MUST OUTRANK THIS, AND IT DOES BY CONSTRUCTION.
+   `#global-header .sjc-mark span` is (1,1,1); `#global-header *` is (1,0,0). The id is equal, the
+   class breaks the tie, so the mark keeps Playfair without needing !important. */
+#global-header,
+#global-header *,
+#global-footer,
+#global-footer * {
+  font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
 /* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
    two rules above, which would otherwise reach it through `.sjc-design`. */
 .sjc-design .sjc-mark span,
 #global-header .sjc-mark span,
 #global-footer .sjc-mark span {
   font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+}
+
+/* ⭐ HOLD THE CALENDAR'S SPACE BEFORE IT LOADS, OR EVERY ANCHOR BELOW IT MISSES.
+   Steven: *"click pricing… it goes to the pricing section, and then jumps up into the calendar."*
+
+   ⛔ THE LINK WAS NEVER WRONG. `/#sl6o1yj` is correct and the target exists. The sequence is:
+   the router scrolls to the anchor using the SERVER-rendered page, and only then does React
+   hydrate and portal the 620px calendar in ABOVE it. Everything below shifts down ~646px; the
+   scroll position does not follow. Measured on the live page — anchor at 8348, browser parked
+   at 7702, calendar filling the screen.
+
+   ⚠️ CalEmbed ALREADY reserves this height, and that is not enough: its reservation is a React
+   inline style, so it exists only after hydration — after the scroll has happened. The space has
+   to be there in the first paint, which means CSS.
+
+   ⛔ AND IT MUST RELEASE ITSELF, or it becomes the slab of white it was written to prevent. Cal
+   sizes its own iframe (570px live) and a fixed floor underneath would leave a gap. `:not(:has(
+   iframe))` drops the floor the instant the calendar arrives — no timer, no observer, nothing to
+   mis-sequence. → the same fork-not-bouncer reasoning as the band guard. */
+[data-sjc-cal]:not(:has(iframe)) {
+  min-height: 620px;
 }

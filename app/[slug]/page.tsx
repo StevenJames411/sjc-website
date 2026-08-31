@@ -41,11 +41,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!r) return {};
   // On the studio this segment is a whole SITE, so its canonical is that site's bare address. On
   // a customer's domain it's a PAGE of theirs, so it hangs off their root.
+  // ⛔ CANONICALISE TO WHERE THE CONTENT LIVES (`r.slug`), NOT TO WHAT WAS TYPED (`slug`).
+  // `resolvePage` follows a rename's redirect record and RENDERS the target at the old address, on
+  // purpose, so links already texted or indexed keep answering. But the canonical was built from
+  // the requested slug, so the old address declared ITSELF canonical — two URLs, identical content,
+  // each claiming to be the original. That is the duplicate Google penalises, and it is created by
+  // the very feature meant to protect the old link.
+  //
+  // ⚠️ FOR EVERY NORMAL PAGE `r.slug === slug`, so this changes nothing. It only differs on a page
+  // reached through a redirect record — exactly where it should. Found when /hiring was renamed to
+  // /careers on 2026-08-31 and both answered 200, each self-canonical.
   const canonical =
     h.kind === "studio"
       ? publicUrlFor(r.site)
       : h.kind === "client"
-        ? publicUrlFor(r.site, slug, false)
+        ? publicUrlFor(r.site, r.slug, false)
         : undefined;
   return metadataFor(r, `/${slug}`, canonical);
 }
