@@ -22,6 +22,7 @@ const lexend = localFont({
   ],
   variable: "--font-lexend",
   display: "swap",
+  preload: false,
 });
 
 // The curated brand fonts. next/font is build-time, so the set is fixed on purpose —
@@ -38,6 +39,7 @@ const inter = localFont({
   ],
   variable: "--font-inter",
   display: "swap",
+  preload: false,
 });
 const poppins = localFont({
   src: [
@@ -49,6 +51,7 @@ const poppins = localFont({
   ],
   variable: "--font-poppins",
   display: "swap",
+  preload: false,
 });
 const montserrat = localFont({
   src: [
@@ -61,6 +64,7 @@ const montserrat = localFont({
   ],
   variable: "--font-montserrat",
   display: "swap",
+  preload: false,
 });
 const merriweather = localFont({
   src: [
@@ -70,6 +74,7 @@ const merriweather = localFont({
   ],
   variable: "--font-merriweather",
   display: "swap",
+  preload: false,
 });
 const playfair = localFont({
   src: [
@@ -93,6 +98,7 @@ const sourceSans = localFont({
   ],
   variable: "--font-source-sans",
   display: "swap",
+  preload: false,
 });
 // Added for bought designs, which routinely pair a display face with a plain body face.
 const spaceGrotesk = localFont({
@@ -105,6 +111,7 @@ const spaceGrotesk = localFont({
   ],
   variable: "--font-space-grotesk",
   display: "swap",
+  preload: false,
 });
 
 // ⭐ THE PILL AND THE SECTION LABEL FONT — chosen for ONE letter. Steven, on "YOUR AI EMPLOYEE":
@@ -121,6 +128,15 @@ const ibmPlex = localFont({
   src: [{ path: "./fonts/ibm-plex-sans.woff2", weight: "400 700", style: "normal" }],
   variable: "--font-ibm-plex",
   display: "swap",
+  preload: true,
+  // ⛔ WITHOUT A METRIC-MATCHED FALLBACK, `swap` REFLOWS THE WHOLE PAGE.
+  // Every character on this site is IBM Plex. On a cold load the text drew in the system
+  // font, the browser jumped to the #anchor using THOSE line heights, then the real font
+  // arrived and every line re-flowed — the page grew 566px above the target and the
+  // scroll stayed put. Exactly 566 on every load, because it is deterministic, not timing.
+  // `adjustFontFallback` scales the fallback so the two layouts are the same height.
+  adjustFontFallback: "Arial",
+  fallback: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "Arial", "sans-serif"],
 });
 
 const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans, spaceGrotesk, ibmPlex]
