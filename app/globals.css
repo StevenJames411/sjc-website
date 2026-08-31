@@ -533,37 +533,74 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   }
 }
 
-/* ⭐ THE MOBILE DRAWER LETS THE PAGE SHOW THROUGH. THE BLUE BAR ABOVE IT DOES NOT.
-   Steven: *"On mobile, I think I want to do the transparent instead of that blue drop-down
-   background color… I don't want to go as transparent as the truck build or the landscaper."*
+/* ⭐ THE MOBILE MENU IS A FULL-SCREEN OVERLAY WITH CAPSULE BUTTONS, LIKE THE CLIENT BUILDS.
+   Steven, holding SJC's drawer next to the Phenomenon and Texas Best demos: *"what we have now
+   looks like shit compared to what we built for other people… I don't mind having mine look just
+   like those other two."*
 
-   ⛔ THE DRAWER HAS NO BACKGROUND OF ITS OWN — measured, `rgba(0,0,0,0)`. What paints it is the
-   HEADER, which grows to contain it when it opens. So there is nothing to make translucent on the
-   drawer itself, and making the header translucent would take the solid blue bar with it.
+   What those two do and this now does: the page stays visible behind a dimmed blur, the links
+   become big centred capsules with a hairline in the brand's accent, and the bar stays put so the
+   same button that opened it closes it.
 
-   A gradient with a hard stop solves it in one declaration: solid to 68px — the measured height of
-   the closed bar at every width below the breakpoint — then translucent from there down. The bar
-   keeps its colour, everything the drawer occupies shows the page beneath.
+   ⚠️ IT STARTS AT 68px, NOT AT 0. Covering the whole viewport would bury the header — and the
+   header holds the only control that closes this. Texas Best and Phenomenon both keep their bar
+   for exactly that reason. 68px is the measured bar height, pinned on every phone width.
 
-   ⚠️ 68px IS MEASURED, NOT CHOSEN. 48px of bar plus the 10px `py-2.5` above and below. It holds
-   because the wordmark is `clamp(23px,2.6vw,32px)`, which is pinned at its 23px floor everywhere
-   under 884px — the bar cannot change height on a phone.
+   ⚠️ THE SCRIM IS WHAT MAKES IT READABLE, NOT THE BLUR. Blur alone leaves bright hero photography
+   bright, and gold-on-white fails. The dark navy at 62% guarantees the floor whatever is behind
+   it; the blur only stops the detail competing.
 
-   ⚠️ THE `backdrop-filter` IS WHAT KEEPS IT READABLE. At 72% alpha over a busy hero the menu text
-   would fight the photo behind it; blurring what shows through keeps the page visible as colour
-   and shape rather than as competing detail.
+   ⚠️ `position: fixed` ON A CHILD OF THE HEADER IS FINE HERE because nothing above it creates a
+   containing block — no transform, filter or perspective on the header. `backdrop-filter` on the
+   header would have created one and broken this, which is why the translucency it used to carry
+   was removed rather than kept alongside.
 
-   ⚠️ THE rgba() LINE IS A FALLBACK AND MUST COME FIRST. `color-mix` follows the brand variable, so
-   a re-skin carries the drawer with it; a browser too old for `color-mix` keeps the literal above
-   rather than dropping the rule and rendering the drawer fully transparent. */
+   ⚠️ SCROLLS RATHER THAN SHRINKS. Fourteen links do not fit a phone at a 52px tap target, and
+   shrinking the capsules to fit is how a menu becomes hard to hit. `overflow-y:auto` with
+   momentum scrolling keeps the target size and lets the list run. */
 @media (max-width: 1023px) {
-  #global-header {
-    background: linear-gradient(var(--primary-color) 0 68px, rgba(30, 61, 145, 0.72) 68px);
-    background: linear-gradient(
-      var(--primary-color) 0 68px,
-      color-mix(in srgb, var(--primary-color) 72%, transparent) 68px
-    );
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
+  #global-header [data-landingsite-mobile-menu] {
+    position: fixed;
+    inset: 68px 0 0 0;
+    z-index: 70;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 22px 34px;
+    background: rgba(10, 14, 39, 0.62);
+    -webkit-backdrop-filter: blur(9px);
+    backdrop-filter: blur(9px);
+  }
+  #global-header [data-landingsite-mobile-menu] > div {
+    align-items: stretch;
+    max-width: 380px;
+    margin: 0 auto;
+    gap: 11px;
+  }
+  /* the links become the capsules */
+  #global-header [data-landingsite-mobile-menu] a {
+    display: block;
+    padding: 14px 20px !important;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.55);
+    border-radius: 999px;
+    background: rgba(10, 14, 39, 0.45);
+    color: var(--accent2-color, #ffd700) !important;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  #global-header [data-landingsite-mobile-menu] a:hover,
+  #global-header [data-landingsite-mobile-menu] a:focus {
+    background: var(--accent2-color, #ffd700);
+    border-color: var(--accent2-color, #ffd700);
+    color: var(--primary-color) !important;
+  }
+  /* ⚠️ THE SUB-INDENT IS UNDONE ON PURPOSE — it was for a flat list, and it makes centred
+     capsules look misaligned by 15px. */
+  #global-header [data-landingsite-mobile-menu] a.sjc-sub { padding-left: 20px; }
+  #global-header [data-landingsite-mobile-menu] .sjc-mgroup {
+    text-align: center;
+    padding: 18px 0 4px;
+    color: rgba(255, 255, 255, 0.6);
   }
 }
