@@ -518,16 +518,17 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   .sjc-design.sjc-design [data-sjc-hero-split] {
     grid-template-columns: 3fr 1fr;
   }
-  /* ⚠️ A FIXED WIDTH, NOT A PERCENTAGE — AND THAT IS THE WHOLE POINT OF THIS SECOND PASS.
-     The photo shipped as `w-1/2`, so at the old half-page column it drew 300px. Narrowing the
-     column to a quarter and setting `width:100%` drew 300px again: I had only changed what the
-     300 was a percentage OF. Steven, correctly: *"the photo is still the same size… you could
-     make the image smaller, not the column."* 220px is a size, so it cannot follow the column
-     anywhere. The button matches it so the two read as one stack rather than a photo floating
-     over a wider bar. */
-  .sjc-design.sjc-design [data-sjc-hero-split] img,
+  /* ⛔ THE PHOTO IS DELIBERATELY NOT SIZED HERE — THE PANEL OWNS IT.
+     The Design Studio already has this control: Photos on this section → **Frame width — % of its
+     column**, alongside Frame shape, Frame height, Shape/crop and Zoom. A hard-coded width here
+     would outrank it and Steven would set the field and watch nothing happen — the same dead
+     control as the padding that was baked into the sealed markup. He asked the right question:
+     *"I thought resizing the image is something I could actually do in the design studio."* He can.
+
+     Only the BUTTON is sized here, because it is a link rather than a photo and has no panel
+     control of its own. It shipped `w-1/2`, which was half of a half-page column; in a
+     quarter-page column that is ~150px, too small to read as the primary action. */
   .sjc-design.sjc-design [data-sjc-hero-split] .sjc-cta {
-    width: 220px;
-    max-width: 100%;
+    width: 100%;
   }
 }
