@@ -194,12 +194,14 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    Merriweather, Verdana and Tahoma put crossbars on it.
    Playfair wins on two counts: it is the face already carrying the wordmark he approved, so the
    pill echoes the mark instead of introducing a fourth typeface; and Verdana/Tahoma would date the
-   page. `font-variant:small-caps` is deliberately NOT used here — the copy is already uppercase,
-   and small-caps on uppercase text does nothing. */
+   page. `font-variant:small-caps` matches the wordmark exactly — it is the alphabet, not just the
+   family, that gives the mark its look, and the pill now echoes it without any copy changing. */
 .sjc-design .eyebrow,
 .sjc-design .eyebrow.eyebrow {
   font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
-  letter-spacing: 0.14em;
+  font-variant: small-caps;
+  font-weight: 600;
+  letter-spacing: 0.09em;
 }
 /* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
    two rules above, which would otherwise reach it through `.sjc-design`. */
