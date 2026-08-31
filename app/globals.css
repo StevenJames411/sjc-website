@@ -302,24 +302,36 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   min-height: 570px;
 }
 
-/* ⭐ THE ACCENT RULE UNDER A HERO HEADLINE DRAWS ONCE, NOT ONCE PER LINE.
-   Steven, with /podcast and /about side by side on a phone: *"the hero section where the blue line
-   just doesn't sit right."*
+/* ⛔ NO RULE UNDER A HERO HEADLINE. THE TWO COLOURS ARE THE DESIGN.
+   Steven, after two passes at making the line behave: *"Get rid of the underline. It's enough to
+   have one line in white text and one line of words in blue text. If we get rid of the underline,
+   I think the problem goes away."*
 
-   ⛔ THE CAUSE IS `em` BEING INLINE, NOT THE BORDER ITSELF. Every sealed hero styles the cyan half
-   of the headline as `h1.big em { border-bottom: 3px solid …; padding-bottom: 6px }`. On a desktop
-   the phrase fits on one line and that reads as one clean rule. On a phone it wraps, and a border
-   on an INLINE box paints under EVERY line fragment — so the phrase gets a rule under each of its
-   two lines, and `padding-bottom` (which adds no height to an inline line box) drops the first one
-   into the top of the second line's text. Nothing is wrong with the copy or the width; the box was
-   simply the wrong kind.
+   THE PROBLEM IT ENDS. Every sealed hero styles the cyan half of the headline as
+   `h1.big em { border-bottom: 3px solid …; padding-bottom: 6px }`. That is a text-width underline
+   only while the phrase fits on one line. On a phone it wraps, and there is no box that draws it
+   correctly:
 
-   `inline-block` makes the phrase one box that wraps INSIDE itself, so there is exactly one bottom
-   edge to draw and the padding finally reserves real space. Six of the ten pages already carried
-   `style="display:inline-block"` pasted onto the tag by hand; /podcast and /about were the two the
-   paste never reached, which is why only those two broke. One rule here is the fork — no page,
-   sealed or imported, can arrive without it again, and the six inline copies are now redundant
-   rather than load-bearing. */
-.sjc-design h1.big em {
-  display: inline-block;
+     • INLINE paints the border under EVERY line fragment, and `padding-bottom` (which adds no
+       height to an inline line box) drops the first rule into the top of the second line's text —
+       the original defect on /podcast and /about, two rules with one through the words.
+     • INLINE-BLOCK gives one rule, but a wrapped shrink-to-fit box is as wide as the COLUMN, so it
+       runs well past the last word. `fit-content`, `max-content`, a table box and a float all
+       resolve the same way; CSS cannot shrink a wrapped box to its longest line, so hugging the
+       text would have meant measuring the last line in JavaScript on every resize.
+
+   Deleting the rule removes the whole class of problem instead of managing it — a fork, not a
+   bouncer. Six pages carry `style="display:inline-block"` pasted onto the tag by hand; those are
+   inert now rather than load-bearing, and nothing has to be un-pasted.
+
+   ⚠️ THE PADDING GOES WITH IT. The 6px only ever existed to hold the rule off the words; left
+   behind it is a gap under one half of a headline and nothing under the other.
+
+   ⚠️ `.sjc-design.sjc-design` IS DELIBERATE, the same trick as `.label.label` above: each design's
+   sheet ships its rule as `.sjc-design-<id> h1.big em` = (0,2,2) and is injected into the body
+   AFTER this stylesheet is linked, so an equal-specificity rule here loses on order alone. */
+.sjc-design.sjc-design h1.big em,
+.sjc-design.sjc-design h2.big em {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
