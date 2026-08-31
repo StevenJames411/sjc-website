@@ -186,23 +186,39 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   font-family: var(--font-space-grotesk), "Space Grotesk", var(--font-inter), sans-serif;
 }
 
-/* ⭐ THE PILL IS PLAYFAIR, AND THE REASON IS ONE LETTER.
-   Steven, on "YOUR AI EMPLOYEE": *"the I could also pass for a capital letter L because the font
-   family gives no stylization on the letter I."* He is right, and it is not fixable by size or
-   weight — Space Grotesk, Inter, Lexend, Montserrat and Source Sans all draw the capital I as a
-   bare vertical bar, so "AI" reads as "AL" at a glance. Rendered side by side, only Playfair,
-   Merriweather, Verdana and Tahoma put crossbars on it.
-   Playfair wins on two counts: it is the face already carrying the wordmark he approved, so the
-   pill echoes the mark instead of introducing a fourth typeface; and Verdana/Tahoma would date the
-   page. `font-variant:small-caps` matches the wordmark exactly — it is the alphabet, not just the
-   family, that gives the mark its look, and the pill now echoes it without any copy changing. */
+/* ⭐ THE PILL AND THE SECTION LABEL ARE IBM PLEX SANS, AND THE REASON IS ONE LETTER.
+   Steven, on the "YOUR AI EMPLOYEE" pill: *"the I could also pass for a capital letter L because
+   the font family gives no stylization on the letter I."* He is right, and it cannot be fixed with
+   size, weight or tracking — Space Grotesk, Inter, Lexend, Montserrat and Source Sans ALL draw the
+   capital I as a bare vertical post, so "AI" reads as "AL" at a glance.
+
+   ⛔ THE OBVIOUS FIX IS THE WRONG ONE. Playfair — the wordmark's own face — puts crossbars on the I
+   and shipped for about ten minutes. Steven, looking at it live: *"when you put that font in the
+   pill, whatever that is, it's hard to read the words, so I don't want to go that direction. All
+   the fancy fonts make the letters too small."* A serif at 11px buys the letter and loses the word.
+
+   ⭐ THE TRADE IS REAL AND IT DOES NOT HAVE A WINNER ON BOTH SIDES: matching the wordmark means a
+   serif, and a serif is unreadable at this size. So the mark stays serif and the page stays sans —
+   which is what a logo is SUPPOSED to do. IBM Plex Sans is the sans that gets closest: plain,
+   modern, readable at 11px, and its capital I carries crossbars top and bottom. Those crossbars
+   are themselves a serif detail, which is why it sits under the Playfair mark without clashing.
+
+   ⚠️ .label IS INCLUDED ON PURPOSE, NOT AS A BONUS. The pill is `.eyebrow`; the section opener
+   ("ARTIFICIAL INTELLIGENCE ADOPTION") is `.label` — a different class, so the first attempt fixed
+   the pill and left the label wrong, which is exactly what Steven spotted in the screenshot. Both
+   are set here, in one place, because the alternative is 59 content fields across ten pages:
+   *"so I don't have to manually go to ten pages and change it in five sections."*
+
+   ⚠️ THE CLASS IS DOUBLED (`.label.label`, `.eyebrow.eyebrow`) TO REACH (0,3,0). Each design's
+   sheet is SCOPED at import, so its own rule ships as `.sjc-design-<id> .label` = (0,2,0); a single
+   class here is (0,1,0) and loses SILENTLY. That is the same specificity loss that ate the CTA text
+   colour further up this file. */
 .sjc-design .eyebrow,
-.sjc-design .eyebrow.eyebrow {
-  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
-  font-variant: small-caps;
-  font-weight: 600;
-  letter-spacing: 0.09em;
+.sjc-design .eyebrow.eyebrow,
+.sjc-design .label.label {
+  font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
+
 /* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
    two rules above, which would otherwise reach it through `.sjc-design`. */
 .sjc-design .sjc-mark span,
