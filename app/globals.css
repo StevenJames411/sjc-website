@@ -105,7 +105,24 @@ textarea { resize: vertical !important; min-height: 76px; }
 }
 
 /* Resting colours for the buttons whose background used to be an inline style (an inline style
-   beats any stylesheet, so the colour had to move out here for the hover to land at all). */
+   beats any stylesheet, so the colour had to move out here for the hover to land at all).
+
+   ⛔ WRITTEN AS `a.sjc-cta.cta-*`, NOT `.cta-*`, AND THAT IS THE WHOLE FIX (2026-08-30).
+   A bare class is (0,1,0). The sealed design sheet is SCOPED at import, so every one of its
+   utilities ships as `.sjc-design-<id> .something` — (0,2,0) — and quietly out-ranked the colour
+   set here. The $97 card's button therefore drew its navy BACKGROUND from this rule while taking
+   its TEXT colour from the sheet: near-black lettering on a dark navy button, unreadable, and
+   live on the published page. Steven: "two dark colors don't work."
+
+   ⚠️ The background never showed the problem because nothing else was setting one. Only the
+   colour lost, so the bug looked like a design choice rather than a specificity loss.
+   (0,3,0) clears the scoped utility, and matches the reasoning already written above for
+   `a.sjc-cta:hover`. */
+a.sjc-cta.cta-navy   { background: #1c3a6e; color: #fff; }
+a.sjc-cta.cta-white  { background: #ffffff; color: #1c3a6e; }
+a.sjc-cta.cta-yellow { background: #FFEB3B; color: #12263f; }
+a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
+/* Kept for any non-anchor element carrying the class — same values, lower rank. */
 .cta-navy   { background: #1c3a6e; color: #fff; }
 .cta-white  { background: #ffffff; color: #1c3a6e; }
 .cta-yellow { background: #FFEB3B; color: #12263f; }
