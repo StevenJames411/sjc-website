@@ -518,8 +518,16 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   .sjc-design.sjc-design [data-sjc-hero-split] {
     grid-template-columns: 3fr 1fr;
   }
+  /* ⚠️ A FIXED WIDTH, NOT A PERCENTAGE — AND THAT IS THE WHOLE POINT OF THIS SECOND PASS.
+     The photo shipped as `w-1/2`, so at the old half-page column it drew 300px. Narrowing the
+     column to a quarter and setting `width:100%` drew 300px again: I had only changed what the
+     300 was a percentage OF. Steven, correctly: *"the photo is still the same size… you could
+     make the image smaller, not the column."* 220px is a size, so it cannot follow the column
+     anywhere. The button matches it so the two read as one stack rather than a photo floating
+     over a wider bar. */
   .sjc-design.sjc-design [data-sjc-hero-split] img,
   .sjc-design.sjc-design [data-sjc-hero-split] .sjc-cta {
-    width: 100%;
+    width: 220px;
+    max-width: 100%;
   }
 }
