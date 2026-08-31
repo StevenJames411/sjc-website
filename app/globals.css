@@ -295,7 +295,7 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    the box is flat during load and everything under it moves when the real height lands.
    ⚠️ 570px is MEASURED, not chosen. `min-height` only ever adds space, so a taller month view still
    grows the box normally and can never be clipped.
-   ⛔ This is NOT what caused the #anchor bug — that was the font swap, see app/layout.tsx. Reserving
+   ⛔ This is NOT what caused the #anchor bug — that was the font swap, see components/blocks/CalEmbed.tsx. Reserving
    this was tried three ways against that bug and changed nothing. It is kept because it is correct
    on its own merits, not as a fix for something else. */
 [data-sjc-cal] {

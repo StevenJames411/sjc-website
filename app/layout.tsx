@@ -130,7 +130,7 @@ const ibmPlex = localFont({
   display: "swap",
   preload: true,
   // ⛔ THE SITE PRELOADED THE WRONG FONT. This is worth fixing on its own merits; it did NOT
-  // fix the #anchor bug, which is corrected in components/HashAnchor.tsx and still unexplained.
+  // fix the #anchor bug — that was Cal scrolling itself into view; see components/blocks/CalEmbed.
   //
   // Every character on this site is IBM Plex. The page was preloading five weights of Space
   // Grotesk, which nothing draws in any more, and never preloading this. With `display: swap` the
