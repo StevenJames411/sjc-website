@@ -587,7 +587,18 @@ export const BAND_STYLES: Record<string, BandDef> = {
 function bandCss(id: string, band?: string): string {
   const def = BAND_STYLES[String(band || "").trim()];
   if (!id || !def) return "";
-  const at = `[data-sjc-band="${id}"]`;
+  // ⛔ THE ATTRIBUTE IS REPEATED THREE TIMES, AND THAT IS NOT A TYPO.
+  //
+  // The design's compiled sheet is SCOPED at import (lib/designShared:scopeCss), so every one of
+  // its utilities ships as `.sjc-design-<id> .bg-\[\#e5e5e5\]` — specificity (0,2,0). A single
+  // attribute selector is (0,1,0), so `!important` here met `!important` there, lost the tie on
+  // specificity, and the band silently did nothing: the attribute was on the element, the rule was
+  // in the document, and the colour never moved. Repeating the attribute costs nothing and takes
+  // this to (0,3,0), which clears the scoped utility with room to spare.
+  //
+  // ⚠️ `>*` ADDS NOTHING TO SPECIFICITY — the universal selector is worth zero — so the child rule
+  // needs the same tripling as the parent, not one less.
+  const at = `[data-sjc-band="${id}"][data-sjc-band][data-sjc-band]`;
   // The design's own tag sits INSIDE this wrapper and paints its own background, so painting the
   // wrapper alone would leave the band exactly as it was. Both are set.
   const paint =
