@@ -315,6 +315,15 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    ⚠️ 570px IS MEASURED, NOT CHOSEN. The first value was 620 — 50px MORE than the widget, so the
    page SHRANK when the calendar arrived. A reservation that is not the real height is a shift in
    the other direction. */
-[data-sjc-cal]:not([data-cal-ready]) {
+/* ⛔ THE FLOOR IS PERMANENT. IT IS NEVER RELEASED, AND THAT IS THE FIX.
+   Every released version of this rule shifted the page, because release means the box changes size
+   and anything below it moves. `:not(:has(iframe))` released on the EMPTY frame; released on
+   `data-cal-ready` it still stepped from the reserved figure to Cal's real one. The measurement
+   that ended it: the miss was EXACTLY 566px on every single load — warm, cold, clicked, typed.
+   A load-timing problem varies. A constant is deterministic, and 566 against the iframe's measured
+   570 is the calendar, full stop.
+   `min-height` only ever ADDS space, so a taller month view still grows the box normally — it can
+   never clip. 570px is the measured height of the live embed. */
+[data-sjc-cal] {
   min-height: 570px;
 }
