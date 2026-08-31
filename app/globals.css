@@ -546,9 +546,9 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    header holds the only control that closes this. Texas Best and Phenomenon both keep their bar
    for exactly that reason. 68px is the measured bar height, pinned on every phone width.
 
-   ⚠️ THE SCRIM IS WHAT MAKES IT READABLE, NOT THE BLUR. Blur alone leaves bright hero photography
-   bright, and gold-on-white fails. The dark navy at 62% guarantees the floor whatever is behind
-   it; the blur only stops the detail competing.
+   ⚠️ THE PILL IS WHAT MAKES IT READABLE — NOT A SCRIM AND NOT A BLUR. That is the whole trick in
+   the client builds: a solid capsule guarantees its own contrast, which buys the freedom to leave
+   the page sharp behind it. Dimming the page instead is what made this look cheap.
 
    ⚠️ `position: fixed` ON A CHILD OF THE HEADER IS FINE HERE because nothing above it creates a
    containing block — no transform, filter or perspective on the header. `backdrop-filter` on the
@@ -566,9 +566,11 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 0 22px 34px;
-    background: rgba(10, 14, 39, 0.5);
-    -webkit-backdrop-filter: blur(7px);
-    backdrop-filter: blur(7px);
+    /* ⛔ ALMOST NO SCRIM AND NO BLUR — this is the half I had backwards. Steven, pointing at the
+       Texas Best menu: *"I don't mean the pill needs to be transparent."* There the PAGE is sharp
+       and the PILLS are solid; I had blurred the page and hollowed the pills, which is the same
+       two ingredients used the wrong way round. A 20% tint only stops the page glaring. */
+    background: rgba(10, 14, 39, 0.2);
   }
   #global-header [data-landingsite-mobile-menu] > div {
     align-items: stretch;
@@ -586,11 +588,13 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     /* ⛔ NO FILL — Steven: *"I want to see the website under these buttons."* The capsule is the
        outline and nothing else; the page runs straight through it. The shadow is what keeps gold
        legible when a bright part of a photo passes underneath, since no fill is guaranteeing it. */
-    background: transparent;
+    /* SOLID, like the client builds. The pill is what guarantees the text — not a shadow, not a
+       scrim — which is exactly why the page behind it can stay sharp. */
+    background: rgba(8, 12, 32, 0.93);
     color: var(--accent2-color, #ffd700) !important;
     font-weight: 700;
     letter-spacing: 0.01em;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     transition: background 0.2s, border-color 0.2s, color 0.2s;
   }
   #global-header [data-landingsite-mobile-menu] a:hover,
