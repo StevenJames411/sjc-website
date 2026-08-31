@@ -475,7 +475,15 @@ function markBandRoot(html: string): string {
       first = false;
       rootDepth = depth;
       if (!/data-sjc-bandroot/.test(tag)) out = tag.replace(/\/?>$/, (e) => ` data-sjc-bandroot${e}`);
-    } else if (depth > rootDepth && /class\s*=\s*(["'])[^"']*\bbg-/i.test(tag)) {
+    } else if (
+      depth > rootDepth &&
+      // ⛔ A CLASS IS ONLY HALF OF IT. The pricing tiers paint themselves from an INLINE style
+      // (`style="background:#1c3a6e"`), not a `bg-` utility, so a class-only test walked straight
+      // past them: the band repainted their text to its own colour and Tier 2 and Tier 3 lost
+      // their words into their own card. Checked live on 2026-08-31 — contrast 1.27:1.
+      (/class\s*=\s*(["'])[^"']*\bbg-/i.test(tag) ||
+        /style\s*=\s*(["'])[^"']*background(-color)?\s*:/i.test(tag))
+    ) {
       // ⚠️ Anything BELOW the root that paints its own background is a card, a callout or a
       // pricing tier. It already carries text colours chosen against that background, so the
       // band must not repaint inside it — that is how white text landed on white cards.
