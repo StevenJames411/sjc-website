@@ -486,3 +486,34 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     text-align: left;
   }
 }
+
+/* ⭐ THE HOME HERO GIVES THREE QUARTERS TO THE WORDS, NOT TO THE FACE.
+   Steven: *"my photo and the booking CTA link don't need to be half the page. My photo could be
+   much smaller, so let's give three-quarters of that hero section to the words, not my face."*
+
+   ⛔ WHY THIS IS NOT A CLASS CHANGE. This hero came in from a different builder and is styled with
+   Tailwind utilities (`grid lg:grid-cols-2`). Our Tailwind compiles by scanning SOURCE FILES, and
+   imported markup lives in the database — so writing `lg:grid-cols-4 lg:col-span-3` into it
+   produces exactly nothing, silently. Only classes that were already in the markup at import time
+   exist in the compiled sheet.
+
+   ⛔ AND WHY NOT AN INLINE STYLE. `lg:grid-cols-2` IS a media query, and an inline style outranks
+   one — that is the trap that killed the mobile stack on /custom-websites earlier today. The hero
+   is a single column below `lg`, and it has to stay that way.
+
+   So the markup carries a marker ATTRIBUTE (no compilation needed, unique on the site) and the
+   sizing lives here, behind Tailwind's own `lg` breakpoint of 1024px.
+
+   ⚠️ THE PHOTO AND BUTTON GO TO FULL WIDTH OF THEIR COLUMN, and that is not a second opinion — it
+   is arithmetic. They ship as `w-1/2 mx-auto`, so in a quarter-width column they would render at
+   an eighth of the page, about 144px. At 100% of the narrowed column they land near 280px, which
+   is a headshot rather than a thumbnail. */
+@media (min-width: 1024px) {
+  [data-sjc-hero-split] {
+    grid-template-columns: 3fr 1fr;
+  }
+  [data-sjc-hero-split] img,
+  [data-sjc-hero-split] .sjc-cta {
+    width: 100%;
+  }
+}
