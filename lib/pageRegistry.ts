@@ -289,6 +289,29 @@ const ROUTE_FOLDERS = [
   "i", "llms.txt", "share", "v2", "websites",
 ];
 
+/**
+ * ⭐ THE THREE FOLDERS THAT FORWARD INSTEAD OF SHADOWING.
+ *
+ * `apply`, `careers` and `guest` each call `tenantPage(slug)` (lib/sjcRoute.tsx): on any host that
+ * is NOT SJC's own, they resolve and render THAT SITE'S builder page of the same name. So for a
+ * non-SJC site these names are not taken — the route is the delivery mechanism FOR the builder
+ * page, and reserving them makes the guard block the very thing the bridge exists to serve.
+ *
+ * ⛔ HOW IT SURFACED (2026-08-31). stevenjamesconsulting.com now resolves as a TENANT, not as the
+ * legacy "sjc" host. `/careers` therefore ran the bridge, found no builder page named `careers`,
+ * and returned its 404 — while a page titled "Careers" sat live at `/hiring` and the nav pointed
+ * there. Renaming it to `careers` was refused by this guard even though the bridge would have
+ * served it correctly.
+ *
+ * ⛔ MEMBERSHIP IS NOT COSMETIC. A folder belongs here ONLY if its page.tsx calls `tenantPage`.
+ * One that does not would genuinely shadow the builder page and take the name away from every
+ * site on the deployment — the exact bug lib/sjcRoute.tsx opens by describing. `api`, `i`,
+ * `share`, `v2`, `websites` have no page.tsx at all and `edit` is static: none may be added.
+ * scripts/check-route-folders.mjs already fails the build on an unwired folder, which is what
+ * keeps this list honest.
+ */
+const BRIDGED_FOLDERS = new Set(["apply", "careers", "guest"]);
+
 // Static segments under /edit/<site>/ — a page with one of these slugs would be shadowed in the
 // builder by the route of the same name and become uneditable.
 // ⚠️ ADD A SEGMENT HERE THE MOMENT YOU ADD ONE UNDER /edit/[site]/. A static segment WINS over
@@ -325,7 +348,9 @@ async function reservedSlugs(siteId: string): Promise<Set<string>> {
     // idea which site is being served, so a static segment shadows a client's page just as surely
     // as it shadows SJC's. PUCK_PAGES stays SJC-only: those are SJC's own built-in pages, and the
     // ones that would actually collide (`about`, `podcast`) are route folders anyway.
-    ...ROUTE_FOLDERS,
+    // ⚠️ BRIDGED folders are reserved on SJC's own site only. Everywhere else the route forwards
+    // to the builder page of that name rather than shadowing it — see BRIDGED_FOLDERS above.
+    ...ROUTE_FOLDERS.filter((f) => siteId === SJC || !BRIDGED_FOLDERS.has(f)),
     ...(siteId === SJC ? PUCK_PAGES.map((p) => p.slug) : []),
     ...pages.map((p) => p.slug),
   ]);
