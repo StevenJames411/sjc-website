@@ -13,7 +13,7 @@
 
 export type BrandFont =
   | "lexend" | "inter" | "poppins" | "montserrat"
-  | "merriweather" | "playfair" | "sourceSans" | "spaceGrotesk";
+  | "merriweather" | "playfair" | "sourceSans" | "spaceGrotesk" | "ibmPlex";
 
 export type Brand = {
   /**
@@ -207,6 +207,7 @@ export const FONT_VAR: Record<BrandFont, string> = {
   playfair: "--font-playfair",
   sourceSans: "--font-source-sans",
   spaceGrotesk: "--font-space-grotesk",
+  ibmPlex: "--font-ibm-plex",
 };
 
 
@@ -247,6 +248,13 @@ export const FONT_SETS: FontSet[] = [
   { key: "friendly",    label: "Friendly",     note: "Warm and approachable",      heading: "poppins",      body: "inter" },
   { key: "corporate",   label: "Corporate",    note: "Established and solid",      heading: "montserrat",   body: "sourceSans" },
   { key: "classic",     label: "Classic",      note: "Traditional, trustworthy",   heading: "merriweather", body: "inter" },
+  /* ⭐ ONE FACE, HEADING AND BODY THE SAME, AND THAT IS THE POINT — Steven: *"we need some damn
+     uniformity."* Every other set here PAIRS two faces; this one deliberately does not, so a site
+     wearing it cannot drift into a second typeface as sections are added.
+     ⚠️ IBM Plex is the face whose capital I carries crossbars, which is why it was chosen — see
+     the note on `.eyebrow` in globals.css. Every other option in this file draws the I as a bare
+     post, so "AI" reads as "AL". */
+  { key: "uniform",     label: "Uniform",      note: "One face everywhere — clearest \"AI\"", heading: "ibmPlex",      body: "ibmPlex" },
 ];
 
 /**
@@ -268,6 +276,7 @@ export function fontsForSet(key: string, brand: Brand): { font: BrandFont; headi
 }
 
 export const FONTS: { value: BrandFont; label: string; note: string }[] = [
+  { value: "ibmPlex",      label: "IBM Plex Sans",    note: "One face everywhere — the capital I has crossbars" },
   { value: "lexend",       label: "Lexend",           note: "Current — clean, highly readable" },
   { value: "inter",        label: "Inter",            note: "Neutral, modern, very safe" },
   { value: "poppins",      label: "Poppins",          note: "Rounded, friendly" },
