@@ -400,3 +400,22 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 .sjc-design.sjc-design .band--hero .lede {
   max-width: none;
 }
+
+/* ⭐ THE HERO VIDEO HOLDS ITS OWN SHAPE BEFORE IT LOADS.
+   The AI page's explainer moved out of its own section and into the right column of the hero
+   (Steven merged two pages, so the section under it was saying the same thing twice).
+
+   ⛔ WITHOUT THIS THE BOX IS 507×151 UNTIL METADATA ARRIVES, then snaps to 507×285. A `<video>`
+   has no intrinsic size until the file's header lands, so `height:auto` falls back to the HTML
+   default of 150px — a squat black letterbox sitting in the hero on every cold load, and a jump
+   in the fold when it resolves. `aspect-ratio` gives the browser the shape up front and the file
+   only confirms it. **1280×720 is measured with ffprobe against the actual file, not assumed.**
+
+   ⚠️ `margin-top:0` UNDOES A RULE THAT WAS RIGHT WHERE THE VIDEO USED TO LIVE. The sheet ships
+   `.vsl video{margin-top:36px}` to space it under three stacked headlines. In a two-column hero
+   there is nothing above it, so that margin just pushes it off centre from the words beside it. */
+.sjc-design.sjc-design .band--hero .vsl video {
+  aspect-ratio: 16 / 9;
+  height: auto;
+  margin-top: 0;
+}
