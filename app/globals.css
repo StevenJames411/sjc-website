@@ -472,3 +472,17 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 .sjc-design.sjc-design .split:has(.vsl) .vsl {
   margin-top: 28px;
 }
+
+/* ⭐ THE VIDEO COLUMN GOES BACK TO LEFT-JUSTIFIED. THE COLUMN BESIDE IT STAYS CENTRED.
+   Steven, on the centred pass: *"for the left column where the video is, everything in that column
+   needs to do a left justify, then we'll be finished."*
+
+   ⚠️ DESKTOP ONLY, AND THAT IS NOT A GUESS — it is his other instruction, still standing: *"when
+   they stack on a phone, same thing being centered looks better than a wonky left-right
+   justification."* There is no left column on a phone, only a stack, so below 961px the centring
+   above is left alone and this rule never applies. */
+@media (min-width: 961px) {
+  .sjc-design.sjc-design .split:has(.vsl) > :first-child {
+    text-align: left;
+  }
+}
