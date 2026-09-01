@@ -428,6 +428,35 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   .sjc-design.sjc-design .split:has(.shotwrap) .btns {
     justify-content: center;
   }
+  /* ⭐ THE PHOTO BUYS HEIGHT FROM THE BUTTON AND FROM THE FOLD (2026-09-01, Steven: *"I definitely
+     liked the photo taller. It did real work on a desktop… make the CTA a little thinner so the
+     photo's got some more height"*).
+
+     MEASURED before choosing the numbers — hero bottom against the viewport bottom:
+       1440x900  → 126px of the next band showing
+       1512x982  → 208px
+       1728x1080 → 306px
+     Sized for the SMALLEST, because that is the one that can run out. `min-height: 600px` grows
+     the row by 78px and still leaves ~48px of the white band visible at 1440x900 — a deliberate
+     sliver, because a hero that ends exactly on the fold reads as the whole page.
+
+     The button gives back another 14px: 17px of vertical padding is a form-submit button's
+     padding, not a "Book a Call" link's. 10px lands it at 46px tall, which is still well over the
+     44px tap minimum.
+
+     ⚠️ The words column CENTRES rather than stretching now. It is the shorter side once the row is
+     600px, and top-aligned text beside a taller photo leaves a hole under "Available now" — the
+     exact complaint that started this on /about, mirrored. */
+  .sjc-design.sjc-design .split:has(.shotwrap) {
+    min-height: 600px;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) > div:not(:has(.shotwrap)) {
+    align-self: center;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) .btns .btn {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
   .sjc-design.sjc-design .split:has(.shotwrap) .shotwrap,
   .sjc-design.sjc-design .split:has(.shotwrap) .shot {
     height: 100%;
