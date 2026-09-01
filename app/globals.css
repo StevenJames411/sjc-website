@@ -428,6 +428,22 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   justify-content: center;
   z-index: 2;
 }
+/* ⛔ AND THE PILL MUST NOT SPAN THE FRAME ON A PHONE. The sealed design ships
+   `.sjc-design-84b3c11f .btn { width: 100% }` inside its own mobile media query — fine when the
+   button was in flow under the photo, wrong the moment it floats ON it. The phone photo is 263px
+   tall against the desktop's 600px, so a full-width 60px pill covered about a quarter of the frame
+   and sat straight across the review list, which is the part of that screenshot doing the selling.
+   Auto width plus a lower anchor puts it on the hand instead, the same accent it is on a laptop.
+   ⚠️ Unconditional on purpose — the desktop button is already auto width, so this changes nothing
+   above 961px and there is no second breakpoint to keep in sync. */
+.sjc-design.sjc-design .split:has(.shotwrap) .btns .btn {
+  width: auto;
+}
+@media (max-width: 960px) {
+  .sjc-design.sjc-design .split:has(.shotwrap) .btns {
+    bottom: 14px;
+  }
+}
 
 @media (min-width: 961px) {
   .sjc-design.sjc-design .split:has(.shotwrap) {
