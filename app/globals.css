@@ -367,6 +367,19 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     font-size: clamp(29px, 8vw, 40px);
     line-height: 1.2;
   }
+  /* ⭐ AND EVERY SECTION HEADING, FOR THE SAME REASON — MEASURED, NOT GUESSED.
+     A headless pass over all ten public pages at 390x844 (DPR 3, mobile UA) found 44 `h2.sec`
+     headings shipping `clamp(28px, 3.8vw, 44px)` at line-height 1.12. The 3.8vw term falls under
+     the 28px floor below 737px, so a phone renders the same 28px a tablet does — and 31 of those
+     44 wrap to TWO OR THREE lines at that width, 28px of glyphs in a 31.4px box.
+     Two things get fixed at once: the leading opens, and the section heading stops being nearly
+     the same size as the hero above it (31px vs 28px was no hierarchy at all).
+     Lands exactly on 28px at the 640px edge, so nothing jumps at the breakpoint. */
+  .sjc-design.sjc-design h2.sec,
+  .sjc-design.sjc-design h3.sec {
+    font-size: clamp(23px, 6.2vw, 28px);
+    line-height: 1.25;
+  }
 }
 
 /* ⭐ THE CUSTOM-WEBSITES HERO: WORDS GET THE ROOM, AND THE PHOTO IS AS TALL AS THEY ARE.
