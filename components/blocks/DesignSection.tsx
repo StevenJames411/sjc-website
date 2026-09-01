@@ -777,7 +777,14 @@ function columnCss(
  * own frame — and covering is what finally makes zoom and keep-in-view do something on a photo
  * with no Shape set.
  */
-function frameCss(images: DesignImage[]): string {
+// ⛔ SCOPED TO ONE SECTION, BECAUSE IMAGE KEYS ARE ONLY UNIQUE INSIDE ONE. Every design numbers
+// its own photos from i1, so a page routinely carries several `data-sjc-img="i1"` — on the home
+// page it is four: the header logo, the hero portrait, a feature card and the footer brand mark.
+// `.sjc-design` is on ALL of them, so sizing the hero photo silently resized the other three too.
+// Steven, 2026-08-31: *"when I click on that hero section to try to manipulate the size of the
+// photo, it's not working."* It was working — on four elements at once. The section id is already
+// how this file scopes column and band styling; the wrapper grows a matching data-sjc-sec below.
+function frameCss(images: DesignImage[], sectionId: string): string {
   const out: string[] = [];
   for (const img of images || []) {
     const key = String(img?.key || "");
@@ -791,7 +798,7 @@ function frameCss(images: DesignImage[]): string {
     const z = typeof img?.zoom === "number" && img.zoom > 100 ? img.zoom : 100;
     if (!shape && !h && !w && !band && !bandCol && !glow) continue;
 
-    const sel = `.${DESIGN_SCOPE} *:has(> img[data-sjc-img="${key}"])`;
+    const sel = `.${DESIGN_SCOPE}[data-sjc-sec="${sectionId}"] *:has(> img[data-sjc-img="${key}"])`;
 
     // ⚠️ A HAND-SET FRAME SIZE IS A DESKTOP DECISION, AND MUST NOT FOLLOW THE PAGE ONTO A PHONE.
     //
@@ -846,7 +853,7 @@ function frameCss(images: DesignImage[]): string {
     // With a shape the photo must cover the frame at EVERY width — the frame has a real size at
     // every width, so there is nothing to hold back for desktop.
     const stretchParent = matchCol
-      ? `.${DESIGN_SCOPE} *:has(> * > img[data-sjc-img="${key}"]){align-self:stretch;display:flex}`
+      ? `.${DESIGN_SCOPE}[data-sjc-sec="${sectionId}"] *:has(> * > img[data-sjc-img="${key}"]){align-self:stretch;display:flex}`
       : "";
     const fillSized = shape
       ? `${sel} > img[data-sjc-img="${key}"]{width:100%;height:100%;object-fit:cover}`
@@ -964,7 +971,7 @@ export default function DesignSection(props: DesignSectionProps) {
   // section choosing it shares one rule and no unique id has to be invented.
   const fgRole = String(foreground || "").trim();
   const fgValue = resolveColor(fgRole);
-  const framing = frameCss(images);
+  const framing = frameCss(images, String(props.id || ""));
   // Keyed to this block's own id — see the note on columnCss for why the sheet scope won't do.
   const colStyling = columnCss(String(props.id || ""), columns, splitAfter, flip);
   const bandStyling = bandCss(String(props.id || ""), band);
@@ -1068,6 +1075,10 @@ export default function DesignSection(props: DesignSectionProps) {
       // the outside. `none` means the prop never arrived.
       data-sjc-sheet={sheet || "none"}
       // Only present when columns are actually set, so an untouched section's markup is unchanged.
+      // Present only when a photo on this section has a frame setting, so an untouched section's
+      // markup is unchanged. This is what keeps one section's photo rules off every other
+      // section's identically keyed images.
+      {...(framing ? { "data-sjc-sec": String(props.id || "") } : {})}
       {...(colStyling ? { "data-sjc-cols": String(props.id || "") } : {})}
       {...(bandStyling ? { "data-sjc-band": String(props.id || "") } : {})}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
