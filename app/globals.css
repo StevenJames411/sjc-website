@@ -795,6 +795,31 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   }
 }
 
+/* ⭐ THE HOME CTA WEARS THE SAME CYAN AS EVERY OTHER CTA (2026-09-01, Steven's call).
+   The home hero shipped its Book A Call as royal blue on a royal-blue-adjacent dark band -
+   `bg-[var(--primary-color)]` with a 2px border of the same colour and an 8px corner. Every other
+   page's CTA is the cyan gradient pill. So the one button a first-time visitor sees first was the
+   only one on the site not wearing the action colour.
+
+   ⛔ CYAN IS THE ACTION COLOUR AND NOTHING ELSE MAY USE IT. That is why this is worth changing
+   rather than leaving as "variety": the label pills all share the nav's dark-and-gold treatment,
+   and cyan is reserved for the one thing you want clicked. A CTA that is not cyan reads as another
+   panel.
+
+   Values lifted verbatim from `.btn--primary` in the sealed sheets - the same gradient, the same
+   ink text, the same glow - so the two cannot drift apart.
+   ⚠️ `.sjc-cta` is the marker on the home hero button only. The pricing tiers' "Get Started"
+   buttons keep their own treatment: they sit inside coloured cards, three across, and are a
+   choice between options rather than the page's one action. */
+.sjc-design .sjc-cta,
+.sjc-design .sjc-cta:visited {
+  background: linear-gradient(180deg, #4FE0FF, #00B8DB) !important;
+  color: #04121D !important;
+  border-color: transparent !important;
+  border-radius: 999px !important;
+  box-shadow: 0 16px 40px rgba(0, 217, 255, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
 /* ⭐ THE HOME HERO PUTS THE WORDS FIRST ON A PHONE (2026-09-01, Steven's call).
    The design ships the two hero columns as `order-2 lg:order-1` (words) and `order-1 lg:order-2`
    (portrait + Book a Call) — so on a phone a visitor got a face and a button before a single word
