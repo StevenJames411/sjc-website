@@ -613,12 +613,15 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    Both columns fall back to DOM order below the desktop breakpoint: words, then portrait and CTA.
    Nothing about the desktop layout changes.
 
-   ⚠️ `[data-sjc-hero-split]` TWICE IS DELIBERATE. Tailwind's `.order-1` is (0,1,0) and lives in
-   the sealed sheet injected into the BODY; a single attribute selector ties and loses on order.
+   ⚠️ THE SELECTOR IS (0,3,0) ON PURPOSE, AND (0,2,0) WAS MEASURED FAILING. The sealed sheet does
+   NOT ship Tailwind's `.order-1` bare at (0,1,0) — it ships it SCOPED, as
+   `.sjc-design-7b6d59e9 .order-1` = (0,2,0). The doubled attribute alone tied that and lost on
+   source order (the sheet is injected into the BODY, after this file), and the columns did not
+   move. `> div[class]` adds the third simple selector that actually wins.
    ⚠️ The attribute is on the HOME hero only — verified across all ten pages — so this cannot
    reach another page's split. */
 @media (max-width: 1023px) {
-  [data-sjc-hero-split][data-sjc-hero-split] > div {
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class] {
     order: 0;
   }
 }
