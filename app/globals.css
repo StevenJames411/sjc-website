@@ -604,6 +604,33 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    ⚠️ SCROLLS RATHER THAN SHRINKS. Fourteen links do not fit a phone at a 52px tap target, and
    shrinking the capsules to fit is how a menu becomes hard to hit. `overflow-y:auto` with
    momentum scrolling keeps the target size and lets the list run. */
+/* ⛔ THE WORDMARK AND THE HAMBURGER COLLIDE ON A REAL PHONE (2026-09-01, Steven's iPhone).
+   MEASURED, headless, mobile emulation, four widths — the gap between the end of "Consulting"
+   and the hamburger:
+
+     428px → 49px ok      390px → 11px      375px → 0px ⛔      320px → 0px ⛔ (clamps to 363)
+
+   The nav chrome sets `.sjc-mark span { font-size: clamp(23px, 2.6vw, 32px) }`. Below ~885px the
+   2.6vw term is under the 23px floor, so the wordmark FREEZES at 23px — 254px wide — while the
+   screen keeps shrinking. 52px logo + 12px gap + 254px wordmark + 30px burger + 32px of padding
+   needs 380px, and a 375px phone does not have it. Same clamp-floor failure as the two headline
+   rules above; this one just runs out of room instead of stacking.
+
+   ⚠️ THE LOGO HEIGHT IS DELIBERATELY NOT TOUCHED. The bar measures 68px and the drawer is pinned
+   at `inset: 68px 0 0 0` — shrinking the logo shortens the bar and opens a strip of page above
+   the menu. The wordmark carries the whole reduction.
+
+   ⚠️ `#global-header#global-header` IS DELIBERATE — the doubled selector, same trick as
+   `.sjc-design.sjc-design` above. The nav's own rule is in an inline <style> inside the BODY, so
+   it comes after this stylesheet and wins any tie at equal specificity.
+
+   Lands on 23px at 480px and above, so nothing changes for tablets or the desktop bar. */
+@media (max-width: 640px) {
+  #global-header#global-header .sjc-mark span {
+    font-size: clamp(15px, 4.8vw, 23px);
+  }
+}
+
 @media (max-width: 1023px) {
   #global-header [data-landingsite-mobile-menu] {
     position: fixed;
