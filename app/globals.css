@@ -646,3 +646,25 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     font-weight: 700;
   }
 }
+
+/* ⭐ A SINGLE-COLUMN SECTION USES ITS COLUMN. IT DOES NOT LEAVE A HOLE ON THE RIGHT.
+   Steven: *"a lot of sections were brought in from other places… the words are only using 60 or 70%
+   of the column."* Measured on /ai-implementation at 1512px: 36 paragraphs rendering 684px wide,
+   flush left at 28px, with 468px of dead space to their right. Not centred — ragged.
+
+   ⛔ THE CAUSE IS ONE INHERITED RULE, NOT THE LAYOUT. Every sealed design ships
+   `.lede{max-width:60ch}` — a proper reading measure, and correct on the narrow column of a
+   two-column section. In a FULL-WIDTH section it caps the text at 58% of an 1180px wrap and leaves
+   the rest empty, which reads as a broken import rather than as typography.
+
+   ⚠️ 86ch IS A COMPROMISE, DELIBERATELY. Removing the cap gives 120-character lines at this font
+   size, which is genuinely hard to track. 86ch lands near 980px — the page is used, ~200px of
+   breathing room remains, and the line stays inside what a person can read without losing their
+   place.
+
+   ⚠️ IT DOES NOT TOUCH TWO-COLUMN SECTIONS. `:not(.split *)` leaves the narrow column alone, where
+   60ch is exactly right and where widening would push text under a photo or a video. */
+.sjc-design.sjc-design .lede:not(.split *),
+.sjc-design.sjc-design .sec p:not(.split *) {
+  max-width: 86ch;
+}
