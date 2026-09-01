@@ -453,9 +453,18 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   .sjc-design.sjc-design .split:has(.shotwrap) > div:not(:has(.shotwrap)) {
     align-self: center;
   }
+  /* ⛔ AND THE FAT IS THE LINE-HEIGHT, NOT THE PADDING. Steven, comparing it to the eyebrow pill
+     across the hero: *"the pill on the far left is more narrow than the book a call button. The
+     thing doesn't need to be that fat."* Measured: eyebrow 36px (14px font, 14px line-height,
+     9px padding) against button 46px — but the button's padding was already only 10px. Its bulk
+     was `line-height: 25.5px` on a 15px font, i.e. 1.7. Dropping to 1.2 and 9px of padding lands
+     it on 36px, the eyebrow exactly, and hands the 10px to the photo.
+     ⚠️ 36px IS UNDER THE 44px TAP MINIMUM — fine only because this whole block is
+     `min-width: 961px`. A phone never sees it and keeps the design's own full-size button. */
   .sjc-design.sjc-design .split:has(.shotwrap) .btns .btn {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    line-height: 1.2;
   }
   .sjc-design.sjc-design .split:has(.shotwrap) .shotwrap,
   .sjc-design.sjc-design .split:has(.shotwrap) .shot {
