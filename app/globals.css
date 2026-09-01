@@ -412,6 +412,22 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     gap: 44px;
     align-items: stretch;
   }
+  /* ⭐ THE CTA MOVED UNDER THE PHOTO (2026-09-01, Steven: *"just like the home page… when it stacks
+     on a phone it's in the right order"*). Below 961px this block does not apply at all and the
+     button simply follows the photo in source order, which IS the phone requirement. Up here the
+     photo column becomes a flex column so the frame can give the button its 96px and the two
+     columns still finish level — the words remain the taller side and set the row. */
+  .sjc-design.sjc-design .split:has(.shotwrap) > div:has(.shotwrap) {
+    display: flex;
+    flex-direction: column;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) .shotwrap {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) .btns {
+    justify-content: center;
+  }
   .sjc-design.sjc-design .split:has(.shotwrap) .shotwrap,
   .sjc-design.sjc-design .split:has(.shotwrap) .shot {
     height: 100%;
