@@ -412,55 +412,35 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     gap: 44px;
     align-items: stretch;
   }
-  /* ⭐ THE CTA MOVED UNDER THE PHOTO (2026-09-01, Steven: *"just like the home page… when it stacks
-     on a phone it's in the right order"*). Below 961px this block does not apply at all and the
-     button simply follows the photo in source order, which IS the phone requirement. Up here the
-     photo column becomes a flex column so the frame can give the button its 96px and the two
-     columns still finish level — the words remain the taller side and set the row. */
+  /* ⭐ THE CTA SITS ON THE PHOTO (2026-09-01, Steven: *"put the book a call pill at the bottom of
+     the damn photo and make the photo taller"*).
+
+     Three passes got here and the last one was the point: while the button was a SIBLING of the
+     frame it had to be paid for out of the column, so every pixel it took came off the image —
+     46px of button plus a 36px gap was 82px of photo. Lifting it out of flow means the frame owns
+     the whole row and the button costs nothing: 519px → 600px.
+
+     The photo column becomes the positioning context and the button is pinned 22px off the bottom,
+     centred over the frame. It lands on the hand and the desk — the darkest, least detailed part
+     of the shot — and the pill is solid cyan with its own glow, so it carries its own contrast the
+     same way the menu capsules do.
+
+     ⚠️ DESKTOP ONLY, and that is the whole reason this is safe. Below 961px the block does not
+     apply: the button drops back into flow, under the photo, at full size and full tap target,
+     which is the phone order Steven asked for two passes ago. An absolutely positioned CTA over a
+     photo on a 390px screen would be neither. */
   .sjc-design.sjc-design .split:has(.shotwrap) > div:has(.shotwrap) {
-    display: flex;
-    flex-direction: column;
-  }
-  .sjc-design.sjc-design .split:has(.shotwrap) .shotwrap {
-    flex: 1 1 auto;
-    min-height: 0;
+    position: relative;
   }
   .sjc-design.sjc-design .split:has(.shotwrap) .btns {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 22px;
+    margin-top: 0;
     justify-content: center;
+    z-index: 2;
   }
-  /* ⭐ THE PHOTO BUYS HEIGHT FROM THE BUTTON AND FROM THE FOLD (2026-09-01, Steven: *"I definitely
-     liked the photo taller. It did real work on a desktop… make the CTA a little thinner so the
-     photo's got some more height"*).
-
-     MEASURED before choosing the numbers — hero bottom against the viewport bottom:
-       1440x900  → 126px of the next band showing
-       1512x982  → 208px
-       1728x1080 → 306px
-     Sized for the SMALLEST, because that is the one that can run out. `min-height: 600px` grows
-     the row by 78px and still leaves ~48px of the white band visible at 1440x900 — a deliberate
-     sliver, because a hero that ends exactly on the fold reads as the whole page.
-
-     The button gives back another 14px: 17px of vertical padding is a form-submit button's
-     padding, not a "Book a Call" link's. 10px lands it at 46px tall, which is still well over the
-     44px tap minimum.
-
-     ⚠️ The words column CENTRES rather than stretching now. It is the shorter side once the row is
-     600px, and top-aligned text beside a taller photo leaves a hole under "Available now" — the
-     exact complaint that started this on /about, mirrored. */
-  .sjc-design.sjc-design .split:has(.shotwrap) {
-    min-height: 600px;
-  }
-  .sjc-design.sjc-design .split:has(.shotwrap) > div:not(:has(.shotwrap)) {
-    align-self: center;
-  }
-  /* ⛔ AND THE FAT IS THE LINE-HEIGHT, NOT THE PADDING. Steven, comparing it to the eyebrow pill
-     across the hero: *"the pill on the far left is more narrow than the book a call button. The
-     thing doesn't need to be that fat."* Measured: eyebrow 36px (14px font, 14px line-height,
-     9px padding) against button 46px — but the button's padding was already only 10px. Its bulk
-     was `line-height: 25.5px` on a 15px font, i.e. 1.7. Dropping to 1.2 and 9px of padding lands
-     it on 36px, the eyebrow exactly, and hands the 10px to the photo.
-     ⚠️ 36px IS UNDER THE 44px TAP MINIMUM — fine only because this whole block is
-     `min-width: 961px`. A phone never sees it and keeps the design's own full-size button. */
   .sjc-design.sjc-design .split:has(.shotwrap) .btns .btn {
     padding-top: 9px;
     padding-bottom: 9px;
