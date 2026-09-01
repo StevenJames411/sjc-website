@@ -429,6 +429,16 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
      apply: the button drops back into flow, under the photo, at full size and full tap target,
      which is the phone order Steven asked for two passes ago. An absolutely positioned CTA over a
      photo on a 390px screen would be neither. */
+  /* ⚠️ THESE TWO CAME BACK AFTER A MEASUREMENT CAUGHT ME DELETING THEM. Rewriting the block above
+     took the `min-height` out with it, so the row fell back to the words (522px) and the photo lost
+     the 78px of fold budget it had been given. Sized against the SMALLEST laptop: at 1440x900 the
+     hero then ends 48px short of the fold, a deliberate sliver of the next band. */
+  .sjc-design.sjc-design .split:has(.shotwrap) {
+    min-height: 600px;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) > div:not(:has(.shotwrap)) {
+    align-self: center;
+  }
   .sjc-design.sjc-design .split:has(.shotwrap) > div:has(.shotwrap) {
     position: relative;
   }
