@@ -604,6 +604,41 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    ⚠️ SCROLLS RATHER THAN SHRINKS. Fourteen links do not fit a phone at a 52px tap target, and
    shrinking the capsules to fit is how a menu becomes hard to hit. `overflow-y:auto` with
    momentum scrolling keeps the target size and lets the list run. */
+/* ⭐ THE ABOUT HERO: PILL CENTRED UNDER THE PHOTO, AND THE TWO COLUMNS THE SAME HEIGHT.
+   Steven, 2026-09-01: *"I definitely want the pill centered under the photo, just like the home
+   page… the photo needs to be a little smaller, so both columns appear to have the same height."*
+
+   MEASURED at four desktop widths, left column vs right column:
+
+     1728 · 1440 · 1280 → left 421px, right 476px   (right 55px TALLER)
+     1024               → left 504px, right 421px   (right 83px SHORTER — the text wraps more)
+
+   `.wrap` caps its measure around 1200px, so 1280 and up are all the same layout — one number
+   fixes every one of them. Shrinking the photo to **85%** takes it from 381px to 325px tall;
+   325 + the 36px gap + the 60px pill = 421px, which is the text column exactly.
+
+   ⛔ AND IT IS GATED AT 1200px, BECAUSE BELOW THAT THE MISMATCH IS THE OTHER WAY ROUND. At 1024
+   the text column is already the taller of the two; shrinking the photo there would open the gap
+   instead of closing it. Steven's ask was about the capped desktop layout, and that is where it
+   applies.
+
+   ⚠️ THE HARDCODED 85% IS SANCTIONED, NOT LAZY. Steven: *"Don't worry about me changing the copy
+   in that Hero section, I'm never going to touch it. That's like a static page."* If that copy
+   ever does move, this number is the thing to re-measure.
+
+   ⚠️ THE SELECTOR ONLY MATCHES A PHOTO COLUMN THAT CARRIES THE BUTTON — `> div:last-child .btns`.
+   On /premium-smart-websites the same `.band--hero .split` keeps its button in the WORDS column,
+   so centring cannot reach it. That is the guard; there is no page name in this rule. */
+.sjc-design .band--hero .split > div:last-child .btns {
+  justify-content: center;
+}
+@media (min-width: 1200px) {
+  .sjc-design .band--hero .split > div:last-child .shot {
+    max-width: 85%;
+    margin-inline: auto;
+  }
+}
+
 /* ⭐ THE HOME HERO PUTS THE WORDS FIRST ON A PHONE (2026-09-01, Steven's call).
    The design ships the two hero columns as `order-2 lg:order-1` (words) and `order-1 lg:order-2`
    (portrait + Book a Call) — so on a phone a visitor got a face and a button before a single word
