@@ -630,30 +630,47 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 
    ⚠️ ≥1200px ONLY. Below the wrap's cap the words column is the taller of the two by an amount
    that changes with width, and stacked on a phone there is no second column to match. */
+/* ⛔ THE WHITE FRAME IS DRAWN HERE, NOT BAKED INTO THE PHOTO, AND IT IS NOT GATED BY WIDTH.
+   Steven: *"maybe it's a square photo that we're trying to put rounded corners on."* He was right.
+   The original asset carried its own white frame WITH rounded interior corners; re-cutting it to
+   fit this box stripped those corners and padded a square white block back on, so the outer corners
+   were round while the photo inside had hard 90° ones. A border on a rounded box cannot have that
+   problem: CSS derives the INNER radius from the outer minus the border width (26 - 8 = 18px), so
+   both curves come out right and stay right at any size. The asset is now the plain photograph.
+
+   ⛔ AND IT LIVES OUTSIDE THE MEDIA QUERY BECAUSE THE FIRST VERSION DID NOT. Steven, on his phone:
+   *"when it flips to mobile, the border goes dark, and against the dark page you can't even see
+   the border."* It was inside `min-width: 1200px`, so every phone fell back to the design's own
+   `border: 1px solid var(--line)` — a dark hairline on a dark page, i.e. no frame at all. The
+   FRAME is width-independent; only the height-matching below is a desktop concern.
+
+   ⚠️ `.shot` ships `border: 1px solid var(--line)` — this replaces it; 8px of white is the frame.
+   ⚠️ THE ATTRIBUTE IS DOUBLED, AND THAT IS LOAD-BEARING. The sealed sheet ships
+   `.sjc-design-4f3c8c3e .shot { border: … }` at (0,2,0), which ties a single attribute selector and
+   wins on source order. Measured: the border came back as `1px rgba(255,255,255,.1)` at (0,2,0).
+   The `flex`/`min-height` rules below need no such help — nothing competes for those. */
+[data-sjc-hero-fill][data-sjc-hero-fill] .shot {
+  border: 8px solid #fff;
+}
+
+/* The height match is the part that only makes sense on a desktop: the photo column stretches to
+   the grid row instead of centring in it, and the frame flexes to fill that height, so the WORDS
+   set the height and no constant can go stale. Stacked on a phone there is no second column to
+   match, and below the wrap's cap the words are the taller side by an amount that moves with width.
+
+   ⚠️ `object-position: right` IS THE SAFETY MARGIN. Steven sits at the right edge of that photo,
+   so every cropped pixel comes off the left — the laptop and the window — and he is never touched.
+   ⚠️ `[data-sjc-hero-fill]` is on the ABOUT photo column only, the same marker pattern the home
+   hero uses. /premium-smart-websites runs the identical `.band--hero .split` with a phone photo
+   that must NOT be cropped, and a bare `.split` selector here would have stretched it too. */
 @media (min-width: 1200px) {
   [data-sjc-hero-fill] {
     align-self: stretch;
     display: flex;
   }
-  /* ⛔ THE WHITE FRAME IS DRAWN HERE, NOT BAKED INTO THE PHOTO — AND THAT IS THE WHOLE POINT.
-     Steven: *"maybe it's a square photo that we're trying to put rounded corners on."* He was
-     right. The original asset carried its own white frame WITH rounded interior corners; re-cutting
-     it to fit this box stripped those corners and padded a square white block back on, so the
-     outer corners were round (clipped by `.shot`) while the photo inside had hard 90° corners.
-     A border on a rounded box does not have that problem: CSS derives the INNER radius from the
-     outer one minus the border width (26 - 14 = 12px), so both curves come out right and stay
-     right at any size. The asset is now the plain photograph, nothing baked in.
-     ⚠️ `.shot` ships `border: 1px solid var(--line)` — this replaces it, so the hairline is gone
-     on purpose; 14px of white is the frame now.
-     ⚠️ THE ATTRIBUTE IS DOUBLED HERE AND NOT ON THE RULE ABOVE, AND THAT IS NOT AN INCONSISTENCY.
-     The sealed sheet says nothing about `flex` or `min-height`, so a (0,2,0) selector sets those
-     unopposed — but it DOES ship `.sjc-design-4f3c8c3e .shot { border: 1px solid var(--line) }` at
-     (0,2,0), which ties and wins on source order. Measured: the border came back as
-     `1px rgba(255,255,255,.1)` with the single attribute. (0,3,0) is what actually paints it. */
-  [data-sjc-hero-fill][data-sjc-hero-fill] .shot {
+  [data-sjc-hero-fill] .shot {
     flex: 1 1 auto;
     min-height: 0;
-    border: 14px solid #fff;
   }
   [data-sjc-hero-fill] .shot img {
     width: 100%;
