@@ -406,6 +406,29 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    ⚠️ `:has(.shotwrap)` IS THE SCOPE, NOT A PAGE CLASS. The phone-in-hand shot is the only
    `.shotwrap` on the whole site (checked across all ten pages), so this reaches exactly one hero
    and cannot wander into another sealed design that happens to use `.split`. */
+/* ⭐ AND THE PILL SITS ON THE PHOTO AT EVERY WIDTH (2026-09-01). It was desktop-only for one
+   deploy and Steven asked the obvious question: *"Why did it have to be any different on the
+   phone? I don't follow."* There was no good reason. I had bundled two changes that are not
+   related — floating the button, and trimming it to 36px to match the eyebrow. Only the TRIM is
+   desktop-only, because 36px is under the 44px tap minimum. The overlay itself is just as right
+   on a phone, and the reading order is unchanged either way: headline, photo, then the CTA.
+
+   ⚠️ It lands on the bottom of the frame, which is the hand and the desk in this shot — the
+   darkest, least detailed part — and the pill is solid cyan with its own glow, so it carries its
+   own contrast the way the menu capsules do. Check that before reusing this on another photo. */
+.sjc-design.sjc-design .split:has(.shotwrap) > div:has(.shotwrap) {
+  position: relative;
+}
+.sjc-design.sjc-design .split:has(.shotwrap) .btns {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  margin-top: 0;
+  justify-content: center;
+  z-index: 2;
+}
+
 @media (min-width: 961px) {
   .sjc-design.sjc-design .split:has(.shotwrap) {
     grid-template-columns: 1.32fr 0.68fr;
@@ -438,18 +461,6 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   }
   .sjc-design.sjc-design .split:has(.shotwrap) > div:not(:has(.shotwrap)) {
     align-self: center;
-  }
-  .sjc-design.sjc-design .split:has(.shotwrap) > div:has(.shotwrap) {
-    position: relative;
-  }
-  .sjc-design.sjc-design .split:has(.shotwrap) .btns {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 22px;
-    margin-top: 0;
-    justify-content: center;
-    z-index: 2;
   }
   .sjc-design.sjc-design .split:has(.shotwrap) .btns .btn {
     padding-top: 9px;
