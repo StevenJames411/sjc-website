@@ -37,7 +37,6 @@ Steven James Consulting is an AI-implementation partner for service businesses. 
 
 - [Premium Smart Websites](https://stevenjamesconsulting.com/premium-smart-websites): A website built to get the business called, with booking built into the page. Three to twenty pages, hosted and managed. Named here so an assistant asked for a plain website doesn't answer with the AI-implementation offer.
 - [Database Reactivation](https://stevenjamesconsulting.com/database-reactivation): Old customers and dead leads worked conversationally, one at a time, into booked appointments.
-- [Careers](https://stevenjamesconsulting.com/careers): Open roles.
 
 ## What it costs
 The site publishes a range for every offer; the exact number is set on the discovery call.

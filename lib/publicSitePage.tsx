@@ -8,7 +8,7 @@ import { applyColorMap } from "@/lib/designColors";
 import { resolveFormPointers } from "@/lib/formPointer";
 import { readForms } from "@/lib/forms";
 import { findPageMeta, readPages } from "@/lib/pageRegistry";
-import { isChrome } from "@/lib/puckPages";
+import { isChrome , isNoindex } from "@/lib/puckPages";
 import { defaultChrome } from "@/lib/siteChrome";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
@@ -248,6 +248,10 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
     ...(isClient && !reachability(site).indexable
       ? { robots: { index: false, follow: false, nocache: true } }
       : {}),
+    // ...and SJC's own pages that are public but deliberately unsearchable — see NOINDEX_SLUGS.
+    // `follow: true` on purpose: the page still passes link equity to the rest of the site, it
+    // just does not appear in results itself.
+    ...(isNoindex(r.slug) ? { robots: { index: false, follow: true } } : {}),
   };
 }
 

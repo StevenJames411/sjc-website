@@ -55,3 +55,20 @@ export const findPage = (slug: string) => PUCK_PAGES.find((p) => p.slug === slug
 // added here must be excluded from public routing in the same commit.
 export const CHROME = ["nav", "footer"] as const;
 export const isChrome = (slug: string) => (CHROME as readonly string[]).includes(slug);
+
+/**
+ * Pages that are PUBLIC but deliberately kept out of search and out of AI assistants.
+ *
+ * ⛔ /careers IS NOT SECRET — it is linked in the nav and anyone can read it. Steven, 2026-09-01,
+ * as indexing went wide: *"I really don't want that indexed. I don't want people blowing me up for
+ * a job."* Reachable for someone he sends there, invisible to a stranger searching for work.
+ *
+ * ⚠️ NOINDEX, NOT A robots.txt DISALLOW. Disallow stops the crawl, which means the noindex tag is
+ * never read, and a page linked from the nav can still surface as a bare URL. The meta tag is what
+ * actually keeps it out.
+ *
+ * ⚠️ ONE LIST, TWO CONSUMERS — app/sitemap.ts drops these, and lib/publicSitePage's metadataFor
+ * tags them. Two hand-maintained lists would drift, and the failure is silent in both directions.
+ */
+export const NOINDEX_SLUGS = new Set(["careers"]);
+export const isNoindex = (slug: string) => NOINDEX_SLUGS.has(slug);
