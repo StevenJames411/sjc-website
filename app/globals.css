@@ -670,3 +670,61 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 .sjc-design.sjc-design .sec p:not(.split *) {
   max-width: 100ch;
 }
+
+/* ⭐ THE PODCAST EPISODES: TWO COLUMNS — VIDEO LEFT, WORDS RIGHT.
+   Steven, 08-31: *"I'd like to have this entire page a two-column. The video on the left, the words
+   on the right, it'll stack nicely on a phone. And where we number them one through five or six
+   interviews, that font size is too goddamn small."*
+
+   ⛔ THE PAGE WAS BOXED AT 760px INSIDE AN 1180px BAND. `.podcol{max-width:760px}` came in with the
+   import and is the reason this page read as a different site — every measurement on it was taken
+   against 760 while every other page uses the full wrap. Widening it is what makes two columns
+   possible at all; without it there is not enough room for a video and a paragraph side by side.
+
+   ⚠️ THE MARKUP WAS RESTRUCTURED TO MATCH, IT IS NOT CSS ALONE. Each `.ep` used to be three
+   stacked siblings (head, video, body) and a pure-CSS two-column would have left a ~250px hole
+   between the title and its text, because the video forces the height of the row the title sits in.
+   Each episode is now `.ep__media` (video + book cover) beside `.ep__words` (number, title, copy),
+   so each column flows on its own. Every `{{t:tN}}` token was carried across untouched. */
+.sjc-design.sjc-design .podcol { max-width: none; }
+
+@media (min-width: 961px) {
+  .sjc-design.sjc-design .ep {
+    display: grid;
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr);
+    column-gap: 46px;
+    align-items: start;
+  }
+}
+.sjc-design.sjc-design .ep__media .cover { display: block; margin-top: 22px; }
+.sjc-design.sjc-design .ep__media .cover img { width: 170px; height: auto; }
+
+/* ⚠️ `.ep__body` USED TO BE THE GRID THAT PLACED THE COVER BESIDE THE TEXT. It no longer exists in
+   the markup, so its 170px/1fr rule is dead — the cover now sits under the video and the text owns
+   the whole right column. */
+
+/* the episode number: 13px is a footnote, not a marker. 28px reads as a numeral. */
+.sjc-design.sjc-design .ep__n {
+  font-size: 28px;
+  line-height: 1.1;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+/* body copy was 16px here and 19px everywhere else — that gap is most of why the page looked
+   imported. */
+.sjc-design.sjc-design .ep__text p { font-size: 18px; line-height: 1.62; }
+
+/* the attribution line added 08-31: these blurbs are publisher jacket copy, not Steven's words and
+   not the guest's. Marked so every claim inside them belongs to whoever actually made it. */
+.sjc-design.sjc-design .ep__src {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .62;
+  margin: 0 0 10px;
+}
+
+@media (max-width: 960px) {
+  .sjc-design.sjc-design .ep__media { margin-bottom: 22px; }
+}
