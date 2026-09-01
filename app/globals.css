@@ -572,10 +572,24 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
        two ingredients used the wrong way round. A 20% tint only stops the page glaring. */
     background: rgba(10, 14, 39, 0.2);
   }
+  /* ⛔ CENTRED BY FLEX, NOT BY `margin: 0 auto` — THE AUTO MARGINS DID NOT SURVIVE.
+     Measured on the live page: `margin-left: 76px; margin-right: 0`. Something in the imported
+     sheet lands on `margin-right` after this file, so only the left margin resolved to auto — and
+     one auto margin does not centre anything, it shoves the element to the far side and dumps all
+     76px of slack on the other. The stack sat flush right with a 98px gutter on the left and 22px
+     on the right, which is exactly what Steven spotted.
+     Centring from the PARENT cannot be half-applied: `align-items: center` needs no cooperation
+     from the child's margins, so a stray margin rule can no longer defeat it. */
+  #global-header [data-landingsite-mobile-menu] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   #global-header [data-landingsite-mobile-menu] > div {
     align-items: stretch;
+    width: 100%;
     max-width: 380px;
-    margin: 0 auto;
+    margin: 0;
     gap: 11px;
   }
   /* the links become the capsules */
