@@ -29,6 +29,7 @@ import { surfaceCss, wantsPulse, PULSE_KEYFRAMES, type Surface } from "@/lib/sur
 import type { DesignBoxGroup } from "@/lib/designHtml";
 import DesignFormMount from "./DesignFormMount";
 import DesignCalMount from "./DesignCalMount";
+import DesignVideoMount from "./DesignVideoMount";
 import DesignMenu from "./DesignMenu";
 import type { LeadFormField } from "./LeadForm";
 
@@ -1102,6 +1103,10 @@ export default function DesignSection(props: DesignSectionProps) {
           band, the heading and the white panel are the design's; only the empty box in the middle
           is replaced. → components/blocks/DesignCalMount.tsx */}
       {calLink ? <DesignCalMount calLink={calLink} /> : null}
+      {/* ⛔ A PAUSED YOUTUBE EMBED SHOWS TWO WAYS OFF THE PAGE — the "Watch on YouTube" bar and a
+          copy-link button — and neither is reachable with CSS or an embed parameter. This swaps in
+          our own poster until someone clicks. → components/blocks/DesignVideoMount.tsx */}
+      <DesignVideoMount />
       {swapForm ? (
         <style
           dangerouslySetInnerHTML={{
