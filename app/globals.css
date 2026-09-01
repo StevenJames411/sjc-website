@@ -604,38 +604,46 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    ⚠️ SCROLLS RATHER THAN SHRINKS. Fourteen links do not fit a phone at a 52px tap target, and
    shrinking the capsules to fit is how a menu becomes hard to hit. `overflow-y:auto` with
    momentum scrolling keeps the target size and lets the list run. */
-/* ⭐ THE ABOUT HERO: PILL CENTRED UNDER THE PHOTO, AND THE TWO COLUMNS THE SAME HEIGHT.
-   Steven, 2026-09-01: *"I definitely want the pill centered under the photo, just like the home
-   page… the photo needs to be a little smaller, so both columns appear to have the same height."*
+/* ⭐ THE ABOUT HERO: THE PHOTO IS AS TALL AS THE WORDS BESIDE IT.
+   Steven, 2026-09-01, after centring the pill under the photo and matching the two column heights:
+   *"It still looks unbalanced… I think it's the two pills, one's on the top left, one's on the
+   bottom right. I'm going to take the book a call button off the page and then just make the photo
+   as tall as the left column. There's plenty of call buttons on the damn website."*
 
-   MEASURED at four desktop widths, left column vs right column:
+   ⛔ THE FIX WAS DELETING A THING, NOT TUNING IT. Two capsules on a diagonal — the ABOUT eyebrow
+   top-left, Book a Call bottom-right — read as a see-saw no amount of height-matching could settle.
+   The button is gone from the markup (the page has a calendar of its own further down), the
+   photo column holds one object, and the diagonal is gone with it.
 
-     1728 · 1440 · 1280 → left 421px, right 476px   (right 55px TALLER)
-     1024               → left 504px, right 421px   (right 83px SHORTER — the text wraps more)
+   HOW THE HEIGHT IS MATCHED, WITH NO MAGIC NUMBER. The photo column stretches to the grid row
+   instead of centring in it, and the frame flexes to fill that height; the row is then set by the
+   words, which are the taller side. Change the copy and the photo follows on its own — the 85%
+   constant this replaces would not have.
 
-   `.wrap` caps its measure around 1200px, so 1280 and up are all the same layout — one number
-   fixes every one of them. Shrinking the photo to **85%** takes it from 381px to 325px tall;
-   325 + the 36px gap + the 60px pill = 421px, which is the text column exactly.
+   ⚠️ `object-position: right` IS THE WHOLE SAFETY MARGIN. Filling 507x421 from a 4:3 original
+   crops ~11% horizontally. Steven is at the RIGHT edge of that photo, so every cropped pixel is
+   taken off the LEFT — the laptop and the window — and he is never touched.
 
-   ⛔ AND IT IS GATED AT 1200px, BECAUSE BELOW THAT THE MISMATCH IS THE OTHER WAY ROUND. At 1024
-   the text column is already the taller of the two; shrinking the photo there would open the gap
-   instead of closing it. Steven's ask was about the capped desktop layout, and that is where it
-   applies.
+   ⚠️ `[data-sjc-hero-fill]` IS ON THE ABOUT PHOTO COLUMN ONLY, the same marker pattern the home
+   hero uses. /premium-smart-websites runs the identical `.band--hero .split` with a phone photo
+   that must NOT be cropped, and a bare `.split` selector here would have stretched it too.
 
-   ⚠️ THE HARDCODED 85% IS SANCTIONED, NOT LAZY. Steven: *"Don't worry about me changing the copy
-   in that Hero section, I'm never going to touch it. That's like a static page."* If that copy
-   ever does move, this number is the thing to re-measure.
-
-   ⚠️ THE SELECTOR ONLY MATCHES A PHOTO COLUMN THAT CARRIES THE BUTTON — `> div:last-child .btns`.
-   On /premium-smart-websites the same `.band--hero .split` keeps its button in the WORDS column,
-   so centring cannot reach it. That is the guard; there is no page name in this rule. */
-.sjc-design .band--hero .split > div:last-child .btns {
-  justify-content: center;
-}
+   ⚠️ ≥1200px ONLY. Below the wrap's cap the words column is the taller of the two by an amount
+   that changes with width, and stacked on a phone there is no second column to match. */
 @media (min-width: 1200px) {
-  .sjc-design .band--hero .split > div:last-child .shot {
-    max-width: 85%;
-    margin-inline: auto;
+  [data-sjc-hero-fill] {
+    align-self: stretch;
+    display: flex;
+  }
+  [data-sjc-hero-fill] .shot {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  [data-sjc-hero-fill] .shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center;
   }
 }
 
