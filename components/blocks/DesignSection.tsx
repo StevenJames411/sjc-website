@@ -495,16 +495,34 @@ function markBandRoot(html: string): string {
   });
 }
 
+// ⛔ TAGS THAT PAINT NOTHING CANNOT CARRY THE SECTION'S PADDING. An imported section often opens
+// with its own <style> block before its first real element — the site nav is one — and matching
+// "the first tag" then lands the declarations on <style>, where they do nothing at all. The
+// symptom is silent and confusing: the Space above/below dial stores a number, shows it back in
+// the panel, and changes nothing on the page. Steven, 2026-08-31, on the header: *"you see how the
+// padding is marked zero. That's not zero padding."* The footer worked only because its markup
+// happens to open with <footer>. Same family as the lift-chrome first-tag bug.
+const NON_PAINTING = new Set(["style", "script", "link", "meta", "template", "noscript"]);
+
 export function injectStyle(html: string, decls: string): string {
   if (!decls) return html;
-  const tag = html.match(/<([a-z][a-z0-9]*)\b[^>]*>/i);
+  const re = /<([a-z][a-z0-9]*)\b[^>]*>/gi;
+  let tag: RegExpExecArray | null = null;
+  for (let m = re.exec(html); m; m = re.exec(html)) {
+    if (!NON_PAINTING.has(m[1].toLowerCase())) {
+      tag = m;
+      break;
+    }
+  }
   if (!tag) return html;
   const open = tag[0];
   const existing = open.match(/\sstyle\s*=\s*(["'])([\s\S]*?)\1/i);
   const next = existing
     ? open.replace(existing[0], ` style="${existing[2].replace(/;\s*$/, "")};${decls}"`)
     : open.replace(/>$/, ` style="${decls}">`);
-  return html.replace(open, next);
+  // ⚠️ SPLICED BY INDEX, NOT `replace`. The same opening-tag string can appear earlier inside the
+  // style block as ordinary text, and `replace` would rewrite that copy instead.
+  return html.slice(0, tag.index) + next + html.slice(tag.index + open.length);
 }
 
 /**
