@@ -377,7 +377,7 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
      Lands exactly on 28px at the 640px edge, so nothing jumps at the breakpoint. */
   .sjc-design.sjc-design h2.sec,
   .sjc-design.sjc-design h3.sec {
-    font-size: clamp(23px, 6.2vw, 28px);
+    font-size: clamp(20px, 5.4vw, 24px);
     line-height: 1.25;
   }
 }
@@ -771,6 +771,27 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   [data-sjc-hero-split][data-sjc-hero-split] > div[class] {
     order: 0;
   }
+}
+
+/* ⭐ SECTION HEADINGS COME DOWN TWO STEPS (2026-09-01, Steven pointing at "In 2024 the math
+   changed, and it changed in your favor" on /ai-implementation: *"whatever this font size is, drop
+   it two sizes"*).
+
+   Every one of the imported sheets ships the SAME rule - `h2.sec { clamp(28px, 3.8vw, 44px) }` -
+   so one rule here moves all of them and they cannot drift apart. Two steps down the scale from
+   the 44px ceiling is 38 then 32; the floor and the vw term come down in proportion.
+
+   His conditional does not fire. He said that if the drop made the heading the same size as the
+   label above it, the label should come down one too - the label is 11px, so there was never a
+   collision and it is untouched.
+
+   ⚠️ `.sjc-design.sjc-design` is (0,3,1) against the sheets' own (0,2,1). Every sheet is injected
+   into the BODY after this file, so an equal-specificity rule would lose on order.
+   ⚠️ The phone rule above moves with it, two steps down from 28 to 24, and lands ON 24px at the
+   640px boundary where this rule's floor also sits - so nothing jumps at the breakpoint. */
+.sjc-design.sjc-design h2.sec,
+.sjc-design.sjc-design h3.sec {
+  font-size: clamp(24px, 2.8vw, 32px);
 }
 
 /* ⛔ THE WORDMARK AND THE HAMBURGER COLLIDE ON A REAL PHONE (2026-09-01, Steven's iPhone).
