@@ -606,13 +606,22 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   /* ⚠️ THE SUB-INDENT IS UNDONE ON PURPOSE — it was for a flat list, and it makes centred
      capsules look misaligned by 15px. */
   #global-header [data-landingsite-mobile-menu] a.sjc-sub { padding-left: 20px; }
+  /* ⛔ THE GROUP LABEL IS A PILL TOO, FOR THE SAME REASON THE LINKS ARE.
+     Gold text alone still sat on bare photography — Steven: *"the word services and companies
+     need the same pill treatment, otherwise they blend into the page underneath it."* A text
+     shadow was never going to fix that; only a solid backing does. Narrower and quieter than the
+     links so it still reads as a heading rather than a fourteenth button: `align-self:center`
+     shrinks it to its text inside a column whose other children stretch. */
   #global-header [data-landingsite-mobile-menu] .sjc-mgroup {
-    /* ⚠️ WAS 60% WHITE AND UNREADABLE over a blurred page — Steven: *"need to be a color you
-       could actually see."* Gold at full strength, matching the capsules it labels. */
+    align-self: center;
+    margin-top: 10px;
+    padding: 7px 22px;
+    border-radius: 999px;
+    background: rgba(8, 12, 32, 0.93);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     text-align: center;
-    padding: 20px 0 6px;
     color: var(--accent2-color, #ffd700);
     font-weight: 700;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
   }
 }
