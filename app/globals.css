@@ -762,25 +762,33 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   color: rgba(255, 255, 255, 0.55);
 }
 
-/* ⭐ THE PODCAST DIVIDERS, GIVEN A HIERARCHY. Steven, 08-31: *"some are okay, some are so faint I
-   can't even tell it's a page divider."*
+/* ⭐ THE PODCAST DIVIDERS — ONE WEIGHT, TWO JOBS. Steven, 08-31: *"categories get a bar above it
+   and below it to distinguish a goddamn category, and then a nice divider line a human could see
+   between the episodes."*
 
-   ⛔ THE RANKING WAS UPSIDE DOWN. Measured on white: the category rule is 2px solid #056B87, the
-   line under the category title is 1px at 0.22 alpha, and the line BETWEEN ONE INTERVIEW AND THE
-   NEXT — the most important break on the page after the category — was 1px at 0.13 alpha. At 13%
-   on white that is roughly a #dfe0e4 hairline, which is below what most screens show at all once
-   there is any glare. The faintest line was carrying the biggest job.
+   ⛔ EVERY RULE ON THIS PAGE IS NOW 2px SOLID var(--cyan). The imported design shipped three
+   different weights — 2px teal above a category, 1px at 0.22 alpha below it, 1px at 0.13 alpha
+   between episodes — so the two lines doing the most structural work were the two nobody could
+   see. Alpha was the wrong tool: on white, 0.13 is roughly #dfe0e4 and disappears under any glare.
 
-   ⚠️ THREE LEVELS, AND THEY STAY THREE. Category (2px teal) > interview (1px at 0.32) > label
-   underline. Space is doing half the work: a divider needs room around it or it reads as a stray
-   rule rather than as the end of something. */
+   ⭐ MEANING COMES FROM COUNT, NOT FROM WEIGHT. A category is bracketed — a bar above AND below,
+   which reads as parentheses around the heading. An episode break is a SINGLE bar. Same ink, and
+   you can tell the two apart at a glance without either one being faint. */
+.sjc-design.sjc-design .eps .cathead {
+  border-top: 2px solid var(--cyan, #056b87);
+  border-bottom: 2px solid var(--cyan, #056b87);
+}
 .sjc-design.sjc-design .eps .ep {
-  border-bottom-color: rgba(10, 14, 39, 0.32);
+  border-bottom: 2px solid var(--cyan, #056b87);
   padding-bottom: 46px;
   margin-bottom: 46px;
 }
-.sjc-design.sjc-design .eps .cathead {
-  border-bottom-color: rgba(10, 14, 39, 0.28);
+/* ⚠️ the LAST episode in a category keeps no bar — the next category's own top bar is the break,
+   and two rules stacked with only whitespace between them reads as a mistake. */
+.sjc-design.sjc-design .eps .catgroup > .ep:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 /* ⚠️ THE HAIRLINES ON `.vid` AND THE BOOK COVER ARE NOT DIVIDERS — they are frames around media,
