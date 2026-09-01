@@ -604,6 +604,25 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    ⚠️ SCROLLS RATHER THAN SHRINKS. Fourteen links do not fit a phone at a 52px tap target, and
    shrinking the capsules to fit is how a menu becomes hard to hit. `overflow-y:auto` with
    momentum scrolling keeps the target size and lets the list run. */
+/* ⭐ THE HOME HERO PUTS THE WORDS FIRST ON A PHONE (2026-09-01, Steven's call).
+   The design ships the two hero columns as `order-2 lg:order-1` (words) and `order-1 lg:order-2`
+   (portrait + Book a Call) — so on a phone a visitor got a face and a button before a single word
+   saying what the company does, and the headline did not appear until the second screen. Side by
+   side on the desktop the order never read that way, which is why it survived.
+
+   Both columns fall back to DOM order below the desktop breakpoint: words, then portrait and CTA.
+   Nothing about the desktop layout changes.
+
+   ⚠️ `[data-sjc-hero-split]` TWICE IS DELIBERATE. Tailwind's `.order-1` is (0,1,0) and lives in
+   the sealed sheet injected into the BODY; a single attribute selector ties and loses on order.
+   ⚠️ The attribute is on the HOME hero only — verified across all ten pages — so this cannot
+   reach another page's split. */
+@media (max-width: 1023px) {
+  [data-sjc-hero-split][data-sjc-hero-split] > div {
+    order: 0;
+  }
+}
+
 /* ⛔ THE WORDMARK AND THE HAMBURGER COLLIDE ON A REAL PHONE (2026-09-01, Steven's iPhone).
    MEASURED, headless, mobile emulation, four widths — the gap between the end of "Consulting"
    and the hamburger:
