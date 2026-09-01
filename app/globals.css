@@ -336,6 +336,39 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   padding-bottom: 0;
 }
 
+/* ⭐ THE HERO HEADLINE GETS AIR ON A PHONE. Steven, 2026-09-01, on /about at phone width:
+   *"you see how the words are stacking together… make the font smaller on mobile so that the text
+   has more room to breathe."*
+
+   ⛔ THE CULPRIT IS THE CLAMP FLOOR, NOT THE COLUMN. Every sealed hero ships
+   `h1.big { font-size: clamp(40px, 6vw, 68px); line-height: 1.04 }`. Below 667px the 6vw middle
+   term is smaller than the 40px floor, so the floor wins and the headline STOPS SHRINKING — a
+   390px phone renders the same 40px as a 667px one. Paired with a 1.04 line-height (a 41.6px box
+   around 40px glyphs) the descenders of one line sit on the caps of the next. The columns are
+   fine: `.split` already collapses to `1fr` at 960px.
+
+   So the floor is lowered and the leading opened, and only under 640px — above that the vw term
+   is doing its job and the desktop headline is untouched.
+
+   ⚠️ `.sjc-design.sjc-design` IS DELIBERATE — same trick, same reason as the rule above: the
+   sheet's own `.sjc-design-<id> h1.big` is (0,2,1) and is injected into the body AFTER this
+   stylesheet, so an equal-specificity rule here would lose on order alone.
+
+   ⚠️ THE HEADLINE MAY STILL WRAP TO A THIRD OR FOURTH LINE, AND THAT IS FINE. Holding
+   "lead systems integrator." on one line at 390px needs ~27px type, which is not a hero any more.
+   The complaint was crowding, not wrapping — this buys ~6px of visible gap between lines against
+   the ~1.6px it had.
+
+   One rule, seven pages: /about, /premium-smart-websites, /automated-five-star-reviews,
+   /speed-to-lead, /booked-appointments, /database-reactivation, /ai-implementation. */
+@media (max-width: 640px) {
+  .sjc-design.sjc-design h1.big,
+  .sjc-design.sjc-design h2.big {
+    font-size: clamp(29px, 8vw, 40px);
+    line-height: 1.2;
+  }
+}
+
 /* ⭐ THE CUSTOM-WEBSITES HERO: WORDS GET THE ROOM, AND THE PHOTO IS AS TALL AS THEY ARE.
    Steven: *"the two-column in the hero section needs adjusted so that the words fit the page
    better on desktop"* — and then, with the text fixed: *"make the image container taller… you
