@@ -761,3 +761,28 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.55);
 }
+
+/* ⭐ THE PODCAST DIVIDERS, GIVEN A HIERARCHY. Steven, 08-31: *"some are okay, some are so faint I
+   can't even tell it's a page divider."*
+
+   ⛔ THE RANKING WAS UPSIDE DOWN. Measured on white: the category rule is 2px solid #056B87, the
+   line under the category title is 1px at 0.22 alpha, and the line BETWEEN ONE INTERVIEW AND THE
+   NEXT — the most important break on the page after the category — was 1px at 0.13 alpha. At 13%
+   on white that is roughly a #dfe0e4 hairline, which is below what most screens show at all once
+   there is any glare. The faintest line was carrying the biggest job.
+
+   ⚠️ THREE LEVELS, AND THEY STAY THREE. Category (2px teal) > interview (1px at 0.32) > label
+   underline. Space is doing half the work: a divider needs room around it or it reads as a stray
+   rule rather than as the end of something. */
+.sjc-design.sjc-design .eps .ep {
+  border-bottom-color: rgba(10, 14, 39, 0.32);
+  padding-bottom: 46px;
+  margin-bottom: 46px;
+}
+.sjc-design.sjc-design .eps .cathead {
+  border-bottom-color: rgba(10, 14, 39, 0.28);
+}
+
+/* ⚠️ THE HAIRLINES ON `.vid` AND THE BOOK COVER ARE NOT DIVIDERS — they are frames around media,
+   and they sit on top of a dark video or a cover image where they read as an edge. Left alone on
+   purpose; raising them would put stray lines across the right column. */
