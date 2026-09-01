@@ -163,8 +163,38 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   letter-spacing: 0.06em;
   margin-bottom: 14px;
 }
+
+/* ⭐ THE SECTION TOPIC IS A PILL, AND IT IS ONE STEP UNDER THE HEADING (2026-09-01).
+   Steven: *"the section topic is the first thing you read, and then the H1 is the second thing…
+   it should be one font size smaller than the line that says it makes the business worth more the
+   day you sell it. It looks like you went the other way, so I want it flipped. And put that
+   subject line inside a pill that gives it more separation."*
+
+   ⛔ THIS IS A CORRECTION OF MY OWN BAD MEASUREMENT. On the previous pass he asked for exactly
+   this if the heading drop brought the two together. I queried `.label, .eyebrow`, got `.eyebrow`
+   back — the 14px HERO pill — and told him there was no collision. The real numbers were
+   `.label` 24px against `h2.sec` 32px, which is why it read flat to him and did not to me.
+   ⚠️ Query the class you are actually asking about. A comma selector returns whichever matches
+   first in the document, and on these pages that is always the hero.
+
+   20px against the 32px heading is a clear step down, and the pill does the separating that size
+   alone was being asked to do. Tracking eases to 0.10em: a border needs the caps to sit in from
+   the edges or the pill looks stuffed. */
+.sjc-design .label.label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 20px;
+  letter-spacing: 0.10em;
+  padding: 7px 18px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
 @media (max-width: 640px) {
-  .sjc-design .label.label { font-size: 19px; }
+  .sjc-design .label.label {
+    font-size: 16px;
+    padding: 6px 15px;
+  }
 }
 
 /* ⭐ THE WHOLE SEALED PAGE IS IBM PLEX SANS, AND IT IS STILL THE SAME ONE LETTER.
