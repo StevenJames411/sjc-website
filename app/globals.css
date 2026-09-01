@@ -647,6 +647,59 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   }
 }
 
+/* ⭐ THE DESKTOP DROPDOWN WEARS THE PHONE DRAWER'S CLOTHES (2026-09-01, Steven's ask).
+   The drawer above and the two Services/Company panels are the SAME menu at two widths, and they
+   looked like two different websites: gold capsules on the phone, a flat royal-blue slab with
+   white text on the desktop. Same skin, same reasoning — a solid capsule guarantees its own
+   contrast, so the panel behind it does not have to be an opaque slab and the page keeps showing
+   through between the pills, exactly as it does on the phone.
+
+   ⛔ !important IS LOAD-BEARING, NOT LAZINESS. The base `.sjc-drop` rules live in the nav chrome
+   document's own <style> block (they had to — the imported sheet 7b6d59e91bbcfde5 is frozen at
+   1,436 class names and a class it does not carry renders as nothing). That inline block is in the
+   BODY, so it comes after this stylesheet and wins every tie at equal specificity. An !important
+   declaration beats a normal one whatever the order, which is the only thing that reaches past it
+   from here. Same trick the drawer above already uses on `padding` and `color`.
+
+   ⚠️ IF YOU EDIT `.sjc-drop` IN THE NAV BLOCK AND NOTHING MOVES, IT IS THESE RULES. The panel
+   geometry (position, hover bridge, open/close transition) still lives there; only the SKIN is
+   here.
+
+   ⚠️ >= 1024px ONLY. Below that the panels do not exist at all — `hidden lg:flex` — and the drawer
+   above owns the same links. */
+@media (min-width: 1024px) {
+  #global-header .sjc-drop {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    min-width: 268px;
+    padding: 12px !important;
+    /* the same 20% tint as the drawer: enough to stop a bright hero glaring, not a slab */
+    background: rgba(10, 14, 39, 0.2) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  /* the links become the capsules — values copied from the drawer so the two cannot drift */
+  #global-header .sjc-drop a {
+    padding: 12px 22px !important;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.55);
+    border-radius: 999px;
+    background: rgba(8, 12, 32, 0.93) !important;
+    color: var(--accent2-color, #ffd700) !important;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  #global-header .sjc-drop a:hover,
+  #global-header .sjc-drop a:focus {
+    background: var(--accent2-color, #ffd700) !important;
+    border-color: var(--accent2-color, #ffd700);
+    color: var(--primary-color) !important;
+  }
+}
+
 /* ⭐ A SINGLE-COLUMN SECTION USES ITS COLUMN. IT DOES NOT LEAVE A HOLE ON THE RIGHT.
    Steven: *"a lot of sections were brought in from other places… the words are only using 60 or 70%
    of the column."* Measured on /ai-implementation at 1512px: 36 paragraphs rendering 684px wide,
