@@ -635,9 +635,20 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     align-self: stretch;
     display: flex;
   }
+  /* ⛔ THE WHITE FRAME IS DRAWN HERE, NOT BAKED INTO THE PHOTO — AND THAT IS THE WHOLE POINT.
+     Steven: *"maybe it's a square photo that we're trying to put rounded corners on."* He was
+     right. The original asset carried its own white frame WITH rounded interior corners; re-cutting
+     it to fit this box stripped those corners and padded a square white block back on, so the
+     outer corners were round (clipped by `.shot`) while the photo inside had hard 90° corners.
+     A border on a rounded box does not have that problem: CSS derives the INNER radius from the
+     outer one minus the border width (26 - 14 = 12px), so both curves come out right and stay
+     right at any size. The asset is now the plain photograph, nothing baked in.
+     ⚠️ `.shot` ships `border: 1px solid var(--line)` — this replaces it, so the hairline is gone
+     on purpose; 14px of white is the frame now. */
   [data-sjc-hero-fill] .shot {
     flex: 1 1 auto;
     min-height: 0;
+    border: 14px solid #fff;
   }
   [data-sjc-hero-fill] .shot img {
     width: 100%;
