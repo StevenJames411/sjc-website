@@ -728,3 +728,19 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 @media (max-width: 960px) {
   .sjc-design.sjc-design .ep__media { margin-bottom: 22px; }
 }
+
+/* the site-wide legal disclaimer, added 08-31 at Steven's instruction. Sits above the copyright
+   line in the footer, so it is on every page rather than only the ones carrying numbers or quoted
+   publisher copy. Deliberately quiet — it is a disclosure, not a message. */
+.sjc-design.sjc-design .sjc-foot-disclaimer {
+  margin: 26px 0 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+.sjc-design.sjc-design .sjc-foot-disclaimer p {
+  margin: 0;
+  max-width: none;
+  font-size: 12px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.55);
+}
