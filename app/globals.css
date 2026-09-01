@@ -657,14 +657,16 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    two-column section. In a FULL-WIDTH section it caps the text at 58% of an 1180px wrap and leaves
    the rest empty, which reads as a broken import rather than as typography.
 
-   ⚠️ 86ch IS A COMPROMISE, DELIBERATELY. Removing the cap gives 120-character lines at this font
-   size, which is genuinely hard to track. 86ch lands near 980px — the page is used, ~200px of
-   breathing room remains, and the line stays inside what a person can read without losing their
-   place.
+   ⚠️ 100ch IS A COMPROMISE, DELIBERATELY, AND IT REPLACED 86ch ON 08-31. Removing the cap entirely
+   gives 120-character lines at this font size, which is genuinely hard to track. 86ch was the first
+   attempt and it was still too tight: it lands at 980px, so an 1180px wrap kept ~200px of dead space
+   on the right and a re-measure flagged 21 paragraphs across six pages. 100ch lands near 1140px —
+   it fills an 1180px wrap almost exactly, still caps a 1497px full-bleed band, and stays inside what
+   a person can read without losing their place.
 
    ⚠️ IT DOES NOT TOUCH TWO-COLUMN SECTIONS. `:not(.split *)` leaves the narrow column alone, where
    60ch is exactly right and where widening would push text under a photo or a video. */
 .sjc-design.sjc-design .lede:not(.split *),
 .sjc-design.sjc-design .sec p:not(.split *) {
-  max-width: 86ch;
+  max-width: 100ch;
 }
