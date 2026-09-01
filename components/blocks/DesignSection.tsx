@@ -814,7 +814,14 @@ function frameCss(images: DesignImage[], sectionId: string): string {
       h ? `height:${h}px` : "",
       // max-width:none so a width over 100% can actually leave the column instead of being
       // clamped back to it by the design's own max-width.
-      w ? `width:${w}%;max-width:none` : "",
+      //
+      // ⚠️ AND CENTRED, BECAUSE THE DESIGN'S OWN CENTRING IS ON THE PHOTO, NOT THE FRAME. These
+      // designs centre a photo with `mx-auto` on the <img>. Once the frame has a width the photo
+      // fills it, so that `mx-auto` has nothing left to centre and the FRAME sits hard left — the
+      // photo looks like it jumped to the edge the moment a width is set. Steven, 2026-08-31:
+      // *"my image is left justified above the CTA button. It used to be centered."* The control
+      // reads "% of its column", so the space it gives back belongs on both sides.
+      w ? `width:${w}%;max-width:none;margin-left:auto;margin-right:auto` : "",
     ].filter(Boolean).join(";");
 
     // The band and the glow are proportional and read correctly at any width, so they are NOT
