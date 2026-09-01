@@ -644,8 +644,13 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
      outer one minus the border width (26 - 14 = 12px), so both curves come out right and stay
      right at any size. The asset is now the plain photograph, nothing baked in.
      ⚠️ `.shot` ships `border: 1px solid var(--line)` — this replaces it, so the hairline is gone
-     on purpose; 14px of white is the frame now. */
-  [data-sjc-hero-fill] .shot {
+     on purpose; 14px of white is the frame now.
+     ⚠️ THE ATTRIBUTE IS DOUBLED HERE AND NOT ON THE RULE ABOVE, AND THAT IS NOT AN INCONSISTENCY.
+     The sealed sheet says nothing about `flex` or `min-height`, so a (0,2,0) selector sets those
+     unopposed — but it DOES ship `.sjc-design-4f3c8c3e .shot { border: 1px solid var(--line) }` at
+     (0,2,0), which ties and wins on source order. Measured: the border came back as
+     `1px rgba(255,255,255,.1)` with the single attribute. (0,3,0) is what actually paints it. */
+  [data-sjc-hero-fill][data-sjc-hero-fill] .shot {
     flex: 1 1 auto;
     min-height: 0;
     border: 14px solid #fff;
