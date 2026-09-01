@@ -674,8 +674,11 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     gap: 11px;
     min-width: 268px;
     padding: 12px !important;
-    /* the same 20% tint as the drawer: enough to stop a bright hero glaring, not a slab */
-    background: rgba(10, 14, 39, 0.2) !important;
+    /* ⛔ NOTHING BEHIND THE PILLS AT ALL — Steven, 2026-09-01: *"you could still see the screen
+       underneath the pills… if you can make it completely clear, do it."* The drawer keeps its 20%
+       tint because it covers the whole phone screen; a panel this small does not need one. The
+       capsules are solid, so they carry their own contrast over anything they land on. */
+    background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
   }
