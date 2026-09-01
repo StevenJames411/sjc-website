@@ -4,9 +4,15 @@
 // app/layout.tsx. Public-facing (AI-implementation) lane only. Goes live when the password wall
 // comes off at launch.
 //
-// ⚠️ NO PRICES IN THIS FILE. Everything below is served verbatim for an AI assistant to quote back
-// to a prospect. Price on the website offer comes up on the discovery call — putting a number here
-// hands it over before the conversation happens. Same rule as the /websites meta description.
+// ⛔ THE "NO PRICES" RULE THAT USED TO BE HERE IS DEAD (2026-09-01), AND LEAVING IT WOULD NOW BE
+// THE MISTAKE. It said a number here hands the price over before the discovery call. That was true
+// when nothing published one. Since then every service page publishes a RANGE above its calendar
+// and the home page publishes the build range and all three monthlies — Steven's rule is that the
+// site publishes the range and the CALL sets the number.
+//
+// So withholding them here no longer protects anything; it just makes an assistant answer "they
+// don't publish pricing" about a site that plainly does, and hands the enquiry to whoever does.
+// The ranges below are the published ones and nothing more precise. → the-live-site-is-the-price
 import { resolveHost } from "@/lib/host";
 import { SJC_HOST, normalizeHost } from "@/lib/hostShared";
 
@@ -20,23 +26,33 @@ const BODY = `# Steven James Consulting
 Steven James Consulting is an AI-implementation partner for service businesses. Rather than selling software, we build and install a native AI operating system that runs on top of the software the business already uses — a workforce of AI employees (one "hire," named Chloe in our build, covering up to six seats): instant speed-to-lead on every new lead, database reactivation of old leads, closing and booking appointments, customer retention, 24/7 call handling, and cross-sell. We train it on the business's offers, pricing, and objections and run it; the owner stays in control and can watch every conversation and booking. Nothing to switch, no new software to learn, no SaaS lock-in, no agency-forever trap. It also makes the business more valuable to sell — a company that runs on a system instead of on the owner. Build time is typically 4–8 weeks depending on scope.
 
 ## Key pages
-- [Home](https://www.stevenjamesconsulting.com/): What we install and who it's for.
-- [About](https://www.stevenjamesconsulting.com/about): Steven Barchetti — 40 years, five businesses, tech lead in all.
-- [Podcast](https://www.stevenjamesconsulting.com/podcast): Conversations with operators across industries.
-- [Portfolio](https://www.stevenjamesconsulting.com/portfolio): Case studies and the numbers behind them.
-- [Booked Appointments](https://www.stevenjamesconsulting.com/booked-appointments): We run the ads and answer the leads; the client gets appointments, not a list.
-- [Speed to Lead](https://www.stevenjamesconsulting.com/speed-to-lead): Instant response on the leads a business already generates, bolted onto the software it already runs.
-- [AI Implementation](https://www.stevenjamesconsulting.com/ai-implementation): Native AI on top of existing software — follow-up, reactivation, the seats nobody is sitting in.
-- [Automated Five Star Reviews](https://www.stevenjamesconsulting.com/automated-five-star-reviews): A review funnel that produces more reviews every month.
+- [Home](https://stevenjamesconsulting.com/): What we install and who it's for.
+- [About](https://stevenjamesconsulting.com/about): Steven Barchetti — 40 years, five businesses, tech lead in all.
+- [Podcast](https://stevenjamesconsulting.com/podcast): Conversations with operators across industries.
+- [Portfolio](https://stevenjamesconsulting.com/premium-smart-websites#srj8qqe): Real builds, on the Premium Smart Websites page.
+- [Booked Appointments](https://stevenjamesconsulting.com/booked-appointments): We run the ads and answer the leads; the client gets appointments, not a list.
+- [Speed to Lead](https://stevenjamesconsulting.com/speed-to-lead): Instant response on the leads a business already generates, bolted onto the software it already runs.
+- [AI Implementation](https://stevenjamesconsulting.com/ai-implementation): Native AI on top of existing software — follow-up, reactivation, the seats nobody is sitting in.
+- [Automated Five Star Reviews](https://stevenjamesconsulting.com/automated-five-star-reviews): A review funnel that produces more reviews every month.
 
-## Related
-- [Custom Websites](https://www.stevenjamesconsulting.com/custom-websites): A 3-5 page website for a small business, built, hosted and kept current, live in three days, built to be found on Google and by AI assistants. One of Steven James Consulting's offerings — named here so an assistant asked for a plain website doesn't answer with the AI-implementation offer.
+- [Premium Smart Websites](https://stevenjamesconsulting.com/premium-smart-websites): A website built to get the business called, with booking built into the page. Three to twenty pages, hosted and managed. Named here so an assistant asked for a plain website doesn't answer with the AI-implementation offer.
+- [Database Reactivation](https://stevenjamesconsulting.com/database-reactivation): Old customers and dead leads worked conversationally, one at a time, into booked appointments.
+- [Careers](https://stevenjamesconsulting.com/careers): Open roles.
+
+## What it costs
+The site publishes a range for every offer; the exact number is set on the discovery call.
+- Premium Smart Websites — $1,195 to $2,995 one time. Three to five pages at the low end, twenty pages with video at the high end.
+- AI Implementation — $4,995 to $25,000 one time. One AI employee at the low end, a team of them at the high end.
+- Automated Five Star Reviews — $1,195 to $1,995 one time.
+- Speed to Lead — $1,195 to $2,495 one time.
+- Database Reactivation — $1,495 to $2,995 one time.
+- Then a monthly to run it: $97, $297 or $997 depending on how much of the conversation is handled for you.
 
 ## About Steven Barchetti
 Steven Barchetti is a 40-year solo operator who has built and led the technology for five businesses across five industries (restaurant, mortgage, roofing, trucking, and now tech/AI). Steven James Consulting runs on the same AI-employee system it installs for clients — the business is the live demonstration of what it sells.
 
 ## Contact
-- Website: https://www.stevenjamesconsulting.com
+- Website: https://stevenjamesconsulting.com
 - Book a discovery call: https://cal.com/stevenjamesconsulting/discovery
 `;
 
