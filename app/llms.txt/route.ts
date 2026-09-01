@@ -27,7 +27,7 @@ Steven James Consulting is an AI-implementation partner for service businesses. 
 - [Booked Appointments](https://www.stevenjamesconsulting.com/booked-appointments): We run the ads and answer the leads; the client gets appointments, not a list.
 - [Speed to Lead](https://www.stevenjamesconsulting.com/speed-to-lead): Instant response on the leads a business already generates, bolted onto the software it already runs.
 - [AI Implementation](https://www.stevenjamesconsulting.com/ai-implementation): Native AI on top of existing software — follow-up, reactivation, the seats nobody is sitting in.
-- [Five Star Reviews](https://www.stevenjamesconsulting.com/five-star-reviews): A review funnel that produces more reviews every month.
+- [Automated Five Star Reviews](https://www.stevenjamesconsulting.com/automated-five-star-reviews): A review funnel that produces more reviews every month.
 
 ## Related
 - [Custom Websites](https://www.stevenjamesconsulting.com/custom-websites): A 3-5 page website for a small business, built, hosted and kept current, live in three days, built to be found on Google and by AI assistants. One of Steven James Consulting's offerings — named here so an assistant asked for a plain website doesn't answer with the AI-implementation offer.

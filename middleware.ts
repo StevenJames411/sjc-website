@@ -319,7 +319,7 @@ export async function middleware(req: NextRequest) {
   const SPOKEN: Record<string, string> = {
     "/websites": "/custom-websites",
     "/website": "/custom-websites",
-    "/reviews": "/five-star-reviews",
+    "/reviews": "/automated-five-star-reviews",
     "/ads": "/booked-appointments",
     "/work": "/portfolio",
   };
