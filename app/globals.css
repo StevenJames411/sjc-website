@@ -794,3 +794,29 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 /* ⚠️ THE HAIRLINES ON `.vid` AND THE BOOK COVER ARE NOT DIVIDERS — they are frames around media,
    and they sit on top of a dark video or a cover image where they read as an edge. Left alone on
    purpose; raising them would put stray lines across the right column. */
+
+/* ⭐ THE INTERVIEWS PLAY FROM OUR OWN SERVER NOW. Steven, 08-31: *"take the five YouTube videos,
+   put them on our own server, and put them back on the website when you're ready."* The files sit
+   in Vercel Blob and play in a native <video>, so there is no copy-link button, no "Watch on
+   YouTube" bar, no YouTube branding and nothing on the page pointing off it.
+
+   ⛔ THE DESIGN'S BOX WAS BUILT FOR AN IFRAME AND HAS TO BE UNDONE. `.vid` fakes a 16:9 box with
+   `padding-top:56.25%` and then absolutely positions the iframe inside it — the standard trick for
+   an element that cannot size itself. A <video> CAN size itself, and dropping one into that box
+   leaves it stranded below 56.25% of empty padding. Zero the padding wherever a real player is
+   present and let the file's own dimensions set the height.
+
+   ⚠️ AND THAT IS AN IMPROVEMENT, NOT A COMPROMISE. These uploads are 480x300, 464x360 and 640x480 —
+   none of them 16:9. The embed was letterboxing every one of them into black bars. Their own
+   aspect ratio is the honest one. */
+.sjc-design.sjc-design .vid:has(.vid__player) {
+  padding-top: 0;
+  background: #000;
+}
+.sjc-design.sjc-design .vid__player {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0;
+  background: #000;
+}
