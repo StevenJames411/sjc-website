@@ -580,7 +580,14 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
      on the right, which is exactly what Steven spotted.
      Centring from the PARENT cannot be half-applied: `align-items: center` needs no cooperation
      from the child's margins, so a stray margin rule can no longer defeat it. */
-  #global-header [data-landingsite-mobile-menu] {
+  /* ⛔ `:not(.hidden)` IS WHAT LETS THE MENU CLOSE — IT IS NOT DECORATION.
+     The close-on-tap handler works by adding Tailwind's `hidden` class. But this selector carries
+     an ID, so it is (1,1,0) against `.hidden` at (0,1,0) — `display:flex` won every time and the
+     drawer stayed open over the page it had just navigated to. The handler was firing the whole
+     time; the CSS was overruling it.
+     Excluding the closed state means there is nothing to overrule: when `hidden` is on, this rule
+     does not match at all and the design's own `display:none` stands. */
+  #global-header [data-landingsite-mobile-menu]:not(.hidden) {
     display: flex;
     flex-direction: column;
     align-items: center;
