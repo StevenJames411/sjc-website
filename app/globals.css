@@ -691,10 +691,16 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 @media (min-width: 961px) {
   .sjc-design.sjc-design .ep {
     display: grid;
-    grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
     column-gap: 46px;
     align-items: start;
   }
+  /* ⛔ WORDS LEFT, VIDEO RIGHT — Steven, 08-31: *"Humans read from left to right. Let's put the
+     text on the left, the video on the right."* The markup still runs media-then-words, because
+     that is the order a phone should stack in; the columns are placed explicitly so the source
+     order and the reading order can differ. */
+  .sjc-design.sjc-design .ep__words { grid-column: 1; grid-row: 1; }
+  .sjc-design.sjc-design .ep__media { grid-column: 2; grid-row: 1; }
 }
 .sjc-design.sjc-design .ep__media .cover { display: block; margin-top: 22px; }
 .sjc-design.sjc-design .ep__media .cover img { width: 170px; height: auto; }
@@ -725,8 +731,19 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   margin: 0 0 10px;
 }
 
+/* ⚠️ ON A PHONE THE TWO WRAPPERS DISSOLVE. `display:contents` promotes the four real pieces to be
+   grid items of `.ep`, so `order` can interleave them across what were two separate columns —
+   title, then the video, then the write-up, then the book cover. Without this the phone would show
+   a video before it says whose interview it is, or bury the video under five paragraphs; neither
+   wrapper order can produce the right sequence on its own. */
 @media (max-width: 960px) {
-  .sjc-design.sjc-design .ep__media { margin-bottom: 22px; }
+  .sjc-design.sjc-design .ep { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .sjc-design.sjc-design .ep__media,
+  .sjc-design.sjc-design .ep__words { display: contents; }
+  .sjc-design.sjc-design .ep .ep__head { order: 1; }
+  .sjc-design.sjc-design .ep .vid      { order: 2; margin-bottom: 20px; }
+  .sjc-design.sjc-design .ep .ep__text { order: 3; }
+  .sjc-design.sjc-design .ep .cover    { order: 4; margin-top: 18px; }
 }
 
 /* the site-wide legal disclaimer, added 08-31 at Steven's instruction. Sits above the copyright
