@@ -566,11 +566,14 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 0 22px 34px;
-    /* ⛔ ALMOST NO SCRIM AND NO BLUR — this is the half I had backwards. Steven, pointing at the
-       Texas Best menu: *"I don't mean the pill needs to be transparent."* There the PAGE is sharp
-       and the PILLS are solid; I had blurred the page and hollowed the pills, which is the same
-       two ingredients used the wrong way round. A 20% tint only stops the page glaring. */
-    background: rgba(10, 14, 39, 0.2);
+    /* ⛔ NO SCRIM, NO BLUR, NO TINT — NOTHING. Steven, 2026-09-01: *"You don't need that gradient
+       covering up the underlying screen. You want to read the screen without anything in your way.
+       We engineered the pills to stand on their own."* This started as a blurred page with hollow
+       pills (both ingredients backwards), then became a sharp page under a 20% tint; the tint was
+       the last of the scrim thinking and it is now gone too. The capsule is solid, so it carries
+       its own contrast over anything — which is the entire reason the page behind can stay sharp.
+       ⛔ Do not reintroduce a tint, a scrim or a backdrop-filter here. Twice ruled. */
+    background: transparent;
   }
   /* ⛔ CENTRED BY FLEX, NOT BY `margin: 0 auto` — THE AUTO MARGINS DID NOT SURVIVE.
      Measured on the live page: `margin-left: 76px; margin-right: 0`. Something in the imported
