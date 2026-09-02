@@ -1004,7 +1004,10 @@ export default function DesignSection(props: DesignSectionProps) {
       const text = resolveColor((b as Surface)?.textColor);
       const reach = `${sel}[data-sjc-box][data-sjc-box]`;
       const kids = text
-        ? `${reach} :is(h1,h2,h3,h4,h5,h6,p,li,span,strong,b,em){color:${text}}`
+        // ⚠️ `svg` IS IN THE LIST ON PURPOSE. These designs draw their card icons with
+        // `stroke="currentColor"` and set `.ico svg{color:var(--cyan)}` — so recolouring a card
+        // without this leaves a cyan glyph on a blue card, which reads as a missing icon.
+        ? `${reach} :is(h1,h2,h3,h4,h5,h6,p,li,span,strong,b,em,svg){color:${text}}`
         : "";
       return `${own}${kids}`;
     })
