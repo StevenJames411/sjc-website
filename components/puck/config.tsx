@@ -144,6 +144,7 @@ type Props = {
     anchor: string;
   };
   Spacer: { height: number };
+  SystemStrip: { current: string; intro: string; onDark: boolean; spaceAbove: number; spaceBelow: number };
   Divider: { color: string; thickness: number; spacing: number };
   Booking: { src: string; title: string; subtitle: string; spaceAbove: number; spaceBelow: number; height: number; width: string; anchor: string };
   Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
@@ -510,6 +511,22 @@ export const IMAGE_DEFAULTS = {
   zoom: 100,
   focus: "center",
 };
+
+/**
+ * THE SIX SYSTEMS, IN THE ORDER A CUSTOMER MOVES THROUGH THEM - found, wanted, answered,
+ * recovered, trusted - with the connecting layer last. ⛔ The NAMES are the page names and the
+ * search terms; they are not reworded here. The one-liner underneath is where the outcome goes,
+ * so a visitor gets a consistent Problem-System-Outcome read across six labels that are otherwise
+ * a thing, a process, an outcome and a technology.
+ */
+export const SIX_SYSTEMS = [
+  { slug: "/premium-smart-websites", name: "Premium Smart Websites", line: "Get found, and give a customer one obvious thing to do." },
+  { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
+  { slug: "/speed-to-lead", name: "Speed to Lead", line: "Answer every lead in seconds, day or night." },
+  { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
+  { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy customer into a review." },
+  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five inside the software you already run." },
+];
 
 export const CONVERSATION_DEFAULTS = {
   caption: "",
@@ -2675,6 +2692,106 @@ const baseConfig: Config<Props, RootProps> = {
             <Content />
           </div>
         </section>
+        );
+      },
+    },
+
+    /**
+     * THE SIX SYSTEMS, WITH THIS PAGE'S ONE LIT UP.
+     *
+     * ⛔ WHY IT IS A COMPONENT AND NOT SIX HAND-BUILT SECTIONS. Six copies of the same markup is
+     * six places to forget when a system is renamed, repriced or reordered. The list lives once,
+     * below, and every page reads it. Adding a seventh system is one line here.
+     *
+     * ⚠️ NO "SYSTEM 2 OF 6" NUMBERING, DELIBERATELY. Numbering reads as a checkout wizard and
+     * asserts an order the buyer does not have to follow - most clients start with one system.
+     * The strip shows membership, which is the thing a visitor is missing, without implying steps.
+     *
+     * ⭐ AI IMPLEMENTATION IS RENDERED APART FROM THE OTHER FIVE, because it is not a peer. It is
+     * the layer that connects them, the copy has said so for weeks, and until now the layout
+     * argued the opposite by drawing it as a sixth identical box.
+     */
+    SystemStrip: {
+      label: "Six systems strip (this page highlighted)",
+      fields: {
+        current: {
+          type: "select" as const,
+          label: "Which system is this page?",
+          options: [
+            { label: "(none highlighted)", value: "" },
+            ...SIX_SYSTEMS.map((x) => ({ label: x.name, value: x.slug })),
+          ],
+        },
+        intro: { type: "textarea" as const, label: "Line above the strip" },
+        onDark: {
+          type: "radio" as const,
+          label: "Sits on",
+          options: [
+            { label: "A light band", value: false },
+            { label: "A dark band", value: true },
+          ],
+        },
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={40} step={8} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={40} step={8} min={0} />
+          ),
+        },
+      },
+      defaultProps: {
+        current: "",
+        intro: "This is one of six systems we build. They are designed to connect, so a lead is never dropped between them.",
+        onDark: false,
+        spaceAbove: 40,
+        spaceBelow: 40,
+      },
+      render: ({ current, intro, onDark, spaceAbove, spaceBelow }) => {
+        const ink = onDark ? "#ffffff" : "#0A0E27";
+        const body = onDark ? "rgba(255,255,255,.82)" : "#3E4B63";
+        const five = SIX_SYSTEMS.filter((x) => x.slug !== "/ai-implementation");
+        const layer = SIX_SYSTEMS.find((x) => x.slug === "/ai-implementation")!;
+        const chip = (x: { slug: string; name: string; line: string }, wide: boolean) => {
+          const on = x.slug === current;
+          return (
+            <a
+              key={x.slug}
+              href={x.slug}
+              style={{
+                display: "block",
+                flex: wide ? "1 1 100%" : "1 1 190px",
+                textDecoration: "none",
+                padding: "14px 16px",
+                borderRadius: "14px",
+                background: on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#ffffff",
+                border: `1px solid ${on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.12)"}`,
+                boxShadow: on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
+              }}
+            >
+              <span style={{ display: "block", fontWeight: 700, fontSize: "15px", lineHeight: 1.25, color: on ? "#ffffff" : ink }}>
+                {x.name}
+              </span>
+              <span style={{ display: "block", marginTop: "4px", fontSize: "13px", lineHeight: 1.35, color: on ? "#E9F1F8" : body }}>
+                {x.line}
+              </span>
+            </a>
+          );
+        };
+        return (
+          <div style={{ paddingTop: `${spaceAbove ?? 40}px`, paddingBottom: `${spaceBelow ?? 40}px` }}>
+            {intro ? (
+              <p style={{ margin: "0 0 16px", fontSize: "16px", lineHeight: 1.5, color: body, maxWidth: "56rem" }}>{intro}</p>
+            ) : null}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>{five.map((x) => chip(x, false))}</div>
+            <div style={{ display: "flex", marginTop: "12px" }}>{chip(layer, true)}</div>
+          </div>
         );
       },
     },
