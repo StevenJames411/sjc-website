@@ -3863,10 +3863,13 @@ const baseConfig: Config<Props, RootProps> = {
                 >
                   <span
                     style={{
-                      // ⛔ 11px #9ca3af ON THE #f5f5f7 CARD IS 2.3:1 — Steven could not read the
-                      // speaker labels at all. 13px #4b5563 is 7.2:1 and still reads as a label.
+                      // ⛔ THE TWO SPEAKER LABELS ARE BLACK, NOT A GREY. 11px #9ca3af on the
+                      // #f5f5f7 card was 2.3:1; #4b5563 was the next try and Steven still could
+                      // not read it: *"make it a black font."* A label being quiet is worth
+                      // nothing if the reader cannot tell who is talking.
                       fontSize: "13px",
-                      color: "#4b5563",
+                      fontWeight: 600,
+                      color: "#000000",
                       margin: isChloe ? "0 8px 2px 0" : "0 0 2px 8px",
                     }}
                   >
