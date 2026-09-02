@@ -152,7 +152,7 @@ type Props = {
   Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean; size: string; labelColor: string };
   Video: { src: string; caption: string; poster: string; width: string; aspect: string; autoplay: boolean; loop: boolean; muted: boolean };
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
-  Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
+  Conversation: { caption: string; captionColor: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
   SiteFooter: { blurb: string; links: { label: string; target: string; newTab?: boolean }[]; groups: { heading: string; links: { label: string; target: string; note?: string; newTab?: boolean }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; contactLayout: string; paddingTop: number; paddingBottom: number; legalGap: number; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
   PhoneLink: { label: string; tel: string };
@@ -513,6 +513,7 @@ export const IMAGE_DEFAULTS = {
 
 export const CONVERSATION_DEFAULTS = {
   caption: "",
+  captionColor: "",
   chloeLabel: "Chloe",
   leadLabel: "Lead",
   messages: [
@@ -3835,9 +3836,10 @@ const baseConfig: Config<Props, RootProps> = {
         chloeLabel: { type: "text" as const, label: "Chloe's name label" },
         leadLabel: { type: "text" as const, label: "Lead's name label" },
         caption: { type: "textarea" as const, label: "Caption (below the thread)" },
+        captionColor: { ...COLOR_FIELD, label: "Caption colour" },
       },
       defaultProps: CONVERSATION_DEFAULTS,
-      render: ({ caption, chloeLabel, leadLabel, messages }) => (
+      render: ({ caption, captionColor, chloeLabel, leadLabel, messages }) => (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: "1.5rem" }}>
           <div
             style={{
@@ -3861,8 +3863,10 @@ const baseConfig: Config<Props, RootProps> = {
                 >
                   <span
                     style={{
-                      fontSize: "11px",
-                      color: "#9ca3af",
+                      // ⛔ 11px #9ca3af ON THE #f5f5f7 CARD IS 2.3:1 — Steven could not read the
+                      // speaker labels at all. 13px #4b5563 is 7.2:1 and still reads as a label.
+                      fontSize: "13px",
+                      color: "#4b5563",
                       margin: isChloe ? "0 8px 2px 0" : "0 0 2px 8px",
                     }}
                   >
@@ -3889,7 +3893,11 @@ const baseConfig: Config<Props, RootProps> = {
             })}
           </div>
           {caption && (
-            <p style={{ marginTop: "0.7rem", fontSize: "0.875rem", color: "#6b7280", textAlign: "center", maxWidth: "440px" }}>
+            // ⛔ THE CAPTION SITS OUTSIDE THE CARD, ON THE SECTION'S OWN BACKGROUND — and Section
+            // cascades NO text colour, so the old #6b7280 was grey on the navy band: invisible.
+            // Both live threads (speed-to-lead, automated-five-star-reviews) are on #0a1f4d, so the
+            // fallback is a light one; `captionColor` overrides it for a light band.
+            <p style={{ marginTop: "0.7rem", fontSize: "1rem", lineHeight: 1.5, color: resolveColorOr(captionColor, "#D6E0F0"), textAlign: "center", maxWidth: "440px" }}>
               {caption}
             </p>
           )}
