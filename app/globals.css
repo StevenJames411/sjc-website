@@ -1211,3 +1211,32 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   border: 0;
   background: #000;
 }
+
+/* ⛔ A CARD HEADING IS NOT ITSELF A CARD (2026-09-02).
+   Every sealed sheet on this site ships two rules that collide:
+
+     .card    { background: var(--glass); border: 1px solid var(--line); border-radius: 18px;
+                padding: 32px; box-shadow: … }
+     h3.card  { font-size: 21px; font-weight: 700 }
+
+   The second was only ever meant to size the heading — but the FIRST one matches it too, because
+   `h3.card` is a `.card`. So every feature card on the site rendered a second white box, wrapped
+   around its own heading, inside the card. On a white card against a white page nobody could see
+   it; the moment the cards went blue it was unmissable, and it was there all along.
+
+   ⚠️ HEADINGS ONLY. The container `<div class="card">` must keep every one of these properties —
+   this strips them from h1–h6 and nothing else. Doubled class for (0,3,0), because each design's
+   sheet ships its own rule scoped as `.sjc-design-<id> .card` = (0,2,0). */
+.sjc-design h1.card.card,
+.sjc-design h2.card.card,
+.sjc-design h3.card.card,
+.sjc-design h4.card.card,
+.sjc-design h5.card.card,
+.sjc-design h6.card.card {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}

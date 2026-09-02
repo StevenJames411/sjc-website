@@ -993,7 +993,21 @@ export default function DesignSection(props: DesignSectionProps) {
   // Feature cards. ONE style for the whole set — that is what makes them a set — while each card
   // keeps its own destination below.
   const boxStyling = (boxes || [])
-    .map((b) => surfaceCss(`.${DESIGN_SCOPE} [data-sjc-box="${b?.key}"]`, b as Surface))
+    .map((b) => {
+      const sel = `.${DESIGN_SCOPE} [data-sjc-box="${b?.key}"]`;
+      const own = surfaceCss(sel, b as Surface);
+      // ⛔ A CARD'S TEXT COLOUR HAS TO REACH THE CARD'S TEXT, NOT JUST THE BOX. `surfaceCss` sets
+      // `color` on the card element and inheritance was expected to do the rest — but every one of
+      // these designs ships `.card p{color:var(--muted)}`, which is more specific than an inherited
+      // value and wins silently. Recolour a card to solid blue and the body copy stays grey on it.
+      // Repeating the attribute lifts this to (0,4,1) so it beats the design's own (0,2,1) rule.
+      const text = resolveColor((b as Surface)?.textColor);
+      const reach = `${sel}[data-sjc-box][data-sjc-box]`;
+      const kids = text
+        ? `${reach} :is(h1,h2,h3,h4,h5,h6,p,li,span,strong,b,em){color:${text}}`
+        : "";
+      return `${own}${kids}`;
+    })
     .filter(Boolean)
     .join("");
   // A card that links needs somewhere for the anchor to sit, and the anchor has to sit UNDER any
