@@ -1256,3 +1256,19 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   box-shadow: none;
   backdrop-filter: none;
 }
+
+/* ⭐ THE LAYER CARD'S LINK NEEDS A HOVER THAT IS NOT GOLD.
+   Steven, 2026-09-03: *"make the hover color different than yellow, so when you put your mouse
+   over it, you realize it's a clickable link."* Gold on navy is the resting state everywhere in
+   the AI Implementation livery, so the hover has to leave the livery to register as a state
+   change at all — white is the only lift on that navy that introduces no new hue.
+   ⚠️ It is a CLASS, not an inline style: an inline `color` would beat any rule written here, so
+   the base colour lives with the hover or the two can never stay in sync. */
+.sjc-design .sjc-layer-link {
+  color: #ffd700;
+  transition: color 0.18s ease;
+}
+.sjc-design .sjc-layer-link:hover,
+.sjc-design .sjc-layer-link:focus-visible {
+  color: #ffffff;
+}
