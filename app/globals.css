@@ -1009,13 +1009,20 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     gap: 11px;
     min-width: 268px;
     padding: 12px !important;
-    /* ⛔ NOTHING BEHIND THE PILLS AT ALL — Steven, 2026-09-01: *"you could still see the screen
-       underneath the pills… if you can make it completely clear, do it."* The drawer keeps its 20%
-       tint because it covers the whole phone screen; a panel this small does not need one. The
-       capsules are solid, so they carry their own contrast over anything they land on. */
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
+    /* ⛔ FULLY TRANSPARENT WAS RIGHT UNTIL A PILL NEEDED A COLOURED BORDER (2026-09-02). Steven,
+       2026-09-01, asked for clear: *"if you can make it completely clear, do it."* That held while
+       every capsule was solid navy with gold — each one carried its own contrast. The AI pill's
+       money-green edge does not: over the dark hero it reads, over a white band it washes out, and
+       between the pills the page bleeds through and the whole menu looks unfinished.
+       ⭐ HIS FIX, 2026-09-02: *"we might need to put a gradient layer under these pills."* A blurred
+       gradient keeps the see-through quality he likes — you still read the page moving underneath —
+       while giving every border ONE ground to sit on instead of whatever happens to scroll past. */
+    background: linear-gradient(180deg, rgba(8, 12, 32, 0.82) 0%, rgba(8, 12, 32, 0.62) 100%) !important;
+    backdrop-filter: blur(14px) saturate(125%);
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 18px;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.42) !important;
   }
   /* the links become the capsules — values copied from the drawer so the two cannot drift */
   #global-header .sjc-drop a {
