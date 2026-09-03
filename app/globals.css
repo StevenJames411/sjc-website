@@ -91,8 +91,7 @@ textarea { resize: vertical !important; min-height: 76px; }
    .text-white / .border-[…] rules, which are (0,2,0). ⛔ But a COMPILED hover: class is (0,3,0)
    and beats this — strip `hover:bg-*` / `hover:text-*` off the markup, never fight it here. */
 .sjc-cta {
-  transition: background-color .3s ease, color .3s ease, border-color .3s ease,
-              transform .3s ease, box-shadow .3s ease;
+  transition: background .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease;
 }
 /* ⛔ hover:hover or a phone TAP sticks the green on until something else is tapped. */
 /* ⛔ `.sjc-cta` IS REPEATED, AND WITHOUT IT THE HOVER SILENTLY LOST (2026-08-31).
@@ -104,17 +103,21 @@ textarea { resize: vertical !important; min-height: 76px; }
    `pf-cta`. Doubling the class makes this (0,3,1) and puts the hover back on top.
    ⚠️ A COMPILED `hover:bg-*` utility is still (0,3,0) + pseudo and beats even this — strip those
    off the markup rather than escalating here again. */
+/* ⛔ THIS HOVER WAS DEAD, AND THE SWELL HID IT (2026-09-03).
+   It set green with no !important, while `.sjc-design .sjc-cta` sets the cyan gradient WITH
+   !important — so the colour never changed on a single button and the only thing a visitor saw
+   was `transform: scale()`. Steven: *"take away the swell and make the hover color change."*
+   ⭐ The hover is now a DEEPER cyan, not a different hue: the button is the page's one action, and
+   a colour it never wears at rest reads as a different button rather than the same one pressed.
+   ⚠️ !important is required here purely to answer the gradient's own !important — without it this
+   rule loses exactly the way the green one did. */
 @media (hover: hover) {
   a.sjc-cta.sjc-cta:hover {
-    background: #22c55e;
-    color: #fff;
-    border-color: #22c55e;
-    transform: scale(1.045);
-    box-shadow: 0 12px 26px rgba(0, 0, 0, .30);
+    background: linear-gradient(180deg, #2FC8EA, #0090B4) !important;
+    color: #04121D !important;
+    border-color: transparent !important;
+    box-shadow: 0 10px 24px rgba(0, 217, 255, .38), inset 0 1px 0 rgba(255, 255, 255, .45) !important;
   }
-}
-@media (prefers-reduced-motion: reduce) {
-  a.sjc-cta.sjc-cta:hover { transform: none; }
 }
 
 /* Resting colours for the buttons whose background used to be an inline style (an inline style
