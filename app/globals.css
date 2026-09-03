@@ -1017,7 +1017,7 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
        ⭐ HIS FIX, 2026-09-02: *"we might need to put a gradient layer under these pills."* A blurred
        gradient keeps the see-through quality he likes — you still read the page moving underneath —
        while giving every border ONE ground to sit on instead of whatever happens to scroll past. */
-    background: linear-gradient(180deg, rgba(8, 12, 32, 0.82) 0%, rgba(8, 12, 32, 0.62) 100%) !important;
+    background: linear-gradient(180deg, rgba(5, 8, 22, 0.93) 0%, rgba(5, 8, 22, 0.78) 100%) !important;
     backdrop-filter: blur(14px) saturate(125%);
     -webkit-backdrop-filter: blur(14px) saturate(125%);
     border: 1px solid rgba(255, 255, 255, 0.10) !important;
