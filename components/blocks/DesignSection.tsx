@@ -638,6 +638,9 @@ type BandDef = {
 const GRID_LIGHT =
   "linear-gradient(rgba(30,61,145,.05) 1px,transparent 1px)," +
   "linear-gradient(90deg,rgba(30,61,145,.05) 1px,transparent 1px)";
+const GRID_DEEP =
+  "linear-gradient(rgba(30,61,145,.075) 1px,transparent 1px),"+
+  "linear-gradient(90deg,rgba(30,61,145,.075) 1px,transparent 1px)";
 const GRID_DARK =
   "linear-gradient(rgba(148,197,255,.055) 1px,transparent 1px)," +
   "linear-gradient(90deg,rgba(148,197,255,.055) 1px,transparent 1px)";
@@ -656,7 +659,12 @@ export const BAND_STYLES: Record<string, BandDef> = {
   "brand-fade": { label: "Brand gradient", base: "var(--primary-color,#1e3d91)",
     bg: "linear-gradient(to bottom right,var(--primary-color,#1e3d91),var(--accent3-color,#00a8cc))", ...ON_DARK },
   mist: { label: "Mist (light grey)", base: "#EEF2F7", bg: "", ...ON_LIGHT },
-  "mist-grid": { label: "Mist + grid", base: "#EEF2F7", bg: GRID_LIGHT, size: "64px 64px,64px 64px", ...ON_LIGHT },
+  // ⚠️ DEEPER THAN `mist`, DELIBERATELY, AND IT IS SAFE TO CHANGE ALONE. Steven, 2026-09-03:
+  // the calendar band needed to read as a distinct grey, not as near-white. `mist-grid` is used
+  // by exactly one thing site-wide — the booking section at the foot of seven pages — so it
+  // carries its own deeper base and its own slightly stronger grid instead of dragging plain
+  // `mist` (the FAQ and the home machine band) darker with it.
+  "mist-grid": { label: "Mist + grid (deeper)", base: "#DCE3ED", bg: GRID_DEEP, size: "64px 64px,64px 64px", ...ON_LIGHT },
   paper: { label: "Paper (white)", base: "#FFFFFF", bg: "", ...ON_LIGHT },
   "paper-grid": { label: "Paper + grid", base: "#FFFFFF", bg: GRID_LIGHT, size: "64px 64px,64px 64px", ...ON_LIGHT },
 };
