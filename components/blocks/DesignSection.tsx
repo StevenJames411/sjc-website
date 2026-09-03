@@ -504,11 +504,31 @@ function markBandRoot(html: string): string {
 // happens to open with <footer>. Same family as the lift-chrome first-tag bug.
 const NON_PAINTING = new Set(["style", "script", "link", "meta", "template", "noscript"]);
 
+/**
+ * Blank the CONTENTS of every style/script block, keeping length and offsets identical.
+ *
+ * ⛔ SKIPPING THE `<style>` TAG IS NOT ENOUGH — THE SEARCH THEN RUNS ON THROUGH THE CSS INSIDE IT.
+ * A stylesheet comment reading "`<fill> padding-box, <stroke> border-box`" was matched as the
+ * section's first painting tag, so Space above / Space below stamped the padding onto a phrase in
+ * a comment. The controls saved correctly and moved nothing, on every attempt, with no error.
+ *
+ * Masked rather than stripped so `tag.index` still points into the ORIGINAL string and the splice
+ * below stays exact.
+ */
+function maskInertBlocks(html: string): string {
+  return html.replace(
+    /(<(style|script)\b[^>]*>)([\s\S]*?)(<\/\2\s*>)/gi,
+    (_m, open: string, _name: string, body: string, close: string) =>
+      open + " ".repeat(body.length) + close
+  );
+}
+
 export function injectStyle(html: string, decls: string): string {
   if (!decls) return html;
+  const hay = maskInertBlocks(html);
   const re = /<([a-z][a-z0-9]*)\b[^>]*>/gi;
   let tag: RegExpExecArray | null = null;
-  for (let m = re.exec(html); m; m = re.exec(html)) {
+  for (let m = re.exec(hay); m; m = re.exec(hay)) {
     if (!NON_PAINTING.has(m[1].toLowerCase())) {
       tag = m;
       break;
