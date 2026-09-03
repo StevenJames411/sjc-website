@@ -533,7 +533,7 @@ export const SIX_SYSTEMS = [
   { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy customer into a review." },
   { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
   { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
-  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five inside the software you already run." },
+  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five systems inside the software you already run." },
 ];
 
 export const CONVERSATION_DEFAULTS = {
@@ -2811,7 +2811,7 @@ const baseConfig: Config<Props, RootProps> = {
               <span style={{ display: "block", fontWeight: 700, fontSize: "15px", lineHeight: 1.25, color: layer ? GOLD : on ? "#ffffff" : ink }}>
                 {x.name}
               </span>
-              <span style={{ display: "block", marginTop: "4px", fontSize: "13px", lineHeight: 1.35, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
+              <span style={{ display: "block", marginTop: layer ? "6px" : "4px", fontSize: layer ? "15px" : "13px", lineHeight: 1.4, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
                 {x.line}
               </span>
             </a>
