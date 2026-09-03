@@ -934,7 +934,7 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     margin: 0;
     /* ⛔ 11px JAMMED THE CAPSULES TOGETHER. Steven, 2026-09-02: "we have plenty of vertical room
        on the phone and on the desktop, why do the pills have to be jammed together." */
-    gap: 18px;
+    gap: 25px;
   }
   /* the links become the capsules */
   #global-header [data-landingsite-mobile-menu] a {
@@ -1008,9 +1008,9 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   #global-header .sjc-drop {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 25px;
     min-width: 268px;
-    padding: 16px !important;
+    padding: 22px !important;
     /* ⛔ FULLY TRANSPARENT WAS RIGHT UNTIL A PILL NEEDED A COLOURED BORDER (2026-09-02). Steven,
        2026-09-01, asked for clear: *"if you can make it completely clear, do it."* That held while
        every capsule was solid navy with gold — each one carried its own contrast. The AI pill's
