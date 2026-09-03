@@ -2783,7 +2783,7 @@ const baseConfig: Config<Props, RootProps> = {
             <a
               key={x.slug}
               href={x.slug}
-              className={layer ? "sjc-sys-card sjc-sys-card--layer" : "sjc-sys-card"}
+              className={`sjc-sys-card${layer ? " sjc-sys-card--layer" : ""}${on ? " sjc-sys-card--active" : ""}`}
               style={{
                 display: "block",
                 flex: wide ? "1 1 100%" : "1 1 190px",
@@ -2814,15 +2814,16 @@ const baseConfig: Config<Props, RootProps> = {
                 {x.name}
               </span>
               <span style={{ display: "block", marginTop: "6px", fontSize: "15px", lineHeight: 1.4, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
-                {x.line}{" "}
-                {/* ⭐ THE ARROW IS THE AFFORDANCE, AND IT IS VISIBLE AT REST.
-                    Steven, 2026-09-03: *"how does a customer know that they're a hyperlink?"* — he
-                    only found out by watching his own status bar. A hover effect cannot answer that
-                    question, because you have to already suspect the card to trigger it. "→" is
-                    the site's existing word for "this goes somewhere" (every "See how it works →"),
-                    so it needs no explaining. aria-hidden: it is decoration, the anchor already
-                    reads as a link to a screen reader. */}
-                <span className="sjc-sys-arrow" aria-hidden="true">&#8594;</span>
+                {x.line}
+              </span>
+              {/* ⭐ WORDS, NOT JUST A GLYPH. Steven, 2026-09-03: *"the arrow's not doing the work."*
+                  A bare arrow trailing a sentence reads as punctuation; a labelled link reads as a
+                  link. "Learn more" over "See how it works" because these cards are narrow and four
+                  words wrap — two fit on every card at every width, and the phrase then matches the
+                  big cards on the home page so a visitor learns ONE affordance for the whole site.
+                  aria-hidden on the glyph only: the words carry the meaning. */}
+              <span className="sjc-sys-cta">
+                Learn more <span className="sjc-sys-arrow" aria-hidden="true">&#8594;</span>
               </span>
             </a>
           );
