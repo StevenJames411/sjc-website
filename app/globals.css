@@ -107,16 +107,18 @@ textarea { resize: vertical !important; min-height: 76px; }
    It set green with no !important, while `.sjc-design .sjc-cta` sets the cyan gradient WITH
    !important — so the colour never changed on a single button and the only thing a visitor saw
    was `transform: scale()`. Steven: *"take away the swell and make the hover color change."*
-   ⭐ The hover is now a DEEPER cyan, not a different hue: the button is the page's one action, and
-   a colour it never wears at rest reads as a different button rather than the same one pressed.
+   ⭐ GOLD, NOT A DEEPER CYAN. Deepening the cyan was the first attempt and Steven killed it:
+   *"it's so similar to the original you can barely tell it's doing something."* A hover has to
+   cross a hue boundary to register at a glance. Gold is the brand accent, it is the furthest jump
+   from cyan still inside the palette, and dark navy text on it keeps the label readable.
    ⚠️ !important is required here purely to answer the gradient's own !important — without it this
    rule loses exactly the way the green one did. */
 @media (hover: hover) {
   a.sjc-cta.sjc-cta:hover {
-    background: linear-gradient(180deg, #2FC8EA, #0090B4) !important;
-    color: #04121D !important;
+    background: linear-gradient(180deg, #FFE04A, #F0C000) !important;
+    color: #12263F !important;
     border-color: transparent !important;
-    box-shadow: 0 10px 24px rgba(0, 217, 255, .38), inset 0 1px 0 rgba(255, 255, 255, .45) !important;
+    box-shadow: 0 10px 24px rgba(255, 215, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .55) !important;
   }
 }
 
