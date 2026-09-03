@@ -2768,8 +2768,17 @@ const baseConfig: Config<Props, RootProps> = {
         const body = onDark ? "rgba(255,255,255,.82)" : "#0A0E27";
         const five = SIX_SYSTEMS.filter((x) => x.slug !== "/ai-implementation");
         const layer = SIX_SYSTEMS.find((x) => x.slug === "/ai-implementation")!;
+        // ⛔ THE LAYER IS NOT ONE OF THE FIVE, SO IT IS NOT SKINNED LIKE THEM.
+        // Same livery as the menu pill and the home hero: gold NAME, green tagline, green hairline.
+        // → the-ai-implementation-pill-is-one-object
+        // ⚠️ It carries a DARK ground here even though the hero's version is transparent. The rule is
+        // "fill is for floating": the hero sits on a fixed dark gradient and needs none, this strip
+        // sits on a LIGHT page, and gold on near-white is unreadable. The capsule supplies the ground
+        // the gold needs — the same reason the menu pill is filled over Steven's photo.
+        const GOLD = "#ffd700", GREEN = "#85bb65", LAYER_BG = "#0A0E27";
         const chip = (x: { slug: string; name: string; line: string }, wide: boolean) => {
           const on = x.slug === current;
+          const layer = wide;
           return (
             <a
               key={x.slug}
@@ -2783,15 +2792,15 @@ const baseConfig: Config<Props, RootProps> = {
                 // ⛔ THE RESTING CARD IS NEVER WHITE ON A LIGHT PAGE — it disappears into the page and only
                 // the ACTIVE card is visible, which reads as four broken cards. Steven, 2026-09-02.
                 // A soft tint of the same blue the active card uses, so the set reads as one family.
-                background: on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#E8EFF7",
-                border: `1px solid ${on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
+                background: layer ? LAYER_BG : on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#E8EFF7",
+                border: `1px solid ${layer ? GREEN : on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
                 boxShadow: on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
               }}
             >
-              <span style={{ display: "block", fontWeight: 700, fontSize: "15px", lineHeight: 1.25, color: on ? "#ffffff" : ink }}>
+              <span style={{ display: "block", fontWeight: 700, fontSize: "15px", lineHeight: 1.25, color: layer ? GOLD : on ? "#ffffff" : ink }}>
                 {x.name}
               </span>
-              <span style={{ display: "block", marginTop: "4px", fontSize: "13px", lineHeight: 1.35, color: on ? "#E9F1F8" : body }}>
+              <span style={{ display: "block", marginTop: "4px", fontSize: "13px", lineHeight: 1.35, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
                 {x.line}
               </span>
             </a>
