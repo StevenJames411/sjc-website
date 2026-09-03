@@ -2785,7 +2785,7 @@ const baseConfig: Config<Props, RootProps> = {
               href={x.slug}
               style={{
                 display: "block",
-                flex: wide ? "1 1 100%" : "1 1 190px",
+                flex: wide ? "1 1 100%" : "1 1 220px",
                 textDecoration: "none",
                 padding: "14px 16px",
                 borderRadius: "14px",
@@ -2808,10 +2808,10 @@ const baseConfig: Config<Props, RootProps> = {
                   : on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
               }}
             >
-              <span style={{ display: "block", fontWeight: 700, fontSize: layer ? "18px" : "15px", lineHeight: 1.25, color: layer ? GOLD : on ? "#ffffff" : ink }}>
+              <span style={{ display: "block", fontWeight: 700, fontSize: "18px", lineHeight: 1.25, color: layer ? GOLD : on ? "#ffffff" : ink }}>
                 {x.name}
               </span>
-              <span style={{ display: "block", marginTop: layer ? "6px" : "4px", fontSize: layer ? "17px" : "13px", lineHeight: 1.4, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
+              <span style={{ display: "block", marginTop: "6px", fontSize: "17px", lineHeight: 1.4, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
                 {x.line}
               </span>
             </a>
