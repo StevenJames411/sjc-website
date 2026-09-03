@@ -1021,7 +1021,10 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   #global-header .sjc-drop a {
     padding: 12px 22px !important;
     text-align: center;
-    border: 1px solid rgba(255, 215, 0, 0.55);
+    /* ⛔ A HAIRLINE AT HALF OPACITY IS A DECISION NOBODY CAN SEE. Steven, 2026-09-02: "the gold
+       band around the pills - you make it half a pixel tall so you can't even see it." 2px at
+       near-full gold. If a border is worth drawing it is worth seeing. */
+    border: 2px solid rgba(255, 215, 0, 0.9);
     border-radius: 999px;
     background: rgba(8, 12, 32, 0.93) !important;
     color: var(--accent2-color, #ffd700) !important;
