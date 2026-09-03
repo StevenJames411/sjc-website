@@ -519,12 +519,20 @@ export const IMAGE_DEFAULTS = {
  * so a visitor gets a consistent Problem-System-Outcome read across six labels that are otherwise
  * a thing, a process, an outcome and a technology.
  */
+// ⛔ THIS ORDER IS THE ARGUMENT, NOT A LIST. Steven, 2026-09-02: you do not turn paid ads on until
+// the rest of the house is in order, so the sequence has to read as the build order of a business:
+//   1 website (the front door)  ->  2 speed to lead (organic + existing customers already reach out)
+//   3 reviews (do this from the day you open)  ->  4 database (you already paid for those names)
+//   -> 5 paid ads LAST, because ads into a leaky machine just buy more voicemails.
+// ⛔ AI IMPLEMENTATION IS NOT THE SIXTH SYSTEM. It is the glue under the five — the plumbing between
+// them. Never counted as one of them, never listed alongside them: it renders as its own wide row.
+// The nav and the home hero already run this order; this const was the one place that disagreed.
 export const SIX_SYSTEMS = [
   { slug: "/premium-smart-websites", name: "Premium Smart Websites", line: "Get found, and give a customer one obvious thing to do." },
-  { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
   { slug: "/speed-to-lead", name: "Speed to Lead", line: "Answer every lead in seconds, day or night." },
-  { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
   { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy customer into a review." },
+  { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
+  { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
   { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five inside the software you already run." },
 ];
 
@@ -2748,14 +2756,16 @@ const baseConfig: Config<Props, RootProps> = {
       },
       defaultProps: {
         current: "",
-        intro: "This is one of six systems we build. They are designed to connect, so a lead is never dropped between them.",
+        intro: "This is one of five systems we build. They are designed to connect, so a lead is never dropped between them.",
         onDark: false,
         spaceAbove: 40,
         spaceBelow: 40,
       },
       render: ({ current, intro, onDark, spaceAbove, spaceBelow }) => {
         const ink = onDark ? "#ffffff" : "#0A0E27";
-        const body = onDark ? "rgba(255,255,255,.82)" : "#3E4B63";
+        // ⛔ BLACK ON A LIGHT PAGE, NEVER GREY. Steven, 2026-09-02: "I hate grey font. It blends into
+        // the background too much." This drives BOTH the intro paragraph and each card's line.
+        const body = onDark ? "rgba(255,255,255,.82)" : "#0A0E27";
         const five = SIX_SYSTEMS.filter((x) => x.slug !== "/ai-implementation");
         const layer = SIX_SYSTEMS.find((x) => x.slug === "/ai-implementation")!;
         const chip = (x: { slug: string; name: string; line: string }, wide: boolean) => {
@@ -2770,8 +2780,11 @@ const baseConfig: Config<Props, RootProps> = {
                 textDecoration: "none",
                 padding: "14px 16px",
                 borderRadius: "14px",
-                background: on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#ffffff",
-                border: `1px solid ${on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.12)"}`,
+                // ⛔ THE RESTING CARD IS NEVER WHITE ON A LIGHT PAGE — it disappears into the page and only
+                // the ACTIVE card is visible, which reads as four broken cards. Steven, 2026-09-02.
+                // A soft tint of the same blue the active card uses, so the set reads as one family.
+                background: on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#E8EFF7",
+                border: `1px solid ${on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
                 boxShadow: on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
               }}
             >
