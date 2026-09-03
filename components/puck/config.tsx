@@ -2795,7 +2795,17 @@ const baseConfig: Config<Props, RootProps> = {
                 background: layer ? LAYER_BG : on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#E8EFF7",
                 // 2px on the layer only — at 1px the green read as a faint outline against the dark ground.
                 border: `${layer ? 2 : 1}px solid ${layer ? GREEN : on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
-                boxShadow: on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
+                // ⛔ THE GREEN NEEDS A DARK NEIGHBOUR ON BOTH SIDES OR IT GOES MUDDY.
+                // #85bb65 is mid-tone: in the menu it sits dark-card / green / dark-panel and reads
+                // crisp because it is the lightest thing there. On a LIGHT page it lands between
+                // near-black and near-white and has weak contrast against both at once — Steven,
+                // 2026-09-03: "the green and the white are kind of blending together."
+                // So the card carries its own navy ring OUTSIDE the green, rebuilding the menu's
+                // dark/green/dark sandwich. Thickening the line does not fix it; changing what is
+                // NEXT to it does.
+                boxShadow: layer
+                  ? `0 0 0 5px ${LAYER_BG}`
+                  : on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
               }}
             >
               <span style={{ display: "block", fontWeight: 700, fontSize: "15px", lineHeight: 1.25, color: layer ? GOLD : on ? "#ffffff" : ink }}>
