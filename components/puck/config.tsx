@@ -2796,7 +2796,7 @@ const baseConfig: Config<Props, RootProps> = {
                 // A soft tint of the same blue the active card uses, so the set reads as one family.
                 background: layer ? LAYER_BG : on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#E8EFF7",
                 // 2px on the layer only — at 1px the green read as a faint outline against the dark ground.
-                border: `${layer ? 2 : 1}px solid ${layer ? GREEN : on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
+                border: `2px solid ${layer ? GREEN : on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
                 // ⛔ THE GREEN NEEDS A DARK NEIGHBOUR ON BOTH SIDES OR IT GOES MUDDY.
                 // #85bb65 is mid-tone: in the menu it sits dark-card / green / dark-panel and reads
                 // crisp because it is the lightest thing there. On a LIGHT page it lands between

@@ -1333,21 +1333,39 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 a.sjc-sys-card {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+/* ⛔ SUBTLE IS THE SAME AS BROKEN — Steven, 2026-09-03, on the third pass at this:
+   *"the arrow is so small... you can barely even see the arrow to begin with."* At the line's own
+   size and 45% opacity it read as punctuation. 1.5em, bold, and mostly opaque at REST, because the
+   arrow's job is to be seen before anyone hovers. */
 a.sjc-sys-card .sjc-sys-arrow {
-  opacity: 0.45;
-  transition: opacity 0.2s ease;
+  display: inline-block;
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 0.8;
+  vertical-align: -3px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, color 0.2s ease;
   white-space: nowrap;
+}
+/* On the black card a green arrow at 15px was nearly invisible. Gold ties it to the card's own
+   name and is the brightest thing available on that ground. */
+a.sjc-sys-card--layer .sjc-sys-arrow {
+  color: #ffd700;
+  opacity: 0.9;
 }
 a.sjc-sys-card:hover .sjc-sys-arrow,
 a.sjc-sys-card:focus-visible .sjc-sys-arrow {
   opacity: 1;
 }
+/* ⛔ A HOVER THAT ONLY RECOLOURS A 2px LINE IS NOT VISIBLE. The ring is what actually reads —
+   it thickens the edge without changing the border-width, so nothing reflows. */
 a.sjc-sys-card:not(.sjc-sys-card--layer):hover,
 a.sjc-sys-card:not(.sjc-sys-card--layer):focus-visible {
   border-color: #3b7fb8 !important;
-  box-shadow: 0 2px 10px rgba(59, 127, 184, .22) !important;
+  box-shadow: 0 0 0 3px rgba(59, 127, 184, .38), 0 4px 14px rgba(59, 127, 184, .28) !important;
 }
 a.sjc-sys-card--layer:hover,
 a.sjc-sys-card--layer:focus-visible {
-  box-shadow: 0 0 0 3px #0A0E27, 0 0 14px rgba(133, 187, 101, .45) !important;
+  border-color: #a5d989 !important;
+  box-shadow: 0 0 0 3px #0A0E27, 0 0 0 6px rgba(133, 187, 101, .45), 0 0 18px rgba(133, 187, 101, .5) !important;
 }
