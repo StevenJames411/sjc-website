@@ -2804,7 +2804,7 @@ const baseConfig: Config<Props, RootProps> = {
                 // dark/green/dark sandwich. Thickening the line does not fix it; changing what is
                 // NEXT to it does.
                 boxShadow: layer
-                  ? `0 0 0 5px ${LAYER_BG}`
+                  ? `0 0 0 3px ${LAYER_BG}`  // 3px, not 5 — enough dark to frame the green without the card reading as a slab
                   : on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
               }}
             >

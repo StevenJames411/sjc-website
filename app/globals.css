@@ -199,7 +199,11 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   border-radius: 999px;
   /* the nav dropdown's own values, so the two cannot drift apart */
   background: rgba(8, 12, 32, 0.93);
-  border: 1px solid rgba(255, 215, 0, 0.55);
+  /* ⛔ 2px AT 0.9, THE DROPDOWN'S VALUE. These were copied from the drawer's OLD hairline; the
+     desktop dropdown was later raised to 2px/0.9 and NOTHING ELSE FOLLOWED, so the "cannot drift"
+     comment above was true only for the file it was written in. Steven, 2026-09-03, third time on
+     this same defect: "you always make the border so fine you could barely see it." */
+  border: 2px solid rgba(255, 215, 0, 0.9);
   color: var(--accent2-color, #ffd700);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
   margin-bottom: 16px;
@@ -941,7 +945,7 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     display: block;
     padding: 14px 20px !important;
     text-align: center;
-    border: 1px solid rgba(255, 215, 0, 0.55);
+    border: 2px solid rgba(255, 215, 0, 0.9);
     border-radius: 999px;
     /* ⛔ NO FILL — Steven: *"I want to see the website under these buttons."* The capsule is the
        outline and nothing else; the page runs straight through it. The shadow is what keeps gold
@@ -976,7 +980,7 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     padding: 7px 22px;
     border-radius: 999px;
     background: rgba(8, 12, 32, 0.93);
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    border: 2px solid rgba(255, 215, 0, 0.55);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     text-align: center;
     color: var(--accent2-color, #ffd700);
