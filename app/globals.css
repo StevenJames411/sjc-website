@@ -1292,3 +1292,27 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 .sjc-design .sjc-card-link:focus-visible {
   color: #ffd700;
 }
+
+/* ⭐ THE SEALED SHEETS' OWN `.btn--primary` — THE HERO BUTTON ON EVERY SERVICE PAGE.
+   Steven, 2026-09-03, after the `.sjc-cta` sweep: *"these seven... they swell and barely change
+   color... they swell and don't do anything."* He was right and the sweep genuinely missed them:
+   these anchors carry `btn btn--primary` from the imported sheet, NOT `sjc-cta`, so nothing in the
+   CTA rules above ever applied. The sheet ships `.btn:hover{transform:translateY(-2px)}` and NO
+   colour rule at all — the lift was the entire hover.
+   ⛔ SPECIFICITY IS THE WHOLE TRICK. The sealed sheet is scoped at import, so its rules ship as
+   `.sjc-design-<id> .btn:hover` = (0,3,0). Doubling `.btn` here makes these (0,4,1), which clears
+   it WITHOUT !important — the same reasoning already written for `a.sjc-cta.sjc-cta:hover`.
+   Same gold as the CTA sweep, so every button on the site answers a hover identically. */
+.sjc-design a.btn.btn {
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+.sjc-design a.btn.btn:hover,
+.sjc-design a.btn.btn:focus-visible {
+  transform: none;
+}
+.sjc-design a.btn.btn--primary:hover,
+.sjc-design a.btn.btn--primary:focus-visible {
+  background: linear-gradient(180deg, #FFE04A, #F0C000);
+  color: #12263F;
+  box-shadow: 0 10px 24px rgba(255, 215, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .55);
+}
