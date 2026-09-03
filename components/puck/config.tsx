@@ -2793,7 +2793,8 @@ const baseConfig: Config<Props, RootProps> = {
                 // the ACTIVE card is visible, which reads as four broken cards. Steven, 2026-09-02.
                 // A soft tint of the same blue the active card uses, so the set reads as one family.
                 background: layer ? LAYER_BG : on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#E8EFF7",
-                border: `1px solid ${layer ? GREEN : on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
+                // 2px on the layer only — at 1px the green read as a faint outline against the dark ground.
+                border: `${layer ? 2 : 1}px solid ${layer ? GREEN : on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
                 boxShadow: on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
               }}
             >
