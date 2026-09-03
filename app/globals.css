@@ -1316,3 +1316,32 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   color: #12263F;
   box-shadow: 0 10px 24px rgba(255, 215, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .55);
 }
+
+/* ⭐ THE SIX SYSTEM CARDS ARE LINKS, AND NOTHING SAID SO (2026-09-03).
+   The arrow (in the markup) is the resting signal; this is the confirmation on hover.
+   ⛔ !important on the border because the card's border is an INLINE style from the React
+   component, and an inline style beats any stylesheet — the same trap already documented for
+   `a.sjc-cta.cta-*`. The layer card is excluded: its green border IS its identity, so it brightens
+   its arrow and keeps its colour. No transform anywhere — Steven had the swell stripped off the
+   cards and the CTAs for competing with the link itself. */
+.sjc-design .sjc-sys-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.sjc-design .sjc-sys-arrow {
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+.sjc-design .sjc-sys-card:hover .sjc-sys-arrow,
+.sjc-design .sjc-sys-card:focus-visible .sjc-sys-arrow {
+  opacity: 1;
+}
+.sjc-design .sjc-sys-card:not(.sjc-sys-card--layer):hover,
+.sjc-design .sjc-sys-card:not(.sjc-sys-card--layer):focus-visible {
+  border-color: #3b7fb8 !important;
+  box-shadow: 0 2px 10px rgba(59, 127, 184, .22) !important;
+}
+.sjc-design .sjc-sys-card--layer:hover,
+.sjc-design .sjc-sys-card--layer:focus-visible {
+  box-shadow: 0 0 0 3px #0A0E27, 0 0 14px rgba(133, 187, 101, .45) !important;
+}

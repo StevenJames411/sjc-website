@@ -2783,6 +2783,7 @@ const baseConfig: Config<Props, RootProps> = {
             <a
               key={x.slug}
               href={x.slug}
+              className={layer ? "sjc-sys-card sjc-sys-card--layer" : "sjc-sys-card"}
               style={{
                 display: "block",
                 flex: wide ? "1 1 100%" : "1 1 190px",
@@ -2813,7 +2814,15 @@ const baseConfig: Config<Props, RootProps> = {
                 {x.name}
               </span>
               <span style={{ display: "block", marginTop: "6px", fontSize: "15px", lineHeight: 1.4, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
-                {x.line}
+                {x.line}{" "}
+                {/* ⭐ THE ARROW IS THE AFFORDANCE, AND IT IS VISIBLE AT REST.
+                    Steven, 2026-09-03: *"how does a customer know that they're a hyperlink?"* — he
+                    only found out by watching his own status bar. A hover effect cannot answer that
+                    question, because you have to already suspect the card to trigger it. "→" is
+                    the site's existing word for "this goes somewhere" (every "See how it works →"),
+                    so it needs no explaining. aria-hidden: it is decoration, the anchor already
+                    reads as a link to a screen reader. */}
+                <span className="sjc-sys-arrow" aria-hidden="true">&#8594;</span>
               </span>
             </a>
           );
