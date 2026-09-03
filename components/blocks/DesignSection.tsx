@@ -641,6 +641,13 @@ const GRID_LIGHT =
 const GRID_DEEP =
   "linear-gradient(rgba(30,61,145,.075) 1px,transparent 1px),"+
   "linear-gradient(90deg,rgba(30,61,145,.075) 1px,transparent 1px)";
+/**
+ * ⭐ THE LIGHT BAND IS A CONTRAST DEVICE, NOT A TINT. Steven, 2026-09-03: *"when the gray is so
+ * damn close to white, you really don't get the contrast you're looking for."* The page alternates
+ * white and grey to give the eye a rhythm, and at #EEF2F7 the grey read as white with a smudge —
+ * the alternation was doing no work. One constant so the plain and gridded variants cannot drift.
+ */
+const MIST = "#DCE3ED";
 const GRID_DARK =
   "linear-gradient(rgba(148,197,255,.055) 1px,transparent 1px)," +
   "linear-gradient(90deg,rgba(148,197,255,.055) 1px,transparent 1px)";
@@ -658,13 +665,13 @@ export const BAND_STYLES: Record<string, BandDef> = {
   brand: { label: "Brand solid", base: "var(--primary-color,#1e3d91)", bg: "", ...ON_DARK },
   "brand-fade": { label: "Brand gradient", base: "var(--primary-color,#1e3d91)",
     bg: "linear-gradient(to bottom right,var(--primary-color,#1e3d91),var(--accent3-color,#00a8cc))", ...ON_DARK },
-  mist: { label: "Mist (light grey)", base: "#EEF2F7", bg: "", ...ON_LIGHT },
+  mist: { label: "Mist (grey band)", base: MIST, bg: "", ...ON_LIGHT },
   // ⚠️ DEEPER THAN `mist`, DELIBERATELY, AND IT IS SAFE TO CHANGE ALONE. Steven, 2026-09-03:
   // the calendar band needed to read as a distinct grey, not as near-white. `mist-grid` is used
   // by exactly one thing site-wide — the booking section at the foot of seven pages — so it
   // carries its own deeper base and its own slightly stronger grid instead of dragging plain
   // `mist` (the FAQ and the home machine band) darker with it.
-  "mist-grid": { label: "Mist + grid (deeper)", base: "#DCE3ED", bg: GRID_DEEP, size: "64px 64px,64px 64px", ...ON_LIGHT },
+  "mist-grid": { label: "Mist + grid", base: MIST, bg: GRID_DEEP, size: "64px 64px,64px 64px", ...ON_LIGHT },
   paper: { label: "Paper (white)", base: "#FFFFFF", bg: "", ...ON_LIGHT },
   "paper-grid": { label: "Paper + grid", base: "#FFFFFF", bg: GRID_LIGHT, size: "64px 64px,64px 64px", ...ON_LIGHT },
 };
