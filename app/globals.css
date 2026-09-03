@@ -1319,29 +1319,35 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
 
 /* ⭐ THE SIX SYSTEM CARDS ARE LINKS, AND NOTHING SAID SO (2026-09-03).
    The arrow (in the markup) is the resting signal; this is the confirmation on hover.
+   ⛔ NO `.sjc-design` ANCESTOR HERE, AND THAT IS THE WHOLE BUG THE FIRST VERSION HAD.
+   Every rule was written as `.sjc-design .sjc-sys-card` — but SystemStrip is a Puck `Section`
+   block, NOT a DesignSection, so it renders with no `.sjc-design` wrapper anywhere above it and
+   not one of those rules ever matched. The arrow still appeared because it is markup; the hover
+   silently did nothing. Steven: *"the only difference I see is the arrow, nothing else is
+   happening."* ⚠️ Check the ancestor exists before scoping to it — a rule that never matches
+   looks exactly like a rule that lost.
    ⛔ !important on the border because the card's border is an INLINE style from the React
-   component, and an inline style beats any stylesheet — the same trap already documented for
-   `a.sjc-cta.cta-*`. The layer card is excluded: its green border IS its identity, so it brightens
-   its arrow and keeps its colour. No transform anywhere — Steven had the swell stripped off the
-   cards and the CTAs for competing with the link itself. */
-.sjc-design .sjc-sys-card {
+   component, and an inline style beats any stylesheet. The layer card keeps its green — that
+   border is its identity — and brightens its glow instead. No transform: the swell was removed
+   from these cards and the CTAs for competing with the link itself. */
+a.sjc-sys-card {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.sjc-design .sjc-sys-arrow {
+a.sjc-sys-card .sjc-sys-arrow {
   opacity: 0.45;
   transition: opacity 0.2s ease;
   white-space: nowrap;
 }
-.sjc-design .sjc-sys-card:hover .sjc-sys-arrow,
-.sjc-design .sjc-sys-card:focus-visible .sjc-sys-arrow {
+a.sjc-sys-card:hover .sjc-sys-arrow,
+a.sjc-sys-card:focus-visible .sjc-sys-arrow {
   opacity: 1;
 }
-.sjc-design .sjc-sys-card:not(.sjc-sys-card--layer):hover,
-.sjc-design .sjc-sys-card:not(.sjc-sys-card--layer):focus-visible {
+a.sjc-sys-card:not(.sjc-sys-card--layer):hover,
+a.sjc-sys-card:not(.sjc-sys-card--layer):focus-visible {
   border-color: #3b7fb8 !important;
   box-shadow: 0 2px 10px rgba(59, 127, 184, .22) !important;
 }
-.sjc-design .sjc-sys-card--layer:hover,
-.sjc-design .sjc-sys-card--layer:focus-visible {
+a.sjc-sys-card--layer:hover,
+a.sjc-sys-card--layer:focus-visible {
   box-shadow: 0 0 0 3px #0A0E27, 0 0 14px rgba(133, 187, 101, .45) !important;
 }
