@@ -67,22 +67,20 @@ type Row = {
  * careers application, submitted from his own address while testing that form. The manifest exists
  * to say what is real; a smoke test that arms it is the exact false PROTECTED it was built to end.
  *
- * ⚠️ THE TEST FOR "OURS" IS DELIBERATELY NARROW. Only four signals count, and each one is
+ * ⚠️ THE TEST FOR "OURS" IS DELIBERATELY NARROW. Only three signals count, and each one is
  * something no stranger can produce by accident: the ZZ-TEST marker we type on purpose, the
- * reserved `example.com` domain (RFC 2606 — it cannot belong to a real prospect), an address that
- * already owns this site, and the address this site DELIVERS ITS LEADS TO. That last one is the
- * one that caught Steven's careers application: a form submitted by the person who receives that
- * form's own leads is a test by definition — a stranger cannot be their own destination.
- * Anything else is a stranger and still arms protection.
+ * reserved `example.com` domain (RFC 2606 — it cannot belong to a real prospect), and a HOUSE
+ * ADDRESS — one that owns a site in this studio or receives some site's leads.
+ *
+ * ⛔ THE HOUSE SET IS BUILT ACROSS EVERY SITE, NOT PER-SITE, AND THAT IS THE WHOLE POINT. Scoping
+ * it to one site's own wiring was the first attempt and it missed by a domain: `sjc-2026` delivers
+ * to steven@stevenjamesconsulting.com, and Steven filled the careers form in as
+ * steven@stevenbarchetti.com. Same person, two of his own addresses, and the manifest called him a
+ * customer. Any address the studio already delivers to is ours wherever it turns up; a prospect is
+ * never the destination of one of our own forms.
  */
-function isOurs(
-  lead: { answers?: { label?: string; value?: string }[] },
-  ownerEmails: string[],
-  leadEmail?: string
-): boolean {
-  const owners = new Set(
-    [...ownerEmails, leadEmail || ""].map((e) => (e || "").trim().toLowerCase()).filter(Boolean)
-  );
+function isOurs(lead: { answers?: { label?: string; value?: string }[] }, house: Set<string>): boolean {
+  const owners = house;
   for (const a of lead.answers || []) {
     const v = String(a?.value ?? "").trim().toLowerCase();
     if (!v) continue;
@@ -100,6 +98,14 @@ export async function GET(req: Request) {
   const sites = await readSites();
   const rows: Row[] = [];
 
+  // Every address the studio itself owns or delivers to — see isOurs().
+  const house = new Set(
+    (sites as Site[])
+      .flatMap((s) => [...(s.ownerEmails || []), s.leadEmail || ""])
+      .map((e) => (e || "").trim().toLowerCase())
+      .filter(Boolean)
+  );
+
   for (const s of sites as Site[]) {
     const reach = reachability(s);
     const wiring = leadWiring(s, sites);
@@ -110,7 +116,7 @@ export async function GET(req: Request) {
     let ourTests = 0;
     try {
       const stored = await readLeads(s.id);
-      const ours = stored.filter((l) => isOurs(l, s.ownerEmails || [], s.leadEmail));
+      const ours = stored.filter((l) => isOurs(l, house));
       ourTests = ours.length;
       // Only STRANGERS count. See isOurs() above for why, and for what it refuses to guess at.
       leads = stored.length - ourTests;
