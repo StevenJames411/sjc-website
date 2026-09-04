@@ -76,6 +76,6 @@ export const NOINDEX_SLUGS = new Set([
   // prospect the way a video sales letter is — nothing links to it, it is not in the nav, and it
   // has no business turning up in a search for a booking agent. Reachable by anyone he sends the
   // link to, invisible to everyone else.
-  "how-chloe-thinks",
+  "how-we-train-ai-employees",
 ]);
 export const isNoindex = (slug: string) => NOINDEX_SLUGS.has(slug);
