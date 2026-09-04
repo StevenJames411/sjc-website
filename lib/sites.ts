@@ -13,7 +13,7 @@
 // Server-only (pulls in the store). Types that the browser needs live in ./sitesShared.
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
-import { siteKeys, allKeysFor, KEY_INFIXES, SITES_KEY, SJC } from "./siteKeys";
+import { siteKeys, allKeysFor, KEY_INFIXES, SITES_KEY, SJC, FLAGSHIP } from "./siteKeys";
 import { scrubForTransfer, sameBusiness } from "./transferScrub";
 import { RESERVED_SITE_IDS, daysLeft, type Site, type SiteKind, emptyBusiness, emptySeo } from "./sitesShared";
 
@@ -286,7 +286,7 @@ export async function updateSite(
  */
 export async function deleteSite(id: string): Promise<{ ok: boolean; error?: string }> {
   const s = String(id || "").trim();
-  if (s === SJC) return { ok: false, error: "The SJC site can't be deleted." };
+  if (s === FLAGSHIP) return { ok: false, error: "The live site can't be deleted." };
 
   const all = await readSitesRaw();
   const row = all.find((x) => x.id === s);
@@ -336,7 +336,7 @@ export async function restoreSite(id: string): Promise<{ ok: boolean; error?: st
  */
 export async function purgeSiteForever(id: string): Promise<{ ok: boolean; error?: string }> {
   const s = String(id || "").trim();
-  if (s === SJC) return { ok: false, error: "The SJC site can't be deleted." };
+  if (s === FLAGSHIP) return { ok: false, error: "The live site can't be deleted." };
 
   const all = await readSitesRaw();
   if (!all.some((x) => x.id === s)) return { ok: false, error: "No such website." };
