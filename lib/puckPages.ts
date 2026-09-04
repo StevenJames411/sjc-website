@@ -70,5 +70,12 @@ export const isChrome = (slug: string) => (CHROME as readonly string[]).includes
  * ⚠️ ONE LIST, TWO CONSUMERS — app/sitemap.ts drops these, and lib/publicSitePage's metadataFor
  * tags them. Two hand-maintained lists would drift, and the failure is silent in both directions.
  */
-export const NOINDEX_SLUGS = new Set(["careers"]);
+export const NOINDEX_SLUGS = new Set([
+  "careers",
+  // ⛔ A SALES ASSET, NOT A WEBSITE PAGE. Steven, 2026-09-03: the Chloe explainer is sent to a
+  // prospect the way a video sales letter is — nothing links to it, it is not in the nav, and it
+  // has no business turning up in a search for a booking agent. Reachable by anyone he sends the
+  // link to, invisible to everyone else.
+  "how-chloe-thinks",
+]);
 export const isNoindex = (slug: string) => NOINDEX_SLUGS.has(slug);
