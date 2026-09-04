@@ -342,14 +342,16 @@ export async function SitePageBody({
   // nav above it: Steven's branding on someone else's business, with a link to the free Skool
   // community that teaches what he charges for.
   //
-  // The site's KIND is the real answer. A client site brings its own chrome or has none; it never
-  // borrows ours.
-  const isClientSite = siteId !== SJC;
-
-  const ownHeader = isClientSite || hasBlock(data, "SiteHeader");
-  const ownFooter = isClientSite || hasBlock(data, "SiteFooter");
-  // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
-  const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
+  // ⛔ AND "IS THIS SJC'S OWN SITE" IS NO LONGER THE QUESTION (2026-09-04). This read
+  // `siteId !== SJC` back when SJC's own pages were the only ones the hardcoded <Nav>/<Footer>
+  // components were for. SJC's site is now built in the builder like every other one, with its own
+  // nav and footer pages — so the moment SJC pointed at the live site, this went FALSE for it and
+  // the apex fell back to the old hardcoded chrome. It shipped, and the live nav and footer were
+  // a rebrand out of date for four minutes. EVERY site brings its own chrome, its own brand and
+  // its own structured data; there is no site left that borrows the components.
+  const ownHeader = true;
+  const ownFooter = true;
+  const brand = siteId ? await readBrand(true, siteId) : null;
 
   // The stylesheets this page's blocks actually reference, read off the data already loaded above.
   // Each design's rules are scoped under its own `sjc-design-<id>` class, which rides on the
@@ -370,14 +372,13 @@ export async function SitePageBody({
   //
   // Built entirely from Website settings, so it costs nothing per client: fill in her phone and
   // address at onboarding and the markup writes itself. See lib/siteSchema.
-  // ⚠️ FETCHED FOR EVERY SITE NOW, NOT ONLY CLIENTS.
-  //
-  // It used to be `isClientSite ? … : null`, which was right for the schema below but starved the
-  // provider on SJC's OWN pages — so a token in the lead form's thank-you copy had nothing to
-  // resolve against and printed raw. The schema still only ships for client sites; that behaviour
-  // is unchanged and deliberate (SJC's own Organization markup comes from the root layout).
+  // ⚠️ FETCHED FOR EVERY SITE, AND NOW EMITTED FOR EVERY SITE. It used to be gated on "is this a
+  // client site", which stopped being a real distinction when SJC's own site became an ordinary
+  // row — and it was already emitting for the apex before this, because the gate was reading a
+  // constant that pointed at the retired `sjc` id. Unconditional is what is live and what is right:
+  // a business's own LocalBusiness markup, built from its Website settings.
   const site = await findSite(siteId);
-  const schema = site && isClientSite ? localBusinessSchema(site, publicUrlFor(site)) : null;
+  const schema = site ? localBusinessSchema(site, publicUrlFor(site)) : null;
 
   // ── THIS SITE'S OWN SITE-WIDE CHROME ───────────────────────────────────────────────────────
   // The missing third option. There used to be only two: SJC's global chrome, or chrome duplicated
@@ -401,7 +402,7 @@ export async function SitePageBody({
   // any earlier is a use-before-declaration on `site`.
   const importedDesign = hasBlock(data, "DesignSection");
   const fallback =
-    isClientSite && site && !importedDesign ? defaultChrome(site, await readPages(siteId)) : null;
+    site && !importedDesign ? defaultChrome(site, await readPages(siteId)) : null;
 
   // ⛔ A DOCUMENT WITH NO `content` ARRAY IS NOT CHROME — IT IS A 500.
   // `<Render>` walks `data.content`. Hand it a truthy object without one and Puck throws
@@ -432,12 +433,14 @@ export async function SitePageBody({
   const fillChrome = <T,>(doc: T): T =>
     site ? fillBusinessTokens(doc, site.business, site.domain ? `https://${site.domain}` : "") : doc;
 
-  const chrome = isClientSite
-    ? {
-        nav: fillChrome(usable(await readPuckPublished("nav", siteId)) || fallback?.nav || null),
-        footer: fillChrome(usable(await readPuckPublished("footer", siteId)) || fallback?.footer || null),
-      }
-    : { nav: null, footer: null };
+  // ⛔ UNCONDITIONAL. This was gated on "is this a client site" — and when SJC's own site became
+  // the site that constant names, the gate went false and the apex served the hardcoded <Nav>
+  // and <Footer> instead of its own nav and footer pages. Every site's chrome comes from its own
+  // chrome pages; there is no site that does not have them.
+  const chrome = {
+    nav: fillChrome(usable(await readPuckPublished("nav", siteId)) || fallback?.nav || null),
+    footer: fillChrome(usable(await readPuckPublished("footer", siteId)) || fallback?.footer || null),
+  };
 
   // ⛔ THE HEADER AND FOOTER HAVE THEIR OWN STYLESHEETS, AND THIS USED TO EMIT ONLY THE PAGE'S.
   //
@@ -537,9 +540,9 @@ export async function SitePageBody({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       ) : null}
-      {/* Only on a client's own site, and only from an id somebody deliberately stored. Nothing is
-          injected onto a page whose owner has not asked for it. */}
-      {isClientSite ? <SiteTracking accounts={site?.accounts} /> : null}
+      {/* Only from an id somebody deliberately stored — nothing is injected onto a page whose
+          owner has not asked for it. `accounts` being empty is the off switch. */}
+      <SiteTracking accounts={site?.accounts} />
       {brand ? <BrandStyle brand={brand} id="site-brand" /> : null}
       {designCss ? (
         <style id="site-design" dangerouslySetInnerHTML={{ __html: designCss }} />
