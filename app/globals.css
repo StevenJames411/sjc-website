@@ -1278,19 +1278,27 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   color: #ffffff;
 }
 
-/* ⭐ THE FIVE BLUE CARDS' LINK HOVER — WHITE AT REST, GOLD ON HOVER.
-   Steven, 2026-09-03, after the layer card got one: *"all five feature cards above it have the
-   same see how it works with no hover color."* Gold is the exact INVERSE of the layer card
-   (gold -> white), so the two hovers read as one system instead of two unrelated effects.
-   ⚠️ Specificity: `.text-white` in the markup is (0,1,0); this is (0,3,0) on hover, so it wins
-   without !important. The band rules do not touch <a>, only p/span/strong, so nothing else
-   competes here. */
-.sjc-design .sjc-card-link {
+/* ⭐ THE FIVE BLUE CARDS' LINK — GOLD AT REST, WHITE ON HOVER (2026-09-04).
+   ⚠️ THIS IS THE REVERSE OF WHAT IT SAID YESTERDAY, AND THE REASON MATTERS.
+   09-03 set white at rest -> gold on hover, to invert the layer card. Steven, 09-04, looking at
+   the live page: *"when we leave them in white as primary, they don't stand out very good"* —
+   white on the #3b7fb8 card is the same colour as the heading and the body copy above it, so the
+   link did not read as a link until the mouse was already on it. A hover cannot rescue an anchor
+   nobody knows to hover. Gold at rest is the only colour on that blue that says "clickable"
+   standing still, and it now matches `.sjc-layer-link` exactly — one rule for every card link on
+   the home page instead of two mirrored ones.
+   ⛔ SPECIFICITY: the anchor carries `text-white`, and the sealed sheet ships its utilities SCOPED
+   (`.sjc-design-<id> .text-white` = (0,2,0)), injected into the BODY — i.e. AFTER this file. A
+   (0,2,0) rule here ties and LOSES on source order; that is the 2026-08-30 bug, and the comment
+   this replaces mis-stated `.text-white` as (0,1,0). The class is doubled to make the resting rule
+   (0,3,1), the same trick `a.sjc-cta.sjc-cta:hover` uses above. */
+.sjc-design a.sjc-card-link.sjc-card-link {
+  color: #ffd700;
   transition: color 0.18s ease;
 }
-.sjc-design .sjc-card-link:hover,
-.sjc-design .sjc-card-link:focus-visible {
-  color: #ffd700;
+.sjc-design a.sjc-card-link.sjc-card-link:hover,
+.sjc-design a.sjc-card-link.sjc-card-link:focus-visible {
+  color: #ffffff;
 }
 
 /* ⭐ THE SEALED SHEETS' OWN `.btn--primary` — THE HERO BUTTON ON EVERY SERVICE PAGE.
