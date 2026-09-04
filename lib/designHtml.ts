@@ -27,6 +27,10 @@ const EMBED_HOSTS = new Set([
   "www.youtube-nocookie.com",
   "youtube-nocookie.com",
   "player.vimeo.com",
+  // Loom, added 2026-09-03: the sales pages carry a Loom at the top like a video sales letter,
+  // and Steven records in Loom already. Same shape as the others — a player host, nothing else.
+  "www.loom.com",
+  "loom.com",
 ]);
 
 function isAllowedEmbed(src: string | undefined): boolean {

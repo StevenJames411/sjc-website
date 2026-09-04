@@ -402,7 +402,7 @@ export function fillTokens(
 // ⚠️ ANCHORED. The host must come straight after `src="https://` and be followed by `/` or the
 // closing quote, so `youtube.com.evil.tld` and `evil.tld/?x=youtube.com` both still get stripped.
 const EMBED_SRC =
-  /src\s*=\s*"https:\/\/(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|player\.vimeo\.com)(?:\/|")/i;
+  /src\s*=\s*"https:\/\/(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|player\.vimeo\.com|loom\.com)(?:\/|")/i;
 
 function stripDangerous(html: string): string {
   return String(html || "")
