@@ -13,22 +13,22 @@
 //
 // The ugliness is contained to the four lines below — no caller ever knows.
 
-export const SJC = "sjc";
-
 /**
- * THE SITE THAT CANNOT BE DELETED — the one serving stevenjamesconsulting.com today.
+ * SJC'S OWN WEBSITE — the default site for internal callers, and the one that cannot be deleted.
  *
- * ⛔ SEPARATE FROM `SJC` ON PURPOSE, AND ONLY UNTIL THE OLD ROW IS GONE. `SJC` is two things at
- * once: the DEFAULT id for internal callers, and the LEGACY key namespace of the site that used to
- * be live. The undeletable-flagship guard read `SJC`, which meant it was protecting a dead archived
- * site while the site actually serving the domain had no guard at all — the exact inversion you get
- * from a constant that outlived its meaning.
+ * ⛔ IT IS `sjc-website`, AND THE OLD VALUE IS NOT COMING BACK. This read `"sjc"` from the day the
+ * builder gained a site layer until 2026-09-04. `sjc` was the FIRST SJC site; Steven renamed the
+ * company three times and rebuilt it twice, and the constant never followed — so "the default
+ * site" and "the site that is actually live" drifted apart and stayed apart, which is what put a
+ * dead three-page shell first in every listing and under the undeletable guard.
  *
- * ⚠️ THIS CONSTANT DIES IN THE SECOND HALF OF THIS CHANGE. Once `sjc` is purged, `SJC` becomes
- * "sjc-website", the legacy branch in siteKeys() goes with it, and these two collapse into one. It
- * exists so the purge and the rename are two verifiable deploys instead of one unverifiable jump.
+ * ⚠️ CHANGING THIS ALONE WOULD HAVE TAKEN THE APEX DOWN, and that is worth knowing before anyone
+ * edits it again. `lib/host.ts` carried `s.id !== SJC` in the domain lookup, to stop the retiring
+ * `sjc` row re-claiming stevenjamesconsulting.com. Point SJC at the live site without removing
+ * that filter and the live site is excluded from matching its own domain — the apex falls through
+ * to the legacy branch and serves a seed. The filter went out in the same commit as this value.
  */
-export const FLAGSHIP = "sjc-website";
+export const SJC = "sjc-website";
 
 const safe = (s: string) => String(s || "").replace(/[^a-z0-9-]/gi, "").toLowerCase();
 
@@ -72,13 +72,17 @@ export function siteKeys(siteId: string) {
     );
   }
   const id = safe(raw) || SJC;
-  const legacy = id === SJC;
-  const ns = legacy ? "sjc" : `site-${id}`;
+  // ⛔ THE LEGACY UN-NAMESPACED BRANCH IS GONE (2026-09-04). Site `sjc` used to return `sjc-pages`
+  // / `sjc-puck-<page>` / `sjc-brand` byte-for-byte, so the first live site never had to be
+  // migrated. That site was purged; its keys went with it. EVERY site is namespaced now, with no
+  // special case to reason about — which also removes the trap that the branch keyed off `SJC`:
+  // repointing that constant would have handed the NEW live site the OLD site's storage.
+  const ns = `site-${id}`;
 
   return {
     id,
     /** The page registry for this site (which pages exist, renames, tombstones). */
-    pages: legacy ? "sjc-pages" : `${ns}-pages`,
+    pages: `${ns}-pages`,
     /** A page's Puck content. `pub` = the published snapshot the public site reads. */
     puck: (page: string, pub = false) =>
       `${ns}-puck-${safe(page) || "home"}` + (pub ? "-pub" : ""),

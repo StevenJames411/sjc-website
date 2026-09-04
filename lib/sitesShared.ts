@@ -2,7 +2,10 @@
 // Split from ./sites for the same reason brandShared is split from brand: the editor is a client
 // component, and importing the storage module drags the redis client into the browser bundle.
 
-export type SiteKind = "sjc" | "client" | "template";
+// ⛔ THE `sjc` KIND IS RETIRED (2026-09-04). It marked "this is SJC's own site" — but it lived on
+// a row synthesised in lib/sites.ts, so when SJC's site was rebuilt under a new id the kind stayed
+// behind on the dead one. That identity is the `SJC` constant in ./siteKeys and nothing else.
+export type SiteKind = "client" | "template";
 
 /**
  * The facts about the business that owns a website.

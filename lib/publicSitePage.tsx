@@ -177,19 +177,29 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
     {}) as Record<string, unknown>;
   const str = (k: string) => (typeof root[k] === "string" ? (root[k] as string).trim() : "");
 
-  const isClient = site.kind !== "sjc";
+  // ⛔ ONE FLAG WAS ANSWERING TWO UNRELATED QUESTIONS, AND IT WAS READING A DEAD FIELD (2026-09-04).
+  // `const isClient = site.kind !== "sjc"` gated BOTH the completeness of the metadata block AND
+  // the favicon override below. The `sjc` kind lived on a row synthesised in lib/sites.ts; SJC's
+  // own site was rebuilt under a new id and has been coming through here as an ordinary site ever
+  // since, so in practice this has read TRUE for every site for months.
+  //
+  // The two questions are now asked separately, and neither changes what the live site emits:
+  //   • metadata — EVERY site owns its own complete block. That is what the docblock above has
+  //     always asked for, and it is what has actually been happening. No flag, no branch.
+  //   • the favicon — a real guard, and the only thing the flag was still earning. See below.
   const label = cleanName(site.business?.name || site.name);
 
-  const title = str("title") || (isClient ? label : "");
+  const title = str("title") || label;
   const description =
     str("description") ||
     site.seo?.description ||
-    (isClient ? propOf(data, "SiteHeader", "tagline") || propOf(data, "Heading", "text") || "" : "");
-  const businessName = str("businessName") || site.seo?.businessName || (isClient ? label : "");
-  const ogImage = str("shareImage") || site.seo?.shareImage || (isClient ? firstImage(data) : null);
+    propOf(data, "SiteHeader", "tagline") ||
+    propOf(data, "Heading", "text") ||
+    "";
+  const businessName = str("businessName") || site.seo?.businessName || label;
+  const ogImage = str("shareImage") || site.seo?.shareImage || firstImage(data);
 
-  const openGraph = isClient
-    ? {
+  const openGraph = {
         title: title || businessName,
         description,
         siteName: businessName || title,
@@ -202,12 +212,7 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
         // deliberate no-image case: a plain text preview is honest, SJC's logo on a groomer's
         // site is not.
         images: ogImage ? [ogImage] : [],
-      }
-    : {
-        ...(title ? { title } : {}),
-        ...(description ? { description } : {}),
-        ...(ogImage ? { images: [ogImage] } : {}),
-      };
+  };
 
   // ⛔ THE FAVICON. Every client site has shipped wearing whatever the platform default is, because
   // there has never been a control — grep for "favicon" across this codebase before today returns
@@ -215,19 +220,21 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
   // thing a business owner notices immediately when they open their own site in a tab beside their
   // competitors'.
   //
-  // ⚠️ CLIENT SITES ONLY. SJC's own favicon is a file in the repo; overriding it from a site record
-  // would let a settings screen change the studio's own identity.
-  const favicon = isClient ? String(site.seo?.favicon || "").trim() : "";
+  // ⚠️ THIS WAS "CLIENT SITES ONLY" — SJC's own favicon was said to be a file in the repo, so that
+  // a settings screen could not change the studio's identity. It has not been true for a while:
+  // the guard keyed off the retired `sjc` kind, and SJC's own site sets its tab icon from its own
+  // record like every other site. That icon is live on the apex right now. Every site, one rule.
+  const favicon = String(site.seo?.favicon || "").trim();
 
   return {
     ...(title ? { title: { absolute: title } } : {}),
-    ...(isClient || description ? { description } : {}),
+    ...{ description },
     ...(favicon ? { icons: { icon: favicon, shortcut: favicon, apple: favicon } } : {}),
     openGraph,
     twitter: {
       card: ogImage ? ("summary_large_image" as const) : ("summary" as const),
       ...(title ? { title } : {}),
-      ...(isClient || description ? { description } : {}),
+      ...{ description },
       ...(ogImage ? { images: [ogImage] } : {}),
     },
     // ⚠️ EVERY CLIENT PAGE USED TO NAME SJC'S HOME PAGE AS ITS CANONICAL.
@@ -245,7 +252,7 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
     // A demo lives on the studio's domain carrying a real business's name, phone and address,
     // while robots.txt welcomes every AI crawler. Until it's on its own domain it stays out.
     // ...or while it is deliberately held back on a real domain — see Site.holdIndexing.
-    ...(isClient && !reachability(site).indexable
+    ...(!reachability(site).indexable
       ? { robots: { index: false, follow: false, nocache: true } }
       : {}),
     // ...and SJC's own pages that are public but deliberately unsearchable — see NOINDEX_SLUGS.
