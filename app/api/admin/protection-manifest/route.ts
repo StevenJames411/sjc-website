@@ -57,12 +57,54 @@ type Row = {
   why: string;
 };
 
+/**
+ * IS THIS LEAD ONE OF OURS?
+ *
+ * ⛔ COUNTING ROWS IS NOT COUNTING CUSTOMERS, AND THE DIFFERENCE COST A WHOLE SESSION (2026-09-04).
+ * `sjc-2026` sat PROTECTED on "4 real lead(s) stored — someone's actual contact details live
+ * here". All four were ours: three `ZZ-TEST` rows from the apex-wiring, new-sender and careers
+ * pipeline checks — two of them labelled "safe to delete" in the form itself — and Steven's own
+ * careers application, submitted from his own address while testing that form. The manifest exists
+ * to say what is real; a smoke test that arms it is the exact false PROTECTED it was built to end.
+ *
+ * ⚠️ THE TEST FOR "OURS" IS DELIBERATELY NARROW. Only three signals count, and each one is
+ * something no stranger can produce by accident: the ZZ-TEST marker we type on purpose, the
+ * reserved `example.com` domain (RFC 2606 — it cannot belong to a real prospect), and a HOUSE
+ * ADDRESS — one that owns a site in this studio or receives some site's leads.
+ *
+ * ⛔ THE HOUSE SET IS BUILT ACROSS EVERY SITE, NOT PER-SITE, AND THAT IS THE WHOLE POINT. Scoping
+ * it to one site's own wiring was the first attempt and it missed by a domain: `sjc-2026` delivers
+ * to steven@stevenjamesconsulting.com, and Steven filled the careers form in as
+ * steven@stevenbarchetti.com. Same person, two of his own addresses, and the manifest called him a
+ * customer. Any address the studio already delivers to is ours wherever it turns up; a prospect is
+ * never the destination of one of our own forms.
+ */
+function isOurs(lead: { answers?: { label?: string; value?: string }[] }, house: Set<string>): boolean {
+  const owners = house;
+  for (const a of lead.answers || []) {
+    const v = String(a?.value ?? "").trim().toLowerCase();
+    if (!v) continue;
+    if (v.includes("zz-test")) return true;
+    if (/@example\.(com|org|net)$/.test(v)) return true;
+    if (owners.has(v)) return true;
+  }
+  return false;
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const wantMd = url.searchParams.get("format") === "md";
 
   const sites = await readSites();
   const rows: Row[] = [];
+
+  // Every address the studio itself owns or delivers to — see isOurs().
+  const house = new Set(
+    (sites as Site[])
+      .flatMap((s) => [...(s.ownerEmails || []), s.leadEmail || ""])
+      .map((e) => (e || "").trim().toLowerCase())
+      .filter(Boolean)
+  );
 
   for (const s of sites as Site[]) {
     const reach = reachability(s);
@@ -71,10 +113,16 @@ export async function GET(req: Request) {
     // ⚠️ Never let a failed read look like "no leads" — an empty result and an unreachable store
     // are opposite answers, and treating them the same is how a real client's site gets marked FREE.
     let leads = -1;
+    let ourTests = 0;
     try {
-      leads = (await readLeads(s.id)).length;
+      const stored = await readLeads(s.id);
+      const ours = stored.filter((l) => isOurs(l, house));
+      ourTests = ours.length;
+      // Only STRANGERS count. See isOurs() above for why, and for what it refuses to guess at.
+      leads = stored.length - ourTests;
     } catch {
       leads = -1;
+      ourTests = 0;
     }
 
     // ⛔ PER-SURFACE, NOT JUST PER-SITE. This is the Alamo Slim correction: name which plumbing is
@@ -83,6 +131,9 @@ export async function GET(req: Request) {
     if (reach.onDomain) surfaces.push(`domain:${s.domain}${reach.indexable ? "+indexed" : "+noindex"}`);
     if (reach.onDemo) surfaces.push("demo-url");
     if (leads > 0) surfaces.push(`leads:${leads}`);
+    // Named, never hidden. A site whose only rows are ours should SAY so, or the next reader finds
+    // four rows in the store, a manifest claiming none, and no way to tell which one is lying.
+    if (ourTests > 0) surfaces.push(`our-tests:${ourTests}`);
     if (leads === -1) surfaces.push("leads:UNREADABLE");
     if (wiring.hasSheet) surfaces.push("sheet");
     if (wiring.hasGhl) surfaces.push("ghl");
