@@ -30,7 +30,7 @@ SERVICES = [
     {"n": 1, "slug": "/custom-websites", "name": "Custom Websites",
      "desc": "A website built to sell — not a page somebody's nephew made. Fast on a phone, "
              "and found on Google and by AI."},
-    {"n": 2, "slug": "/five-star-reviews", "name": "Five Star Reviews",
+    {"n": 2, "slug": "/automated-five-star-reviews", "name": "Automated Five Star Reviews",
      "desc": "Reviews arriving on their own, from every customer, without anybody having to "
              "remember to ask."},
     {"n": 3, "slug": "/speed-to-lead", "name": "Every Lead Answered",

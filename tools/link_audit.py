@@ -31,7 +31,7 @@ SITE = "sjc-2026"
 # on exactly the links a rename is most likely to have broken.
 SLUGS = [
     (("custom website",),                    "/custom-websites"),
-    (("five star review", "five-star review"), "/five-star-reviews"),
+    (("automated five star review", "five star review", "five-star review"), "/automated-five-star-reviews"),
     (("every lead answered", "speed to lead"), "/speed-to-lead"),
     (("booked appointment", "paid ads"),     "/booked-appointments"),
     (("your ai employee", "ai implementation"), "/ai-implementation"),

@@ -91,8 +91,7 @@ textarea { resize: vertical !important; min-height: 76px; }
    .text-white / .border-[…] rules, which are (0,2,0). ⛔ But a COMPILED hover: class is (0,3,0)
    and beats this — strip `hover:bg-*` / `hover:text-*` off the markup, never fight it here. */
 .sjc-cta {
-  transition: background-color .3s ease, color .3s ease, border-color .3s ease,
-              transform .3s ease, box-shadow .3s ease;
+  transition: background .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease;
 }
 /* ⛔ hover:hover or a phone TAP sticks the green on until something else is tapped. */
 /* ⛔ `.sjc-cta` IS REPEATED, AND WITHOUT IT THE HOVER SILENTLY LOST (2026-08-31).
@@ -104,17 +103,23 @@ textarea { resize: vertical !important; min-height: 76px; }
    `pf-cta`. Doubling the class makes this (0,3,1) and puts the hover back on top.
    ⚠️ A COMPILED `hover:bg-*` utility is still (0,3,0) + pseudo and beats even this — strip those
    off the markup rather than escalating here again. */
+/* ⛔ THIS HOVER WAS DEAD, AND THE SWELL HID IT (2026-09-03).
+   It set green with no !important, while `.sjc-design .sjc-cta` sets the cyan gradient WITH
+   !important — so the colour never changed on a single button and the only thing a visitor saw
+   was `transform: scale()`. Steven: *"take away the swell and make the hover color change."*
+   ⭐ GOLD, NOT A DEEPER CYAN. Deepening the cyan was the first attempt and Steven killed it:
+   *"it's so similar to the original you can barely tell it's doing something."* A hover has to
+   cross a hue boundary to register at a glance. Gold is the brand accent, it is the furthest jump
+   from cyan still inside the palette, and dark navy text on it keeps the label readable.
+   ⚠️ !important is required here purely to answer the gradient's own !important — without it this
+   rule loses exactly the way the green one did. */
 @media (hover: hover) {
   a.sjc-cta.sjc-cta:hover {
-    background: #22c55e;
-    color: #fff;
-    border-color: #22c55e;
-    transform: scale(1.045);
-    box-shadow: 0 12px 26px rgba(0, 0, 0, .30);
+    background: linear-gradient(180deg, #FFE04A, #F0C000) !important;
+    color: #12263F !important;
+    border-color: transparent !important;
+    box-shadow: 0 10px 24px rgba(255, 215, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .55) !important;
   }
-}
-@media (prefers-reduced-motion: reduce) {
-  a.sjc-cta.sjc-cta:hover { transform: none; }
 }
 
 /* Resting colours for the buttons whose background used to be an inline style (an inline style
@@ -163,8 +168,56 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   letter-spacing: 0.06em;
   margin-bottom: 14px;
 }
+
+/* ⭐ THE SECTION TOPIC IS A PILL, AND IT IS ONE STEP UNDER THE HEADING (2026-09-01).
+   Steven: *"the section topic is the first thing you read, and then the H1 is the second thing…
+   it should be one font size smaller than the line that says it makes the business worth more the
+   day you sell it. It looks like you went the other way, so I want it flipped. And put that
+   subject line inside a pill that gives it more separation."*
+
+   ⛔ THIS IS A CORRECTION OF MY OWN BAD MEASUREMENT. On the previous pass he asked for exactly
+   this if the heading drop brought the two together. I queried `.label, .eyebrow`, got `.eyebrow`
+   back — the 14px HERO pill — and told him there was no collision. The real numbers were
+   `.label` 24px against `h2.sec` 32px, which is why it read flat to him and did not to me.
+   ⚠️ Query the class you are actually asking about. A comma selector returns whichever matches
+   first in the document, and on these pages that is always the hero.
+
+   ⛔ 20px WAS STILL NOT SMALLER, AND THE NUMBER WAS NOT THE REASON. 20 is plainly less than 32,
+   but the topic is bold uppercase inside a bordered box 50px tall, and a headline is lowercase
+   with no box - so the pill won the page while losing the font-size comparison. Steven, twice:
+   *"could you make the fucking thing smaller than the headline."* 15px with tighter padding puts
+   the BOX at roughly 32px, which is what he was actually measuring by eye.
+   ⚠️ Judge a label against a headline by the height of the drawn box, never by font-size.
+
+   ⭐ AND IT WEARS THE NAV DROPDOWN'S CLOTHES (his call): *"it wouldn't be a horrible idea to have
+   this pill look real similar to the drop down in our navigation."* Same fill, same gold hairline,
+   same gold text, same 999px radius - lifted as literal values from the menu rules above so the
+   two cannot drift. The shadow is softened from the menu's 0.35 to 0.18 because these sit on white
+   and gray bands, not over photography: *"the website pages do not need to have as dark of a
+   treatment as our drop-down."* */
+.sjc-design .label.label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  padding: 7px 18px;
+  border-radius: 999px;
+  /* the nav dropdown's own values, so the two cannot drift apart */
+  background: rgba(8, 12, 32, 0.93);
+  /* ⛔ 2px AT 0.9, THE DROPDOWN'S VALUE. These were copied from the drawer's OLD hairline; the
+     desktop dropdown was later raised to 2px/0.9 and NOTHING ELSE FOLLOWED, so the "cannot drift"
+     comment above was true only for the file it was written in. Steven, 2026-09-03, third time on
+     this same defect: "you always make the border so fine you could barely see it." */
+  border: 2px solid rgba(255, 215, 0, 0.9);
+  color: var(--accent2-color, #ffd700);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  margin-bottom: 16px;
+}
 @media (max-width: 640px) {
-  .sjc-design .label.label { font-size: 19px; }
+  .sjc-design .label.label {
+    font-size: 13px;
+    padding: 6px 15px;
+  }
 }
 
 /* ⭐ THE WHOLE SEALED PAGE IS IBM PLEX SANS, AND IT IS STILL THE SAME ONE LETTER.
@@ -291,23 +344,1033 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
 }
 
-/* ⭐ HOLD THE CALENDAR'S SPACE BEFORE IT LOADS, OR EVERY ANCHOR BELOW IT MISSES.
-   Steven: *"click pricing… it goes to the pricing section, and then jumps up into the calendar."*
+/* ⭐ HOLD THE CALENDAR'S SPACE. Cal mounts the iframe empty and sizes it later, so without a floor
+   the box is flat during load and everything under it moves when the real height lands.
+   ⚠️ 570px is MEASURED, not chosen. `min-height` only ever adds space, so a taller month view still
+   grows the box normally and can never be clipped.
+   ⛔ This is NOT what caused the #anchor bug — that was the font swap, see components/blocks/CalEmbed.tsx. Reserving
+   this was tried three ways against that bug and changed nothing. It is kept because it is correct
+   on its own merits, not as a fix for something else. */
+[data-sjc-cal] {
+  min-height: 570px;
+}
 
-   ⛔ THE LINK WAS NEVER WRONG. `/#sl6o1yj` is correct and the target exists. The sequence is:
-   the router scrolls to the anchor using the SERVER-rendered page, and only then does React
-   hydrate and portal the 620px calendar in ABOVE it. Everything below shifts down ~646px; the
-   scroll position does not follow. Measured on the live page — anchor at 8348, browser parked
-   at 7702, calendar filling the screen.
+/* ⛔ NO RULE UNDER A HERO HEADLINE. THE TWO COLOURS ARE THE DESIGN.
+   Steven, after two passes at making the line behave: *"Get rid of the underline. It's enough to
+   have one line in white text and one line of words in blue text. If we get rid of the underline,
+   I think the problem goes away."*
 
-   ⚠️ CalEmbed ALREADY reserves this height, and that is not enough: its reservation is a React
-   inline style, so it exists only after hydration — after the scroll has happened. The space has
-   to be there in the first paint, which means CSS.
+   THE PROBLEM IT ENDS. Every sealed hero styles the cyan half of the headline as
+   `h1.big em { border-bottom: 3px solid …; padding-bottom: 6px }`. That is a text-width underline
+   only while the phrase fits on one line. On a phone it wraps, and there is no box that draws it
+   correctly:
 
-   ⛔ AND IT MUST RELEASE ITSELF, or it becomes the slab of white it was written to prevent. Cal
-   sizes its own iframe (570px live) and a fixed floor underneath would leave a gap. `:not(:has(
-   iframe))` drops the floor the instant the calendar arrives — no timer, no observer, nothing to
-   mis-sequence. → the same fork-not-bouncer reasoning as the band guard. */
-[data-sjc-cal]:not(:has(iframe)) {
-  min-height: 620px;
+     • INLINE paints the border under EVERY line fragment, and `padding-bottom` (which adds no
+       height to an inline line box) drops the first rule into the top of the second line's text —
+       the original defect on /podcast and /about, two rules with one through the words.
+     • INLINE-BLOCK gives one rule, but a wrapped shrink-to-fit box is as wide as the COLUMN, so it
+       runs well past the last word. `fit-content`, `max-content`, a table box and a float all
+       resolve the same way; CSS cannot shrink a wrapped box to its longest line, so hugging the
+       text would have meant measuring the last line in JavaScript on every resize.
+
+   Deleting the rule removes the whole class of problem instead of managing it — a fork, not a
+   bouncer. Six pages carry `style="display:inline-block"` pasted onto the tag by hand; those are
+   inert now rather than load-bearing, and nothing has to be un-pasted.
+
+   ⚠️ THE PADDING GOES WITH IT. The 6px only ever existed to hold the rule off the words; left
+   behind it is a gap under one half of a headline and nothing under the other.
+
+   ⚠️ `.sjc-design.sjc-design` IS DELIBERATE, the same trick as `.label.label` above: each design's
+   sheet ships its rule as `.sjc-design-<id> h1.big em` = (0,2,2) and is injected into the body
+   AFTER this stylesheet is linked, so an equal-specificity rule here loses on order alone. */
+.sjc-design.sjc-design h1.big em,
+.sjc-design.sjc-design h2.big em {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* ⭐ THE HERO HEADLINE GETS AIR ON A PHONE. Steven, 2026-09-01, on /about at phone width:
+   *"you see how the words are stacking together… make the font smaller on mobile so that the text
+   has more room to breathe."*
+
+   ⛔ THE CULPRIT IS THE CLAMP FLOOR, NOT THE COLUMN. Every sealed hero ships
+   `h1.big { font-size: clamp(40px, 6vw, 68px); line-height: 1.04 }`. Below 667px the 6vw middle
+   term is smaller than the 40px floor, so the floor wins and the headline STOPS SHRINKING — a
+   390px phone renders the same 40px as a 667px one. Paired with a 1.04 line-height (a 41.6px box
+   around 40px glyphs) the descenders of one line sit on the caps of the next. The columns are
+   fine: `.split` already collapses to `1fr` at 960px.
+
+   So the floor is lowered and the leading opened, and only under 640px — above that the vw term
+   is doing its job and the desktop headline is untouched.
+
+   ⚠️ `.sjc-design.sjc-design` IS DELIBERATE — same trick, same reason as the rule above: the
+   sheet's own `.sjc-design-<id> h1.big` is (0,2,1) and is injected into the body AFTER this
+   stylesheet, so an equal-specificity rule here would lose on order alone.
+
+   ⚠️ THE HEADLINE MAY STILL WRAP TO A THIRD OR FOURTH LINE, AND THAT IS FINE. Holding
+   "lead systems integrator." on one line at 390px needs ~27px type, which is not a hero any more.
+   The complaint was crowding, not wrapping — this buys ~6px of visible gap between lines against
+   the ~1.6px it had.
+
+   One rule, seven pages: /about, /premium-smart-websites, /automated-five-star-reviews,
+   /speed-to-lead, /booked-appointments, /database-reactivation, /ai-implementation. */
+@media (max-width: 640px) {
+  .sjc-design.sjc-design h1.big,
+  .sjc-design.sjc-design h2.big {
+    font-size: clamp(29px, 8vw, 40px);
+    line-height: 1.2;
+  }
+  /* ⭐ AND EVERY SECTION HEADING, FOR THE SAME REASON — MEASURED, NOT GUESSED.
+     A headless pass over all ten public pages at 390x844 (DPR 3, mobile UA) found 44 `h2.sec`
+     headings shipping `clamp(28px, 3.8vw, 44px)` at line-height 1.12. The 3.8vw term falls under
+     the 28px floor below 737px, so a phone renders the same 28px a tablet does — and 31 of those
+     44 wrap to TWO OR THREE lines at that width, 28px of glyphs in a 31.4px box.
+     Two things get fixed at once: the leading opens, and the section heading stops being nearly
+     the same size as the hero above it (31px vs 28px was no hierarchy at all).
+     Lands exactly on 28px at the 640px edge, so nothing jumps at the breakpoint. */
+  .sjc-design.sjc-design h2.sec,
+  .sjc-design.sjc-design h3.sec {
+    font-size: clamp(20px, 5.4vw, 24px);
+    line-height: 1.25;
+  }
+}
+
+/* ⭐ THE CUSTOM-WEBSITES HERO: WORDS GET THE ROOM, AND THE PHOTO IS AS TALL AS THEY ARE.
+   Steven: *"the two-column in the hero section needs adjusted so that the words fit the page
+   better on desktop"* — and then, with the text fixed: *"make the image container taller… you
+   could get rid of those three little pills."*
+
+   Two changes live here. The design ships `.split` as `1.05fr .95fr` — near-equal columns — and
+   the white headline line needs 691px to stay on one line at 42px. It was getting ~600 and
+   breaking three ways. `1.32fr` gives it 713px, which is the first ratio with real margin: 1.28fr
+   lands on 691.2px and one font-loading hiccup would wrap it.
+
+   And `align-items:center` left the photo floating at its natural height beside a much taller
+   column of text. Stretching the row and letting the image cover it makes the two columns finish
+   together.
+
+   ⛔ THIS WAS AN INLINE STYLE FOR AN HOUR AND THAT WAS A BUG — the reason it is a media query now.
+   An inline style beats a stylesheet rule, INCLUDING one inside a media query, so the sheet's own
+   `@media (max-width:960px){.split{grid-template-columns:1fr}}` never got to collapse the hero on
+   a phone. The hero stayed two squeezed columns on mobile, which is the one place Steven said the
+   layout did not matter because it stacks. A min-width query cannot make that mistake: below
+   961px this block simply does not apply and the design's own stacking takes over.
+
+   ⚠️ `:has(.shotwrap)` IS THE SCOPE, NOT A PAGE CLASS. The phone-in-hand shot is the only
+   `.shotwrap` on the whole site (checked across all ten pages), so this reaches exactly one hero
+   and cannot wander into another sealed design that happens to use `.split`. */
+/* ⭐ AND THE PILL SITS ON THE PHOTO AT EVERY WIDTH (2026-09-01). It was desktop-only for one
+   deploy and Steven asked the obvious question: *"Why did it have to be any different on the
+   phone? I don't follow."* There was no good reason. I had bundled two changes that are not
+   related — floating the button, and trimming it to 36px to match the eyebrow. Only the TRIM is
+   desktop-only, because 36px is under the 44px tap minimum. The overlay itself is just as right
+   on a phone, and the reading order is unchanged either way: headline, photo, then the CTA.
+
+   ⚠️ It lands on the bottom of the frame, which is the hand and the desk in this shot — the
+   darkest, least detailed part — and the pill is solid cyan with its own glow, so it carries its
+   own contrast the way the menu capsules do. Check that before reusing this on another photo. */
+.sjc-design.sjc-design .split:has(.shotwrap) > div:has(.shotwrap) {
+  position: relative;
+}
+.sjc-design.sjc-design .split:has(.shotwrap) .btns {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  margin-top: 0;
+  justify-content: center;
+  z-index: 2;
+}
+/* ⛔ AND THE PILL MUST NOT SPAN THE FRAME ON A PHONE. The sealed design ships
+   `.sjc-design-84b3c11f .btn { width: 100% }` inside its own mobile media query — fine when the
+   button was in flow under the photo, wrong the moment it floats ON it. The phone photo is 263px
+   tall against the desktop's 600px, so a full-width 60px pill covered about a quarter of the frame
+   and sat straight across the review list, which is the part of that screenshot doing the selling.
+   Auto width plus a lower anchor puts it on the hand instead, the same accent it is on a laptop.
+   ⚠️ Unconditional on purpose — the desktop button is already auto width, so this changes nothing
+   above 961px and there is no second breakpoint to keep in sync. */
+.sjc-design.sjc-design .split:has(.shotwrap) .btns .btn {
+  width: auto;
+}
+@media (max-width: 960px) {
+  .sjc-design.sjc-design .split:has(.shotwrap) .btns {
+    bottom: 14px;
+  }
+}
+
+@media (min-width: 961px) {
+  .sjc-design.sjc-design .split:has(.shotwrap) {
+    grid-template-columns: 1.32fr 0.68fr;
+    gap: 44px;
+    align-items: stretch;
+  }
+  /* ⭐ THE CTA SITS ON THE PHOTO (2026-09-01, Steven: *"put the book a call pill at the bottom of
+     the damn photo and make the photo taller"*).
+
+     Three passes got here and the last one was the point: while the button was a SIBLING of the
+     frame it had to be paid for out of the column, so every pixel it took came off the image —
+     46px of button plus a 36px gap was 82px of photo. Lifting it out of flow means the frame owns
+     the whole row and the button costs nothing: 519px → 600px.
+
+     The photo column becomes the positioning context and the button is pinned 22px off the bottom,
+     centred over the frame. It lands on the hand and the desk — the darkest, least detailed part
+     of the shot — and the pill is solid cyan with its own glow, so it carries its own contrast the
+     same way the menu capsules do.
+
+     ⚠️ DESKTOP ONLY, and that is the whole reason this is safe. Below 961px the block does not
+     apply: the button drops back into flow, under the photo, at full size and full tap target,
+     which is the phone order Steven asked for two passes ago. An absolutely positioned CTA over a
+     photo on a 390px screen would be neither. */
+  /* ⚠️ THESE TWO CAME BACK AFTER A MEASUREMENT CAUGHT ME DELETING THEM. Rewriting the block above
+     took the `min-height` out with it, so the row fell back to the words (522px) and the photo lost
+     the 78px of fold budget it had been given. Sized against the SMALLEST laptop: at 1440x900 the
+     hero then ends 48px short of the fold, a deliberate sliver of the next band. */
+  .sjc-design.sjc-design .split:has(.shotwrap) {
+    min-height: 600px;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) > div:not(:has(.shotwrap)) {
+    align-self: center;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) .btns .btn {
+    padding-top: 9px;
+    padding-bottom: 9px;
+    line-height: 1.2;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) .shotwrap,
+  .sjc-design.sjc-design .split:has(.shotwrap) .shot {
+    height: 100%;
+  }
+  .sjc-design.sjc-design .split:has(.shotwrap) .shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* ⭐ A HERO PARAGRAPH USES THE WHOLE PAGE. THE BODY OF THE PAGE STILL DOES NOT.
+   Steven, with two hero screenshots side by side: *"one page is acting like a double column with a
+   bunch of empty space… I think they both need to be single column so that the words use the whole
+   page on a desktop."*
+
+   ⛔ NEITHER HERO WAS EVER TWO COLUMNS — I checked the markup before changing anything, and both
+   are a plain `.wrap` with no `.split` in them. What differs is the HEADLINE: a long one runs the
+   full width and a short one leaves the right half empty, which reads as a column that lost its
+   partner. The thing actually stopping short is the paragraph — the design ships
+   `.lede{max-width:60ch}`, so it wraps at ~640px inside a ~1200px page and hangs a ragged edge
+   under a full-width headline.
+
+   ⚠️ SCOPED TO `.band--hero` ON PURPOSE. 60ch is the right measure for reading, and every `.lede`
+   further down the page keeps it. A hero paragraph is four or five lines that get scanned, not
+   read, and it sits directly under a headline whose width it should match. Lifting the cap
+   everywhere would turn the body of every page into 95-character lines.
+
+   ⚠️ IT DOES NOTHING ON A PHONE — the column is already narrower than 60ch there, so the cap was
+   never the binding constraint. */
+.sjc-design.sjc-design .band--hero .lede {
+  max-width: none;
+}
+
+/* ⭐ THE HERO VIDEO HOLDS ITS OWN SHAPE BEFORE IT LOADS.
+   The AI page's explainer moved out of its own section and into the right column of the hero
+   (Steven merged two pages, so the section under it was saying the same thing twice).
+
+   ⛔ WITHOUT THIS THE BOX IS 507×151 UNTIL METADATA ARRIVES, then snaps to 507×285. A `<video>`
+   has no intrinsic size until the file's header lands, so `height:auto` falls back to the HTML
+   default of 150px — a squat black letterbox sitting in the hero on every cold load, and a jump
+   in the fold when it resolves. `aspect-ratio` gives the browser the shape up front and the file
+   only confirms it. **1280×720 is measured with ffprobe against the actual file, not assumed.**
+
+   ⚠️ `margin-top:0` UNDOES A RULE THAT WAS RIGHT WHERE THE VIDEO USED TO LIVE. The sheet ships
+   `.vsl video{margin-top:36px}` to space it under three stacked headlines. In a two-column hero
+   there is nothing above it, so that margin just pushes it off centre from the words beside it. */
+.sjc-design.sjc-design .band--hero .vsl video {
+  aspect-ratio: 16 / 9;
+  height: auto;
+  margin-top: 0;
+}
+
+/* ⭐ THE PLAYER GETS WIDER, NOT TALLER — THAT IS WHAT KILLS THE BLACK BARS.
+   Steven, looking at the stretched box: *"Not sure how I feel about the stupid video container with
+   the black above it and below it… should we shrink the column down so the video doesn't look so
+   tiny in a large column."*
+
+   ⛔ SHRINKING THE COLUMN IS THE WRONG DIRECTION. It clears the bars by making the picture smaller,
+   which is the complaint underneath the complaint. A 16:9 file only gains height by gaining WIDTH.
+   So the stretch comes off — that is what put black above and below it — and the video column grows
+   instead: equal halves, 507×285 → 572×322, no bars anywhere.
+
+   ⛔ THE FILE IS NOT HOSTED BY GOOGLE, whatever the player looks like. It sits on this account's own
+   Vercel Blob storage, and the controls are Chrome's built-in `<video>` UI. Nothing upstream picked
+   this size; every pixel of it came from this stylesheet.
+
+   ⚠️ THE HEIGHT DIFFERENCE THAT REMAINS IS A COPY LENGTH, NOT A LAYOUT BUG. The hero paragraph runs
+   91 words. To stand level with it a 16:9 player would have to be 1076px wide — wider than the
+   page. Shorten the paragraph and the columns even up on their own.
+
+   ⚠️ `:has(.vsl)` KEEPS THIS OFF THE OTHER HERO. The websites hero is `:has(.shotwrap)` and still
+   stretches, because a photograph can be cropped to fill a box and a video meant to be watched
+   cannot. */
+@media (min-width: 961px) {
+  .sjc-design.sjc-design .split:has(.vsl) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ⭐ THE VIDEO HERO CENTRES BOTH COLUMNS, AND THE VIDEO GETS AIR UNDER THE HEADLINE.
+   Steven: *"since the two columns have such a small amount of real estate on the desktop, with the
+   words and elements being centered, it looks fine. And when they stack on a phone, same thing —
+   centered looks better than a wonky left-right justification."*
+
+   ⚠️ NO MEDIA QUERY HERE ON PURPOSE. Everything else in this file that touches a hero is desktop-
+   only, because the desktop is where the two-column layout exists. This one is the opposite: he
+   wants it centred in BOTH states, and the stacked phone view is half the reason.
+
+   ⚠️ `.btns` NEEDS ITS OWN LINE — it is `display:flex`, so `text-align` slides straight past it and
+   the button would sit left under centred words. `justify-content` is the flex spelling of the
+   same instruction.
+
+   ⚠️ THE 28px IS A GAP THAT DID NOT EXIST. Moving the video under the headline put the two flush
+   against each other: the h1 has no bottom margin and `.vsl video` had its own top margin zeroed
+   when it came out of the stacked section it used to live in. */
+.sjc-design.sjc-design .split:has(.vsl) {
+  text-align: center;
+}
+.sjc-design.sjc-design .split:has(.vsl) .btns {
+  justify-content: center;
+}
+.sjc-design.sjc-design .split:has(.vsl) .vsl {
+  margin-top: 28px;
+}
+
+/* ⭐ THE VIDEO COLUMN GOES BACK TO LEFT-JUSTIFIED. THE COLUMN BESIDE IT STAYS CENTRED.
+   Steven, on the centred pass: *"for the left column where the video is, everything in that column
+   needs to do a left justify, then we'll be finished."*
+
+   ⚠️ DESKTOP ONLY, AND THAT IS NOT A GUESS — it is his other instruction, still standing: *"when
+   they stack on a phone, same thing being centered looks better than a wonky left-right
+   justification."* There is no left column on a phone, only a stack, so below 961px the centring
+   above is left alone and this rule never applies. */
+@media (min-width: 961px) {
+  .sjc-design.sjc-design .split:has(.vsl) > :first-child {
+    text-align: left;
+  }
+}
+
+/* ⭐ THE HOME HERO GIVES THREE QUARTERS TO THE WORDS, NOT TO THE FACE.
+   Steven: *"my photo and the booking CTA link don't need to be half the page. My photo could be
+   much smaller, so let's give three-quarters of that hero section to the words, not my face."*
+
+   ⛔ WHY THIS IS NOT A CLASS CHANGE. This hero came in from a different builder and is styled with
+   Tailwind utilities (`grid lg:grid-cols-2`). Our Tailwind compiles by scanning SOURCE FILES, and
+   imported markup lives in the database — so writing `lg:grid-cols-4 lg:col-span-3` into it
+   produces exactly nothing, silently. Only classes that were already in the markup at import time
+   exist in the compiled sheet.
+
+   ⛔ AND WHY NOT AN INLINE STYLE. `lg:grid-cols-2` IS a media query, and an inline style outranks
+   one — that is the trap that killed the mobile stack on /custom-websites earlier today. The hero
+   is a single column below `lg`, and it has to stay that way.
+
+   So the markup carries a marker ATTRIBUTE (no compilation needed, unique on the site) and the
+   sizing lives here, behind Tailwind's own `lg` breakpoint of 1024px.
+
+   ⚠️ THE PHOTO AND BUTTON GO TO FULL WIDTH OF THEIR COLUMN, and that is not a second opinion — it
+   is arithmetic. They ship as `w-1/2 mx-auto`, so in a quarter-width column they would render at
+   an eighth of the page, about 144px. At 100% of the narrowed column they land near 280px, which
+   is a headshot rather than a thumbnail.
+
+   ⛔ AND THE DOUBLED SCOPE CLASS IS NOT DECORATION — I SHIPPED THIS ONCE WITHOUT IT AND IT DID
+   NOTHING. A bare `[data-sjc-hero-split]` is (0,1,0) and Tailwind's `.lg\:grid-cols-2` is also
+   (0,1,0). Identical specificity means document order decides, and the design's sheet is injected
+   into the BODY, after this file is linked in the head. The rule loaded, the media query matched,
+   and the columns stayed 600/600. `.sjc-design.sjc-design` takes it to (0,3,0) and it wins. */
+@media (min-width: 1024px) {
+  .sjc-design.sjc-design [data-sjc-hero-split] {
+    grid-template-columns: 3fr 1fr;
+  }
+  /* ⛔ THE PHOTO IS DELIBERATELY NOT SIZED HERE — THE PANEL OWNS IT.
+     The Design Studio already has this control: Photos on this section → **Frame width — % of its
+     column**, alongside Frame shape, Frame height, Shape/crop and Zoom. A hard-coded width here
+     would outrank it and Steven would set the field and watch nothing happen — the same dead
+     control as the padding that was baked into the sealed markup. He asked the right question:
+     *"I thought resizing the image is something I could actually do in the design studio."* He can.
+
+     Only the BUTTON is sized here, because it is a link rather than a photo and has no panel
+     control of its own. It shipped `w-1/2`, which was half of a half-page column; in a
+     quarter-page column that is ~150px, too small to read as the primary action. */
+  .sjc-design.sjc-design [data-sjc-hero-split] .sjc-cta {
+    width: 100%;
+  }
+}
+
+/* ⭐ THE MOBILE MENU IS A FULL-SCREEN OVERLAY WITH CAPSULE BUTTONS, LIKE THE CLIENT BUILDS.
+   Steven, holding SJC's drawer next to the Phenomenon and Texas Best demos: *"what we have now
+   looks like shit compared to what we built for other people… I don't mind having mine look just
+   like those other two."*
+
+   What those two do and this now does: the page stays visible behind a dimmed blur, the links
+   become big centred capsules with a hairline in the brand's accent, and the bar stays put so the
+   same button that opened it closes it.
+
+   ⚠️ IT STARTS AT 68px, NOT AT 0. Covering the whole viewport would bury the header — and the
+   header holds the only control that closes this. Texas Best and Phenomenon both keep their bar
+   for exactly that reason. 68px is the measured bar height, pinned on every phone width.
+
+   ⚠️ THE PILL IS WHAT MAKES IT READABLE — NOT A SCRIM AND NOT A BLUR. That is the whole trick in
+   the client builds: a solid capsule guarantees its own contrast, which buys the freedom to leave
+   the page sharp behind it. Dimming the page instead is what made this look cheap.
+
+   ⚠️ `position: fixed` ON A CHILD OF THE HEADER IS FINE HERE because nothing above it creates a
+   containing block — no transform, filter or perspective on the header. `backdrop-filter` on the
+   header would have created one and broken this, which is why the translucency it used to carry
+   was removed rather than kept alongside.
+
+   ⚠️ SCROLLS RATHER THAN SHRINKS. Fourteen links do not fit a phone at a 52px tap target, and
+   shrinking the capsules to fit is how a menu becomes hard to hit. `overflow-y:auto` with
+   momentum scrolling keeps the target size and lets the list run. */
+/* ⭐ THE ABOUT HERO: THE PHOTO IS AS TALL AS THE WORDS BESIDE IT.
+   Steven, 2026-09-01, after centring the pill under the photo and matching the two column heights:
+   *"It still looks unbalanced… I think it's the two pills, one's on the top left, one's on the
+   bottom right. I'm going to take the book a call button off the page and then just make the photo
+   as tall as the left column. There's plenty of call buttons on the damn website."*
+
+   ⛔ THE FIX WAS DELETING A THING, NOT TUNING IT. Two capsules on a diagonal — the ABOUT eyebrow
+   top-left, Book a Call bottom-right — read as a see-saw no amount of height-matching could settle.
+   The button is gone from the markup (the page has a calendar of its own further down), the
+   photo column holds one object, and the diagonal is gone with it.
+
+   HOW THE HEIGHT IS MATCHED, WITH NO MAGIC NUMBER. The photo column stretches to the grid row
+   instead of centring in it, and the frame flexes to fill that height; the row is then set by the
+   words, which are the taller side. Change the copy and the photo follows on its own — the 85%
+   constant this replaces would not have.
+
+   ⚠️ `object-position: right` IS THE WHOLE SAFETY MARGIN. Filling 507x421 from a 4:3 original
+   crops ~11% horizontally. Steven is at the RIGHT edge of that photo, so every cropped pixel is
+   taken off the LEFT — the laptop and the window — and he is never touched.
+
+   ⚠️ `[data-sjc-hero-fill]` IS ON THE ABOUT PHOTO COLUMN ONLY, the same marker pattern the home
+   hero uses. /premium-smart-websites runs the identical `.band--hero .split` with a phone photo
+   that must NOT be cropped, and a bare `.split` selector here would have stretched it too.
+
+   ⚠️ ≥1200px ONLY. Below the wrap's cap the words column is the taller of the two by an amount
+   that changes with width, and stacked on a phone there is no second column to match. */
+/* ⛔ THE WHITE FRAME IS DRAWN HERE, NOT BAKED INTO THE PHOTO, AND IT IS NOT GATED BY WIDTH.
+   Steven: *"maybe it's a square photo that we're trying to put rounded corners on."* He was right.
+   The original asset carried its own white frame WITH rounded interior corners; re-cutting it to
+   fit this box stripped those corners and padded a square white block back on, so the outer corners
+   were round while the photo inside had hard 90° ones. A border on a rounded box cannot have that
+   problem: CSS derives the INNER radius from the outer minus the border width (26 - 8 = 18px), so
+   both curves come out right and stay right at any size. The asset is now the plain photograph.
+
+   ⛔ AND IT LIVES OUTSIDE THE MEDIA QUERY BECAUSE THE FIRST VERSION DID NOT. Steven, on his phone:
+   *"when it flips to mobile, the border goes dark, and against the dark page you can't even see
+   the border."* It was inside `min-width: 1200px`, so every phone fell back to the design's own
+   `border: 1px solid var(--line)` — a dark hairline on a dark page, i.e. no frame at all. The
+   FRAME is width-independent; only the height-matching below is a desktop concern.
+
+   ⚠️ `.shot` ships `border: 1px solid var(--line)` — this replaces it; 8px of white is the frame.
+   ⚠️ THE ATTRIBUTE IS DOUBLED, AND THAT IS LOAD-BEARING. The sealed sheet ships
+   `.sjc-design-4f3c8c3e .shot { border: … }` at (0,2,0), which ties a single attribute selector and
+   wins on source order. Measured: the border came back as `1px rgba(255,255,255,.1)` at (0,2,0).
+   The `flex`/`min-height` rules below need no such help — nothing competes for those. */
+[data-sjc-hero-fill][data-sjc-hero-fill] .shot {
+  border: 8px solid #fff;
+}
+
+/* The height match is the part that only makes sense on a desktop: the photo column stretches to
+   the grid row instead of centring in it, and the frame flexes to fill that height, so the WORDS
+   set the height and no constant can go stale. Stacked on a phone there is no second column to
+   match, and below the wrap's cap the words are the taller side by an amount that moves with width.
+
+   ⚠️ `object-position: right` IS THE SAFETY MARGIN. Steven sits at the right edge of that photo,
+   so every cropped pixel comes off the left — the laptop and the window — and he is never touched.
+   ⚠️ `[data-sjc-hero-fill]` is on the ABOUT photo column only, the same marker pattern the home
+   hero uses. /premium-smart-websites runs the identical `.band--hero .split` with a phone photo
+   that must NOT be cropped, and a bare `.split` selector here would have stretched it too. */
+@media (min-width: 1200px) {
+  [data-sjc-hero-fill] {
+    align-self: stretch;
+    display: flex;
+  }
+  [data-sjc-hero-fill] .shot {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  [data-sjc-hero-fill] .shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center;
+  }
+}
+
+/* ⭐ THE HOME CTA WEARS THE SAME CYAN AS EVERY OTHER CTA (2026-09-01, Steven's call).
+   The home hero shipped its Book A Call as royal blue on a royal-blue-adjacent dark band -
+   `bg-[var(--primary-color)]` with a 2px border of the same colour and an 8px corner. Every other
+   page's CTA is the cyan gradient pill. So the one button a first-time visitor sees first was the
+   only one on the site not wearing the action colour.
+
+   ⛔ CYAN IS THE ACTION COLOUR AND NOTHING ELSE MAY USE IT. That is why this is worth changing
+   rather than leaving as "variety": the label pills all share the nav's dark-and-gold treatment,
+   and cyan is reserved for the one thing you want clicked. A CTA that is not cyan reads as another
+   panel.
+
+   Values lifted verbatim from `.btn--primary` in the sealed sheets - the same gradient, the same
+   ink text, the same glow - so the two cannot drift apart.
+   ⚠️ `.sjc-cta` is the marker on the home hero button only. The pricing tiers' "Get Started"
+   buttons keep their own treatment: they sit inside coloured cards, three across, and are a
+   choice between options rather than the page's one action. */
+.sjc-design .sjc-cta,
+.sjc-design .sjc-cta:visited {
+  background: linear-gradient(180deg, #4FE0FF, #00B8DB) !important;
+  color: #04121D !important;
+  border-color: transparent !important;
+  border-radius: 999px !important;
+  box-shadow: 0 16px 40px rgba(0, 217, 255, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* ⭐ THE HOME HERO PUTS THE WORDS FIRST ON A PHONE (2026-09-01, Steven's call).
+   The design ships the two hero columns as `order-2 lg:order-1` (words) and `order-1 lg:order-2`
+   (portrait + Book a Call) — so on a phone a visitor got a face and a button before a single word
+   saying what the company does, and the headline did not appear until the second screen. Side by
+   side on the desktop the order never read that way, which is why it survived.
+
+   Both columns fall back to DOM order below the desktop breakpoint: words, then portrait and CTA.
+   Nothing about the desktop layout changes.
+
+   ⚠️ THE SELECTOR IS (0,3,0) ON PURPOSE, AND (0,2,0) WAS MEASURED FAILING. The sealed sheet does
+   NOT ship Tailwind's `.order-1` bare at (0,1,0) — it ships it SCOPED, as
+   `.sjc-design-7b6d59e9 .order-1` = (0,2,0). The doubled attribute alone tied that and lost on
+   source order (the sheet is injected into the BODY, after this file), and the columns did not
+   move. `> div[class]` adds the third simple selector that actually wins.
+   ⚠️ The attribute is on the HOME hero only — verified across all ten pages — so this cannot
+   reach another page's split. */
+@media (max-width: 1023px) {
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class] {
+    order: 0;
+  }
+}
+
+/* ⭐ SECTION HEADINGS COME DOWN TWO STEPS (2026-09-01, Steven pointing at "In 2024 the math
+   changed, and it changed in your favor" on /ai-implementation: *"whatever this font size is, drop
+   it two sizes"*).
+
+   Every one of the imported sheets ships the SAME rule - `h2.sec { clamp(28px, 3.8vw, 44px) }` -
+   so one rule here moves all of them and they cannot drift apart. Two steps down the scale from
+   the 44px ceiling is 38 then 32; the floor and the vw term come down in proportion.
+
+   His conditional does not fire. He said that if the drop made the heading the same size as the
+   label above it, the label should come down one too - the label is 11px, so there was never a
+   collision and it is untouched.
+
+   ⚠️ `.sjc-design.sjc-design` is (0,3,1) against the sheets' own (0,2,1). Every sheet is injected
+   into the BODY after this file, so an equal-specificity rule would lose on order.
+   ⚠️ The phone rule above moves with it, two steps down from 28 to 24, and lands ON 24px at the
+   640px boundary where this rule's floor also sits - so nothing jumps at the breakpoint. */
+.sjc-design.sjc-design h2.sec,
+.sjc-design.sjc-design h3.sec {
+  font-size: clamp(24px, 2.8vw, 32px);
+}
+
+/* ⛔ THE WORDMARK AND THE HAMBURGER COLLIDE ON A REAL PHONE (2026-09-01, Steven's iPhone).
+   MEASURED, headless, mobile emulation, four widths — the gap between the end of "Consulting"
+   and the hamburger:
+
+     428px → 49px ok      390px → 11px      375px → 0px ⛔      320px → 0px ⛔ (clamps to 363)
+
+   The nav chrome sets `.sjc-mark span { font-size: clamp(23px, 2.6vw, 32px) }`. Below ~885px the
+   2.6vw term is under the 23px floor, so the wordmark FREEZES at 23px — 254px wide — while the
+   screen keeps shrinking. 52px logo + 12px gap + 254px wordmark + 30px burger + 32px of padding
+   needs 380px, and a 375px phone does not have it. Same clamp-floor failure as the two headline
+   rules above; this one just runs out of room instead of stacking.
+
+   ⚠️ THE LOGO HEIGHT IS DELIBERATELY NOT TOUCHED. The bar measures 68px and the drawer is pinned
+   at `inset: 68px 0 0 0` — shrinking the logo shortens the bar and opens a strip of page above
+   the menu. The wordmark carries the whole reduction.
+
+   ⚠️ `#global-header#global-header` IS DELIBERATE — the doubled selector, same trick as
+   `.sjc-design.sjc-design` above. The nav's own rule is in an inline <style> inside the BODY, so
+   it comes after this stylesheet and wins any tie at equal specificity.
+
+   Lands on 23px at 480px and above, so nothing changes for tablets or the desktop bar. */
+@media (max-width: 640px) {
+  #global-header#global-header .sjc-mark span {
+    font-size: clamp(15px, 4.8vw, 23px);
+  }
+}
+
+@media (max-width: 1023px) {
+  #global-header [data-landingsite-mobile-menu] {
+    position: fixed;
+    inset: 68px 0 0 0;
+    z-index: 70;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 22px 34px;
+    /* ⛔ NO SCRIM, NO BLUR, NO TINT — NOTHING. Steven, 2026-09-01: *"You don't need that gradient
+       covering up the underlying screen. You want to read the screen without anything in your way.
+       We engineered the pills to stand on their own."* This started as a blurred page with hollow
+       pills (both ingredients backwards), then became a sharp page under a 20% tint; the tint was
+       the last of the scrim thinking and it is now gone too. The capsule is solid, so it carries
+       its own contrast over anything — which is the entire reason the page behind can stay sharp.
+       ⛔ Do not reintroduce a tint, a scrim or a backdrop-filter here. Twice ruled. */
+    background: transparent;
+  }
+  /* ⛔ CENTRED BY FLEX, NOT BY `margin: 0 auto` — THE AUTO MARGINS DID NOT SURVIVE.
+     Measured on the live page: `margin-left: 76px; margin-right: 0`. Something in the imported
+     sheet lands on `margin-right` after this file, so only the left margin resolved to auto — and
+     one auto margin does not centre anything, it shoves the element to the far side and dumps all
+     76px of slack on the other. The stack sat flush right with a 98px gutter on the left and 22px
+     on the right, which is exactly what Steven spotted.
+     Centring from the PARENT cannot be half-applied: `align-items: center` needs no cooperation
+     from the child's margins, so a stray margin rule can no longer defeat it. */
+  /* ⛔ `:not(.hidden)` IS WHAT LETS THE MENU CLOSE — IT IS NOT DECORATION.
+     The close-on-tap handler works by adding Tailwind's `hidden` class. But this selector carries
+     an ID, so it is (1,1,0) against `.hidden` at (0,1,0) — `display:flex` won every time and the
+     drawer stayed open over the page it had just navigated to. The handler was firing the whole
+     time; the CSS was overruling it.
+     Excluding the closed state means there is nothing to overrule: when `hidden` is on, this rule
+     does not match at all and the design's own `display:none` stands. */
+  #global-header [data-landingsite-mobile-menu]:not(.hidden) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #global-header [data-landingsite-mobile-menu] > div {
+    align-items: stretch;
+    width: 100%;
+    max-width: 380px;
+    margin: 0;
+    /* ⛔ 11px JAMMED THE CAPSULES TOGETHER. Steven, 2026-09-02: "we have plenty of vertical room
+       on the phone and on the desktop, why do the pills have to be jammed together." */
+    gap: 25px;
+  }
+  /* the links become the capsules */
+  #global-header [data-landingsite-mobile-menu] a {
+    display: block;
+    padding: 14px 20px !important;
+    text-align: center;
+    border: 2px solid rgba(255, 215, 0, 0.9);
+    border-radius: 999px;
+    /* ⛔ NO FILL — Steven: *"I want to see the website under these buttons."* The capsule is the
+       outline and nothing else; the page runs straight through it. The shadow is what keeps gold
+       legible when a bright part of a photo passes underneath, since no fill is guaranteeing it. */
+    /* SOLID, like the client builds. The pill is what guarantees the text — not a shadow, not a
+       scrim — which is exactly why the page behind it can stay sharp. */
+    background: rgba(8, 12, 32, 0.93);
+    color: var(--accent2-color, #ffd700) !important;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  #global-header [data-landingsite-mobile-menu] a:hover,
+  #global-header [data-landingsite-mobile-menu] a:focus {
+    background: var(--accent2-color, #ffd700);
+    border-color: var(--accent2-color, #ffd700);
+    color: var(--primary-color) !important;
+  }
+  /* ⚠️ THE SUB-INDENT IS UNDONE ON PURPOSE — it was for a flat list, and it makes centred
+     capsules look misaligned by 15px. */
+  #global-header [data-landingsite-mobile-menu] a.sjc-sub { padding-left: 20px; }
+  /* ⛔ THE GROUP LABEL IS A PILL TOO, FOR THE SAME REASON THE LINKS ARE.
+     Gold text alone still sat on bare photography — Steven: *"the word services and companies
+     need the same pill treatment, otherwise they blend into the page underneath it."* A text
+     shadow was never going to fix that; only a solid backing does. Narrower and quieter than the
+     links so it still reads as a heading rather than a fourteenth button: `align-self:center`
+     shrinks it to its text inside a column whose other children stretch. */
+  #global-header [data-landingsite-mobile-menu] .sjc-mgroup {
+    align-self: center;
+    margin-top: 10px;
+    padding: 7px 22px;
+    border-radius: 999px;
+    background: rgba(8, 12, 32, 0.93);
+    border: 2px solid rgba(255, 215, 0, 0.55);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    color: var(--accent2-color, #ffd700);
+    font-weight: 700;
+  }
+}
+
+/* ⭐ THE DESKTOP DROPDOWN WEARS THE PHONE DRAWER'S CLOTHES (2026-09-01, Steven's ask).
+   The drawer above and the two Services/Company panels are the SAME menu at two widths, and they
+   looked like two different websites: gold capsules on the phone, a flat royal-blue slab with
+   white text on the desktop. Same skin, same reasoning — a solid capsule guarantees its own
+   contrast, so the panel behind it does not have to be an opaque slab and the page keeps showing
+   through between the pills, exactly as it does on the phone.
+
+   ⛔ !important IS LOAD-BEARING, NOT LAZINESS. The base `.sjc-drop` rules live in the nav chrome
+   document's own <style> block (they had to — the imported sheet 7b6d59e91bbcfde5 is frozen at
+   1,436 class names and a class it does not carry renders as nothing). That inline block is in the
+   BODY, so it comes after this stylesheet and wins every tie at equal specificity. An !important
+   declaration beats a normal one whatever the order, which is the only thing that reaches past it
+   from here. Same trick the drawer above already uses on `padding` and `color`.
+
+   ⚠️ IF YOU EDIT `.sjc-drop` IN THE NAV BLOCK AND NOTHING MOVES, IT IS THESE RULES. The panel
+   geometry (position, hover bridge, open/close transition) still lives there; only the SKIN is
+   here.
+
+   ⚠️ >= 1024px ONLY. Below that the panels do not exist at all — `hidden lg:flex` — and the drawer
+   above owns the same links. */
+@media (min-width: 1024px) {
+  #global-header .sjc-drop {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    min-width: 268px;
+    padding: 22px !important;
+    /* ⛔ FULLY TRANSPARENT WAS RIGHT UNTIL A PILL NEEDED A COLOURED BORDER (2026-09-02). Steven,
+       2026-09-01, asked for clear: *"if you can make it completely clear, do it."* That held while
+       every capsule was solid navy with gold — each one carried its own contrast. The AI pill's
+       money-green edge does not: over the dark hero it reads, over a white band it washes out, and
+       between the pills the page bleeds through and the whole menu looks unfinished.
+       ⭐ HIS FIX, 2026-09-02: *"we might need to put a gradient layer under these pills."* A blurred
+       gradient keeps the see-through quality he likes — you still read the page moving underneath —
+       while giving every border ONE ground to sit on instead of whatever happens to scroll past. */
+    background: linear-gradient(180deg, rgba(5, 8, 22, 0.93) 0%, rgba(5, 8, 22, 0.78) 100%) !important;
+    backdrop-filter: blur(14px) saturate(125%);
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 18px;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.42) !important;
+  }
+  /* the links become the capsules — values copied from the drawer so the two cannot drift */
+  #global-header .sjc-drop a {
+    padding: 12px 22px !important;
+    text-align: center;
+    /* ⛔ A HAIRLINE AT HALF OPACITY IS A DECISION NOBODY CAN SEE. Steven, 2026-09-02: "the gold
+       band around the pills - you make it half a pixel tall so you can't even see it." 2px at
+       near-full gold. If a border is worth drawing it is worth seeing. */
+    border: 2px solid rgba(255, 215, 0, 0.9);
+    border-radius: 999px;
+    background: rgba(8, 12, 32, 0.93) !important;
+    color: var(--accent2-color, #ffd700) !important;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  #global-header .sjc-drop a:hover,
+  #global-header .sjc-drop a:focus {
+    background: var(--accent2-color, #ffd700) !important;
+    border-color: var(--accent2-color, #ffd700);
+    color: var(--primary-color) !important;
+  }
+}
+
+/* ⭐ A SINGLE-COLUMN SECTION USES ITS COLUMN. IT DOES NOT LEAVE A HOLE ON THE RIGHT.
+   Steven: *"a lot of sections were brought in from other places… the words are only using 60 or 70%
+   of the column."* Measured on /ai-implementation at 1512px: 36 paragraphs rendering 684px wide,
+   flush left at 28px, with 468px of dead space to their right. Not centred — ragged.
+
+   ⛔ THE CAUSE IS ONE INHERITED RULE, NOT THE LAYOUT. Every sealed design ships
+   `.lede{max-width:60ch}` — a proper reading measure, and correct on the narrow column of a
+   two-column section. In a FULL-WIDTH section it caps the text at 58% of an 1180px wrap and leaves
+   the rest empty, which reads as a broken import rather than as typography.
+
+   ⚠️ 100ch IS A COMPROMISE, DELIBERATELY, AND IT REPLACED 86ch ON 08-31. Removing the cap entirely
+   gives 120-character lines at this font size, which is genuinely hard to track. 86ch was the first
+   attempt and it was still too tight: it lands at 980px, so an 1180px wrap kept ~200px of dead space
+   on the right and a re-measure flagged 21 paragraphs across six pages. 100ch lands near 1140px —
+   it fills an 1180px wrap almost exactly, still caps a 1497px full-bleed band, and stays inside what
+   a person can read without losing their place.
+
+   ⚠️ IT DOES NOT TOUCH TWO-COLUMN SECTIONS. `:not(.split *)` leaves the narrow column alone, where
+   60ch is exactly right and where widening would push text under a photo or a video. */
+.sjc-design.sjc-design .lede:not(.split *),
+.sjc-design.sjc-design .sec p:not(.split *) {
+  max-width: 100ch;
+}
+
+/* ⭐ THE PODCAST EPISODES: TWO COLUMNS — VIDEO LEFT, WORDS RIGHT.
+   Steven, 08-31: *"I'd like to have this entire page a two-column. The video on the left, the words
+   on the right, it'll stack nicely on a phone. And where we number them one through five or six
+   interviews, that font size is too goddamn small."*
+
+   ⛔ THE PAGE WAS BOXED AT 760px INSIDE AN 1180px BAND. `.podcol{max-width:760px}` came in with the
+   import and is the reason this page read as a different site — every measurement on it was taken
+   against 760 while every other page uses the full wrap. Widening it is what makes two columns
+   possible at all; without it there is not enough room for a video and a paragraph side by side.
+
+   ⚠️ THE MARKUP WAS RESTRUCTURED TO MATCH, IT IS NOT CSS ALONE. Each `.ep` used to be three
+   stacked siblings (head, video, body) and a pure-CSS two-column would have left a ~250px hole
+   between the title and its text, because the video forces the height of the row the title sits in.
+   Each episode is now `.ep__media` (video + book cover) beside `.ep__words` (number, title, copy),
+   so each column flows on its own. Every `{{t:tN}}` token was carried across untouched. */
+.sjc-design.sjc-design .podcol { max-width: none; }
+
+@media (min-width: 961px) {
+  .sjc-design.sjc-design .ep {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
+    column-gap: 46px;
+    align-items: start;
+  }
+  /* ⛔ WORDS LEFT, VIDEO RIGHT — Steven, 08-31: *"Humans read from left to right. Let's put the
+     text on the left, the video on the right."* The markup still runs media-then-words, because
+     that is the order a phone should stack in; the columns are placed explicitly so the source
+     order and the reading order can differ. */
+  .sjc-design.sjc-design .ep__words { grid-column: 1; grid-row: 1; }
+  .sjc-design.sjc-design .ep__media { grid-column: 2; grid-row: 1; }
+}
+.sjc-design.sjc-design .ep__media .cover { display: block; margin-top: 22px; }
+.sjc-design.sjc-design .ep__media .cover img { width: 170px; height: auto; }
+
+/* ⚠️ `.ep__body` USED TO BE THE GRID THAT PLACED THE COVER BESIDE THE TEXT. It no longer exists in
+   the markup, so its 170px/1fr rule is dead — the cover now sits under the video and the text owns
+   the whole right column. */
+
+/* the episode number: 13px is a footnote, not a marker. 28px reads as a numeral. */
+.sjc-design.sjc-design .ep__n {
+  font-size: 28px;
+  line-height: 1.1;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+/* body copy was 16px here and 19px everywhere else — that gap is most of why the page looked
+   imported. */
+.sjc-design.sjc-design .ep__text p { font-size: 18px; line-height: 1.62; }
+
+/* the attribution line added 08-31: these blurbs are publisher jacket copy, not Steven's words and
+   not the guest's. Marked so every claim inside them belongs to whoever actually made it. */
+.sjc-design.sjc-design .ep__src {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .62;
+  margin: 0 0 10px;
+}
+
+/* ⚠️ ON A PHONE THE TWO WRAPPERS DISSOLVE. `display:contents` promotes the four real pieces to be
+   grid items of `.ep`, so `order` can interleave them across what were two separate columns —
+   title, then the video, then the write-up, then the book cover. Without this the phone would show
+   a video before it says whose interview it is, or bury the video under five paragraphs; neither
+   wrapper order can produce the right sequence on its own. */
+@media (max-width: 960px) {
+  .sjc-design.sjc-design .ep { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .sjc-design.sjc-design .ep__media,
+  .sjc-design.sjc-design .ep__words { display: contents; }
+  .sjc-design.sjc-design .ep .ep__head { order: 1; }
+  .sjc-design.sjc-design .ep .vid      { order: 2; margin-bottom: 20px; }
+  .sjc-design.sjc-design .ep .ep__text { order: 3; }
+  .sjc-design.sjc-design .ep .cover    { order: 4; margin-top: 18px; }
+}
+
+/* the site-wide legal disclaimer, added 08-31 at Steven's instruction. Sits above the copyright
+   line in the footer, so it is on every page rather than only the ones carrying numbers or quoted
+   publisher copy. Deliberately quiet — it is a disclosure, not a message. */
+.sjc-design.sjc-design .sjc-foot-disclaimer {
+  margin: 26px 0 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+.sjc-design.sjc-design .sjc-foot-disclaimer p {
+  margin: 0;
+  max-width: none;
+  font-size: 12px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ⭐ THE PODCAST DIVIDERS — ONE WEIGHT, TWO JOBS. Steven, 08-31: *"categories get a bar above it
+   and below it to distinguish a goddamn category, and then a nice divider line a human could see
+   between the episodes."*
+
+   ⛔ EVERY RULE ON THIS PAGE IS NOW 2px SOLID var(--cyan). The imported design shipped three
+   different weights — 2px teal above a category, 1px at 0.22 alpha below it, 1px at 0.13 alpha
+   between episodes — so the two lines doing the most structural work were the two nobody could
+   see. Alpha was the wrong tool: on white, 0.13 is roughly #dfe0e4 and disappears under any glare.
+
+   ⭐ MEANING COMES FROM COUNT, NOT FROM WEIGHT. A category is bracketed — a bar above AND below,
+   which reads as parentheses around the heading. An episode break is a SINGLE bar. Same ink, and
+   you can tell the two apart at a glance without either one being faint. */
+.sjc-design.sjc-design .eps .cathead {
+  border-top: 2px solid var(--cyan, #056b87);
+  border-bottom: 2px solid var(--cyan, #056b87);
+}
+.sjc-design.sjc-design .eps .ep {
+  border-bottom: 2px solid var(--cyan, #056b87);
+  padding-bottom: 46px;
+  margin-bottom: 46px;
+}
+/* ⚠️ the LAST episode in a category keeps no bar — the next category's own top bar is the break,
+   and two rules stacked with only whitespace between them reads as a mistake. */
+.sjc-design.sjc-design .eps .catgroup > .ep:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+/* ⚠️ THE HAIRLINES ON `.vid` AND THE BOOK COVER ARE NOT DIVIDERS — they are frames around media,
+   and they sit on top of a dark video or a cover image where they read as an edge. Left alone on
+   purpose; raising them would put stray lines across the right column. */
+
+/* ⭐ THE INTERVIEWS PLAY FROM OUR OWN SERVER NOW. Steven, 08-31: *"take the five YouTube videos,
+   put them on our own server, and put them back on the website when you're ready."* The files sit
+   in Vercel Blob and play in a native <video>, so there is no copy-link button, no "Watch on
+   YouTube" bar, no YouTube branding and nothing on the page pointing off it.
+
+   ⛔ THE DESIGN'S BOX WAS BUILT FOR AN IFRAME AND HAS TO BE UNDONE. `.vid` fakes a 16:9 box with
+   `padding-top:56.25%` and then absolutely positions the iframe inside it — the standard trick for
+   an element that cannot size itself. A <video> CAN size itself, and dropping one into that box
+   leaves it stranded below 56.25% of empty padding. Zero the padding wherever a real player is
+   present and let the file's own dimensions set the height.
+
+   ⚠️ AND THAT IS AN IMPROVEMENT, NOT A COMPROMISE. These uploads are 480x300, 464x360 and 640x480 —
+   none of them 16:9. The embed was letterboxing every one of them into black bars. Their own
+   aspect ratio is the honest one. */
+.sjc-design.sjc-design .vid:has(.vid__player) {
+  padding-top: 0;
+  background: #000;
+}
+.sjc-design.sjc-design .vid__player {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0;
+  background: #000;
+}
+
+/* ⛔ A CARD HEADING IS NOT ITSELF A CARD (2026-09-02).
+   Every sealed sheet on this site ships two rules that collide:
+
+     .card    { background: var(--glass); border: 1px solid var(--line); border-radius: 18px;
+                padding: 32px; box-shadow: … }
+     h3.card  { font-size: 21px; font-weight: 700 }
+
+   The second was only ever meant to size the heading — but the FIRST one matches it too, because
+   `h3.card` is a `.card`. So every feature card on the site rendered a second white box, wrapped
+   around its own heading, inside the card. On a white card against a white page nobody could see
+   it; the moment the cards went blue it was unmissable, and it was there all along.
+
+   ⚠️ HEADINGS ONLY. The container `<div class="card">` must keep every one of these properties —
+   this strips them from h1–h6 and nothing else. Doubled class for (0,3,0), because each design's
+   sheet ships its own rule scoped as `.sjc-design-<id> .card` = (0,2,0). */
+.sjc-design h1.card.card,
+.sjc-design h2.card.card,
+.sjc-design h3.card.card,
+.sjc-design h4.card.card,
+.sjc-design h5.card.card,
+.sjc-design h6.card.card {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* ⭐ THE LAYER CARD'S LINK NEEDS A HOVER THAT IS NOT GOLD.
+   Steven, 2026-09-03: *"make the hover color different than yellow, so when you put your mouse
+   over it, you realize it's a clickable link."* Gold on navy is the resting state everywhere in
+   the AI Implementation livery, so the hover has to leave the livery to register as a state
+   change at all — white is the only lift on that navy that introduces no new hue.
+   ⚠️ It is a CLASS, not an inline style: an inline `color` would beat any rule written here, so
+   the base colour lives with the hover or the two can never stay in sync. */
+.sjc-design .sjc-layer-link {
+  color: #ffd700;
+  transition: color 0.18s ease;
+}
+.sjc-design .sjc-layer-link:hover,
+.sjc-design .sjc-layer-link:focus-visible {
+  color: #ffffff;
+}
+
+/* ⭐ THE FIVE BLUE CARDS' LINK HOVER — WHITE AT REST, GOLD ON HOVER.
+   Steven, 2026-09-03, after the layer card got one: *"all five feature cards above it have the
+   same see how it works with no hover color."* Gold is the exact INVERSE of the layer card
+   (gold -> white), so the two hovers read as one system instead of two unrelated effects.
+   ⚠️ Specificity: `.text-white` in the markup is (0,1,0); this is (0,3,0) on hover, so it wins
+   without !important. The band rules do not touch <a>, only p/span/strong, so nothing else
+   competes here. */
+.sjc-design .sjc-card-link {
+  transition: color 0.18s ease;
+}
+.sjc-design .sjc-card-link:hover,
+.sjc-design .sjc-card-link:focus-visible {
+  color: #ffd700;
+}
+
+/* ⭐ THE SEALED SHEETS' OWN `.btn--primary` — THE HERO BUTTON ON EVERY SERVICE PAGE.
+   Steven, 2026-09-03, after the `.sjc-cta` sweep: *"these seven... they swell and barely change
+   color... they swell and don't do anything."* He was right and the sweep genuinely missed them:
+   these anchors carry `btn btn--primary` from the imported sheet, NOT `sjc-cta`, so nothing in the
+   CTA rules above ever applied. The sheet ships `.btn:hover{transform:translateY(-2px)}` and NO
+   colour rule at all — the lift was the entire hover.
+   ⛔ SPECIFICITY IS THE WHOLE TRICK. The sealed sheet is scoped at import, so its rules ship as
+   `.sjc-design-<id> .btn:hover` = (0,3,0). Doubling `.btn` here makes these (0,4,1), which clears
+   it WITHOUT !important — the same reasoning already written for `a.sjc-cta.sjc-cta:hover`.
+   Same gold as the CTA sweep, so every button on the site answers a hover identically. */
+.sjc-design a.btn.btn {
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+.sjc-design a.btn.btn:hover,
+.sjc-design a.btn.btn:focus-visible {
+  transform: none;
+}
+.sjc-design a.btn.btn--primary:hover,
+.sjc-design a.btn.btn--primary:focus-visible {
+  background: linear-gradient(180deg, #FFE04A, #F0C000);
+  color: #12263F;
+  box-shadow: 0 10px 24px rgba(255, 215, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .55);
+}
+
+/* ⭐ THE SIX SYSTEM CARDS ARE LINKS, AND NOTHING SAID SO (2026-09-03).
+   The arrow (in the markup) is the resting signal; this is the confirmation on hover.
+   ⛔ NO `.sjc-design` ANCESTOR HERE, AND THAT IS THE WHOLE BUG THE FIRST VERSION HAD.
+   Every rule was written as `.sjc-design .sjc-sys-card` — but SystemStrip is a Puck `Section`
+   block, NOT a DesignSection, so it renders with no `.sjc-design` wrapper anywhere above it and
+   not one of those rules ever matched. The arrow still appeared because it is markup; the hover
+   silently did nothing. Steven: *"the only difference I see is the arrow, nothing else is
+   happening."* ⚠️ Check the ancestor exists before scoping to it — a rule that never matches
+   looks exactly like a rule that lost.
+   ⛔ !important on the border because the card's border is an INLINE style from the React
+   component, and an inline style beats any stylesheet. The layer card keeps its green — that
+   border is its identity — and brightens its glow instead. No transform: the swell was removed
+   from these cards and the CTAs for competing with the link itself. */
+a.sjc-sys-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+/* ⛔ SUBTLE IS THE SAME AS BROKEN — Steven, 2026-09-03, on the third pass at this:
+   *"the arrow is so small... you can barely even see the arrow to begin with."* At the line's own
+   size and 45% opacity it read as punctuation. 1.5em, bold, and mostly opaque at REST, because the
+   arrow's job is to be seen before anyone hovers. */
+a.sjc-sys-card .sjc-sys-cta {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #3b7fb8;
+  transition: color 0.2s ease;
+}
+a.sjc-sys-card .sjc-sys-arrow {
+  display: inline-block;
+  font-size: 1.2em;
+  font-weight: 700;
+  line-height: 0.8;
+  vertical-align: -2px;
+  transition: color 0.2s ease;
+}
+/* On the black card a green arrow at 15px was nearly invisible. Gold ties it to the card's own
+   name and is the brightest thing available on that ground. */
+/* the layer card is gold-on-navy, and the active card is white-on-blue — the resting blue would
+   disappear on both. */
+a.sjc-sys-card--layer .sjc-sys-cta { color: #ffd700; }
+a.sjc-sys-card--active .sjc-sys-cta { color: #ffffff; }
+a.sjc-sys-card:hover .sjc-sys-cta,
+a.sjc-sys-card:focus-visible .sjc-sys-cta { text-decoration: underline; }
+/* ⛔ A HOVER THAT ONLY RECOLOURS A 2px LINE IS NOT VISIBLE. The ring is what actually reads —
+   it thickens the edge without changing the border-width, so nothing reflows. */
+a.sjc-sys-card:not(.sjc-sys-card--layer):hover,
+a.sjc-sys-card:not(.sjc-sys-card--layer):focus-visible {
+  border-color: #3b7fb8 !important;
+  box-shadow: 0 0 0 3px rgba(59, 127, 184, .38), 0 4px 14px rgba(59, 127, 184, .28) !important;
+}
+a.sjc-sys-card--layer:hover,
+a.sjc-sys-card--layer:focus-visible {
+  border-color: #a5d989 !important;
+  box-shadow: 0 0 0 3px #0A0E27, 0 0 0 6px rgba(133, 187, 101, .45), 0 0 18px rgba(133, 187, 101, .5) !important;
 }

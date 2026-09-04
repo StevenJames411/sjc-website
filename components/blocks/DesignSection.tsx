@@ -402,7 +402,7 @@ export function fillTokens(
 // ⚠️ ANCHORED. The host must come straight after `src="https://` and be followed by `/` or the
 // closing quote, so `youtube.com.evil.tld` and `evil.tld/?x=youtube.com` both still get stripped.
 const EMBED_SRC =
-  /src\s*=\s*"https:\/\/(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|player\.vimeo\.com)(?:\/|")/i;
+  /src\s*=\s*"https:\/\/(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|player\.vimeo\.com|loom\.com)(?:\/|")/i;
 
 function stripDangerous(html: string): string {
   return String(html || "")
@@ -495,16 +495,54 @@ function markBandRoot(html: string): string {
   });
 }
 
+// ⛔ TAGS THAT PAINT NOTHING CANNOT CARRY THE SECTION'S PADDING. An imported section often opens
+// with its own <style> block before its first real element — the site nav is one — and matching
+// "the first tag" then lands the declarations on <style>, where they do nothing at all. The
+// symptom is silent and confusing: the Space above/below dial stores a number, shows it back in
+// the panel, and changes nothing on the page. Steven, 2026-08-31, on the header: *"you see how the
+// padding is marked zero. That's not zero padding."* The footer worked only because its markup
+// happens to open with <footer>. Same family as the lift-chrome first-tag bug.
+const NON_PAINTING = new Set(["style", "script", "link", "meta", "template", "noscript"]);
+
+/**
+ * Blank the CONTENTS of every style/script block, keeping length and offsets identical.
+ *
+ * ⛔ SKIPPING THE `<style>` TAG IS NOT ENOUGH — THE SEARCH THEN RUNS ON THROUGH THE CSS INSIDE IT.
+ * A stylesheet comment reading "`<fill> padding-box, <stroke> border-box`" was matched as the
+ * section's first painting tag, so Space above / Space below stamped the padding onto a phrase in
+ * a comment. The controls saved correctly and moved nothing, on every attempt, with no error.
+ *
+ * Masked rather than stripped so `tag.index` still points into the ORIGINAL string and the splice
+ * below stays exact.
+ */
+function maskInertBlocks(html: string): string {
+  return html.replace(
+    /(<(style|script)\b[^>]*>)([\s\S]*?)(<\/\2\s*>)/gi,
+    (_m, open: string, _name: string, body: string, close: string) =>
+      open + " ".repeat(body.length) + close
+  );
+}
+
 export function injectStyle(html: string, decls: string): string {
   if (!decls) return html;
-  const tag = html.match(/<([a-z][a-z0-9]*)\b[^>]*>/i);
+  const hay = maskInertBlocks(html);
+  const re = /<([a-z][a-z0-9]*)\b[^>]*>/gi;
+  let tag: RegExpExecArray | null = null;
+  for (let m = re.exec(hay); m; m = re.exec(hay)) {
+    if (!NON_PAINTING.has(m[1].toLowerCase())) {
+      tag = m;
+      break;
+    }
+  }
   if (!tag) return html;
   const open = tag[0];
   const existing = open.match(/\sstyle\s*=\s*(["'])([\s\S]*?)\1/i);
   const next = existing
     ? open.replace(existing[0], ` style="${existing[2].replace(/;\s*$/, "")};${decls}"`)
     : open.replace(/>$/, ` style="${decls}">`);
-  return html.replace(open, next);
+  // ⚠️ SPLICED BY INDEX, NOT `replace`. The same opening-tag string can appear earlier inside the
+  // style block as ordinary text, and `replace` would rewrite that copy instead.
+  return html.slice(0, tag.index) + next + html.slice(tag.index + open.length);
 }
 
 /**
@@ -620,6 +658,16 @@ type BandDef = {
 const GRID_LIGHT =
   "linear-gradient(rgba(30,61,145,.05) 1px,transparent 1px)," +
   "linear-gradient(90deg,rgba(30,61,145,.05) 1px,transparent 1px)";
+const GRID_DEEP =
+  "linear-gradient(rgba(30,61,145,.075) 1px,transparent 1px),"+
+  "linear-gradient(90deg,rgba(30,61,145,.075) 1px,transparent 1px)";
+/**
+ * ⭐ THE LIGHT BAND IS A CONTRAST DEVICE, NOT A TINT. Steven, 2026-09-03: *"when the gray is so
+ * damn close to white, you really don't get the contrast you're looking for."* The page alternates
+ * white and grey to give the eye a rhythm, and at #EEF2F7 the grey read as white with a smudge —
+ * the alternation was doing no work. One constant so the plain and gridded variants cannot drift.
+ */
+const MIST = "#DCE3ED";
 const GRID_DARK =
   "linear-gradient(rgba(148,197,255,.055) 1px,transparent 1px)," +
   "linear-gradient(90deg,rgba(148,197,255,.055) 1px,transparent 1px)";
@@ -637,8 +685,13 @@ export const BAND_STYLES: Record<string, BandDef> = {
   brand: { label: "Brand solid", base: "var(--primary-color,#1e3d91)", bg: "", ...ON_DARK },
   "brand-fade": { label: "Brand gradient", base: "var(--primary-color,#1e3d91)",
     bg: "linear-gradient(to bottom right,var(--primary-color,#1e3d91),var(--accent3-color,#00a8cc))", ...ON_DARK },
-  mist: { label: "Mist (light grey)", base: "#EEF2F7", bg: "", ...ON_LIGHT },
-  "mist-grid": { label: "Mist + grid", base: "#EEF2F7", bg: GRID_LIGHT, size: "64px 64px,64px 64px", ...ON_LIGHT },
+  mist: { label: "Mist (grey band)", base: MIST, bg: "", ...ON_LIGHT },
+  // ⚠️ DEEPER THAN `mist`, DELIBERATELY, AND IT IS SAFE TO CHANGE ALONE. Steven, 2026-09-03:
+  // the calendar band needed to read as a distinct grey, not as near-white. `mist-grid` is used
+  // by exactly one thing site-wide — the booking section at the foot of seven pages — so it
+  // carries its own deeper base and its own slightly stronger grid instead of dragging plain
+  // `mist` (the FAQ and the home machine band) darker with it.
+  "mist-grid": { label: "Mist + grid", base: MIST, bg: GRID_DEEP, size: "64px 64px,64px 64px", ...ON_LIGHT },
   paper: { label: "Paper (white)", base: "#FFFFFF", bg: "", ...ON_LIGHT },
   "paper-grid": { label: "Paper + grid", base: "#FFFFFF", bg: GRID_LIGHT, size: "64px 64px,64px 64px", ...ON_LIGHT },
 };
@@ -759,7 +812,14 @@ function columnCss(
  * own frame — and covering is what finally makes zoom and keep-in-view do something on a photo
  * with no Shape set.
  */
-function frameCss(images: DesignImage[]): string {
+// ⛔ SCOPED TO ONE SECTION, BECAUSE IMAGE KEYS ARE ONLY UNIQUE INSIDE ONE. Every design numbers
+// its own photos from i1, so a page routinely carries several `data-sjc-img="i1"` — on the home
+// page it is four: the header logo, the hero portrait, a feature card and the footer brand mark.
+// `.sjc-design` is on ALL of them, so sizing the hero photo silently resized the other three too.
+// Steven, 2026-08-31: *"when I click on that hero section to try to manipulate the size of the
+// photo, it's not working."* It was working — on four elements at once. The section id is already
+// how this file scopes column and band styling; the wrapper grows a matching data-sjc-sec below.
+function frameCss(images: DesignImage[], sectionId: string): string {
   const out: string[] = [];
   for (const img of images || []) {
     const key = String(img?.key || "");
@@ -773,7 +833,7 @@ function frameCss(images: DesignImage[]): string {
     const z = typeof img?.zoom === "number" && img.zoom > 100 ? img.zoom : 100;
     if (!shape && !h && !w && !band && !bandCol && !glow) continue;
 
-    const sel = `.${DESIGN_SCOPE} *:has(> img[data-sjc-img="${key}"])`;
+    const sel = `.${DESIGN_SCOPE}[data-sjc-sec="${sectionId}"] *:has(> img[data-sjc-img="${key}"])`;
 
     // ⚠️ A HAND-SET FRAME SIZE IS A DESKTOP DECISION, AND MUST NOT FOLLOW THE PAGE ONTO A PHONE.
     //
@@ -789,7 +849,14 @@ function frameCss(images: DesignImage[]): string {
       h ? `height:${h}px` : "",
       // max-width:none so a width over 100% can actually leave the column instead of being
       // clamped back to it by the design's own max-width.
-      w ? `width:${w}%;max-width:none` : "",
+      //
+      // ⚠️ AND CENTRED, BECAUSE THE DESIGN'S OWN CENTRING IS ON THE PHOTO, NOT THE FRAME. These
+      // designs centre a photo with `mx-auto` on the <img>. Once the frame has a width the photo
+      // fills it, so that `mx-auto` has nothing left to centre and the FRAME sits hard left — the
+      // photo looks like it jumped to the edge the moment a width is set. Steven, 2026-08-31:
+      // *"my image is left justified above the CTA button. It used to be centered."* The control
+      // reads "% of its column", so the space it gives back belongs on both sides.
+      w ? `width:${w}%;max-width:none;margin-left:auto;margin-right:auto` : "",
     ].filter(Boolean).join(";");
 
     // The band and the glow are proportional and read correctly at any width, so they are NOT
@@ -828,7 +895,7 @@ function frameCss(images: DesignImage[]): string {
     // With a shape the photo must cover the frame at EVERY width — the frame has a real size at
     // every width, so there is nothing to hold back for desktop.
     const stretchParent = matchCol
-      ? `.${DESIGN_SCOPE} *:has(> * > img[data-sjc-img="${key}"]){align-self:stretch;display:flex}`
+      ? `.${DESIGN_SCOPE}[data-sjc-sec="${sectionId}"] *:has(> * > img[data-sjc-img="${key}"]){align-self:stretch;display:flex}`
       : "";
     const fillSized = shape
       ? `${sel} > img[data-sjc-img="${key}"]{width:100%;height:100%;object-fit:cover}`
@@ -946,7 +1013,7 @@ export default function DesignSection(props: DesignSectionProps) {
   // section choosing it shares one rule and no unique id has to be invented.
   const fgRole = String(foreground || "").trim();
   const fgValue = resolveColor(fgRole);
-  const framing = frameCss(images);
+  const framing = frameCss(images, String(props.id || ""));
   // Keyed to this block's own id — see the note on columnCss for why the sheet scope won't do.
   const colStyling = columnCss(String(props.id || ""), columns, splitAfter, flip);
   const bandStyling = bandCss(String(props.id || ""), band);
@@ -961,7 +1028,24 @@ export default function DesignSection(props: DesignSectionProps) {
   // Feature cards. ONE style for the whole set — that is what makes them a set — while each card
   // keeps its own destination below.
   const boxStyling = (boxes || [])
-    .map((b) => surfaceCss(`.${DESIGN_SCOPE} [data-sjc-box="${b?.key}"]`, b as Surface))
+    .map((b) => {
+      const sel = `.${DESIGN_SCOPE} [data-sjc-box="${b?.key}"]`;
+      const own = surfaceCss(sel, b as Surface);
+      // ⛔ A CARD'S TEXT COLOUR HAS TO REACH THE CARD'S TEXT, NOT JUST THE BOX. `surfaceCss` sets
+      // `color` on the card element and inheritance was expected to do the rest — but every one of
+      // these designs ships `.card p{color:var(--muted)}`, which is more specific than an inherited
+      // value and wins silently. Recolour a card to solid blue and the body copy stays grey on it.
+      // Repeating the attribute lifts this to (0,4,1) so it beats the design's own (0,2,1) rule.
+      const text = resolveColor((b as Surface)?.textColor);
+      const reach = `${sel}[data-sjc-box][data-sjc-box]`;
+      const kids = text
+        // ⚠️ `svg` IS IN THE LIST ON PURPOSE. These designs draw their card icons with
+        // `stroke="currentColor"` and set `.ico svg{color:var(--cyan)}` — so recolouring a card
+        // without this leaves a cyan glyph on a blue card, which reads as a missing icon.
+        ? `${reach} :is(h1,h2,h3,h4,h5,h6,p,li,span,strong,b,em,svg){color:${text}}`
+        : "";
+      return `${own}${kids}`;
+    })
     .filter(Boolean)
     .join("");
   // A card that links needs somewhere for the anchor to sit, and the anchor has to sit UNDER any
@@ -1050,6 +1134,10 @@ export default function DesignSection(props: DesignSectionProps) {
       // the outside. `none` means the prop never arrived.
       data-sjc-sheet={sheet || "none"}
       // Only present when columns are actually set, so an untouched section's markup is unchanged.
+      // Present only when a photo on this section has a frame setting, so an untouched section's
+      // markup is unchanged. This is what keeps one section's photo rules off every other
+      // section's identically keyed images.
+      {...(framing ? { "data-sjc-sec": String(props.id || "") } : {})}
       {...(colStyling ? { "data-sjc-cols": String(props.id || "") } : {})}
       {...(bandStyling ? { "data-sjc-band": String(props.id || "") } : {})}
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}

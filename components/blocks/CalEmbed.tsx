@@ -71,7 +71,7 @@ function ensureCal(onError: () => void): CalApi {
 
 export default function CalEmbed({
   calLink,
-  minHeight = 620,
+  minHeight = 570,
 }: {
   calLink: string;
   minHeight?: number;
@@ -87,6 +87,46 @@ export default function CalEmbed({
   const [failed, setFailed] = useState(false);
   // Holds space only until Cal's iframe mounts; released below.
   const [reserved, setReserved] = useState(true);
+
+  // ⛔ CAL SCROLLS THE PAGE TO ITSELF, AND THAT IS THE ANCHOR BUG. THIS STOPS IT.
+  //
+  // From Cal's own shipped embed.js:
+  //     this.actionManager.on("__routeChanged", () => {
+  //       const { top: r, height: o } = this.inlineEl.getBoundingClientRect();
+  //       r < 0 && Math.abs(r / o) >= 0.25 && this.inlineEl.scrollIntoView({ behavior: "smooth" });
+  //     });
+  // When its own box is scrolled more than a quarter of its height above the fold, it drags the
+  // page back to put itself at the top. `__routeChanged` fires while the booker boots, on every
+  // load, hash or not.
+  //
+  // ⚠️ WHAT THAT DID HERE. Landing on `/#sl6o1yj` the browser scrolls CORRECTLY to 8268. The
+  // calendar sits above that section, so its top is then −566 and |−566|/570 = 0.99 — well past the
+  // 0.25 trigger — so Cal scrolled itself flush to the top and the visitor landed on the calendar
+  // instead of Pricing. `scrollIntoView` moves by exactly `rect.top`, which is why the miss was
+  // EXACTLY 566px on every single load, warm or cold: the miss IS the trigger distance, by
+  // construction. Steven's words were literally accurate — *"it goes to the pricing section, and
+  // then jumps up into the calendar."*
+  //
+  // ⛔ WHY THIS SHAPE. `this.inlineEl` is a wrapper Cal injects INSIDE our host, so it does not
+  // exist yet and cannot be patched directly. Patching the prototype and refusing only calls whose
+  // target is inside a Cal container is the narrowest interception available: every other
+  // `scrollIntoView` on the page is untouched.
+  // ⚠️ It never runs on the server (inside an effect) and is restored on unmount.
+  useEffect(() => {
+    const proto = Element.prototype;
+    const original = proto.scrollIntoView;
+    // Guard against double-patching when two calendars are on one page.
+    if ((proto.scrollIntoView as { __sjcCalGuard?: boolean }).__sjcCalGuard) return;
+    function patched(this: Element, ...args: unknown[]) {
+      if (this.closest?.("[data-sjc-cal], [id^='cal-inline'], [id^='my-cal-inline']")) return;
+      return (original as (...a: unknown[]) => void).apply(this, args);
+    }
+    (patched as { __sjcCalGuard?: boolean }).__sjcCalGuard = true;
+    proto.scrollIntoView = patched as typeof proto.scrollIntoView;
+    return () => {
+      proto.scrollIntoView = original;
+    };
+  }, []);
 
   useEffect(() => {
     if (failed || mounted.current) return;
@@ -117,16 +157,34 @@ export default function CalEmbed({
     if (failed) return;
     const el = document.getElementById(elId);
     if (!el) return;
+    // ⛔ RELEASE ON A SIZED IFRAME, NOT ON AN IFRAME EXISTING. THIS EXACT LINE WAS THE BUG.
+    // Cal mounts the <iframe> EMPTY, then loads its own app inside it, then that app postMessages
+    // its real height out and only THEN does Cal set the frame's height. Testing for mere presence
+    // fired on the empty frame: the floor dropped, the box collapsed to 0, and ~600px later the
+    // real height arrived and shoved everything below back down. Proved on the live page —
+    // inserting a zero-height iframe into the box takes it from 620px to 0px instantly.
+    //
+    // That collapse-then-regrow is what threw every `#section` link that lands below the calendar,
+    // and it is why the page visibly "jumps around before it settles."
+    const READY = 100; // px. Above any empty/placeholder frame, far below a real month view.
     const release = () => {
-      if (el.querySelector("iframe")) {
-        setReserved(false);
-        return true;
-      }
-      return false;
+      const frame = el.querySelector("iframe");
+      if (!frame || frame.getBoundingClientRect().height <= READY) return false;
+      setReserved(false);
+      // The CSS floor is on the PORTAL HOST, one level up, and it needs the same signal — see the
+      // `[data-sjc-cal]` rule in globals.css. Marking the element keeps the two in step instead of
+      // letting each guess separately.
+      el.closest("[data-sjc-cal]")?.setAttribute("data-cal-ready", "1");
+      return true;
     };
     if (release()) return;
-    const obs = new MutationObserver(() => release());
-    obs.observe(el, { childList: true, subtree: true });
+    // ⚠️ `attributes: true` IS LOAD-BEARING. Cal resizes by setting `style.height` ON the iframe —
+    // an ATTRIBUTE change. Watching childList alone fired once, on insertion, at exactly the wrong
+    // moment, and then never again.
+    const obs = new MutationObserver(() => {
+      if (release()) obs.disconnect();
+    });
+    obs.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "height"] });
     return () => obs.disconnect();
   }, [elId, failed]);
 

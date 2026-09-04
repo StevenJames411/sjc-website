@@ -144,6 +144,7 @@ type Props = {
     anchor: string;
   };
   Spacer: { height: number };
+  SystemStrip: { current: string; intro: string; onDark: boolean; spaceAbove: number; spaceBelow: number };
   Divider: { color: string; thickness: number; spacing: number };
   Booking: { src: string; title: string; subtitle: string; spaceAbove: number; spaceBelow: number; height: number; width: string; anchor: string };
   Columns: { columns: number; gap: number; ratio: string; align: string; mobileOrder: string; col1: Slot; col2: Slot; col3: Slot; col4: Slot };
@@ -152,7 +153,7 @@ type Props = {
   Button: { title: string; subtitle: string; href: string; newTab: boolean; variant: string; shape: string; color: string; icon: string; align: Align; fullWidth: boolean; size: string; labelColor: string };
   Video: { src: string; caption: string; poster: string; width: string; aspect: string; autoplay: boolean; loop: boolean; muted: boolean };
   Image: { src: string; alt: string; caption: string; captionColor: string; maxWidth: number; rounded: string; align: Align; spaceAbove: number; spaceBelow: number; linkUrl: string; openInNewTab: string; shape: string; zoom: number; focus: string };
-  Conversation: { caption: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
+  Conversation: { caption: string; captionColor: string; chloeLabel: string; leadLabel: string; messages: { from: string; text: string }[] };
   StaffRoster: { businessName: string; rows: { name: string; email: string; role: string; isAI: boolean }[] };
   SiteFooter: { blurb: string; links: { label: string; target: string; newTab?: boolean }[]; groups: { heading: string; links: { label: string; target: string; note?: string; newTab?: boolean }[] }[]; phone: string; phoneDisplay: string; email: string; privacyUrl: string; tosUrl: string; copyright: string; background: string; foreground: string; brandName: string; showLogo: boolean; brandStyle: string; brandLine2: string; brandLine2Color: string; brandAccentWord: string; brandAccentColor: string; buttonStyle: string; contactLayout: string; paddingTop: number; paddingBottom: number; legalGap: number; iconCall: string; iconText: string; iconEmail: string; bookHref: string; bookLabel: string; bookIcon: string; contactWidth: number; buttonWidthMobile: number; mirrorHeaderLinks: boolean };
   PhoneLink: { label: string; tel: string };
@@ -511,8 +512,33 @@ export const IMAGE_DEFAULTS = {
   focus: "center",
 };
 
+/**
+ * THE SIX SYSTEMS, IN THE ORDER A CUSTOMER MOVES THROUGH THEM - found, wanted, answered,
+ * recovered, trusted - with the connecting layer last. ⛔ The NAMES are the page names and the
+ * search terms; they are not reworded here. The one-liner underneath is where the outcome goes,
+ * so a visitor gets a consistent Problem-System-Outcome read across six labels that are otherwise
+ * a thing, a process, an outcome and a technology.
+ */
+// ⛔ THIS ORDER IS THE ARGUMENT, NOT A LIST. Steven, 2026-09-02: you do not turn paid ads on until
+// the rest of the house is in order, so the sequence has to read as the build order of a business:
+//   1 website (the front door)  ->  2 speed to lead (organic + existing customers already reach out)
+//   3 reviews (do this from the day you open)  ->  4 database (you already paid for those names)
+//   -> 5 paid ads LAST, because ads into a leaky machine just buy more voicemails.
+// ⛔ AI IMPLEMENTATION IS NOT THE SIXTH SYSTEM. It is the glue under the five — the plumbing between
+// them. Never counted as one of them, never listed alongside them: it renders as its own wide row.
+// The nav and the home hero already run this order; this const was the one place that disagreed.
+export const SIX_SYSTEMS = [
+  { slug: "/premium-smart-websites", name: "Premium Smart Websites", line: "Get found, and give a customer one obvious thing to do." },
+  { slug: "/speed-to-lead", name: "Speed to Lead", line: "Answer every lead in seconds, day or night." },
+  { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy customer into a review." },
+  { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
+  { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
+  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five systems inside the software you already run." },
+];
+
 export const CONVERSATION_DEFAULTS = {
   caption: "",
+  captionColor: "",
   chloeLabel: "Chloe",
   leadLabel: "Lead",
   messages: [
@@ -2678,6 +2704,142 @@ const baseConfig: Config<Props, RootProps> = {
       },
     },
 
+    /**
+     * THE SIX SYSTEMS, WITH THIS PAGE'S ONE LIT UP.
+     *
+     * ⛔ WHY IT IS A COMPONENT AND NOT SIX HAND-BUILT SECTIONS. Six copies of the same markup is
+     * six places to forget when a system is renamed, repriced or reordered. The list lives once,
+     * below, and every page reads it. Adding a seventh system is one line here.
+     *
+     * ⚠️ NO "SYSTEM 2 OF 6" NUMBERING, DELIBERATELY. Numbering reads as a checkout wizard and
+     * asserts an order the buyer does not have to follow - most clients start with one system.
+     * The strip shows membership, which is the thing a visitor is missing, without implying steps.
+     *
+     * ⭐ AI IMPLEMENTATION IS RENDERED APART FROM THE OTHER FIVE, because it is not a peer. It is
+     * the layer that connects them, the copy has said so for weeks, and until now the layout
+     * argued the opposite by drawing it as a sixth identical box.
+     */
+    SystemStrip: {
+      label: "Six systems strip (this page highlighted)",
+      fields: {
+        current: {
+          type: "select" as const,
+          label: "Which system is this page?",
+          options: [
+            { label: "(none highlighted)", value: "" },
+            ...SIX_SYSTEMS.map((x) => ({ label: x.name, value: x.slug })),
+          ],
+        },
+        intro: { type: "textarea" as const, label: "Line above the strip" },
+        onDark: {
+          type: "radio" as const,
+          label: "Sits on",
+          options: [
+            { label: "A light band", value: false },
+            { label: "A dark band", value: true },
+          ],
+        },
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={40} step={8} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below (− / +)",
+          render: ({ onChange, value }) => (
+            <SizeStepper value={value as number} onChange={onChange as (v: number | null) => void} fallback={40} step={8} min={0} />
+          ),
+        },
+      },
+      defaultProps: {
+        current: "",
+        intro: "This is one of five systems we build. They are designed to connect, so a lead is never dropped between them.",
+        onDark: false,
+        spaceAbove: 40,
+        spaceBelow: 40,
+      },
+      render: ({ current, intro, onDark, spaceAbove, spaceBelow }) => {
+        const ink = onDark ? "#ffffff" : "#0A0E27";
+        // ⛔ BLACK ON A LIGHT PAGE, NEVER GREY. Steven, 2026-09-02: "I hate grey font. It blends into
+        // the background too much." This drives BOTH the intro paragraph and each card's line.
+        const body = onDark ? "rgba(255,255,255,.82)" : "#0A0E27";
+        const five = SIX_SYSTEMS.filter((x) => x.slug !== "/ai-implementation");
+        const layer = SIX_SYSTEMS.find((x) => x.slug === "/ai-implementation")!;
+        // ⛔ THE LAYER IS NOT ONE OF THE FIVE, SO IT IS NOT SKINNED LIKE THEM.
+        // Same livery as the menu pill and the home hero: gold NAME, green tagline, green hairline.
+        // → the-ai-implementation-pill-is-one-object
+        // ⚠️ It carries a DARK ground here even though the hero's version is transparent. The rule is
+        // "fill is for floating": the hero sits on a fixed dark gradient and needs none, this strip
+        // sits on a LIGHT page, and gold on near-white is unreadable. The capsule supplies the ground
+        // the gold needs — the same reason the menu pill is filled over Steven's photo.
+        const GOLD = "#ffd700", GREEN = "#85bb65", LAYER_BG = "#0A0E27";
+        const chip = (x: { slug: string; name: string; line: string }, wide: boolean) => {
+          const on = x.slug === current;
+          const layer = wide;
+          return (
+            <a
+              key={x.slug}
+              href={x.slug}
+              className={`sjc-sys-card${layer ? " sjc-sys-card--layer" : ""}${on ? " sjc-sys-card--active" : ""}`}
+              style={{
+                display: "block",
+                flex: wide ? "1 1 100%" : "1 1 190px",
+                minWidth: 0,
+                textDecoration: "none",
+                padding: "14px 16px",
+                borderRadius: "14px",
+                // ⛔ THE RESTING CARD IS NEVER WHITE ON A LIGHT PAGE — it disappears into the page and only
+                // the ACTIVE card is visible, which reads as four broken cards. Steven, 2026-09-02.
+                // A soft tint of the same blue the active card uses, so the set reads as one family.
+                background: layer ? LAYER_BG : on ? "#3b7fb8" : onDark ? "rgba(255,255,255,.06)" : "#E8EFF7",
+                // 2px on the layer only — at 1px the green read as a faint outline against the dark ground.
+                border: `2px solid ${layer ? GREEN : on ? "#5599cc" : onDark ? "rgba(255,255,255,.16)" : "rgba(10,14,39,.18)"}`,
+                // ⛔ THE GREEN NEEDS A DARK NEIGHBOUR ON BOTH SIDES OR IT GOES MUDDY.
+                // #85bb65 is mid-tone: in the menu it sits dark-card / green / dark-panel and reads
+                // crisp because it is the lightest thing there. On a LIGHT page it lands between
+                // near-black and near-white and has weak contrast against both at once — Steven,
+                // 2026-09-03: "the green and the white are kind of blending together."
+                // So the card carries its own navy ring OUTSIDE the green, rebuilding the menu's
+                // dark/green/dark sandwich. Thickening the line does not fix it; changing what is
+                // NEXT to it does.
+                boxShadow: layer
+                  ? `0 0 0 3px ${LAYER_BG}`  // 3px, not 5 — enough dark to frame the green without the card reading as a slab
+                  : on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
+              }}
+            >
+              <span style={{ display: "block", fontWeight: 700, fontSize: "16px", lineHeight: 1.25, color: layer ? GOLD : on ? "#ffffff" : ink }}>
+                {x.name}
+              </span>
+              <span style={{ display: "block", marginTop: "6px", fontSize: "15px", lineHeight: 1.4, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
+                {x.line}
+              </span>
+              {/* ⭐ WORDS, NOT JUST A GLYPH. Steven, 2026-09-03: *"the arrow's not doing the work."*
+                  A bare arrow trailing a sentence reads as punctuation; a labelled link reads as a
+                  link. "Learn more" over "See how it works" because these cards are narrow and four
+                  words wrap — two fit on every card at every width, and the phrase then matches the
+                  big cards on the home page so a visitor learns ONE affordance for the whole site.
+                  aria-hidden on the glyph only: the words carry the meaning. */}
+              <span className="sjc-sys-cta">
+                Learn more <span className="sjc-sys-arrow" aria-hidden="true">&#8594;</span>
+              </span>
+            </a>
+          );
+        };
+        return (
+          <div style={{ paddingTop: `${spaceAbove ?? 40}px`, paddingBottom: `${spaceBelow ?? 40}px` }}>
+            {intro ? (
+              <p style={{ margin: "0 0 16px", fontSize: "16px", lineHeight: 1.5, color: body, maxWidth: "56rem" }}>{intro}</p>
+            ) : null}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>{five.map((x) => chip(x, false))}</div>
+            <div style={{ display: "flex", marginTop: "12px" }}>{chip(layer, true)}</div>
+          </div>
+        );
+      },
+    },
+
     Spacer: {
       label: "Spacer (vertical gap)",
       fields: {
@@ -3835,9 +3997,10 @@ const baseConfig: Config<Props, RootProps> = {
         chloeLabel: { type: "text" as const, label: "Chloe's name label" },
         leadLabel: { type: "text" as const, label: "Lead's name label" },
         caption: { type: "textarea" as const, label: "Caption (below the thread)" },
+        captionColor: { ...COLOR_FIELD, label: "Caption colour" },
       },
       defaultProps: CONVERSATION_DEFAULTS,
-      render: ({ caption, chloeLabel, leadLabel, messages }) => (
+      render: ({ caption, captionColor, chloeLabel, leadLabel, messages }) => (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: "1.5rem" }}>
           <div
             style={{
@@ -3861,8 +4024,13 @@ const baseConfig: Config<Props, RootProps> = {
                 >
                   <span
                     style={{
-                      fontSize: "11px",
-                      color: "#9ca3af",
+                      // ⛔ THE TWO SPEAKER LABELS ARE BLACK, NOT A GREY. 11px #9ca3af on the
+                      // #f5f5f7 card was 2.3:1; #4b5563 was the next try and Steven still could
+                      // not read it: *"make it a black font."* A label being quiet is worth
+                      // nothing if the reader cannot tell who is talking.
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "#000000",
                       margin: isChloe ? "0 8px 2px 0" : "0 0 2px 8px",
                     }}
                   >
@@ -3889,7 +4057,11 @@ const baseConfig: Config<Props, RootProps> = {
             })}
           </div>
           {caption && (
-            <p style={{ marginTop: "0.7rem", fontSize: "0.875rem", color: "#6b7280", textAlign: "center", maxWidth: "440px" }}>
+            // ⛔ THE CAPTION SITS OUTSIDE THE CARD, ON THE SECTION'S OWN BACKGROUND — and Section
+            // cascades NO text colour, so the old #6b7280 was grey on the navy band: invisible.
+            // Both live threads (speed-to-lead, automated-five-star-reviews) are on #0a1f4d, so the
+            // fallback is a light one; `captionColor` overrides it for a light band.
+            <p style={{ marginTop: "0.7rem", fontSize: "1rem", lineHeight: 1.5, color: resolveColorOr(captionColor, "#D6E0F0"), textAlign: "center", maxWidth: "440px" }}>
               {caption}
             </p>
           )}

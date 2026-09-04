@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
-import HashAnchor from "@/components/HashAnchor";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
@@ -23,6 +22,7 @@ const lexend = localFont({
   ],
   variable: "--font-lexend",
   display: "swap",
+  preload: false,
 });
 
 // The curated brand fonts. next/font is build-time, so the set is fixed on purpose —
@@ -39,6 +39,7 @@ const inter = localFont({
   ],
   variable: "--font-inter",
   display: "swap",
+  preload: false,
 });
 const poppins = localFont({
   src: [
@@ -50,6 +51,7 @@ const poppins = localFont({
   ],
   variable: "--font-poppins",
   display: "swap",
+  preload: false,
 });
 const montserrat = localFont({
   src: [
@@ -62,6 +64,7 @@ const montserrat = localFont({
   ],
   variable: "--font-montserrat",
   display: "swap",
+  preload: false,
 });
 const merriweather = localFont({
   src: [
@@ -71,6 +74,7 @@ const merriweather = localFont({
   ],
   variable: "--font-merriweather",
   display: "swap",
+  preload: false,
 });
 const playfair = localFont({
   src: [
@@ -94,6 +98,7 @@ const sourceSans = localFont({
   ],
   variable: "--font-source-sans",
   display: "swap",
+  preload: false,
 });
 // Added for bought designs, which routinely pair a display face with a plain body face.
 const spaceGrotesk = localFont({
@@ -106,6 +111,7 @@ const spaceGrotesk = localFont({
   ],
   variable: "--font-space-grotesk",
   display: "swap",
+  preload: false,
 });
 
 // ⭐ THE PILL AND THE SECTION LABEL FONT — chosen for ONE letter. Steven, on "YOUR AI EMPLOYEE":
@@ -122,6 +128,31 @@ const ibmPlex = localFont({
   src: [{ path: "./fonts/ibm-plex-sans.woff2", weight: "400 700", style: "normal" }],
   variable: "--font-ibm-plex",
   display: "swap",
+  preload: true,
+  // ⛔ THE SITE PRELOADED THE WRONG FONT. This is worth fixing on its own merits; it did NOT
+  // fix the #anchor bug — that was Cal scrolling itself into view; see components/blocks/CalEmbed.
+  //
+  // Every character on this site is IBM Plex. The page was preloading five weights of Space
+  // Grotesk, which nothing draws in any more, and never preloading this. With `display: swap` the
+  // text drew in the system fallback, the browser jumped to the `#section` using THOSE line
+  // heights, then the real font arrived and re-flowed a 9,600px page. The anchor moved 566px out
+  // from under the landing and the scroll did not follow.
+  //
+  // ⚠️ THE TELL WAS THAT 566 NEVER VARIED — warm, cold, clicked, typed, fresh tab, cache-busted.
+  // A race varies; a deterministic reflow does not. Three hours went into images, the calendar and
+  // layout shift because that constancy was not taken as the clue it was.
+  //
+  // ⛔ SO: PRELOAD THE FONT THE SITE ACTUALLY USES, AND ONLY THAT ONE. Every other face here ships
+  // `preload: false`. If the site's typeface changes again, move the preload with it — a preload
+  // pointing at the old font is worse than none, because it spends the connection on bytes nothing
+  // renders while the real font waits.
+  // Every character on this site is IBM Plex. On a cold load the text drew in the system
+  // font, the browser jumped to the #anchor using THOSE line heights, then the real font
+  // arrived and every line re-flowed — the page grew 566px above the target and the
+  // scroll stayed put. Exactly 566 on every load, because it is deterministic, not timing.
+  // `adjustFontFallback` scales the fallback so the two layouts are the same height.
+  adjustFontFallback: "Arial",
+  fallback: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "Arial", "sans-serif"],
 });
 
 const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, sourceSans, spaceGrotesk, ibmPlex]
@@ -247,7 +278,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         <EditLink />
-        <HashAnchor />
       </body>
     </html>
   );

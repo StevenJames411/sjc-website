@@ -3,7 +3,7 @@ import { resolveHost, publicUrlFor } from "@/lib/host";
 import { reachability } from "@/lib/sitesShared";
 import { readPages } from "@/lib/pageRegistry";
 import { readPuckPublished } from "@/lib/puckContent";
-import { isChrome } from "@/lib/puckPages";
+import { isChrome , isNoindex } from "@/lib/puckPages";
 import { SJC_HOST } from "@/lib/hostShared";
 
 // /sitemap.xml — the map crawlers (and AI indexers) use to find every page worth reading.
@@ -61,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // filter. `resolvePage` has always refused chrome; the sitemap simply never asked.
     const published = await Promise.all(
       pages
-        .filter((p) => !isChrome(p.slug))
+        .filter((p) => !isChrome(p.slug) && !isNoindex(p.slug))
         .map(async (p) => ((await readPuckPublished(p.slug, h.site.id)) ? p : null))
     );
 
