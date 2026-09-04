@@ -45,8 +45,12 @@ raw JSON for an old sentence therefore returns a FALSE POSITIVE from the label. 
 import argparse, json, os, pathlib, sys, urllib.request, urllib.error
 
 HERE = pathlib.Path(__file__).resolve().parent.parent
-BASE = os.environ.get("SJC_SITE_BASE", "https://www.stevenjamesconsulting.com")
-DEFAULT_SITE = "sjc-2026"
+# ⛔ THE APEX HOST, NOT www — a PUT to www answers 308 "Redirecting..." and the save is lost
+# (urllib does not re-send the body on a redirect). Measured 2026-09-04.
+BASE = os.environ.get("SJC_SITE_BASE", "https://stevenjamesconsulting.com")
+# ⛔ The live site moved off `sjc-2026` to `sjc-website` on 2026-09-03. The old id still
+# resolves to the LEGACY keys, so a default of it edits a page nobody serves.
+DEFAULT_SITE = "sjc-website"
 
 
 def token() -> str:
