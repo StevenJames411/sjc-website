@@ -118,11 +118,19 @@ export const resolveHost = cache(async (): Promise<HostKind> => {
   // registry won everywhere except the one domain that mattered most. Steven rebuilt SJC's own
   // site as `sjc-2026` and there was no setting in the builder that could serve it at the apex.
   //
-  // ⚠️ NOTHING VALIDATES DOMAIN UNIQUENESS — `updateSite` writes the field through unchecked — and
-  // the built-in `sjc` row declares the apex as its own default (lib/sites.ts). The `s.id !== SJC`
-  // filter below is what stops the retiring site re-claiming the apex through this path. Keep it.
+  // ⚠️ NOTHING VALIDATES DOMAIN UNIQUENESS — `updateSite` writes the field through unchecked. That
+  // used to matter here, because the built-in `sjc` row declared the apex as its own default, and
+  // an `s.id !== SJC` filter on this line was the only thing stopping the retiring site from
+  // re-claiming stevenjamesconsulting.com. The row was synthesised in code, so deleting it did
+  // nothing; the filter was the whole defence.
+  //
+  // ⛔ THAT ROW IS GONE (2026-09-04, see lib/sites.ts) AND THE FILTER WENT WITH IT — it had to.
+  // `SJC` now names the LIVE site, so `s.id !== SJC` would exclude sjc-website from matching its
+  // own domain: the apex would fall through to the legacy branch below and serve a seed page.
+  // Two sites can still be given the same domain by hand; that is a data mistake with a visible
+  // result, not a constant quietly aiming at the wrong site.
   const sites = await readSites();
-  const site = sites.find((s) => s.id !== SJC && s.domain && normalizeHost(s.domain) === host);
+  const site = sites.find((s) => s.domain && normalizeHost(s.domain) === host);
   // ⛔ THE STATE CHECK IS A BRANCH ON THE FOUND SITE — NEVER A PREDICATE INSIDE THE `.find()`.
   //
   // Written the natural way — `find(s => … && reachability(s).onDomain)` — a site set to Draft

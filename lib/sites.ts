@@ -4,16 +4,17 @@
 // flat list and every client's colours competed for one global brand slot. A site is the container
 // those things actually belong to: its own pages, its own brand, its own SEO, its own domain.
 //
-// Three kinds:
-//   sjc      — Steven James Consulting itself. Always exists, never deleted, keeps its legacy keys.
-//   client   — a real customer's website.
+// Two kinds:
+//   client   — a real customer's website. SJC's own site is one of these; it is not special, it
+//              just happens to be the one `SJC` points at and the one the delete guard refuses.
+//              (The `sjc` kind is retired — see the note above readSitesRaw.)
 //   template — a starting layout with NO business in it. "New website → from template" copies one.
 //              A template is not a special object; that is exactly why a library of them is cheap.
 //
 // Server-only (pulls in the store). Types that the browser needs live in ./sitesShared.
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";
-import { siteKeys, allKeysFor, KEY_INFIXES, SITES_KEY, SJC, FLAGSHIP } from "./siteKeys";
+import { siteKeys, allKeysFor, KEY_INFIXES, SITES_KEY, SJC } from "./siteKeys";
 import { scrubForTransfer, sameBusiness } from "./transferScrub";
 import { RESERVED_SITE_IDS, daysLeft, type Site, type SiteKind, emptyBusiness, emptySeo } from "./sitesShared";
 
@@ -23,18 +24,20 @@ type SitesBlob = { sites?: Site[] };
 
 const store = () => createKvStore(getClient(), SITES_KEY);
 
-// SJC is implicit, the same way the built-in pages are: it exists whether or not anything has been
-// written to the registry, so a cold/unprovisioned store can never make the live site disappear.
-const SJC_SITE: Site = {
-  id: SJC,
-  name: "Steven James Consulting",
-  kind: "sjc",
-  description: "The consulting site — AI employees, podcast, the $795 website offer.",
-  // It has had a domain the whole time; leaving this blank made its own card report "no domain".
-  domain: "stevenjamesconsulting.com",
-  business: emptyBusiness(),
-  seo: emptySeo(),
-};
+// ⛔ THE IMPLICIT `sjc` ROW IS GONE (2026-09-04). It used to be synthesised here on every read —
+// id `sjc`, kind `sjc`, `domain: "stevenjamesconsulting.com"` — so that a cold store could never
+// make the live site vanish from the builder. That floor was right when `sjc` WAS the live site.
+//
+// It stopped being right the moment SJC's own site was rebuilt under a new id. Steven renamed the
+// company three times (Consulting → Designs → Websites → Consulting), and each rebuild left the
+// previous id behind. `sjc` ended up an archived three-page shell that still declared the money
+// domain as its own default, sitting FIRST in every read — held off the apex by one `!==` filter
+// in lib/host.ts, and re-appearing intact every time it was deleted, because it was never data.
+//
+// ⭐ THE LIVE SITE IS `sjc-website`, AND IT IS A REAL SAVED ROW — measured before this was removed
+// (13 pages, kind client, published, holding the domain). The floor was protecting a site that no
+// longer existed, against a failure mode that would now be visible instead of silent.
+// → memory tech-stack/2026-09-04-the-root-naming-mess-is-three-rebrands-deep
 
 const slugify = (s: string) =>
   String(s || "")
@@ -59,21 +62,9 @@ export async function readSites(opts?: { includeDeleted?: boolean }): Promise<Si
 /** Every row, deleted included. The bin, the sweep and restore need this. */
 export async function readSitesRaw(): Promise<Site[]> {
   const blob = (await store().read<SitesBlob>()) || {};
-  const saved = (blob.sites || []).filter((s) => s && s.id);
-
-  // SJC stays IMPLICIT — it exists whether or not anything has been written, so a cold or
-  // unprovisioned store can never make the live site vanish from the builder. But anything saved
-  // for it (a renamed business, SEO defaults) merges on top, so it is editable like any other.
-  const override = saved.find((s) => s.id === SJC);
-  const sjc: Site = {
-    ...SJC_SITE,
-    ...(override || {}),
-    id: SJC,
-    kind: "sjc",
-    business: { ...SJC_SITE.business, ...(override?.business || {}) },
-    seo: { ...SJC_SITE.seo, ...(override?.seo || {}) },
-  };
-  return [sjc, ...saved.filter((s) => s.id !== SJC)];
+  // Every website is a saved row now — see the note above SJC_SITE's removal. Nothing is
+  // synthesised, so what the studio lists is exactly what the store holds.
+  return (blob.sites || []).filter((s) => s && s.id);
 }
 
 export async function findSite(id: string): Promise<Site | undefined> {
@@ -85,9 +76,8 @@ export async function readTemplates(): Promise<Site[]> {
   return (await readSites()).filter((s) => s.kind === "template");
 }
 
-// SJC IS persisted once it's been edited — its implicit defaults in SJC_SITE stay the floor that
-// readSites merges over, so a wiped store still shows the live site, but a name or an SEO default
-// set here survives.
+// Every site, SJC's own included, is an ordinary saved row — there is no floor to merge over any
+// more, so what is written here is the whole truth.
 async function writeSites(sites: Site[]): Promise<boolean> {
   return store().write({ sites });
 }
@@ -286,7 +276,7 @@ export async function updateSite(
  */
 export async function deleteSite(id: string): Promise<{ ok: boolean; error?: string }> {
   const s = String(id || "").trim();
-  if (s === FLAGSHIP) return { ok: false, error: "The live site can't be deleted." };
+  if (s === SJC) return { ok: false, error: "The live site can't be deleted." };
 
   const all = await readSitesRaw();
   const row = all.find((x) => x.id === s);
@@ -336,7 +326,7 @@ export async function restoreSite(id: string): Promise<{ ok: boolean; error?: st
  */
 export async function purgeSiteForever(id: string): Promise<{ ok: boolean; error?: string }> {
   const s = String(id || "").trim();
-  if (s === FLAGSHIP) return { ok: false, error: "The live site can't be deleted." };
+  if (s === SJC) return { ok: false, error: "The live site can't be deleted." };
 
   const all = await readSitesRaw();
   if (!all.some((x) => x.id === s)) return { ok: false, error: "No such website." };

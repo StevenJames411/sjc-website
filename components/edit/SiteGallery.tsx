@@ -1,4 +1,5 @@
 "use client";
+import { SJC } from "@/lib/siteKeys";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RETENTION_DAYS, daysLeft, statusOf, leadWiring, reachability, type Site } from "@/lib/sitesShared";
@@ -364,7 +365,7 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
                   was wrong: a domain-less site was served IN FULL at its demo address, readable by
                   anyone holding the link. "Draft" now means only you, and means it. */}
               <div style={badgeRow}>
-                {s.kind === "sjc" ? <span style={chip}>Yours</span> : null}
+                {s.id === SJC ? <span style={chip}>Yours</span> : null}
                 {(() => {
                   const st = statusOf(s);
                   if (st === "published" && s.domain) return <span style={chipLive}>{s.domain}</span>;
@@ -429,7 +430,7 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
 
                 ⛔ A SHARED destination is red and named. Missing is something a client is owed;
                 shared means their customer's enquiry lands in another client's inbox. */}
-            {s.kind !== "sjc" ? (
+            {s.id !== SJC ? (
               (() => {
                 const w = leadWiring(s, sites);
                 const chip2 = (ok: boolean, label: string, full?: string) => (
@@ -536,7 +537,7 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
                 The count is the point — "open · 1 of 9" for four days is a client who needs a
                 nudge, visible without opening anything.
                 Not shown for SJC's own site, which has nobody to onboard. */}
-            {s.kind !== "sjc" ? (
+            {s.id !== SJC ? (
               <div style={intakeRow}>
                 <span style={intakeLabel}>
                   {(() => {
@@ -723,7 +724,7 @@ export default function SiteGallery({ sites, intake, title, view = "all" }: Prop
                 </button>
                 {/* Not offered for SJC's own site — deleteSite() refuses it anyway, and a button
                     that always fails is worse than no button. */}
-                {s.kind !== "sjc" ? (
+                {s.id !== SJC ? (
                   <button
                     type="button"
                     style={trashBtn}

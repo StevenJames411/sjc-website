@@ -177,19 +177,29 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
     {}) as Record<string, unknown>;
   const str = (k: string) => (typeof root[k] === "string" ? (root[k] as string).trim() : "");
 
-  const isClient = site.kind !== "sjc";
+  // ⛔ ONE FLAG WAS ANSWERING TWO UNRELATED QUESTIONS, AND IT WAS READING A DEAD FIELD (2026-09-04).
+  // `const isClient = site.kind !== "sjc"` gated BOTH the completeness of the metadata block AND
+  // the favicon override below. The `sjc` kind lived on a row synthesised in lib/sites.ts; SJC's
+  // own site was rebuilt under a new id and has been coming through here as an ordinary site ever
+  // since, so in practice this has read TRUE for every site for months.
+  //
+  // The two questions are now asked separately, and neither changes what the live site emits:
+  //   • metadata — EVERY site owns its own complete block. That is what the docblock above has
+  //     always asked for, and it is what has actually been happening. No flag, no branch.
+  //   • the favicon — a real guard, and the only thing the flag was still earning. See below.
   const label = cleanName(site.business?.name || site.name);
 
-  const title = str("title") || (isClient ? label : "");
+  const title = str("title") || label;
   const description =
     str("description") ||
     site.seo?.description ||
-    (isClient ? propOf(data, "SiteHeader", "tagline") || propOf(data, "Heading", "text") || "" : "");
-  const businessName = str("businessName") || site.seo?.businessName || (isClient ? label : "");
-  const ogImage = str("shareImage") || site.seo?.shareImage || (isClient ? firstImage(data) : null);
+    propOf(data, "SiteHeader", "tagline") ||
+    propOf(data, "Heading", "text") ||
+    "";
+  const businessName = str("businessName") || site.seo?.businessName || label;
+  const ogImage = str("shareImage") || site.seo?.shareImage || firstImage(data);
 
-  const openGraph = isClient
-    ? {
+  const openGraph = {
         title: title || businessName,
         description,
         siteName: businessName || title,
@@ -202,12 +212,7 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
         // deliberate no-image case: a plain text preview is honest, SJC's logo on a groomer's
         // site is not.
         images: ogImage ? [ogImage] : [],
-      }
-    : {
-        ...(title ? { title } : {}),
-        ...(description ? { description } : {}),
-        ...(ogImage ? { images: [ogImage] } : {}),
-      };
+  };
 
   // ⛔ THE FAVICON. Every client site has shipped wearing whatever the platform default is, because
   // there has never been a control — grep for "favicon" across this codebase before today returns
@@ -215,19 +220,21 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
   // thing a business owner notices immediately when they open their own site in a tab beside their
   // competitors'.
   //
-  // ⚠️ CLIENT SITES ONLY. SJC's own favicon is a file in the repo; overriding it from a site record
-  // would let a settings screen change the studio's own identity.
-  const favicon = isClient ? String(site.seo?.favicon || "").trim() : "";
+  // ⚠️ THIS WAS "CLIENT SITES ONLY" — SJC's own favicon was said to be a file in the repo, so that
+  // a settings screen could not change the studio's identity. It has not been true for a while:
+  // the guard keyed off the retired `sjc` kind, and SJC's own site sets its tab icon from its own
+  // record like every other site. That icon is live on the apex right now. Every site, one rule.
+  const favicon = String(site.seo?.favicon || "").trim();
 
   return {
     ...(title ? { title: { absolute: title } } : {}),
-    ...(isClient || description ? { description } : {}),
+    ...{ description },
     ...(favicon ? { icons: { icon: favicon, shortcut: favicon, apple: favicon } } : {}),
     openGraph,
     twitter: {
       card: ogImage ? ("summary_large_image" as const) : ("summary" as const),
       ...(title ? { title } : {}),
-      ...(isClient || description ? { description } : {}),
+      ...{ description },
       ...(ogImage ? { images: [ogImage] } : {}),
     },
     // ⚠️ EVERY CLIENT PAGE USED TO NAME SJC'S HOME PAGE AS ITS CANONICAL.
@@ -245,7 +252,7 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
     // A demo lives on the studio's domain carrying a real business's name, phone and address,
     // while robots.txt welcomes every AI crawler. Until it's on its own domain it stays out.
     // ...or while it is deliberately held back on a real domain — see Site.holdIndexing.
-    ...(isClient && !reachability(site).indexable
+    ...(!reachability(site).indexable
       ? { robots: { index: false, follow: false, nocache: true } }
       : {}),
     // ...and SJC's own pages that are public but deliberately unsearchable — see NOINDEX_SLUGS.
@@ -335,14 +342,16 @@ export async function SitePageBody({
   // nav above it: Steven's branding on someone else's business, with a link to the free Skool
   // community that teaches what he charges for.
   //
-  // The site's KIND is the real answer. A client site brings its own chrome or has none; it never
-  // borrows ours.
-  const isClientSite = siteId !== SJC;
-
-  const ownHeader = isClientSite || hasBlock(data, "SiteHeader");
-  const ownFooter = isClientSite || hasBlock(data, "SiteFooter");
-  // SJC's own pages are already branded by the root layout — re-emitting would be identical CSS.
-  const brand = siteId && siteId !== SJC ? await readBrand(true, siteId) : null;
+  // ⛔ AND "IS THIS SJC'S OWN SITE" IS NO LONGER THE QUESTION (2026-09-04). This read
+  // `siteId !== SJC` back when SJC's own pages were the only ones the hardcoded <Nav>/<Footer>
+  // components were for. SJC's site is now built in the builder like every other one, with its own
+  // nav and footer pages — so the moment SJC pointed at the live site, this went FALSE for it and
+  // the apex fell back to the old hardcoded chrome. It shipped, and the live nav and footer were
+  // a rebrand out of date for four minutes. EVERY site brings its own chrome, its own brand and
+  // its own structured data; there is no site left that borrows the components.
+  const ownHeader = true;
+  const ownFooter = true;
+  const brand = siteId ? await readBrand(true, siteId) : null;
 
   // The stylesheets this page's blocks actually reference, read off the data already loaded above.
   // Each design's rules are scoped under its own `sjc-design-<id>` class, which rides on the
@@ -363,14 +372,13 @@ export async function SitePageBody({
   //
   // Built entirely from Website settings, so it costs nothing per client: fill in her phone and
   // address at onboarding and the markup writes itself. See lib/siteSchema.
-  // ⚠️ FETCHED FOR EVERY SITE NOW, NOT ONLY CLIENTS.
-  //
-  // It used to be `isClientSite ? … : null`, which was right for the schema below but starved the
-  // provider on SJC's OWN pages — so a token in the lead form's thank-you copy had nothing to
-  // resolve against and printed raw. The schema still only ships for client sites; that behaviour
-  // is unchanged and deliberate (SJC's own Organization markup comes from the root layout).
+  // ⚠️ FETCHED FOR EVERY SITE, AND NOW EMITTED FOR EVERY SITE. It used to be gated on "is this a
+  // client site", which stopped being a real distinction when SJC's own site became an ordinary
+  // row — and it was already emitting for the apex before this, because the gate was reading a
+  // constant that pointed at the retired `sjc` id. Unconditional is what is live and what is right:
+  // a business's own LocalBusiness markup, built from its Website settings.
   const site = await findSite(siteId);
-  const schema = site && isClientSite ? localBusinessSchema(site, publicUrlFor(site)) : null;
+  const schema = site ? localBusinessSchema(site, publicUrlFor(site)) : null;
 
   // ── THIS SITE'S OWN SITE-WIDE CHROME ───────────────────────────────────────────────────────
   // The missing third option. There used to be only two: SJC's global chrome, or chrome duplicated
@@ -394,7 +402,7 @@ export async function SitePageBody({
   // any earlier is a use-before-declaration on `site`.
   const importedDesign = hasBlock(data, "DesignSection");
   const fallback =
-    isClientSite && site && !importedDesign ? defaultChrome(site, await readPages(siteId)) : null;
+    site && !importedDesign ? defaultChrome(site, await readPages(siteId)) : null;
 
   // ⛔ A DOCUMENT WITH NO `content` ARRAY IS NOT CHROME — IT IS A 500.
   // `<Render>` walks `data.content`. Hand it a truthy object without one and Puck throws
@@ -425,12 +433,14 @@ export async function SitePageBody({
   const fillChrome = <T,>(doc: T): T =>
     site ? fillBusinessTokens(doc, site.business, site.domain ? `https://${site.domain}` : "") : doc;
 
-  const chrome = isClientSite
-    ? {
-        nav: fillChrome(usable(await readPuckPublished("nav", siteId)) || fallback?.nav || null),
-        footer: fillChrome(usable(await readPuckPublished("footer", siteId)) || fallback?.footer || null),
-      }
-    : { nav: null, footer: null };
+  // ⛔ UNCONDITIONAL. This was gated on "is this a client site" — and when SJC's own site became
+  // the site that constant names, the gate went false and the apex served the hardcoded <Nav>
+  // and <Footer> instead of its own nav and footer pages. Every site's chrome comes from its own
+  // chrome pages; there is no site that does not have them.
+  const chrome = {
+    nav: fillChrome(usable(await readPuckPublished("nav", siteId)) || fallback?.nav || null),
+    footer: fillChrome(usable(await readPuckPublished("footer", siteId)) || fallback?.footer || null),
+  };
 
   // ⛔ THE HEADER AND FOOTER HAVE THEIR OWN STYLESHEETS, AND THIS USED TO EMIT ONLY THE PAGE'S.
   //
@@ -530,9 +540,9 @@ export async function SitePageBody({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       ) : null}
-      {/* Only on a client's own site, and only from an id somebody deliberately stored. Nothing is
-          injected onto a page whose owner has not asked for it. */}
-      {isClientSite ? <SiteTracking accounts={site?.accounts} /> : null}
+      {/* Only from an id somebody deliberately stored — nothing is injected onto a page whose
+          owner has not asked for it. `accounts` being empty is the off switch. */}
+      <SiteTracking accounts={site?.accounts} />
       {brand ? <BrandStyle brand={brand} id="site-brand" /> : null}
       {designCss ? (
         <style id="site-design" dangerouslySetInnerHTML={{ __html: designCss }} />
