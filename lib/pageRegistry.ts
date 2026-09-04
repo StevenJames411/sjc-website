@@ -71,7 +71,22 @@ export async function readPages(siteId: string): Promise<PageEntry[]> {
   // This is NOT the leak the warning above is about: About/Podcast/Apply stay SJC-only, and an
   // empty chrome document falls back to the page's own blocks rather than to SJC's chrome. There
   // is no path from here to a client wearing Steven's nav.
-  const grant = siteId === SJC ? PUCK_PAGES : PUCK_PAGES.filter((p) => isChrome(p.slug));
+  // ⛔ NOBODY GETS THE HARDCODED BUILT-INS ANY MORE — CHROME ONLY, FOR EVERY SITE (2026-09-04).
+  //
+  // This read `siteId === SJC ? PUCK_PAGES : chrome`, and the whole PUCK_PAGES list existed to
+  // serve the FIRST SJC site, whose pages were hardcoded before the registry existed. SJC's site
+  // has since been rebuilt twice; every page it actually has — home, the five systems, about,
+  // podcast, careers — is an ordinary custom registry row, and the built-in list had rotted into
+  // `websites`, `websites-nav`, `websites-footer` and a scratch pad called `lucky-dog-wash-house`.
+  //
+  // ⚠️ IT SURFACED THE MOMENT `SJC` WAS REPOINTED at the live site: nine phantom pages appeared in
+  // the switcher, duplicating `home`, `about` and `podcast` against the real ones. Same trap as
+  // the chrome flags in publicSitePage — `=== SJC` never meant what it looked like, it meant "the
+  // one site the constant happens to name", and it inverts the instant that moves.
+  //
+  // Losing them costs nothing: content is keyed by SLUG, so a built-in and a custom row with the
+  // same slug were always reading the same document. The two chrome docs stay, for every site.
+  const grant = PUCK_PAGES.filter((p) => isChrome(p.slug));
   const builtins: PageEntry[] = grant
     .filter((p) => !hidden.has(p.slug))
     .map((p) => ({ ...named(p), custom: false }));
@@ -441,7 +456,11 @@ export async function deletePage(
   const prevCustom = blob.custom || [];
   const custom = prevCustom.filter((p) => p.slug !== s);
   const wasCustom = custom.length !== prevCustom.length;
-  const isBuiltin = siteId === SJC && PUCK_PAGES.some((p) => p.slug === s);
+  // ⛔ NOT `siteId === SJC` ANY MORE. Built-ins are granted to nobody now (see readPages), so the
+  // only thing that can still be one is chrome — and chrome is refused by SYSTEM a few lines up.
+  // Left keyed off the same grant so this and readPages cannot drift into disagreeing about what
+  // a built-in is; that disagreement is what made deleting a real page write a phantom tombstone.
+  const isBuiltin = PUCK_PAGES.filter((x) => isChrome(x.slug)).some((x) => x.slug === s);
   if (!wasCustom && !isBuiltin) return { ok: false, error: "No such page." };
 
   const hidden = new Set(blob.hidden || []);
