@@ -15,6 +15,21 @@
 
 export const SJC = "sjc";
 
+/**
+ * THE SITE THAT CANNOT BE DELETED — the one serving stevenjamesconsulting.com today.
+ *
+ * ⛔ SEPARATE FROM `SJC` ON PURPOSE, AND ONLY UNTIL THE OLD ROW IS GONE. `SJC` is two things at
+ * once: the DEFAULT id for internal callers, and the LEGACY key namespace of the site that used to
+ * be live. The undeletable-flagship guard read `SJC`, which meant it was protecting a dead archived
+ * site while the site actually serving the domain had no guard at all — the exact inversion you get
+ * from a constant that outlived its meaning.
+ *
+ * ⚠️ THIS CONSTANT DIES IN THE SECOND HALF OF THIS CHANGE. Once `sjc` is purged, `SJC` becomes
+ * "sjc-website", the legacy branch in siteKeys() goes with it, and these two collapse into one. It
+ * exists so the purge and the rename are two verifiable deploys instead of one unverifiable jump.
+ */
+export const FLAGSHIP = "sjc-website";
+
 const safe = (s: string) => String(s || "").replace(/[^a-z0-9-]/gi, "").toLowerCase();
 
 /**
