@@ -813,7 +813,15 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: right center;
+    /* ⛔ 82%, NOT `right`, AND THE NUMBER IS ARITHMETIC RATHER THAN TASTE (2026-09-04).
+       Measured: the asset is 1448x1086 (a true 4:3) and the frame is 507x421. `cover` scales to
+       the height, so the image lands 561px wide in a 507px box — 54px of overflow. At `right`
+       (100%) all 54 of those come off the LEFT, which is 140px of the ORIGINAL, and the "M" of
+       "Mobile Optimized" begins about 127px in. The letter was inside the crop, which is why
+       fixing the frame alone did not bring it back — the border was only ever part of the loss.
+       82% leaves ~46px cropped on the left and moves ~9px onto the right: the M clears, and the
+       right edge only gives up chair and empty wall, so Steven is still never touched. */
+    object-position: 82% center;
   }
 }
 
