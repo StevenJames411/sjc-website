@@ -774,7 +774,20 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    wins on source order. Measured: the border came back as `1px rgba(255,255,255,.1)` at (0,2,0).
    The `flex`/`min-height` rules below need no such help — nothing competes for those. */
 [data-sjc-hero-fill][data-sjc-hero-fill] .shot {
-  border: 8px solid #fff;
+  /* ⛔ A RING, NOT A BORDER — AND THAT IS THE WHOLE POINT (2026-09-04).
+     This was `border: 8px solid #fff`, and a border is drawn INSIDE the element: it took 16px off
+     the width of the photo's content box. The image fills that box with `object-fit: cover` and
+     `object-position: right`, so every pixel lost comes off the LEFT — and the left edge is the
+     monitor reading "Mobile Optimized". Steven: *"when we put the white border around the hero
+     image, it cropped the M off."* The frame was eating the photo.
+
+     A spread box-shadow paints the same 8px of white OUTSIDE the border box, so the content box is
+     back to its full width and the framing returns to exactly what it was before the frame existed.
+     The ring follows border-radius, so the corners are unchanged.
+     ⚠️ The drop shadow has to be restated in the same declaration — a second box-shadow rule would
+     replace this one rather than add to it, and the photo would lose its lift. */
+  border: 0;
+  box-shadow: 0 0 0 8px #fff, 0 40px 90px rgba(0, 0, 0, .5);
 }
 
 /* The height match is the part that only makes sense on a desktop: the photo column stretches to
