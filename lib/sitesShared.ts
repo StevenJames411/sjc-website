@@ -181,6 +181,17 @@ export type Site = {
    *
    * Blank = the lead stays in SJC's intake (correct for a demo, and for SJC's own pages).
    */
+  /**
+   * WHICH ONBOARDING FORM THIS CLIENT RECEIVES. Absent = the small website intake, which is what
+   * every existing client is on, so leaving this unset changes nothing.
+   *
+   * ⛔ ONE INTAKE PER PRODUCT (Steven, 2026-09-04): *"If they just want a website built, we're not
+   * asking them what blood type they have."* The 35-question systems audit and the 9-question
+   * website intake are different forms for different purchases, and the onboarding link has to be
+   * able to carry either. Without this the route hardcoded the website form, so a client on the
+   * full systems engagement could not be sent the survey his quote depends on.
+   */
+  onboardingFormId?: string;
   leadEmail?: string;
   /**
    * WHO MAY SIGN IN AND EDIT THIS WEBSITE. Lower-cased addresses; a magic link to any of them opens

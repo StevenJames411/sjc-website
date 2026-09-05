@@ -36,11 +36,14 @@ const empty = (): IntakeRecord => ({ answers: {}, photos: [] });
  * Falls back to the code copy if the store is unreachable. A cold store must not mean a business
  * opens her link and is asked nothing.
  */
-export async function onboardingQuestions(): Promise<IntakeQuestion[]> {
+export async function onboardingQuestions(formId?: string): Promise<IntakeQuestion[]> {
   const { findForm } = await import("./forms");
   const { toIntakeQuestions, ONBOARDING_FORM_ID, INTAKE_QUESTIONS } = await import("./intakeShared");
   try {
-    const form = await findForm(ONBOARDING_FORM_ID);
+    // A site may name its own onboarding form (Site.onboardingFormId) — the systems audit rather
+    // than the website intake. Absent, or missing from the library, falls back to the website one,
+    // which is what every existing client is on.
+    const form = await findForm(formId || ONBOARDING_FORM_ID);
     if (form?.fields?.length) return toIntakeQuestions(form.fields);
   } catch {
     /* fall through to the code copy */
