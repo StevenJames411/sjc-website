@@ -82,9 +82,11 @@ export default async function OnboardPage({
 
   // The form as Steven has it in his library, not as it was written in code — this is what makes
   // "Client onboarding" on /edit/forms the real thing rather than a description of it.
+  // WHICH form this client gets — the website intake unless the site record names another.
+  const formId = site.onboardingFormId || ONBOARDING_FORM_ID;
   const [questions, form] = await Promise.all([
-    onboardingQuestions(),
-    findForm(ONBOARDING_FORM_ID),
+    onboardingQuestions(formId),
+    findForm(formId),
   ]);
 
   return (
