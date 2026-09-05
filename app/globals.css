@@ -800,28 +800,36 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    ⚠️ `[data-sjc-hero-fill]` is on the ABOUT photo column only, the same marker pattern the home
    hero uses. /premium-smart-websites runs the identical `.band--hero .split` with a phone photo
    that must NOT be cropped, and a bare `.split` selector here would have stretched it too. */
+/* ⛔ THE PHOTO IS NO LONGER CROPPED AT ALL (2026-09-04, after three passes at the crop).
+   The frame used to STRETCH to match the words column, which made it 507x421 — and the asset is a
+   true 4:3 (1448x1086). `object-fit: cover` into a box of a different shape must throw ~11% away,
+   so every attempt only chose WHICH 11%: `right` cut the "M" of "Mobile Optimized" off the left,
+   82% brought the M back and started cutting Steven's arm off the right. Steven, on the third
+   look: *"you're still doing a shitty job cropping the photo."* He is right, and the answer is not
+   a better percentage — it is to stop cropping.
+
+   ⭐ THE FRAME NOW TAKES THE PHOTO'S SHAPE. `aspect-ratio: 4/3` on the frame means `cover` has
+   nothing to discard: the whole photograph shows, edge to edge, at every width. No object-position
+   to tune and no part of the picture to trade away.
+
+   ⚠️ WHAT THIS GIVES UP, DELIBERATELY: the exact height match with the words column added on
+   2026-09-01. At the wrap's cap the photo lands ~380px against the words' ~421px — 40px shorter,
+   near enough that the see-saw that fix was for does not come back, and the two capsules it was
+   really about are long gone. A whole photograph beats a flush bottom edge. */
 @media (min-width: 1200px) {
   [data-sjc-hero-fill] {
-    align-self: stretch;
     display: flex;
+    align-items: center;
   }
   [data-sjc-hero-fill] .shot {
     flex: 1 1 auto;
-    min-height: 0;
+    aspect-ratio: 4 / 3;
   }
   [data-sjc-hero-fill] .shot img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* ⛔ 82%, NOT `right`, AND THE NUMBER IS ARITHMETIC RATHER THAN TASTE (2026-09-04).
-       Measured: the asset is 1448x1086 (a true 4:3) and the frame is 507x421. `cover` scales to
-       the height, so the image lands 561px wide in a 507px box — 54px of overflow. At `right`
-       (100%) all 54 of those come off the LEFT, which is 140px of the ORIGINAL, and the "M" of
-       "Mobile Optimized" begins about 127px in. The letter was inside the crop, which is why
-       fixing the frame alone did not bring it back — the border was only ever part of the loss.
-       82% leaves ~46px cropped on the left and moves ~9px onto the right: the M clears, and the
-       right edge only gives up chair and empty wall, so Steven is still never touched. */
-    object-position: 82% center;
+    object-position: center;
   }
 }
 
