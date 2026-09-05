@@ -25,6 +25,7 @@ import {
   type SectionKey,
 } from "./formsShared";
 import { ONBOARDING_FORM } from "./intakeShared";
+import { SYSTEMS_ONBOARDING_FORM } from "./systemsIntake";
 
 export * from "./formsShared";
 
@@ -81,7 +82,7 @@ export async function readForms(): Promise<FormDef[]> {
   // only be changed by editing code. He went looking for it in his own library and it wasn't
   // there. Its floor lives in lib/intakeShared.ts with the questions and the reasoning behind
   // them; it is merged here rather than defined in formsShared so the prose stays with the form.
-  const builtins = [...BUILTIN_FORMS, ONBOARDING_FORM].map((b) => {
+  const builtins = [...BUILTIN_FORMS, ONBOARDING_FORM, SYSTEMS_ONBOARDING_FORM].map((b) => {
     const override = saved.find((s) => s.id === b.id);
     return {
       ...b,
