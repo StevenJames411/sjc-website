@@ -123,6 +123,62 @@ export const SYSTEMS_ONBOARDING_FIELDS: FormField[] = [
   },
   { fieldId: "crmDetail", label: "If you named one, which and how long?", type: "text" },
   {
+    fieldId: "crmKeep",
+    label: "If you already have one — keep it or move?",
+    help:
+      "No wrong answer. What decides it is whether it will talk to the new website: some connect " +
+      "cleanly, some only through a middleman, and a couple not at all. If you are happy where you " +
+      "are we will tell you honestly whether it can carry what you want it to do.",
+    type: "choice",
+    options: [
+      "I do not have one — build me one",
+      "Keep what I have if it works with the site",
+      "Move me to whatever works best",
+      "Not sure — tell me",
+    ],
+  },
+  {
+    fieldId: "automationsWanted",
+    label: "Do you want texts, reminders and follow-up going out automatically?",
+    help:
+      "Almost everyone says yes, and it is worth asking plainly because the answer decides the next " +
+      "four questions. Anything that texts a customer has to be registered with the phone carriers " +
+      "first, and that registration is the longest wait in the whole build — so we start it on day one.",
+    type: "choice",
+    options: ["Yes", "No, just the website", "Not sure yet"],
+    required: true,
+  },
+
+  // ── D2. THE CARRIER REGISTRATION (A2P) ─────────────────────────────────────────────────────
+  // ⛔ THE ONE SECTION WHERE "CLOSE ENOUGH" FAILS. Steven, 2026-09-04: *"If they want any type of
+  // automations, we have to get their business name, corporate name, everything correct."* The
+  // carriers check these against public records; one wrong character bounces the whole brand
+  // registration and every text, reminder and follow-up in the build waits behind the resubmission.
+  {
+    fieldId: "legalName",
+    label: "Your exact legal business name",
+    help:
+      "Not the sign on the door — the name on your registration, character for character, including " +
+      "the LLC or Inc. The phone companies check it against public records, and one wrong character " +
+      "sends the whole thing back to the start of a queue that takes weeks.",
+    type: "text",
+    placeholder: "Acme Home Services LLC",
+  },
+  { fieldId: "dbaName", label: "And the name customers actually know you by, if it differs", help: "The DBA or trading name. Both can be registered; they just have to be declared honestly.", type: "text" },
+  {
+    fieldId: "ein",
+    label: "EIN or Tax ID",
+    help:
+      "The federal number on your tax filings. A sole trader without one can still register — say so " +
+      "and we will use the route that fits. ⛔ Nobody else sees this; it goes to the carrier registration and nowhere else.",
+    type: "text",
+  },
+  { fieldId: "entityType", label: "How is the business registered?", type: "choice",
+    options: ["Sole proprietor", "LLC", "S-Corp", "C-Corp", "Partnership", "Non-profit", "Not registered yet"] },
+  { fieldId: "registeredAddress", label: "The address on the registration", help: "Where the business is legally registered, which is often not where you work from. This has to match the record too.", type: "text" },
+  { fieldId: "authorizedRep", label: "Who can sign for the business?", help: "Name, title and email of the person the carriers can verify. Usually you.", type: "textarea", placeholder: "Jane Doe, Owner, jane@…" },
+
+  {
     fieldId: "customerList",
     label: "Your customer list",
     help:
