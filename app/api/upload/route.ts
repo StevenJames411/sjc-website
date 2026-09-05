@@ -2,6 +2,7 @@
 // "file" field, stores the file in Vercel Blob (public access), returns { url }.
 // Protected by middleware — only the signed-in owner can reach this route.
 import { put } from "@vercel/blob";
+import { SJC } from "@/lib/siteKeys";
 import { siteOr } from "@/lib/siteAccess";
 
 export const dynamic = "force-dynamic";
@@ -55,10 +56,20 @@ export async function POST(req: Request) {
   // ⛔ SCOPED — and this one matters more than most: an upload writes a PUBLIC blob under
   // `sites/<id>/`, so an unscoped call drops a stranger's file into someone else's folder, where
   // it is then served from their website and swept up by THEIR deletion.
+  // ⛔ THE FALLBACK IS THE CONSTANT, NEVER A TYPED-IN ID (2026-09-04). This read `|| "sjc"`, and on
+  // 2026-09-04 that cost the live site three images. An upload with no `?site=` landed in
+  // `sites/sjc/` — the RETIRED site's folder — while being used on the live site, because a blob
+  // URL does not care which folder it sits in. It served perfectly until `purgeSiteForever` was run
+  // on that retired site, which deletes the `sites/<id>/` prefix by design, and the live About hero,
+  // an explainer graphic and the favicon all went with it.
+  //
+  // ⚠️ A HARDCODED ID GOES STALE SILENTLY AND A CONSTANT CANNOT. `SJC` now resolves to the site that
+  // is actually live, so a defaulted upload lands where the file is used. The literal would also
+  // 404 outright today, since no site with that id exists any more.
   const asked =
     String(new URL(req.url).searchParams.get("site") || "")
       .replace(/[^a-z0-9-]/gi, "")
-      .toLowerCase() || "sjc";
+      .toLowerCase() || SJC;
   const { site: __s, deny } = await siteOr(asked, req);
   if (deny) return deny;
   const site = __s.id;
