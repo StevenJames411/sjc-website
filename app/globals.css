@@ -997,7 +997,10 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   #global-header [data-landingsite-mobile-menu] a:focus {
     background: var(--accent2-color, #ffd700);
     border-color: var(--accent2-color, #ffd700);
-    color: var(--primary-color) !important;
+    /* ⛔ TRUE BLACK ON A GOLD FILL, NOT THE NAVY (Steven, 2026-09-06: "that does not look like a
+       true black to me on either website"). --primary-color is royal blue; on yellow it reads gray. */
+    color: #000 !important;
+    font-weight: 800;
   }
   /* ⚠️ THE SUB-INDENT IS UNDONE ON PURPOSE — it was for a flat list, and it makes centred
      capsules look misaligned by 15px. */
@@ -1084,7 +1087,13 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   #global-header .sjc-drop a:focus {
     background: var(--accent2-color, #ffd700) !important;
     border-color: var(--accent2-color, #ffd700);
-    color: var(--primary-color) !important;
+    color: #000 !important;
+    font-weight: 800;
+  }
+  /* ⛔ THE TOP-LEVEL TRIGGERS ARE BOLD LIKE EVERY PILL BELOW THEM (Steven, 2026-09-06: "in the
+     navigation where it says systems and company, it's not bold. Make everything bold"). */
+  #global-header .sjc-trigger {
+    font-weight: 700 !important;
   }
 }
 
