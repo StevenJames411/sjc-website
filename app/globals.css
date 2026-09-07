@@ -1432,3 +1432,13 @@ a.sjc-sys-card--layer:focus-visible {
 .sjc-design[data-sjc-editing] .fixed,
 .sjc-design[data-sjc-editing] [style*="position:fixed"],
 .sjc-design[data-sjc-editing] [style*="position: fixed"] { position: relative !important; }
+
+/* THE CANVAS IS NARROWER THAN THE SCREEN IT PRETENDS TO BE (2026-09-07 2:39pm). Tailwind's `lg:`
+   rules key off the WINDOW, so a design in a ~1170px canvas still lays out its full desktop header —
+   logo, name pill and five nav links — in a row with 100px less room than the laptop it was built
+   for. Alamo Slim: "GLP-1 Weight Loss Program" broke into four lines and "Testimonials" ran off the
+   edge. In the editor only: nav items never wrap mid-label, and when the row cannot hold them the
+   nav drops to a second line under the logo instead of crushing. The public page is untouched. */
+.sjc-design[data-sjc-editing] header nav a,
+.sjc-design[data-sjc-editing] header nav button { white-space: nowrap; }
+.sjc-design[data-sjc-editing] header .flex.justify-between { flex-wrap: wrap; row-gap: 10px; }
