@@ -2,6 +2,7 @@
 // sets the auth cookie that middleware checks before allowing any content write.
 // Posted as JSON from the edit toolbar's login box; returns { ok }.
 import { NextResponse } from "next/server";
+import { cookieDomainFor } from "@/lib/authCookie";
 
 const COOKIE_NAME = "sjc_site_auth";
 
@@ -34,6 +35,11 @@ export async function POST(req: Request) {
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: true,
+    // ONE SIGN-IN COVERS EVERY DEMO ADDRESS (2026-09-07). Without a domain the cookie is host-only:
+    // signed in on the studio, still anonymous on `<id>-demo.stevenjamesconsulting.com`, so a
+    // `?preview=1` link from the toolbar fell through to the published page — a 404 on a draft.
+    // Scoped to the studio's own domain only; a client's own domain still gets a host-only cookie.
+    ...cookieDomainFor(req.headers.get("host")),
     // ⛔ LAX, NOT STRICT — AND STRICT SILENTLY BROKE `?preview=1` FROM ANY LINK (2026-08-30).
     //
     // Strict withholds this cookie on every CROSS-SITE navigation, and "cross-site" includes a

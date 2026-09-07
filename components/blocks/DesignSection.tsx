@@ -1143,6 +1143,14 @@ export default function DesignSection(props: DesignSectionProps) {
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
       {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
       {...(fgRole ? { "data-sjc-fg": fgRole } : {})}
+      // IN THE EDITOR, A FIXED HEADER MUST NOT LEAVE ITS SECTION (2026-09-07).
+      //
+      // The canvas is not an iframe, so a design's `position: fixed` header pins to the BROWSER
+      // viewport and lands on top of the editor's own toolbar — Alamo Slim's logo disc and green
+      // name pill sat over "Page: Home" and could not be dismissed. This attribute lets
+      // globals.css turn fixed descendants into absolute ones inside the canvas only; the public
+      // page is untouched, and so is the design's markup.
+      {...(editing ? { "data-sjc-editing": "1" } : {})}
       // STICKY BELONGS ON THIS ELEMENT, not on the design's header inside it.
       //
       // `position: sticky` sticks within its parent's box and no further. The header's parent is
