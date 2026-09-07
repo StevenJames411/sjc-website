@@ -1425,9 +1425,10 @@ a.sjc-sys-card--layer:focus-visible {
    Puck renders the page inline, not in an iframe, so a design's `position: fixed` header pins to the
    real viewport and sits on top of the editor toolbar. Alamo Slim's transparent header (logo disc +
    green name pill) covered "Page: Home" and would not go away. Inside an editing section only, fixed
-   becomes absolute — it still sits at the top of its own section, where it belongs on the canvas —
-   and the section becomes the containing box. The public page never carries data-sjc-editing. */
-.sjc-design[data-sjc-editing] { position: relative; }
+   becomes an ordinary in-flow block: the header shows as a bar at the top of the canvas with its own
+   height, where it can be clicked and edited. NOT absolute — the header is a section by itself, so
+   absolute left a zero-height block and the editor's next block painted straight over it (the header
+   vanished from the canvas entirely, 2026-09-07 2:18pm). The public page never carries this attribute. */
 .sjc-design[data-sjc-editing] .fixed,
 .sjc-design[data-sjc-editing] [style*="position:fixed"],
-.sjc-design[data-sjc-editing] [style*="position: fixed"] { position: absolute !important; }
+.sjc-design[data-sjc-editing] [style*="position: fixed"] { position: relative !important; }

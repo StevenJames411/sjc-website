@@ -267,8 +267,36 @@ function studioRedirect(req: NextRequest): URL | null {
   return url;
 }
 
+/**
+ * THE BUILDER HAS ONE ADDRESS, AND IT IS NOT *.vercel.app (2026-09-07).
+ *
+ * Steven had the editor open at sjc-website-mu.vercel.app/edit/… — Vercel's default address, which
+ * serves the builder perfectly well — clicked the toolbar's preview link, and got a 404 on the demo
+ * host. His sign-in cookie lived on the vercel.app host; the demo address is on the studio domain;
+ * `?preview=1` for an anonymous visitor falls through to the published page, which does not exist.
+ * Nothing on screen connected the two. The owner cookie is now scoped to the studio domain
+ * (lib/authCookie.ts), which only helps if the sign-in HAPPENS there — so any builder path on a
+ * vercel.app host moves to the studio domain, path and query intact. Public pages on a vercel.app
+ * host are untouched: a deployment preview still shows the site.
+ */
+function builderRedirect(req: NextRequest, pathname: string): URL | null {
+  if (!pathname.startsWith("/edit")) return null;
+  const here = normalizeHost(
+    req.headers.get("x-forwarded-host") || req.headers.get("host") || ""
+  );
+  if (!here.endsWith(".vercel.app")) return null;
+  const url = new URL(req.nextUrl);
+  url.protocol = "https:";
+  url.port = "";
+  url.host = normalizeHost(process.env.NEXT_PUBLIC_STUDIO_DOMAIN || STUDIO_HOST);
+  return url;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  const builderHome = builderRedirect(req, pathname);
+  if (builderHome) return NextResponse.redirect(builderHome, 302);
 
   // Before anything else — a change of address, not a decision about who's allowed in. The
   // builder is still gated once it lands on the studio host; this only decides WHICH host.
