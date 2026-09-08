@@ -1458,3 +1458,28 @@ a.sjc-sys-card--layer:focus-visible {
     margin-right: auto;
   }
 }
+
+/* ⭐ THE SYSTEM PAGES LINK TO EACH OTHER (2026-09-08). Steven: "when we talk about the other system,
+   we link to the dedicated page, so the consumer understands each system stands on its own and AI
+   Implementation ties them together. I know it's one big endless loop — when you educate a consumer,
+   that's what you've got to do." A link leads with the system name ("Speed to Lead — see how it
+   works"). Resting colour is the signal, hover confirms. Light bands (band--gray, band--white,
+   paper, mist) get a dark blue that clears contrast on white; dark bands (band--hero, band--soft)
+   get the site's gold → white, the same pair every card link already uses. Class doubled for the
+   same specificity reason as `.sjc-card-link` above. */
+.sjc-design .sjc-sys-p { margin-top: 12px; }
+.sjc-design a.sjc-sys-link.sjc-sys-link {
+  color: #1f4f8f;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.18s ease;
+}
+.sjc-design a.sjc-sys-link.sjc-sys-link:hover,
+.sjc-design a.sjc-sys-link.sjc-sys-link:focus-visible { color: #0b1020; }
+.sjc-design .band--hero a.sjc-sys-link.sjc-sys-link,
+.sjc-design .band--soft a.sjc-sys-link.sjc-sys-link { color: #ffd700; }
+.sjc-design .band--hero a.sjc-sys-link.sjc-sys-link:hover,
+.sjc-design .band--soft a.sjc-sys-link.sjc-sys-link:hover,
+.sjc-design .band--hero a.sjc-sys-link.sjc-sys-link:focus-visible,
+.sjc-design .band--soft a.sjc-sys-link.sjc-sys-link:focus-visible { color: #ffffff; }
