@@ -12,22 +12,15 @@ import { cookieDomainFor } from "@/lib/authCookie";
 const COOKIES = ["sjc_site_auth", "sjc_id"];
 
 function clear(res: NextResponse, host: string | null): NextResponse {
+  // ⛔ NOT res.cookies.set (fixed 2026-09-08). Next's ResponseCookies is keyed by NAME, so setting
+  // the same name twice keeps only the last write — production emitted ONE Set-Cookie per name,
+  // domain-scoped, and a host-only cookie written before 09-07 survived every "Sign out". The
+  // headers are appended by hand so BOTH scopes actually reach the browser.
+  const { domain } = cookieDomainFor(host);
   for (const name of COOKIES) {
-    // Delete + explicitly expire (belt and suspenders for the httpOnly cookie).
-    res.cookies.delete(name);
-    // Cleared twice: host-only (how sjc_id and the pre-09-07 owner cookie were written) AND under
-    // the studio domain (how the owner cookie is written now). A cookie cleared under different
-    // attributes than it was written with is not reliably cleared at all.
-    for (const scope of [{}, cookieDomainFor(host)]) {
-      res.cookies.set(name, "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-        ...scope,
-      });
-    }
+    const base = `${name}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Lax`;
+    res.headers.append("Set-Cookie", base);
+    if (domain) res.headers.append("Set-Cookie", `${base}; Domain=${domain}`);
   }
   return res;
 }
