@@ -1442,3 +1442,19 @@ a.sjc-sys-card--layer:focus-visible {
 .sjc-design[data-sjc-editing] header nav a,
 .sjc-design[data-sjc-editing] header nav button { white-space: nowrap; }
 .sjc-design[data-sjc-editing] header .flex.justify-between { flex-wrap: wrap; row-gap: 10px; }
+
+/* ── AN ODD CARD NEVER SITS BESIDE A HOLE — the Companies We Serve grid (home, section sxq4oqf) ──
+   Fifteen cards on 2026-09-08. From `sm` up the grid is three across and 15 divides clean; on a
+   phone it is two across, so the last card would hang on the left beside an empty cell. Centre it
+   at the SAME width as its neighbours (half the row minus half the 24px gap), never stretched.
+   `:last-child:nth-child(odd)` makes it a rule, not a patch — Steven adds and removes cards in the
+   editor, and the sheet is content-addressed so a class it never compiled cannot do this. Scoped
+   to the design root and the section id so it touches nothing else. */
+@media (max-width: 639px) {
+  .sjc-design #sxq4oqf .grid > div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    max-width: calc(50% - 12px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
