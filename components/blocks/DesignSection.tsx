@@ -735,8 +735,14 @@ function bandCss(id: string, band?: string): string {
   // `markBandRoot` stamps those elements `data-sjc-ownbg`, so the selector states a fact instead
   // of inferring one: skip the element itself and everything under it.
   const safe = ':not([data-sjc-ownbg]):not([data-sjc-ownbg] *)';
+  // ⛔ NOT THE TEXT-SLOT WRAPPER (fixed 2026-09-08). `renderHtml` wraps every slot in
+  // `<span data-sjc-text>` in the editor (and on the live page whenever a per-text override is
+  // set). A bare `span` here painted those wrappers the band's BODY colour with !important — so in
+  // the studio the gold section label and the ink h2 both rendered slate, and a colour override set
+  // in the studio would lose on a live band. The wrapper inherits from its parent instead, which is
+  // exactly what the public page shows.
   return (
-    `${at} :is(p,li,blockquote,span)${safe}{color:${def.body} !important}` +
+    `${at} :is(p,li,blockquote,span:not([data-sjc-text]))${safe}{color:${def.body} !important}` +
     `${at} :is(h1,h2,h3,h4,strong,b)${safe}{color:${def.head} !important}`
   );
 }
