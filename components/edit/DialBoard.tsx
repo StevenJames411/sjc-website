@@ -582,7 +582,13 @@ export default function DialBoard({
           </div>
           {groupsInOrder.map((g) => (
             <div key={g}>
-              <div style={colGroup}>{g}</div>
+              {colEdit ? (
+                <input value={g === "Lists" ? "" : g} placeholder="Group name" aria-label="Group name"
+                  onChange={(e) => { const v = e.target.value; lists.filter((l) => (l.group || "Lists") === g).forEach((l) => editList(l.id, { group: v })); }}
+                  style={{ ...colInput, ...colGroup, background: "var(--e-bg)", padding: "6px 8px", margin: "8px 0 4px", width: "100%" }} />
+              ) : (
+                <div style={colGroup}>{g}</div>
+              )}
               {lists.filter((l) => (l.group || "Lists") === g).map((l) => {
                 const i = lists.findIndex((x) => x.id === l.id);
                 const on = l.id === activeId;
