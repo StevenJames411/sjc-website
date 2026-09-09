@@ -374,7 +374,6 @@ export default function DialBoard({
     try { setColOpen(window.localStorage.getItem("sjc-dial-col") !== "0"); } catch { /* ignore */ }
   }, []);
   const setColumnOpen = (v: boolean) => { setColOpen(v); try { window.localStorage.setItem("sjc-dial-col", v ? "1" : "0"); } catch { /* ignore */ } };
-  const dragList = useRef<string | null>(null);
   function saveOrder(next: CallList[]) {
     setLists(next);
     void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order: next.map((l) => l.id) }) });
@@ -385,14 +384,15 @@ export default function DialBoard({
     if ((lists[to].group || "Lists") !== (lists[i].group || "Lists")) return; // stays inside its group
     const next = lists.slice(); const [m] = next.splice(i, 1); next.splice(to, 0, m); saveOrder(next);
   }
-  function dragOver(id: string) {
-    const from = dragList.current; if (!from || from === id) return;
-    const next = lists.filter((l) => l.id !== from); const fromL = lists.find((l) => l.id === from)!;
-    next.splice(next.findIndex((l) => l.id === id), 0, fromL); setLists(next);
-  }
   function editList(id: string, patch: { name?: string; group?: string }) {
     setLists((cur) => cur.map((l) => (l.id === id ? { ...l, ...patch } : l)));
     void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...patch }) });
+  }
+  const dragGroup = useRef<string | null>(null);
+  function groupOrder(): string[] { const o: string[] = []; for (const l of lists) { const k = l.group || "Lists"; if (!o.includes(k)) o.push(k); } return o; }
+  function placeGroup(g: string, before: string) {
+    const order = groupOrder().filter((k) => k !== g); order.splice(order.indexOf(before), 0, g);
+    setLists(order.flatMap((k) => lists.filter((l) => (l.group || "Lists") === k)));
   }
   function moveGroup(g: string, dir: -1 | 1) {
     const order: string[] = [];
@@ -597,7 +597,12 @@ export default function DialBoard({
                   onCommit={(v) => lists.filter((l) => (l.group || "Lists") === g).forEach((l) => editList(l.id, { group: v }))}
                 />
               ) : (
-                <div style={{ ...colGroup, display: "flex", alignItems: "center", gap: 8 }}>
+                <div draggable
+                  onDragStart={() => { dragGroup.current = g; }}
+                  onDragOver={(e) => { e.preventDefault(); if (dragGroup.current && dragGroup.current !== g) placeGroup(dragGroup.current, g); }}
+                  onDragEnd={() => { if (dragGroup.current) saveOrder(lists); dragGroup.current = null; }}
+                  style={{ ...colGroup, display: "flex", alignItems: "center", gap: 8, cursor: "grab" }}>
+                  <span style={colGrip} title="Drag the group">≡</span>
                   <span style={{ flex: 1 }}>{g}</span>
                   <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <button onClick={() => moveGroup(g, -1)} disabled={groupsInOrder[0] === g} style={{ ...colArrow, opacity: groupsInOrder[0] === g ? 0.25 : 1 }} title="Move this group up">▲</button>
@@ -609,12 +614,7 @@ export default function DialBoard({
                 const i = lists.findIndex((x) => x.id === l.id);
                 const on = l.id === activeId;
                 return (
-                  <div key={l.id} draggable={!colEdit}
-                    onDragStart={() => { dragList.current = l.id; }}
-                    onDragOver={(e) => { e.preventDefault(); dragOver(l.id); }}
-                    onDragEnd={() => { if (dragList.current) saveOrder(lists); dragList.current = null; }}
-                    style={{ ...colRow, ...(on ? colRowOn : null) }}>
-                    <span style={colGrip}>≡</span>
+                  <div key={l.id} style={{ ...colRow, ...(on ? colRowOn : null) }}>
                     {colEdit ? (
                       <span style={{ flex: 1, minWidth: 0, display: "grid", gap: 4 }}>
                         <Draft value={l.name} placeholder="List name" onCommit={(v) => editList(l.id, { name: v })} style={colInput} label="List name" />
