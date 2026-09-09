@@ -428,7 +428,11 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
      on two lines with ~15px to spare; 27px is a coin toss. Scoped to the hero section's own id
      (`sf0of7a`, in the imported markup) so no other page moves. Id beats the sheet's (0,2,0) class. */
   #sf0of7a h1 {
-    font-size: 26px;
+    /* 22px, not 26 (Steven, 09-09, from a 12 Pro Max where 26px still ran three lines: "a lot of
+       people don't have the Pro Max"). Measured off his screenshot: Plex Bold runs ~0.575em per
+       character at this weight, so 25 characters need ~316px at 22px — inside a 375 iPhone's
+       ~342px column, which is the smallest phone the site has to fit. */
+    font-size: 22px;
     line-height: 1.2;
     /* balance keeps "Engine" from sitting alone on the second line at the widths between a
        390 iPhone and the 640 edge (a 500px window wrapped it 42 + 6). */
