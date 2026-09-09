@@ -415,10 +415,61 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    One rule, seven pages: /about, /premium-smart-websites, /automated-five-star-reviews,
    /speed-to-lead, /booked-appointments, /database-reactivation, /ai-implementation. */
 @media (max-width: 640px) {
-  .sjc-design.sjc-design h1.big,
   .sjc-design.sjc-design h2.big {
     font-size: clamp(29px, 8vw, 40px);
     line-height: 1.2;
+  }
+  /* ⭐ EVERY HERO HEADLINE ON A PHONE IS 22px (Steven, 09-09, three rulings in a row from his
+     iPhone). It began as the home hero alone — its h1 is the sheet's `text-3xl` (30px) and "Five
+     Business Systems = One Revenue Growth Engine" ran three lines on a 390 — then 26px still ran
+     three on a 12 Pro Max ("a lot of people don't have the Pro Max"), then: "each page has a hero
+     section, so let's have this font size carry for all pages whenever a phone is being used."
+     Measured off his screenshot: Plex Bold runs ~0.575em per character, so the home's 25-character
+     second line needs ~316px at 22px — inside a 375 iPhone's ~342px column, the smallest the site
+     has to fit. One h1 per public page, all twelve under `.sjc-design`, so `h1` here IS the hero.
+     ⛔ `!important` on purpose: /for-coaches-authors-and-influencers carries an inline
+     `style="font-size:clamp(28px,5vw,42px)"` on its h1, and nothing but !important beats inline.
+     `.sjc-design.sjc-design` for the same (0,2,1) reason as the h2 rule above. h2.big keeps its
+     clamp — section headings were not the complaint. */
+  .sjc-design.sjc-design h1 {
+    font-size: 22px !important;
+    line-height: 1.2;
+    /* ⛔ NO text-wrap:balance. It shipped for twenty minutes and Steven sent the screenshots back:
+       "there's no reason for the hero section to stack the second line under the pill. It should
+       use the whole canvas." Balance evens the lines by SHORTENING every line, so a 22px headline
+       sat in a narrow stack with the right half of the column empty. Fill the column; wrap where
+       the column ends. */
+    text-wrap: wrap;
+  }
+  /* ⛔ THE DESIGNED HARD BREAK IS A DESKTOP DECISION. Ten heroes ship
+     `…first line<br><em style="display:inline-block">second line</em>` so the cyan phrase sits on
+     its own line at 68px. At 22px on a 375 the <br> plus the inline-block em produced three short
+     lines ("Your website either / attracts clients / or repels them!"). On a phone the headline
+     flows as one sentence and fills the column; the em keeps its colour and its underline. */
+  .sjc-design.sjc-design h1 br {
+    display: none;
+  }
+  .sjc-design.sjc-design h1 em {
+    display: inline !important;
+    /* the <br> carried the word gap; with it hidden "clients" and "or repels" ran together. A
+       margin, not a text space, so the em's underline starts at the first letter. */
+    margin-left: 0.28em;
+  }
+  /* ⛔ THE SPANS INSIDE FOUR HEROES CARRY THEIR OWN INLINE SIZE — /about (42px), /podcast (44px),
+     /careers (40px), /ai-implementation (28px) wrap each line of the h1 in
+     `<span style="font-size:…">`, and an inline size on a child ignores the parent's. So those four
+     were still rendering 28–44px on a phone after the h1 rule shipped. Inherit, forced. */
+  .sjc-design.sjc-design h1 span {
+    font-size: inherit !important;
+  }
+  /* ⭐ THE LEDE STEPS DOWN WITH THE HEADLINE (Steven, 09-09, /premium-smart-websites: "the only page
+     that's not acting right"). The sheet's `.lede` is 19px at 1.72 — beside a 22px h1 the paragraph
+     outweighed the headline and the hero read upside down. 17px keeps it readable on a 375 and puts
+     the headline back on top; the home's rows are 18px, so the site's phone body sits at 17–18. */
+  .sjc-design.sjc-design .lede {
+    font-size: 17px;
+    line-height: 1.65;
+    margin-top: 16px;
   }
   /* ⭐ AND EVERY SECTION HEADING, FOR THE SAME REASON — MEASURED, NOT GUESSED.
      A headless pass over all ten public pages at 390x844 (DPR 3, mobile UA) found 44 `h2.sec`
