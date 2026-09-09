@@ -438,6 +438,22 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
        the 640 edge (a 500px window wrapped the home line 42 + 6). */
     text-wrap: balance;
   }
+  /* ⛔ THE SPANS INSIDE FOUR HEROES CARRY THEIR OWN INLINE SIZE — /about (42px), /podcast (44px),
+     /careers (40px), /ai-implementation (28px) wrap each line of the h1 in
+     `<span style="font-size:…">`, and an inline size on a child ignores the parent's. So those four
+     were still rendering 28–44px on a phone after the h1 rule shipped. Inherit, forced. */
+  .sjc-design.sjc-design h1 span {
+    font-size: inherit !important;
+  }
+  /* ⭐ THE LEDE STEPS DOWN WITH THE HEADLINE (Steven, 09-09, /premium-smart-websites: "the only page
+     that's not acting right"). The sheet's `.lede` is 19px at 1.72 — beside a 22px h1 the paragraph
+     outweighed the headline and the hero read upside down. 17px keeps it readable on a 375 and puts
+     the headline back on top; the home's rows are 18px, so the site's phone body sits at 17–18. */
+  .sjc-design.sjc-design .lede {
+    font-size: 17px;
+    line-height: 1.65;
+    margin-top: 16px;
+  }
   /* ⭐ AND EVERY SECTION HEADING, FOR THE SAME REASON — MEASURED, NOT GUESSED.
      A headless pass over all ten public pages at 390x844 (DPR 3, mobile UA) found 44 `h2.sec`
      headings shipping `clamp(28px, 3.8vw, 44px)` at line-height 1.12. The 3.8vw term falls under
