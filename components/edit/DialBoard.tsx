@@ -583,9 +583,10 @@ export default function DialBoard({
           {groupsInOrder.map((g) => (
             <div key={g}>
               {colEdit ? (
-                <input value={g === "Lists" ? "" : g} placeholder="Group name" aria-label="Group name"
-                  onChange={(e) => { const v = e.target.value; lists.filter((l) => (l.group || "Lists") === g).forEach((l) => editList(l.id, { group: v })); }}
-                  style={{ ...colInput, ...colGroup, background: "var(--e-bg)", padding: "6px 8px", margin: "8px 0 4px", width: "100%" }} />
+                <GroupName
+                  value={g === "Lists" ? "" : g}
+                  onCommit={(v) => lists.filter((l) => (l.group || "Lists") === g).forEach((l) => editList(l.id, { group: v }))}
+                />
               ) : (
                 <div style={colGroup}>{g}</div>
               )}
@@ -709,6 +710,21 @@ export default function DialBoard({
       </div>
       </div>
     </div>
+  );
+}
+
+/** A group heading you can type into. Commits on blur or Enter — never per keystroke, because the
+ *  rename re-keys the heading and a per-keystroke save unmounted the box after one letter. */
+function GroupName({ value, onCommit }: { value: string; onCommit: (v: string) => void }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => { setDraft(value); }, [value]);
+  const commit = () => { const v = draft.trim(); if (v !== value) onCommit(v); };
+  return (
+    <input value={draft} placeholder="Group name" aria-label="Group name"
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+      style={{ ...colInput, ...colGroup, background: "var(--e-bg)", padding: "6px 8px", margin: "8px 0 4px", width: "100%" }} />
   );
 }
 
