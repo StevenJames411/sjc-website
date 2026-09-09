@@ -602,8 +602,8 @@ export default function DialBoard({
                     <span style={colGrip}>≡</span>
                     {colEdit ? (
                       <span style={{ flex: 1, minWidth: 0, display: "grid", gap: 4 }}>
-                        <input value={l.name} onChange={(e) => editList(l.id, { name: e.target.value })} style={colInput} aria-label="List name" />
-                        <input value={l.group || ""} placeholder="Group (the vertical)" onChange={(e) => editList(l.id, { group: e.target.value })} style={{ ...colInput, fontSize: 11.5 }} aria-label="Group" />
+                        <Draft value={l.name} placeholder="List name" onCommit={(v) => editList(l.id, { name: v })} style={colInput} label="List name" />
+                        <Draft value={l.group || ""} placeholder="Group (the vertical)" onCommit={(v) => editList(l.id, { group: v })} style={{ ...colInput, fontSize: 11.5 }} label="Group" />
                       </span>
                     ) : (
                       <span onClick={() => switchList(l.id)} title="Click to load — this becomes the default" style={colName}>{l.name}</span>
@@ -710,6 +710,19 @@ export default function DialBoard({
       </div>
       </div>
     </div>
+  );
+}
+
+/** Any box in the lists column: type freely, save once on blur or Enter. A per-keystroke save moved
+ *  the row into a new group and redrew it, which threw the cursor out after one letter. */
+function Draft({ value, placeholder, onCommit, style, label }: { value: string; placeholder: string; onCommit: (v: string) => void; style: React.CSSProperties; label: string }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => { setDraft(value); }, [value]);
+  const commit = () => { const v = draft.trim(); if (v !== value) onCommit(v); };
+  return (
+    <input value={draft} placeholder={placeholder} aria-label={label} style={style}
+      onChange={(e) => setDraft(e.target.value)} onBlur={commit}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }} />
   );
 }
 
