@@ -434,9 +434,26 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   .sjc-design.sjc-design h1 {
     font-size: 22px !important;
     line-height: 1.2;
-    /* balance: no single word stranded on the last line at the widths between a 375 iPhone and
-       the 640 edge (a 500px window wrapped the home line 42 + 6). */
-    text-wrap: balance;
+    /* ⛔ NO text-wrap:balance. It shipped for twenty minutes and Steven sent the screenshots back:
+       "there's no reason for the hero section to stack the second line under the pill. It should
+       use the whole canvas." Balance evens the lines by SHORTENING every line, so a 22px headline
+       sat in a narrow stack with the right half of the column empty. Fill the column; wrap where
+       the column ends. */
+    text-wrap: wrap;
+  }
+  /* ⛔ THE DESIGNED HARD BREAK IS A DESKTOP DECISION. Ten heroes ship
+     `…first line<br><em style="display:inline-block">second line</em>` so the cyan phrase sits on
+     its own line at 68px. At 22px on a 375 the <br> plus the inline-block em produced three short
+     lines ("Your website either / attracts clients / or repels them!"). On a phone the headline
+     flows as one sentence and fills the column; the em keeps its colour and its underline. */
+  .sjc-design.sjc-design h1 br {
+    display: none;
+  }
+  .sjc-design.sjc-design h1 em {
+    display: inline !important;
+    /* the <br> carried the word gap; with it hidden "clients" and "or repels" ran together. A
+       margin, not a text space, so the em's underline starts at the first letter. */
+    margin-left: 0.28em;
   }
   /* ⛔ THE SPANS INSIDE FOUR HEROES CARRY THEIR OWN INLINE SIZE — /about (42px), /podcast (44px),
      /careers (40px), /ai-implementation (28px) wrap each line of the h1 in
