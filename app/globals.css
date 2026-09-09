@@ -415,27 +415,27 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    One rule, seven pages: /about, /premium-smart-websites, /automated-five-star-reviews,
    /speed-to-lead, /booked-appointments, /database-reactivation, /ai-implementation. */
 @media (max-width: 640px) {
-  .sjc-design.sjc-design h1.big,
   .sjc-design.sjc-design h2.big {
     font-size: clamp(29px, 8vw, 40px);
     line-height: 1.2;
   }
-  /* ⭐ THE HOME HERO HEADLINE (Steven, 09-09, from his iPhone: "the only line that the font is too
-     large is our second line in the hero section"). That h1 is NOT `.big` — it ships the sealed
-     sheet's `text-3xl` (30px) and "Five Business Systems = One Revenue Growth Engine" wraps to THREE
-     lines in a 390px column. Measured: IBM Plex Sans Bold runs ~0.52em per character, the column is
-     ~357px, and the natural second line "One Revenue Growth Engine" is 25 characters — 26px lands it
-     on two lines with ~15px to spare; 27px is a coin toss. Scoped to the hero section's own id
-     (`sf0of7a`, in the imported markup) so no other page moves. Id beats the sheet's (0,2,0) class. */
-  #sf0of7a h1 {
-    /* 22px, not 26 (Steven, 09-09, from a 12 Pro Max where 26px still ran three lines: "a lot of
-       people don't have the Pro Max"). Measured off his screenshot: Plex Bold runs ~0.575em per
-       character at this weight, so 25 characters need ~316px at 22px — inside a 375 iPhone's
-       ~342px column, which is the smallest phone the site has to fit. */
-    font-size: 22px;
+  /* ⭐ EVERY HERO HEADLINE ON A PHONE IS 22px (Steven, 09-09, three rulings in a row from his
+     iPhone). It began as the home hero alone — its h1 is the sheet's `text-3xl` (30px) and "Five
+     Business Systems = One Revenue Growth Engine" ran three lines on a 390 — then 26px still ran
+     three on a 12 Pro Max ("a lot of people don't have the Pro Max"), then: "each page has a hero
+     section, so let's have this font size carry for all pages whenever a phone is being used."
+     Measured off his screenshot: Plex Bold runs ~0.575em per character, so the home's 25-character
+     second line needs ~316px at 22px — inside a 375 iPhone's ~342px column, the smallest the site
+     has to fit. One h1 per public page, all twelve under `.sjc-design`, so `h1` here IS the hero.
+     ⛔ `!important` on purpose: /for-coaches-authors-and-influencers carries an inline
+     `style="font-size:clamp(28px,5vw,42px)"` on its h1, and nothing but !important beats inline.
+     `.sjc-design.sjc-design` for the same (0,2,1) reason as the h2 rule above. h2.big keeps its
+     clamp — section headings were not the complaint. */
+  .sjc-design.sjc-design h1 {
+    font-size: 22px !important;
     line-height: 1.2;
-    /* balance keeps "Engine" from sitting alone on the second line at the widths between a
-       390 iPhone and the 640 edge (a 500px window wrapped it 42 + 6). */
+    /* balance: no single word stranded on the last line at the widths between a 375 iPhone and
+       the 640 edge (a 500px window wrapped the home line 42 + 6). */
     text-wrap: balance;
   }
   /* ⭐ AND EVERY SECTION HEADING, FOR THE SAME REASON — MEASURED, NOT GUESSED.
