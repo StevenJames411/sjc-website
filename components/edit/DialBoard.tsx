@@ -402,6 +402,7 @@ export default function DialBoard({
     const [m] = order.splice(i, 1); order.splice(to, 0, m);
     saveOrder(order.flatMap((k) => lists.filter((l) => (l.group || "Lists") === k)));
   }
+  const activeGroup = lists.find((l) => l.id === activeId)?.group || "Lists";
   const groupsInOrder: string[] = [];
   for (const l of lists) { const g = l.group || "Lists"; if (!groupsInOrder.includes(g)) groupsInOrder.push(g); }
 
@@ -601,7 +602,7 @@ export default function DialBoard({
                   onDragStart={() => { dragGroup.current = g; }}
                   onDragOver={(e) => { e.preventDefault(); if (dragGroup.current && dragGroup.current !== g) placeGroup(dragGroup.current, g); }}
                   onDragEnd={() => { if (dragGroup.current) saveOrder(lists); dragGroup.current = null; }}
-                  style={{ ...colGroup, display: "flex", alignItems: "center", gap: 8, cursor: "grab" }}>
+                  style={{ ...colGroup, ...(g === activeGroup ? colGroupOn : null), display: "flex", alignItems: "center", gap: 8, cursor: "grab" }}>
                   <span style={colGrip} title="Drag the group">≡</span>
                   <span style={{ flex: 1 }}>{g}</span>
                   <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -614,7 +615,7 @@ export default function DialBoard({
                 const i = lists.findIndex((x) => x.id === l.id);
                 const on = l.id === activeId;
                 return (
-                  <div key={l.id} style={{ ...colRow, ...(on ? colRowOn : null) }}>
+                  <div key={l.id} style={{ ...colRow, fontWeight: on ? 800 : 500 }}>
                     {colEdit ? (
                       <span style={{ flex: 1, minWidth: 0, display: "grid", gap: 4 }}>
                         <Draft value={l.name} placeholder="List name" onCommit={(v) => editList(l.id, { name: v })} style={colInput} label="List name" />
@@ -1065,9 +1066,10 @@ const filterRow: React.CSSProperties = { display: "flex", gap: 9, flexWrap: "wra
 const col: React.CSSProperties = { position: "sticky", top: 96, alignSelf: "flex-start", flex: "none", width: 320, maxHeight: "calc(100vh - 110px)", overflow: "auto", background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 12, padding: "10px 10px 14px", fontFamily: font };
 const colHead: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "2px 4px 8px" };
 const colTitle: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--e-muted)" };
-const colGroup: React.CSSProperties = { fontSize: 11, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--e-accent)", padding: "10px 6px 4px" };
-const colRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, padding: "8px 8px 8px 10px", margin: "3px 0", borderRadius: 9, background: "var(--e-bg)", border: "1px solid var(--e-line)", color: "var(--e-ink)", fontSize: 13.5 };
-const colRowOn: React.CSSProperties = { borderColor: "var(--e-accent)", boxShadow: "inset 0 0 0 1px var(--e-accent)", fontWeight: 800 };
+const colGroup: React.CSSProperties = { fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--e-muted)", padding: "8px 8px", margin: "8px 0 2px", borderRadius: 8, border: "1px solid transparent" };
+const colGroupOn: React.CSSProperties = { color: "var(--e-accent)", border: "1.5px solid var(--e-accent)", background: "color-mix(in srgb, var(--e-accent) 8%, transparent)" };
+const colRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, padding: "8px 8px 8px 14px", margin: "3px 0", borderRadius: 9, background: "var(--e-bg)", border: "1px solid var(--e-line)", boxShadow: "none", outline: "none", color: "var(--e-ink)", fontSize: 13.5 };
+
 const colGrip: React.CSSProperties = { color: "var(--e-muted)", cursor: "grab", flex: "none" };
 const colName: React.CSSProperties = { flex: 1, minWidth: 0, cursor: "pointer", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
 const colInput: React.CSSProperties = { width: "100%", boxSizing: "border-box", background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 6, color: "var(--e-ink)", font: "inherit", fontSize: 13, padding: "4px 6px" };
