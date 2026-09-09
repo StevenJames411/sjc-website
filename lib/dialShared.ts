@@ -40,10 +40,16 @@ export type CallList = {
   spreadsheetId: string;
   /** Empty = the first tab, whatever it is called. */
   tab?: string;
+  /** The vertical this list belongs to — "HVAC + Plumbing". Rows in the lists column group under it. */
+  group?: string;
   addedAt?: string;
 };
 
-export type DialDoc = { lists: CallList[] };
+export type DialDoc = {
+  lists: CallList[];
+  /** The pill he highlighted last. The board opens on it; the server draws it so nothing flickers. */
+  defaultId?: string;
+};
 
 export const EMPTY_DIAL_DOC: DialDoc = { lists: [] };
 

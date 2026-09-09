@@ -46,6 +46,7 @@ function normalise(raw: unknown): DialDoc {
   const doc = (raw || {}) as Partial<DialDoc>;
   const lists = Array.isArray(doc.lists) ? doc.lists : [];
   return {
+    defaultId: String(doc.defaultId || "").trim() || undefined,
     lists: lists
       .filter((l): l is CallList => Boolean(l && typeof l === "object"))
       .map((l) => ({
@@ -53,21 +54,62 @@ function normalise(raw: unknown): DialDoc {
         name: String(l.name || "").trim() || "Untitled list",
         spreadsheetId: String(l.spreadsheetId || "").trim(),
         tab: String(l.tab || "").trim() || undefined,
+        group: String(l.group || "").trim() || undefined,
         addedAt: l.addedAt,
       }))
       .filter((l) => l.id && l.spreadsheetId),
   };
 }
 
-export async function readLists(): Promise<CallList[]> {
+export async function readDialDoc(): Promise<DialDoc> {
   const raw = await store().read();
-  return raw ? normalise(raw).lists : EMPTY_DIAL_DOC.lists;
+  return raw ? normalise(raw) : EMPTY_DIAL_DOC;
+}
+
+export async function readLists(): Promise<CallList[]> {
+  return (await readDialDoc()).lists;
+}
+
+/**
+ * ⭐ THE HIGHLIGHTED PILL IS THE DEFAULT (2026-09-08). Steven: "the pills at the top just highlight
+ * which one I want to be on. That's the default — until I switch, every reload stays on what I've
+ * highlighted." Stored WITH the registry, not in the browser, so the server renders the right pill
+ * and the right list on the first paint — a browser-side memory highlighted one pill and loaded
+ * another, because the server could not see it.
+ */
+export async function setDefaultList(id: string): Promise<{ ok: boolean; error?: string }> {
+  const doc = await readDialDoc();
+  if (!doc.lists.some((l) => l.id === id)) return { ok: false, error: "No such list." };
+  const ok = await store().write({ ...doc, defaultId: id });
+  return ok ? { ok: true } : { ok: false, error: "Couldn't save." };
+}
+
+/**
+ * The lists column's order IS the registry order. Arrows and drag call this with the full id list;
+ * an id it does not know is ignored, one it is missing keeps its place at the end.
+ */
+export async function reorderLists(ids: string[]): Promise<{ ok: boolean; error?: string }> {
+  const lists = await readLists();
+  const byId = new Map(lists.map((l) => [l.id, l]));
+  const next: CallList[] = [];
+  for (const id of ids) { const l = byId.get(id); if (l && !next.includes(l)) next.push(l); }
+  for (const l of lists) if (!next.includes(l)) next.push(l);
+  const ok = await writeLists(next);
+  return ok ? { ok: true } : { ok: false, error: "Couldn't save." };
+}
+
+/** Every writer goes through here so `defaultId` survives an add, a rename or a removal. */
+async function writeLists(lists: CallList[]): Promise<boolean> {
+  const doc = await readDialDoc();
+  const defaultId = doc.defaultId && lists.some((l) => l.id === doc.defaultId) ? doc.defaultId : undefined;
+  return store().write({ lists, defaultId });
 }
 
 export async function addList(opts: {
   name: string;
   paste: string;
   tab?: string;
+  group?: string;
 }): Promise<{ ok: boolean; id?: string; error?: string }> {
   const spreadsheetId = parseSpreadsheetId(opts.paste);
   if (!spreadsheetId) {
@@ -88,16 +130,17 @@ export async function addList(opts: {
     name: String(opts.name || "").trim() || "Untitled list",
     spreadsheetId,
     tab: tab || undefined,
+    group: String(opts.group || "").trim() || undefined,
     addedAt: new Date().toISOString(),
   };
 
-  const ok = await store().write({ lists: [...lists, next] });
+  const ok = await writeLists([...lists, next]);
   return ok ? { ok: true, id } : { ok: false, error: "Couldn't save — storage refused the write." };
 }
 
 export async function updateList(
   id: string,
-  patch: Partial<Pick<CallList, "name" | "tab">>
+  patch: Partial<Pick<CallList, "name" | "tab" | "group">>
 ): Promise<{ ok: boolean; error?: string }> {
   const lists = await readLists();
   if (!lists.some((l) => l.id === id)) return { ok: false, error: "No such list." };
@@ -111,10 +154,11 @@ export async function updateList(
           // An explicitly empty tab means "the first tab", which is a real choice — so `undefined`
           // has to survive the round trip rather than being read as "no change".
           tab: patch.tab !== undefined ? String(patch.tab).trim() || undefined : l.tab,
+          group: patch.group !== undefined ? String(patch.group).trim() || undefined : l.group,
         }
   );
 
-  const ok = await store().write({ lists: next });
+  const ok = await writeLists(next);
   return ok ? { ok: true } : { ok: false, error: "Couldn't save." };
 }
 
@@ -130,6 +174,6 @@ export async function removeList(id: string): Promise<{ ok: boolean; error?: str
   const lists = await readLists();
   const next = lists.filter((l) => l.id !== id);
   if (next.length === lists.length) return { ok: false, error: "No such list." };
-  const ok = await store().write({ lists: next });
+  const ok = await writeLists(next);
   return ok ? { ok: true } : { ok: false, error: "Couldn't save." };
 }

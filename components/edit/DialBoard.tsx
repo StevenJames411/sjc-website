@@ -65,34 +65,22 @@ type Loaded = {
 
 export default function DialBoard({
   lists: initialLists,
+  defaultId,
   title,
   configured,
 }: {
   lists: CallList[];
+  /** The pill highlighted last — the one the board opens on. */
+  defaultId?: string;
   title: string;
   configured: boolean;
 }) {
   const [lists, setLists] = useState(initialLists);
-  // ⭐ OPEN ON THE LIST HE WAS WORKING (2026-09-08). Steven: "every time I load the page it defaults
-  // back to the pet groomer… it wastes my time." The last list he clicked is remembered per browser
-  // and is the one that loads first; a list that no longer exists falls back to the first pill.
-  const LAST_LIST_KEY = "sjc-dial-last-list";
-  const [activeId, setActiveId] = useState(() => {
-    try {
-      const last = typeof window !== "undefined" ? window.localStorage.getItem(LAST_LIST_KEY) : null;
-      if (last && initialLists.some((l) => l.id === last)) return last;
-    } catch {
-      /* private mode etc. — fall through */
-    }
-    return initialLists[0]?.id || "";
-  });
-  useEffect(() => {
-    try {
-      if (activeId) window.localStorage.setItem(LAST_LIST_KEY, activeId);
-    } catch {
-      /* ignore */
-    }
-  }, [activeId]);
+  // ⭐ THE HIGHLIGHTED PILL IS THE DEFAULT (2026-09-08) — it comes from the registry, server-rendered,
+  // so the pill and the list agree on the first paint. Switching a pill saves it as the new default.
+  const [activeId, setActiveId] = useState(
+    (defaultId && initialLists.some((l) => l.id === defaultId) ? defaultId : initialLists[0]?.id) || ""
+  );
   const [data, setData] = useState<Loaded | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -244,6 +232,7 @@ export default function DialBoard({
       return;
     }
     setActiveId(id);
+    void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, default: true }) });
   }
 
   const all = useMemo(() => data?.prospects || [], [data]);
@@ -374,6 +363,39 @@ export default function DialBoard({
     if (activeId === id) setActiveId(next[0]?.id || "");
   }
 
+  // ⭐ THE LISTS ARE A COLUMN, NOT A STRIP (2026-09-08). Steven: "if I stay in HVAC and plumbing and
+  // go to ten different states, the top of the page should still stay organised." A collapsible
+  // left column, grouped by vertical, one row per list; ▲▼ or drag to reorder (the order is the
+  // registry's order); click a row to load it — and that row is the default until the next click.
+  // Collapse it and the whole canvas is cards. Same column the cockpit's To-Do page uses.
+  const [colOpen, setColOpen] = useState(true);
+  const [colEdit, setColEdit] = useState(false);
+  useEffect(() => {
+    try { setColOpen(window.localStorage.getItem("sjc-dial-col") !== "0"); } catch { /* ignore */ }
+  }, []);
+  const setColumnOpen = (v: boolean) => { setColOpen(v); try { window.localStorage.setItem("sjc-dial-col", v ? "1" : "0"); } catch { /* ignore */ } };
+  const dragList = useRef<string | null>(null);
+  function saveOrder(next: CallList[]) {
+    setLists(next);
+    void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order: next.map((l) => l.id) }) });
+  }
+  function moveList(id: string, dir: -1 | 1) {
+    const i = lists.findIndex((l) => l.id === id); const to = i + dir;
+    if (i < 0 || to < 0 || to >= lists.length) return;
+    const next = lists.slice(); const [m] = next.splice(i, 1); next.splice(to, 0, m); saveOrder(next);
+  }
+  function dragOver(id: string) {
+    const from = dragList.current; if (!from || from === id) return;
+    const next = lists.filter((l) => l.id !== from); const fromL = lists.find((l) => l.id === from)!;
+    next.splice(next.findIndex((l) => l.id === id), 0, fromL); setLists(next);
+  }
+  function editList(id: string, patch: { name?: string; group?: string }) {
+    setLists((cur) => cur.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+    void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...patch }) });
+  }
+  const groupsInOrder: string[] = [];
+  for (const l of lists) { const g = l.group || "Lists"; if (!groupsInOrder.includes(g)) groupsInOrder.push(g); }
+
   return (
     <div style={page}>
       <div style={bar}>
@@ -387,27 +409,6 @@ export default function DialBoard({
             row one; every filter shares row two. */}
         <div style={barTop}>
           <h1 style={h1}>{title}</h1>
-          {lists.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => switchList(l.id)}
-              style={l.id === activeId ? { ...pill, ...pillOn } : pill}
-            >
-              {l.name}
-            </button>
-          ))}
-          <button onClick={() => setAdding((v) => !v)} style={{ ...pill, borderStyle: "dashed" }} title="Add a list">
-            +
-          </button>
-          {activeId ? (
-            <button
-              onClick={() => void dropList(activeId)}
-              style={dropBtn}
-              title="Take this list off the board — the sheet is untouched"
-            >
-              Remove
-            </button>
-          ) : null}
           <div style={{ display: "flex", gap: 14, marginLeft: "auto", alignItems: "center" }}>
             {/* ── the session clock ────────────────────────────────────────────────────────── */}
             {session ? (
@@ -569,6 +570,55 @@ export default function DialBoard({
         </p>
       ) : null}
 
+      <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+      {colOpen ? (
+        <aside style={col}>
+          <div style={colHead}>
+            <span style={colTitle}>Lists · {colEdit ? "rename, regroup, reorder" : "click to load · ▲▼ to reorder"}</span>
+            <span style={{ display: "flex", gap: 6 }}>
+              <button onClick={() => setColEdit((v) => !v)} style={{ ...colBtn, ...(colEdit ? colBtnOn : null) }} title={colEdit ? "Done" : "Rename and regroup"}>{colEdit ? "✓" : "✎"}</button>
+              <button onClick={() => setColumnOpen(false)} style={colBtn} title="Hide the lists">«</button>
+            </span>
+          </div>
+          {groupsInOrder.map((g) => (
+            <div key={g}>
+              <div style={colGroup}>{g}</div>
+              {lists.filter((l) => (l.group || "Lists") === g).map((l) => {
+                const i = lists.findIndex((x) => x.id === l.id);
+                const on = l.id === activeId;
+                return (
+                  <div key={l.id} draggable={!colEdit}
+                    onDragStart={() => { dragList.current = l.id; }}
+                    onDragOver={(e) => { e.preventDefault(); dragOver(l.id); }}
+                    onDragEnd={() => { if (dragList.current) saveOrder(lists); dragList.current = null; }}
+                    style={{ ...colRow, ...(on ? colRowOn : null) }}>
+                    <span style={colGrip}>≡</span>
+                    {colEdit ? (
+                      <span style={{ flex: 1, minWidth: 0, display: "grid", gap: 4 }}>
+                        <input value={l.name} onChange={(e) => editList(l.id, { name: e.target.value })} style={colInput} aria-label="List name" />
+                        <input value={l.group || ""} placeholder="Group (the vertical)" onChange={(e) => editList(l.id, { group: e.target.value })} style={{ ...colInput, fontSize: 11.5 }} aria-label="Group" />
+                      </span>
+                    ) : (
+                      <span onClick={() => switchList(l.id)} title="Click to load — this becomes the default" style={colName}>{l.name}</span>
+                    )}
+                    <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: "none" }}>
+                      <button onClick={() => moveList(l.id, -1)} disabled={i === 0} style={{ ...colArrow, opacity: i === 0 ? 0.25 : 1 }} title="Move up">▲</button>
+                      <button onClick={() => moveList(l.id, 1)} disabled={i === lists.length - 1} style={{ ...colArrow, opacity: i === lists.length - 1 ? 0.25 : 1 }} title="Move down">▼</button>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button onClick={() => setAdding((v) => !v)} style={{ ...colBtn, flex: 1, borderStyle: "dashed" }} title="Add a list">+ Add a list</button>
+            {activeId ? <button onClick={() => void dropList(activeId)} style={colBtn} title="Take the highlighted list off the board — the sheet is untouched">Remove</button> : null}
+          </div>
+        </aside>
+      ) : (
+        <button onClick={() => setColumnOpen(true)} style={{ ...colBtn, position: "sticky", top: 96, flex: "none", width: 34, height: 34, fontSize: 15 }} title="Show the lists">≡</button>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
       {adding ? (
         <form onSubmit={addList} style={addBox}>
           <div style={addGrid}>
@@ -584,6 +634,10 @@ export default function DialBoard({
                 style={input}
                 required
               />
+            </label>
+            <label style={lab}>
+              Group <span style={{ color: "var(--e-muted)", fontWeight: 400 }}>(the vertical)</span>
+              <input name="group" placeholder="HVAC + Plumbing" defaultValue={lists.find((l) => l.id === activeId)?.group || ""} style={input} />
             </label>
             <label style={lab}>
               Tab{" "}
@@ -646,6 +700,8 @@ export default function DialBoard({
           ) : null}
         </>
       ) : null}
+      </div>
+      </div>
     </div>
   );
 }
@@ -956,6 +1012,18 @@ const h1: React.CSSProperties = { fontSize: 22, fontWeight: 800, letterSpacing: 
 const bigNum: React.CSSProperties = { fontSize: 22, fontWeight: 800, lineHeight: 1 };
 const numCap: React.CSSProperties = { fontSize: 9.5, color: "var(--e-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 };
 const filterRow: React.CSSProperties = { display: "flex", gap: 9, flexWrap: "wrap", alignItems: "center", marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--e-line-soft)" };
+const col: React.CSSProperties = { position: "sticky", top: 96, alignSelf: "flex-start", flex: "none", width: 320, maxHeight: "calc(100vh - 110px)", overflow: "auto", background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 12, padding: "10px 10px 14px", fontFamily: font };
+const colHead: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "2px 4px 8px" };
+const colTitle: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--e-muted)" };
+const colGroup: React.CSSProperties = { fontSize: 11, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--e-accent)", padding: "10px 6px 4px" };
+const colRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, padding: "8px 8px 8px 10px", margin: "3px 0", borderRadius: 9, background: "var(--e-bg)", border: "1px solid var(--e-line)", color: "var(--e-ink)", fontSize: 13.5 };
+const colRowOn: React.CSSProperties = { borderColor: "var(--e-accent)", boxShadow: "inset 0 0 0 1px var(--e-accent)", fontWeight: 800 };
+const colGrip: React.CSSProperties = { color: "var(--e-muted)", cursor: "grab", flex: "none" };
+const colName: React.CSSProperties = { flex: 1, minWidth: 0, cursor: "pointer", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
+const colInput: React.CSSProperties = { width: "100%", boxSizing: "border-box", background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 6, color: "var(--e-ink)", font: "inherit", fontSize: 13, padding: "4px 6px" };
+const colArrow: React.CSSProperties = { width: 22, height: 15, lineHeight: "13px", fontSize: 9, padding: 0, background: "var(--e-panel)", color: "var(--e-muted)", border: "1px solid var(--e-line)", borderRadius: 4, cursor: "pointer" };
+const colBtn: React.CSSProperties = { background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 8, color: "var(--e-ink)", cursor: "pointer", fontSize: 12.5, fontWeight: 600, padding: "6px 10px", fontFamily: font };
+const colBtnOn: React.CSSProperties = { borderColor: "var(--e-accent)", color: "var(--e-accent)" };
 const pill: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 999, padding: "7px 14px", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font };
 const pillOn: React.CSSProperties = { borderColor: "var(--e-accent)", color: "var(--e-accent)", fontWeight: 800 };
 const dropBtn: React.CSSProperties = { ...pill, marginLeft: "auto", color: "var(--e-muted)", fontWeight: 500 };
