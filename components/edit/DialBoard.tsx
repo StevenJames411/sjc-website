@@ -73,7 +73,26 @@ export default function DialBoard({
   configured: boolean;
 }) {
   const [lists, setLists] = useState(initialLists);
-  const [activeId, setActiveId] = useState(initialLists[0]?.id || "");
+  // ⭐ OPEN ON THE LIST HE WAS WORKING (2026-09-08). Steven: "every time I load the page it defaults
+  // back to the pet groomer… it wastes my time." The last list he clicked is remembered per browser
+  // and is the one that loads first; a list that no longer exists falls back to the first pill.
+  const LAST_LIST_KEY = "sjc-dial-last-list";
+  const [activeId, setActiveId] = useState(() => {
+    try {
+      const last = typeof window !== "undefined" ? window.localStorage.getItem(LAST_LIST_KEY) : null;
+      if (last && initialLists.some((l) => l.id === last)) return last;
+    } catch {
+      /* private mode etc. — fall through */
+    }
+    return initialLists[0]?.id || "";
+  });
+  useEffect(() => {
+    try {
+      if (activeId) window.localStorage.setItem(LAST_LIST_KEY, activeId);
+    } catch {
+      /* ignore */
+    }
+  }, [activeId]);
   const [data, setData] = useState<Loaded | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
