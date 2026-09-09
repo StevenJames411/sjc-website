@@ -382,6 +382,7 @@ export default function DialBoard({
   function moveList(id: string, dir: -1 | 1) {
     const i = lists.findIndex((l) => l.id === id); const to = i + dir;
     if (i < 0 || to < 0 || to >= lists.length) return;
+    if ((lists[to].group || "Lists") !== (lists[i].group || "Lists")) return; // stays inside its group
     const next = lists.slice(); const [m] = next.splice(i, 1); next.splice(to, 0, m); saveOrder(next);
   }
   function dragOver(id: string) {
@@ -392,6 +393,14 @@ export default function DialBoard({
   function editList(id: string, patch: { name?: string; group?: string }) {
     setLists((cur) => cur.map((l) => (l.id === id ? { ...l, ...patch } : l)));
     void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...patch }) });
+  }
+  function moveGroup(g: string, dir: -1 | 1) {
+    const order: string[] = [];
+    for (const l of lists) { const k = l.group || "Lists"; if (!order.includes(k)) order.push(k); }
+    const i = order.indexOf(g); const to = i + dir;
+    if (i < 0 || to < 0 || to >= order.length) return;
+    const [m] = order.splice(i, 1); order.splice(to, 0, m);
+    saveOrder(order.flatMap((k) => lists.filter((l) => (l.group || "Lists") === k)));
   }
   const groupsInOrder: string[] = [];
   for (const l of lists) { const g = l.group || "Lists"; if (!groupsInOrder.includes(g)) groupsInOrder.push(g); }
@@ -588,7 +597,13 @@ export default function DialBoard({
                   onCommit={(v) => lists.filter((l) => (l.group || "Lists") === g).forEach((l) => editList(l.id, { group: v }))}
                 />
               ) : (
-                <div style={colGroup}>{g}</div>
+                <div style={{ ...colGroup, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ flex: 1 }}>{g}</span>
+                  <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    <button onClick={() => moveGroup(g, -1)} disabled={groupsInOrder[0] === g} style={{ ...colArrow, opacity: groupsInOrder[0] === g ? 0.25 : 1 }} title="Move this group up">▲</button>
+                    <button onClick={() => moveGroup(g, 1)} disabled={groupsInOrder[groupsInOrder.length - 1] === g} style={{ ...colArrow, opacity: groupsInOrder[groupsInOrder.length - 1] === g ? 0.25 : 1 }} title="Move this group down">▼</button>
+                  </span>
+                </div>
               )}
               {lists.filter((l) => (l.group || "Lists") === g).map((l) => {
                 const i = lists.findIndex((x) => x.id === l.id);
@@ -609,8 +624,8 @@ export default function DialBoard({
                       <span onClick={() => switchList(l.id)} title="Click to load — this becomes the default" style={colName}>{l.name}</span>
                     )}
                     <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: "none" }}>
-                      <button onClick={() => moveList(l.id, -1)} disabled={i === 0} style={{ ...colArrow, opacity: i === 0 ? 0.25 : 1 }} title="Move up">▲</button>
-                      <button onClick={() => moveList(l.id, 1)} disabled={i === lists.length - 1} style={{ ...colArrow, opacity: i === lists.length - 1 ? 0.25 : 1 }} title="Move down">▼</button>
+                      <button onClick={() => moveList(l.id, -1)} disabled={i === 0 || (lists[i - 1].group || "Lists") !== g} style={{ ...colArrow, opacity: i === 0 || (lists[i - 1].group || "Lists") !== g ? 0.25 : 1 }} title="Move up">▲</button>
+                      <button onClick={() => moveList(l.id, 1)} disabled={i === lists.length - 1 || (lists[i + 1].group || "Lists") !== g} style={{ ...colArrow, opacity: i === lists.length - 1 || (lists[i + 1].group || "Lists") !== g ? 0.25 : 1 }} title="Move down">▼</button>
                     </span>
                   </div>
                 );
