@@ -9,7 +9,7 @@
 //
 // ⛔ NOTHING PUBLIC READS THIS. A call sheet is Steven's own prospecting, and the only surface that
 // touches it is a page behind the app password.
-import { readLists, addList, updateList, removeList, toProspects, statusText } from "@/lib/dial";
+import { readLists, addList, updateList, removeList, toProspects, statusText, setDefaultList } from "@/lib/dial";
 import { readSheetRows, logSheetCall, sheetsConfigured } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
@@ -80,6 +80,12 @@ export async function PATCH(req: Request) {
 
   const id = String(body?.id || "");
   if (!id) return Response.json({ ok: false, error: "id required" }, { status: 400 });
+
+  // The highlighted pill is the default — see lib/dial.ts setDefaultList.
+  if (body.default === true) {
+    const res = await setDefaultList(id);
+    return Response.json(res, { status: res.ok ? 200 : 400 });
+  }
 
   // One route, two shapes. A `row` means "log a call"; anything else is editing the list itself.
   if (body.row === undefined) {

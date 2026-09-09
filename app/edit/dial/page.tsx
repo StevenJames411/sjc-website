@@ -8,7 +8,7 @@
 // free — /api/dial had to be added to the gated list by hand.
 //
 // The heading and the browser tab both read the name Steven gave this screen in the rail.
-import { readLists } from "@/lib/dial";
+import { readLists, readDialDoc } from "@/lib/dial";
 import { sheetsConfigured } from "@/lib/sheets";
 import { navLabel } from "@/lib/editNav";
 import DialBoard from "@/components/edit/DialBoard";
@@ -20,9 +20,10 @@ export async function generateMetadata() {
 }
 
 export default async function DialPage() {
-  const [lists, title] = await Promise.all([readLists(), navLabel("dial")]);
+  const [doc, title] = await Promise.all([readDialDoc(), navLabel("dial")]);
+  const lists = doc.lists;
   // ⚠️ The prospects are NOT fetched here. The board loads them client-side per list, because a
   // call sheet is read live on every switch and a server render would cache a snapshot of a list
   // he is actively writing to. See the note at the top of lib/dial.ts.
-  return <DialBoard lists={lists} title={title} configured={sheetsConfigured()} />;
+  return <DialBoard lists={lists} defaultId={doc.defaultId} title={title} configured={sheetsConfigured()} />;
 }

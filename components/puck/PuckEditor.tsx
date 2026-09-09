@@ -1188,7 +1188,18 @@ export default function PuckEditor({
               }}
             />
             <a
-              href={publicPath}
+              // NOT PUBLISHED → OPEN THE DRAFT, NOT A 404 (2026-09-07). `?preview=1` renders the
+              // draft through the real public template for a signed-in owner (middleware). Before
+              // this the link on an unpublished page could only 404, and the toolbar's advice was
+              // "hit Publish first" — so the only way to see a draft in a browser looked like
+              // publishing it. Steven on Alamo Slim: "I don't see how to look at it without
+              // publishing it, and I don't want to publish it." The Copy button below stays the
+              // plain address, because that one is for sending to a prospect.
+              href={
+                live === false && reachable
+                  ? `${publicPath}${publicPath.includes("?") ? "&" : "?"}preview=1`
+                  : publicPath
+              }
               target="_blank"
               rel="noreferrer"
               style={{ fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 600 }}
@@ -1196,7 +1207,7 @@ export default function PuckEditor({
                 !reachable
                   ? `The site is ${reach?.status ?? "draft"} — this address returns 404 until you set it to Demo or Published`
                   : live === false
-                    ? "Nothing published here yet — hit Publish first"
+                    ? "Not published — opens your DRAFT in a new tab (only you can see it; sign in there if it 404s)"
                     : "Open the live page"
               }
             >

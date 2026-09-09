@@ -65,15 +65,22 @@ type Loaded = {
 
 export default function DialBoard({
   lists: initialLists,
+  defaultId,
   title,
   configured,
 }: {
   lists: CallList[];
+  /** The pill highlighted last — the one the board opens on. */
+  defaultId?: string;
   title: string;
   configured: boolean;
 }) {
   const [lists, setLists] = useState(initialLists);
-  const [activeId, setActiveId] = useState(initialLists[0]?.id || "");
+  // ⭐ THE HIGHLIGHTED PILL IS THE DEFAULT (2026-09-08) — it comes from the registry, server-rendered,
+  // so the pill and the list agree on the first paint. Switching a pill saves it as the new default.
+  const [activeId, setActiveId] = useState(
+    (defaultId && initialLists.some((l) => l.id === defaultId) ? defaultId : initialLists[0]?.id) || ""
+  );
   const [data, setData] = useState<Loaded | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -225,6 +232,7 @@ export default function DialBoard({
       return;
     }
     setActiveId(id);
+    void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, default: true }) });
   }
 
   const all = useMemo(() => data?.prospects || [], [data]);

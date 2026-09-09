@@ -1420,3 +1420,66 @@ a.sjc-sys-card--layer:focus-visible {
   border-color: #a5d989 !important;
   box-shadow: 0 0 0 3px #0A0E27, 0 0 0 6px rgba(133, 187, 101, .45), 0 0 18px rgba(133, 187, 101, .5) !important;
 }
+
+/* ── THE EDITOR CANVAS IS NOT A BROWSER WINDOW (2026-09-07) ─────────────────────────────────────
+   Puck renders the page inline, not in an iframe, so a design's `position: fixed` header pins to the
+   real viewport and sits on top of the editor toolbar. Alamo Slim's transparent header (logo disc +
+   green name pill) covered "Page: Home" and would not go away. Inside an editing section only, fixed
+   becomes an ordinary in-flow block: the header shows as a bar at the top of the canvas with its own
+   height, where it can be clicked and edited. NOT absolute — the header is a section by itself, so
+   absolute left a zero-height block and the editor's next block painted straight over it (the header
+   vanished from the canvas entirely, 2026-09-07 2:18pm). The public page never carries this attribute. */
+.sjc-design[data-sjc-editing] .fixed,
+.sjc-design[data-sjc-editing] [style*="position:fixed"],
+.sjc-design[data-sjc-editing] [style*="position: fixed"] { position: relative !important; }
+
+/* THE CANVAS IS NARROWER THAN THE SCREEN IT PRETENDS TO BE (2026-09-07 2:39pm). Tailwind's `lg:`
+   rules key off the WINDOW, so a design in a ~1170px canvas still lays out its full desktop header —
+   logo, name pill and five nav links — in a row with 100px less room than the laptop it was built
+   for. Alamo Slim: "GLP-1 Weight Loss Program" broke into four lines and "Testimonials" ran off the
+   edge. In the editor only: nav items never wrap mid-label, and when the row cannot hold them the
+   nav drops to a second line under the logo instead of crushing. The public page is untouched. */
+.sjc-design[data-sjc-editing] header nav a,
+.sjc-design[data-sjc-editing] header nav button { white-space: nowrap; }
+.sjc-design[data-sjc-editing] header .flex.justify-between { flex-wrap: wrap; row-gap: 10px; }
+
+/* ── AN ODD CARD NEVER SITS BESIDE A HOLE — the Companies We Serve grid (home, section sxq4oqf) ──
+   Fifteen cards on 2026-09-08. From `sm` up the grid is three across and 15 divides clean; on a
+   phone it is two across, so the last card would hang on the left beside an empty cell. Centre it
+   at the SAME width as its neighbours (half the row minus half the 24px gap), never stretched.
+   `:last-child:nth-child(odd)` makes it a rule, not a patch — Steven adds and removes cards in the
+   editor, and the sheet is content-addressed so a class it never compiled cannot do this. Scoped
+   to the design root and the section id so it touches nothing else. */
+@media (max-width: 639px) {
+  .sjc-design #sxq4oqf .grid > div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    max-width: calc(50% - 12px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ⭐ THE SYSTEM PAGES LINK TO EACH OTHER (2026-09-08). Steven: "when we talk about the other system,
+   we link to the dedicated page, so the consumer understands each system stands on its own and AI
+   Implementation ties them together. I know it's one big endless loop — when you educate a consumer,
+   that's what you've got to do." A link leads with the system name ("Speed to Lead — see how it
+   works"). Resting colour is the signal, hover confirms. Light bands (band--gray, band--white,
+   paper, mist) get a dark blue that clears contrast on white; dark bands (band--hero, band--soft)
+   get the site's gold → white, the same pair every card link already uses. Class doubled for the
+   same specificity reason as `.sjc-card-link` above. */
+.sjc-design .sjc-sys-p { margin-top: 12px; }
+.sjc-design a.sjc-sys-link.sjc-sys-link {
+  color: #1f4f8f;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.18s ease;
+}
+.sjc-design a.sjc-sys-link.sjc-sys-link:hover,
+.sjc-design a.sjc-sys-link.sjc-sys-link:focus-visible { color: #0b1020; }
+.sjc-design .band--hero a.sjc-sys-link.sjc-sys-link,
+.sjc-design .band--soft a.sjc-sys-link.sjc-sys-link { color: #ffd700; }
+.sjc-design .band--hero a.sjc-sys-link.sjc-sys-link:hover,
+.sjc-design .band--soft a.sjc-sys-link.sjc-sys-link:hover,
+.sjc-design .band--hero a.sjc-sys-link.sjc-sys-link:focus-visible,
+.sjc-design .band--soft a.sjc-sys-link.sjc-sys-link:focus-visible { color: #ffffff; }

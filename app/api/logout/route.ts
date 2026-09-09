@@ -1,6 +1,7 @@
 // Sign-out. Clears BOTH sessions and returns to the public view.
 // Open (not gated) so it can always be reached; clearing a cookie is harmless.
 import { NextResponse } from "next/server";
+import { cookieDomainFor } from "@/lib/authCookie";
 
 // ⛔ THERE ARE TWO SESSIONS NOW, AND THIS KNEW ABOUT ONE (fixed 2026-08-12).
 //   sjc_site_auth — Steven's password login
@@ -10,25 +11,22 @@ import { NextResponse } from "next/server";
 // sign-out button, because the button is the reassurance.
 const COOKIES = ["sjc_site_auth", "sjc_id"];
 
-function clear(res: NextResponse): NextResponse {
+function clear(res: NextResponse, host: string | null): NextResponse {
+  // ⛔ NOT res.cookies.set (fixed 2026-09-08). Next's ResponseCookies is keyed by NAME, so setting
+  // the same name twice keeps only the last write — production emitted ONE Set-Cookie per name,
+  // domain-scoped, and a host-only cookie written before 09-07 survived every "Sign out". The
+  // headers are appended by hand so BOTH scopes actually reach the browser.
+  const { domain } = cookieDomainFor(host);
   for (const name of COOKIES) {
-    // Delete + explicitly expire (belt and suspenders for the httpOnly cookie).
-    res.cookies.delete(name);
-    res.cookies.set(name, "", {
-      httpOnly: true,
-      secure: true,
-      // `lax`, matching how sjc_id was set — a cookie cleared under different attributes than it
-      // was written with is not reliably cleared at all.
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0,
-    });
+    const base = `${name}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Lax`;
+    res.headers.append("Set-Cookie", base);
+    if (domain) res.headers.append("Set-Cookie", `${base}; Domain=${domain}`);
   }
   return res;
 }
 
-export async function POST() {
-  return clear(NextResponse.json({ ok: true }));
+export async function POST(req: Request) {
+  return clear(NextResponse.json({ ok: true }), req.headers.get("host"));
 }
 
 /**
@@ -37,5 +35,5 @@ export async function POST() {
  * nothing at all, silently.
  */
 export async function GET(req: Request) {
-  return clear(NextResponse.redirect(new URL("/", req.url), { status: 302 }));
+  return clear(NextResponse.redirect(new URL("/", req.url), { status: 302 }), req.headers.get("host"));
 }

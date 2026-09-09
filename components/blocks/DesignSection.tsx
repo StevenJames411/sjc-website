@@ -735,8 +735,14 @@ function bandCss(id: string, band?: string): string {
   // `markBandRoot` stamps those elements `data-sjc-ownbg`, so the selector states a fact instead
   // of inferring one: skip the element itself and everything under it.
   const safe = ':not([data-sjc-ownbg]):not([data-sjc-ownbg] *)';
+  // ⛔ NOT THE TEXT-SLOT WRAPPER (fixed 2026-09-08). `renderHtml` wraps every slot in
+  // `<span data-sjc-text>` in the editor (and on the live page whenever a per-text override is
+  // set). A bare `span` here painted those wrappers the band's BODY colour with !important — so in
+  // the studio the gold section label and the ink h2 both rendered slate, and a colour override set
+  // in the studio would lose on a live band. The wrapper inherits from its parent instead, which is
+  // exactly what the public page shows.
   return (
-    `${at} :is(p,li,blockquote,span)${safe}{color:${def.body} !important}` +
+    `${at} :is(p,li,blockquote,span:not([data-sjc-text]))${safe}{color:${def.body} !important}` +
     `${at} :is(h1,h2,h3,h4,strong,b)${safe}{color:${def.head} !important}`
   );
 }
@@ -1143,6 +1149,14 @@ export default function DesignSection(props: DesignSectionProps) {
       {...(swapForm ? { "data-sjc-form-pending": "1" } : {})}
       {...(mockOnly ? { "data-sjc-form-mock": "1" } : {})}
       {...(fgRole ? { "data-sjc-fg": fgRole } : {})}
+      // IN THE EDITOR, A FIXED HEADER MUST NOT LEAVE ITS SECTION (2026-09-07).
+      //
+      // The canvas is not an iframe, so a design's `position: fixed` header pins to the BROWSER
+      // viewport and lands on top of the editor's own toolbar — Alamo Slim's logo disc and green
+      // name pill sat over "Page: Home" and could not be dismissed. This attribute lets
+      // globals.css turn fixed descendants into absolute ones inside the canvas only; the public
+      // page is untouched, and so is the design's markup.
+      {...(editing ? { "data-sjc-editing": "1" } : {})}
       // STICKY BELONGS ON THIS ELEMENT, not on the design's header inside it.
       //
       // `position: sticky` sticks within its parent's box and no further. The header's parent is

@@ -43,7 +43,11 @@ export type CallList = {
   addedAt?: string;
 };
 
-export type DialDoc = { lists: CallList[] };
+export type DialDoc = {
+  lists: CallList[];
+  /** The pill he highlighted last. The board opens on it; the server draws it so nothing flickers. */
+  defaultId?: string;
+};
 
 export const EMPTY_DIAL_DOC: DialDoc = { lists: [] };
 

@@ -46,6 +46,7 @@ function normalise(raw: unknown): DialDoc {
   const doc = (raw || {}) as Partial<DialDoc>;
   const lists = Array.isArray(doc.lists) ? doc.lists : [];
   return {
+    defaultId: String(doc.defaultId || "").trim() || undefined,
     lists: lists
       .filter((l): l is CallList => Boolean(l && typeof l === "object"))
       .map((l) => ({
@@ -59,9 +60,34 @@ function normalise(raw: unknown): DialDoc {
   };
 }
 
-export async function readLists(): Promise<CallList[]> {
+export async function readDialDoc(): Promise<DialDoc> {
   const raw = await store().read();
-  return raw ? normalise(raw).lists : EMPTY_DIAL_DOC.lists;
+  return raw ? normalise(raw) : EMPTY_DIAL_DOC;
+}
+
+export async function readLists(): Promise<CallList[]> {
+  return (await readDialDoc()).lists;
+}
+
+/**
+ * ⭐ THE HIGHLIGHTED PILL IS THE DEFAULT (2026-09-08). Steven: "the pills at the top just highlight
+ * which one I want to be on. That's the default — until I switch, every reload stays on what I've
+ * highlighted." Stored WITH the registry, not in the browser, so the server renders the right pill
+ * and the right list on the first paint — a browser-side memory highlighted one pill and loaded
+ * another, because the server could not see it.
+ */
+export async function setDefaultList(id: string): Promise<{ ok: boolean; error?: string }> {
+  const doc = await readDialDoc();
+  if (!doc.lists.some((l) => l.id === id)) return { ok: false, error: "No such list." };
+  const ok = await store().write({ ...doc, defaultId: id });
+  return ok ? { ok: true } : { ok: false, error: "Couldn't save." };
+}
+
+/** Every writer goes through here so `defaultId` survives an add, a rename or a removal. */
+async function writeLists(lists: CallList[]): Promise<boolean> {
+  const doc = await readDialDoc();
+  const defaultId = doc.defaultId && lists.some((l) => l.id === doc.defaultId) ? doc.defaultId : undefined;
+  return store().write({ lists, defaultId });
 }
 
 export async function addList(opts: {
@@ -91,7 +117,7 @@ export async function addList(opts: {
     addedAt: new Date().toISOString(),
   };
 
-  const ok = await store().write({ lists: [...lists, next] });
+  const ok = await writeLists([...lists, next]);
   return ok ? { ok: true, id } : { ok: false, error: "Couldn't save — storage refused the write." };
 }
 
@@ -114,7 +140,7 @@ export async function updateList(
         }
   );
 
-  const ok = await store().write({ lists: next });
+  const ok = await writeLists(next);
   return ok ? { ok: true } : { ok: false, error: "Couldn't save." };
 }
 
@@ -130,6 +156,6 @@ export async function removeList(id: string): Promise<{ ok: boolean; error?: str
   const lists = await readLists();
   const next = lists.filter((l) => l.id !== id);
   if (next.length === lists.length) return { ok: false, error: "No such list." };
-  const ok = await store().write({ lists: next });
+  const ok = await writeLists(next);
   return ok ? { ok: true } : { ok: false, error: "Couldn't save." };
 }
