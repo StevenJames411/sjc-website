@@ -363,6 +363,49 @@ export default function DialBoard({
     if (activeId === id) setActiveId(next[0]?.id || "");
   }
 
+  // ⭐ THE LISTS ARE A COLUMN, NOT A STRIP (2026-09-08). Steven: "if I stay in HVAC and plumbing and
+  // go to ten different states, the top of the page should still stay organised." A collapsible
+  // left column, grouped by vertical, one row per list; ▲▼ or drag to reorder (the order is the
+  // registry's order); click a row to load it — and that row is the default until the next click.
+  // Collapse it and the whole canvas is cards. Same column the cockpit's To-Do page uses.
+  const [colOpen, setColOpen] = useState(true);
+  const [colEdit, setColEdit] = useState(false);
+  useEffect(() => {
+    try { setColOpen(window.localStorage.getItem("sjc-dial-col") !== "0"); } catch { /* ignore */ }
+  }, []);
+  const setColumnOpen = (v: boolean) => { setColOpen(v); try { window.localStorage.setItem("sjc-dial-col", v ? "1" : "0"); } catch { /* ignore */ } };
+  function saveOrder(next: CallList[]) {
+    setLists(next);
+    void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order: next.map((l) => l.id) }) });
+  }
+  function moveList(id: string, dir: -1 | 1) {
+    const i = lists.findIndex((l) => l.id === id); const to = i + dir;
+    if (i < 0 || to < 0 || to >= lists.length) return;
+    if ((lists[to].group || "Lists") !== (lists[i].group || "Lists")) return; // stays inside its group
+    const next = lists.slice(); const [m] = next.splice(i, 1); next.splice(to, 0, m); saveOrder(next);
+  }
+  function editList(id: string, patch: { name?: string; group?: string }) {
+    setLists((cur) => cur.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+    void fetch("/api/dial", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...patch }) });
+  }
+  const dragGroup = useRef<string | null>(null);
+  function groupOrder(): string[] { const o: string[] = []; for (const l of lists) { const k = l.group || "Lists"; if (!o.includes(k)) o.push(k); } return o; }
+  function placeGroup(g: string, before: string) {
+    const order = groupOrder().filter((k) => k !== g); order.splice(order.indexOf(before), 0, g);
+    setLists(order.flatMap((k) => lists.filter((l) => (l.group || "Lists") === k)));
+  }
+  function moveGroup(g: string, dir: -1 | 1) {
+    const order: string[] = [];
+    for (const l of lists) { const k = l.group || "Lists"; if (!order.includes(k)) order.push(k); }
+    const i = order.indexOf(g); const to = i + dir;
+    if (i < 0 || to < 0 || to >= order.length) return;
+    const [m] = order.splice(i, 1); order.splice(to, 0, m);
+    saveOrder(order.flatMap((k) => lists.filter((l) => (l.group || "Lists") === k)));
+  }
+  const activeGroup = lists.find((l) => l.id === activeId)?.group || "Lists";
+  const groupsInOrder: string[] = [];
+  for (const l of lists) { const g = l.group || "Lists"; if (!groupsInOrder.includes(g)) groupsInOrder.push(g); }
+
   return (
     <div style={page}>
       <div style={bar}>
@@ -376,27 +419,6 @@ export default function DialBoard({
             row one; every filter shares row two. */}
         <div style={barTop}>
           <h1 style={h1}>{title}</h1>
-          {lists.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => switchList(l.id)}
-              style={l.id === activeId ? { ...pill, ...pillOn } : pill}
-            >
-              {l.name}
-            </button>
-          ))}
-          <button onClick={() => setAdding((v) => !v)} style={{ ...pill, borderStyle: "dashed" }} title="Add a list">
-            +
-          </button>
-          {activeId ? (
-            <button
-              onClick={() => void dropList(activeId)}
-              style={dropBtn}
-              title="Take this list off the board — the sheet is untouched"
-            >
-              Remove
-            </button>
-          ) : null}
           <div style={{ display: "flex", gap: 14, marginLeft: "auto", alignItems: "center" }}>
             {/* ── the session clock ────────────────────────────────────────────────────────── */}
             {session ? (
@@ -558,6 +580,68 @@ export default function DialBoard({
         </p>
       ) : null}
 
+      <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+      {colOpen ? (
+        <aside style={col}>
+          <div style={colHead}>
+            <span style={colTitle}>Lists · {colEdit ? "rename, regroup, reorder" : "click to load · ▲▼ to reorder"}</span>
+            <span style={{ display: "flex", gap: 6 }}>
+              <button onClick={() => setColEdit((v) => !v)} style={{ ...colBtn, ...(colEdit ? colBtnOn : null) }} title={colEdit ? "Done" : "Rename and regroup"}>{colEdit ? "✓" : "✎"}</button>
+              <button onClick={() => setColumnOpen(false)} style={colBtn} title="Hide the lists">«</button>
+            </span>
+          </div>
+          {groupsInOrder.map((g) => (
+            <div key={g}>
+              {colEdit ? (
+                <GroupName
+                  value={g === "Lists" ? "" : g}
+                  onCommit={(v) => lists.filter((l) => (l.group || "Lists") === g).forEach((l) => editList(l.id, { group: v }))}
+                />
+              ) : (
+                <div draggable
+                  onDragStart={() => { dragGroup.current = g; }}
+                  onDragOver={(e) => { e.preventDefault(); if (dragGroup.current && dragGroup.current !== g) placeGroup(dragGroup.current, g); }}
+                  onDragEnd={() => { if (dragGroup.current) saveOrder(lists); dragGroup.current = null; }}
+                  style={{ ...colGroup, ...(g === activeGroup ? colGroupOn : null), display: "flex", alignItems: "center", gap: 8, cursor: "grab" }}>
+                  <span style={colGrip} title="Drag the group">≡</span>
+                  <span style={{ flex: 1 }}>{g}</span>
+                  <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    <button onClick={() => moveGroup(g, -1)} disabled={groupsInOrder[0] === g} style={{ ...colArrow, opacity: groupsInOrder[0] === g ? 0.25 : 1 }} title="Move this group up">▲</button>
+                    <button onClick={() => moveGroup(g, 1)} disabled={groupsInOrder[groupsInOrder.length - 1] === g} style={{ ...colArrow, opacity: groupsInOrder[groupsInOrder.length - 1] === g ? 0.25 : 1 }} title="Move this group down">▼</button>
+                  </span>
+                </div>
+              )}
+              {lists.filter((l) => (l.group || "Lists") === g).map((l) => {
+                const i = lists.findIndex((x) => x.id === l.id);
+                const on = l.id === activeId;
+                return (
+                  <div key={l.id} style={{ ...colRow, fontWeight: on ? 800 : 500 }}>
+                    {colEdit ? (
+                      <span style={{ flex: 1, minWidth: 0, display: "grid", gap: 4 }}>
+                        <Draft value={l.name} placeholder="List name" onCommit={(v) => editList(l.id, { name: v })} style={colInput} label="List name" />
+                        <Draft value={l.group || ""} placeholder="Group (the vertical)" onCommit={(v) => editList(l.id, { group: v })} style={{ ...colInput, fontSize: 11.5 }} label="Group" />
+                      </span>
+                    ) : (
+                      <span onClick={() => switchList(l.id)} title="Click to load — this becomes the default" style={colName}>{l.name}</span>
+                    )}
+                    <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: "none" }}>
+                      <button onClick={() => moveList(l.id, -1)} disabled={i === 0 || (lists[i - 1].group || "Lists") !== g} style={{ ...colArrow, opacity: i === 0 || (lists[i - 1].group || "Lists") !== g ? 0.25 : 1 }} title="Move up">▲</button>
+                      <button onClick={() => moveList(l.id, 1)} disabled={i === lists.length - 1 || (lists[i + 1].group || "Lists") !== g} style={{ ...colArrow, opacity: i === lists.length - 1 || (lists[i + 1].group || "Lists") !== g ? 0.25 : 1 }} title="Move down">▼</button>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button onClick={() => setAdding((v) => !v)} style={{ ...colBtn, flex: 1, borderStyle: "dashed" }} title="Add a list">+ Add a list</button>
+            {activeId ? <button onClick={() => void dropList(activeId)} style={colBtn} title="Take the highlighted list off the board — the sheet is untouched">Remove</button> : null}
+          </div>
+        </aside>
+      ) : (
+        <button onClick={() => setColumnOpen(true)} style={{ ...colBtn, position: "sticky", top: 96, flex: "none", width: 34, height: 34, fontSize: 15 }} title="Show the lists">≡</button>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
       {adding ? (
         <form onSubmit={addList} style={addBox}>
           <div style={addGrid}>
@@ -573,6 +657,10 @@ export default function DialBoard({
                 style={input}
                 required
               />
+            </label>
+            <label style={lab}>
+              Group <span style={{ color: "var(--e-muted)", fontWeight: 400 }}>(the vertical)</span>
+              <input name="group" placeholder="HVAC + Plumbing" defaultValue={lists.find((l) => l.id === activeId)?.group || ""} style={input} />
             </label>
             <label style={lab}>
               Tab{" "}
@@ -635,7 +723,37 @@ export default function DialBoard({
           ) : null}
         </>
       ) : null}
+      </div>
+      </div>
     </div>
+  );
+}
+
+/** Any box in the lists column: type freely, save once on blur or Enter. A per-keystroke save moved
+ *  the row into a new group and redrew it, which threw the cursor out after one letter. */
+function Draft({ value, placeholder, onCommit, style, label }: { value: string; placeholder: string; onCommit: (v: string) => void; style: React.CSSProperties; label: string }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => { setDraft(value); }, [value]);
+  const commit = () => { const v = draft.trim(); if (v !== value) onCommit(v); };
+  return (
+    <input value={draft} placeholder={placeholder} aria-label={label} style={style}
+      onChange={(e) => setDraft(e.target.value)} onBlur={commit}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }} />
+  );
+}
+
+/** A group heading you can type into. Commits on blur or Enter — never per keystroke, because the
+ *  rename re-keys the heading and a per-keystroke save unmounted the box after one letter. */
+function GroupName({ value, onCommit }: { value: string; onCommit: (v: string) => void }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => { setDraft(value); }, [value]);
+  const commit = () => { const v = draft.trim(); if (v !== value) onCommit(v); };
+  return (
+    <input value={draft} placeholder="Group name" aria-label="Group name"
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+      style={{ ...colInput, ...colGroup, background: "var(--e-bg)", padding: "6px 8px", margin: "8px 0 4px", width: "100%" }} />
   );
 }
 
@@ -945,6 +1063,19 @@ const h1: React.CSSProperties = { fontSize: 22, fontWeight: 800, letterSpacing: 
 const bigNum: React.CSSProperties = { fontSize: 22, fontWeight: 800, lineHeight: 1 };
 const numCap: React.CSSProperties = { fontSize: 9.5, color: "var(--e-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 2 };
 const filterRow: React.CSSProperties = { display: "flex", gap: 9, flexWrap: "wrap", alignItems: "center", marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--e-line-soft)" };
+const col: React.CSSProperties = { position: "sticky", top: 96, alignSelf: "flex-start", flex: "none", width: 440, maxHeight: "calc(100vh - 110px)", overflow: "auto", background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 12, padding: "10px 10px 14px", fontFamily: font };
+const colHead: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "2px 4px 8px" };
+const colTitle: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--e-muted)" };
+const colGroup: React.CSSProperties = { fontSize: 11.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--e-muted)", padding: "8px 8px", margin: "8px 0 2px", borderRadius: 8, border: "1px solid transparent" };
+const colGroupOn: React.CSSProperties = { color: "var(--e-accent)", border: "1.5px solid var(--e-accent)", background: "color-mix(in srgb, var(--e-accent) 8%, transparent)" };
+const colRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, padding: "8px 8px 8px 14px", margin: "3px 0", borderRadius: 9, background: "var(--e-bg)", border: "1px solid var(--e-line)", boxShadow: "none", outline: "none", color: "var(--e-ink)", fontSize: 13.5 };
+
+const colGrip: React.CSSProperties = { color: "var(--e-muted)", cursor: "grab", flex: "none" };
+const colName: React.CSSProperties = { flex: 1, minWidth: 0, cursor: "pointer", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
+const colInput: React.CSSProperties = { width: "100%", boxSizing: "border-box", background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 6, color: "var(--e-ink)", font: "inherit", fontSize: 13, padding: "4px 6px" };
+const colArrow: React.CSSProperties = { width: 22, height: 15, lineHeight: "13px", fontSize: 9, padding: 0, background: "var(--e-panel)", color: "var(--e-muted)", border: "1px solid var(--e-line)", borderRadius: 4, cursor: "pointer" };
+const colBtn: React.CSSProperties = { background: "var(--e-panel)", border: "1px solid var(--e-line)", borderRadius: 8, color: "var(--e-ink)", cursor: "pointer", fontSize: 12.5, fontWeight: 600, padding: "6px 10px", fontFamily: font };
+const colBtnOn: React.CSSProperties = { borderColor: "var(--e-accent)", color: "var(--e-accent)" };
 const pill: React.CSSProperties = { border: "1px solid var(--e-line)", background: "var(--e-panel)", color: "var(--e-ink)", borderRadius: 999, padding: "7px 14px", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font };
 const pillOn: React.CSSProperties = { borderColor: "var(--e-accent)", color: "var(--e-accent)", fontWeight: 800 };
 const dropBtn: React.CSSProperties = { ...pill, marginLeft: "auto", color: "var(--e-muted)", fontWeight: 500 };

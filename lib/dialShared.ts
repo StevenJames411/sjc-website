@@ -40,6 +40,8 @@ export type CallList = {
   spreadsheetId: string;
   /** Empty = the first tab, whatever it is called. */
   tab?: string;
+  /** The vertical this list belongs to — "HVAC + Plumbing". Rows in the lists column group under it. */
+  group?: string;
   addedAt?: string;
 };
 

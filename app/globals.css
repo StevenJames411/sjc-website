@@ -420,6 +420,20 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
     font-size: clamp(29px, 8vw, 40px);
     line-height: 1.2;
   }
+  /* ⭐ THE HOME HERO HEADLINE (Steven, 09-09, from his iPhone: "the only line that the font is too
+     large is our second line in the hero section"). That h1 is NOT `.big` — it ships the sealed
+     sheet's `text-3xl` (30px) and "Five Business Systems = One Revenue Growth Engine" wraps to THREE
+     lines in a 390px column. Measured: IBM Plex Sans Bold runs ~0.52em per character, the column is
+     ~357px, and the natural second line "One Revenue Growth Engine" is 25 characters — 26px lands it
+     on two lines with ~15px to spare; 27px is a coin toss. Scoped to the hero section's own id
+     (`sf0of7a`, in the imported markup) so no other page moves. Id beats the sheet's (0,2,0) class. */
+  #sf0of7a h1 {
+    font-size: 26px;
+    line-height: 1.2;
+    /* balance keeps "Engine" from sitting alone on the second line at the widths between a
+       390 iPhone and the 640 edge (a 500px window wrapped it 42 + 6). */
+    text-wrap: balance;
+  }
   /* ⭐ AND EVERY SECTION HEADING, FOR THE SAME REASON — MEASURED, NOT GUESSED.
      A headless pass over all ten public pages at 390x844 (DPR 3, mobile UA) found 44 `h2.sec`
      headings shipping `clamp(28px, 3.8vw, 44px)` at line-height 1.12. The 3.8vw term falls under

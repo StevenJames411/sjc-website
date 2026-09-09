@@ -9,7 +9,7 @@
 //
 // ⛔ NOTHING PUBLIC READS THIS. A call sheet is Steven's own prospecting, and the only surface that
 // touches it is a page behind the app password.
-import { readLists, addList, updateList, removeList, toProspects, statusText, setDefaultList } from "@/lib/dial";
+import { readLists, addList, updateList, removeList, toProspects, statusText, setDefaultList, reorderLists } from "@/lib/dial";
 import { readSheetRows, logSheetCall, sheetsConfigured } from "@/lib/sheets";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +56,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  let body: { name?: string; paste?: string; tab?: string };
+  let body: { name?: string; paste?: string; tab?: string; group?: string };
   try {
     body = await req.json();
   } catch {
@@ -66,6 +66,7 @@ export async function POST(req: Request) {
     name: String(body?.name || ""),
     paste: String(body?.paste || ""),
     tab: String(body?.tab || ""),
+    group: body?.group === undefined ? undefined : String(body.group),
   });
   return Response.json(res, { status: res.ok ? 200 : 400 });
 }
@@ -76,6 +77,12 @@ export async function PATCH(req: Request) {
     body = await req.json();
   } catch {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
+  }
+
+  // The lists column's order — PATCH { order: [ids] }.
+  if (Array.isArray(body.order)) {
+    const res = await reorderLists(body.order.map((x) => String(x)));
+    return Response.json(res, { status: res.ok ? 200 : 400 });
   }
 
   const id = String(body?.id || "");
@@ -92,6 +99,7 @@ export async function PATCH(req: Request) {
     const res = await updateList(id, {
       name: body.name === undefined ? undefined : String(body.name),
       tab: body.tab === undefined ? undefined : String(body.tab),
+      group: body.group === undefined ? undefined : String(body.group),
     });
     return Response.json(res, { status: res.ok ? 200 : 400 });
   }
