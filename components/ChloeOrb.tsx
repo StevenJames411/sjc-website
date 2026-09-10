@@ -1,7 +1,7 @@
 "use client";
 // THE ORB — Chloe at the door (ruled 2026-09-10). Phone or laptop, every visitor, three doors:
 //   TEXT  — a text thread on the website (Chloe's engine on the WEB channel, no phone number)
-//   TALK  — voice both ways in the browser (speech-to-text in, Chloe's reply spoken back)
+//   TALK  — voice both ways in the browser (speech-to-text in, the reply spoken back)
 //   CALL  — a human: rings the owner's real number (lights up when the Twilio number lands)
 // Mounts only when NEXT_PUBLIC_CHLOE_API is set, so the live site shows nothing until Chloe's
 // server exists. Session id lives in localStorage so a returning visitor keeps their thread.
@@ -83,7 +83,15 @@ export default function ChloeOrb() {
         spoken.current.add(m.id);
         const u = new SpeechSynthesisUtterance(m.body);
         const voices = window.speechSynthesis.getVoices();
-        const pick = voices.find((v) => /Samantha|Karen|Moira|Google US English|Microsoft Aria/i.test(v.name)) || voices.find((v) => v.lang.startsWith("en"));
+        // A man's voice for Jarvis (Steven, 09-10): British first (the record's Jarvis is Oliver),
+        // then the best male English voice the device has. NEXT_PUBLIC_CHLOE_VOICE overrides by name.
+        const want = process.env.NEXT_PUBLIC_CHLOE_VOICE || "";
+        const pick =
+          (want && voices.find((v) => v.name.toLowerCase().includes(want.toLowerCase()))) ||
+          voices.find((v) => /^(Daniel|Oliver|Arthur)\b/i.test(v.name) && v.lang.startsWith("en")) ||
+          voices.find((v) => /Google UK English Male|Microsoft (Ryan|George|Guy)|Aaron|Fred/i.test(v.name)) ||
+          voices.find((v) => v.lang.startsWith("en-GB")) ||
+          voices.find((v) => v.lang.startsWith("en"));
         if (pick) u.voice = pick;
         u.rate = 1.0;
         window.speechSynthesis.speak(u);
