@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
+import ChloeOrb from "@/components/ChloeOrb";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
@@ -278,6 +279,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         <EditLink />
+        {/* THE ORB (2026-09-10): Chloe at the door on SJC's own site. Renders nothing until
+            NEXT_PUBLIC_CHLOE_API is set, so the live site is untouched until her server exists. */}
+        {isSjc ? <ChloeOrb /> : null}
       </body>
     </html>
   );
