@@ -172,25 +172,25 @@ export default function ChloeOrb() {
       {open && (
         <div className="chloe-panel" role="dialog" aria-label={`Talk to ${NAME}`}>
           <div className="chloe-head">
-            <span>{door === "menu" ? `Hi, I'm ${NAME}. How do you want to talk?` : door === "text" ? `Text ${NAME}` : `Talk to ${NAME}`}</span>
+            <span>{door === "menu" ? `Hi, I'm ${NAME}. How do you want to talk?` : door === "text" ? `Text ${NAME}` : `${NAME} is listening`}</span>
             <button onClick={() => { window.speechSynthesis?.cancel(); setDoor("closed"); }} aria-label="Close">×</button>
           </div>
 
           {door === "menu" && (
             <div className="chloe-doors">
               <button className="chloe-door" onClick={() => setDoor("text")}>
-                <b>Text {NAME}</b>Type like you would in a text. She answers in seconds.
+                <b>Text me</b>Type like you would in a text. I answer in seconds.
               </button>
               <button className="chloe-door" onClick={() => { setDoor("talk"); setTimeout(startListening, 300); }}>
-                <b>Talk to {NAME}</b>Tap, say what you need, and she talks back.
+                <b>Speak to me through your speaker</b>Tap, say what you need, and I talk back.
               </button>
               {CALL ? (
                 <a className="chloe-door" href={`tel:${CALL}`}>
-                  <b>Call a human</b>Ring the office and get a person on the phone.
+                  <b>Call me</b>Ring the office and get a person on the phone.
                 </a>
               ) : (
                 <button className="chloe-door" aria-disabled="true">
-                  <b>Call a human</b>Phone line coming soon. Text or talk for now.
+                  <b>Call me</b>Phone line coming soon. Text or speak for now.
                 </button>
               )}
             </div>
