@@ -280,8 +280,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {children}
         <EditLink />
         {/* THE ORB (2026-09-10): Chloe at the door on SJC's own site. Renders nothing until
-            NEXT_PUBLIC_CHLOE_API is set, so the live site is untouched until her server exists. */}
-        {isSjc ? <ChloeOrb /> : null}
+            NEXT_PUBLIC_CHLOE_API is set. The live domain resolves as a CLIENT site whose id is SJC
+            (a site row claims stevenjamesconsulting.com), so both shapes are checked. */}
+        {isSjc || (h.kind === "client" && h.site.id === SJC) ? <ChloeOrb /> : null}
       </body>
     </html>
   );
