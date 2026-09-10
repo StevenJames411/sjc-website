@@ -16,6 +16,16 @@ const PREFIX = process.env.NEXT_PUBLIC_AGENT_PREFIX || "sjc";
 const CALL = process.env.NEXT_PUBLIC_AGENT_CALL || "";
 const NAME = process.env.NEXT_PUBLIC_AGENT_NAME || "your assistant";
 
+// HETERONYMS (Steven, 2026-09-10): "leads" is spelled like the metal and the voice read it that
+// way — "lead-based paint" for lead generation. In this business the word is never the metal, so
+// respell it the way it sounds before the voice sees it. Heard, never shown.
+function sayItRight(text: string): string {
+  return text
+    .replace(/\b([Ll])ead(s|\b)/g, (_m, l: string, tail: string) => l + "eed" + (tail || ""))
+    .replace(/\b([Ll])eading\b/g, "$1eeding")
+    .replace(/\b(I|you|we|they|he|she|already|just|last\s+\w+)\s+read\b/g, "$1 red");
+}
+
 function sessionId(): string {
   try {
     const k = "agent-session";
@@ -42,6 +52,8 @@ export default function AgentOrb() {
   const spoken = useRef<Set<number>>(new Set());
   const bottom = useRef<HTMLDivElement>(null);
   const recog = useRef<any>(null);
+  const handsFree = useRef(false);   // the talk door is a conversation: listen → he speaks → listen again
+  const gotFinal = useRef(false);
 
   useEffect(() => {
     session.current = sessionId();
@@ -81,7 +93,7 @@ export default function AgentOrb() {
     for (const m of msgs) {
       if (m.direction === "outbound" && !spoken.current.has(m.id)) {
         spoken.current.add(m.id);
-        const u = new SpeechSynthesisUtterance(m.body);
+        const u = new SpeechSynthesisUtterance(sayItRight(m.body));
         const voices = window.speechSynthesis.getVoices();
         // A man's voice for Jarvis (Steven, 09-10): British first (the record's Jarvis is Oliver),
         // then the best male English voice the device has. NEXT_PUBLIC_AGENT_VOICE overrides by name.
@@ -94,6 +106,7 @@ export default function AgentOrb() {
           voices.find((v) => v.lang.startsWith("en"));
         if (pick) u.voice = pick;
         u.rate = 1.0;
+        u.onend = () => { if (handsFree.current) startListening(); };
         window.speechSynthesis.speak(u);
       }
     }
@@ -132,16 +145,32 @@ export default function AgentOrb() {
       for (const res of e.results) s += res[0].transcript;
       setHeard(s);
       if (e.results[e.results.length - 1].isFinal) {
+        gotFinal.current = true;
         setListening(false);
         send(s);
         setHeard("");
       }
     };
-    r.onend = () => setListening(false);
+    r.onend = () => {
+      setListening(false);
+      // The browser drops the mic after a pause (the glitch). In a hands-free conversation, if
+      // nothing final was heard and Jarvis is not talking, pick it straight back up.
+      if (handsFree.current && !gotFinal.current && !window.speechSynthesis?.speaking) {
+        setTimeout(() => { if (handsFree.current && !listening) startListening(); }, 250);
+      }
+    };
     r.onerror = () => setListening(false);
     recog.current = r;
+    gotFinal.current = false;
     setListening(true);
-    r.start();
+    try { r.start(); } catch { /* already started */ }
+  }
+
+  function stopHandsFree() {
+    handsFree.current = false;
+    try { recog.current?.stop(); } catch { /* ignore */ }
+    window.speechSynthesis?.cancel();
+    setListening(false);
   }
 
   if (!API) return null;
@@ -181,7 +210,7 @@ export default function AgentOrb() {
         <div className="agent-panel" role="dialog" aria-label={`Talk to ${NAME}`}>
           <div className="agent-head">
             <span>{door === "menu" ? `Hi, I'm ${NAME}. Choose a method from below.` : door === "text" ? `Text ${NAME}` : `${NAME} is listening`}</span>
-            <button onClick={() => { window.speechSynthesis?.cancel(); setDoor("closed"); }} aria-label="Close">×</button>
+            <button onClick={() => { stopHandsFree(); setDoor("closed"); }} aria-label="Close">×</button>
           </div>
 
           {door === "menu" && (
@@ -189,7 +218,7 @@ export default function AgentOrb() {
               <button className="agent-door" onClick={() => setDoor("text")}>
                 <b>Text me</b>Type like you would in a text. I answer in seconds.
               </button>
-              <button className="agent-door" onClick={() => { setDoor("talk"); setTimeout(startListening, 300); }}>
+              <button className="agent-door" onClick={() => { setDoor("talk"); handsFree.current = true; setTimeout(startListening, 300); }}>
                 <b>Speak to me through your speaker</b>Tap, say what you need, and I talk back.
               </button>
               {CALL ? (
@@ -219,8 +248,8 @@ export default function AgentOrb() {
               {door === "talk" ? (
                 <>
                   <div className="agent-heard">{heard}</div>
-                  <button className="agent-mic" data-on={listening} onClick={startListening}>
-                    {listening ? "Listening… tap when done" : "Tap to talk"}
+                  <button className="agent-mic" data-on={listening} onClick={() => { if (handsFree.current) { stopHandsFree(); } else { handsFree.current = true; startListening(); } }}>
+                    {listening ? "Listening… (tap to stop)" : handsFree.current ? (busy ? `${NAME} is thinking…` : `${NAME} is talking… (tap to stop)`) : "Tap to start talking"}
                   </button>
                 </>
               ) : (
@@ -234,7 +263,7 @@ export default function AgentOrb() {
         </div>
       )}
 
-      <button className="agent-orb" onClick={() => { setDoor(open ? "closed" : "menu"); if (open) window.speechSynthesis?.cancel(); }} aria-label={open ? "Close" : `Talk to ${NAME}`}>
+      <button className="agent-orb" onClick={() => { if (open) stopHandsFree(); setDoor(open ? "closed" : "menu"); }} aria-label={open ? "Close" : `Talk to ${NAME}`}>
         {open ? "×" : NAME.toUpperCase()}
       </button>
     </>
