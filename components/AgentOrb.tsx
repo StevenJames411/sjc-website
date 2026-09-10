@@ -161,10 +161,10 @@ export default function AgentOrb() {
         .agent-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#1e3a6e;font-weight:600}
         .agent-head button{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;line-height:1}
         .agent-doors{display:grid;gap:10px;padding:16px}
-        .agent-door{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:12px;border:1px solid rgba(240,179,35,.55);background:transparent;color:#fff;cursor:pointer;font-size:15px}
+        .agent-door{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(240,179,35,.82);background:transparent;color:#fff;cursor:pointer;font-size:15px}
         .agent-door b{display:block;color:#f0b323;font-size:16px;margin-bottom:2px}
         .agent-door:hover{background:#f0b323;color:#111827}.agent-door:hover b{color:#111827}
-        .agent-door[aria-disabled="true"]{opacity:.55;cursor:default}.agent-door[aria-disabled="true"]:hover{background:transparent;color:#fff}.agent-door[aria-disabled="true"]:hover b{color:#f0b323}
+        .agent-door[aria-disabled="true"]{opacity:.5;border-color:rgba(240,179,35,.35);cursor:default}.agent-door[aria-disabled="true"]:hover{background:transparent;color:#fff}.agent-door[aria-disabled="true"]:hover b{color:#f0b323}
         .agent-thread{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-height:180px}
         .agent-m{max-width:85%;padding:10px 12px;border-radius:14px;font-size:15px;line-height:1.35;white-space:pre-wrap}
         .agent-m.in{align-self:flex-end;background:#2563eb}.agent-m.out{align-self:flex-start;background:#1e3a6e}
@@ -180,7 +180,7 @@ export default function AgentOrb() {
       {open && (
         <div className="agent-panel" role="dialog" aria-label={`Talk to ${NAME}`}>
           <div className="agent-head">
-            <span>{door === "menu" ? `Hi, I'm ${NAME}. How do you want to talk?` : door === "text" ? `Text ${NAME}` : `${NAME} is listening`}</span>
+            <span>{door === "menu" ? `Hi, I'm ${NAME}. Choose a method from below.` : door === "text" ? `Text ${NAME}` : `${NAME} is listening`}</span>
             <button onClick={() => { window.speechSynthesis?.cancel(); setDoor("closed"); }} aria-label="Close">×</button>
           </div>
 
