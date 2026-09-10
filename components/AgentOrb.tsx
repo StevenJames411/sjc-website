@@ -1,9 +1,9 @@
 "use client";
-// THE ORB — Chloe at the door (ruled 2026-09-10). Phone or laptop, every visitor, three doors:
-//   TEXT  — a text thread on the website (Chloe's engine on the WEB channel, no phone number)
+// THE ORB — the AI booking agent at the door (ruled 2026-09-10). Phone or laptop, every visitor, three doors:
+//   TEXT  — a text thread on the website (the agent's engine on the WEB channel, no phone number)
 //   TALK  — voice both ways in the browser (speech-to-text in, the reply spoken back)
 //   CALL  — a human: rings the owner's real number (lights up when the Twilio number lands)
-// Mounts only when NEXT_PUBLIC_CHLOE_API is set, so the live site shows nothing until Chloe's
+// Mounts only when NEXT_PUBLIC_AGENT_API is set, so the live site shows nothing until the agent's
 // server exists. Session id lives in localStorage so a returning visitor keeps their thread.
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -11,14 +11,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type Msg = { id: number; direction: "inbound" | "outbound"; author: string; body: string };
 type Door = "closed" | "menu" | "text" | "talk";
 
-const API = process.env.NEXT_PUBLIC_CHLOE_API || "";
-const PREFIX = process.env.NEXT_PUBLIC_CHLOE_PREFIX || "sjc";
-const CALL = process.env.NEXT_PUBLIC_CHLOE_CALL || "";
-const NAME = process.env.NEXT_PUBLIC_CHLOE_NAME || "Chloe";
+const API = process.env.NEXT_PUBLIC_AGENT_API || "";
+const PREFIX = process.env.NEXT_PUBLIC_AGENT_PREFIX || "sjc";
+const CALL = process.env.NEXT_PUBLIC_AGENT_CALL || "";
+const NAME = process.env.NEXT_PUBLIC_AGENT_NAME || "your assistant";
 
 function sessionId(): string {
   try {
-    const k = "chloe-session";
+    const k = "agent-session";
     let s = window.localStorage.getItem(k);
     if (!s) {
       s = Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -30,7 +30,7 @@ function sessionId(): string {
   }
 }
 
-export default function ChloeOrb() {
+export default function AgentOrb() {
   const [door, setDoor] = useState<Door>("closed");
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [draft, setDraft] = useState("");
@@ -47,7 +47,7 @@ export default function ChloeOrb() {
     session.current = sessionId();
   }, []);
 
-  // Poll the thread while a door is open. Chloe answers in ~1-20s on the web channel.
+  // Poll the thread while a door is open. the agent answers in ~1-20s on the web channel.
   const poll = useCallback(async () => {
     if (!API || !session.current) return;
     try {
@@ -75,7 +75,7 @@ export default function ChloeOrb() {
     bottom.current?.scrollIntoView({ block: "end" });
   }, [msgs]);
 
-  // TALK door: speak every new Chloe reply aloud, once.
+  // TALK door: speak every new agent reply aloud, once.
   useEffect(() => {
     if (door !== "talk" || typeof window === "undefined" || !("speechSynthesis" in window)) return;
     for (const m of msgs) {
@@ -84,8 +84,8 @@ export default function ChloeOrb() {
         const u = new SpeechSynthesisUtterance(m.body);
         const voices = window.speechSynthesis.getVoices();
         // A man's voice for Jarvis (Steven, 09-10): British first (the record's Jarvis is Oliver),
-        // then the best male English voice the device has. NEXT_PUBLIC_CHLOE_VOICE overrides by name.
-        const want = process.env.NEXT_PUBLIC_CHLOE_VOICE || "";
+        // then the best male English voice the device has. NEXT_PUBLIC_AGENT_VOICE overrides by name.
+        const want = process.env.NEXT_PUBLIC_AGENT_VOICE || "";
         const pick =
           (want && voices.find((v) => v.name.toLowerCase().includes(want.toLowerCase()))) ||
           voices.find((v) => /^(Daniel|Oliver|Arthur)\b/i.test(v.name) && v.lang.startsWith("en")) ||
@@ -150,54 +150,54 @@ export default function ChloeOrb() {
   return (
     <>
       <style>{`
-        .chloe-orb{position:fixed;right:20px;bottom:20px;z-index:9999;width:64px;height:64px;border-radius:50%;border:0;cursor:pointer;
+        .agent-orb{position:fixed;right:20px;bottom:20px;z-index:9999;width:64px;height:64px;border-radius:50%;border:0;cursor:pointer;
           background:radial-gradient(circle at 35% 35%,#ffe08a,#f0b323 55%,#b07d0c);box-shadow:0 0 0 0 rgba(240,179,35,.55),0 10px 30px rgba(0,0,0,.35);
-          animation:chloe-pulse 2.4s ease-out infinite;display:flex;align-items:center;justify-content:center;color:#0f1f3d;font-weight:700;font-size:13px;letter-spacing:.04em}
-        .chloe-orb:hover{background:#f0b323;color:#111827}
-        @keyframes chloe-pulse{0%{box-shadow:0 0 0 0 rgba(240,179,35,.55),0 10px 30px rgba(0,0,0,.35)}70%{box-shadow:0 0 0 22px rgba(240,179,35,0),0 10px 30px rgba(0,0,0,.35)}100%{box-shadow:0 0 0 0 rgba(240,179,35,0),0 10px 30px rgba(0,0,0,.35)}}
-        .chloe-panel{position:fixed;right:20px;bottom:96px;z-index:9999;width:min(380px,calc(100vw - 32px));max-height:min(70vh,560px);display:flex;flex-direction:column;
+          animation:agent-pulse 2.4s ease-out infinite;display:flex;align-items:center;justify-content:center;color:#0f1f3d;font-weight:700;font-size:13px;letter-spacing:.04em}
+        .agent-orb:hover{background:#f0b323;color:#111827}
+        @keyframes agent-pulse{0%{box-shadow:0 0 0 0 rgba(240,179,35,.55),0 10px 30px rgba(0,0,0,.35)}70%{box-shadow:0 0 0 22px rgba(240,179,35,0),0 10px 30px rgba(0,0,0,.35)}100%{box-shadow:0 0 0 0 rgba(240,179,35,0),0 10px 30px rgba(0,0,0,.35)}}
+        .agent-panel{position:fixed;right:20px;bottom:96px;z-index:9999;width:min(380px,calc(100vw - 32px));max-height:min(70vh,560px);display:flex;flex-direction:column;
           background:#0f1f3d;color:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.45);overflow:hidden;font-family:var(--font-sans,system-ui);border:1px solid rgba(240,179,35,.35)}
-        @media (max-width:480px){.chloe-panel{right:0;bottom:0;width:100vw;max-height:88vh;border-radius:18px 18px 0 0}.chloe-orb{right:16px;bottom:16px}}
-        .chloe-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#1e3a6e;font-weight:600}
-        .chloe-head button{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;line-height:1}
-        .chloe-doors{display:grid;gap:10px;padding:16px}
-        .chloe-door{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:12px;border:1px solid rgba(240,179,35,.55);background:transparent;color:#fff;cursor:pointer;font-size:15px}
-        .chloe-door b{display:block;color:#f0b323;font-size:16px;margin-bottom:2px}
-        .chloe-door:hover{background:#f0b323;color:#111827}.chloe-door:hover b{color:#111827}
-        .chloe-door[aria-disabled="true"]{opacity:.55;cursor:default}.chloe-door[aria-disabled="true"]:hover{background:transparent;color:#fff}.chloe-door[aria-disabled="true"]:hover b{color:#f0b323}
-        .chloe-thread{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-height:180px}
-        .chloe-m{max-width:85%;padding:10px 12px;border-radius:14px;font-size:15px;line-height:1.35;white-space:pre-wrap}
-        .chloe-m.in{align-self:flex-end;background:#2563eb}.chloe-m.out{align-self:flex-start;background:#1e3a6e}
-        .chloe-typing{align-self:flex-start;color:#9ca3af;font-size:13px}
-        .chloe-input{display:flex;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
-        .chloe-input input{flex:1;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:#0b1730;color:#fff;font-size:16px}
-        .chloe-input button{padding:12px 16px;border-radius:12px;border:0;background:#f0b323;color:#111827;font-weight:700;cursor:pointer}
-        .chloe-mic{margin:12px;padding:16px;border-radius:14px;border:2px solid #f0b323;background:transparent;color:#fff;font-size:16px;cursor:pointer}
-        .chloe-mic[data-on="true"]{background:#f0b323;color:#111827}
-        .chloe-heard{padding:0 16px 12px;color:#9ca3af;font-size:14px;min-height:20px}
+        @media (max-width:480px){.agent-panel{right:0;bottom:0;width:100vw;max-height:88vh;border-radius:18px 18px 0 0}.agent-orb{right:16px;bottom:16px}}
+        .agent-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#1e3a6e;font-weight:600}
+        .agent-head button{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;line-height:1}
+        .agent-doors{display:grid;gap:10px;padding:16px}
+        .agent-door{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:12px;border:1px solid rgba(240,179,35,.55);background:transparent;color:#fff;cursor:pointer;font-size:15px}
+        .agent-door b{display:block;color:#f0b323;font-size:16px;margin-bottom:2px}
+        .agent-door:hover{background:#f0b323;color:#111827}.agent-door:hover b{color:#111827}
+        .agent-door[aria-disabled="true"]{opacity:.55;cursor:default}.agent-door[aria-disabled="true"]:hover{background:transparent;color:#fff}.agent-door[aria-disabled="true"]:hover b{color:#f0b323}
+        .agent-thread{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-height:180px}
+        .agent-m{max-width:85%;padding:10px 12px;border-radius:14px;font-size:15px;line-height:1.35;white-space:pre-wrap}
+        .agent-m.in{align-self:flex-end;background:#2563eb}.agent-m.out{align-self:flex-start;background:#1e3a6e}
+        .agent-typing{align-self:flex-start;color:#9ca3af;font-size:13px}
+        .agent-input{display:flex;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+        .agent-input input{flex:1;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:#0b1730;color:#fff;font-size:16px}
+        .agent-input button{padding:12px 16px;border-radius:12px;border:0;background:#f0b323;color:#111827;font-weight:700;cursor:pointer}
+        .agent-mic{margin:12px;padding:16px;border-radius:14px;border:2px solid #f0b323;background:transparent;color:#fff;font-size:16px;cursor:pointer}
+        .agent-mic[data-on="true"]{background:#f0b323;color:#111827}
+        .agent-heard{padding:0 16px 12px;color:#9ca3af;font-size:14px;min-height:20px}
       `}</style>
 
       {open && (
-        <div className="chloe-panel" role="dialog" aria-label={`Talk to ${NAME}`}>
-          <div className="chloe-head">
+        <div className="agent-panel" role="dialog" aria-label={`Talk to ${NAME}`}>
+          <div className="agent-head">
             <span>{door === "menu" ? `Hi, I'm ${NAME}. How do you want to talk?` : door === "text" ? `Text ${NAME}` : `${NAME} is listening`}</span>
             <button onClick={() => { window.speechSynthesis?.cancel(); setDoor("closed"); }} aria-label="Close">×</button>
           </div>
 
           {door === "menu" && (
-            <div className="chloe-doors">
-              <button className="chloe-door" onClick={() => setDoor("text")}>
+            <div className="agent-doors">
+              <button className="agent-door" onClick={() => setDoor("text")}>
                 <b>Text me</b>Type like you would in a text. I answer in seconds.
               </button>
-              <button className="chloe-door" onClick={() => { setDoor("talk"); setTimeout(startListening, 300); }}>
+              <button className="agent-door" onClick={() => { setDoor("talk"); setTimeout(startListening, 300); }}>
                 <b>Speak to me through your speaker</b>Tap, say what you need, and I talk back.
               </button>
               {CALL ? (
-                <a className="chloe-door" href={`tel:${CALL}`}>
+                <a className="agent-door" href={`tel:${CALL}`}>
                   <b>Call me</b>Ring the office and get a person on the phone.
                 </a>
               ) : (
-                <button className="chloe-door" aria-disabled="true">
+                <button className="agent-door" aria-disabled="true">
                   <b>Call me</b>Phone line coming soon. Text or speak for now.
                 </button>
               )}
@@ -206,25 +206,25 @@ export default function ChloeOrb() {
 
           {(door === "text" || door === "talk") && (
             <>
-              <div className="chloe-thread">
+              <div className="agent-thread">
                 {msgs.length === 0 && (
-                  <div className="chloe-m out">{door === "talk" ? "Go ahead, I'm listening." : "Hey! What can I help you with?"}</div>
+                  <div className="agent-m out">{door === "talk" ? "Go ahead, I'm listening." : "Hey! What can I help you with?"}</div>
                 )}
                 {msgs.map((m) => (
-                  <div key={m.id} className={`chloe-m ${m.direction === "inbound" ? "in" : "out"}`}>{m.body}</div>
+                  <div key={m.id} className={`agent-m ${m.direction === "inbound" ? "in" : "out"}`}>{m.body}</div>
                 ))}
-                {busy && <div className="chloe-typing">{NAME} is typing…</div>}
+                {busy && <div className="agent-typing">{NAME} is typing…</div>}
                 <div ref={bottom} />
               </div>
               {door === "talk" ? (
                 <>
-                  <div className="chloe-heard">{heard}</div>
-                  <button className="chloe-mic" data-on={listening} onClick={startListening}>
+                  <div className="agent-heard">{heard}</div>
+                  <button className="agent-mic" data-on={listening} onClick={startListening}>
                     {listening ? "Listening… tap when done" : "Tap to talk"}
                   </button>
                 </>
               ) : (
-                <form className="chloe-input" onSubmit={(e) => { e.preventDefault(); send(draft); }}>
+                <form className="agent-input" onSubmit={(e) => { e.preventDefault(); send(draft); }}>
                   <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Type here…" autoFocus />
                   <button type="submit" disabled={busy}>Send</button>
                 </form>
@@ -234,7 +234,7 @@ export default function ChloeOrb() {
         </div>
       )}
 
-      <button className="chloe-orb" onClick={() => { setDoor(open ? "closed" : "menu"); if (open) window.speechSynthesis?.cancel(); }} aria-label={open ? "Close" : `Talk to ${NAME}`}>
+      <button className="agent-orb" onClick={() => { setDoor(open ? "closed" : "menu"); if (open) window.speechSynthesis?.cancel(); }} aria-label={open ? "Close" : `Talk to ${NAME}`}>
         {open ? "×" : NAME.toUpperCase()}
       </button>
     </>
