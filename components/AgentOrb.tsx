@@ -121,7 +121,8 @@ export default function AgentOrb() {
       await fetch(`${API}/${PREFIX}/web/message`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ session: session.current, text: t }),
+        // THE PAGE IS CONTEXT (2026-09-11): the slug rides with every message so the twin opens on this page's subject.
+        body: JSON.stringify({ session: session.current, text: t, page: (window.location.pathname.replace(/^\/+|\/+$/g, "") || "home") }),
       });
       setTimeout(poll, 600);
     } catch {
