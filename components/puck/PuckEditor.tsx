@@ -8,7 +8,7 @@ import "@measured/puck/puck.css";
 import { config } from "@/components/puck/config";
 import { seedFor } from "@/components/puck/seeds";
 import { SJC as SJC_ID } from "@/lib/siteKeys";
-import { publicUrlFor } from "@/lib/hostShared";
+import { publicUrlFor, STUDIO_HOST } from "@/lib/hostShared";
 
 // The page list is passed in from the server route (it's Redis-backed now, so the client can't
 // read it directly). Shape mirrors lib/pageRegistry's PageEntry.
@@ -1187,6 +1187,21 @@ export default function PuckEditor({
                   live === null ? "#d1d5db" : live && reachable ? "#16a34a" : "#f59e0b",
               }}
             />
+            {/* PREVIEW — THE IN-BETWEEN URL (Steven, 2026-09-11, "we've been through this a couple
+                times… the canvas is a little bit different than live"). Always present, always the
+                DRAFT, on the page's REAL address: `?preview=1` renders the draft through the public
+                template for a signed-in owner. The ↗ link beside it stays what it was — the live
+                page when one is published, the draft only when nothing is. SJC's bare paths are
+                pinned to the apex so the sign-in cookie (scoped to the studio domain) travels. */}
+            <a
+              href={`${publicPath.startsWith("http") ? publicPath : `https://${STUDIO_HOST}${publicPath}`}${publicPath.includes("?") ? "&" : "?"}preview=1`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ ...btn, padding: "4px 10px", fontSize: 12, color: "#2563eb", border: "1px solid #2563eb", textDecoration: "none", fontWeight: 600 }}
+              title="Open the DRAFT of this page at its real address, in a new tab — what visitors will see once you publish. Only you can see it."
+            >
+              Preview
+            </a>
             <a
               // NOT PUBLISHED → OPEN THE DRAFT, NOT A 404 (2026-09-07). `?preview=1` renders the
               // draft through the real public template for a signed-in owner (middleware). Before
