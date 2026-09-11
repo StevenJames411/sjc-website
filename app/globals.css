@@ -1534,3 +1534,93 @@ a.sjc-sys-card--layer:focus-visible {
 .sjc-design .band--soft a.sjc-sys-link.sjc-sys-link:hover,
 .sjc-design .band--hero a.sjc-sys-link.sjc-sys-link:focus-visible,
 .sjc-design .band--soft a.sjc-sys-link.sjc-sys-link:focus-visible { color: #ffffff; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   THE TALKING HERO (ruled 2026-09-11) — Steven is the orb. The room is the canvas, the headline
+   sits over it, the conversation runs in captions under the words, one tap starts the talk.
+   Marker attribute + rules here (never Tailwind in block markup — globals.css:715-737).
+   Laws in force: the phone hero fills the canvas · every hero headline is 22px on a phone (the
+   .sjc-design h1 rule above applies because the block carries .sjc-design) · both screens get the
+   same move (the same room, wide and tall).
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+[data-sjc-talking-hero] {
+  position: relative;
+  isolation: isolate;
+  min-height: var(--th-min, 86vh);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: 24px 40px;
+  padding: 56px clamp(20px, 6vw, 96px) 40px;
+  color: #fff;
+  background: #0b1730;
+  overflow: hidden;
+}
+[data-sjc-talking-hero] .th-room { position: absolute; inset: 0; z-index: -1; background: #0b1730; }
+[data-sjc-talking-hero] .th-loop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+[data-sjc-talking-hero] .th-tall { display: none; }
+[data-sjc-talking-hero] .th-shade {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(11, 23, 48, .92) 0%, rgba(11, 23, 48, .72) 42%, rgba(11, 23, 48, .18) 72%, rgba(11, 23, 48, .05) 100%),
+    linear-gradient(0deg, rgba(11, 23, 48, .88) 0%, rgba(11, 23, 48, 0) 38%);
+}
+[data-sjc-talking-hero] .th-words { grid-column: 1; grid-row: 1; align-self: center; max-width: 34rem; }
+[data-sjc-talking-hero] .th-eyebrow { margin: 0 0 14px; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: #f0b323; font-weight: 600; }
+[data-sjc-talking-hero] h1 { margin: 0; font-size: clamp(34px, 4.4vw, 58px); line-height: 1.04; font-weight: 700; color: #fff; text-wrap: balance; }
+[data-sjc-talking-hero] .th-byline { margin: 16px 0 0; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: #f0b323; font-weight: 600; }
+[data-sjc-talking-hero] .th-talk { grid-column: 1 / -1; grid-row: 2; display: grid; gap: 14px; max-width: 46rem; }
+[data-sjc-talking-hero] .th-captions { display: flex; flex-direction: column; gap: 8px; max-height: 32vh; overflow-y: auto; scrollbar-width: thin; padding-right: 6px; }
+[data-sjc-talking-hero] .th-cap { margin: 0; font-size: clamp(17px, 1.6vw, 22px); line-height: 1.4; text-wrap: pretty; }
+[data-sjc-talking-hero] .th-cap.out { color: #fff; }
+[data-sjc-talking-hero] .th-cap.in { color: #cfe0ff; font-size: clamp(15px, 1.3vw, 18px); }
+[data-sjc-talking-hero] .th-cap.in::before { content: "You: "; color: #8fb3ff; font-weight: 600; }
+[data-sjc-talking-hero] .th-cap.hearing { opacity: .75; font-style: italic; }
+[data-sjc-talking-hero] .th-cap.thinking { color: #9ca3af; font-size: 14px; }
+[data-sjc-talking-hero] .th-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+[data-sjc-talking-hero] .th-mic {
+  padding: 16px 26px; border-radius: 999px; border: 2px solid #f0b323; background: #f0b323; color: #111827;
+  font-size: 17px; font-weight: 700; cursor: pointer; box-shadow: 0 0 0 0 rgba(240, 179, 35, .55), 0 10px 30px rgba(0, 0, 0, .35);
+  animation: th-pulse 2.4s ease-out infinite;
+}
+[data-sjc-talking-hero][data-state="listening"] .th-mic { background: #fff; border-color: #fff; animation: none; }
+[data-sjc-talking-hero][data-state="talking"] .th-mic,
+[data-sjc-talking-hero][data-state="thinking"] .th-mic { animation: none; }
+[data-sjc-talking-hero] .th-mic:disabled { opacity: .55; cursor: default; animation: none; }
+@keyframes th-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(240, 179, 35, .55), 0 10px 30px rgba(0, 0, 0, .35); }
+  70% { box-shadow: 0 0 0 18px rgba(240, 179, 35, 0), 0 10px 30px rgba(0, 0, 0, .35); }
+  100% { box-shadow: 0 0 0 0 rgba(240, 179, 35, 0), 0 10px 30px rgba(0, 0, 0, .35); }
+}
+@media (prefers-reduced-motion: reduce) { [data-sjc-talking-hero] .th-mic { animation: none; } }
+[data-sjc-talking-hero] .th-ghost { padding: 14px 20px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, .55); background: transparent; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
+[data-sjc-talking-hero] .th-ghost:hover { background: #f0b323; border-color: #f0b323; color: #111827; }
+[data-sjc-talking-hero] .th-play { padding: 10px 6px; border: 0; background: none; color: #f0b323; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+[data-sjc-talking-hero] .th-input { display: flex; gap: 8px; }
+[data-sjc-talking-hero] .th-input input { flex: 1; min-width: 0; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(11, 23, 48, .85); color: #fff; font-size: 16px; }
+[data-sjc-talking-hero] .th-input button { padding: 12px 18px; border-radius: 12px; border: 0; background: #f0b323; color: #111827; font-weight: 700; cursor: pointer; }
+[data-sjc-talking-hero] .th-note { margin: 0; font-size: 13px; color: #9ca3af; }
+[data-sjc-talking-hero] .th-modal { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, .88); display: grid; place-items: center; padding: 24px; }
+[data-sjc-talking-hero] .th-modal video { width: min(1100px, 100%); max-height: 88vh; border-radius: 12px; background: #000; }
+[data-sjc-talking-hero] .th-close { position: absolute; top: 16px; right: 20px; background: none; border: 0; color: #fff; font-size: 36px; line-height: 1; cursor: pointer; }
+[data-sjc-talking-hero] button:focus-visible, [data-sjc-talking-hero] input:focus-visible { outline: 3px solid #8fb3ff; outline-offset: 2px; }
+
+/* the phone: the tall loop fills the first screen, the words at the top, the mic under the thumb */
+@media (max-width: 1023px) {
+  [data-sjc-talking-hero] { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 18px; min-height: 88svh; padding: 28px 20px 24px; }
+  [data-sjc-talking-hero] .th-words { grid-row: 1; align-self: start; max-width: none; }
+  [data-sjc-talking-hero] .th-talk { grid-row: 2; align-self: end; max-width: none; }
+  [data-sjc-talking-hero] .th-captions { max-height: 30svh; }
+  [data-sjc-talking-hero] .th-shade {
+    background:
+      linear-gradient(0deg, rgba(11, 23, 48, .94) 0%, rgba(11, 23, 48, .55) 45%, rgba(11, 23, 48, .15) 70%, rgba(11, 23, 48, .35) 100%);
+  }
+  [data-sjc-talking-hero] .th-mic { width: 100%; text-align: center; }
+  [data-sjc-talking-hero] .th-ghost { flex: 1; text-align: center; }
+}
+@media (max-width: 640px) {
+  [data-sjc-talking-hero] .th-wide { display: none; }
+  [data-sjc-talking-hero] .th-tall { display: block; }
+  [data-sjc-talking-hero] .th-byline { font-size: 13px; }
+}

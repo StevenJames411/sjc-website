@@ -3,180 +3,42 @@
 //   TEXT  — a text thread on the website (the agent's engine on the WEB channel, no phone number)
 //   TALK  — voice both ways in the browser (speech-to-text in, the reply spoken back)
 //   CALL  — a human: rings the owner's real number (lights up when the Twilio number lands)
-// Mounts only when NEXT_PUBLIC_AGENT_API is set, so the live site shows nothing until the agent's
-// server exists. Session id lives in localStorage so a returning visitor keeps their thread.
+// Mounts only when NEXT_PUBLIC_AGENT_API is set. The conversation engine lives in lib/useAgentThread
+// (shared with the TalkingHero block, 2026-09-11); on a page whose hero IS the orb, this stays hidden.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useAgentThread, AGENT_CALL, AGENT_NAME } from "@/lib/useAgentThread";
 
-type Msg = { id: number; direction: "inbound" | "outbound"; author: string; body: string };
 type Door = "closed" | "menu" | "text" | "talk";
 
-const API = process.env.NEXT_PUBLIC_AGENT_API || "";
-const PREFIX = process.env.NEXT_PUBLIC_AGENT_PREFIX || "sjc";
-const CALL = process.env.NEXT_PUBLIC_AGENT_CALL || "";
-const NAME = process.env.NEXT_PUBLIC_AGENT_NAME || "your assistant";
-
-// HETERONYMS (Steven, 2026-09-10): "leads" is spelled like the metal and the voice read it that
-// way — "lead-based paint" for lead generation. In this business the word is never the metal, so
-// respell it the way it sounds before the voice sees it. Heard, never shown.
-function sayItRight(text: string): string {
-  return text
-    .replace(/\b([Ll])ead(s|\b)/g, (_m, l: string, tail: string) => l + "eed" + (tail || ""))
-    .replace(/\b([Ll])eading\b/g, "$1eeding")
-    .replace(/\b(I|you|we|they|he|she|already|just|last\s+\w+)\s+read\b/g, "$1 red");
-}
-
-function sessionId(): string {
-  try {
-    const k = "agent-session";
-    let s = window.localStorage.getItem(k);
-    if (!s) {
-      s = Math.random().toString(36).slice(2) + Date.now().toString(36);
-      window.localStorage.setItem(k, s);
-    }
-    return s;
-  } catch {
-    return "anon-" + Date.now().toString(36);
-  }
-}
-
 export default function AgentOrb() {
+  const t = useAgentThread({ pollMs: 2000 });
   const [door, setDoor] = useState<Door>("closed");
-  const [msgs, setMsgs] = useState<Msg[]>([]);
   const [draft, setDraft] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [heard, setHeard] = useState("");
-  const lastId = useRef(0);
-  const session = useRef("");
-  const spoken = useRef<Set<number>>(new Set());
+  const [heroOnPage, setHeroOnPage] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
-  const recog = useRef<any>(null);
-  const handsFree = useRef(false);   // the talk door is a conversation: listen → he speaks → listen again
-  const gotFinal = useRef(false);
 
+  // The hero IS the orb on pages that carry a TalkingHero block — no second mouth.
   useEffect(() => {
-    session.current = sessionId();
-  }, []);
-
-  // Poll the thread while a door is open. the agent answers in ~1-20s on the web channel.
-  const poll = useCallback(async () => {
-    if (!API || !session.current) return;
-    try {
-      const r = await fetch(`${API}/${PREFIX}/web/thread?session=${encodeURIComponent(session.current)}&after=${lastId.current}`);
-      const j = await r.json();
-      const fresh: Msg[] = j.messages || [];
-      if (fresh.length) {
-        lastId.current = fresh[fresh.length - 1].id;
-        setMsgs((m) => [...m, ...fresh]);
-        if (fresh.some((x) => x.direction === "outbound")) setBusy(false);
-      }
-    } catch {
-      /* server asleep or offline — the orb just waits */
-    }
+    const check = () => setHeroOnPage(document.documentElement.hasAttribute("data-talking-hero"));
+    check();
+    window.addEventListener("sjc:talking-hero", check);
+    return () => window.removeEventListener("sjc:talking-hero", check);
   }, []);
 
   useEffect(() => {
-    if (door === "closed" || door === "menu") return;
-    poll();
-    const t = setInterval(poll, 2000);
-    return () => clearInterval(t);
-  }, [door, poll]);
+    t.setActive(door === "text" || door === "talk");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [door]);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ block: "end" });
-  }, [msgs]);
+  }, [t.msgs]);
 
-  // TALK door: speak every new agent reply aloud, once.
-  useEffect(() => {
-    if (door !== "talk" || typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    for (const m of msgs) {
-      if (m.direction === "outbound" && !spoken.current.has(m.id)) {
-        spoken.current.add(m.id);
-        const u = new SpeechSynthesisUtterance(sayItRight(m.body));
-        const voices = window.speechSynthesis.getVoices();
-        // A man's voice for Jarvis (Steven, 09-10): British first (the record's Jarvis is Oliver),
-        // then the best male English voice the device has. NEXT_PUBLIC_AGENT_VOICE overrides by name.
-        const want = process.env.NEXT_PUBLIC_AGENT_VOICE || "";
-        const pick =
-          (want && voices.find((v) => v.name.toLowerCase().includes(want.toLowerCase()))) ||
-          voices.find((v) => /^(Daniel|Oliver|Arthur)\b/i.test(v.name) && v.lang.startsWith("en")) ||
-          voices.find((v) => /Google UK English Male|Microsoft (Ryan|George|Guy)|Aaron|Fred/i.test(v.name)) ||
-          voices.find((v) => v.lang.startsWith("en-GB")) ||
-          voices.find((v) => v.lang.startsWith("en"));
-        if (pick) u.voice = pick;
-        u.rate = 1.0;
-        u.onend = () => { if (handsFree.current) startListening(); };
-        window.speechSynthesis.speak(u);
-      }
-    }
-  }, [msgs, door]);
-
-  async function send(text: string) {
-    const t = text.trim();
-    if (!t || !API) return;
-    setDraft("");
-    setBusy(true);
-    try {
-      await fetch(`${API}/${PREFIX}/web/message`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        // THE PAGE IS CONTEXT (2026-09-11): the slug rides with every message so the twin opens on this page's subject.
-        body: JSON.stringify({ session: session.current, text: t, page: (window.location.pathname.replace(/^\/+|\/+$/g, "") || "home") }),
-      });
-      setTimeout(poll, 600);
-    } catch {
-      setBusy(false);
-    }
-  }
-
-  function startListening() {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      setHeard("Your browser can't listen — try Chrome or Safari, or use the text door.");
-      return;
-    }
-    window.speechSynthesis?.cancel();
-    const r = new SR();
-    r.lang = "en-US";
-    r.interimResults = true;
-    r.continuous = false;
-    r.onresult = (e: any) => {
-      let s = "";
-      for (const res of e.results) s += res[0].transcript;
-      setHeard(s);
-      if (e.results[e.results.length - 1].isFinal) {
-        gotFinal.current = true;
-        setListening(false);
-        send(s);
-        setHeard("");
-      }
-    };
-    r.onend = () => {
-      setListening(false);
-      // The browser drops the mic after a pause (the glitch). In a hands-free conversation, if
-      // nothing final was heard and Jarvis is not talking, pick it straight back up.
-      if (handsFree.current && !gotFinal.current && !window.speechSynthesis?.speaking) {
-        setTimeout(() => { if (handsFree.current && !listening) startListening(); }, 250);
-      }
-    };
-    r.onerror = () => setListening(false);
-    recog.current = r;
-    gotFinal.current = false;
-    setListening(true);
-    try { r.start(); } catch { /* already started */ }
-  }
-
-  function stopHandsFree() {
-    handsFree.current = false;
-    try { recog.current?.stop(); } catch { /* ignore */ }
-    window.speechSynthesis?.cancel();
-    setListening(false);
-  }
-
-  if (!API) return null;
+  if (!t.ready || heroOnPage) return null;
 
   const open = door !== "closed";
+  const visible = t.msgs.filter((m) => !m.hidden);
   return (
     <>
       <style>{`
@@ -208,10 +70,10 @@ export default function AgentOrb() {
       `}</style>
 
       {open && (
-        <div className="agent-panel" role="dialog" aria-label={`Talk to ${NAME}`}>
+        <div className="agent-panel" role="dialog" aria-label={`Talk to ${AGENT_NAME}`}>
           <div className="agent-head">
-            <span>{door === "menu" ? `Hi, I'm ${NAME}. Choose a method from below.` : door === "text" ? `Text ${NAME}` : `${NAME} is listening`}</span>
-            <button onClick={() => { stopHandsFree(); setDoor("closed"); }} aria-label="Close">×</button>
+            <span>{door === "menu" ? `Hi, I'm ${AGENT_NAME}. Choose a method from below.` : door === "text" ? `Text ${AGENT_NAME}` : `${AGENT_NAME} is listening`}</span>
+            <button onClick={() => { t.stopHandsFree(); setDoor("closed"); }} aria-label="Close">×</button>
           </div>
 
           {door === "menu" && (
@@ -219,11 +81,11 @@ export default function AgentOrb() {
               <button className="agent-door" onClick={() => setDoor("text")}>
                 <b>Text me</b>Type like you would in a text. I answer in seconds.
               </button>
-              <button className="agent-door" onClick={() => { setDoor("talk"); handsFree.current = true; setTimeout(startListening, 300); }}>
+              <button className="agent-door" onClick={() => { setDoor("talk"); t.startHandsFree(); }}>
                 <b>Speak to me through your speaker</b>Tap, say what you need, and I talk back.
               </button>
-              {CALL ? (
-                <a className="agent-door" href={`tel:${CALL}`}>
+              {AGENT_CALL ? (
+                <a className="agent-door" href={`tel:${AGENT_CALL}`}>
                   <b>Call me</b>Ring the office and get a person on the phone.
                 </a>
               ) : (
@@ -237,26 +99,26 @@ export default function AgentOrb() {
           {(door === "text" || door === "talk") && (
             <>
               <div className="agent-thread">
-                {msgs.length === 0 && (
+                {visible.length === 0 && (
                   <div className="agent-m out">{door === "talk" ? "Go ahead, I'm listening." : "Hey! What can I help you with?"}</div>
                 )}
-                {msgs.map((m) => (
+                {visible.map((m) => (
                   <div key={m.id} className={`agent-m ${m.direction === "inbound" ? "in" : "out"}`}>{m.body}</div>
                 ))}
-                {busy && <div className="agent-typing">{NAME} is typing…</div>}
+                {t.busy && <div className="agent-typing">{AGENT_NAME} is typing…</div>}
                 <div ref={bottom} />
               </div>
               {door === "talk" ? (
                 <>
-                  <div className="agent-heard">{heard}</div>
-                  <button className="agent-mic" data-on={listening} onClick={() => { if (handsFree.current) { stopHandsFree(); } else { handsFree.current = true; startListening(); } }}>
-                    {listening ? "Listening… (tap to stop)" : handsFree.current ? (busy ? `${NAME} is thinking…` : `${NAME} is talking… (tap to stop)`) : "Tap to start talking"}
+                  <div className="agent-heard">{t.heard}</div>
+                  <button className="agent-mic" data-on={t.listening} onClick={() => { if (t.handsFree()) { t.stopHandsFree(); } else { t.startHandsFree(); } }}>
+                    {t.listening ? "Listening… (tap to stop)" : t.handsFree() ? (t.busy ? `${AGENT_NAME} is thinking…` : `${AGENT_NAME} is talking… (tap to stop)`) : "Tap to start talking"}
                   </button>
                 </>
               ) : (
-                <form className="agent-input" onSubmit={(e) => { e.preventDefault(); send(draft); }}>
+                <form className="agent-input" onSubmit={(e) => { e.preventDefault(); t.send(draft); setDraft(""); }}>
                   <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Type here…" autoFocus />
-                  <button type="submit" disabled={busy}>Send</button>
+                  <button type="submit" disabled={t.busy}>Send</button>
                 </form>
               )}
             </>
@@ -264,8 +126,8 @@ export default function AgentOrb() {
         </div>
       )}
 
-      <button className="agent-orb" onClick={() => { if (open) stopHandsFree(); setDoor(open ? "closed" : "menu"); }} aria-label={open ? "Close" : `Talk to ${NAME}`}>
-        {open ? "×" : NAME.toUpperCase()}
+      <button className="agent-orb" onClick={() => { if (open) t.stopHandsFree(); setDoor(open ? "closed" : "menu"); }} aria-label={open ? "Close" : `Talk to ${AGENT_NAME}`}>
+        {open ? "×" : AGENT_NAME.toUpperCase()}
       </button>
     </>
   );
