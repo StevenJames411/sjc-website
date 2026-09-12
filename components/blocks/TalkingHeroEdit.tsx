@@ -61,7 +61,7 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
 
   return (
     <div className="th-editwrap">
-      <div className="th-strip" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="th-strip" onPointerDownCapture={(e) => e.nativeEvent.stopPropagation()}>
         <div className="th-strip-group" role="tablist" aria-label="Screen">
           <button type="button" role="tab" aria-selected={screen === "laptop"} onClick={() => { setScreen("laptop"); setSelected(null); }}>Laptop</button>
           <button type="button" role="tab" aria-selected={screen === "phone"} onClick={() => { setScreen("phone"); setSelected(null); }}>Phone</button>

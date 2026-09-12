@@ -1665,6 +1665,13 @@ a.sjc-sys-card--layer:focus-visible {
 [data-sjc-talking-hero][data-layout] .th-note-abs { position: absolute; left: 4%; bottom: 3%; z-index: 5; }
 
 /* ── editing (the studio only: data-editing) ── */
+/* ⛔ Puck switches pointer events OFF for everything inside a block ([data-puck-component] *) so a
+   click selects the block. This canvas IS the control, so inside it they come back on; a press on a
+   handle is stopped natively before Puck's drag layer sees it (TalkingHero.tsx), and a press on the
+   room itself still bubbles up and selects the block like any other. */
+[data-puck-component] .th-editwrap, [data-puck-component] .th-editwrap * { pointer-events: auto; }
+[data-puck-component] .th-editwrap .th-loop, [data-puck-component] .th-editwrap .th-shade { pointer-events: none; }
+[data-puck-component] .th-editwrap .th-free.typing, [data-puck-component] .th-editwrap .th-free.typing * { user-select: text; -webkit-user-select: text; }
 [data-sjc-talking-hero][data-editing] .th-canvas { user-select: none; touch-action: none; }
 [data-sjc-talking-hero][data-editing] .th-free { cursor: grab; outline: 2px solid transparent; outline-offset: 2px; }
 [data-sjc-talking-hero][data-editing] .th-free:hover { outline-color: rgba(240, 179, 35, .5); }

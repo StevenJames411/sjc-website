@@ -273,6 +273,9 @@ function Free({ el, t, edit, phone, children }: {
 
   function down(e: RPointerEvent<HTMLDivElement>, kind: "move" | "size") {
     if (!edit || typing) return;
+    // ⛔ STOP IT NATIVELY, HERE, IN THE CAPTURE PHASE. Puck's drag layer listens natively on the
+    // block wrapper; React's own stopPropagation runs at the root, after that listener has fired.
+    e.nativeEvent.stopPropagation();
     const host = ref.current!.parentElement!.getBoundingClientRect();
     drag.current = { kind, sx: e.clientX, sy: e.clientY, x: t.x, y: t.y, size: t.size, w: t.w, bw: ref.current!.getBoundingClientRect().width, cw: host.width, ch: host.height, moved: false };
     ref.current!.setPointerCapture(e.pointerId);
@@ -319,7 +322,7 @@ function Free({ el, t, edit, phone, children }: {
       className={`th-free th-${el}${sel ? " sel" : ""}${typing ? " typing" : ""}`}
       style={style}
       data-el={el}
-      onPointerDown={edit ? (e) => down(e, "move") : undefined}
+      onPointerDownCapture={edit ? (e) => down(e, "move") : undefined}
       onPointerMove={edit ? move : undefined}
       onPointerUp={edit ? up : undefined}
       onPointerCancel={edit ? () => { drag.current = null; setLive(null); } : undefined}
@@ -328,7 +331,7 @@ function Free({ el, t, edit, phone, children }: {
       {edit && sel ? (
         <>
           <span className="th-tag">{HERO_ELEMENT_LABEL[el]}{phone && el === "headline" ? " · 22px on a phone" : ` · ${size}px`}</span>
-          <span className="th-handle" title="Drag to resize" onPointerDown={(e) => down(e as any, "size")} />
+          <span className="th-handle" title="Drag to resize" onPointerDownCapture={(e) => down(e as any, "size")} />
         </>
       ) : null}
     </div>
@@ -358,6 +361,7 @@ function Orb({ x, y, size, state, edit, onTap, ready }: {
 
   function down(e: RPointerEvent<HTMLButtonElement>) {
     if (!edit) return;
+    e.nativeEvent.stopPropagation(); // see Free.down
     const host = ref.current!.parentElement!.getBoundingClientRect();
     drag.current = { sx: e.clientX, sy: e.clientY, x, y, cw: host.width, ch: host.height, moved: false };
     ref.current!.setPointerCapture(e.pointerId);
@@ -389,7 +393,7 @@ function Orb({ x, y, size, state, edit, onTap, ready }: {
       aria-label={state === "idle" ? "Tap and I'll talk to you" : "Tap to stop"}
       disabled={!edit && !ready}
       onClick={edit ? undefined : onTap}
-      onPointerDown={edit ? down : undefined}
+      onPointerDownCapture={edit ? down : undefined}
       onPointerMove={edit ? move : undefined}
       onPointerUp={edit ? up : undefined}
       onPointerCancel={edit ? () => { drag.current = null; setLive(null); } : undefined}
