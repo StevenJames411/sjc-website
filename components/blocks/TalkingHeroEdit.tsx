@@ -8,8 +8,8 @@
 // Loaded with next/dynamic (ssr off) from TalkingHeroSwitch so @measured/puck's hooks never enter
 // the public bundle — usePuck throws outside <Puck>, and the public page has no <Puck>.
 
-import { useMemo, useState } from "react";
-import { usePuck } from "@measured/puck";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { registerOverlayPortal, usePuck } from "@measured/puck";
 import SizeStepper from "@/components/puck/SizeStepper";
 import TalkingHero, { type TalkingHeroProps, type HeroEditApi } from "./TalkingHero";
 import {
@@ -26,6 +26,14 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
   const [selected, setSelected] = useState<HeroElement | null>(null);
 
   const layouts = useMemo(() => withLayoutDefaults(rest.layout), [rest.layout]);
+
+  // ⛔ PUCK EATS CLICKS INSIDE A BLOCK. Its wrapper listens natively for `click`, calls
+  // stopPropagation (so React's root never hears it) and selects the block — which is why the
+  // Tablet tab did nothing the first time (09-12). registerOverlayPortal is Puck's own door for
+  // controls that live inside a block: it marks the strip so the wrapper lets its clicks through,
+  // and with disableDrag it stops a press on the strip from dragging the block.
+  const strip = useRef<HTMLDivElement>(null);
+  useEffect(() => registerOverlayPortal(strip.current, { disableDrag: true, disableDragOnFocus: false }), []);
 
   // The single write path. Reads the block's CURRENT props from Puck (not from this render's
   // props, which can lag one commit behind during a fast drag-then-type), patches, replaces.
@@ -61,7 +69,7 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
 
   return (
     <div className="th-editwrap">
-      <div className="th-strip" onPointerDownCapture={(e) => e.nativeEvent.stopPropagation()}>
+      <div className="th-strip" ref={strip}>
         <div className="th-strip-group" role="tablist" aria-label="Screen">
           {HERO_SCREENS.map((s) => (
             <button key={s} type="button" role="tab" aria-selected={screen === s} onClick={() => { setScreen(s); setSelected(null); }}>{HERO_SCREEN_LABEL[s]}</button>
