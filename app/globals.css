@@ -1639,7 +1639,9 @@ a.sjc-sys-card--layer:focus-visible {
 @media (max-width: 1023px) { [data-sjc-talking-hero][data-layout] .th-canvas { min-height: 100svh; aspect-ratio: auto; } }
 [data-sjc-talking-hero][data-layout] .th-brand { position: absolute; left: 4%; top: 4%; z-index: 5; margin: 0; }
 [data-sjc-talking-hero][data-layout] .th-free { position: absolute; z-index: 4; transform: translateX(-50%); padding: .3em .5em; line-height: 1.12; text-shadow: 0 2px 16px rgba(0, 0, 0, .7); box-sizing: border-box; max-width: 96%; }
-[data-sjc-talking-hero][data-layout] .th-free .th-text > * { margin: 0; font: inherit; color: inherit; line-height: inherit; }
+/* the site's own h1/p rules (balance, uppercase eyebrows, tracking) must not reach a placed line:
+   the box carries the whole look inline, the tag inside inherits all of it */
+[data-sjc-talking-hero][data-layout] .th-free .th-text > * { margin: 0; font: inherit; color: inherit; line-height: inherit; white-space: inherit; text-transform: none; letter-spacing: normal; text-align: inherit; }
 /* the headline's own size is the inline px, on every screen — the site-wide 22px phone law is
    applied by the block itself (Free: phone → 22), so the !important rule and this agree */
 [data-sjc-talking-hero][data-layout] .th-h1 { font-size: inherit !important; line-height: inherit; text-wrap: initial; }

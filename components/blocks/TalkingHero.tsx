@@ -267,7 +267,7 @@ function Free({ el, t, edit, phone, children }: {
 
   const style: CSSProperties = {
     left: `${v.x}%`, top: `${v.y}%`, fontSize: `${size}px`,
-    width: v.w ? `${v.w}%` : "auto", whiteSpace: v.w ? "normal" : "nowrap",
+    width: v.w ? `${v.w}%` : "max-content", whiteSpace: v.w ? "normal" : "nowrap",
     textAlign: v.align, color: v.color === "gold" ? "#f0b323" : "#fff", fontWeight: v.bold ? 700 : 400,
   };
 
