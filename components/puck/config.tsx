@@ -20,7 +20,9 @@ import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
 import CalEmbed from "@/components/blocks/CalEmbed";
-import TalkingHero, { TALKING_HERO_DEFAULTS, type TalkingHeroProps } from "@/components/blocks/TalkingHero";
+import { TALKING_HERO_DEFAULTS, type TalkingHeroProps } from "@/components/blocks/TalkingHero";
+import TalkingHeroSwitch from "@/components/blocks/TalkingHeroSwitch";
+import { HERO_LAYOUT_DEFAULTS } from "@/components/blocks/talkingHeroLayout";
 import { calLinkFrom } from "@/lib/calLink";
 
 // ⛔ Cal's auto-resize embed is PARKED behind this flag — see the note at the Booking render.
@@ -3713,12 +3715,33 @@ const baseConfig: Config<Props, RootProps> = {
             <SizeStepper label={"Canvas height"} value={value as number} onChange={onChange} fallback={86} step={2} min={50} allowZero={false} />
           ),
         },
+        // The layout is placed ON THE HERO, not in this panel (ruled 09-12: drag it where you want
+        // it, size in px, one set for a laptop and one for a phone). The field exists so the prop
+        // survives every layer that drops unnamed props; the control is the canvas itself.
+        layout: {
+          type: "custom" as const,
+          label: "Where things sit",
+          render: ({ value, onChange }) => (
+            <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>
+              {value ? "Placed by hand on the hero — drag, resize and type there. " : "Not placed yet — the block uses its original grid. "}
+              <button
+                type="button"
+                onClick={() => onChange(value ? null : HERO_LAYOUT_DEFAULTS)}
+                style={{ padding: "4px 8px", fontSize: 12, borderRadius: 6, border: "1px solid #d1d5db", background: "#fff", cursor: "pointer", marginTop: 6 }}
+              >
+                {value ? "Back to the original grid" : "Place things by hand"}
+              </button>
+            </div>
+          ),
+        },
       },
       defaultProps: TALKING_HERO_DEFAULTS,
-      render: ({ eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight }) => (
-        <TalkingHero
+      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, puck }) => (
+        <TalkingHeroSwitch
+          id={id} editing={puck?.isEditing}
           eyebrow={eyebrow} headline={headline} byline={byline} opener={opener} ctaTalk={ctaTalk} ctaType={ctaType}
           idleWide={idleWide} idleTall={idleTall} poster={poster} videoUrl={videoUrl} videoLabel={videoLabel} minHeight={minHeight}
+          layout={layout}
         />
       ),
     },

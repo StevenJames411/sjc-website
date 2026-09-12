@@ -1624,3 +1624,70 @@ a.sjc-sys-card--layer:focus-visible {
   [data-sjc-talking-hero] .th-tall { display: block; }
   [data-sjc-talking-hero] .th-byline { font-size: 13px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   THE TALKING HERO, PLACED BY HAND (ruled 2026-09-12) — `data-layout` on the section means every
+   element sits at its own x/y (% of the canvas) and size (px), one set for a laptop, one for a
+   phone, both placed in the design studio ON THE HERO. Sizes are inline (px) because they are the
+   owner's numbers; positions are inline (%) because they are his placement. This CSS only draws
+   the frame, the handles while editing, and the phone frame the studio places inside.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+[data-sjc-talking-hero][data-layout] { display: block; padding: 0; min-height: 0; }
+[data-sjc-talking-hero][data-layout] .th-canvas { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: var(--th-min, 86vh); overflow: hidden; background: #0b1730; isolation: isolate; }
+[data-sjc-talking-hero][data-layout] .th-canvas[data-screen="phone"] { aspect-ratio: 9 / 16; min-height: 0; }
+/* the phone canvas fills the first screen on a real phone, like every hero on the site */
+@media (max-width: 1023px) { [data-sjc-talking-hero][data-layout] .th-canvas { min-height: 100svh; aspect-ratio: auto; } }
+[data-sjc-talking-hero][data-layout] .th-brand { position: absolute; left: 4%; top: 4%; z-index: 5; margin: 0; }
+[data-sjc-talking-hero][data-layout] .th-free { position: absolute; z-index: 4; transform: translateX(-50%); padding: .3em .5em; line-height: 1.12; text-shadow: 0 2px 16px rgba(0, 0, 0, .7); box-sizing: border-box; max-width: 96%; }
+[data-sjc-talking-hero][data-layout] .th-free .th-text > * { margin: 0; font: inherit; color: inherit; line-height: inherit; }
+/* the headline's own size is the inline px, on every screen — the site-wide 22px phone law is
+   applied by the block itself (Free: phone → 22), so the !important rule and this agree */
+[data-sjc-talking-hero][data-layout] .th-h1 { font-size: inherit !important; line-height: inherit; text-wrap: initial; }
+[data-sjc-talking-hero][data-layout] .th-h1 em { font-style: normal; color: #f0b323; }
+[data-sjc-talking-hero][data-layout] .th-opener .th-talk { display: grid; gap: 12px; text-align: inherit; }
+[data-sjc-talking-hero][data-layout] .th-opener .th-cap { font-size: inherit; line-height: 1.4; }
+[data-sjc-talking-hero][data-layout] .th-opener .th-cap.in { font-size: .9em; }
+[data-sjc-talking-hero][data-layout] .th-captions { max-height: 34vh; }
+/* the orb — the one control on the page, never small */
+[data-sjc-talking-hero][data-layout] .th-orb { position: absolute; z-index: 5; transform: translate(-50%, -50%); border-radius: 50%; border: 0; padding: 0; background: #f0b323; display: grid; place-items: center; cursor: pointer; box-shadow: 0 0 0 0 rgba(240, 179, 35, .55), 0 14px 40px rgba(0, 0, 0, .45); animation: th-pulse 2.2s ease-out infinite; }
+[data-sjc-talking-hero][data-layout] .th-orb svg { fill: none; stroke: #111827; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+[data-sjc-talking-hero][data-layout] .th-orb:not([data-state="idle"]) .th-slash { display: none; }
+[data-sjc-talking-hero][data-layout] .th-orb[data-state="listening"] { background: #fff; animation: none; }
+[data-sjc-talking-hero][data-layout] .th-orb[data-state="talking"], [data-sjc-talking-hero][data-layout] .th-orb[data-state="thinking"] { animation: none; }
+[data-sjc-talking-hero][data-layout] .th-orb:disabled { opacity: .55; cursor: default; animation: none; }
+@keyframes th-pulse { 0% { box-shadow: 0 0 0 0 rgba(240, 179, 35, .6), 0 14px 40px rgba(0, 0, 0, .45); } 70% { box-shadow: 0 0 0 30px rgba(240, 179, 35, 0), 0 14px 40px rgba(0, 0, 0, .45); } 100% { box-shadow: 0 0 0 0 rgba(240, 179, 35, 0), 0 14px 40px rgba(0, 0, 0, .45); } }
+@media (prefers-reduced-motion: reduce) { [data-sjc-talking-hero][data-layout] .th-orb { animation: none; } }
+[data-sjc-talking-hero][data-layout] .th-under { position: absolute; z-index: 5; transform: translateX(-50%); display: grid; justify-items: center; gap: 8px; white-space: nowrap; }
+[data-sjc-talking-hero][data-layout] .th-orblabel { font-size: 15px; font-weight: 600; color: #fff; text-shadow: 0 2px 12px rgba(0, 0, 0, .7); }
+[data-sjc-talking-hero][data-layout] .th-ghost.th-small { padding: 8px 14px; font-size: 13px; }
+[data-sjc-talking-hero][data-layout] .th-note-abs { position: absolute; left: 4%; bottom: 3%; z-index: 5; }
+
+/* ── editing (the studio only: data-editing) ── */
+[data-sjc-talking-hero][data-editing] .th-canvas { user-select: none; touch-action: none; }
+[data-sjc-talking-hero][data-editing] .th-free { cursor: grab; outline: 2px solid transparent; outline-offset: 2px; }
+[data-sjc-talking-hero][data-editing] .th-free:hover { outline-color: rgba(240, 179, 35, .5); }
+[data-sjc-talking-hero][data-editing] .th-free.sel { outline-color: #f0b323; }
+[data-sjc-talking-hero][data-editing] .th-free.typing { cursor: text; outline-style: dashed; user-select: text; }
+[data-sjc-talking-hero][data-editing] .th-free.typing [contenteditable] { outline: none; }
+[data-sjc-talking-hero][data-editing] .th-orb { cursor: grab; outline: 2px solid transparent; outline-offset: 5px; animation: none; }
+[data-sjc-talking-hero][data-editing] .th-orb.sel { outline-color: #fff; }
+[data-sjc-talking-hero][data-editing] .th-handle { position: absolute; right: -9px; bottom: -9px; width: 18px; height: 18px; border-radius: 50%; background: #f0b323; border: 2px solid #111; cursor: nwse-resize; }
+[data-sjc-talking-hero][data-editing] .th-tag { position: absolute; left: 0; top: -22px; font: 600 11px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing: .02em; color: #111827; background: #f0b323; padding: 4px 7px; border-radius: 4px; white-space: nowrap; text-shadow: none; }
+[data-sjc-talking-hero][data-editing] .th-orb .th-tag { left: 50%; transform: translateX(-50%); top: auto; bottom: -26px; }
+[data-sjc-talking-hero][data-editing] .th-under button, [data-sjc-talking-hero][data-editing] .th-under .th-play { pointer-events: none; }
+/* the phone frame the studio draws around the phone canvas, on a laptop screen */
+[data-sjc-talking-hero][data-editing] .th-phone-frame { width: 375px; margin: 24px auto; border-radius: 28px; overflow: hidden; box-shadow: 0 0 0 10px #111, 0 24px 60px rgba(0, 0, 0, .5); }
+[data-sjc-talking-hero][data-editing] .th-phone-frame .th-canvas { min-height: 0; aspect-ratio: 9 / 16; }
+/* the strip of controls above the hero (TalkingHeroEdit) */
+.th-editwrap { position: relative; }
+.th-strip { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 8px 14px; background: #0a1530; color: #fff; border-bottom: 1px solid rgba(255, 255, 255, .12); font: 13px/1.3 "IBM Plex Sans", system-ui, sans-serif; }
+.th-strip-group { display: inline-flex; align-items: center; gap: 6px; }
+.th-strip-end { margin-left: auto; }
+.th-strip-sel { color: rgba(255, 255, 255, .75); font-size: 12.5px; }
+.th-strip-note { color: #f0b323; font-size: 12px; font-weight: 600; }
+.th-strip button { height: 30px; padding: 0 11px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .35); background: transparent; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer; }
+.th-strip button[aria-pressed="true"], .th-strip button[aria-selected="true"] { background: #f0b323; color: #111827; border-color: #f0b323; }
+.th-strip button:disabled { opacity: .4; cursor: default; }
+/* the stepper inside the strip is the studio's own; give it the dark ground */
+.th-strip input[type="number"] { background: #06101f; color: #fff; border-color: rgba(255, 255, 255, .3); }
+.th-strip .th-strip-group > div > div { margin: 0; }
