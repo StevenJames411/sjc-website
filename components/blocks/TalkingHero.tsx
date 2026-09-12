@@ -206,7 +206,9 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   const canvas = (
     <div className="th-canvas" data-screen={screen}>
       {room}
-      {props.eyebrow ? <p className="th-eyebrow th-brand">{props.eyebrow}</p> : null}
+      {/* No brand line here: the site's navigation is a global block and carries the name on every
+          page (Steven, 09-12: "we have it on two different blocks now"). The eyebrow field stays
+          for the original grid only. */}
 
       <Free el="headline" t={L.headline} edit={edit} phone={phone}>
         <h1 className="th-h1">{plain}{gold !== null ? <em>{gold}</em> : null}</h1>

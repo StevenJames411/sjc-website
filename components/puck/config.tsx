@@ -3697,7 +3697,7 @@ const baseConfig: Config<Props, RootProps> = {
     TalkingHero: {
       label: "Talking hero (Steven's twin over the room)",
       fields: {
-        eyebrow: { type: "text" as const, label: "Eyebrow (small line above the headline)" },
+        eyebrow: { type: "text" as const, label: "Eyebrow — original grid only (once placed by hand, the site navigation carries the name)" },
         headline: { type: "textarea" as const, label: "Headline" },
         byline: { type: "text" as const, label: "Byline (under the headline)" },
         opener: { type: "textarea" as const, label: "The first line the visitor reads (the twin says it once they tap)" },
