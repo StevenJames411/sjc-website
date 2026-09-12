@@ -13,11 +13,11 @@ import { usePuck } from "@measured/puck";
 import SizeStepper from "@/components/puck/SizeStepper";
 import TalkingHero, { type TalkingHeroProps, type HeroEditApi } from "./TalkingHero";
 import {
-  HERO_ELEMENT_LABEL, HERO_LAYOUT_DEFAULTS, cloneLayouts, withLayoutDefaults,
-  type HeroElement, type HeroLayouts, type HeroText,
+  HERO_ELEMENT_LABEL, HERO_LAYOUT_DEFAULTS, HERO_SCREENS, HERO_SCREEN_LABEL, cloneLayouts, withLayoutDefaults,
+  type HeroElement, type HeroLayouts, type HeroScreen, type HeroText,
 } from "./talkingHeroLayout";
 
-type Screen = "laptop" | "phone";
+type Screen = HeroScreen;
 
 export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id: string }) {
   const { id, ...rest } = props;
@@ -63,8 +63,9 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
     <div className="th-editwrap">
       <div className="th-strip" onPointerDownCapture={(e) => e.nativeEvent.stopPropagation()}>
         <div className="th-strip-group" role="tablist" aria-label="Screen">
-          <button type="button" role="tab" aria-selected={screen === "laptop"} onClick={() => { setScreen("laptop"); setSelected(null); }}>Laptop</button>
-          <button type="button" role="tab" aria-selected={screen === "phone"} onClick={() => { setScreen("phone"); setSelected(null); }}>Phone</button>
+          {HERO_SCREENS.map((s) => (
+            <button key={s} type="button" role="tab" aria-selected={screen === s} onClick={() => { setScreen(s); setSelected(null); }}>{HERO_SCREEN_LABEL[s]}</button>
+          ))}
         </div>
 
         <span className="th-strip-sel">

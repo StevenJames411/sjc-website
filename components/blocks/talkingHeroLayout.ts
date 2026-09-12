@@ -1,7 +1,7 @@
-// THE HERO LAYOUT — one shape, two screens (ruled 2026-09-12: "one system, not clumsy, easy to use").
+// THE HERO LAYOUT — one shape, three screens (ruled 2026-09-12: "one system, not clumsy, easy to use").
 //
 // Every placeable thing on the hero is an element with a position in % of the canvas and a size
-// in px. Two layouts, laptop and phone, each placed by hand in the design studio — never derived
+// in px. Three layouts, laptop, tablet and phone, each placed by hand in the design studio — never derived
 // from one another, because on a phone the headline lands on the ceiling ring and the question on
 // the podium base when you scale the laptop numbers (Steven, 09-11 23:46).
 //
@@ -31,7 +31,15 @@ export type HeroLayout = {
   orb: HeroOrb;         // the one control on the page — never small (09-11)
 };
 
-export type HeroLayouts = { laptop: HeroLayout; phone: HeroLayout };
+export type HeroScreen = "laptop" | "tablet" | "phone";
+export const HERO_SCREENS: HeroScreen[] = ["laptop", "tablet", "phone"];
+export const HERO_SCREEN_LABEL: Record<HeroScreen, string> = { laptop: "Laptop", tablet: "Tablet", phone: "Phone" };
+// Where one screen ends and the next begins, matched to the site's own lines: the tall film and
+// the phone-height canvas switch at 1023 (globals.css), the 22px headline law at 640.
+export const HERO_BREAKS = { phoneMax: 640, tabletMax: 1023 } as const;
+// The frame the studio draws to place each screen on a laptop monitor.
+export const HERO_FRAME_WIDTH: Record<HeroScreen, number | null> = { laptop: null, tablet: 768, phone: 375 };
+export type HeroLayouts = { laptop: HeroLayout; tablet: HeroLayout; phone: HeroLayout };
 
 export const HERO_ELEMENTS = ["headline", "byline", "opener", "orb"] as const;
 export type HeroElement = (typeof HERO_ELEMENTS)[number];
@@ -52,6 +60,12 @@ export const HERO_LAYOUT_DEFAULTS: HeroLayouts = {
     opener:   { x: 27, y: 56, size: 19, w: 40, color: "white", bold: false, align: "left" },
     orb:      { x: 48.8, y: 34, size: 120 },
   },
+  tablet: {
+    headline: { x: 50, y: 10, size: 34, w: 90, color: "white", bold: true, align: "center" },
+    byline:   { x: 50, y: 80, size: 26, w: 90, color: "white", bold: true, align: "center" },
+    opener:   { x: 50, y: 58, size: 18, w: 80, color: "white", bold: false, align: "center" },
+    orb:      { x: 50, y: 34, size: 110 },
+  },
   phone: {
     headline: { x: 50, y: 9, size: 22, w: 90, color: "white", bold: true, align: "center" },
     byline:   { x: 50, y: 78, size: 20, w: 90, color: "white", bold: true, align: "center" },
@@ -68,7 +82,7 @@ export function cloneLayouts(l: HeroLayouts): HeroLayouts {
 // must still open next month after an element is added.
 export function withLayoutDefaults(l: Partial<HeroLayouts> | null | undefined): HeroLayouts {
   const d = HERO_LAYOUT_DEFAULTS;
-  const fill = (screen: "laptop" | "phone"): HeroLayout => {
+  const fill = (screen: HeroScreen): HeroLayout => {
     const s = (l?.[screen] || {}) as Partial<HeroLayout>;
     return {
       headline: { ...d[screen].headline, ...(s.headline || {}) },
@@ -77,7 +91,7 @@ export function withLayoutDefaults(l: Partial<HeroLayouts> | null | undefined): 
       orb: { ...d[screen].orb, ...(s.orb || {}) },
     };
   };
-  return { laptop: fill("laptop"), phone: fill("phone") };
+  return { laptop: fill("laptop"), tablet: fill("tablet"), phone: fill("phone") };
 }
 
 // The headline's gold half: everything after a "|" in the words is gold. Same convention as the

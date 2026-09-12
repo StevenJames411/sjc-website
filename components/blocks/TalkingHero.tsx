@@ -16,8 +16,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type PointerEvent as RPointerEvent } from "react";
 import { useAgentThread, AGENT_NAME } from "@/lib/useAgentThread";
 import {
-  HERO_ELEMENT_LABEL, splitGold, withLayoutDefaults,
-  type HeroElement, type HeroLayout, type HeroLayouts, type HeroText,
+  HERO_BREAKS, HERO_ELEMENT_LABEL, HERO_FRAME_WIDTH, splitGold, withLayoutDefaults,
+  type HeroElement, type HeroLayout, type HeroLayouts, type HeroScreen, type HeroText,
 } from "./talkingHeroLayout";
 
 export type TalkingHeroProps = {
@@ -54,7 +54,7 @@ export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
 
 /** What the studio hands the block while editing. Absent on the public page. */
 export type HeroEditApi = {
-  screen: "laptop" | "phone";
+  screen: HeroScreen;
   selected: HeroElement | null;
   onSelect: (el: HeroElement | null) => void;
   /** Commit a position/size change for one element on the CURRENT screen. */
@@ -63,20 +63,22 @@ export type HeroEditApi = {
   onText: (el: "headline" | "byline" | "opener", text: string) => void;
 };
 
-const PHONE_QUERY = "(max-width: 1023px)"; // the same line as the CSS: the tall loop switches here
-const DRAG_START_PX = 4;                    // less than this is a click, more is a drag
+const DRAG_START_PX = 4; // less than this is a click, more is a drag
 
-function usePhone(force?: "laptop" | "phone") {
-  const [phone, setPhone] = useState(false);
+// Which of the three layouts the visitor gets: phone ≤ 640 · tablet ≤ 1023 · laptop above. The
+// studio forces one while placing. The lines match the CSS (tall film ≤ 1023, 22px h1 ≤ 640).
+function useScreen(force?: HeroScreen): HeroScreen {
+  const [screen, setScreen] = useState<HeroScreen>("laptop");
   useEffect(() => {
     if (force) return;
-    const mq = window.matchMedia(PHONE_QUERY);
-    const on = () => setPhone(mq.matches);
+    const p = window.matchMedia(`(max-width: ${HERO_BREAKS.phoneMax}px)`);
+    const t = window.matchMedia(`(max-width: ${HERO_BREAKS.tabletMax}px)`);
+    const on = () => setScreen(p.matches ? "phone" : t.matches ? "tablet" : "laptop");
     on();
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
+    p.addEventListener("change", on); t.addEventListener("change", on);
+    return () => { p.removeEventListener("change", on); t.removeEventListener("change", on); };
   }, [force]);
-  return force ? force === "phone" : phone;
+  return force ?? screen;
 }
 
 export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: HeroEditApi }) {
@@ -88,7 +90,8 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   const [showVideo, setShowVideo] = useState(false);
   const started = useRef(false);
   const captionsEnd = useRef<HTMLDivElement>(null);
-  const phone = usePhone(edit?.screen);
+  const screen = useScreen(edit?.screen);
+  const phone = screen === "phone";
 
   // Tell the floating orb it is not needed on this page — the hero IS the orb.
   useEffect(() => {
@@ -197,7 +200,6 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
 
   // ── PLACED BY HAND — one layout per screen, every element at its own x/y/size. ────────────────
   const layouts = withLayoutDefaults(props.layout);
-  const screen: "laptop" | "phone" = phone ? "phone" : "laptop";
   const L: HeroLayout = layouts[screen];
   const { plain, gold } = splitGold(props.headline);
 
@@ -246,7 +248,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
       style={{ ["--th-min" as any]: `${props.minHeight}vh` }}
       onPointerDown={edit ? (e) => { if ((e.target as HTMLElement).closest(".th-free, .th-orb")) return; edit.onSelect(null); } : undefined}
     >
-      {edit?.screen === "phone" ? <div className="th-phone-frame">{canvas}</div> : canvas}
+      {edit && HERO_FRAME_WIDTH[edit.screen] ? <div className="th-frame" data-frame={edit.screen} style={{ width: HERO_FRAME_WIDTH[edit.screen]! }}>{canvas}</div> : canvas}
       {modal}
     </section>
   );
