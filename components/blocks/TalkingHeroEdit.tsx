@@ -50,10 +50,18 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
     });
   }
 
+  // Selecting a thing on the hero also selects the block in the studio, so the side panel shows
+  // this block's fields (its words) and never a half-state. Presses on the canvas are stopped
+  // before Puck sees them, so Puck would otherwise never learn the block was picked.
+  const selectBlock = () => {
+    const sel = getSelectorForId(id);
+    if (sel) dispatch({ type: "setUi", ui: { itemSelector: { index: sel.index, zone: sel.zone } } });
+  };
+
   const api: HeroEditApi = {
     screen,
     selected,
-    onSelect: setSelected,
+    onSelect: (el) => { setSelected(el); if (el) selectBlock(); },
     onPatch: (el, patch) => {
       const clean: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(patch)) if (v !== undefined) clean[k] = v;

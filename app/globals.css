@@ -1706,3 +1706,6 @@ a.sjc-sys-card--layer:focus-visible {
 .th-strip input[type="number"] { background: #06101f; color: #fff; border-color: rgba(255, 255, 255, .3); }
 .th-strip .th-strip-group > div > div { margin: 0; }
 .th-strip .th-strip-group > div > div > span { color: rgba(255, 255, 255, .7); }
+/* SizeStepper's − and + are white buttons that never set a text colour; inside the dark strip
+   they inherited white and were blank squares (Steven's screenshot, 09-12 14:18). Name it. */
+.th-strip .th-strip-group > div button { color: #111827; }
