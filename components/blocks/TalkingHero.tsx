@@ -340,13 +340,16 @@ function Free({ el, t, edit, phone, children }: {
   );
 }
 
-// Words back out of a contenteditable: text nodes stay, <em> becomes the "|" gold marker.
-function extract(node: HTMLElement): string {
+// Words back out of a contenteditable: text nodes stay, <em> becomes the "|" gold marker. Walks
+// the whole tree — the em sits inside the h1, inside the box, and a one-level read lost the gold
+// the first time it was typed into (09-12).
+function extract(node: Node): string {
   let s = "";
   node.childNodes.forEach((n) => {
     if (n.nodeType === 3) s += n.textContent;
     else if ((n as HTMLElement).tagName === "EM") s += "|" + n.textContent;
-    else s += (n as HTMLElement).innerText;
+    else if ((n as HTMLElement).tagName === "BR") s += " ";
+    else s += extract(n);
   });
   return s.replace(/\s+/g, " ").trim();
 }
