@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import EditLink from "@/components/edit/EditLink";
-import AgentOrb from "@/components/AgentOrb";
 import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { SITE_DEFAULTS, SITE_NAME } from "@/lib/pageMeta";
@@ -279,10 +278,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         <EditLink />
-        {/* THE ORB (2026-09-10): the AI booking agent at the door on SJC's own site. Renders nothing until
-            NEXT_PUBLIC_AGENT_API is set. The live domain resolves as a CLIENT site whose id is SJC
-            (a site row claims stevenjamesconsulting.com), so both shapes are checked. */}
-        {isSjc || (h.kind === "client" && h.site.id === SJC) ? <AgentOrb /> : null}
+        {/* The floating orb (09-10 → 09-12) is gone: Steven IS the orb, in the hero of every page
+            (components/blocks/TalkingHero.tsx). The thread engine it used lives on in lib/useAgentThread. */}
       </body>
     </html>
   );
