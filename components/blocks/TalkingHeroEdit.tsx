@@ -131,6 +131,13 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
           >
             Reset {screen}
           </button>
+          <button
+            type="button"
+            title="Clear this browser's conversation thread and reload — test the opener fresh"
+            onClick={() => { try { window.localStorage.removeItem("agent-session"); } catch {} window.location.reload(); }}
+          >
+            Start over
+          </button>
         </div>
       </div>
 

@@ -34,7 +34,13 @@ export type TalkingHeroProps = {
   videoLabel: string;
   minHeight: number;     // laptop canvas height in vh
   layout: HeroLayouts | null; // null = the original grid; set = placed by hand in the studio
+  nudgeSeconds: number;  // silence before the first nudge line (placed layout only)
+  nudgeCount: number;    // how many nudges before the call goes quiet
 };
+
+// The two lines a silent visitor hears — pre-cached on the voice server (Lane H) under these
+// ids, so a nudge never waits on a cold GPU the way a fresh reply would.
+const NUDGE_LINES = ["Still there? Take your time.", "I'll be right here when you're ready."];
 
 export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   eyebrow: "Steven James Consulting",
@@ -50,6 +56,8 @@ export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   videoLabel: "Watch the 3-minute version",
   minHeight: 86,
   layout: null,
+  nudgeSeconds: 8,
+  nudgeCount: 2,
 };
 
 /** What the studio hands the block while editing. Absent on the public page. */
@@ -92,6 +100,8 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   const captionsEnd = useRef<HTMLDivElement>(null);
   const screen = useScreen(edit?.screen);
   const phone = screen === "phone";
+  const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nudgesSent = useRef(0);
 
   // Tell the floating orb it is not needed on this page — the hero IS the orb.
   useEffect(() => {
@@ -101,6 +111,49 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
       document.documentElement.removeAttribute("data-talking-hero");
       window.dispatchEvent(new Event("sjc:talking-hero"));
     };
+  }, []);
+
+  // ── THE SILENCE NUDGES — placed layout only; the legacy grid is untouched (09-12 ruling). ─────
+  // Armed every time the mic reopens on its own (hands-free listening, mid-call). Quiet for
+  // `nudgeSeconds` -> one canned line, quiet again -> the second, then the call goes to sleep
+  // exactly like a manual hang-up (stopHandsFree + idle) so a further tap resumes hands-free
+  // without `begin()` ever re-sending the hidden "Hi" (started.current is already true).
+  function clearSilence() {
+    if (silenceTimer.current) { clearTimeout(silenceTimer.current); silenceTimer.current = null; }
+  }
+  useEffect(() => {
+    if (edit || !props.layout) return; // studio, or the original grid: no auto-nudge
+    if (mode !== "talk") { clearSilence(); return; }
+    if (!t.listening) { clearSilence(); return; }
+    clearSilence();
+    const seconds = Math.max(1, props.nudgeSeconds || 8);
+    silenceTimer.current = setTimeout(() => {
+      if (nudgesSent.current < Math.max(0, props.nudgeCount ?? 2)) {
+        nudgesSent.current += 1;
+        const line = NUDGE_LINES[nudgesSent.current - 1] || NUDGE_LINES[NUDGE_LINES.length - 1];
+        t.speakSystemLine(`nudge-${nudgesSent.current}`, line);
+      } else {
+        t.stopHandsFree();
+        setMode("idle");
+        nudgesSent.current = 0;
+      }
+    }, seconds * 1000);
+    return clearSilence;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t.listening, mode, props.layout, props.nudgeSeconds, props.nudgeCount, edit]);
+
+  // Real activity (the visitor's own words landing in the thread) resets the nudge count, so a
+  // second quiet stretch later in the same call still gets both lines, not zero.
+  useEffect(() => {
+    const last = t.msgs[t.msgs.length - 1];
+    if (last && last.direction === "inbound") nudgesSent.current = 0;
+  }, [t.msgs]);
+
+  // Leaving the page stops everything — mic, recognition, any playing audio. stopHandsFree()
+  // already does all three; nothing here is new machinery, just calling it on unmount.
+  useEffect(() => {
+    return () => { clearSilence(); t.stopHandsFree(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

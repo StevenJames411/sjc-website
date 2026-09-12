@@ -63,6 +63,19 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
     session.current = sessionId();
   }, []);
 
+  // WARM ON LOAD — the voice server's GPU container is cold until something asks it for audio,
+  // and the first tap should not be the thing that wakes it up. Fire-and-forget: nobody is
+  // waiting on this, so a slow or dead voice server must never delay or block the page.
+  //
+  // ⛔ NO NEW BRAIN ROUTE. There is no dedicated warm/health endpoint on this path (that belongs
+  // to another lane); HEADing the speak route for a message id that will never exist ("warm")
+  // still reaches the same Modal function and starts it spinning, which is the only thing this
+  // needs to do.
+  useEffect(() => {
+    if (!AGENT_API) return;
+    fetch(`${AGENT_API}/${AGENT_PREFIX}/web/speak/warm`, { method: "HEAD" }).catch(() => {});
+  }, []);
+
   const poll = useCallback(async () => {
     if (!AGENT_API || !session.current) return;
     try {
@@ -113,24 +126,37 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
     window.speechSynthesis.speak(u);
   }
 
-  async function speak(m: Msg) {
+  // One id, one line, one voice — used for real replies (id = the message id) AND for the two
+  // canned nudge lines (id = "nudge-1" / "nudge-2", pre-cached on the voice server so a silent
+  // visitor never waits on a cold GPU). Same server-first, browser-fallback order either way.
+  async function speakRaw(id: string | number, text: string, onEnd: () => void) {
     setSpeaking(true);
-    const done = () => { setSpeaking(false); listenAgain(); };
-    // The server voice first (step 2): the owner's cloned voice, generated once per reply.
     try {
-      const url = `${AGENT_API}/${AGENT_PREFIX}/web/speak/${m.id}`;
+      const url = `${AGENT_API}/${AGENT_PREFIX}/web/speak/${id}`;
       const head = await fetch(url, { method: "HEAD" });
       if (head.ok) {
         const a = audio.current || new Audio();
         audio.current = a;
         a.src = url;
-        a.onended = done;
-        a.onerror = () => speakWithBrowser(m.body, done);
+        a.onended = onEnd;
+        a.onerror = () => speakWithBrowser(text, onEnd);
         await a.play();
         return;
       }
     } catch { /* fall through to the browser voice */ }
-    speakWithBrowser(m.body, done);
+    speakWithBrowser(text, onEnd);
+  }
+
+  async function speak(m: Msg) {
+    const done = () => { setSpeaking(false); listenAgain(); };
+    await speakRaw(m.id, m.body, done);
+  }
+
+  // A system line the thread never carried — the silence nudges. Speaks it, then reopens the mic
+  // exactly like a real reply (hands-free only; a typed conversation has no silence to nudge).
+  function speakSystemLine(id: string, text: string) {
+    const done = () => { setSpeaking(false); listenAgain(); };
+    speakRaw(id, text, done);
   }
 
   // voice mode: speak every new reply aloud, once, in order
@@ -223,7 +249,7 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
     ready: !!AGENT_API,
     msgs, busy, speaking, listening, heard, active,
     handsFree: () => handsFree.current,
-    send, startListening, startHandsFree, stopHandsFree,
+    send, startListening, startHandsFree, stopHandsFree, speakSystemLine,
     setActive, setVoiceOn,
   };
 }

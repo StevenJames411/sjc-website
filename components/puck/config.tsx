@@ -3715,6 +3715,22 @@ const baseConfig: Config<Props, RootProps> = {
             <SizeStepper label={"Canvas height"} value={value as number} onChange={onChange} fallback={86} step={2} min={50} allowZero={false} />
           ),
         },
+        // Placed layout only (09-12 call model): how long the visitor can go quiet before the
+        // twin nudges them, and how many nudges before the call goes to sleep on its own.
+        nudgeSeconds: {
+          type: "custom" as const,
+          label: "Silence before a nudge (seconds)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Nudge after"} value={value as number} onChange={onChange} fallback={8} step={1} min={3} allowZero={false} unit="s" />
+          ),
+        },
+        nudgeCount: {
+          type: "custom" as const,
+          label: "Nudges before the call goes quiet",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Nudges"} value={value as number} onChange={onChange} fallback={2} step={1} min={0} allowZero unit="" />
+          ),
+        },
         // The layout is placed ON THE HERO, not in this panel (ruled 09-12: drag it where you want
         // it, size in px, one set for a laptop and one for a phone). The field exists so the prop
         // survives every layer that drops unnamed props; the control is the canvas itself.
@@ -3736,12 +3752,12 @@ const baseConfig: Config<Props, RootProps> = {
         },
       },
       defaultProps: TALKING_HERO_DEFAULTS,
-      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, puck }) => (
+      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, puck }) => (
         <TalkingHeroSwitch
           id={id} editing={puck?.isEditing}
           eyebrow={eyebrow} headline={headline} byline={byline} opener={opener} ctaTalk={ctaTalk} ctaType={ctaType}
           idleWide={idleWide} idleTall={idleTall} poster={poster} videoUrl={videoUrl} videoLabel={videoLabel} minHeight={minHeight}
-          layout={layout}
+          layout={layout} nudgeSeconds={nudgeSeconds} nudgeCount={nudgeCount}
         />
       ),
     },
