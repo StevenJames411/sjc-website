@@ -1696,9 +1696,13 @@ a.sjc-sys-card--layer:focus-visible {
 .th-strip-end { margin-left: auto; }
 .th-strip-sel { color: rgba(255, 255, 255, .75); font-size: 12.5px; }
 .th-strip-note { color: #f0b323; font-size: 12px; font-weight: 600; }
-.th-strip button { height: 30px; padding: 0 11px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .35); background: transparent; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer; }
-.th-strip button[aria-pressed="true"], .th-strip button[aria-selected="true"] { background: #f0b323; color: #111827; border-color: #f0b323; }
-.th-strip button:disabled { opacity: .4; cursor: default; }
-/* the stepper inside the strip is the studio's own; give it the dark ground */
+/* ⛔ ONLY THE STRIP'S OWN PILLS. The px stepper inside the strip is the studio's SizeStepper with
+   its own white buttons; the first cut painted every button white-on-white and the − and + were
+   blank squares (09-12). Scope to direct children of a group. */
+.th-strip .th-strip-group > button { height: 30px; padding: 0 11px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .35); background: transparent; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer; }
+.th-strip .th-strip-group > button[aria-pressed="true"], .th-strip .th-strip-group > button[aria-selected="true"] { background: #f0b323; color: #111827; border-color: #f0b323; }
+.th-strip .th-strip-group > button:disabled { opacity: .4; cursor: default; }
+/* the stepper inside the strip is the studio's own; give it the dark ground and keep its glyphs dark */
 .th-strip input[type="number"] { background: #06101f; color: #fff; border-color: rgba(255, 255, 255, .3); }
 .th-strip .th-strip-group > div > div { margin: 0; }
+.th-strip .th-strip-group > div > div > span { color: rgba(255, 255, 255, .7); }
