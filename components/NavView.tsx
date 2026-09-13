@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Icon from "@/components/blocks/Icon";
 // Shared with FooterView — one definition of the three contact buttons, so the menu and the
 // footer cannot drift apart again.
@@ -157,6 +157,24 @@ export default function NavView({
   const [open, setOpen] = useState(false);
   const linkEls = (links || []).filter((l) => l && l.label);
 
+  // ── FLOATS OVER THE HERO WHEN THE PAGE OPENS ON THE TALKING HERO (ruled 09-11). ────────────────
+  // TalkingHero stamps `data-talking-hero` on <html> the moment it mounts (see TalkingHero.tsx —
+  // the same signal the floating orb already reads to know it isn't needed on this page) and
+  // dispatches `sjc:talking-hero` on both mount and unmount. The nav is global and rendered
+  // before the page's own blocks, so it cannot know this from its own props — it has to ask.
+  const [transparentHero, setTransparentHero] = useState(false);
+  useEffect(() => {
+    const sync = () => setTransparentHero(document.documentElement.hasAttribute("data-talking-hero"));
+    sync();
+    window.addEventListener("sjc:talking-hero", sync);
+    return () => window.removeEventListener("sjc:talking-hero", sync);
+  }, []);
+  // Kay's gradient nav is the model, not a solid band: dark at the top, gone by the time it meets
+  // the room. A solid bar elsewhere is untouched — this only fires on a talking-hero page.
+  const heroNavStyle = transparentHero
+    ? { background: "linear-gradient(to bottom, rgba(0,0,0,.65) 0%, rgba(0,0,0,.28) 55%, rgba(0,0,0,0) 100%)" }
+    : undefined;
+
   // Existing nav documents have none of these saved → undefined → these defaults.
   //
   // ⚠️ ROLES. #1e3a6e was the last thing on the page a palette change couldn't reach: the site
@@ -284,8 +302,8 @@ export default function NavView({
     // as-is. Only the clip is needed.
     return (
       <header
-        className={`sticky top-0 z-30 w-full${bandGrid ? " overflow-hidden" : ""}`}
-        style={{ backgroundColor: resolveColor(bg) }}
+        className={`${transparentHero ? "fixed" : "sticky"} top-0 z-30 w-full${bandGrid ? " overflow-hidden" : ""}`}
+        style={heroNavStyle || { backgroundColor: resolveColor(bg) }}
       >
         {GridOverlay}
         <div
@@ -427,8 +445,8 @@ export default function NavView({
     // against white they look more different." That IS the mechanism. A colour that depends on
     // what happens to be behind it isn't a colour you can tune.
     <header
-      className={`sticky top-0 z-20 w-full${bandGrid ? " overflow-hidden" : ""}`}
-      style={{ backgroundColor: resolveColor(bg) }}
+      className={`${transparentHero ? "fixed" : "sticky"} top-0 z-20 w-full${bandGrid ? " overflow-hidden" : ""}`}
+      style={heroNavStyle || { backgroundColor: resolveColor(bg) }}
     >
       {GridOverlay}
       {/* Desktop: brand left · tagline centered · links + button right */}

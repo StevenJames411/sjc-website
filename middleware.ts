@@ -55,6 +55,7 @@ const PUBLIC_API = [
   "/api/health",
   "/api/cron", // gated by CRON_SECRET, not by the owner cookie
   "/api/stripe", // Stripe's own signature is the gate
+  "/api/blueprint", // gated by X-Blueprint-Key, not by the owner cookie — the brain is the caller
 ];
 
 // The owner-only surfaces: the whole editor, plus every API route not explicitly made public.

@@ -77,5 +77,16 @@ export const NOINDEX_SLUGS = new Set([
   // has no business turning up in a search for a booking agent. Reachable by anyone he sends the
   // link to, invisible to everyone else.
   "how-we-train-ai-employees",
+  // ⛔ THE SIX BLUEPRINT PAGES — live but unadvertised (Steven, 2026-09-12: "we could stick them
+  // in our architecture whenever we want; they're not advertised"). agent-sjc emails the link to a
+  // prospect who asks for one; nothing on the site links to them and they carry no nav entry.
+  // Flat slugs, not the nested /blueprints/<x> the brain speaks — app/[slug] is a single dynamic
+  // segment and cannot resolve a second one, so next.config redirects the nested address here.
+  "blueprint-five-systems",
+  "blueprint-website",
+  "blueprint-speed",
+  "blueprint-reviews",
+  "blueprint-database",
+  "blueprint-ads",
 ]);
 export const isNoindex = (slug: string) => NOINDEX_SLUGS.has(slug);

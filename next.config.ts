@@ -45,6 +45,39 @@ const nextConfig: NextConfig = {
         destination: "/hustle-trap",
         permanent: true,
       },
+      // The six blueprint pages — agent-sjc emails links at the nested address it was told to
+      // speak (/blueprints/<x>), but app/[slug] is a single dynamic segment and cannot resolve a
+      // second one. Flat slugs are the real pages; these just make the brain's URL answer.
+      {
+        source: "/blueprints/five-systems",
+        destination: "/blueprint-five-systems",
+        permanent: true,
+      },
+      {
+        source: "/blueprints/website",
+        destination: "/blueprint-website",
+        permanent: true,
+      },
+      {
+        source: "/blueprints/speed",
+        destination: "/blueprint-speed",
+        permanent: true,
+      },
+      {
+        source: "/blueprints/reviews",
+        destination: "/blueprint-reviews",
+        permanent: true,
+      },
+      {
+        source: "/blueprints/database",
+        destination: "/blueprint-database",
+        permanent: true,
+      },
+      {
+        source: "/blueprints/ads",
+        destination: "/blueprint-ads",
+        permanent: true,
+      },
     ];
   },
 };

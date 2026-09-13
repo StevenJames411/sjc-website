@@ -278,6 +278,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {children}
         <EditLink />
+        {/* The floating orb (09-10 → 09-12) is gone: Steven IS the orb, in the hero of every page
+            (components/blocks/TalkingHero.tsx). The thread engine it used lives on in lib/useAgentThread. */}
       </body>
     </html>
   );

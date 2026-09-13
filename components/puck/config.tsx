@@ -20,6 +20,9 @@ import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
 import CalEmbed from "@/components/blocks/CalEmbed";
+import { TALKING_HERO_DEFAULTS, type TalkingHeroProps } from "@/components/blocks/TalkingHero";
+import TalkingHeroSwitch from "@/components/blocks/TalkingHeroSwitch";
+import { HERO_LAYOUT_DEFAULTS } from "@/components/blocks/talkingHeroLayout";
 import { calLinkFrom } from "@/lib/calLink";
 
 // ⛔ Cal's auto-resize embed is PARKED behind this flag — see the note at the Booking render.
@@ -97,6 +100,8 @@ type Props = {
   };
   // Generic, page-agnostic building blocks — compose these instead of hand-coding a section.
   Card: { badge: string; eyebrow: string; heading: string; body: string; icon: string; iconColor: string; badgeColor: string; badgePosition: string; centered: boolean; layout: string; bare: boolean; eyebrowSize: number; eyebrowColor: string; headingSize: number; headingColor: string; bodySize: number; bodyColor: string; eyebrowBold: boolean; headingBold: boolean; bodyBold: boolean; eyebrowCaps: boolean; surface: string; surfaceColor: string; surfaceOpacity: number; borderColor: string; hoverBorderColor: string; shadowColor: string; hoverLift: boolean; radius: number };
+  /** THE TALKING HERO (2026-09-11): the page's hero is a live conversation with Steven's twin over his room. */
+  TalkingHero: TalkingHeroProps;
   HeroImage: {
     src: string; alt: string; height: number; tilt: number; glow: string; frame: string;
     radius: number; badgeTitle: string; badgeBody: string; pillText: string; pillColor: string;
@@ -784,7 +789,7 @@ const baseConfig: Config<Props, RootProps> = {
     building: {
       title: "Building blocks",
       defaultExpanded: true,
-      components: ["Section", "Columns", "Heading", "Text", "Button", "Card", "CheckList",
+      components: ["TalkingHero", "Section", "Columns", "Heading", "Text", "Button", "Card", "CheckList",
                    "PriceBox", "Conversation", "Image", "HeroImage", "Video", "Booking", "Spacer",
                    "Divider", "PhoneLink"] as (keyof Props)[],
     },
@@ -3689,6 +3694,85 @@ const baseConfig: Config<Props, RootProps> = {
     // photo's corners. Separate from Image because the badges sit ON the photo and therefore have
     // to live in the same box; assembling that from loose blocks would need absolute-position
     // controls in the builder. Every effect is optional, so this also renders a plain photo.
+    TalkingHero: {
+      label: "Talking hero (Steven's twin over the room)",
+      fields: {
+        eyebrow: { type: "text" as const, label: "Eyebrow — original grid only (once placed by hand, the site navigation carries the name)" },
+        headline: { type: "textarea" as const, label: "Headline" },
+        byline: { type: "text" as const, label: "Byline (under the headline)" },
+        opener: { type: "textarea" as const, label: "The first line the visitor reads (the twin says it once they tap)" },
+        ctaTalk: { type: "text" as const, label: "Talk button" },
+        ctaType: { type: "text" as const, label: "Type button" },
+        idleWide: { type: "text" as const, label: "Idle loop, laptop (16:9 mp4 URL)" },
+        idleTall: { type: "text" as const, label: "Idle loop, phone (9:16 mp4 URL)" },
+        poster: { type: "text" as const, label: "Poster image URL (first frame while the loop loads)" },
+        videoUrl: { type: "text" as const, label: "The 3-minute version (mp4 URL — blank hides the play button)" },
+        videoLabel: { type: "text" as const, label: "Play button label" },
+        minHeight: {
+          type: "custom" as const,
+          label: "Canvas height on a laptop (% of the screen)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Canvas height"} value={value as number} onChange={onChange} fallback={86} step={2} min={50} allowZero={false} />
+          ),
+        },
+        // Placed layout only (09-12 call model): how long the visitor can go quiet before the
+        // twin nudges them, and how many nudges before the call goes to sleep on its own.
+        nudgeSeconds: {
+          type: "custom" as const,
+          label: "Silence before a nudge (seconds)",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Nudge after"} value={value as number} onChange={onChange} fallback={8} step={1} min={3} allowZero={false} unit="s" />
+          ),
+        },
+        nudgeCount: {
+          type: "custom" as const,
+          label: "Nudges before the call goes quiet",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Nudges"} value={value as number} onChange={onChange} fallback={2} step={1} min={0} allowZero unit="" />
+          ),
+        },
+        // The layout is placed ON THE HERO, not in this panel (ruled 09-12: drag it where you want
+        // it, size in px, one set for a laptop and one for a phone). The field exists so the prop
+        // survives every layer that drops unnamed props; the control is the canvas itself.
+        // Lines added from the strip's "+ Text" (09-13). Words live here so the prop survives every
+        // layer that drops unnamed props; they are typed ON the hero, so the panel only counts them.
+        extra: {
+          type: "custom" as const,
+          label: "Added lines",
+          render: ({ value }) => (
+            <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>
+              {Array.isArray(value) && value.length ? `${value.length} added — click one on the hero to move or type it.` : "None — press + Text on the hero to add one."}
+            </div>
+          ),
+        },
+        layout: {
+          type: "custom" as const,
+          label: "Where things sit",
+          render: ({ value, onChange }) => (
+            <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>
+              {value ? "Placed by hand on the hero — drag, resize and type there. " : "Not placed yet — the block uses its original grid. "}
+              <button
+                type="button"
+                onClick={() => onChange(value ? null : HERO_LAYOUT_DEFAULTS)}
+                style={{ padding: "4px 8px", fontSize: 12, borderRadius: 6, border: "1px solid #d1d5db", background: "#fff", cursor: "pointer", marginTop: 6 }}
+              >
+                {value ? "Back to the original grid" : "Place things by hand"}
+              </button>
+            </div>
+          ),
+        },
+      },
+      defaultProps: TALKING_HERO_DEFAULTS,
+      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, extra, puck }) => (
+        <TalkingHeroSwitch
+          id={id} editing={puck?.isEditing}
+          eyebrow={eyebrow} headline={headline} byline={byline} opener={opener} ctaTalk={ctaTalk} ctaType={ctaType}
+          idleWide={idleWide} idleTall={idleTall} poster={poster} videoUrl={videoUrl} videoLabel={videoLabel} minHeight={minHeight}
+          layout={layout} nudgeSeconds={nudgeSeconds} nudgeCount={nudgeCount} extra={extra}
+        />
+      ),
+    },
+
     HeroImage: {
       label: "Hero photo (tilt + floating cards)",
       fields: {

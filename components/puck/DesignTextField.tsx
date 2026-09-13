@@ -195,6 +195,38 @@ function GlobalSize({ textKey }: { textKey: string }) {
   );
 }
 
+/**
+ * "Size — this line only", seeded with the size the line is ACTUALLY rendered at.
+ *
+ * ⛔ IT OPENED AT 0 (Steven, 2026-09-12): "it is set at zero because it's never been manipulated,
+ * and then I have to click in there and figure out is it 30 point, is it 28 point." The stepper
+ * only knew the saved override, and an untouched line has none — so it showed a number that was
+ * not in effect and nobody had chosen. The line is on the canvas, rendered at a real size; measure
+ * it there (`data-sjc-text` marks the span) and start from that. The first + is measured+2, which
+ * is what he expects a size box to do. The "Everywhere" control underneath is unchanged.
+ */
+function LineSize({ textKey, size, onChange }: { textKey: string; size?: number; onChange: (v: number | null) => void }) {
+  const [measured, setMeasured] = useState(0);
+  useEffect(() => {
+    if (typeof document === "undefined" || !textKey) return;
+    const el = document.querySelector<HTMLElement>(`[data-sjc-text="${CSS.escape(textKey)}"]`);
+    if (!el) return setMeasured(0);
+    const px = parseFloat(getComputedStyle(el).fontSize);
+    setMeasured(Number.isFinite(px) ? Math.round(px) : 0);
+  }, [textKey, size]);
+  const isSet = typeof size === "number" && size > 0;
+  return (
+    <SizeStepper
+      label={isSet ? "Size — this line only" : measured ? `Size — this line only (${measured}px as rendered)` : "Size — this line only"}
+      value={size || 0}
+      onChange={onChange}
+      fallback={measured || 0}
+      step={2}
+      min={0}
+    />
+  );
+}
+
 export default function DesignTextField({
   value,
   onChange,
@@ -320,14 +352,7 @@ export default function DesignTextField({
                     resize: "vertical",
                   }}
                 />
-                <SizeStepper
-                  label="Size — this line only"
-                  value={row.size || 0}
-                  onChange={(v) => set(row.key, { size: v as number })}
-                  fallback={0}
-                  step={2}
-                  min={0}
-                />
+                <LineSize textKey={row.key} size={row.size} onChange={(v) => set(row.key, { size: v as number })} />
                 <GlobalSize textKey={row.key} />
                 <ColorField value={row.color} onChange={(v) => set(row.key, { color: v })} />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
