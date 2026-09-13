@@ -254,6 +254,9 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   }
 
   // ── PLACED BY HAND — one layout per screen, every element at its own x/y/size. ────────────────
+  // THE CENTRE LINE (09-13: "I'm having to eyeball where center is"). While a thing is dragged
+  // within SNAP_PCT of the canvas's middle, a dashed line shows and the thing locks to x = 50.
+  const [guide, setGuide] = useState(false);
   const layouts = withLayoutDefaults(props.layout);
   const L: HeroLayout = layouts[screen];
   const { plain, gold } = splitGold(props.headline);
@@ -265,27 +268,29 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
           page (Steven, 09-12: "we have it on two different blocks now"). The eyebrow field stays
           for the original grid only. */}
 
-      <Free el="headline" t={L.headline} edit={edit} phone={phone}>
+      {edit && guide ? <div className="th-guide-v" aria-hidden="true" /> : null}
+
+      <Free el="headline" t={L.headline} edit={edit} phone={phone} onGuide={setGuide}>
         <h1 className="th-h1">{plain}{gold !== null ? <em>{gold}</em> : null}</h1>
       </Free>
 
       {props.byline || edit ? (
-        <Free el="byline" t={L.byline} edit={edit} phone={phone}>
+        <Free el="byline" t={L.byline} edit={edit} phone={phone} onGuide={setGuide}>
           <p className="th-q">{props.byline || (edit ? "Your question here" : "")}</p>
         </Free>
       ) : null}
 
-      <Free el="opener" t={L.opener} edit={edit} phone={phone}>
+      <Free el="opener" t={L.opener} edit={edit} phone={phone} onGuide={setGuide}>
         <div className="th-talk">{conversation}</div>
       </Free>
 
       {(props.extra || []).map((x) => (
-        <Free key={x.id} el={x.id as HeroTextElement} t={heroText(L, x.id as HeroTextElement, screen)} edit={edit} phone={phone}>
+        <Free key={x.id} el={x.id as HeroTextElement} t={heroText(L, x.id as HeroTextElement, screen)} edit={edit} phone={phone} onGuide={setGuide}>
           <p className="th-q">{x.text || (edit ? "Type here" : "")}</p>
         </Free>
       ))}
 
-      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={toggleTalk} ready={t.ready} />
+      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={toggleTalk} ready={t.ready} onGuide={setGuide} />
 
       <div className="th-under" style={{ left: `${L.orb.x}%`, top: `calc(${L.orb.y}% + ${L.orb.size / 2 + 10}px)` }}>
         {mode === "idle" ? <span className="th-orblabel">{props.ctaTalk}</span> : null}
@@ -317,9 +322,18 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   );
 }
 
+// Snap a dragged centre line to the canvas middle when it is close. Returns the x to use and
+// whether the guide should show. The threshold is in % of the canvas so it feels the same on
+// every screen (~1.5% is about 20px on a laptop, 6px on a phone frame).
+const SNAP_PCT = 1.5;
+function snapMid(x: number): { x: number; near: boolean } {
+  const near = Math.abs(x - 50) <= SNAP_PCT;
+  return { x: near ? 50 : x, near };
+}
+
 // ── one free-floating text element ─────────────────────────────────────────────────────────────
-function Free({ el, t, edit, phone, children }: {
-  el: HeroTextElement; t: HeroText; edit?: HeroEditApi; phone: boolean; children: ReactNode;
+function Free({ el, t, edit, phone, children, onGuide }: {
+  el: HeroTextElement; t: HeroText; edit?: HeroEditApi; phone: boolean; children: ReactNode; onGuide?: (on: boolean) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [live, setLive] = useState<Partial<HeroText> | null>(null); // while a drag is in flight
@@ -351,8 +365,11 @@ function Free({ el, t, edit, phone, children }: {
     const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
     if (!d.moved && Math.hypot(dx, dy) < DRAG_START_PX) return;
     d.moved = true;
-    if (d.kind === "move") setLive({ x: d.x + (dx / d.cw) * 100, y: d.y + (dy / d.ch) * 100 });
-    else {
+    if (d.kind === "move") {
+      const m = snapMid(d.x + (dx / d.cw) * 100);
+      onGuide?.(m.near);
+      setLive({ x: m.x, y: d.y + (dy / d.ch) * 100 });
+    } else {
       const k = Math.max(0.3, 1 + dx / Math.max(60, d.bw));
       setLive({ size: Math.max(8, Math.round(d.size * k)), w: d.w ? Math.max(10, Math.round(d.w * k)) : null });
     }
@@ -360,6 +377,7 @@ function Free({ el, t, edit, phone, children }: {
   function up(e: RPointerEvent<HTMLDivElement>) {
     const d = drag.current; if (!d || !edit) return;
     drag.current = null;
+    onGuide?.(false);
     try { ref.current!.releasePointerCapture(e.pointerId); } catch {}
     if (d.moved && live) { edit.onPatch(el, { ...live, x: live.x !== undefined ? +live.x.toFixed(2) : undefined, y: live.y !== undefined ? +live.y.toFixed(2) : undefined }); setLive(null); return; }
     setLive(null);
@@ -390,7 +408,7 @@ function Free({ el, t, edit, phone, children }: {
       onPointerDownCapture={edit ? (e) => down(e, "move") : undefined}
       onPointerMove={edit ? move : undefined}
       onPointerUp={edit ? up : undefined}
-      onPointerCancel={edit ? () => { drag.current = null; setLive(null); } : undefined}
+      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(false); } : undefined}
     >
       <div className="th-text">{children}</div>
       {edit && sel ? (
@@ -418,8 +436,8 @@ function extract(node: Node): string {
 }
 
 // ── the orb — the one control on the page, never small ──────────────────────────────────────────
-function Orb({ x, y, size, state, edit, onTap, ready }: {
-  x: number; y: number; size: number; state: string; edit?: HeroEditApi; onTap: () => void; ready: boolean;
+function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
+  x: number; y: number; size: number; state: string; edit?: HeroEditApi; onTap: () => void; ready: boolean; onGuide?: (on: boolean) => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [live, setLive] = useState<{ x: number; y: number } | null>(null);
@@ -440,11 +458,14 @@ function Orb({ x, y, size, state, edit, onTap, ready }: {
     const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
     if (!d.moved && Math.hypot(dx, dy) < DRAG_START_PX) return;
     d.moved = true;
-    setLive({ x: d.x + (dx / d.cw) * 100, y: d.y + (dy / d.ch) * 100 });
+    const m = snapMid(d.x + (dx / d.cw) * 100);
+    onGuide?.(m.near);
+    setLive({ x: m.x, y: d.y + (dy / d.ch) * 100 });
   }
   function up(e: RPointerEvent<HTMLButtonElement>) {
     const d = drag.current; if (!d || !edit) return;
     drag.current = null;
+    onGuide?.(false);
     try { ref.current!.releasePointerCapture(e.pointerId); } catch {}
     if (d.moved && live) edit.onPatch("orb", { x: +live.x.toFixed(2), y: +live.y.toFixed(2) });
     else edit.onSelect("orb");
@@ -464,7 +485,7 @@ function Orb({ x, y, size, state, edit, onTap, ready }: {
       onPointerDownCapture={edit ? down : undefined}
       onPointerMove={edit ? move : undefined}
       onPointerUp={edit ? up : undefined}
-      onPointerCancel={edit ? () => { drag.current = null; setLive(null); } : undefined}
+      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(false); } : undefined}
     >
       <svg viewBox="0 0 32 32" style={{ width: size * 0.56, height: size * 0.56 }} aria-hidden="true">
         <g><path d="M5 12h5l7-6v20l-7-6H5z" /><path d="M21 12.5a5 5 0 0 1 0 7" /><path d="M23.5 9.5a9 9 0 0 1 0 13" /><path d="M26 6.5a13 13 0 0 1 0 19" /></g>

@@ -1674,6 +1674,8 @@ a.sjc-sys-card--layer:focus-visible {
 [data-puck-component] .th-editwrap .th-loop, [data-puck-component] .th-editwrap .th-shade { pointer-events: none; }
 [data-puck-component] .th-editwrap .th-free.typing, [data-puck-component] .th-editwrap .th-free.typing * { user-select: text; -webkit-user-select: text; }
 [data-sjc-talking-hero][data-editing] .th-canvas { user-select: none; touch-action: none; }
+/* The centre line: shows only while a drag is within snap range of the middle (09-13). */
+[data-sjc-talking-hero][data-editing] .th-guide-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 0; border-left: 2px dashed #f0b323; z-index: 9; pointer-events: none; opacity: .9; }
 [data-sjc-talking-hero][data-editing] .th-free { cursor: grab; outline: 2px solid transparent; outline-offset: 2px; }
 [data-sjc-talking-hero][data-editing] .th-free:hover { outline-color: rgba(240, 179, 35, .5); }
 [data-sjc-talking-hero][data-editing] .th-free.sel { outline-color: #f0b323; }

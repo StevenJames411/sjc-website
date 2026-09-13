@@ -165,6 +165,12 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
           </>
         ) : null}
 
+        {selected ? (
+          <div className="th-strip-group">
+            <button type="button" title="Put this thing dead centre, left to right, on this screen" onClick={() => api.onPatch(selected, { x: 50 })}>Centre on page</button>
+          </div>
+        ) : null}
+
         <div className="th-strip-group">
           <button type="button" title="Add another line of text to the hero (it lands on every screen)" onClick={() => addLine()}>+ Text</button>
           {text && selected ? (
