@@ -29,7 +29,12 @@ export type HeroLayout = {
   byline: HeroText;     // the question under (or wherever he puts it)
   opener: HeroText;     // the first line he reads; the captions land here once they talk
   orb: HeroOrb;         // the one control on the page — never small (09-11)
+  extra: Record<string, HeroText>; // any further lines he adds from the strip ("+ Text"), by id
 };
+
+// A line added from the strip (09-13): the WORDS live once on the block (`extra` prop, shared by
+// every screen); the POSITION lives per screen in `layout.<screen>.extra[id]`, like the core four.
+export type HeroExtraLine = { id: string; text: string };
 
 export type HeroScreen = "laptop" | "tablet" | "phone";
 export const HERO_SCREENS: HeroScreen[] = ["laptop", "tablet", "phone"];
@@ -42,13 +47,30 @@ export const HERO_FRAME_WIDTH: Record<HeroScreen, number | null> = { laptop: nul
 export type HeroLayouts = { laptop: HeroLayout; tablet: HeroLayout; phone: HeroLayout };
 
 export const HERO_ELEMENTS = ["headline", "byline", "opener", "orb"] as const;
-export type HeroElement = (typeof HERO_ELEMENTS)[number];
+export type HeroCoreElement = (typeof HERO_ELEMENTS)[number];
+export type HeroExtraId = `x-${string}`;
+export type HeroElement = HeroCoreElement | HeroExtraId;
+export type HeroTextElement = Exclude<HeroElement, "orb">;
 
-export const HERO_ELEMENT_LABEL: Record<HeroElement, string> = {
+export const HERO_ELEMENT_LABEL: Record<HeroCoreElement, string> = {
   headline: "Headline",
   byline: "Question",
   opener: "First line",
   orb: "The orb",
+};
+export const isExtra = (el: HeroElement): el is HeroExtraId => el.startsWith("x-");
+export const heroLabel = (el: HeroElement): string => (isExtra(el) ? "Text" : HERO_ELEMENT_LABEL[el]);
+export const newExtraId = (): HeroExtraId => `x-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+
+/** The placement of any text element on one screen — core or added — never undefined. */
+export function heroText(l: HeroLayout, el: HeroTextElement, screen: HeroScreen): HeroText {
+  if (isExtra(el)) return l.extra[el] || NEW_LINE_DEFAULT[screen];
+  return l[el];
+}
+export const NEW_LINE_DEFAULT: Record<HeroScreen, HeroText> = {
+  laptop: { x: 50, y: 46, size: 22, w: null, color: "white", bold: false, align: "center" },
+  tablet: { x: 50, y: 48, size: 20, w: 80, color: "white", bold: false, align: "center" },
+  phone:  { x: 50, y: 50, size: 16, w: 90, color: "white", bold: false, align: "center" },
 };
 
 // Steven's own laptop placement from the layout page (2026-09-12, artifact layout/home v73),
@@ -59,18 +81,21 @@ export const HERO_LAYOUT_DEFAULTS: HeroLayouts = {
     byline:   { x: 35, y: 80, size: 30, w: null, color: "white", bold: true, align: "center" },
     opener:   { x: 27, y: 56, size: 19, w: 40, color: "white", bold: false, align: "left" },
     orb:      { x: 48.8, y: 34, size: 120 },
+    extra: {},
   },
   tablet: {
     headline: { x: 50, y: 10, size: 34, w: 90, color: "white", bold: true, align: "center" },
     byline:   { x: 50, y: 80, size: 26, w: 90, color: "white", bold: true, align: "center" },
     opener:   { x: 50, y: 58, size: 18, w: 80, color: "white", bold: false, align: "center" },
     orb:      { x: 50, y: 34, size: 110 },
+    extra: {},
   },
   phone: {
     headline: { x: 50, y: 9, size: 22, w: 90, color: "white", bold: true, align: "center" },
     byline:   { x: 50, y: 78, size: 20, w: 90, color: "white", bold: true, align: "center" },
     opener:   { x: 50, y: 60, size: 16, w: 90, color: "white", bold: false, align: "center" },
     orb:      { x: 50, y: 34, size: 96 },
+    extra: {},
   },
 };
 
@@ -89,6 +114,7 @@ export function withLayoutDefaults(l: Partial<HeroLayouts> | null | undefined): 
       byline: { ...d[screen].byline, ...(s.byline || {}) },
       opener: { ...d[screen].opener, ...(s.opener || {}) },
       orb: { ...d[screen].orb, ...(s.orb || {}) },
+      extra: { ...(s.extra || {}) },
     };
   };
   return { laptop: fill("laptop"), tablet: fill("tablet"), phone: fill("phone") };

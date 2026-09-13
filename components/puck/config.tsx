@@ -3734,6 +3734,17 @@ const baseConfig: Config<Props, RootProps> = {
         // The layout is placed ON THE HERO, not in this panel (ruled 09-12: drag it where you want
         // it, size in px, one set for a laptop and one for a phone). The field exists so the prop
         // survives every layer that drops unnamed props; the control is the canvas itself.
+        // Lines added from the strip's "+ Text" (09-13). Words live here so the prop survives every
+        // layer that drops unnamed props; they are typed ON the hero, so the panel only counts them.
+        extra: {
+          type: "custom" as const,
+          label: "Added lines",
+          render: ({ value }) => (
+            <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>
+              {Array.isArray(value) && value.length ? `${value.length} added — click one on the hero to move or type it.` : "None — press + Text on the hero to add one."}
+            </div>
+          ),
+        },
         layout: {
           type: "custom" as const,
           label: "Where things sit",
@@ -3752,12 +3763,12 @@ const baseConfig: Config<Props, RootProps> = {
         },
       },
       defaultProps: TALKING_HERO_DEFAULTS,
-      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, puck }) => (
+      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, extra, puck }) => (
         <TalkingHeroSwitch
           id={id} editing={puck?.isEditing}
           eyebrow={eyebrow} headline={headline} byline={byline} opener={opener} ctaTalk={ctaTalk} ctaType={ctaType}
           idleWide={idleWide} idleTall={idleTall} poster={poster} videoUrl={videoUrl} videoLabel={videoLabel} minHeight={minHeight}
-          layout={layout} nudgeSeconds={nudgeSeconds} nudgeCount={nudgeCount}
+          layout={layout} nudgeSeconds={nudgeSeconds} nudgeCount={nudgeCount} extra={extra}
         />
       ),
     },

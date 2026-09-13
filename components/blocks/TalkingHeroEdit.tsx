@@ -13,8 +13,8 @@ import { registerOverlayPortal, usePuck } from "@measured/puck";
 import SizeStepper from "@/components/puck/SizeStepper";
 import TalkingHero, { type TalkingHeroProps, type HeroEditApi } from "./TalkingHero";
 import {
-  HERO_ELEMENT_LABEL, HERO_LAYOUT_DEFAULTS, HERO_SCREENS, HERO_SCREEN_LABEL, cloneLayouts, withLayoutDefaults,
-  type HeroElement, type HeroLayouts, type HeroScreen, type HeroText,
+  HERO_LAYOUT_DEFAULTS, HERO_SCREENS, HERO_SCREEN_LABEL, NEW_LINE_DEFAULT, cloneLayouts, heroLabel, heroText, isExtra, newExtraId, withLayoutDefaults,
+  type HeroElement, type HeroExtraLine, type HeroLayouts, type HeroScreen, type HeroText, type HeroTextElement,
 } from "./talkingHeroLayout";
 
 type Screen = HeroScreen;
@@ -37,17 +37,51 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
 
   // The single write path. Reads the block's CURRENT props from Puck (not from this render's
   // props, which can lag one commit behind during a fast drag-then-type), patches, replaces.
-  function write(next: (l: HeroLayouts) => HeroLayouts, words?: Partial<TalkingHeroProps>) {
+  type Words = Partial<TalkingHeroProps> | ((cur: Partial<TalkingHeroProps>) => Partial<TalkingHeroProps>);
+  function write(next: (l: HeroLayouts) => HeroLayouts, words?: Words) {
     const item = getItemById(id);
     const sel = getSelectorForId(id);
     if (!item || !sel) return;
-    const cur = withLayoutDefaults((item.props as Partial<TalkingHeroProps>).layout);
+    const curProps = item.props as Partial<TalkingHeroProps>;
+    const cur = withLayoutDefaults(curProps.layout);
+    const w = typeof words === "function" ? words(curProps) : words;
     dispatch({
       type: "replace",
       destinationIndex: sel.index,
       destinationZone: sel.zone,
-      data: { ...item, props: { ...item.props, ...(words || {}), layout: next(cloneLayouts(cur)) } },
+      data: { ...item, props: { ...item.props, ...(w || {}), layout: next(cloneLayouts(cur)) } },
     });
+  }
+  const extraOf = (p: Partial<TalkingHeroProps>): HeroExtraLine[] => Array.isArray(p.extra) ? p.extra : [];
+  const wordsOf = (p: Partial<TalkingHeroProps>, el: HeroTextElement): string =>
+    isExtra(el) ? (extraOf(p).find((x) => x.id === el)?.text || "") : String(p[el] || "");
+
+  // ── + Text · Copy · Remove (09-13: "when I'm on the canvas and want to add another text block") ──
+  // A new line lands on all three screens at once (each at that screen's default spot), so the
+  // tablet and phone never open with a line missing. Copy clones the selected line's words and
+  // its place on every screen, a step down so the two are not on top of each other. Remove only
+  // ever removes an added line — the core four are the page's own words and stay.
+  function addLine(from?: HeroTextElement) {
+    const nid = newExtraId();
+    write(
+      (l) => {
+        for (const sc of HERO_SCREENS) {
+          const src = from ? heroText(l[sc], from, sc) : NEW_LINE_DEFAULT[sc];
+          l[sc].extra[nid] = { ...src, y: from ? Math.min(92, +(src.y + 7).toFixed(2)) : src.y };
+        }
+        return l;
+      },
+      (p) => ({ extra: [...extraOf(p), { id: nid, text: from ? wordsOf(p, from) : "New line" }] }),
+    );
+    setSelected(nid);
+  }
+  function removeLine(el: HeroElement) {
+    if (!isExtra(el)) return;
+    write(
+      (l) => { for (const sc of HERO_SCREENS) delete l[sc].extra[el]; return l; },
+      (p) => ({ extra: extraOf(p).filter((x) => x.id !== el) }),
+    );
+    setSelected(null);
   }
 
   // Selecting a thing on the hero also selects the block in the studio, so the side panel shows
@@ -65,12 +99,21 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
     onPatch: (el, patch) => {
       const clean: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(patch)) if (v !== undefined) clean[k] = v;
-      write((l) => { Object.assign(l[screen][el] as object, clean); return l; });
+      write((l) => {
+        if (isExtra(el)) l[screen].extra[el] = { ...heroText(l[screen], el, screen), ...clean } as HeroText;
+        else Object.assign(l[screen][el] as object, clean);
+        return l;
+      });
     },
-    onText: (el, text) => write((l) => l, { [el]: text }),
+    onText: (el, text) =>
+      isExtra(el)
+        ? write((l) => l, (p) => ({ extra: extraOf(p).map((x) => (x.id === el ? { ...x, text } : x)) }))
+        : write((l) => l, { [el]: text }),
   };
 
-  const cur = selected ? (layouts[screen][selected] as HeroText | { size: number }) : null;
+  const cur: HeroText | { size: number } | null = selected
+    ? (selected === "orb" ? layouts[screen].orb : heroText(layouts[screen], selected, screen))
+    : null;
   const isText = selected && selected !== "orb";
   const text = isText ? (cur as HeroText) : null;
   const headlineOnPhone = screen === "phone" && selected === "headline";
@@ -85,7 +128,7 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
         </div>
 
         <span className="th-strip-sel">
-          {selected ? HERO_ELEMENT_LABEL[selected] : "Click a thing on the hero to place it · drag to move · click again to type"}
+          {selected ? heroLabel(selected) : "Click a thing on the hero to place it · drag to move · click again to type"}
         </span>
 
         {selected ? (
@@ -121,6 +164,16 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
             </div>
           </>
         ) : null}
+
+        <div className="th-strip-group">
+          <button type="button" title="Add another line of text to the hero (it lands on every screen)" onClick={() => addLine()}>+ Text</button>
+          {text && selected ? (
+            <button type="button" title="Copy this line — same words, same place, one step down" onClick={() => addLine(selected as HeroTextElement)}>Copy</button>
+          ) : null}
+          {selected && isExtra(selected) ? (
+            <button type="button" title="Remove this added line from every screen" onClick={() => removeLine(selected)}>Remove</button>
+          ) : null}
+        </div>
 
         <div className="th-strip-group th-strip-end">
           <button type="button" onClick={() => history.back()} disabled={!history.hasPast} title="Undo the last change (the studio's own undo)">↶ Undo</button>

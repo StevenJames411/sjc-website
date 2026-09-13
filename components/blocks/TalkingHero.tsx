@@ -16,8 +16,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type PointerEvent as RPointerEvent } from "react";
 import { useAgentThread, AGENT_NAME } from "@/lib/useAgentThread";
 import {
-  HERO_BREAKS, HERO_ELEMENT_LABEL, HERO_FRAME_WIDTH, splitGold, withLayoutDefaults,
-  type HeroElement, type HeroLayout, type HeroLayouts, type HeroScreen, type HeroText,
+  HERO_BREAKS, HERO_FRAME_WIDTH, heroLabel, heroText, splitGold, withLayoutDefaults,
+  type HeroElement, type HeroExtraLine, type HeroLayout, type HeroLayouts, type HeroScreen, type HeroText, type HeroTextElement,
 } from "./talkingHeroLayout";
 
 export type TalkingHeroProps = {
@@ -36,6 +36,7 @@ export type TalkingHeroProps = {
   layout: HeroLayouts | null; // null = the original grid; set = placed by hand in the studio
   nudgeSeconds: number;  // silence before the first nudge line (placed layout only)
   nudgeCount: number;    // how many nudges before the call goes quiet
+  extra: HeroExtraLine[]; // lines added from the strip ("+ Text", 09-13) — words here, places in `layout`
 };
 
 // The two lines a silent visitor hears — pre-cached on the voice server (Lane H) under these
@@ -58,6 +59,7 @@ export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   layout: null,
   nudgeSeconds: 8,
   nudgeCount: 2,
+  extra: [],
 };
 
 /** What the studio hands the block while editing. Absent on the public page. */
@@ -68,7 +70,7 @@ export type HeroEditApi = {
   /** Commit a position/size change for one element on the CURRENT screen. */
   onPatch: (el: HeroElement, patch: Partial<HeroText> & { size?: number; x?: number; y?: number }) => void;
   /** Commit new words for a text element (the headline keeps "|" for the gold half). */
-  onText: (el: "headline" | "byline" | "opener", text: string) => void;
+  onText: (el: HeroTextElement, text: string) => void;
 };
 
 const DRAG_START_PX = 4; // less than this is a click, more is a drag
@@ -277,6 +279,12 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         <div className="th-talk">{conversation}</div>
       </Free>
 
+      {(props.extra || []).map((x) => (
+        <Free key={x.id} el={x.id as HeroTextElement} t={heroText(L, x.id as HeroTextElement, screen)} edit={edit} phone={phone}>
+          <p className="th-q">{x.text || (edit ? "Type here" : "")}</p>
+        </Free>
+      ))}
+
       <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={toggleTalk} ready={t.ready} />
 
       <div className="th-under" style={{ left: `${L.orb.x}%`, top: `calc(${L.orb.y}% + ${L.orb.size / 2 + 10}px)` }}>
@@ -311,7 +319,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
 
 // ── one free-floating text element ─────────────────────────────────────────────────────────────
 function Free({ el, t, edit, phone, children }: {
-  el: "headline" | "byline" | "opener"; t: HeroText; edit?: HeroEditApi; phone: boolean; children: ReactNode;
+  el: HeroTextElement; t: HeroText; edit?: HeroEditApi; phone: boolean; children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [live, setLive] = useState<Partial<HeroText> | null>(null); // while a drag is in flight
@@ -387,7 +395,7 @@ function Free({ el, t, edit, phone, children }: {
       <div className="th-text">{children}</div>
       {edit && sel ? (
         <>
-          <span className="th-tag">{HERO_ELEMENT_LABEL[el]}{phone && el === "headline" ? " · 22px on a phone" : ` · ${size}px`}</span>
+          <span className="th-tag">{heroLabel(el)}{phone && el === "headline" ? " · 22px on a phone" : ` · ${size}px`}</span>
           <span className="th-handle" title="Drag to resize" onPointerDownCapture={(e) => down(e as any, "size")} />
         </>
       ) : null}
