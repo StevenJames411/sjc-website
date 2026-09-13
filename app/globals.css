@@ -336,6 +336,23 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ⛔ THE NAV FLOATS OVER THE TALKING HERO — AND THIS IS THE HEADER THAT ACTUALLY RENDERS.
+   Steven, 09-13: "the one with the blue background has all my pages... we're going to make it
+   transparent." The 09-12 change went into NavView, but SJC's live header is the imported
+   landing-site chrome (#global-header, a code-section), so nothing on the page ever changed.
+   TalkingHero stamps `data-talking-hero` on <html> the moment it mounts; on that page only, the
+   solid band becomes Kay's top-down gradient and comes out of the flow, so the room starts at
+   the top of the screen with the nav over it. Every other page keeps its blue bar. The doubled
+   id outranks the chrome's own inline <style>, same trick as the wordmark rule below. */
+html[data-talking-hero] #global-header#global-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 30;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, .65) 0%, rgba(0, 0, 0, .28) 55%, rgba(0, 0, 0, 0) 100%) !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
 /* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
    two rules above, which would otherwise reach it through `.sjc-design`. */
 .sjc-design .sjc-mark span,
