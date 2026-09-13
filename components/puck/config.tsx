@@ -3701,8 +3701,20 @@ const baseConfig: Config<Props, RootProps> = {
         headline: { type: "textarea" as const, label: "Headline" },
         byline: { type: "text" as const, label: "Byline (under the headline)" },
         opener: { type: "textarea" as const, label: "The first line the visitor reads (the twin says it once they tap)" },
-        ctaTalk: { type: "text" as const, label: "Words under the orb (blank = none)" },
-        ctaType: { type: "text" as const, label: "Type-instead button under the orb (blank = none)" },
+        // Two different features, one block (Steven, 09-13). Film = the demo, until the live
+        // back-and-forth is ready to go to market.
+        mode: {
+          type: "radio" as const,
+          label: "What the orb does",
+          options: [
+            { label: "Demo: play the film, orb = sound on / off", value: "film" },
+            { label: "Live: talk back and forth (not ready)", value: "live" },
+          ],
+        },
+        filmWide: { type: "text" as const, label: "The film, laptop (16:9 mp4 URL — demo mode)" },
+        filmTall: { type: "text" as const, label: "The film, phone (9:16 mp4 URL — demo mode)" },
+        ctaTalk: { type: "text" as const, label: "Words under the orb — live mode only (blank = none)" },
+        ctaType: { type: "text" as const, label: "Type-instead button — live mode only (blank = none)" },
         idleWide: { type: "text" as const, label: "Idle loop, laptop (16:9 mp4 URL)" },
         idleTall: { type: "text" as const, label: "Idle loop, phone (9:16 mp4 URL)" },
         poster: { type: "text" as const, label: "Poster image URL (first frame while the loop loads)" },
@@ -3763,12 +3775,13 @@ const baseConfig: Config<Props, RootProps> = {
         },
       },
       defaultProps: TALKING_HERO_DEFAULTS,
-      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, extra, puck }) => (
+      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, extra, mode, filmWide, filmTall, puck }) => (
         <TalkingHeroSwitch
           id={id} editing={puck?.isEditing}
           eyebrow={eyebrow} headline={headline} byline={byline} opener={opener} ctaTalk={ctaTalk} ctaType={ctaType}
           idleWide={idleWide} idleTall={idleTall} poster={poster} videoUrl={videoUrl} videoLabel={videoLabel} minHeight={minHeight}
           layout={layout} nudgeSeconds={nudgeSeconds} nudgeCount={nudgeCount} extra={extra}
+          mode={mode} filmWide={filmWide} filmTall={filmTall}
         />
       ),
     },

@@ -37,6 +37,13 @@ export type TalkingHeroProps = {
   nudgeSeconds: number;  // silence before the first nudge line (placed layout only)
   nudgeCount: number;    // how many nudges before the call goes quiet
   extra: HeroExtraLine[]; // lines added from the strip ("+ Text", 09-13) — words here, places in `layout`
+  // DEMO MODE (Steven, 09-13): "for now I just want the HeyGen example without the tap and type
+  // under it... the demo with the HeyGen voice." "film" plays the rendered film in the room and
+  // the orb is sound on/off — nothing under it, no thread, no agent. "live" is the real thing,
+  // untouched, for when the back-and-forth is ready. Two different features, one block.
+  mode: "film" | "live";
+  filmWide: string;      // 16:9 film with its own voice (laptop)
+  filmTall: string;      // 9:16 film (phone)
 };
 
 // The two lines a silent visitor hears — pre-cached on the voice server (Lane H) under these
@@ -60,6 +67,9 @@ export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   nudgeSeconds: 8,
   nudgeCount: 2,
   extra: [],
+  mode: "film",
+  filmWide: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/hero/film/film-1-v1.mp4",
+  filmTall: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/hero/film/film-1-tall-v2.mp4",
 };
 
 /** What the studio hands the block while editing. Absent on the public page. */
@@ -100,6 +110,21 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   const [showVideo, setShowVideo] = useState(false);
   const started = useRef(false);
   const captionsEnd = useRef<HTMLDivElement>(null);
+  // ⚠️ A block saved before these fields existed hands them over as undefined, and that would
+  // override the default above (live mode, no film) — so undefined means the default here.
+  const film = (props.mode || "film") === "film";
+  const filmWide = props.filmWide || TALKING_HERO_DEFAULTS.filmWide;
+  const filmTall = props.filmTall || TALKING_HERO_DEFAULTS.filmTall;
+  const [filmOn, setFilmOn] = useState(false); // sound on = the film restarts from the top with its voice
+  const filmWideRef = useRef<HTMLVideoElement>(null);
+  const filmTallRef = useRef<HTMLVideoElement>(null);
+  function toggleFilm() {
+    if (edit) return;
+    const v = (window.innerWidth <= HERO_BREAKS.phoneMax ? filmTallRef.current : filmWideRef.current) || filmWideRef.current || filmTallRef.current;
+    if (!v) return;
+    if (v.muted) { v.muted = false; v.currentTime = 0; v.play().catch(() => {}); setFilmOn(true); }
+    else { v.muted = true; setFilmOn(false); }
+  }
   const screen = useScreen(edit?.screen);
   const phone = screen === "phone";
   const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,9 +205,17 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
 
   const visible = t.msgs.filter((m) => !m.hidden);
   const captions = visible.slice(-4);
-  const state = t.listening ? "listening" : t.speaking ? "talking" : t.busy ? "thinking" : mode === "idle" ? "idle" : "ready";
+  const state = film
+    ? (filmOn ? "talking" : "idle")
+    : t.listening ? "listening" : t.speaking ? "talking" : t.busy ? "thinking" : mode === "idle" ? "idle" : "ready";
 
-  const room = (
+  const room = film ? (
+    <div className="th-room" aria-hidden="true">
+      {filmWide ? <video ref={filmWideRef} className="th-loop th-wide" src={filmWide} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
+      {filmTall ? <video ref={filmTallRef} className="th-loop th-tall" src={filmTall} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
+      <div className="th-shade" />
+    </div>
+  ) : (
     <div className="th-room" aria-hidden="true">
       {props.idleWide ? <video className="th-loop th-wide" src={props.idleWide} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
       {props.idleTall ? <video className="th-loop th-tall" src={props.idleTall} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
@@ -280,9 +313,17 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         </Free>
       ) : null}
 
-      <Free el="opener" t={L.opener} edit={edit} phone={phone} onGuide={setGuide}>
-        <div className="th-talk">{conversation}</div>
-      </Free>
+      {film ? (
+        props.opener || edit ? (
+          <Free el="opener" t={L.opener} edit={edit} phone={phone} onGuide={setGuide}>
+            <p className="th-q">{props.opener || (edit ? "First line (blank hides it)" : "")}</p>
+          </Free>
+        ) : null
+      ) : (
+        <Free el="opener" t={L.opener} edit={edit} phone={phone} onGuide={setGuide}>
+          <div className="th-talk">{conversation}</div>
+        </Free>
+      )}
 
       {(props.extra || []).map((x) => (
         <Free key={x.id} el={x.id as HeroTextElement} t={heroText(L, x.id as HeroTextElement, screen)} edit={edit} phone={phone} onGuide={setGuide}>
@@ -290,11 +331,11 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         </Free>
       ))}
 
-      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={toggleTalk} ready={t.ready} onGuide={setGuide} />
+      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={film ? toggleFilm : toggleTalk} ready={film || t.ready} onGuide={setGuide} />
 
-      {/* Under the orb: the words and the type button, each only when its field has words.
-          Blank the field in the panel and it is gone (Steven, 09-13: "I can't get rid of the tap
-          and I'll talk to you"). The orb itself never depends on these. */}
+      {/* Under the orb — LIVE MODE ONLY; in film mode the orb stands alone. The words and the
+          type button each show only when their field has words: blank it and it is gone (09-13). */}
+      {film ? null : (
       <div className="th-under" style={{ left: `${L.orb.x}%`, top: `calc(${L.orb.y}% + ${L.orb.size / 2 + 10}px)` }}>
         {mode === "idle" && props.ctaTalk ? <span className="th-orblabel">{props.ctaTalk}</span> : null}
         {!props.ctaType ? null : mode !== "type" ? (
@@ -304,7 +345,8 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         )}
         {props.videoUrl ? <button className="th-play" onClick={() => setShowVideo(true)}>▶ {props.videoLabel}</button> : null}
       </div>
-      {!t.ready && !edit ? <p className="th-note th-note-abs">The conversation is switched off on this preview.</p> : null}
+      )}
+      {!film && !t.ready && !edit ? <p className="th-note th-note-abs">The conversation is switched off on this preview.</p> : null}
     </div>
   );
 
