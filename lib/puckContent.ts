@@ -34,7 +34,7 @@ export const puckKey = (page: string, pub = false, siteId: string) =>
  * The try/catch covers being called outside a request scope (static generation, scripts), where
  * headers() is unavailable — no request means no preview.
  */
-async function previewRequested(): Promise<boolean> {
+export async function previewRequested(): Promise<boolean> {
   try {
     const { headers } = await import("next/headers");
     return (await headers()).get("x-sjc-preview") === "1";

@@ -343,8 +343,11 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
    TalkingHero stamps `data-talking-hero` on <html> the moment it mounts; on that page only, the
    solid band becomes Kay's top-down gradient and comes out of the flow, so the room starts at
    the top of the screen with the nav over it. Every other page keeps its blue bar. The doubled
-   id outranks the chrome's own inline <style>, same trick as the wordmark rule below. */
-html[data-talking-hero] #global-header#global-header {
+   id outranks the chrome's own inline <style>, same trick as the wordmark rule below.
+   ⛔ PREVIEW ONLY until every hero is laid out (Steven, 09-13): the second mark, data-sjc-preview,
+   is stamped by components/PreviewMark only on an owner's ?preview=1 — the published site keeps
+   the blue bar untouched. Drop that attribute from the selector when the switch-over is done. */
+html[data-sjc-preview][data-talking-hero] #global-header#global-header {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 30;
