@@ -292,9 +292,12 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
 
       <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={toggleTalk} ready={t.ready} onGuide={setGuide} />
 
+      {/* Under the orb: the words and the type button, each only when its field has words.
+          Blank the field in the panel and it is gone (Steven, 09-13: "I can't get rid of the tap
+          and I'll talk to you"). The orb itself never depends on these. */}
       <div className="th-under" style={{ left: `${L.orb.x}%`, top: `calc(${L.orb.y}% + ${L.orb.size / 2 + 10}px)` }}>
-        {mode === "idle" ? <span className="th-orblabel">{props.ctaTalk}</span> : null}
-        {mode !== "type" ? (
+        {mode === "idle" && props.ctaTalk ? <span className="th-orblabel">{props.ctaTalk}</span> : null}
+        {!props.ctaType ? null : mode !== "type" ? (
           <button className="th-ghost th-small" onClick={() => { t.stopHandsFree(); begin("type"); }} disabled={!t.ready || !!edit}>{props.ctaType}</button>
         ) : (
           <button className="th-ghost th-small" onClick={() => begin("talk")}>Talk instead</button>
