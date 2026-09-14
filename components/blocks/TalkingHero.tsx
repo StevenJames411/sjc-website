@@ -411,7 +411,7 @@ function measureStage(self: HTMLElement, x: number, y: number): { others: Box[];
   const host = stage.getBoundingClientRect();
   const inner = (n: Element) => n.querySelector(".th-text") || n; // the words, not their padding
   const others: Box[] = [];
-  stage.querySelectorAll(".th-free, .th-orb").forEach((n) => { if (n !== self) others.push(boxOf(inner(n), host)); });
+  stage.querySelectorAll(".th-free:not(.hid), .th-orb").forEach((n) => { if (n !== self) others.push(boxOf(inner(n), host)); });
   const mine = boxOf(inner(self), host);
   return { others, me: { dl: mine.l - x, dr: mine.r - x, dt: mine.t - y, db: mine.b - y } };
 }
@@ -449,10 +449,13 @@ function Free({ el, t, edit, phone, children, onGuide }: {
   const [live, setLive] = useState<Partial<HeroText> | null>(null); // while a drag is in flight
   const [typing, setTyping] = useState(false);
   const drag = useRef<{ kind: "move" | "size"; sx: number; sy: number; x: number; y: number; size: number; w: number | null; bw: number; cw: number; ch: number; moved: boolean; others: Box[]; me: SelfBox } | null>(null);
-  // The phone headline is 22px, always — his law (09-09, three rulings from his iPhone).
-  const size = phone && el === "headline" ? 22 : (live?.size ?? t.size);
+  // 22px is the phone headline's DEFAULT (his 09-09 law, derived for a 375 phone), no longer a
+  // lock: on 09-13 pm he selected it on the phone canvas to make it smaller and had no control.
+  const size = live?.size ?? t.size;
   const v = { ...t, ...live, size };
   const sel = edit?.selected === el;
+  // Hidden on this screen: gone from the page, a ghost in the studio so it can be selected and shown again.
+  const hidden = !!t.hidden;
 
   const style: CSSProperties = {
     left: `${v.x}%`, top: `${v.y}%`, fontSize: `${size}px`,
@@ -509,10 +512,11 @@ function Free({ el, t, edit, phone, children, onGuide }: {
     node.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); node.blur(); } if (ev.key === "Escape") node.blur(); });
   }
 
+  if (hidden && !edit) return null;
   return (
     <div
       ref={ref}
-      className={`th-free th-${el}${sel ? " sel" : ""}${typing ? " typing" : ""}`}
+      className={`th-free th-${el}${sel ? " sel" : ""}${typing ? " typing" : ""}${hidden ? " hid" : ""}`}
       style={style}
       data-el={el}
       onPointerDownCapture={edit ? (e) => down(e, "move") : undefined}
@@ -523,7 +527,7 @@ function Free({ el, t, edit, phone, children, onGuide }: {
       <div className="th-text">{children}</div>
       {edit && sel ? (
         <>
-          <span className="th-tag">{heroLabel(el)}{phone && el === "headline" ? " · 22px on a phone" : ` · ${size}px`}</span>
+          <span className="th-tag">{heroLabel(el)} · {size}px{hidden ? ` · hidden on ${edit.screen}` : ""}</span>
           <span className="th-handle" title="Drag to resize" onPointerDownCapture={(e) => down(e as any, "size")} />
         </>
       ) : null}

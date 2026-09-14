@@ -1726,6 +1726,8 @@ a.sjc-sys-card--layer:focus-visible {
 [data-sjc-talking-hero][data-editing] .th-free { cursor: grab; outline: 2px solid transparent; outline-offset: 2px; }
 [data-sjc-talking-hero][data-editing] .th-free:hover { outline-color: rgba(240, 179, 35, .5); }
 [data-sjc-talking-hero][data-editing] .th-free.sel { outline-color: #f0b323; }
+/* hidden on this screen (09-13 pm): a ghost in the studio, nothing on the page */
+[data-sjc-talking-hero][data-editing] .th-free.hid { opacity: .3; outline-style: dashed; outline-color: rgba(255, 255, 255, .5); }
 [data-sjc-talking-hero][data-editing] .th-free.typing { cursor: text; outline-style: dashed; user-select: text; }
 [data-sjc-talking-hero][data-editing] .th-free.typing [contenteditable] { outline: none; }
 [data-sjc-talking-hero][data-editing] .th-orb { cursor: grab; outline: 2px solid transparent; outline-offset: 5px; animation: none; }

@@ -20,6 +20,7 @@ export type HeroText = {
   color: HeroColor;
   bold: boolean;
   align: HeroAlign;
+  hidden?: boolean;     // hidden on THIS screen only (09-13 pm) — the words stay, the other screens keep it
 };
 
 export type HeroOrb = { x: number; y: number; size: number }; // centre point, diameter px

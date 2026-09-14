@@ -116,7 +116,6 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
     : null;
   const isText = selected && selected !== "orb";
   const text = isText ? (cur as HeroText) : null;
-  const headlineOnPhone = screen === "phone" && selected === "headline";
 
   // The thing directly above the selected one on this screen (highest y below the selected y),
   // for "Centre under the line above" (09-13 pm) — a one-click version of the smart guide.
@@ -147,19 +146,15 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
 
         {selected ? (
           <div className="th-strip-group">
-            {headlineOnPhone ? (
-              <span className="th-strip-note">22px on a phone — every hero headline, his law</span>
-            ) : (
-              <SizeStepper
-                label=""
-                value={(cur as { size: number }).size}
-                onChange={(v) => api.onPatch(selected, { size: Math.max(selected === "orb" ? 40 : 8, v ?? 0) })}
-                fallback={(cur as { size: number }).size}
-                step={selected === "orb" ? 8 : 2}
-                min={selected === "orb" ? 40 : 8}
-                allowZero={false}
-              />
-            )}
+            <SizeStepper
+              label=""
+              value={(cur as { size: number }).size}
+              onChange={(v) => api.onPatch(selected, { size: Math.max(selected === "orb" ? 40 : 8, v ?? 0) })}
+              fallback={(cur as { size: number }).size}
+              step={selected === "orb" ? 8 : 2}
+              min={selected === "orb" ? 40 : 8}
+              allowZero={false}
+            />
           </div>
         ) : null}
 
@@ -197,6 +192,16 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
           <button type="button" title="Add another line of text to the hero (it lands on every screen)" onClick={() => addLine()}>+ Text</button>
           {text && selected ? (
             <button type="button" title="Copy this line — same words, same place, one step down" onClick={() => addLine(selected as HeroTextElement)}>Copy</button>
+          ) : null}
+          {text && selected ? (
+            <button
+              type="button"
+              aria-pressed={!!text.hidden}
+              title={text.hidden ? `Show this line on the ${screen} again` : `Take this line off the ${screen} only — the other screens keep it, and the words stay`}
+              onClick={() => api.onPatch(selected, { hidden: !text.hidden })}
+            >
+              {text.hidden ? `Show on ${screen}` : `Hide on ${screen}`}
+            </button>
           ) : null}
           {selected && isExtra(selected) ? (
             <button type="button" title="Remove this added line from every screen" onClick={() => removeLine(selected)}>Remove</button>
