@@ -1652,6 +1652,14 @@ a.sjc-sys-card--layer:focus-visible {
   [data-sjc-talking-hero] .th-tall { display: block; }
   [data-sjc-talking-hero] .th-byline { font-size: 13px; }
 }
+/* ⛔ THE FILM FOLLOWS THE CANVAS, NOT THE WINDOW (2026-09-13 pm). The studio's Phone frame sits in a
+   laptop-width window, so the media query above never fires there and the phone canvas played the
+   WIDE film — Steven placed the orb on a room the phone never shows, and it landed on his face
+   (his phone plays the tall film). `data-screen` is stamped on the canvas by the studio's tab and,
+   on the public page, by the same breakpoints — so keying the swap on it makes the canvas and the
+   phone one picture. The media query stays for the first paint before hydration. */
+[data-sjc-talking-hero] .th-canvas[data-screen="phone"] .th-wide { display: none; }
+[data-sjc-talking-hero] .th-canvas[data-screen="phone"] .th-tall { display: block; }
 
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════
    THE TALKING HERO, PLACED BY HAND (ruled 2026-09-12) — `data-layout` on the section means every
