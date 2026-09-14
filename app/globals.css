@@ -354,13 +354,22 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header {
   /* The demo's exact fade (sjc-hero-demo .nav): dark at the top, gone at the bottom, no shelf.
      The top value is the brand's navShade (Website settings → "Shade under the navigation",
      09-14); .66 is what shipped and what an untouched brand still gets. */
-  /* 09-14 (later): the fade HOLDS the dialled value through the top 60% — where the wordmark and
-     the menu words actually sit — and only then fades out. Before, it fell from the number to 0
-     across the header's own height, so the words got half the number and 66 → 85 looked like
-     nothing had changed. Still no shelf: the bottom 40% is the fade. */
-  background: linear-gradient(180deg, rgba(0, 0, 0, var(--sjc-nav-shade, .66)) 0%, rgba(0, 0, 0, var(--sjc-nav-shade, .66)) 60%, rgba(0, 0, 0, 0) 100%) !important;
+  /* 09-14 (later still): the dark is SOLID behind the whole header — "I just want the dark to be at
+     the bottom of the words" — and the fade lives BELOW it, on the ::after tail, so no part of a
+     letter sits on the fall-off. The number is the same brand navShade; the tail fades from it. */
+  /* ⚠️ A flat two-stop gradient, not `background:` — the shorthand would set background-color and
+     the transparent line below (which kills the chrome's blue) would cancel it to nothing. */
+  background-image: linear-gradient(rgba(0, 0, 0, var(--sjc-nav-shade, .66)), rgba(0, 0, 0, var(--sjc-nav-shade, .66))) !important;
   background-color: transparent !important;
   box-shadow: none !important;
+}
+html[data-sjc-preview][data-talking-hero] #global-header#global-header::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 100%;
+  height: 40px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, var(--sjc-nav-shade, .66)), rgba(0, 0, 0, 0));
+  pointer-events: none;
 }
 /* The demo carries the wordmark alone — the square logo tile is a blue box on a clear nav. */
 html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-logo] { display: none !important; }
