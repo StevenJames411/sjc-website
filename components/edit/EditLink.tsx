@@ -18,10 +18,15 @@ export default function EditLink() {
   // position:fixed — two sign-out buttons on the same screen, one of them floating over the page.
   // Mounted in the ROOT layout, so it cannot be excluded by a nested layout; it has to opt out.
   const [inBackOffice, setInBackOffice] = useState(false);
+  // DEMO (Steven, 09-13): "how do I demo the page without having the edit blocks on the bottom?"
+  // Signing out kills ?preview=1, so the bar steps aside instead: add &demo=1 to any preview
+  // address and it stays hidden while he stays signed in. Nothing else changes.
+  const [demo, setDemo] = useState(false);
 
   useEffect(() => {
     const raw = window.location.pathname.replace(/\/+$/, "") || "/";
     setInBackOffice(raw === "/edit" || raw.startsWith("/edit/"));
+    setDemo(new URLSearchParams(window.location.search).has("demo"));
     fetch(`/api/auth-status?path=${encodeURIComponent(raw)}`)
       .then((r) => r.json())
       .then((j) => {
@@ -41,7 +46,7 @@ export default function EditLink() {
   }
 
   // Owner is signed in. Always offer Sign out; show Edit only on pages that map to a builder slug.
-  if (!authed || inBackOffice) return null;
+  if (!authed || inBackOffice || demo) return null;
 
   const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
 
