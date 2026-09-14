@@ -354,7 +354,11 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header {
   /* The demo's exact fade (sjc-hero-demo .nav): dark at the top, gone at the bottom, no shelf.
      The top value is the brand's navShade (Website settings → "Shade under the navigation",
      09-14); .66 is what shipped and what an untouched brand still gets. */
-  background: linear-gradient(180deg, rgba(0, 0, 0, var(--sjc-nav-shade, .66)), rgba(0, 0, 0, 0)) !important;
+  /* 09-14 (later): the fade HOLDS the dialled value through the top 60% — where the wordmark and
+     the menu words actually sit — and only then fades out. Before, it fell from the number to 0
+     across the header's own height, so the words got half the number and 66 → 85 looked like
+     nothing had changed. Still no shelf: the bottom 40% is the fade. */
+  background: linear-gradient(180deg, rgba(0, 0, 0, var(--sjc-nav-shade, .66)) 0%, rgba(0, 0, 0, var(--sjc-nav-shade, .66)) 60%, rgba(0, 0, 0, 0) 100%) !important;
   background-color: transparent !important;
   box-shadow: none !important;
 }
