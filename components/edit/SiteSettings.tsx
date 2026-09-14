@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { reachability, type Site } from "@/lib/sitesShared";
 import { FONTS as FONT_VAR_KEYS, FONT_SETS, FONT_VAR, SWATCHES, fontsForSet, type Brand, type BrandFont } from "@/lib/brandShared";
 import { publicUrlFor } from "@/lib/hostShared";
+import SizeStepper from "@/components/puck/SizeStepper";
 
 // EVERYTHING GLOBAL TO ONE WEBSITE, ON ONE SCREEN.
 //
@@ -119,6 +120,39 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
    * single pick is dozens of publishes.
    */
   const colourTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The shade under the floating navigation (09-14). Same save shape as a colour: draft PUT, then
+  // a narrow publish that carries only this field live — a half-picked palette never rides along.
+  function pickNavShade(v: number) {
+    const value = Math.min(90, Math.max(0, Math.round(v)));
+    const next = { ...fonts, navShade: value } as Brand;
+    setFonts(next);
+    setFontMsg("Saving…");
+    if (colourTimer.current) clearTimeout(colourTimer.current);
+    colourTimer.current = setTimeout(async () => {
+      try {
+        const cur = await fetch(`/api/brand?site=${encodeURIComponent(s.id)}`, { credentials: "same-origin" }).then((x) => x.json());
+        const merged = { ...(cur?.brand || {}), navShade: value };
+        const put = await fetch("/api/brand", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, brand: merged }),
+        }).then((x) => x.json());
+        if (!put.ok) throw new Error(put.error || "Couldn't save the shade.");
+        const pub = await fetch("/api/brand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ site: s.id, action: "publish-nav" }),
+        }).then((x) => x.json());
+        if (!pub.ok) throw new Error("Saved, but couldn't put it live.");
+        setFontMsg("Live on the website.");
+      } catch (e) {
+        setFontMsg(e instanceof Error ? e.message : "Couldn't save the shade.");
+      }
+    }, 500);
+  }
+
   function pickColour(key: keyof Brand, value: string) {
     const next = { ...fonts, [key]: value } as Brand;
     setFonts(next);
@@ -1048,6 +1082,24 @@ export default function SiteSettings({ site, pageCount, pages, brand, sizes, els
           );
         })}
       </div>
+
+      <h2 style={sec}>The navigation over the hero</h2>
+      <p style={hint}>
+        On a page with the talking hero the navigation floats over the room with a fade under it, dark at
+        the top and gone at the bottom. This is how dark the top of that fade is. 0 is none, 90 is nearly
+        solid. It applies as you change it.
+      </p>
+      <SizeStepper
+        label="Shade under the navigation (%)"
+        value={typeof fonts.navShade === "number" ? fonts.navShade : 66}
+        onChange={(v) => pickNavShade(v ?? 0)}
+        fallback={66}
+        step={5}
+        min={0}
+        allowZero
+        unit="%"
+      />
+      {fontMsg ? <p style={{ ...hint, margin: "8px 0 0" }}>{fontMsg}</p> : null}
 
       <h2 style={sec}>How it looks when the link is shared</h2>
       <p style={hint}>Defaults for every page. A page can override any of these in its own panel.</p>

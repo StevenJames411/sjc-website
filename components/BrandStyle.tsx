@@ -78,6 +78,11 @@ export default function BrandStyle({ brand, id = "sjc-brand" }: { brand: Brand; 
   if (headerBand !== headerBandDefault) decl.push(`--color-sjc-band-header:${headerBand};`);
   put("secondary", "--color-sjc-secondary");
   put("highlight", "--color-sjc-highlight");
+  // The fade under the floating nav (09-14). A number, clamped like the hero plate; the CSS rule
+  // in globals.css falls back to .66 when nothing is emitted, so the default stays byte-identical.
+  if (typeof brand.navShade === "number" && brand.navShade !== BRAND_DEFAULTS.navShade) {
+    decl.push(`--sjc-nav-shade:${Math.min(90, Math.max(0, brand.navShade)) / 100};`);
+  }
 
   // ⚠️ THE FONTS ARE NOT SUBJECT TO THE SAME TEST, and the asymmetry is deliberate. A colour left
   // at its default means "the design's colour"; a FONT left at its default means Lexend, which is
