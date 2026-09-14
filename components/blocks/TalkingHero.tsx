@@ -419,13 +419,12 @@ function measureStage(self: HTMLElement, x: number, y: number): { others: Box[];
 function snapSmart(x: number, y: number, me: SelfBox, others: Box[]): { x: number; y: number; guide: Guide | null } {
   const l = x + me.dl, r = x + me.dr, cx = (l + r) / 2, t = y + me.dt, b = y + me.db, cy = (t + b) / 2;
   // left to right: the page's middle first, then every other thing
-  let bx: { d: number; at: number; page: boolean } | null = { d: 50 - cx, at: 50, page: true };
-  if (Math.abs(bx.d) > SNAP_PCT) bx = null;
-  const tryX = (d: number, at: number) => { if (Math.abs(d) <= SNAP_PCT && (!bx || Math.abs(d) < Math.abs(bx.d))) bx = { d, at, page: false }; };
+  type XHit = { d: number; at: number; page: boolean }; type YHit = { d: number; at: number };
+  const hit: { x: XHit | null; y: YHit | null } = { x: Math.abs(50 - cx) <= SNAP_PCT ? { d: 50 - cx, at: 50, page: true } : null, y: null };
+  const tryX = (d: number, at: number) => { if (Math.abs(d) <= SNAP_PCT && (!hit.x || Math.abs(d) < Math.abs(hit.x.d))) hit.x = { d, at, page: false }; };
   for (const o of others) { tryX(o.cx - cx, o.cx); tryX(o.l - l, o.l); tryX(o.r - r, o.r); }
-  // up and down: middles, top-to-bottom, and equal gaps
-  let by: { d: number; at: number } | null = null;
-  const tryY = (d: number, at: number) => { if (Math.abs(d) <= SNAP_PCT && (!by || Math.abs(d) < Math.abs(by.d))) by = { d, at }; };
+  // up and down: middles, and equal gaps
+  const tryY = (d: number, at: number) => { if (Math.abs(d) <= SNAP_PCT && (!hit.y || Math.abs(d) < Math.abs(hit.y.d))) hit.y = { d, at }; };
   for (const o of others) tryY(o.cy - cy, o.cy);
   // equal gap: A is the nearest thing above the dragged one, B the nearest above A; the dragged
   // top wants to sit (A.t - B.b) below A.b — the same gap twice.
@@ -434,7 +433,7 @@ function snapSmart(x: number, y: number, me: SelfBox, others: Box[]): { x: numbe
     const aboveA = others.filter((o) => o !== above && o.b <= above.t + 0.5).sort((p, q) => q.b - p.b)[0];
     if (aboveA) { const want = above.b + (above.t - aboveA.b); tryY(want - t, want); }
   }
-  const gx: { d: number; at: number; page: boolean } | null = bx, gy: { d: number; at: number } | null = by;
+  const gx = hit.x, gy = hit.y;
   return {
     x: gx ? x + gx.d : x,
     y: gy ? y + gy.d : y,
