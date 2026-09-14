@@ -52,7 +52,13 @@ export async function POST(req: Request) {
 
   // Prefer the PUBLISHED source: that is the version he is looking at and asking for. Fall back to
   // the draft so a page that was never published can still be used as a starting point.
-  const data = (await readPuckPublished(fromPage, fromSite)) || (await readPuckDraft(fromPage, fromSite));
+  // `prefer: "draft"` (09-13, the twin-page flow): a twin is edited and never published, so the
+  // DRAFT is the version he is looking at — "make this the live version of /home" must carry his
+  // latest work, not a snapshot he happened to publish once.
+  const preferDraft = (body as { prefer?: string })?.prefer === "draft";
+  const data = preferDraft
+    ? (await readPuckDraft(fromPage, fromSite)) || (await readPuckPublished(fromPage, fromSite))
+    : (await readPuckPublished(fromPage, fromSite)) || (await readPuckDraft(fromPage, fromSite));
   if (!data || !Array.isArray((data as { content?: unknown[] }).content)) {
     return Response.json({ ok: false, error: `no content at ${fromSite}/${fromPage}` }, { status: 404 });
   }
