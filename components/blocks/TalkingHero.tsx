@@ -220,13 +220,11 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
     <div className="th-room" aria-hidden="true">
       {filmWide ? <video ref={filmWideRef} className="th-loop th-wide" src={filmWide} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
       {filmTall ? <video ref={filmTallRef} className="th-loop th-tall" src={filmTall} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
-      <div className="th-shade" />
     </div>
   ) : (
     <div className="th-room" aria-hidden="true">
       {props.idleWide ? <video className="th-loop th-wide" src={props.idleWide} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
       {props.idleTall ? <video className="th-loop th-tall" src={props.idleTall} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
-      <div className="th-shade" />
     </div>
   );
 
