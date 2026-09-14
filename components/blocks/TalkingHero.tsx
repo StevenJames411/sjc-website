@@ -44,6 +44,11 @@ export type TalkingHeroProps = {
   mode: "film" | "live";
   filmWide: string;      // 16:9 film with its own voice (laptop)
   filmTall: string;      // 9:16 film (phone)
+  // SPACE ABOVE / BELOW ARE INSIDE THE ROOM (Steven, 09-13: "I can't adjust the padding at the
+  // top of the section"). The room stays full-bleed under the floating nav; these inset the STAGE
+  // the placed things sit on, so everything moves down (or up) together and nothing paints white.
+  spaceAbove: number;
+  spaceBelow: number;
 };
 
 // The two lines a silent visitor hears — pre-cached on the voice server (Lane H) under these
@@ -70,6 +75,8 @@ export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   mode: "film",
   filmWide: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/hero/film/film-1-v1.mp4",
   filmTall: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/hero/film/film-1-tall-v2.mp4",
+  spaceAbove: 0,
+  spaceBelow: 0,
 };
 
 /** What the studio hands the block while editing. Absent on the public page. */
@@ -301,8 +308,12 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
           page (Steven, 09-12: "we have it on two different blocks now"). The eyebrow field stays
           for the original grid only. */}
 
-      {edit && guide ? <div className="th-guide-v" aria-hidden="true" /> : null}
       {edit ? <div className="th-navguide" aria-hidden="true"><span>navigation sits here</span></div> : null}
+
+      {/* The stage: every placed thing lives here, inset from the room's edges by Space above /
+          below. Drags measure against this box, so a % position is a % of the stage. */}
+      <div className="th-stage" style={{ top: Math.max(0, props.spaceAbove || 0), bottom: Math.max(0, props.spaceBelow || 0) }}>
+      {edit && guide ? <div className="th-guide-v" aria-hidden="true" /> : null}
 
       <Free el="headline" t={L.headline} edit={edit} phone={phone} onGuide={setGuide}>
         <h1 className="th-h1">{plain}{gold !== null ? <em>{gold}</em> : null}</h1>
@@ -348,6 +359,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
       </div>
       )}
       {!film && !t.ready && !edit ? <p className="th-note th-note-abs">The conversation is switched off on this preview.</p> : null}
+      </div>
     </div>
   );
 

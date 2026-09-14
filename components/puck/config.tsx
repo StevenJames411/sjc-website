@@ -3711,6 +3711,22 @@ const baseConfig: Config<Props, RootProps> = {
             { label: "Live: talk back and forth (not ready)", value: "live" },
           ],
         },
+        // Declared HERE so withSpacingControls leaves this block alone: on the hero, space above and
+        // below are inside the room (they move the placed things), never a band around it.
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above — inside the room: moves everything down, nothing turns white",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below — inside the room: moves everything up",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+          ),
+        },
         filmWide: { type: "text" as const, label: "The film, laptop (16:9 mp4 URL — demo mode)" },
         filmTall: { type: "text" as const, label: "The film, phone (9:16 mp4 URL — demo mode)" },
         ctaTalk: { type: "text" as const, label: "Words under the orb — live mode only (blank = none)" },
@@ -3775,13 +3791,13 @@ const baseConfig: Config<Props, RootProps> = {
         },
       },
       defaultProps: TALKING_HERO_DEFAULTS,
-      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, extra, mode, filmWide, filmTall, puck }) => (
+      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, extra, mode, filmWide, filmTall, spaceAbove, spaceBelow, puck }) => (
         <TalkingHeroSwitch
           id={id} editing={puck?.isEditing}
           eyebrow={eyebrow} headline={headline} byline={byline} opener={opener} ctaTalk={ctaTalk} ctaType={ctaType}
           idleWide={idleWide} idleTall={idleTall} poster={poster} videoUrl={videoUrl} videoLabel={videoLabel} minHeight={minHeight}
           layout={layout} nudgeSeconds={nudgeSeconds} nudgeCount={nudgeCount} extra={extra}
-          mode={mode} filmWide={filmWide} filmTall={filmTall}
+          mode={mode} filmWide={filmWide} filmTall={filmTall} spaceAbove={spaceAbove} spaceBelow={spaceBelow}
         />
       ),
     },

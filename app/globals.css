@@ -1709,6 +1709,9 @@ a.sjc-sys-card--layer:focus-visible {
 [data-sjc-talking-hero][data-editing] .th-navguide span { position: absolute; right: 10px; bottom: 4px; font: 600 11px/1 system-ui, sans-serif; color: rgba(240, 179, 35, .85); letter-spacing: .04em; text-transform: uppercase; }
 @media (max-width: 640px) { [data-sjc-talking-hero][data-editing] .th-navguide { height: 68px; } }
 
+/* The stage the placed things sit on — inset from the room by the block's Space above / below. */
+[data-sjc-talking-hero][data-layout] .th-stage { position: absolute; left: 0; right: 0; z-index: 1; }
+
 /* The centre line: shows only while a drag is within snap range of the middle (09-13). */
 [data-sjc-talking-hero][data-editing] .th-guide-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 0; border-left: 2px dashed #f0b323; z-index: 9; pointer-events: none; opacity: .9; }
 [data-sjc-talking-hero][data-editing] .th-free { cursor: grab; outline: 2px solid transparent; outline-offset: 2px; }
