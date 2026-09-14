@@ -4,7 +4,7 @@
 // while every other website gets its own namespace. Public render reads the PUBLISHED snapshot
 // only, and only when it carries the `_pub` marker, so editor drafts stay private until Publish.
 // The single exception is preview mode — an authenticated owner on `?preview=1` — see
-// previewRequested() below. A visitor can never reach a draft.
+// previewRequested() below. Anyone with a ?preview=1 link sees the draft (ruled 2026-09-13).
 import type { Data } from "@measured/puck";
 import { createKvStore } from "./kvStateStore";
 import { getClient } from "./store";

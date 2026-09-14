@@ -370,13 +370,12 @@ export async function middleware(req: NextRequest) {
   // The flag travels as a REQUEST HEADER, not a query string the page re-reads, so lib/
   // puckContent can honour it without every call site having to opt in.
   //
-  // Two things this must not do:
-  //   1. Let a stranger read unpublished work. The header is only ever set for an authenticated
-  //      owner; an unauthenticated ?preview=1 silently falls through to the published page
-  //      rather than throwing up a login wall on a public URL (no login prompt where a visitor
-  //      wouldn't expect one, and no hint that preview exists at all).
-  //   2. Be forgeable. Any inbound x-sjc-preview is DELETED first — a visitor can send that
-  //      header themselves, and without this line it would be a free read of every draft.
+  // ⛔ NO SIGN-IN FOR PREVIEW (Steven, 2026-09-13). Until this date ?preview=1 only worked with the
+  // owner cookie; a phone without it silently got the published page (a 404 for a draft-only
+  // page like /home-new). His ruling: "It's a preview demo page. If three people on the planet
+  // could see it, nobody gives a shit." A draft is not a secret — anyone holding the link sees
+  // it, on any device, no cookie. What stays: the inbound x-sjc-preview header is still deleted
+  // and re-stamped here, so the flag has exactly one source (this query string), not two.
   const wantsPreview = req.nextUrl.searchParams.get("preview") === "1";
 
   // ── WHO IS THIS? ────────────────────────────────────────────────────────────────────────────
@@ -406,7 +405,7 @@ export async function middleware(req: NextRequest) {
   };
 
   // PUBLIC: the site is live. Everything except the owner-edit/admin surfaces is open.
-  if (!isProtected(pathname)) return forward(wantsPreview && authed);
+  if (!isProtected(pathname)) return forward(wantsPreview);
 
   if (expectedToken() === null) {
     // Fail closed: no password configured means the site stays locked.
