@@ -171,6 +171,22 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
               <button type="button" aria-pressed={text.align === "right"} onClick={() => api.onPatch(selected, { align: "right" })}>Right</button>
               <button type="button" aria-pressed={!!text.w} title="Let the words wrap inside a set width; drag the dot to change it" onClick={() => api.onPatch(selected, { w: text.w ? null : 50 })}>Wrap</button>
             </div>
+            {/* The plate (09-14): a navy capsule under this line, 0 = none, up to 90% dark. Per screen,
+                like size and colour — a phone line over the desk may need more than a laptop line
+                over the panels. */}
+            <div className="th-strip-group" title="A navy capsule under this line — dial it as dark as the words need to read">
+              <span className="th-strip-sel">Plate</span>
+              <SizeStepper
+                label=""
+                value={text.plate ?? 0}
+                onChange={(v) => api.onPatch(selected, { plate: Math.min(90, Math.max(0, v ?? 0)) })}
+                fallback={0}
+                step={5}
+                min={0}
+                allowZero
+                unit="%"
+              />
+            </div>
           </>
         ) : null}
 

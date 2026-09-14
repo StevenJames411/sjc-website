@@ -460,6 +460,15 @@ function Free({ el, t, edit, phone, children, onGuide }: {
     width: v.w ? `${v.w}%` : "max-content", whiteSpace: v.w ? "normal" : "nowrap",
     textAlign: v.align, color: v.color === "gold" ? "#f0b323" : "#fff", fontWeight: v.bold ? 700 : 400,
   };
+  // THE PLATE (09-14): the room stays bright, and each line carries its own capsule — the nav
+  // pill's navy, at the darkness he dials in on the strip. Nothing until he asks for it.
+  const plate = Math.min(90, Math.max(0, typeof v.plate === "number" ? v.plate : 0));
+  if (plate > 0) {
+    style.background = `rgba(11, 23, 48, ${plate / 100})`;
+    style.borderRadius = v.w ? ".7em" : "999px"; // a wrapped block is a rounded box, a single line a capsule
+    style.padding = ".32em .85em";
+    style.boxShadow = `0 0 0 1px rgba(240, 179, 35, ${Math.min(0.55, plate / 140)})`;
+  }
 
   function down(e: RPointerEvent<HTMLDivElement>, kind: "move" | "size") {
     if (!edit || typing) return;
@@ -525,7 +534,7 @@ function Free({ el, t, edit, phone, children, onGuide }: {
       <div className="th-text">{children}</div>
       {edit && sel ? (
         <>
-          <span className="th-tag">{heroLabel(el)} · {size}px{hidden ? ` · hidden on ${edit.screen}` : ""}</span>
+          <span className="th-tag">{heroLabel(el)} · {size}px{plate ? ` · plate ${plate}%` : ""}{hidden ? ` · hidden on ${edit.screen}` : ""}</span>
           <span className="th-handle" title="Drag to resize" onPointerDownCapture={(e) => down(e as any, "size")} />
         </>
       ) : null}
