@@ -308,8 +308,6 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
           page (Steven, 09-12: "we have it on two different blocks now"). The eyebrow field stays
           for the original grid only. */}
 
-      {edit ? <div className="th-navguide" aria-hidden="true"><span>navigation sits here</span></div> : null}
-
       {/* The stage: every placed thing lives here, inset from the room's edges by Space above /
           below. Drags measure against this box, so a % position is a % of the stage. */}
       <div className="th-stage" style={{ top: Math.max(0, props.spaceAbove || 0), bottom: Math.max(0, props.spaceBelow || 0) }}>
