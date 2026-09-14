@@ -1134,12 +1134,17 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
        ⭐ HIS FIX, 2026-09-02: *"we might need to put a gradient layer under these pills."* A blurred
        gradient keeps the see-through quality he likes — you still read the page moving underneath —
        while giving every border ONE ground to sit on instead of whatever happens to scroll past. */
-    background: linear-gradient(180deg, rgba(5, 8, 22, 0.93) 0%, rgba(5, 8, 22, 0.78) 100%) !important;
-    backdrop-filter: blur(14px) saturate(125%);
-    -webkit-backdrop-filter: blur(14px) saturate(125%);
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    border-radius: 18px;
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.42) !important;
+    /* ⛔ THE BOX IS GONE AGAIN (Steven, 2026-09-13): *"We only need the actual pills to have the
+       background color so you could read the words. We don't need the square background box."*
+       The landscaper's menu (texas-best-demo) is the model: capsules over the page, nothing
+       behind them. This overrules the 09-02 gradient. If the AI pill's green edge washes out over
+       a white band, the fix is on THAT pill, never a slab behind all of them. */
+    background: transparent !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
   }
   /* the links become the capsules — values copied from the drawer so the two cannot drift */
   #global-header .sjc-drop a {
