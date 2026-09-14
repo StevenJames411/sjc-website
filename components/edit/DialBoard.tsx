@@ -61,6 +61,8 @@ type Loaded = {
   tab: string;
   prospects: Prospect[];
   truncated: boolean;
+  snapshotAt?: string;   // when this capture was pulled from the sheet (09-13)
+  fromSnapshot?: boolean;
 };
 
 export default function DialBoard({
@@ -164,12 +166,14 @@ export default function DialBoard({
     return () => window.removeEventListener("pagehide", out);
   }, [endSession]);
 
-  const load = useCallback(async (id: string) => {
+  const [refreshing, setRefreshing] = useState(false);
+  const load = useCallback(async (id: string, refresh = false) => {
     if (!id) return;
     setLoading(true);
+    setRefreshing(refresh);
     setErr("");
     try {
-      const r = await fetch(`/api/dial?list=${encodeURIComponent(id)}`, { cache: "no-store" });
+      const r = await fetch(`/api/dial?list=${encodeURIComponent(id)}${refresh ? "&refresh=1" : ""}`, { cache: "no-store" });
       // ⛔ A NON-JSON ANSWER IS THE INTERESTING ONE — DON'T LET IT FALL INTO THE GENERIC CATCH.
       //
       // `r.json()` on an HTML 500 throws, and the catch below could only say "Couldn't reach the
@@ -568,6 +572,22 @@ export default function DialBoard({
               </a>
               {data.tab ? ` → ${data.tab}` : ""}
               {data.truncated ? " · first 2,000 rows" : ""}
+              {data.snapshotAt ? (
+                <>
+                  {" · snapshot "}
+                  <span title={data.snapshotAt}>{new Date(data.snapshotAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span>
+                  {" · "}
+                  <button
+                    type="button"
+                    onClick={() => void load(data.list.id, true)}
+                    disabled={loading}
+                    style={{ ...link, background: "none", border: 0, padding: 0, cursor: "pointer", font: "inherit" }}
+                    title="Read the sheet again — the slow one, 10 to 40 seconds — and keep that as the new snapshot"
+                  >
+                    refresh from the sheet
+                  </button>
+                </>
+              ) : null}
             </span>
           </div>
         ) : null}
@@ -678,7 +698,7 @@ export default function DialBoard({
 
       {err ? <p style={errBox}>{err}</p> : null}
       {flash ? <p style={okBox}>{flash}</p> : null}
-      {loading ? <p style={muted}>Reading the sheet…</p> : null}
+      {loading ? <p style={muted}>{refreshing ? "Reading the sheet… this is the slow one, 10 to 40 seconds." : "Loading…"}</p> : null}
 
       {!loading && !lists.length ? (
         <p style={muted}>
