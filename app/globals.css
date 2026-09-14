@@ -1694,6 +1694,17 @@ a.sjc-sys-card--layer:focus-visible {
 [data-puck-component] .th-editwrap .th-loop, [data-puck-component] .th-editwrap .th-shade { pointer-events: none; }
 [data-puck-component] .th-editwrap .th-free.typing, [data-puck-component] .th-editwrap .th-free.typing * { user-select: text; -webkit-user-select: text; }
 [data-sjc-talking-hero][data-editing] .th-canvas { user-select: none; touch-action: none; }
+/* The hero's Space above / below is part of the room, never a white band (09-13). */
+[data-spacing-for="TalkingHero"] { background: #0b1730; }
+
+/* THE NAV GUIDE — studio only (09-13: "the text being underneath the navigation section"). The
+   site's header floats over the room in preview, so this paints the same band, the same gradient
+   and a dashed floor at its height, so a line can be placed under it without guessing. Height
+   matches the imported header (#global-header, 10px pad + the mark) at a laptop width. */
+[data-sjc-talking-hero][data-editing] .th-navguide { position: absolute; left: 0; right: 0; top: 0; height: 76px; z-index: 8; pointer-events: none; background: linear-gradient(to bottom, rgba(0, 0, 0, .65) 0%, rgba(0, 0, 0, .28) 55%, rgba(0, 0, 0, 0) 100%); border-bottom: 1px dashed rgba(240, 179, 35, .6); }
+[data-sjc-talking-hero][data-editing] .th-navguide span { position: absolute; right: 10px; bottom: 4px; font: 600 11px/1 system-ui, sans-serif; color: rgba(240, 179, 35, .85); letter-spacing: .04em; text-transform: uppercase; }
+@media (max-width: 640px) { [data-sjc-talking-hero][data-editing] .th-navguide { height: 68px; } }
+
 /* The centre line: shows only while a drag is within snap range of the middle (09-13). */
 [data-sjc-talking-hero][data-editing] .th-guide-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 0; border-left: 2px dashed #f0b323; z-index: 9; pointer-events: none; opacity: .9; }
 [data-sjc-talking-hero][data-editing] .th-free { cursor: grab; outline: 2px solid transparent; outline-offset: 2px; }

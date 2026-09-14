@@ -302,6 +302,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
           for the original grid only. */}
 
       {edit && guide ? <div className="th-guide-v" aria-hidden="true" /> : null}
+      {edit ? <div className="th-navguide" aria-hidden="true"><span>navigation sits here</span></div> : null}
 
       <Free el="headline" t={L.headline} edit={edit} phone={phone} onGuide={setGuide}>
         <h1 className="th-h1">{plain}{gold !== null ? <em>{gold}</em> : null}</h1>

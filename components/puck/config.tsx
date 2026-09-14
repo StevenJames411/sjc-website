@@ -4247,7 +4247,9 @@ function withSpacingControls(cfg: Config<Props, RootProps>): Config<Props, RootP
       const node = inner(props);
       // ⛔ NOTHING SET -> NOTHING ADDED. Not an empty div, not a fragment: the original node.
       if (!above && !below) return node;
-      return <div style={{ paddingTop: above, paddingBottom: below }}>{node}</div>;
+      // Named so a block can paint its own spacing: the talking hero's Space above paints the
+      // room's dark, not the page's white (Steven, 09-13: "it adds a white section to the page").
+      return <div data-spacing-for={name} style={{ paddingTop: above, paddingBottom: below }}>{node}</div>;
     };
   }
   return cfg;
