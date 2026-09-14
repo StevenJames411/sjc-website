@@ -367,7 +367,10 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header::after {
   content: "";
   position: absolute;
   left: 0; right: 0; top: 100%;
-  height: 40px;
+  /* 14px, not 40: measured on the live page 09-14, the header is 54px tall and the wordmark ends
+     at 44, so a 40px tail read as a SECOND fade under the band ("we don't need a double fade").
+     This is a soft edge on the band, not a band of its own. */
+  height: 14px;
   background: linear-gradient(180deg, rgba(0, 0, 0, var(--sjc-nav-shade, .66)), rgba(0, 0, 0, 0));
   pointer-events: none;
 }
