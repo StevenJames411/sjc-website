@@ -296,7 +296,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   // ── PLACED BY HAND — one layout per screen, every element at its own x/y/size. ────────────────
   // THE CENTRE LINE (09-13: "I'm having to eyeball where center is"). While a thing is dragged
   // within SNAP_PCT of the canvas's middle, a dashed line shows and the thing locks to x = 50.
-  const [guide, setGuide] = useState(false);
+  const [guide, setGuide] = useState<Guide | null>(null);
   const layouts = withLayoutDefaults(props.layout);
   const L: HeroLayout = layouts[screen];
   const { plain, gold } = splitGold(props.headline);
@@ -311,7 +311,8 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
       {/* The stage: every placed thing lives here, inset from the room's edges by Space above /
           below. Drags measure against this box, so a % position is a % of the stage. */}
       <div className="th-stage" style={{ top: Math.max(0, props.spaceAbove || 0), bottom: Math.max(0, props.spaceBelow || 0) }}>
-      {edit && guide ? <div className="th-guide-v" aria-hidden="true" /> : null}
+      {edit && guide?.v !== null && guide?.v !== undefined ? <div className={`th-guide-v${guide.vPage ? "" : " el"}`} style={{ left: `${guide.v}%` }} aria-hidden="true" /> : null}
+      {edit && guide?.h !== null && guide?.h !== undefined ? <div className="th-guide-h" style={{ top: `${guide.h}%` }} aria-hidden="true" /> : null}
 
       <Free el="headline" t={L.headline} edit={edit} phone={phone} onGuide={setGuide}>
         <h1 className="th-h1">{plain}{gold !== null ? <em>{gold}</em> : null}</h1>
@@ -382,19 +383,73 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
 // whether the guide should show. The threshold is in % of the canvas so it feels the same on
 // every screen (~1.5% is about 20px on a laptop, 6px on a phone frame).
 const SNAP_PCT = 1.5;
-function snapMid(x: number): { x: number; near: boolean } {
-  const near = Math.abs(x - 50) <= SNAP_PCT;
-  return { x: near ? 50 : x, near };
+
+// ── SMART GUIDES (09-13 pm: "when I use a text block down below, there's nothing to center off
+// of"). The page's middle was the only guide, and a short line in the column beside him is not
+// meant to sit on the page's middle — it is meant to sit on the line above it. So a drag now
+// measures every OTHER thing on the stage and snaps to it, the way Keynote does:
+//   • centre to centre (a white dashed line through both)   • left edge to left edge, right to right
+//   • middle to middle (up and down)                          • equal gap: the space above the dragged
+//     line matches the space above the line above it, so three lines stack evenly.
+// The page's own middle keeps its gold line and wins a tie. Everything is measured from the DOM
+// at the moment the drag starts, in % of the stage, so it is right for whatever font or wrap
+// the other lines have — nothing here reads the stored layout.
+type Guide = { v: number | null; vPage: boolean; h: number | null };
+type Box = { l: number; r: number; cx: number; t: number; b: number; cy: number };
+// Offsets of the dragged thing's own box from its stored (x, y), so a box at any (x, y) is known.
+type SelfBox = { dl: number; dr: number; dt: number; db: number };
+
+function boxOf(n: Element, host: DOMRect): Box {
+  const r = n.getBoundingClientRect();
+  const l = ((r.left - host.left) / host.width) * 100, rr = ((r.right - host.left) / host.width) * 100;
+  const t = ((r.top - host.top) / host.height) * 100, b = ((r.bottom - host.top) / host.height) * 100;
+  return { l, r: rr, cx: (l + rr) / 2, t, b, cy: (t + b) / 2 };
+}
+/** Every other placed thing on the stage, plus the dragged thing's own box relative to (x, y). */
+function measureStage(self: HTMLElement, x: number, y: number): { others: Box[]; me: SelfBox } {
+  const stage = self.parentElement!;
+  const host = stage.getBoundingClientRect();
+  const inner = (n: Element) => n.querySelector(".th-text") || n; // the words, not their padding
+  const others: Box[] = [];
+  stage.querySelectorAll(".th-free, .th-orb").forEach((n) => { if (n !== self) others.push(boxOf(inner(n), host)); });
+  const mine = boxOf(inner(self), host);
+  return { others, me: { dl: mine.l - x, dr: mine.r - x, dt: mine.t - y, db: mine.b - y } };
+}
+/** Snap a dragged (x, y) to the page middle or to any other thing within SNAP_PCT. */
+function snapSmart(x: number, y: number, me: SelfBox, others: Box[]): { x: number; y: number; guide: Guide | null } {
+  const l = x + me.dl, r = x + me.dr, cx = (l + r) / 2, t = y + me.dt, b = y + me.db, cy = (t + b) / 2;
+  // left to right: the page's middle first, then every other thing
+  let bx: { d: number; at: number; page: boolean } | null = { d: 50 - cx, at: 50, page: true };
+  if (Math.abs(bx.d) > SNAP_PCT) bx = null;
+  const tryX = (d: number, at: number) => { if (Math.abs(d) <= SNAP_PCT && (!bx || Math.abs(d) < Math.abs(bx.d))) bx = { d, at, page: false }; };
+  for (const o of others) { tryX(o.cx - cx, o.cx); tryX(o.l - l, o.l); tryX(o.r - r, o.r); }
+  // up and down: middles, top-to-bottom, and equal gaps
+  let by: { d: number; at: number } | null = null;
+  const tryY = (d: number, at: number) => { if (Math.abs(d) <= SNAP_PCT && (!by || Math.abs(d) < Math.abs(by.d))) by = { d, at }; };
+  for (const o of others) tryY(o.cy - cy, o.cy);
+  // equal gap: A is the nearest thing above the dragged one, B the nearest above A; the dragged
+  // top wants to sit (A.t - B.b) below A.b — the same gap twice.
+  const above = others.filter((o) => o.b <= t + SNAP_PCT).sort((p, q) => q.b - p.b)[0];
+  if (above) {
+    const aboveA = others.filter((o) => o !== above && o.b <= above.t + 0.5).sort((p, q) => q.b - p.b)[0];
+    if (aboveA) { const want = above.b + (above.t - aboveA.b); tryY(want - t, want); }
+  }
+  const gx: { d: number; at: number; page: boolean } | null = bx, gy: { d: number; at: number } | null = by;
+  return {
+    x: gx ? x + gx.d : x,
+    y: gy ? y + gy.d : y,
+    guide: gx || gy ? { v: gx ? gx.at : null, vPage: !!gx?.page, h: gy ? gy.at : null } : null,
+  };
 }
 
 // ── one free-floating text element ─────────────────────────────────────────────────────────────
 function Free({ el, t, edit, phone, children, onGuide }: {
-  el: HeroTextElement; t: HeroText; edit?: HeroEditApi; phone: boolean; children: ReactNode; onGuide?: (on: boolean) => void;
+  el: HeroTextElement; t: HeroText; edit?: HeroEditApi; phone: boolean; children: ReactNode; onGuide?: (g: Guide | null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [live, setLive] = useState<Partial<HeroText> | null>(null); // while a drag is in flight
   const [typing, setTyping] = useState(false);
-  const drag = useRef<{ kind: "move" | "size"; sx: number; sy: number; x: number; y: number; size: number; w: number | null; bw: number; cw: number; ch: number; moved: boolean } | null>(null);
+  const drag = useRef<{ kind: "move" | "size"; sx: number; sy: number; x: number; y: number; size: number; w: number | null; bw: number; cw: number; ch: number; moved: boolean; others: Box[]; me: SelfBox } | null>(null);
   // The phone headline is 22px, always — his law (09-09, three rulings from his iPhone).
   const size = phone && el === "headline" ? 22 : (live?.size ?? t.size);
   const v = { ...t, ...live, size };
@@ -412,7 +467,7 @@ function Free({ el, t, edit, phone, children, onGuide }: {
     // block wrapper; React's own stopPropagation runs at the root, after that listener has fired.
     e.nativeEvent.stopPropagation();
     const host = ref.current!.parentElement!.getBoundingClientRect();
-    drag.current = { kind, sx: e.clientX, sy: e.clientY, x: t.x, y: t.y, size: t.size, w: t.w, bw: ref.current!.getBoundingClientRect().width, cw: host.width, ch: host.height, moved: false };
+    drag.current = { kind, sx: e.clientX, sy: e.clientY, x: t.x, y: t.y, size: t.size, w: t.w, bw: ref.current!.getBoundingClientRect().width, cw: host.width, ch: host.height, moved: false, ...measureStage(ref.current!, t.x, t.y) };
     ref.current!.setPointerCapture(e.pointerId);
     e.preventDefault(); e.stopPropagation();
   }
@@ -422,9 +477,9 @@ function Free({ el, t, edit, phone, children, onGuide }: {
     if (!d.moved && Math.hypot(dx, dy) < DRAG_START_PX) return;
     d.moved = true;
     if (d.kind === "move") {
-      const m = snapMid(d.x + (dx / d.cw) * 100);
-      onGuide?.(m.near);
-      setLive({ x: m.x, y: d.y + (dy / d.ch) * 100 });
+      const m = snapSmart(d.x + (dx / d.cw) * 100, d.y + (dy / d.ch) * 100, d.me, d.others);
+      onGuide?.(m.guide);
+      setLive({ x: m.x, y: m.y });
     } else {
       const k = Math.max(0.3, 1 + dx / Math.max(60, d.bw));
       setLive({ size: Math.max(8, Math.round(d.size * k)), w: d.w ? Math.max(10, Math.round(d.w * k)) : null });
@@ -433,7 +488,7 @@ function Free({ el, t, edit, phone, children, onGuide }: {
   function up(e: RPointerEvent<HTMLDivElement>) {
     const d = drag.current; if (!d || !edit) return;
     drag.current = null;
-    onGuide?.(false);
+    onGuide?.(null);
     try { ref.current!.releasePointerCapture(e.pointerId); } catch {}
     if (d.moved && live) { edit.onPatch(el, { ...live, x: live.x !== undefined ? +live.x.toFixed(2) : undefined, y: live.y !== undefined ? +live.y.toFixed(2) : undefined }); setLive(null); return; }
     setLive(null);
@@ -464,7 +519,7 @@ function Free({ el, t, edit, phone, children, onGuide }: {
       onPointerDownCapture={edit ? (e) => down(e, "move") : undefined}
       onPointerMove={edit ? move : undefined}
       onPointerUp={edit ? up : undefined}
-      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(false); } : undefined}
+      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(null); } : undefined}
     >
       <div className="th-text">{children}</div>
       {edit && sel ? (
@@ -493,11 +548,11 @@ function extract(node: Node): string {
 
 // ── the orb — the one control on the page, never small ──────────────────────────────────────────
 function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
-  x: number; y: number; size: number; state: string; edit?: HeroEditApi; onTap: () => void; ready: boolean; onGuide?: (on: boolean) => void;
+  x: number; y: number; size: number; state: string; edit?: HeroEditApi; onTap: () => void; ready: boolean; onGuide?: (g: Guide | null) => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [live, setLive] = useState<{ x: number; y: number } | null>(null);
-  const drag = useRef<{ sx: number; sy: number; x: number; y: number; cw: number; ch: number; moved: boolean } | null>(null);
+  const drag = useRef<{ sx: number; sy: number; x: number; y: number; cw: number; ch: number; moved: boolean; others: Box[]; me: SelfBox } | null>(null);
   const v = live ?? { x, y };
   const sel = edit?.selected === "orb";
 
@@ -505,7 +560,7 @@ function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
     if (!edit) return;
     e.nativeEvent.stopPropagation(); // see Free.down
     const host = ref.current!.parentElement!.getBoundingClientRect();
-    drag.current = { sx: e.clientX, sy: e.clientY, x, y, cw: host.width, ch: host.height, moved: false };
+    drag.current = { sx: e.clientX, sy: e.clientY, x, y, cw: host.width, ch: host.height, moved: false, ...measureStage(ref.current!, x, y) };
     ref.current!.setPointerCapture(e.pointerId);
     e.preventDefault(); e.stopPropagation();
   }
@@ -514,14 +569,14 @@ function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
     const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
     if (!d.moved && Math.hypot(dx, dy) < DRAG_START_PX) return;
     d.moved = true;
-    const m = snapMid(d.x + (dx / d.cw) * 100);
-    onGuide?.(m.near);
-    setLive({ x: m.x, y: d.y + (dy / d.ch) * 100 });
+    const m = snapSmart(d.x + (dx / d.cw) * 100, d.y + (dy / d.ch) * 100, d.me, d.others);
+    onGuide?.(m.guide);
+    setLive({ x: m.x, y: m.y });
   }
   function up(e: RPointerEvent<HTMLButtonElement>) {
     const d = drag.current; if (!d || !edit) return;
     drag.current = null;
-    onGuide?.(false);
+    onGuide?.(null);
     try { ref.current!.releasePointerCapture(e.pointerId); } catch {}
     if (d.moved && live) edit.onPatch("orb", { x: +live.x.toFixed(2), y: +live.y.toFixed(2) });
     else edit.onSelect("orb");
@@ -541,7 +596,7 @@ function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
       onPointerDownCapture={edit ? down : undefined}
       onPointerMove={edit ? move : undefined}
       onPointerUp={edit ? up : undefined}
-      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(false); } : undefined}
+      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(null); } : undefined}
     >
       <svg viewBox="0 0 32 32" style={{ width: size * 0.56, height: size * 0.56 }} aria-hidden="true">
         <g><path d="M5 12h5l7-6v20l-7-6H5z" /><path d="M21 12.5a5 5 0 0 1 0 7" /><path d="M23.5 9.5a9 9 0 0 1 0 13" /><path d="M26 6.5a13 13 0 0 1 0 19" /></g>

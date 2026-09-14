@@ -118,6 +118,20 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
   const text = isText ? (cur as HeroText) : null;
   const headlineOnPhone = screen === "phone" && selected === "headline";
 
+  // The thing directly above the selected one on this screen (highest y below the selected y),
+  // for "Centre under the line above" (09-13 pm) — a one-click version of the smart guide.
+  const lineAbove = useMemo((): { el: HeroElement; x: number } | null => {
+    if (!selected) return null;
+    const L = layouts[screen];
+    const yOf = (el: HeroElement) => (el === "orb" ? L.orb.y : heroText(L, el, screen).y);
+    const xOf = (el: HeroElement) => (el === "orb" ? L.orb.x : heroText(L, el, screen).x);
+    const all: HeroElement[] = ["headline", "byline", "opener", "orb", ...extraOf(rest).map((x) => x.id as HeroElement)];
+    const mine = yOf(selected);
+    let best: HeroElement | null = null;
+    for (const el of all) if (el !== selected && yOf(el) < mine && (best === null || yOf(el) > yOf(best))) best = el;
+    return best ? { el: best, x: xOf(best) } : null;
+  }, [selected, layouts, screen, rest]);
+
   return (
     <div className="th-editwrap">
       <div className="th-strip" ref={strip}>
@@ -168,6 +182,14 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
         {selected ? (
           <div className="th-strip-group">
             <button type="button" title="Put this thing dead centre, left to right, on this screen" onClick={() => api.onPatch(selected, { x: 50 })}>Centre on page</button>
+            <button
+              type="button"
+              disabled={!lineAbove}
+              title={lineAbove ? `Put this thing on the same centre line as the ${heroLabel(lineAbove.el).toLowerCase()} above it` : "Nothing sits above this thing on this screen"}
+              onClick={() => lineAbove && api.onPatch(selected, { x: lineAbove.x })}
+            >
+              Centre under the line above
+            </button>
           </div>
         ) : null}
 
