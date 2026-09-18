@@ -6,8 +6,10 @@ import { readPuckPublished } from "@/lib/puckContent";
 import { seedFor } from "@/components/puck/seeds";
 import { pageMetadata } from "@/lib/pageMeta";
 import { SJC } from "@/lib/siteKeys";
+import { findSite } from "@/lib/sites";
 import { findForm } from "@/lib/forms";
 import { stepsOf, looksLikeSameForm } from "@/lib/formsShared";
+import { SiteProvider } from "@/components/blocks/SiteContext";
 
 // Public discovery-call intake. ALL copy comes from the Puck "apply" page (edited at
 // /edit/apply) — intro, questions, the disclaimer, and the booking-step copy are every one an
@@ -152,11 +154,16 @@ export default async function Apply() {
   ).trim();
   const pageKeys = blockSteps.flatMap((s) => s.questions.map((q) => q.key));
   const steps = (formId ? await stepsFromLibrary(formId, pageKeys) : null) || blockSteps;
+  // So ApplyForm's consent line reads "Steven James Consulting" from the site's own record,
+  // the same way every block on the built pages does — never a hardcoded string here.
+  const site = await findSite(SJC);
   return (
     <>
       <Nav />
       <main className="bg-[color:var(--color-sjc-bg-soft)]">
-        <ApplyForm steps={steps} intro={intro} disclaimer={disclaimer} booking={booking} />
+        <SiteProvider siteId={SJC} business={site?.business}>
+          <ApplyForm steps={steps} intro={intro} disclaimer={disclaimer} booking={booking} />
+        </SiteProvider>
       </main>
       <Footer />
     </>

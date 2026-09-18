@@ -15,6 +15,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type PointerEvent as RPointerEvent } from "react";
 import { useAgentThread, AGENT_NAME } from "@/lib/useAgentThread";
+import { useTwilioRelay } from "@/lib/useTwilioRelay";
 import {
   HERO_BREAKS, HERO_FRAME_WIDTH, heroLabel, heroText, splitGold, withLayoutDefaults,
   type HeroElement, type HeroExtraLine, type HeroLayout, type HeroLayouts, type HeroScreen, type HeroText, type HeroTextElement,

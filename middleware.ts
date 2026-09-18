@@ -56,6 +56,7 @@ const PUBLIC_API = [
   "/api/cron", // gated by CRON_SECRET, not by the owner cookie
   "/api/stripe", // Stripe's own signature is the gate
   "/api/blueprint", // gated by X-Blueprint-Key, not by the owner cookie — the brain is the caller
+  "/api/mail/send", // gated by Bearer MAIL_SEND_TOKEN, not by the owner cookie — a server is the caller
 ];
 
 // The owner-only surfaces: the whole editor, plus every API route not explicitly made public.

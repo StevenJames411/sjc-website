@@ -20,6 +20,7 @@ import FooterView from "@/components/FooterView";
 import Card, { CARD_DEFAULTS } from "@/components/blocks/Card";
 import CheckList, { CHECKLIST_DEFAULTS } from "@/components/blocks/CheckList";
 import CalEmbed from "@/components/blocks/CalEmbed";
+import ConsentLine from "@/components/ConsentLine";
 import { TALKING_HERO_DEFAULTS, type TalkingHeroProps } from "@/components/blocks/TalkingHero";
 import TalkingHeroSwitch from "@/components/blocks/TalkingHeroSwitch";
 import { HERO_LAYOUT_DEFAULTS } from "@/components/blocks/talkingHeroLayout";
@@ -3000,6 +3001,11 @@ const baseConfig: Config<Props, RootProps> = {
                 </div>
               )}
             </div>
+            {/* Outside the widget's own box on purpose — never inside the Cal.com iframe or the
+                Google embed, which we cannot write to anyway. See ConsentLine. */}
+            {calLink || url ? (
+              <ConsentLine className="mt-3 text-center text-xs text-[color:var(--color-sjc-mute)]" />
+            ) : null}
           </div>
         );
       },

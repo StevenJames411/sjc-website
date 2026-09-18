@@ -1,10 +1,11 @@
 "use client";
 import { useSiteId, useBusiness, useSiteUrl } from "@/components/blocks/SiteContext";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { resolveColor } from "@/lib/brandColor";
 import { fillTokens } from "@/lib/businessTokens";
 import { surveyScreensOf } from "@/lib/formsShared";
+import ConsentLine from "@/components/ConsentLine";
 
 // A short lead-capture form, fully driven by props so it can be dropped on ANY page from the
 // builder and re-labelled without touching code. Add/remove/reorder the questions, change the
@@ -344,6 +345,10 @@ export default function LeadForm(props: LeadFormProps) {
 
   // Comes from the route this page is served under, not from anything editable on the block.
   const siteId = useSiteId();
+
+  // Ties the submit button to the consent line below it for screen readers, without restructuring
+  // the form. useId() keeps it unique when several LeadForm blocks sit on one page.
+  const consentId = `lf-consent-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
 
   // ── WHAT GOES IN THE "SOURCE" COLUMN WHEN NOBODY TYPED ONE ──────────────────────────────────
   //
@@ -847,6 +852,7 @@ export default function LeadForm(props: LeadFormProps) {
         <button
           type="submit"
           disabled={state === "sending"}
+          aria-describedby={consentId}
           className={
             /* ⚠️ THE HOVER USED TO BE A NO-OP, AND IT LOOKED DELIBERATE. The light button said
                `bg-[--color-sjc-blue] hover:bg-[--color-sjc-green]` — and on SJC's palette both
@@ -887,6 +893,9 @@ export default function LeadForm(props: LeadFormProps) {
       ) : null}
 
       {note ? <p className={noteCls}>{note}</p> : null}
+      {/* Shown on every screen of a multi-step survey — including the step right before a "book"
+          ending hands off to a calendar — never only on the final thank-you. See ConsentLine. */}
+      <ConsentLine why="form" id={consentId} businessName={business?.name} className={noteCls} />
     </form>
   );
 }
