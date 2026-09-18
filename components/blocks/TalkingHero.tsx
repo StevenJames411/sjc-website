@@ -13,7 +13,7 @@
 // api, the same elements become draggable, resizable and typeable in place; nothing about the
 // public render changes, it only gains handles. See talkingHeroLayout.ts for the shape.
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type PointerEvent as RPointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MutableRefObject, type ReactNode, type Ref, type PointerEvent as RPointerEvent } from "react";
 import { useAgentThread, AGENT_NAME } from "@/lib/useAgentThread";
 import { useTwilioRelay } from "@/lib/useTwilioRelay";
 import {
@@ -375,6 +375,10 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
       {filmWide ? <video ref={filmWideRef} className="th-loop th-wide" src={filmWide} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
       {filmTall ? <video ref={filmTallRef} className="th-loop th-tall" src={filmTall} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
     </div>
+  ) : useTwinStage ? (
+    <div className="th-room" aria-hidden="true">
+      <TwinStage state={twinState} srcs={TWIN_LOOPS[twinCrop]} />
+    </div>
   ) : (
     <div className="th-room" aria-hidden="true">
       {props.idleWide ? <video className="th-loop th-wide" src={props.idleWide} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
@@ -509,7 +513,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         </Free>
       ))}
 
-      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={film ? toggleFilm : relayOn ? relay.toggle : toggleTalk} ready={film || t.ready} onGuide={setGuide} />
+      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={film ? toggleFilm : relayOn ? relay.toggle : toggleTalk} ready={film || t.ready} onGuide={setGuide} twin={relayOn && !edit} ringRef={ringRef} waveRefs={waveRefs} />
 
       {/* Under the orb — LIVE MODE ONLY; in film mode the orb stands alone. The words and the
           type button each show only when their field has words: blank it and it is gone (09-13). */}
@@ -773,7 +777,7 @@ function TwinStage({ state, srcs }: { state: TwinState; srcs: TwinLoopSet }) {
 // ── the orb — the one control on the page, never small ──────────────────────────────────────────
 function Orb({ x, y, size, state, edit, onTap, ready, onGuide, twin, ringRef, waveRefs }: {
   x: number; y: number; size: number; state: string; edit?: HeroEditApi; onTap: () => void; ready: boolean; onGuide?: (g: Guide | null) => void;
-  twin?: boolean; ringRef?: React.Ref<HTMLSpanElement>; waveRefs?: React.MutableRefObject<Array<HTMLSpanElement | null>>;
+  twin?: boolean; ringRef?: Ref<HTMLSpanElement>; waveRefs?: MutableRefObject<Array<HTMLSpanElement | null>>;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [live, setLive] = useState<{ x: number; y: number } | null>(null);
@@ -827,6 +831,14 @@ function Orb({ x, y, size, state, edit, onTap, ready, onGuide, twin, ringRef, wa
         <g><path d="M5 12h5l7-6v20l-7-6H5z" /><path d="M21 12.5a5 5 0 0 1 0 7" /><path d="M23.5 9.5a9 9 0 0 1 0 13" /><path d="M26 6.5a13 13 0 0 1 0 19" /></g>
         <path className="th-slash" d="M4 4l24 24" />
       </svg>
+      {twin ? <span ref={ringRef} className="th-ring" data-who="twin" aria-hidden="true" /> : null}
+      {twin ? (
+        <span className="th-wave" aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <i key={i} ref={(el) => { if (waveRefs) waveRefs.current[i] = el; }} />
+          ))}
+        </span>
+      ) : null}
       {edit && sel ? <span className="th-tag">The orb · {size}px</span> : null}
     </button>
   );
