@@ -96,13 +96,14 @@ export const DEFAULT_LEAD_FROM =
 //   stevenjamesconsulting.com  -> GoDaddy              (needs Steven, and it carries Workspace MX)
 //
 export async function sendAlert(opts: {
-  to: string;
+  to: string | string[];
   from: string;
   fromName: string;
   subject: string;
   html: string;
+  text?: string;
   replyTo?: string;
-}): Promise<void> {
+}): Promise<{ id: string }> {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error("RESEND_API_KEY not set");
   const res = await fetch(RESEND, {
@@ -110,13 +111,16 @@ export async function sendAlert(opts: {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from: `${opts.fromName} <${opts.from}>`,
-      to: [opts.to],
+      to: Array.isArray(opts.to) ? opts.to : [opts.to],
       subject: opts.subject,
       html: opts.html,
+      ...(opts.text ? { text: opts.text } : {}),
       ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
     }),
   });
   if (!res.ok) throw new Error(`resend ${res.status} ${await res.text()}`);
+  const data = await res.json().catch(() => ({}));
+  return { id: data.id || "" };
 }
 
 /**
