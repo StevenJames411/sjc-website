@@ -1488,6 +1488,17 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    component, and an inline style beats any stylesheet. The layer card keeps its green — that
    border is its identity — and brightens its glow instead. No transform: the swell was removed
    from these cards and the CTAs for competing with the link itself. */
+/* ⭐ THE SIX SYSTEM CARDS ARE A GRID, NOT A WRAP (Steven, 2026-09-18): "three columns on a laptop and
+   two columns when it collapses to a phone, all six feature blocks stay the same size." A flex wrap
+   let five share a row and stretched the sixth across the whole width underneath. */
+.sjc-sys-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .sjc-sys-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 a.sjc-sys-card {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1501,9 +1512,19 @@ a.sjc-sys-card .sjc-sys-cta {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.01em;
-  color: #3b7fb8;
+  /* ⛔ LIGHT BLUE ON A LIGHT-BLUE CARD IS NOT A LINK (Steven, 2026-09-18): "I absolutely hate how it's
+     light blue on a blue page. The learn more hyperlink barely stands out." #3b7fb8 on the #E8EFF7
+     card was ~3.6:1. The header's royal blue, a size up, and UNDERLINED AT REST so it reads as the
+     hyperlink it is before anyone hovers. */
+  color: #1a3fb0;
+  font-size: 15px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
   transition: color 0.2s ease;
 }
+/* a strip placed on a DARK section: royal blue would vanish there */
+a.sjc-sys-card--dark:not(.sjc-sys-card--active):not(.sjc-sys-card--layer) .sjc-sys-cta { color: #8fd0ff; }
 a.sjc-sys-card .sjc-sys-arrow {
   display: inline-block;
   font-size: 1.2em;
