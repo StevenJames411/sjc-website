@@ -2785,13 +2785,19 @@ const baseConfig: Config<Props, RootProps> = {
         // sits on a LIGHT page, and gold on near-white is unreadable. The capsule supplies the ground
         // the gold needs — the same reason the menu pill is filled over Steven's photo.
         const GOLD = "#ffd700", GREEN = "#85bb65", LAYER_BG = "#0A0E27";
-        const chip = (x: { slug: string; name: string; line: string }, wide: boolean) => {
-          const on = x.slug === current;
+        const chip = (x: { slug: string; name: string; line: string }, wide: boolean, n?: number) => {
+          // ⛔ THE CARD FOR THE PAGE YOU ARE ON IS NOT A DIFFERENT COLOUR ANY MORE (Steven, 2026-09-18):
+          // "Obviously, they need to be the same color. I don't know why number six is a different
+          // color." The blue fill was a you-are-here marker; he read it as one card being wrong. All
+          // six wear one skin. `isCurrent` survives only as aria-current, which costs nothing to look at.
+          const isCurrent = x.slug === current;
+          const on = false;
           const layer = wide;
           return (
             <a
               key={x.slug}
               href={x.slug}
+              aria-current={isCurrent ? "page" : undefined}
               className={`sjc-sys-card${layer ? " sjc-sys-card--layer" : ""}${on ? " sjc-sys-card--active" : ""}${onDark ? " sjc-sys-card--dark" : ""}`}
               style={{
                 display: "block",
@@ -2819,8 +2825,15 @@ const baseConfig: Config<Props, RootProps> = {
                   : on ? "none" : "0 1px 3px rgba(10,14,39,.06)",
               }}
             >
-              <span style={{ display: "block", fontWeight: 700, fontSize: "16px", lineHeight: 1.25, color: layer ? GOLD : on ? "#ffffff" : ink }}>
-                {x.name}
+              {/* ⭐ NUMBERED LIKE EVERYWHERE ELSE (Steven, 2026-09-18): "since we're numbering everything,
+                  we should number the feature cards. So everywhere has the same aesthetics." Same disc
+                  as the home list, the home cards, the menu and each hero pill. The layer gets none -
+                  it is not one of the six. */}
+              <span style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontWeight: 700, fontSize: "16px", lineHeight: 1.25, color: layer ? GOLD : on ? "#ffffff" : ink }}>
+                {n ? (
+                  <span aria-hidden="true" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "1.5em", height: "1.5em", borderRadius: "9999px", background: "var(--accent3-color,#2f7ee6)", color: "#fff", fontWeight: 700, fontSize: ".9em", lineHeight: 1, flex: "none", marginTop: "-.05em" }}>{n}</span>
+                ) : null}
+                <span>{x.name}</span>
               </span>
               <span style={{ display: "block", marginTop: "6px", fontSize: "15px", lineHeight: 1.4, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
                 {x.line}
@@ -2845,7 +2858,7 @@ const baseConfig: Config<Props, RootProps> = {
             {/* ⭐ SIX CARDS, ONE SIZE (Steven, 2026-09-18): three columns on a laptop, two on a phone, so the
                 sixth never stretches into a wide row of its own. The grid lives in globals.css
                 (.sjc-sys-grid) because an inline style cannot carry a media query. */}
-            <div className="sjc-sys-grid">{systems.map((x) => chip(x, false))}</div>
+            <div className="sjc-sys-grid">{systems.map((x, i) => chip(x, false, i + 1))}</div>
             <div style={{ display: "flex", marginTop: "12px" }}>{chip(layer, true)}</div>
           </div>
         );
