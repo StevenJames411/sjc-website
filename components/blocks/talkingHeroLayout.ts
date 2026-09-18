@@ -20,6 +20,8 @@ export type HeroText = {
   color: HeroColor;
   bold: boolean;
   align: HeroAlign;
+  hidden?: boolean;     // hidden on THIS screen only (09-13 pm) — the words stay, the other screens keep it
+  plate?: number;       // 0–90: a navy capsule under the words, dialled as dark as reading needs (09-14). 0/absent = none
 };
 
 export type HeroOrb = { x: number; y: number; size: number }; // centre point, diameter px

@@ -11,16 +11,47 @@
 // touches it is a page behind the app password.
 import { readLists, addList, updateList, removeList, toProspects, statusText, setDefaultList, reorderLists } from "@/lib/dial";
 import { readSheetRows, logSheetCall, sheetsConfigured } from "@/lib/sheets";
+import { getClient } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
+// ── THE SNAPSHOT (Steven, 09-13) ──────────────────────────────────────────────────────────────
+// "I don't need that data to be accurate every time I reload the page. These businesses move at a
+// glacial pace... just a capture, a snapshot of when we pulled it, stick a date there, and when I
+// want to refresh it and wait, we do that." The Apps Script webhook measured 9–42 s per read
+// (09-13), so a list opens from its last capture in our own store — milliseconds — stamped with
+// when it was pulled. `?refresh=1` is the only thing that goes back to the sheet. A logged call
+// patches the snapshot too, so the board never shows a prospect as un-worked after he worked him.
+type Snapshot = {
+  title: string; tab: string; tabs: string[]; headers: string[];
+  prospects: ReturnType<typeof toProspects>; truncated: boolean; snapshotAt: string;
+};
+const snapKey = (listId: string) => `dial:snapshot:${listId}`;
+async function readSnapshot(listId: string): Promise<Snapshot | null> {
+  try {
+    const v = (await getClient()?.get(snapKey(listId))) as Snapshot | null | undefined;
+    return v && Array.isArray(v.prospects) ? v : null;
+  } catch { return null; }
+}
+async function writeSnapshot(listId: string, snap: Snapshot): Promise<void> {
+  try { await getClient()?.set(snapKey(listId), snap, { force: true }); } catch { /* the sheet still answered; a missed capture only costs the next load */ }
+}
+
 export async function GET(req: Request) {
-  const listId = new URL(req.url).searchParams.get("list") || "";
+  const sp = new URL(req.url).searchParams;
+  const listId = sp.get("list") || "";
+  const refresh = sp.get("refresh") === "1";
   const lists = await readLists();
   if (!listId) return Response.json({ lists, configured: sheetsConfigured() });
 
   const list = lists.find((l) => l.id === listId);
   if (!list) return Response.json({ ok: false, error: "No such list." }, { status: 404 });
+
+  // The fast path: the last capture, unless he asked for fresh.
+  if (!refresh) {
+    const snap = await readSnapshot(listId);
+    if (snap) return Response.json({ ok: true, list, ...snap, fromSnapshot: true });
+  }
 
   const res = await readSheetRows({ spreadsheetId: list.spreadsheetId, tab: list.tab });
   if (!res.ok) {
@@ -43,16 +74,17 @@ export async function GET(req: Request) {
     );
   }
 
-  return Response.json({
-    ok: true,
-    list,
+  const snap: Snapshot = {
     title: res.title,
     tab: res.tab,
     tabs: res.tabs,
     headers: res.headers,
     prospects: toProspects(res.headers, res.rows),
     truncated: Boolean(res.truncated),
-  });
+    snapshotAt: new Date().toISOString(),
+  };
+  await writeSnapshot(listId, snap);
+  return Response.json({ ok: true, list, ...snap, fromSnapshot: false });
 }
 
 export async function POST(req: Request) {
@@ -127,6 +159,28 @@ export async function PATCH(req: Request) {
     callbackAt: body.callbackAt ? String(body.callbackAt) : undefined,
     at: new Date().toISOString(),
   });
+
+  // Keep the capture honest: the same change the board makes on screen, made in the snapshot.
+  if (res.ok) {
+    const snap = await readSnapshot(id);
+    const at = (res as { at?: string }).at || new Date().toISOString();
+    const rowNo = Number((res as { row?: number }).row ?? body.row);
+    if (snap) {
+      const outcome = body.outcome ? String(body.outcome) : "";
+      const note = body.note ? String(body.note) : "";
+      snap.prospects = snap.prospects.map((x) =>
+        x.row === rowNo
+          ? {
+              ...x,
+              status: outcome || x.status,
+              lastCalled: outcome ? at : x.lastCalled,
+              notes: [x.notes, `${at} — ${outcome || "note"}${note ? `: ${note}` : ""}`].filter(Boolean).join("\n"),
+            }
+          : x
+      );
+      await writeSnapshot(id, snap);
+    }
+  }
 
   return Response.json(res, { status: res.ok ? 200 : 502 });
 }

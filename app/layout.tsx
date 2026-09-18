@@ -221,7 +221,7 @@ const faqSchema = {
       name: "What exactly do you install?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "A native AI operating system that runs on top of the software you already use. It's a workforce of AI employees — one hire covering up to six seats: instant speed-to-lead, database reactivation of your old leads, closing and booking, customer retention, 24/7 call handling, and cross-sell. We build and train it on your business and run it; you keep full control and can watch every conversation and booking.",
+        text: "A native AI system that connects the five systems your business runs on. It's a workforce of AI employees — one hire covering up to six seats: instant speed-to-lead, database reactivation of your old leads, closing and booking, customer retention, 24/7 call handling, and cross-sell. We build and train it on your business and run it; you keep full control and can watch every conversation and booking.",
       },
     },
     {
@@ -237,7 +237,7 @@ const faqSchema = {
       name: "How long does the install take?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Typically 4-8 weeks depending on scope. We build on top of your existing software, so nothing you run today gets ripped out — it gets an upgrade.",
+        text: "Typically 4-8 weeks depending on scope. We connect your five systems and keep them getting better from the day they go live.",
       },
     },
   ],

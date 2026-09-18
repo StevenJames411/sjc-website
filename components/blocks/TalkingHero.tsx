@@ -37,6 +37,18 @@ export type TalkingHeroProps = {
   nudgeSeconds: number;  // silence before the first nudge line (placed layout only)
   nudgeCount: number;    // how many nudges before the call goes quiet
   extra: HeroExtraLine[]; // lines added from the strip ("+ Text", 09-13) — words here, places in `layout`
+  // DEMO MODE (Steven, 09-13): "for now I just want the HeyGen example without the tap and type
+  // under it... the demo with the HeyGen voice." "film" plays the rendered film in the room and
+  // the orb is sound on/off — nothing under it, no thread, no agent. "live" is the real thing,
+  // untouched, for when the back-and-forth is ready. Two different features, one block.
+  mode: "film" | "live";
+  filmWide: string;      // 16:9 film with its own voice (laptop)
+  filmTall: string;      // 9:16 film (phone)
+  // SPACE ABOVE / BELOW ARE INSIDE THE ROOM (Steven, 09-13: "I can't adjust the padding at the
+  // top of the section"). The room stays full-bleed under the floating nav; these inset the STAGE
+  // the placed things sit on, so everything moves down (or up) together and nothing paints white.
+  spaceAbove: number;
+  spaceBelow: number;
 };
 
 // The two lines a silent visitor hears — pre-cached on the voice server (Lane H) under these
@@ -60,6 +72,11 @@ export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   nudgeSeconds: 8,
   nudgeCount: 2,
   extra: [],
+  mode: "film",
+  filmWide: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/hero/film/film-1-v1.mp4",
+  filmTall: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/hero/film/film-1-tall-v2.mp4",
+  spaceAbove: 0,
+  spaceBelow: 0,
 };
 
 /** What the studio hands the block while editing. Absent on the public page. */
@@ -100,6 +117,21 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   const [showVideo, setShowVideo] = useState(false);
   const started = useRef(false);
   const captionsEnd = useRef<HTMLDivElement>(null);
+  // ⚠️ A block saved before these fields existed hands them over as undefined, and that would
+  // override the default above (live mode, no film) — so undefined means the default here.
+  const film = (props.mode || "film") === "film";
+  const filmWide = props.filmWide || TALKING_HERO_DEFAULTS.filmWide;
+  const filmTall = props.filmTall || TALKING_HERO_DEFAULTS.filmTall;
+  const [filmOn, setFilmOn] = useState(false); // sound on = the film restarts from the top with its voice
+  const filmWideRef = useRef<HTMLVideoElement>(null);
+  const filmTallRef = useRef<HTMLVideoElement>(null);
+  function toggleFilm() {
+    if (edit) return;
+    const v = (window.innerWidth <= HERO_BREAKS.phoneMax ? filmTallRef.current : filmWideRef.current) || filmWideRef.current || filmTallRef.current;
+    if (!v) return;
+    if (v.muted) { v.muted = false; v.currentTime = 0; v.play().catch(() => {}); setFilmOn(true); }
+    else { v.muted = true; setFilmOn(false); }
+  }
   const screen = useScreen(edit?.screen);
   const phone = screen === "phone";
   const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,13 +212,19 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
 
   const visible = t.msgs.filter((m) => !m.hidden);
   const captions = visible.slice(-4);
-  const state = t.listening ? "listening" : t.speaking ? "talking" : t.busy ? "thinking" : mode === "idle" ? "idle" : "ready";
+  const state = film
+    ? (filmOn ? "talking" : "idle")
+    : t.listening ? "listening" : t.speaking ? "talking" : t.busy ? "thinking" : mode === "idle" ? "idle" : "ready";
 
-  const room = (
+  const room = film ? (
+    <div className="th-room" aria-hidden="true">
+      {filmWide ? <video ref={filmWideRef} className="th-loop th-wide" src={filmWide} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
+      {filmTall ? <video ref={filmTallRef} className="th-loop th-tall" src={filmTall} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
+    </div>
+  ) : (
     <div className="th-room" aria-hidden="true">
       {props.idleWide ? <video className="th-loop th-wide" src={props.idleWide} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
       {props.idleTall ? <video className="th-loop th-tall" src={props.idleTall} poster={props.poster || undefined} autoPlay muted loop playsInline preload="auto" /> : null}
-      <div className="th-shade" />
     </div>
   );
 
@@ -256,7 +294,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   // ── PLACED BY HAND — one layout per screen, every element at its own x/y/size. ────────────────
   // THE CENTRE LINE (09-13: "I'm having to eyeball where center is"). While a thing is dragged
   // within SNAP_PCT of the canvas's middle, a dashed line shows and the thing locks to x = 50.
-  const [guide, setGuide] = useState(false);
+  const [guide, setGuide] = useState<Guide | null>(null);
   const layouts = withLayoutDefaults(props.layout);
   const L: HeroLayout = layouts[screen];
   const { plain, gold } = splitGold(props.headline);
@@ -268,7 +306,11 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
           page (Steven, 09-12: "we have it on two different blocks now"). The eyebrow field stays
           for the original grid only. */}
 
-      {edit && guide ? <div className="th-guide-v" aria-hidden="true" /> : null}
+      {/* The stage: every placed thing lives here, inset from the room's edges by Space above /
+          below. Drags measure against this box, so a % position is a % of the stage. */}
+      <div className="th-stage" style={{ top: Math.max(0, props.spaceAbove || 0), bottom: Math.max(0, props.spaceBelow || 0) }}>
+      {edit && guide?.v !== null && guide?.v !== undefined ? <div className={`th-guide-v${guide.vPage ? "" : " el"}`} style={{ left: `${guide.v}%` }} aria-hidden="true" /> : null}
+      {edit && guide?.h !== null && guide?.h !== undefined ? <div className="th-guide-h" style={{ top: `${guide.h}%` }} aria-hidden="true" /> : null}
 
       <Free el="headline" t={L.headline} edit={edit} phone={phone} onGuide={setGuide}>
         <h1 className="th-h1">{plain}{gold !== null ? <em>{gold}</em> : null}</h1>
@@ -280,9 +322,17 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         </Free>
       ) : null}
 
-      <Free el="opener" t={L.opener} edit={edit} phone={phone} onGuide={setGuide}>
-        <div className="th-talk">{conversation}</div>
-      </Free>
+      {film ? (
+        props.opener || edit ? (
+          <Free el="opener" t={L.opener} edit={edit} phone={phone} onGuide={setGuide}>
+            <p className="th-q">{props.opener || (edit ? "First line (blank hides it)" : "")}</p>
+          </Free>
+        ) : null
+      ) : (
+        <Free el="opener" t={L.opener} edit={edit} phone={phone} onGuide={setGuide}>
+          <div className="th-talk">{conversation}</div>
+        </Free>
+      )}
 
       {(props.extra || []).map((x) => (
         <Free key={x.id} el={x.id as HeroTextElement} t={heroText(L, x.id as HeroTextElement, screen)} edit={edit} phone={phone} onGuide={setGuide}>
@@ -290,18 +340,23 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         </Free>
       ))}
 
-      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={toggleTalk} ready={t.ready} onGuide={setGuide} />
+      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={film ? toggleFilm : toggleTalk} ready={film || t.ready} onGuide={setGuide} />
 
+      {/* Under the orb — LIVE MODE ONLY; in film mode the orb stands alone. The words and the
+          type button each show only when their field has words: blank it and it is gone (09-13). */}
+      {film ? null : (
       <div className="th-under" style={{ left: `${L.orb.x}%`, top: `calc(${L.orb.y}% + ${L.orb.size / 2 + 10}px)` }}>
-        {mode === "idle" ? <span className="th-orblabel">{props.ctaTalk}</span> : null}
-        {mode !== "type" ? (
+        {mode === "idle" && props.ctaTalk ? <span className="th-orblabel">{props.ctaTalk}</span> : null}
+        {!props.ctaType ? null : mode !== "type" ? (
           <button className="th-ghost th-small" onClick={() => { t.stopHandsFree(); begin("type"); }} disabled={!t.ready || !!edit}>{props.ctaType}</button>
         ) : (
           <button className="th-ghost th-small" onClick={() => begin("talk")}>Talk instead</button>
         )}
         {props.videoUrl ? <button className="th-play" onClick={() => setShowVideo(true)}>▶ {props.videoLabel}</button> : null}
       </div>
-      {!t.ready && !edit ? <p className="th-note th-note-abs">The conversation is switched off on this preview.</p> : null}
+      )}
+      {!film && !t.ready && !edit ? <p className="th-note th-note-abs">The conversation is switched off on this preview.</p> : null}
+      </div>
     </div>
   );
 
@@ -326,29 +381,94 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
 // whether the guide should show. The threshold is in % of the canvas so it feels the same on
 // every screen (~1.5% is about 20px on a laptop, 6px on a phone frame).
 const SNAP_PCT = 1.5;
-function snapMid(x: number): { x: number; near: boolean } {
-  const near = Math.abs(x - 50) <= SNAP_PCT;
-  return { x: near ? 50 : x, near };
+
+// ── SMART GUIDES (09-13 pm: "when I use a text block down below, there's nothing to center off
+// of"). The page's middle was the only guide, and a short line in the column beside him is not
+// meant to sit on the page's middle — it is meant to sit on the line above it. So a drag now
+// measures every OTHER thing on the stage and snaps to it, the way Keynote does:
+//   • centre to centre (a white dashed line through both)   • left edge to left edge, right to right
+//   • middle to middle (up and down)                          • equal gap: the space above the dragged
+//     line matches the space above the line above it, so three lines stack evenly.
+// The page's own middle keeps its gold line and wins a tie. Everything is measured from the DOM
+// at the moment the drag starts, in % of the stage, so it is right for whatever font or wrap
+// the other lines have — nothing here reads the stored layout.
+type Guide = { v: number | null; vPage: boolean; h: number | null };
+type Box = { l: number; r: number; cx: number; t: number; b: number; cy: number };
+// Offsets of the dragged thing's own box from its stored (x, y), so a box at any (x, y) is known.
+type SelfBox = { dl: number; dr: number; dt: number; db: number };
+
+function boxOf(n: Element, host: DOMRect): Box {
+  const r = n.getBoundingClientRect();
+  const l = ((r.left - host.left) / host.width) * 100, rr = ((r.right - host.left) / host.width) * 100;
+  const t = ((r.top - host.top) / host.height) * 100, b = ((r.bottom - host.top) / host.height) * 100;
+  return { l, r: rr, cx: (l + rr) / 2, t, b, cy: (t + b) / 2 };
+}
+/** Every other placed thing on the stage, plus the dragged thing's own box relative to (x, y). */
+function measureStage(self: HTMLElement, x: number, y: number): { others: Box[]; me: SelfBox } {
+  const stage = self.parentElement!;
+  const host = stage.getBoundingClientRect();
+  const inner = (n: Element) => n.querySelector(".th-text") || n; // the words, not their padding
+  const others: Box[] = [];
+  stage.querySelectorAll(".th-free:not(.hid), .th-orb").forEach((n) => { if (n !== self) others.push(boxOf(inner(n), host)); });
+  const mine = boxOf(inner(self), host);
+  return { others, me: { dl: mine.l - x, dr: mine.r - x, dt: mine.t - y, db: mine.b - y } };
+}
+/** Snap a dragged (x, y) to the page middle or to any other thing within SNAP_PCT. */
+function snapSmart(x: number, y: number, me: SelfBox, others: Box[]): { x: number; y: number; guide: Guide | null } {
+  const l = x + me.dl, r = x + me.dr, cx = (l + r) / 2, t = y + me.dt, b = y + me.db, cy = (t + b) / 2;
+  // left to right: the page's middle first, then every other thing
+  type XHit = { d: number; at: number; page: boolean }; type YHit = { d: number; at: number };
+  const hit: { x: XHit | null; y: YHit | null } = { x: Math.abs(50 - cx) <= SNAP_PCT ? { d: 50 - cx, at: 50, page: true } : null, y: null };
+  const tryX = (d: number, at: number) => { if (Math.abs(d) <= SNAP_PCT && (!hit.x || Math.abs(d) < Math.abs(hit.x.d))) hit.x = { d, at, page: false }; };
+  for (const o of others) { tryX(o.cx - cx, o.cx); tryX(o.l - l, o.l); tryX(o.r - r, o.r); }
+  // up and down: middles, and equal gaps
+  const tryY = (d: number, at: number) => { if (Math.abs(d) <= SNAP_PCT && (!hit.y || Math.abs(d) < Math.abs(hit.y.d))) hit.y = { d, at }; };
+  for (const o of others) tryY(o.cy - cy, o.cy);
+  // equal gap: A is the nearest thing above the dragged one, B the nearest above A; the dragged
+  // top wants to sit (A.t - B.b) below A.b — the same gap twice.
+  const above = others.filter((o) => o.b <= t + SNAP_PCT).sort((p, q) => q.b - p.b)[0];
+  if (above) {
+    const aboveA = others.filter((o) => o !== above && o.b <= above.t + 0.5).sort((p, q) => q.b - p.b)[0];
+    if (aboveA) { const want = above.b + (above.t - aboveA.b); tryY(want - t, want); }
+  }
+  const gx = hit.x, gy = hit.y;
+  return {
+    x: gx ? x + gx.d : x,
+    y: gy ? y + gy.d : y,
+    guide: gx || gy ? { v: gx ? gx.at : null, vPage: !!gx?.page, h: gy ? gy.at : null } : null,
+  };
 }
 
 // ── one free-floating text element ─────────────────────────────────────────────────────────────
 function Free({ el, t, edit, phone, children, onGuide }: {
-  el: HeroTextElement; t: HeroText; edit?: HeroEditApi; phone: boolean; children: ReactNode; onGuide?: (on: boolean) => void;
+  el: HeroTextElement; t: HeroText; edit?: HeroEditApi; phone: boolean; children: ReactNode; onGuide?: (g: Guide | null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [live, setLive] = useState<Partial<HeroText> | null>(null); // while a drag is in flight
   const [typing, setTyping] = useState(false);
-  const drag = useRef<{ kind: "move" | "size"; sx: number; sy: number; x: number; y: number; size: number; w: number | null; bw: number; cw: number; ch: number; moved: boolean } | null>(null);
-  // The phone headline is 22px, always — his law (09-09, three rulings from his iPhone).
-  const size = phone && el === "headline" ? 22 : (live?.size ?? t.size);
+  const drag = useRef<{ kind: "move" | "size"; sx: number; sy: number; x: number; y: number; size: number; w: number | null; bw: number; cw: number; ch: number; moved: boolean; others: Box[]; me: SelfBox } | null>(null);
+  // 22px is the phone headline's DEFAULT (his 09-09 law, derived for a 375 phone), no longer a
+  // lock: on 09-13 pm he selected it on the phone canvas to make it smaller and had no control.
+  const size = live?.size ?? t.size;
   const v = { ...t, ...live, size };
   const sel = edit?.selected === el;
+  // Hidden on this screen: gone from the page, a ghost in the studio so it can be selected and shown again.
+  const hidden = !!t.hidden;
 
   const style: CSSProperties = {
     left: `${v.x}%`, top: `${v.y}%`, fontSize: `${size}px`,
     width: v.w ? `${v.w}%` : "max-content", whiteSpace: v.w ? "normal" : "nowrap",
     textAlign: v.align, color: v.color === "gold" ? "#f0b323" : "#fff", fontWeight: v.bold ? 700 : 400,
   };
+  // THE PLATE (09-14): the room stays bright, and each line carries its own capsule — the nav
+  // pill's navy, at the darkness he dials in on the strip. Nothing until he asks for it.
+  const plate = Math.min(90, Math.max(0, typeof v.plate === "number" ? v.plate : 0));
+  if (plate > 0) {
+    style.background = `rgba(11, 23, 48, ${plate / 100})`;
+    style.borderRadius = v.w ? ".7em" : "999px"; // a wrapped block is a rounded box, a single line a capsule
+    style.padding = ".32em .85em";
+    style.boxShadow = `0 0 0 1px rgba(240, 179, 35, ${Math.min(0.55, plate / 140)})`;
+  }
 
   function down(e: RPointerEvent<HTMLDivElement>, kind: "move" | "size") {
     if (!edit || typing) return;
@@ -356,7 +476,7 @@ function Free({ el, t, edit, phone, children, onGuide }: {
     // block wrapper; React's own stopPropagation runs at the root, after that listener has fired.
     e.nativeEvent.stopPropagation();
     const host = ref.current!.parentElement!.getBoundingClientRect();
-    drag.current = { kind, sx: e.clientX, sy: e.clientY, x: t.x, y: t.y, size: t.size, w: t.w, bw: ref.current!.getBoundingClientRect().width, cw: host.width, ch: host.height, moved: false };
+    drag.current = { kind, sx: e.clientX, sy: e.clientY, x: t.x, y: t.y, size: t.size, w: t.w, bw: ref.current!.getBoundingClientRect().width, cw: host.width, ch: host.height, moved: false, ...measureStage(ref.current!, t.x, t.y) };
     ref.current!.setPointerCapture(e.pointerId);
     e.preventDefault(); e.stopPropagation();
   }
@@ -366,9 +486,9 @@ function Free({ el, t, edit, phone, children, onGuide }: {
     if (!d.moved && Math.hypot(dx, dy) < DRAG_START_PX) return;
     d.moved = true;
     if (d.kind === "move") {
-      const m = snapMid(d.x + (dx / d.cw) * 100);
-      onGuide?.(m.near);
-      setLive({ x: m.x, y: d.y + (dy / d.ch) * 100 });
+      const m = snapSmart(d.x + (dx / d.cw) * 100, d.y + (dy / d.ch) * 100, d.me, d.others);
+      onGuide?.(m.guide);
+      setLive({ x: m.x, y: m.y });
     } else {
       const k = Math.max(0.3, 1 + dx / Math.max(60, d.bw));
       setLive({ size: Math.max(8, Math.round(d.size * k)), w: d.w ? Math.max(10, Math.round(d.w * k)) : null });
@@ -377,7 +497,7 @@ function Free({ el, t, edit, phone, children, onGuide }: {
   function up(e: RPointerEvent<HTMLDivElement>) {
     const d = drag.current; if (!d || !edit) return;
     drag.current = null;
-    onGuide?.(false);
+    onGuide?.(null);
     try { ref.current!.releasePointerCapture(e.pointerId); } catch {}
     if (d.moved && live) { edit.onPatch(el, { ...live, x: live.x !== undefined ? +live.x.toFixed(2) : undefined, y: live.y !== undefined ? +live.y.toFixed(2) : undefined }); setLive(null); return; }
     setLive(null);
@@ -399,21 +519,22 @@ function Free({ el, t, edit, phone, children, onGuide }: {
     node.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); node.blur(); } if (ev.key === "Escape") node.blur(); });
   }
 
+  if (hidden && !edit) return null;
   return (
     <div
       ref={ref}
-      className={`th-free th-${el}${sel ? " sel" : ""}${typing ? " typing" : ""}`}
+      className={`th-free th-${el}${sel ? " sel" : ""}${typing ? " typing" : ""}${hidden ? " hid" : ""}`}
       style={style}
       data-el={el}
       onPointerDownCapture={edit ? (e) => down(e, "move") : undefined}
       onPointerMove={edit ? move : undefined}
       onPointerUp={edit ? up : undefined}
-      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(false); } : undefined}
+      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(null); } : undefined}
     >
       <div className="th-text">{children}</div>
       {edit && sel ? (
         <>
-          <span className="th-tag">{heroLabel(el)}{phone && el === "headline" ? " · 22px on a phone" : ` · ${size}px`}</span>
+          <span className="th-tag">{heroLabel(el)} · {size}px{plate ? ` · plate ${plate}%` : ""}{hidden ? ` · hidden on ${edit.screen}` : ""}</span>
           <span className="th-handle" title="Drag to resize" onPointerDownCapture={(e) => down(e as any, "size")} />
         </>
       ) : null}
@@ -437,11 +558,11 @@ function extract(node: Node): string {
 
 // ── the orb — the one control on the page, never small ──────────────────────────────────────────
 function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
-  x: number; y: number; size: number; state: string; edit?: HeroEditApi; onTap: () => void; ready: boolean; onGuide?: (on: boolean) => void;
+  x: number; y: number; size: number; state: string; edit?: HeroEditApi; onTap: () => void; ready: boolean; onGuide?: (g: Guide | null) => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [live, setLive] = useState<{ x: number; y: number } | null>(null);
-  const drag = useRef<{ sx: number; sy: number; x: number; y: number; cw: number; ch: number; moved: boolean } | null>(null);
+  const drag = useRef<{ sx: number; sy: number; x: number; y: number; cw: number; ch: number; moved: boolean; others: Box[]; me: SelfBox } | null>(null);
   const v = live ?? { x, y };
   const sel = edit?.selected === "orb";
 
@@ -449,7 +570,7 @@ function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
     if (!edit) return;
     e.nativeEvent.stopPropagation(); // see Free.down
     const host = ref.current!.parentElement!.getBoundingClientRect();
-    drag.current = { sx: e.clientX, sy: e.clientY, x, y, cw: host.width, ch: host.height, moved: false };
+    drag.current = { sx: e.clientX, sy: e.clientY, x, y, cw: host.width, ch: host.height, moved: false, ...measureStage(ref.current!, x, y) };
     ref.current!.setPointerCapture(e.pointerId);
     e.preventDefault(); e.stopPropagation();
   }
@@ -458,14 +579,14 @@ function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
     const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
     if (!d.moved && Math.hypot(dx, dy) < DRAG_START_PX) return;
     d.moved = true;
-    const m = snapMid(d.x + (dx / d.cw) * 100);
-    onGuide?.(m.near);
-    setLive({ x: m.x, y: d.y + (dy / d.ch) * 100 });
+    const m = snapSmart(d.x + (dx / d.cw) * 100, d.y + (dy / d.ch) * 100, d.me, d.others);
+    onGuide?.(m.guide);
+    setLive({ x: m.x, y: m.y });
   }
   function up(e: RPointerEvent<HTMLButtonElement>) {
     const d = drag.current; if (!d || !edit) return;
     drag.current = null;
-    onGuide?.(false);
+    onGuide?.(null);
     try { ref.current!.releasePointerCapture(e.pointerId); } catch {}
     if (d.moved && live) edit.onPatch("orb", { x: +live.x.toFixed(2), y: +live.y.toFixed(2) });
     else edit.onSelect("orb");
@@ -485,7 +606,7 @@ function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
       onPointerDownCapture={edit ? down : undefined}
       onPointerMove={edit ? move : undefined}
       onPointerUp={edit ? up : undefined}
-      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(false); } : undefined}
+      onPointerCancel={edit ? () => { drag.current = null; setLive(null); onGuide?.(null); } : undefined}
     >
       <svg viewBox="0 0 32 32" style={{ width: size * 0.56, height: size * 0.56 }} aria-hidden="true">
         <g><path d="M5 12h5l7-6v20l-7-6H5z" /><path d="M21 12.5a5 5 0 0 1 0 7" /><path d="M23.5 9.5a9 9 0 0 1 0 13" /><path d="M26 6.5a13 13 0 0 1 0 19" /></g>

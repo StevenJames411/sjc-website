@@ -449,7 +449,7 @@ export const NAV_DEFAULTS = {
 // Footer.tsx's fallback (so the live footer never renders blank if nothing's published).
 export const FOOTER_DEFAULTS = {
   blurb:
-    "Five businesses since 1986. Owner and tech lead in every one — now installing AI employees for the solo entrepreneur, done for you, on the software you already run.",
+    "Five businesses since 1986. Owner and tech lead in every one — now installing AI employees for the business owner, done for you, connected to the five systems that run the business.",
   links: [
     { label: "About Steven James — who I am & why listen", target: "/about" },
     { label: "FAQs", target: "/faqs" },
@@ -538,7 +538,7 @@ export const SIX_SYSTEMS = [
   { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy customer into a review." },
   { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
   { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
-  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five systems inside the software you already run." },
+  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five systems so they get better every day." },
 ];
 
 export const CONVERSATION_DEFAULTS = {
@@ -3701,8 +3701,36 @@ const baseConfig: Config<Props, RootProps> = {
         headline: { type: "textarea" as const, label: "Headline" },
         byline: { type: "text" as const, label: "Byline (under the headline)" },
         opener: { type: "textarea" as const, label: "The first line the visitor reads (the twin says it once they tap)" },
-        ctaTalk: { type: "text" as const, label: "Talk button" },
-        ctaType: { type: "text" as const, label: "Type button" },
+        // Two different features, one block (Steven, 09-13). Film = the demo, until the live
+        // back-and-forth is ready to go to market.
+        mode: {
+          type: "radio" as const,
+          label: "What the orb does",
+          options: [
+            { label: "Demo: play the film, orb = sound on / off", value: "film" },
+            { label: "Live: talk back and forth (not ready)", value: "live" },
+          ],
+        },
+        // Declared HERE so withSpacingControls leaves this block alone: on the hero, space above and
+        // below are inside the room (they move the placed things), never a band around it.
+        spaceAbove: {
+          type: "custom" as const,
+          label: "Space above — inside the room: moves everything down, nothing turns white",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Space above"} value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+          ),
+        },
+        spaceBelow: {
+          type: "custom" as const,
+          label: "Space below — inside the room: moves everything up",
+          render: ({ onChange, value }) => (
+            <SizeStepper label={"Space below"} value={value as number} onChange={onChange} fallback={0} step={8} min={0} />
+          ),
+        },
+        filmWide: { type: "text" as const, label: "The film, laptop (16:9 mp4 URL — demo mode)" },
+        filmTall: { type: "text" as const, label: "The film, phone (9:16 mp4 URL — demo mode)" },
+        ctaTalk: { type: "text" as const, label: "Words under the orb — live mode only (blank = none)" },
+        ctaType: { type: "text" as const, label: "Type-instead button — live mode only (blank = none)" },
         idleWide: { type: "text" as const, label: "Idle loop, laptop (16:9 mp4 URL)" },
         idleTall: { type: "text" as const, label: "Idle loop, phone (9:16 mp4 URL)" },
         poster: { type: "text" as const, label: "Poster image URL (first frame while the loop loads)" },
@@ -3763,12 +3791,13 @@ const baseConfig: Config<Props, RootProps> = {
         },
       },
       defaultProps: TALKING_HERO_DEFAULTS,
-      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, extra, puck }) => (
+      render: ({ id, eyebrow, headline, byline, opener, ctaTalk, ctaType, idleWide, idleTall, poster, videoUrl, videoLabel, minHeight, layout, nudgeSeconds, nudgeCount, extra, mode, filmWide, filmTall, spaceAbove, spaceBelow, puck }) => (
         <TalkingHeroSwitch
           id={id} editing={puck?.isEditing}
           eyebrow={eyebrow} headline={headline} byline={byline} opener={opener} ctaTalk={ctaTalk} ctaType={ctaType}
           idleWide={idleWide} idleTall={idleTall} poster={poster} videoUrl={videoUrl} videoLabel={videoLabel} minHeight={minHeight}
           layout={layout} nudgeSeconds={nudgeSeconds} nudgeCount={nudgeCount} extra={extra}
+          mode={mode} filmWide={filmWide} filmTall={filmTall} spaceAbove={spaceAbove} spaceBelow={spaceBelow}
         />
       ),
     },
@@ -4234,7 +4263,9 @@ function withSpacingControls(cfg: Config<Props, RootProps>): Config<Props, RootP
       const node = inner(props);
       // ⛔ NOTHING SET -> NOTHING ADDED. Not an empty div, not a fragment: the original node.
       if (!above && !below) return node;
-      return <div style={{ paddingTop: above, paddingBottom: below }}>{node}</div>;
+      // Named so a block can paint its own spacing: the talking hero's Space above paints the
+      // room's dark, not the page's white (Steven, 09-13: "it adds a white section to the page").
+      return <div data-spacing-for={name} style={{ paddingTop: above, paddingBottom: below }}>{node}</div>;
     };
   }
   return cfg;
@@ -4342,7 +4373,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s3-p3",
-              text: "Now here's the part that matters. Just about everyone else selling AI right now is selling you a chatbot — a little pop-up that answers a question and then hands you back the work. That's not an employee. What I do is build a real AI employee right into the same software you already use to run your business, so it works your leads and your calendar like a real member of your staff. That part is hard, and it's the part nobody else has figured out. I build it myself, by hand.",
+              text: "Now here's the part that matters. Just about everyone else selling AI right now is selling you a chatbot — a little pop-up that answers a question and then hands you back the work. That's not an employee. What I do is build a real AI employee into the five systems that run your business, so it works your leads and your calendar like a real member of your staff. That part is hard, and it's the part nobody else has figured out. I build it myself, by hand.",
               align: "left",
             },
           },
@@ -4379,7 +4410,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s4-p2",
-              text: "I set the AI employee up on top of the business you already run. I don't rip out what's working. I don't take the reins from you. I do the hard part in the background so you never have to think about it — and you keep your hand on every lead and every dollar.",
+              text: "I set the AI employee up on the five systems that make you money, and I keep them getting better. I don't take the reins from you. I do the hard part in the background so you never have to think about it — and you keep your hand on every lead and every dollar.",
               align: "left",
             },
           },

@@ -139,7 +139,7 @@ const HOME_SEED: Data = {
     { type: "Section", props: { id: "hero", background: "#0f1f3d", content: [
       { type: "Text", props: { id: "hero-eyebrow", text: "You already know you need AI.", align: "center", color: "#22c55e" } },
       { type: "Text", props: { id: "hero-eyebrow2", text: "We give you the easy button!", align: "center", color: "#22c55e" } },
-      { type: "Heading", props: { id: "hero-h1", text: "We install AI employees where they make the most impact — finding customers, closing them, and retaining them — installed right on top of the software you already use.", fontSize: 48, align: "center", color: "#ffffff" } },
+      { type: "Heading", props: { id: "hero-h1", text: "We install AI employees where they make the most impact — finding customers, closing them, and retaining them — connected to the five systems that run your business.", fontSize: 48, align: "center", color: "#ffffff" } },
       { type: "Video", props: { id: "hero-video", src: "", caption: "2-minute walkthrough — coming" } },
       { type: "Button", props: { id: "hero-cta", title: "See It Run on Your Business", subtitle: "Your leads, your follow-up, and the work piling up behind you — all handled, done for you. The only question left is how fast you can get it running.", href: "/#your-team" } },
     ] } },
@@ -183,9 +183,9 @@ const HOME_SEED: Data = {
 
     // ── the-bolt-on — not a new system; your software is the good guy; you learn nothing ──────
     { type: "Section", props: { id: "the-bolt-on", background: "#ffffff", content: [
-      { type: "Text", props: { id: "bolt-on-eyebrow", text: "How it fits — nothing gets ripped out", align: "left", color: "#2563eb" } },
-      { type: "Heading", props: { id: "bolt-on-h2", text: "It bolts on top of the software you already run. You don't learn a thing.", align: "left" } },
-      { type: "Text", props: { id: "bolt-on-p1", text: "Here's the part that trips people up, so let's clear it now. This is not a new system you have to switch to. You're not throwing out your software, retraining your team, or learning anything new. The software you use today — the place that holds your contacts, your calendar, your customer history — is good at what it does: it remembers everything. What it can't do is act. It sits there and waits for a person to log in and do the work. That's not a knock on it; that's just what software has always been. What we add is the worker your software has been waiting for — one that lives right on top of it, reads what's already there, and actually does the follow-up, the answering, the booking. We give your good system a set of hands.", align: "left" } },
+      { type: "Text", props: { id: "bolt-on-eyebrow", text: "How it fits — five systems, one machine", align: "left", color: "#2563eb" } },
+      { type: "Heading", props: { id: "bolt-on-h2", text: "It connects your five systems so they talk to each other and get better every day.", align: "left" } },
+      { type: "Text", props: { id: "bolt-on-p1", text: "Here's the part that trips people up, so let's clear it now. Your business already runs on five systems: the website, the phones, the reviews, the customer list, the ads. Each one holds something the others need. What we add is the worker that connects them — one that reads what's already there and actually does the follow-up, the answering, the booking, and gets better at it every day. We give your five systems a set of hands.", align: "left" } },
       { type: "Text", props: { id: "bolt-on-p2", text: "And you don't lift a finger to make it happen. We build it, we train it on how you actually do business — your prices, your offers, the questions you hear all day, the way you like a customer treated — and we run it. You stay the boss. You set the rules, you watch every conversation and every booking happen, and you can change anything any time. That's the difference between us and everyone else selling AI: they hand you a login and a manual and wish you luck. We hand you the finished worker, already on the job.", align: "left" } },
     ] } },
 

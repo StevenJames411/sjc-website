@@ -116,7 +116,20 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
     : null;
   const isText = selected && selected !== "orb";
   const text = isText ? (cur as HeroText) : null;
-  const headlineOnPhone = screen === "phone" && selected === "headline";
+
+  // The thing directly above the selected one on this screen (highest y below the selected y),
+  // for "Centre under the line above" (09-13 pm) — a one-click version of the smart guide.
+  const lineAbove = useMemo((): { el: HeroElement; x: number } | null => {
+    if (!selected) return null;
+    const L = layouts[screen];
+    const yOf = (el: HeroElement) => (el === "orb" ? L.orb.y : heroText(L, el, screen).y);
+    const xOf = (el: HeroElement) => (el === "orb" ? L.orb.x : heroText(L, el, screen).x);
+    const all: HeroElement[] = ["headline", "byline", "opener", "orb", ...extraOf(rest).map((x) => x.id as HeroElement)];
+    const mine = yOf(selected);
+    let best: HeroElement | null = null;
+    for (const el of all) if (el !== selected && yOf(el) < mine && (best === null || yOf(el) > yOf(best))) best = el;
+    return best ? { el: best, x: xOf(best) } : null;
+  }, [selected, layouts, screen, rest]);
 
   return (
     <div className="th-editwrap">
@@ -133,19 +146,15 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
 
         {selected ? (
           <div className="th-strip-group">
-            {headlineOnPhone ? (
-              <span className="th-strip-note">22px on a phone — every hero headline, his law</span>
-            ) : (
-              <SizeStepper
-                label=""
-                value={(cur as { size: number }).size}
-                onChange={(v) => api.onPatch(selected, { size: Math.max(selected === "orb" ? 40 : 8, v ?? 0) })}
-                fallback={(cur as { size: number }).size}
-                step={selected === "orb" ? 8 : 2}
-                min={selected === "orb" ? 40 : 8}
-                allowZero={false}
-              />
-            )}
+            <SizeStepper
+              label=""
+              value={(cur as { size: number }).size}
+              onChange={(v) => api.onPatch(selected, { size: Math.max(selected === "orb" ? 40 : 8, v ?? 0) })}
+              fallback={(cur as { size: number }).size}
+              step={selected === "orb" ? 8 : 2}
+              min={selected === "orb" ? 40 : 8}
+              allowZero={false}
+            />
           </div>
         ) : null}
 
@@ -162,12 +171,36 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
               <button type="button" aria-pressed={text.align === "right"} onClick={() => api.onPatch(selected, { align: "right" })}>Right</button>
               <button type="button" aria-pressed={!!text.w} title="Let the words wrap inside a set width; drag the dot to change it" onClick={() => api.onPatch(selected, { w: text.w ? null : 50 })}>Wrap</button>
             </div>
+            {/* The plate (09-14): a navy capsule under this line, 0 = none, up to 90% dark. Per screen,
+                like size and colour — a phone line over the desk may need more than a laptop line
+                over the panels. */}
+            <div className="th-strip-group" title="A navy capsule under this line — dial it as dark as the words need to read">
+              <span className="th-strip-sel">Plate</span>
+              <SizeStepper
+                label=""
+                value={text.plate ?? 0}
+                onChange={(v) => api.onPatch(selected, { plate: Math.min(90, Math.max(0, v ?? 0)) })}
+                fallback={0}
+                step={5}
+                min={0}
+                allowZero
+                unit="%"
+              />
+            </div>
           </>
         ) : null}
 
         {selected ? (
           <div className="th-strip-group">
             <button type="button" title="Put this thing dead centre, left to right, on this screen" onClick={() => api.onPatch(selected, { x: 50 })}>Centre on page</button>
+            <button
+              type="button"
+              disabled={!lineAbove}
+              title={lineAbove ? `Put this thing on the same centre line as the ${heroLabel(lineAbove.el).toLowerCase()} above it` : "Nothing sits above this thing on this screen"}
+              onClick={() => lineAbove && api.onPatch(selected, { x: lineAbove.x })}
+            >
+              Centre under the line above
+            </button>
           </div>
         ) : null}
 
@@ -175,6 +208,16 @@ export default function TalkingHeroEdit(props: Partial<TalkingHeroProps> & { id:
           <button type="button" title="Add another line of text to the hero (it lands on every screen)" onClick={() => addLine()}>+ Text</button>
           {text && selected ? (
             <button type="button" title="Copy this line — same words, same place, one step down" onClick={() => addLine(selected as HeroTextElement)}>Copy</button>
+          ) : null}
+          {text && selected ? (
+            <button
+              type="button"
+              aria-pressed={!!text.hidden}
+              title={text.hidden ? `Show this line on the ${screen} again` : `Take this line off the ${screen} only — the other screens keep it, and the words stay`}
+              onClick={() => api.onPatch(selected, { hidden: !text.hidden })}
+            >
+              {text.hidden ? `Show on ${screen}` : `Hide on ${screen}`}
+            </button>
           ) : null}
           {selected && isExtra(selected) ? (
             <button type="button" title="Remove this added line from every screen" onClick={() => removeLine(selected)}>Remove</button>

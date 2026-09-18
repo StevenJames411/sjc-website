@@ -1,8 +1,9 @@
 import { Render } from "@measured/puck";
 import Nav from "@/components/Nav";
+import PreviewMark from "@/components/PreviewMark";
 import Footer from "@/components/Footer";
 import { config } from "@/components/puck/config";
-import { readPuckPublished, sheetsFor } from "@/lib/puckContent";
+import { readPuckPublished, sheetsFor, previewRequested } from "@/lib/puckContent";
 import { applyTypeScale } from "@/lib/typeScale";
 import { applyColorMap } from "@/lib/designColors";
 import { resolveFormPointers } from "@/lib/formPointer";
@@ -532,8 +533,11 @@ export async function SitePageBody({
     </SiteProvider>
   );
 
+  const preview = await previewRequested();
+
   return (
     <>
+      {preview ? <PreviewMark /> : null}
       {schema ? (
         <script
           type="application/ld+json"

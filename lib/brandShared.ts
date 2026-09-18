@@ -125,6 +125,14 @@ export type Brand = {
   bandHeader?: string;
   cta: string;         // button fill
   ctaHover: string;
+  /**
+   * THE SHADE UNDER THE FLOATING NAVIGATION, 0–90 (%). On a talking-hero page the header has no
+   * bar — it floats over the room on a top-down fade. Steven, 2026-09-14: the room is bright now
+   * and the nav words need their own dimmer, "but the navigation's not on the page" — so the dial
+   * lives here, with the header, per his 09-13 law. 66 is the demo's measured fade (the value that
+   * shipped), so a brand saved before this field reads back unchanged.
+   */
+  navShade?: number;
 };
 
 // Today's live palette (app/globals.css @theme). Changing nothing changes nothing.
@@ -159,6 +167,7 @@ export const BRAND_DEFAULTS: Brand = {
   bandHeader: "",
   cta: "#22c55e",
   ctaHover: "#16a34a",
+  navShade: 66,
 };
 
 // The curated set. next/font is BUILD-time, so the list must be fixed — arbitrary runtime

@@ -65,7 +65,7 @@ export default function Image() {
           }}
         >
           They answer every lead in seconds, book the appointments, and cover the phones 24/7 —
-          on top of the software you already run.
+          connected to the five systems that run your business.
         </div>
 
         {/* In normal flow, not absolute — absolute let the centered copy run straight into it. */}

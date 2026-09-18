@@ -598,6 +598,41 @@ export default function PuckEditor({
    * Same site to same site is the ordinary case — a services page becomes the second services
    * page — so the destination site is this one and only the new address is asked for.
    */
+  // ── MAKE THIS THE LIVE VERSION OF … (Steven, 09-13) ───────────────────────────────────────────
+  // The twin-page flow: the site is live and indexed, so a page gets rebuilt on a TWIN (/home-new)
+  // and the original never moves. When the twin is ready, this copies the twin's DRAFT over the
+  // original's draft, in place, and opens the original so he presses Publish there. The URL never
+  // changes, so Google sees a page that changed, not one that vanished. Nothing goes live here.
+  const onMakeLive = async () => {
+    const guess = page.replace(/-(new|v2|twin)$/, "");
+    const raw = window.prompt(
+      `Make "${title}" the new version of which page? Type that page's web address.\n\nIts DRAFT is replaced by this page's content; the live site does not change until you press Publish there.`,
+      guess !== page ? guess : ""
+    );
+    if (raw === null) return;
+    const target = raw.trim().toLowerCase().replace(/^\//, "").replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
+    if (!target) return window.alert("A web address is required.");
+    if (target === page) return window.alert("That is this page's own address.");
+    if (!window.confirm(`Replace the draft of /${target} with "${title}"?\n\nThe live /${target} stays as it is until you press Publish.`)) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/admin/clone-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ fromSite: siteId, fromPage: page, toSite: siteId, toPage: target, prefer: "draft" }),
+      });
+      const j = await r.json();
+      if (!j.ok) return window.alert(j.error || "Couldn't replace that page's draft.");
+      window.alert(`The draft of /${target} is now "${title}". Opening it — press Publish there when you're ready.`);
+      router.push(`/edit/${siteId}/${target}`);
+    } catch {
+      window.alert("Couldn't reach the server. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const onDuplicatePage = async () => {
     const raw = window.prompt(
       `Duplicate "${title}" — what should the new page's web address be?`,
@@ -1088,6 +1123,7 @@ export default function PuckEditor({
                   { label: "Save as template", onClick: onSaveAsTemplate, title: "Strip the business details and save this layout as a reusable template" },
                   { label: "Save page to library", onClick: onSaveToLibrary, title: "Keep this whole page so you can drop it onto another website" },
                   { label: "Duplicate page", onClick: onDuplicatePage, title: "Make a copy of this page at a new address, as a draft" },
+                  { label: "Make this the live version of…", onClick: onMakeLive, title: "Copy this page over another page's draft, in place — then press Publish on that page. The live site does not change until you do." },
                   { label: "Rename page", onClick: onRenamePage, title: "Changes the name in the list only — the web address and the page are untouched" },
                   { label: "Change address (URL)", onClick: onChangeSlug, title: "Changes the web address the page lives at — content moves with it. Old links don't redirect yet, so save the new address wherever the old one was shared." },
                   { label: "Publish ALL pages", onClick: onPublishAll, title: "Ships every draft on this site live in one go, including this page. Use it after a pass over the whole website instead of opening each page to press Publish." },

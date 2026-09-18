@@ -336,6 +336,47 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
   font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ⛔ THE NAV FLOATS OVER THE TALKING HERO — AND THIS IS THE HEADER THAT ACTUALLY RENDERS.
+   Steven, 09-13: "the one with the blue background has all my pages... we're going to make it
+   transparent." The 09-12 change went into NavView, but SJC's live header is the imported
+   landing-site chrome (#global-header, a code-section), so nothing on the page ever changed.
+   TalkingHero stamps `data-talking-hero` on <html> the moment it mounts; on that page only, the
+   solid band becomes Kay's top-down gradient and comes out of the flow, so the room starts at
+   the top of the screen with the nav over it. Every other page keeps its blue bar. The doubled
+   id outranks the chrome's own inline <style>, same trick as the wordmark rule below.
+   ⛔ PREVIEW ONLY until every hero is laid out (Steven, 09-13): the second mark, data-sjc-preview,
+   is stamped by components/PreviewMark only on an owner's ?preview=1 — the published site keeps
+   the blue bar untouched. Drop that attribute from the selector when the switch-over is done. */
+html[data-sjc-preview][data-talking-hero] #global-header#global-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 30;
+  /* The demo's exact fade (sjc-hero-demo .nav): dark at the top, gone at the bottom, no shelf.
+     The top value is the brand's navShade (Website settings → "Shade under the navigation",
+     09-14); .66 is what shipped and what an untouched brand still gets. */
+  /* 09-14 (later still): the dark is SOLID behind the whole header — "I just want the dark to be at
+     the bottom of the words" — and the fade lives BELOW it, on the ::after tail, so no part of a
+     letter sits on the fall-off. The number is the same brand navShade; the tail fades from it. */
+  /* ⚠️ A flat two-stop gradient, not `background:` — the shorthand would set background-color and
+     the transparent line below (which kills the chrome's blue) would cancel it to nothing. */
+  background-image: linear-gradient(rgba(0, 0, 0, var(--sjc-nav-shade, .66)), rgba(0, 0, 0, var(--sjc-nav-shade, .66))) !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+html[data-sjc-preview][data-talking-hero] #global-header#global-header::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 100%;
+  /* 14px, not 40: measured on the live page 09-14, the header is 54px tall and the wordmark ends
+     at 44, so a 40px tail read as a SECOND fade under the band ("we don't need a double fade").
+     This is a soft edge on the band, not a band of its own. */
+  height: 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, var(--sjc-nav-shade, .66)), rgba(0, 0, 0, 0));
+  pointer-events: none;
+}
+/* The demo carries the wordmark alone — the square logo tile is a blue box on a clear nav. */
+html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-logo] { display: none !important; }
+
 /* The wordmark keeps Playfair — set on .sjc-mark in the chrome document, and it must outrank the
    two rules above, which would otherwise reach it through `.sjc-design`. */
 .sjc-design .sjc-mark span,
@@ -1111,12 +1152,17 @@ a.sjc-cta.pf-cta     { background: #12263f; color: #fff; }
        ⭐ HIS FIX, 2026-09-02: *"we might need to put a gradient layer under these pills."* A blurred
        gradient keeps the see-through quality he likes — you still read the page moving underneath —
        while giving every border ONE ground to sit on instead of whatever happens to scroll past. */
-    background: linear-gradient(180deg, rgba(5, 8, 22, 0.93) 0%, rgba(5, 8, 22, 0.78) 100%) !important;
-    backdrop-filter: blur(14px) saturate(125%);
-    -webkit-backdrop-filter: blur(14px) saturate(125%);
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    border-radius: 18px;
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.42) !important;
+    /* ⛔ THE BOX IS GONE AGAIN (Steven, 2026-09-13): *"We only need the actual pills to have the
+       background color so you could read the words. We don't need the square background box."*
+       The landscaper's menu (texas-best-demo) is the model: capsules over the page, nothing
+       behind them. This overrules the 09-02 gradient. If the AI pill's green edge washes out over
+       a white band, the fix is on THAT pill, never a slab behind all of them. */
+    background: transparent !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
   }
   /* the links become the capsules — values copied from the drawer so the two cannot drift */
   #global-header .sjc-drop a {
@@ -1560,12 +1606,10 @@ a.sjc-sys-card--layer:focus-visible {
 [data-sjc-talking-hero] .th-room { position: absolute; inset: 0; z-index: -1; background: #0b1730; }
 [data-sjc-talking-hero] .th-loop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 [data-sjc-talking-hero] .th-tall { display: none; }
-[data-sjc-talking-hero] .th-shade {
-  position: absolute; inset: 0;
-  background:
-    linear-gradient(90deg, rgba(11, 23, 48, .92) 0%, rgba(11, 23, 48, .72) 42%, rgba(11, 23, 48, .18) 72%, rgba(11, 23, 48, .05) 100%),
-    linear-gradient(0deg, rgba(11, 23, 48, .88) 0%, rgba(11, 23, 48, 0) 38%);
-}
+/* ⛔ NO SHADE OVER THE ROOM. Steven, 2026-09-14: the three panels behind the desk were "much brighter"
+   in the original; a two-way navy gradient (.92 left → .05 right, .88 bottom → 0) sat over the film
+   from 09-11 and nothing in the studio could touch it. Same ruling as the menu (09-01): the words
+   carry their own text-shadow, so the film stays as bright as it was rendered. Do not reintroduce. */
 [data-sjc-talking-hero] .th-words { grid-column: 1; grid-row: 1; align-self: center; max-width: 34rem; }
 [data-sjc-talking-hero] .th-eyebrow { margin: 0 0 14px; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: #f0b323; font-weight: 600; }
 [data-sjc-talking-hero] h1 { margin: 0; font-size: clamp(34px, 4.4vw, 58px); line-height: 1.04; font-weight: 700; color: #fff; text-wrap: balance; }
@@ -1612,10 +1656,6 @@ a.sjc-sys-card--layer:focus-visible {
   [data-sjc-talking-hero] .th-words { grid-row: 1; align-self: start; max-width: none; }
   [data-sjc-talking-hero] .th-talk { grid-row: 2; align-self: end; max-width: none; }
   [data-sjc-talking-hero] .th-captions { max-height: 30svh; }
-  [data-sjc-talking-hero] .th-shade {
-    background:
-      linear-gradient(0deg, rgba(11, 23, 48, .94) 0%, rgba(11, 23, 48, .55) 45%, rgba(11, 23, 48, .15) 70%, rgba(11, 23, 48, .35) 100%);
-  }
   [data-sjc-talking-hero] .th-mic { width: 100%; text-align: center; }
   [data-sjc-talking-hero] .th-ghost { flex: 1; text-align: center; }
 }
@@ -1624,6 +1664,14 @@ a.sjc-sys-card--layer:focus-visible {
   [data-sjc-talking-hero] .th-tall { display: block; }
   [data-sjc-talking-hero] .th-byline { font-size: 13px; }
 }
+/* ⛔ THE FILM FOLLOWS THE CANVAS, NOT THE WINDOW (2026-09-13 pm). The studio's Phone frame sits in a
+   laptop-width window, so the media query above never fires there and the phone canvas played the
+   WIDE film — Steven placed the orb on a room the phone never shows, and it landed on his face
+   (his phone plays the tall film). `data-screen` is stamped on the canvas by the studio's tab and,
+   on the public page, by the same breakpoints — so keying the swap on it makes the canvas and the
+   phone one picture. The media query stays for the first paint before hydration. */
+[data-sjc-talking-hero] .th-canvas[data-screen="phone"] .th-wide { display: none; }
+[data-sjc-talking-hero] .th-canvas[data-screen="phone"] .th-tall { display: block; }
 
 /* ═══════════════════════════════════════════════════════════════════════════════════════════════
    THE TALKING HERO, PLACED BY HAND (ruled 2026-09-12) — `data-layout` on the section means every
@@ -1671,14 +1719,27 @@ a.sjc-sys-card--layer:focus-visible {
    handle is stopped natively before Puck's drag layer sees it (TalkingHero.tsx), and a press on the
    room itself still bubbles up and selects the block like any other. */
 [data-puck-component] .th-editwrap, [data-puck-component] .th-editwrap * { pointer-events: auto; }
-[data-puck-component] .th-editwrap .th-loop, [data-puck-component] .th-editwrap .th-shade { pointer-events: none; }
+[data-puck-component] .th-editwrap .th-loop { pointer-events: none; }
 [data-puck-component] .th-editwrap .th-free.typing, [data-puck-component] .th-editwrap .th-free.typing * { user-select: text; -webkit-user-select: text; }
 [data-sjc-talking-hero][data-editing] .th-canvas { user-select: none; touch-action: none; }
+/* The hero's Space above / below paints nothing: in preview the nav floats over the room, so the
+   band under it must be the room, not a dark strip (09-13 pm: a dark strip read as a solid bar
+   and "went backwards"). Place the headline under the studio's nav guide instead of padding. */
+
+/* The stage the placed things sit on — inset from the room by the block's Space above / below. */
+[data-sjc-talking-hero][data-layout] .th-stage { position: absolute; left: 0; right: 0; z-index: 1; }
+
 /* The centre line: shows only while a drag is within snap range of the middle (09-13). */
 [data-sjc-talking-hero][data-editing] .th-guide-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 0; border-left: 2px dashed #f0b323; z-index: 9; pointer-events: none; opacity: .9; }
+/* Smart guides (09-13 pm): white when the dragged thing lines up with ANOTHER thing on the hero
+   (centre, edge, or an equal gap); the page's own middle stays gold. */
+[data-sjc-talking-hero][data-editing] .th-guide-v.el { border-left-color: #fff; }
+[data-sjc-talking-hero][data-editing] .th-guide-h { position: absolute; left: 0; right: 0; height: 0; border-top: 2px dashed #fff; z-index: 9; pointer-events: none; opacity: .9; }
 [data-sjc-talking-hero][data-editing] .th-free { cursor: grab; outline: 2px solid transparent; outline-offset: 2px; }
 [data-sjc-talking-hero][data-editing] .th-free:hover { outline-color: rgba(240, 179, 35, .5); }
 [data-sjc-talking-hero][data-editing] .th-free.sel { outline-color: #f0b323; }
+/* hidden on this screen (09-13 pm): a ghost in the studio, nothing on the page */
+[data-sjc-talking-hero][data-editing] .th-free.hid { opacity: .3; outline-style: dashed; outline-color: rgba(255, 255, 255, .5); }
 [data-sjc-talking-hero][data-editing] .th-free.typing { cursor: text; outline-style: dashed; user-select: text; }
 [data-sjc-talking-hero][data-editing] .th-free.typing [contenteditable] { outline: none; }
 [data-sjc-talking-hero][data-editing] .th-orb { cursor: grab; outline: 2px solid transparent; outline-offset: 5px; animation: none; }
@@ -1695,7 +1756,9 @@ a.sjc-sys-card--layer:focus-visible {
 .th-editwrap { position: relative; }
 /* Puck's block toolbar (the name, ▲▼★⧉🗑) floats over the top ~44px of a selected block and was
    sitting on the strip's + button (09-12). A band above the strip is where that toolbar lives. */
-.th-editwrap::before { content: ""; display: block; height: 46px; background: #06101f; }
+/* 09-14: 46px was measured short — the toolbar's bottom edge landed on the strip's first row
+   ("that little black tab is over top of some of my settings"). 64 clears it with margin. */
+.th-editwrap::before { content: ""; display: block; height: 64px; background: #06101f; }
 .th-strip { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 8px 14px; background: #0a1530; color: #fff; border-bottom: 1px solid rgba(255, 255, 255, .12); font: 13px/1.3 "IBM Plex Sans", system-ui, sans-serif; }
 .th-strip-group { display: inline-flex; align-items: center; gap: 6px; }
 .th-strip-end { margin-left: auto; }

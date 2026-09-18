@@ -105,6 +105,15 @@ export async function POST(req: Request) {
     return Response.json({ ok, site, brand: next });
   }
 
+  // The nav shade, same contract: only this control's own field goes live.
+  if (body.action === "publish-nav") {
+    const draft = await readBrand(false, site);
+    const live = await readBrand(true, site);
+    const next = { ...live, navShade: draft.navShade };
+    const ok = await writeBrand(next, true, site);
+    return Response.json({ ok, site, brand: next });
+  }
+
   if (body.action === "publish-faces") {
     const draft = await readBrand(false, site);
     const live = await readBrand(true, site);
