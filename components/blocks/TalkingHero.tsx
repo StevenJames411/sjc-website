@@ -56,6 +56,18 @@ export type TalkingHeroProps = {
 // ids, so a nudge never waits on a cold GPU the way a fresh reply would.
 const NUDGE_LINES = ["Still there? Take your time.", "I'll be right here when you're ready."];
 
+// TWILIO CONVERSATIONRELAY, LAB ONLY (ruled 2026-09-18): ?relay=1 on a live-mode page swaps the
+// text/browser-speech thread for a real phone call to Twilio's ConversationRelay — no number,
+// natural turn timing. Voice IDs match voice_routes.py's RELAY_VOICES, picker only — the
+// SERVER is the one place the default lives (Brian, picked by ear 2026-09-18): this page sends
+// a `voice` param only when the URL names one, so there is no second default to drift.
+const RELAY_VOICES: Record<string, string> = {
+  "1": "CwhRBWXzGAHq8TQ4Fs17", // Roger — confident, warm, resonant American
+  "2": "pqHfZKP75CvOlQylNhV4", // Bill — older, trustworthy American
+  "3": "nPczCjzI2devNBz1zQrb", // Brian — deep, middle-aged American narration voice
+  "4": "cjVigY5qzO86Huf0OWal", // Eric — warm, friendly American, smooth mid-40s
+};
+
 export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   eyebrow: "Steven James Consulting",
   headline: "Everybody wants more leads. Everybody wants more revenue.",
@@ -113,6 +125,19 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   const { edit, ...rest } = p;
   const props = { ...TALKING_HERO_DEFAULTS, ...rest };
   const t = useAgentThread({ pollMs: 1200 });
+  // ?relay=1 on a live-mode page only — every other page, and live mode without the flag,
+  // is untouched (Steven, 2026-09-18: rent the plumbing for the lab test). Voice id is sent
+  // to the server ONLY when the URL names one — no voice param, no client-side default, so
+  // the server's Brian default is the only default that exists (2026-09-18 pm).
+  const [relayFlag, setRelayFlag] = useState(false);
+  const [relayVoiceId, setRelayVoiceId] = useState("");
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    setRelayFlag(sp.get("relay") === "1");
+    const v = sp.get("voice");
+    setRelayVoiceId((v && RELAY_VOICES[v]) || "");
+  }, []);
+  const relay = useTwilioRelay(relayVoiceId);
   const [mode, setMode] = useState<"idle" | "talk" | "type">("idle");
   const [draft, setDraft] = useState("");
   const [showVideo, setShowVideo] = useState(false);
@@ -121,6 +146,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   // ⚠️ A block saved before these fields existed hands them over as undefined, and that would
   // override the default above (live mode, no film) — so undefined means the default here.
   const film = (props.mode || "film") === "film";
+  const relayOn = !film && relayFlag; // live mode + ?relay=1 only
   const filmWide = props.filmWide || TALKING_HERO_DEFAULTS.filmWide;
   const filmTall = props.filmTall || TALKING_HERO_DEFAULTS.filmTall;
   const [filmOn, setFilmOn] = useState(false); // sound on = the film restarts from the top with its voice
@@ -213,7 +239,9 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
 
   const visible = t.msgs.filter((m) => !m.hidden);
   const captions = visible.slice(-4);
-  const state = film
+  const state = relayOn
+    ? (relay.state === "connecting" ? "thinking" : relay.state === "live" ? "listening" : "idle")
+    : film
     ? (filmOn ? "talking" : "idle")
     : t.listening ? "listening" : t.speaking ? "talking" : t.busy ? "thinking" : mode === "idle" ? "idle" : "ready";
 
@@ -229,7 +257,18 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
     </div>
   );
 
-  const conversation = (
+  const relayStatusLine =
+    relay.state === "connecting" ? "Connecting…" :
+    relay.state === "live" ? `Live — talk to ${AGENT_NAME} now.` :
+    relay.error ? `Call ended: ${relay.error}` :
+    relay.state === "ended" ? "Call ended. Tap the orb to call again." :
+    "Tap the orb to start a real phone call — Twilio ConversationRelay.";
+
+  const conversation = relayOn ? (
+    <div className="th-captions" aria-live="polite">
+      <p className="th-cap out">{relayStatusLine}</p>
+    </div>
+  ) : (
     <>
       <div className="th-captions" aria-live="polite">
         {mode === "idle" && visible.length === 0 ? (
@@ -271,14 +310,18 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         <div className="th-talk">
           {conversation}
           <div className="th-controls">
-            {mode === "talk" ? (
+            {relayOn ? (
+              <button className="th-mic" onClick={relay.toggle} disabled={!t.ready}>
+                {relay.state === "connecting" ? "Connecting…" : relay.state === "live" ? "Live — tap to hang up" : "Tap to call (Twilio relay)"}
+              </button>
+            ) : mode === "talk" ? (
               <button className="th-mic" data-on={t.listening} onClick={toggleTalk}>
                 {t.listening ? "Listening… tap to stop" : t.speaking ? `${AGENT_NAME} is talking… tap to stop` : t.busy ? `${AGENT_NAME} is thinking…` : "Tap to talk"}
               </button>
             ) : (
               <button className="th-mic" onClick={() => begin("talk")} disabled={!t.ready}>{props.ctaTalk}</button>
             )}
-            {mode !== "type" ? (
+            {relayOn ? null : mode !== "type" ? (
               <button className="th-ghost" onClick={() => { t.stopHandsFree(); begin("type"); }} disabled={!t.ready}>{props.ctaType}</button>
             ) : (
               <button className="th-ghost" onClick={() => begin("talk")}>Talk instead</button>
@@ -341,14 +384,14 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
         </Free>
       ))}
 
-      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={film ? toggleFilm : toggleTalk} ready={film || t.ready} onGuide={setGuide} />
+      <Orb x={L.orb.x} y={L.orb.y} size={L.orb.size} state={state} edit={edit} onTap={film ? toggleFilm : relayOn ? relay.toggle : toggleTalk} ready={film || t.ready} onGuide={setGuide} />
 
       {/* Under the orb — LIVE MODE ONLY; in film mode the orb stands alone. The words and the
           type button each show only when their field has words: blank it and it is gone (09-13). */}
       {film ? null : (
       <div className="th-under" style={{ left: `${L.orb.x}%`, top: `calc(${L.orb.y}% + ${L.orb.size / 2 + 10}px)` }}>
-        {mode === "idle" && props.ctaTalk ? <span className="th-orblabel">{props.ctaTalk}</span> : null}
-        {!props.ctaType ? null : mode !== "type" ? (
+        {relayOn ? null : mode === "idle" && props.ctaTalk ? <span className="th-orblabel">{props.ctaTalk}</span> : null}
+        {relayOn ? null : !props.ctaType ? null : mode !== "type" ? (
           <button className="th-ghost th-small" onClick={() => { t.stopHandsFree(); begin("type"); }} disabled={!t.ready || !!edit}>{props.ctaType}</button>
         ) : (
           <button className="th-ghost th-small" onClick={() => begin("talk")}>Talk instead</button>
