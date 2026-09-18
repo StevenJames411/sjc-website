@@ -271,6 +271,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+            {/* THE PIXEL (ruled 2026-09-17): first-party visits/events, ours, feeding the
+                owner's KPI screen. Scoped to SJC's own domain, same as the JSON-LD above. */}
+            {process.env.NEXT_PUBLIC_PIXEL_URL ? (
+              <script async src={process.env.NEXT_PUBLIC_PIXEL_URL} />
+            ) : null}
           </>
         ) : null}
         <BrandStyle brand={brand} />
