@@ -21,12 +21,12 @@ export const SITE_NAME = "Steven James Consulting";
 export const SITE_DEFAULTS = {
   title: "Steven James Consulting — Your AI Growth Partner",
   description:
-    "We install a native AI operating system on top of the software you already run — AI employees that answer every lead in seconds, work your old leads, close and book appointments, cover the phones 24/7, and keep customers coming back. Nothing to switch, nothing new to learn. You get the growth and stay in control of your own system.",
+    "We connect the five systems your business runs on and put AI employees to work on them — answering every lead in seconds, working your old leads, closing and booking appointments, covering the phones 24/7, and keeping customers coming back. The systems get better every day, and you stay in control.",
   ogTitle: "Steven James Consulting — AI employees for your business",
   ogDescription:
-    "AI employees that answer every lead in seconds, work your old leads, book the appointments, and cover the phones 24/7 — installed on top of the software you already run. Nothing to switch, nothing new to learn.",
+    "AI employees that answer every lead in seconds, work your old leads, book the appointments, and cover the phones 24/7 — connected to the five systems that run your business, getting better every day.",
   twitterDescription:
-    "AI employees that answer every lead in seconds, book the appointments, and cover the phones 24/7 — on top of the software you already run.",
+    "AI employees that answer every lead in seconds, book the appointments, and cover the phones 24/7 — connected to the five systems that run your business.",
 };
 
 export type PageMetaFallback = {
