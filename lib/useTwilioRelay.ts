@@ -55,8 +55,16 @@ export function useTwilioRelay(voiceId: string) {
       const { Device } = await import("@twilio/voice-sdk");
       const device = new Device(j.token, { logLevel: "error" });
       deviceRef.current = device;
+      // The SDK's own ringing/disconnect tones are built for a softphone, not a website hero —
+      // the orb's "connecting" state is the only feedback wanted (Steven, 2026-09-18: heard a
+      // phone ringing on the first real call).
+      device.audio?.outgoing(false);
+      device.audio?.disconnect(false);
+      device.audio?.incoming(false);
       device.on("error", (e: any) => { setError(e?.message || "device error"); setState("ended"); });
-      const call = await device.connect({ params: { page: pageSlug(), voice: voiceId } });
+      const params: Record<string, string> = { page: pageSlug() };
+      if (voiceId) params.voice = voiceId;
+      const call = await device.connect({ params });
       callRef.current = call;
       call.on("accept", () => setState("live"));
       call.on("disconnect", () => setState("ended"));

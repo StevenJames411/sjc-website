@@ -58,14 +58,15 @@ const NUDGE_LINES = ["Still there? Take your time.", "I'll be right here when yo
 
 // TWILIO CONVERSATIONRELAY, LAB ONLY (ruled 2026-09-18): ?relay=1 on a live-mode page swaps the
 // text/browser-speech thread for a real phone call to Twilio's ConversationRelay — no number,
-// natural turn timing. Voice IDs match voice_routes.py's RELAY_VOICES; "1" is the default.
+// natural turn timing. Voice IDs match voice_routes.py's RELAY_VOICES, picker only — the
+// SERVER is the one place the default lives (Brian, picked by ear 2026-09-18): this page sends
+// a `voice` param only when the URL names one, so there is no second default to drift.
 const RELAY_VOICES: Record<string, string> = {
   "1": "CwhRBWXzGAHq8TQ4Fs17", // Roger — confident, warm, resonant American
   "2": "pqHfZKP75CvOlQylNhV4", // Bill — older, trustworthy American
   "3": "nPczCjzI2devNBz1zQrb", // Brian — deep, middle-aged American narration voice
   "4": "cjVigY5qzO86Huf0OWal", // Eric — warm, friendly American, smooth mid-40s
 };
-const DEFAULT_RELAY_VOICE = RELAY_VOICES["1"];
 
 export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   eyebrow: "Steven James Consulting",
@@ -125,13 +126,16 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   const props = { ...TALKING_HERO_DEFAULTS, ...rest };
   const t = useAgentThread({ pollMs: 1200 });
   // ?relay=1 on a live-mode page only — every other page, and live mode without the flag,
-  // is untouched (Steven, 2026-09-18: rent the plumbing for the lab test).
+  // is untouched (Steven, 2026-09-18: rent the plumbing for the lab test). Voice id is sent
+  // to the server ONLY when the URL names one — no voice param, no client-side default, so
+  // the server's Brian default is the only default that exists (2026-09-18 pm).
   const [relayFlag, setRelayFlag] = useState(false);
-  const [relayVoiceId, setRelayVoiceId] = useState(DEFAULT_RELAY_VOICE);
+  const [relayVoiceId, setRelayVoiceId] = useState("");
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     setRelayFlag(sp.get("relay") === "1");
-    setRelayVoiceId(RELAY_VOICES[sp.get("voice") || "1"] || DEFAULT_RELAY_VOICE);
+    const v = sp.get("voice");
+    setRelayVoiceId((v && RELAY_VOICES[v]) || "");
   }, []);
   const relay = useTwilioRelay(relayVoiceId);
   const [mode, setMode] = useState<"idle" | "talk" | "type">("idle");
