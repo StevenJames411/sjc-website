@@ -2842,7 +2842,10 @@ const baseConfig: Config<Props, RootProps> = {
             {intro ? (
               <p style={{ margin: "0 0 16px", fontSize: "16px", lineHeight: 1.5, color: body, maxWidth: "56rem" }}>{intro}</p>
             ) : null}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>{systems.map((x) => chip(x, false))}</div>
+            {/* ⭐ SIX CARDS, ONE SIZE (Steven, 2026-09-18): three columns on a laptop, two on a phone, so the
+                sixth never stretches into a wide row of its own. The grid lives in globals.css
+                (.sjc-sys-grid) because an inline style cannot carry a media query. */}
+            <div className="sjc-sys-grid">{systems.map((x) => chip(x, false))}</div>
             <div style={{ display: "flex", marginTop: "12px" }}>{chip(layer, true)}</div>
           </div>
         );

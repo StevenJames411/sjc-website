@@ -1488,6 +1488,17 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    component, and an inline style beats any stylesheet. The layer card keeps its green — that
    border is its identity — and brightens its glow instead. No transform: the swell was removed
    from these cards and the CTAs for competing with the link itself. */
+/* ⭐ THE SIX SYSTEM CARDS ARE A GRID, NOT A WRAP (Steven, 2026-09-18): "three columns on a laptop and
+   two columns when it collapses to a phone, all six feature blocks stay the same size." A flex wrap
+   let five share a row and stretched the sixth across the whole width underneath. */
+.sjc-sys-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .sjc-sys-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 a.sjc-sys-card {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
