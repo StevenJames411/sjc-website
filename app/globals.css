@@ -1501,9 +1501,19 @@ a.sjc-sys-card .sjc-sys-cta {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.01em;
-  color: #3b7fb8;
+  /* ⛔ LIGHT BLUE ON A LIGHT-BLUE CARD IS NOT A LINK (Steven, 2026-09-18): "I absolutely hate how it's
+     light blue on a blue page. The learn more hyperlink barely stands out." #3b7fb8 on the #E8EFF7
+     card was ~3.6:1. The header's royal blue, a size up, and UNDERLINED AT REST so it reads as the
+     hyperlink it is before anyone hovers. */
+  color: #1a3fb0;
+  font-size: 15px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
   transition: color 0.2s ease;
 }
+/* a strip placed on a DARK section: royal blue would vanish there */
+a.sjc-sys-card--dark:not(.sjc-sys-card--active):not(.sjc-sys-card--layer) .sjc-sys-cta { color: #8fd0ff; }
 a.sjc-sys-card .sjc-sys-arrow {
   display: inline-block;
   font-size: 1.2em;

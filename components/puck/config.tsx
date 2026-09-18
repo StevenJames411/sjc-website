@@ -2792,7 +2792,7 @@ const baseConfig: Config<Props, RootProps> = {
             <a
               key={x.slug}
               href={x.slug}
-              className={`sjc-sys-card${layer ? " sjc-sys-card--layer" : ""}${on ? " sjc-sys-card--active" : ""}`}
+              className={`sjc-sys-card${layer ? " sjc-sys-card--layer" : ""}${on ? " sjc-sys-card--active" : ""}${onDark ? " sjc-sys-card--dark" : ""}`}
               style={{
                 display: "block",
                 flex: wide ? "1 1 100%" : "1 1 190px",
