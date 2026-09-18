@@ -68,6 +68,50 @@ const RELAY_VOICES: Record<string, string> = {
   "4": "cjVigY5qzO86Huf0OWal", // Eric — warm, friendly American, smooth mid-40s
 };
 
+// THE TWIN'S MOVEMENT (ruled 2026-09-18, believable-movement-in-relay-mode): true lip-sync is
+// impossible on ConversationRelay (Twilio generates the speech; the browser never gets the audio
+// ahead of time to drive a mouth), so the twin NEVER mimes talking — mouth stays closed in every
+// loop, and a separate ring/waveform signal (below) shows who is speaking. Three seamless loops,
+// swapped by a state machine driven off the call's own volume events.
+type TwinState = "idle" | "listening" | "engaged";
+type TwinCrop = "wide" | "portrait";
+type TwinLoopSet = { idle: string; listening: string; engaged: string; poster: string };
+// ⛔ idle/listening/engaged are BLANK — every video vendor on hand was out of runway the day this
+// was built (fal.ai balance exhausted, Gemini/Veo prepay depleted, Higgsfield has no key in .env);
+// OpenRouter's image-to-video ignored the source photo outright and rendered a stranger. The poster
+// is the real still (t=24s of film-1-heygen.mp4, mouth closed, eyes on camera) — TwinStage falls
+// back to it correctly with every loop field blank, so this ships honest today and only needs URLs
+// dropped in once a vendor is funded again.
+const TWIN_LOOPS: Record<TwinCrop, TwinLoopSet> = {
+  wide: {
+    idle: "", listening: "", engaged: "",
+    poster: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/hero/twin/idle-wide-poster.jpg",
+  },
+  portrait: {
+    idle: "", listening: "", engaged: "",
+    poster: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/hero/twin/idle-portrait-poster.jpg",
+  },
+};
+function twinSrc(set: TwinLoopSet, state: TwinState): string {
+  return set[state] || set.idle || "";
+}
+// outputVolume above this = the twin is speaking; inputVolume above this = the visitor is. Both
+// 0-1 off the Voice JS SDK's 'volume' event — ASSUMPTION, never heard on a real call by this model;
+// tune by ear against a live call before trusting the exact numbers.
+const OUT_THRESHOLD = 0.05, IN_THRESHOLD = 0.06;
+const ENGAGED_HOLD_MS = 300, LISTENING_HOLD_MS = 150;
+// ?fakevol=1 (lab only — see relayOn below) drives the whole state machine without a real call, so
+// the loop crossfade and the ring can be watched without anyone talking on the line: silence, then
+// the visitor "speaks", a beat of silence, then the twin "speaks", then back to silence.
+function fakeVolumes(t: number): [number, number] {
+  const cycle = 12000, p = t % cycle;
+  if (p < 3000) return [0, 0];
+  if (p < 6000) return [0.25 + 0.5 * (0.5 + 0.5 * Math.sin((p - 3000) / 180)), 0];
+  if (p < 6300) return [0, 0];
+  if (p < 10000) return [0, 0.3 + 0.55 * (0.5 + 0.5 * Math.sin((p - 6300) / 220))];
+  return [0, 0];
+}
+
 export const TALKING_HERO_DEFAULTS: TalkingHeroProps = {
   eyebrow: "Steven James Consulting",
   headline: "Everybody wants more leads. Everybody wants more revenue.",
@@ -131,11 +175,19 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   // the server's Brian default is the only default that exists (2026-09-18 pm).
   const [relayFlag, setRelayFlag] = useState(false);
   const [relayVoiceId, setRelayVoiceId] = useState("");
+  // ?twin=wide (default) | portrait | off — an eye-comparison switch, not a breakpoint pick: it
+  // forces the SAME crop into the canvas at any screen size so Steven can judge one against the
+  // other. ?fakevol=1 exercises the state machine with no call on the line.
+  const [twinParam, setTwinParam] = useState<"wide" | "portrait" | "off">("wide");
+  const [fakevolFlag, setFakevolFlag] = useState(false);
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     setRelayFlag(sp.get("relay") === "1");
     const v = sp.get("voice");
     setRelayVoiceId((v && RELAY_VOICES[v]) || "");
+    const tw = sp.get("twin");
+    setTwinParam(tw === "portrait" ? "portrait" : tw === "off" ? "off" : "wide");
+    setFakevolFlag(sp.get("fakevol") === "1");
   }, []);
   const relay = useTwilioRelay(relayVoiceId);
   const [mode, setMode] = useState<"idle" | "talk" | "type">("idle");
@@ -147,6 +199,79 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
   // override the default above (live mode, no film) — so undefined means the default here.
   const film = (props.mode || "film") === "film";
   const relayOn = !film && relayFlag; // live mode + ?relay=1 only
+  const fakevolOn = relayOn && fakevolFlag; // never fires off the lab's own gate
+  const twinCrop: TwinCrop = twinParam === "portrait" ? "portrait" : "wide";
+  const useTwinStage = relayOn && twinParam !== "off";
+
+  // ── THE TWIN'S STATE MACHINE — which loop plays. Polls the call's own volume refs (or the fake
+  // oscillator) every frame; only re-renders when the DISCRETE state actually changes, never per
+  // frame. A hold on each direction stops single-word gaps from flapping the loop mid-sentence. ──
+  const [twinState, setTwinState] = useState<TwinState>("idle");
+  const twinStateRef = useRef<TwinState>("idle");
+  useEffect(() => {
+    if (!relayOn) { if (twinStateRef.current !== "idle") { twinStateRef.current = "idle"; setTwinState("idle"); } return; }
+    let raf = 0; let engagedUntil = 0, listeningUntil = 0;
+    const tick = () => {
+      const now = performance.now();
+      let inVol = 0, outVol = 0;
+      if (fakevolOn) [inVol, outVol] = fakeVolumes(now);
+      else if (relay.state === "live") { inVol = relay.inputVolume.current; outVol = relay.outputVolume.current; }
+      if (outVol > OUT_THRESHOLD) engagedUntil = now + ENGAGED_HOLD_MS;
+      if (inVol > IN_THRESHOLD) listeningUntil = now + LISTENING_HOLD_MS;
+      const next: TwinState = now < engagedUntil ? "engaged" : now < listeningUntil ? "listening" : "idle";
+      if (next !== twinStateRef.current) { twinStateRef.current = next; setTwinState(next); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [relayOn, fakevolOn, relay.state]);
+
+  // ── THE SPEAKING RING — a continuous level, independent of the discrete loop above. Writes a CSS
+  // var straight onto the DOM node every frame (no React state per frame). `prefers-reduced-motion`
+  // gets a fixed glow per state instead of the eased, ever-moving one. ──
+  const [reduceMotion, setReduceMotion] = useState(false);
+  useEffect(() => {
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(m.matches);
+    const on = () => setReduceMotion(m.matches);
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, []);
+  const ringRef = useRef<HTMLSpanElement>(null);
+  const waveRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  useEffect(() => {
+    if (!relayOn || reduceMotion) return;
+    let raf = 0; let easedIn = 0, easedOut = 0;
+    const tick = () => {
+      const now = performance.now();
+      let inVol = 0, outVol = 0;
+      if (fakevolOn) [inVol, outVol] = fakeVolumes(now);
+      else if (relay.state === "live") { inVol = relay.inputVolume.current; outVol = relay.outputVolume.current; }
+      easedIn += (inVol - easedIn) * 0.2;
+      easedOut += (outVol - easedOut) * 0.2;
+      const level = Math.max(easedIn, easedOut);
+      const ring = ringRef.current;
+      if (ring) {
+        ring.style.setProperty("--th-ring-v", level.toFixed(3));
+        ring.dataset.who = easedOut >= easedIn ? "twin" : "visitor";
+      }
+      waveRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const h = 0.22 + (0.15 + level * 0.85) * (0.5 + 0.5 * Math.sin(now / 140 + i * 0.8));
+        el.style.transform = `scaleY(${h.toFixed(3)})`;
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [relayOn, reduceMotion, fakevolOn, relay.state]);
+  useEffect(() => {
+    if (!relayOn || !reduceMotion) return;
+    const ring = ringRef.current;
+    if (!ring) return;
+    ring.style.setProperty("--th-ring-v", twinState === "engaged" ? "0.6" : twinState === "listening" ? "0.35" : "0");
+    ring.dataset.who = twinState === "engaged" ? "twin" : "visitor";
+  }, [relayOn, reduceMotion, twinState]);
   const filmWide = props.filmWide || TALKING_HERO_DEFAULTS.filmWide;
   const filmTall = props.filmTall || TALKING_HERO_DEFAULTS.filmTall;
   const [filmOn, setFilmOn] = useState(false); // sound on = the film restarts from the top with its voice
@@ -600,9 +725,55 @@ function extract(node: Node): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
+// ── the twin's room, relay mode only — two stacked <video> layers crossfade between the three
+// closed-mouth loops; a plain <img> poster sits underneath both as the guaranteed fallback (no
+// loop URL yet, or a loop that fails to load, both land here — never a black flash). ──────────────
+function TwinStage({ state, srcs }: { state: TwinState; srcs: TwinLoopSet }) {
+  const aRef = useRef<HTMLVideoElement>(null);
+  const bRef = useRef<HTMLVideoElement>(null);
+  const frontRef = useRef<"a" | "b">("a");
+  const [front, setFront] = useState<"a" | "b">("a");
+  const [srcA, setSrcA] = useState(() => twinSrc(srcs, state));
+  const [srcB, setSrcB] = useState("");
+  const [failedA, setFailedA] = useState(false);
+  const [failedB, setFailedB] = useState(false);
+  const current = useRef(twinSrc(srcs, state));
+
+  useEffect(() => {
+    const target = twinSrc(srcs, state);
+    if (target === current.current) return;
+    current.current = target;
+    if (!target) return; // no clip for this state — stay on whatever is already showing
+    const back = frontRef.current === "a" ? "b" : "a";
+    (back === "a" ? setFailedA : setFailedB)(false);
+    (back === "a" ? setSrcA : setSrcB)(target);
+    const v = (back === "a" ? aRef : bRef).current;
+    if (!v) return;
+    let swapped = false;
+    const swap = () => { if (swapped) return; swapped = true; frontRef.current = back; setFront(back); };
+    v.oncanplay = swap;
+    v.play().catch(() => {});
+    const t = setTimeout(swap, 900); // don't hang the crossfade if canplay never fires
+    return () => clearTimeout(t);
+  }, [state, srcs]);
+
+  return (
+    <>
+      {srcs.poster ? <img className="th-loop th-twin-poster" src={srcs.poster} alt="" /> : null}
+      <video ref={aRef} className="th-loop th-twin-layer" style={{ opacity: front === "a" && srcA && !failedA ? 1 : 0 }}
+        src={srcA || undefined} poster={srcs.poster || undefined} onError={() => setFailedA(true)}
+        autoPlay muted loop playsInline preload="auto" />
+      <video ref={bRef} className="th-loop th-twin-layer" style={{ opacity: front === "b" && srcB && !failedB ? 1 : 0 }}
+        src={srcB || undefined} poster={srcs.poster || undefined} onError={() => setFailedB(true)}
+        autoPlay muted loop playsInline preload="auto" />
+    </>
+  );
+}
+
 // ── the orb — the one control on the page, never small ──────────────────────────────────────────
-function Orb({ x, y, size, state, edit, onTap, ready, onGuide }: {
+function Orb({ x, y, size, state, edit, onTap, ready, onGuide, twin, ringRef, waveRefs }: {
   x: number; y: number; size: number; state: string; edit?: HeroEditApi; onTap: () => void; ready: boolean; onGuide?: (g: Guide | null) => void;
+  twin?: boolean; ringRef?: React.Ref<HTMLSpanElement>; waveRefs?: React.MutableRefObject<Array<HTMLSpanElement | null>>;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [live, setLive] = useState<{ x: number; y: number } | null>(null);

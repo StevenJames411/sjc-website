@@ -75,10 +75,16 @@ export function useTwilioRelay(voiceId: string) {
       const call = await device.connect({ params });
       callRef.current = call;
       call.on("accept", () => setState("live"));
-      call.on("disconnect", () => setState("ended"));
-      call.on("cancel", () => setState("ended"));
-      call.on("reject", () => setState("ended"));
-      call.on("error", (e: any) => { setError(e?.message || "call error"); setState("ended"); });
+      call.on("disconnect", () => { inputVolume.current = 0; outputVolume.current = 0; setState("ended"); });
+      call.on("cancel", () => { inputVolume.current = 0; outputVolume.current = 0; setState("ended"); });
+      call.on("reject", () => { inputVolume.current = 0; outputVolume.current = 0; setState("ended"); });
+      call.on("error", (e: any) => { inputVolume.current = 0; outputVolume.current = 0; setError(e?.message || "call error"); setState("ended"); });
+      // inputVolume = the visitor's mic; outputVolume = the twin's voice. Both 0-1 (Voice JS SDK,
+      // @twilio/voice-sdk ^2.18.5, verified in node_modules/@twilio/voice-sdk/es5/twilio/call.js).
+      call.on("volume", (inVol: number, outVol: number) => {
+        inputVolume.current = inVol;
+        outputVolume.current = outVol;
+      });
     } catch (e: any) {
       setError(e?.message || "microphone permission denied");
       setState("idle");
@@ -91,5 +97,5 @@ export function useTwilioRelay(voiceId: string) {
     if (state === "idle" || state === "ended") start(); else hangup();
   }, [state, start, hangup]);
 
-  return { state, error, start, hangup, toggle };
+  return { state, error, start, hangup, toggle, inputVolume, outputVolume };
 }
