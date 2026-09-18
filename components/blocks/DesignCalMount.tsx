@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import CalEmbed from "./CalEmbed";
+import ConsentLine from "@/components/ConsentLine";
 
 // Put the REAL booking calendar where the design drew its embed.
 //
@@ -43,7 +44,17 @@ export default function DesignCalMount({ calLink }: { calLink: string }) {
   return (
     <>
       <span ref={anchor} hidden aria-hidden="true" />
-      {host ? createPortal(<CalEmbed calLink={calLink} minHeight={570} />, host) : null}
+      {host
+        ? createPortal(
+            <>
+              <CalEmbed calLink={calLink} minHeight={570} />
+              {/* Outside the Cal.com widget's own box, inside the design's card — inherits its
+                  colour so it reads on whatever the design painted behind it. See ConsentLine. */}
+              <ConsentLine />
+            </>,
+            host
+          )
+        : null}
     </>
   );
 }

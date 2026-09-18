@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import ConsentLine from "@/components/ConsentLine";
 
 // Data-driven discovery-call intake. The steps/questions come from the Puck "apply" page
 // (edited at /edit/apply) — nothing here is hardcoded. Renders a multi-step wizard, posts the
@@ -110,6 +111,7 @@ export default function ApplyForm({
   }
 
   const firstName = (answers["q-first"] || "").trim();
+  const consentId = `apply-consent-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
 
   // ---- Booking step (answers already saved) --------------------------------
   if (done) {
@@ -136,9 +138,12 @@ export default function ApplyForm({
           ) : null}
         </div>
         {bookingSrc ? (
-          <div className="mt-8 overflow-hidden rounded-2xl border border-[color:var(--color-sjc-line)] bg-white shadow-sm">
-            <iframe src={bookingSrc} title="Book your time" className="h-[720px] w-full" />
-          </div>
+          <>
+            <div className="mt-8 overflow-hidden rounded-2xl border border-[color:var(--color-sjc-line)] bg-white shadow-sm">
+              <iframe src={bookingSrc} title="Book your time" className="h-[720px] w-full" />
+            </div>
+            <ConsentLine className="mt-4 text-center text-xs text-[color:var(--color-sjc-mute)]" />
+          </>
         ) : (
           <div className="mt-8 rounded-2xl border border-dashed border-[color:var(--color-sjc-line)] bg-white p-8 text-center">
             <p className="text-base font-semibold text-[color:var(--color-sjc-ink)]">
@@ -254,12 +259,20 @@ export default function ApplyForm({
               type="button"
               onClick={next}
               disabled={submitting}
+              aria-describedby={consentId}
               className="inline-flex items-center justify-center rounded-lg bg-[color:var(--color-sjc-blue)] px-7 py-3 font-semibold text-white shadow transition-colors hover:bg-[color:var(--color-sjc-green)] disabled:opacity-60"
             >
               {submitting ? "Sending…" : step < total - 1 ? "Next →" : "See call times →"}
             </button>
           </div>
         </div>
+
+        {/* Shown on every question step — including the last one, right before the calendar
+            step it hands off to — never only after booking. See ConsentLine. */}
+        <ConsentLine
+          id={consentId}
+          className="mt-6 text-center text-xs text-[color:var(--color-sjc-mute)]"
+        />
 
         {disclaimer ? (
           <p

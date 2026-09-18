@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ConsentLine from "@/components/ConsentLine";
 
 // One form, two question sets. The role picker swaps the tail of the form rather than sending
 // applicants to two different pages — showing both seats on one page is the point: it reads as a
@@ -144,6 +145,7 @@ export default function CareersForm() {
           type="button"
           onClick={submit}
           disabled={sending}
+          aria-describedby="careers-consent"
           style={{
             ...INPUT, width: "auto", justifySelf: "start", cursor: sending ? "default" : "pointer",
             padding: "15px 40px", borderColor: "#c9a227", color: "#e8c65a",
@@ -151,6 +153,7 @@ export default function CareersForm() {
           }}
         >{sending ? "Sending…" : "Send application"}</button>
       )}
+      {role && <ConsentLine id="careers-consent" businessName="we" />}
     </div>
   );
 }
