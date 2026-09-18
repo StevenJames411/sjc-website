@@ -1708,6 +1708,30 @@ a.sjc-sys-card--layer:focus-visible {
 [data-sjc-talking-hero][data-layout] .th-orb:disabled { opacity: .55; cursor: default; animation: none; }
 @keyframes th-pulse { 0% { box-shadow: 0 0 0 0 rgba(240, 179, 35, .6), 0 14px 40px rgba(0, 0, 0, .45); } 70% { box-shadow: 0 0 0 30px rgba(240, 179, 35, 0), 0 14px 40px rgba(0, 0, 0, .45); } 100% { box-shadow: 0 0 0 0 rgba(240, 179, 35, 0), 0 14px 40px rgba(0, 0, 0, .45); } }
 @media (prefers-reduced-motion: reduce) { [data-sjc-talking-hero][data-layout] .th-orb { animation: none; } }
+
+/* THE TWIN'S LOOPS, relay mode only (ruled 2026-09-18, believable-movement-in-relay-mode). A poster
+   <img> is the guaranteed base (no loop URL yet, or one that fails, both land here); the two video
+   layers crossfade on top of it, never a black flash. */
+[data-sjc-talking-hero] .th-twin-poster { z-index: 0; }
+[data-sjc-talking-hero] .th-twin-layer { z-index: 1; transition: opacity 250ms ease; }
+@media (prefers-reduced-motion: reduce) { [data-sjc-talking-hero] .th-twin-layer { transition: none; } }
+
+/* THE SPEAKING RING — a halo around the orb, brightness and size follow --th-ring-v (0-1), written
+   every frame off the call's own volume (or the fake oscillator). Blue = the twin is speaking;
+   white = the visitor is. Static under reduced motion (the var still moves, just never eased). */
+[data-sjc-talking-hero][data-layout] .th-ring {
+  position: absolute; inset: -22%; border-radius: 50%; pointer-events: none;
+  --th-ring-rgb: 143, 179, 255;
+  opacity: calc(var(--th-ring-v, 0) * .9);
+  transform: scale(calc(.85 + var(--th-ring-v, 0) * .5));
+  box-shadow: 0 0 calc(var(--th-ring-v, 0) * 46px) calc(var(--th-ring-v, 0) * 14px) rgba(var(--th-ring-rgb), calc(var(--th-ring-v, 0) * .85));
+}
+[data-sjc-talking-hero][data-layout] .th-ring[data-who="visitor"] { --th-ring-rgb: 255, 255, 255; }
+/* the waveform — five bars under the orb, optional read (Steven's eye decides if it stays) */
+[data-sjc-talking-hero][data-layout] .th-wave { position: absolute; left: 50%; top: 100%; transform: translate(-50%, 10px); z-index: 5; display: flex; align-items: flex-end; gap: 4px; height: 22px; pointer-events: none; }
+[data-sjc-talking-hero][data-layout] .th-wave i { display: block; width: 4px; height: 100%; border-radius: 2px; background: #8fb3ff; transform: scaleY(.22); transform-origin: bottom; }
+@media (prefers-reduced-motion: reduce) { [data-sjc-talking-hero][data-layout] .th-wave { display: none; } }
+
 [data-sjc-talking-hero][data-layout] .th-under { position: absolute; z-index: 5; transform: translateX(-50%); display: grid; justify-items: center; gap: 8px; white-space: nowrap; }
 [data-sjc-talking-hero][data-layout] .th-orblabel { font-size: 15px; font-weight: 600; color: #fff; text-shadow: 0 2px 12px rgba(0, 0, 0, .7); }
 [data-sjc-talking-hero][data-layout] .th-ghost.th-small { padding: 8px 14px; font-size: 13px; }
