@@ -89,6 +89,9 @@ def sync_hero_buttons(doc, changes):
 
 
 def main():
+    # RETIRED 2026-09-18 — SERVICES below predates the 09-02 reorder and the 09-18 sixth system
+    # (Automated Organic Content Engine); running this would overwrite the live home page with August wording.
+    sys.exit("RETIRED 2026-09-18 — SERVICES here is stale (old names/order/five slots). Edit copy with tools/site_text.py instead.")
     apply = "--apply" in sys.argv
     changes = []
 

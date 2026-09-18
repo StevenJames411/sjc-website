@@ -450,7 +450,7 @@ export const NAV_DEFAULTS = {
 // Footer.tsx's fallback (so the live footer never renders blank if nothing's published).
 export const FOOTER_DEFAULTS = {
   blurb:
-    "Five businesses since 1986. Owner and tech lead in every one — now installing AI employees for the business owner, done for you, connected to the five systems that run the business.",
+    "Five businesses since 1986. Owner and tech lead in every one — now installing AI employees for the business owner, done for you, connected to the six systems that run the business.",
   links: [
     { label: "About Steven James — who I am & why listen", target: "/about" },
     { label: "FAQs", target: "/faqs" },
@@ -520,17 +520,19 @@ export const IMAGE_DEFAULTS = {
 
 /**
  * THE SIX SYSTEMS, IN THE ORDER A CUSTOMER MOVES THROUGH THEM - found, wanted, answered,
- * recovered, trusted - with the connecting layer last. ⛔ The NAMES are the page names and the
- * search terms; they are not reworded here. The one-liner underneath is where the outcome goes,
- * so a visitor gets a consistent Problem-System-Outcome read across six labels that are otherwise
- * a thing, a process, an outcome and a technology.
+ * recovered, trusted, sent - with the connecting layer last. ⛔ The NAMES are the page names and
+ * the search terms; they are not reworded here. The one-liner underneath is where the outcome
+ * goes, so a visitor gets a consistent Problem-System-Outcome read across seven labels that are
+ * otherwise a thing, a process, an outcome and a technology.
  */
 // ⛔ THIS ORDER IS THE ARGUMENT, NOT A LIST. Steven, 2026-09-02: you do not turn paid ads on until
 // the rest of the house is in order, so the sequence has to read as the build order of a business:
 //   1 website (the front door)  ->  2 speed to lead (organic + existing customers already reach out)
 //   3 reviews (do this from the day you open)  ->  4 database (you already paid for those names)
 //   -> 5 paid ads LAST, because ads into a leaky machine just buy more voicemails.
-// ⛔ AI IMPLEMENTATION IS NOT THE SIXTH SYSTEM. It is the glue under the five — the plumbing between
+//   -> 6 organic content, after ads: ads and content both SEND people to the website, so the house
+//   is in order before either is switched on. You do not own the platform; you own the website.
+// ⛔ AI IMPLEMENTATION IS NOT A SEVENTH SYSTEM. It is the glue under the six — the plumbing between
 // them. Never counted as one of them, never listed alongside them: it renders as its own wide row.
 // The nav and the home hero already run this order; this const was the one place that disagreed.
 export const SIX_SYSTEMS = [
@@ -539,7 +541,8 @@ export const SIX_SYSTEMS = [
   { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy customer into a review." },
   { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
   { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
-  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five systems so they get better every day." },
+  { slug: "/automated-organic-content-engine", name: "Automated Organic Content Engine", line: "Send attention to the website you own, every day, without remembering to post." },
+  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other six systems so they get better every day." },
 ];
 
 export const CONVERSATION_DEFAULTS = {
@@ -2721,7 +2724,7 @@ const baseConfig: Config<Props, RootProps> = {
      * asserts an order the buyer does not have to follow - most clients start with one system.
      * The strip shows membership, which is the thing a visitor is missing, without implying steps.
      *
-     * ⭐ AI IMPLEMENTATION IS RENDERED APART FROM THE OTHER FIVE, because it is not a peer. It is
+     * ⭐ AI IMPLEMENTATION IS RENDERED APART FROM THE OTHER SIX, because it is not a peer. It is
      * the layer that connects them, the copy has said so for weeks, and until now the layout
      * argued the opposite by drawing it as a sixth identical box.
      */
@@ -2762,7 +2765,7 @@ const baseConfig: Config<Props, RootProps> = {
       },
       defaultProps: {
         current: "",
-        intro: "This is one of five systems we build. They are designed to connect, so a lead is never dropped between them.",
+        intro: "This is one of six systems we build. They are designed to connect, so a lead is never dropped between them.",
         onDark: false,
         spaceAbove: 40,
         spaceBelow: 40,
@@ -2772,9 +2775,9 @@ const baseConfig: Config<Props, RootProps> = {
         // ⛔ BLACK ON A LIGHT PAGE, NEVER GREY. Steven, 2026-09-02: "I hate grey font. It blends into
         // the background too much." This drives BOTH the intro paragraph and each card's line.
         const body = onDark ? "rgba(255,255,255,.82)" : "#0A0E27";
-        const five = SIX_SYSTEMS.filter((x) => x.slug !== "/ai-implementation");
+        const systems = SIX_SYSTEMS.filter((x) => x.slug !== "/ai-implementation");
         const layer = SIX_SYSTEMS.find((x) => x.slug === "/ai-implementation")!;
-        // ⛔ THE LAYER IS NOT ONE OF THE FIVE, SO IT IS NOT SKINNED LIKE THEM.
+        // ⛔ THE LAYER IS NOT ONE OF THE SIX, SO IT IS NOT SKINNED LIKE THEM.
         // Same livery as the menu pill and the home hero: gold NAME, green tagline, green hairline.
         // → the-ai-implementation-pill-is-one-object
         // ⚠️ It carries a DARK ground here even though the hero's version is transparent. The rule is
@@ -2839,7 +2842,7 @@ const baseConfig: Config<Props, RootProps> = {
             {intro ? (
               <p style={{ margin: "0 0 16px", fontSize: "16px", lineHeight: 1.5, color: body, maxWidth: "56rem" }}>{intro}</p>
             ) : null}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>{five.map((x) => chip(x, false))}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>{systems.map((x) => chip(x, false))}</div>
             <div style={{ display: "flex", marginTop: "12px" }}>{chip(layer, true)}</div>
           </div>
         );
@@ -4379,7 +4382,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s3-p3",
-              text: "Now here's the part that matters. Just about everyone else selling AI right now is selling you a chatbot — a little pop-up that answers a question and then hands you back the work. That's not an employee. What I do is build a real AI employee into the five systems that run your business, so it works your leads and your calendar like a real member of your staff. That part is hard, and it's the part nobody else has figured out. I build it myself, by hand.",
+              text: "Now here's the part that matters. Just about everyone else selling AI right now is selling you a chatbot — a little pop-up that answers a question and then hands you back the work. That's not an employee. What I do is build a real AI employee into the six systems that run your business, so it works your leads and your calendar like a real member of your staff. That part is hard, and it's the part nobody else has figured out. I build it myself, by hand.",
               align: "left",
             },
           },
@@ -4416,7 +4419,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s4-p2",
-              text: "I set the AI employee up on the five systems that make you money, and I keep them getting better. I don't take the reins from you. I do the hard part in the background so you never have to think about it — and you keep your hand on every lead and every dollar.",
+              text: "I set the AI employee up on the six systems that make you money, and I keep them getting better. I don't take the reins from you. I do the hard part in the background so you never have to think about it — and you keep your hand on every lead and every dollar.",
               align: "left",
             },
           },

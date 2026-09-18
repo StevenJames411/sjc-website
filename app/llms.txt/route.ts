@@ -31,6 +31,7 @@ Steven James Consulting is an AI-implementation partner for service businesses. 
 - [Podcast](https://stevenjamesconsulting.com/podcast): Conversations with operators across industries.
 - [Portfolio](https://stevenjamesconsulting.com/premium-smart-websites#srj8qqe): Real builds, on the Premium Smart Websites page.
 - [Booked Appointments](https://stevenjamesconsulting.com/booked-appointments): We run the ads and answer the leads; the client gets appointments, not a list.
+- [Automated Organic Content Engine](https://stevenjamesconsulting.com/automated-organic-content-engine): Organic content produced and posted for the owner, every piece pointing back to the website he owns.
 - [Speed to Lead](https://stevenjamesconsulting.com/speed-to-lead): Instant response on the leads a business already generates, bolted onto the software it already runs.
 - [AI Implementation](https://stevenjamesconsulting.com/ai-implementation): Native AI on top of existing software — follow-up, reactivation, the seats nobody is sitting in.
 - [Automated Five Star Reviews](https://stevenjamesconsulting.com/automated-five-star-reviews): A review funnel that produces more reviews every month.

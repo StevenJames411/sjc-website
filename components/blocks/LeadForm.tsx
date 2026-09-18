@@ -703,7 +703,7 @@ export default function LeadForm(props: LeadFormProps) {
               {f?.options?.length && f?.dropdown ? (
                 /* ⚠️ OPT-IN, NOT THE DEFAULT. Buttons stay right for a rating scale — see the note
                    above. A dropdown is right when the options are a MENU the visitor is choosing
-                   from rather than a scale they are reading: SJC's five services, where the list is
+                   from rather than a scale they are reading: SJC's six services, where the list is
                    long enough that buttons push the name and phone fields off a phone screen. */
                 <select
                   id={`lf-${k}`}
