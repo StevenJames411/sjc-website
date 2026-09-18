@@ -895,7 +895,7 @@ export default function LeadForm(props: LeadFormProps) {
       {note ? <p className={noteCls}>{note}</p> : null}
       {/* Shown on every screen of a multi-step survey — including the step right before a "book"
           ending hands off to a calendar — never only on the final thank-you. See ConsentLine. */}
-      <ConsentLine id={consentId} businessName={business?.name} className={noteCls} />
+      <ConsentLine why="form" id={consentId} businessName={business?.name} className={noteCls} />
     </form>
   );
 }

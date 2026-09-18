@@ -153,7 +153,7 @@ export default function CareersForm() {
           }}
         >{sending ? "Sending…" : "Send application"}</button>
       )}
-      {role && <ConsentLine id="careers-consent" businessName="we" />}
+      {role && <ConsentLine why="form" reason="to follow up on your application" id="careers-consent" businessName="we" />}
     </div>
   );
 }
