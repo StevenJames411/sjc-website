@@ -351,6 +351,7 @@ export async function middleware(req: NextRequest) {
     "/website": "/custom-websites",
     "/reviews": "/automated-five-star-reviews",
     "/ads": "/booked-appointments",
+    "/content": "/automated-organic-content-engine",
     "/work": "/portfolio",
   };
   const spoken = SPOKEN[pathname.replace(/\/+$/, "").toLowerCase()];

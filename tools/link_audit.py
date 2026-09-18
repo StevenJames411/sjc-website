@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """link_audit.py — catch menu links that point at the wrong page.
 
-⛔ WHY THIS EXISTS (2026-08-24). Reordering the five services on the home page moved the
+⛔ WHY THIS EXISTS (2026-08-24). Reordering the six services on the home page moved the
 menu TEXT but not the HREFS, so every item in the hamburger opened the wrong page and the
 site said nothing was wrong. Steven found it, not a test.
 
@@ -34,6 +34,7 @@ SLUGS = [
     (("automated five star review", "five star review", "five-star review"), "/automated-five-star-reviews"),
     (("every lead answered", "speed to lead"), "/speed-to-lead"),
     (("booked appointment", "paid ads"),     "/booked-appointments"),
+    (("organic content", "content engine"),  "/automated-organic-content-engine"),
     (("your ai employee", "ai implementation"), "/ai-implementation"),
     (("portfolio",),                         "/portfolio"),
     (("careers",),                           "/careers"),

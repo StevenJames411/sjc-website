@@ -75,7 +75,7 @@ export async function readPages(siteId: string): Promise<PageEntry[]> {
   //
   // This read `siteId === SJC ? PUCK_PAGES : chrome`, and the whole PUCK_PAGES list existed to
   // serve the FIRST SJC site, whose pages were hardcoded before the registry existed. SJC's site
-  // has since been rebuilt twice; every page it actually has — home, the five systems, about,
+  // has since been rebuilt twice; every page it actually has — home, the six systems, about,
   // podcast, careers — is an ordinary custom registry row, and the built-in list had rotted into
   // `websites`, `websites-nav`, `websites-footer` and a scratch pad called `lucky-dog-wash-house`.
   //
