@@ -449,7 +449,7 @@ export const NAV_DEFAULTS = {
 // Footer.tsx's fallback (so the live footer never renders blank if nothing's published).
 export const FOOTER_DEFAULTS = {
   blurb:
-    "Five businesses since 1986. Owner and tech lead in every one — now installing AI employees for the solo entrepreneur, done for you, on the software you already run.",
+    "Five businesses since 1986. Owner and tech lead in every one — now installing AI employees for the business owner, done for you, connected to the five systems that run the business.",
   links: [
     { label: "About Steven James — who I am & why listen", target: "/about" },
     { label: "FAQs", target: "/faqs" },
@@ -538,7 +538,7 @@ export const SIX_SYSTEMS = [
   { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy customer into a review." },
   { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
   { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
-  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five systems inside the software you already run." },
+  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other five systems so they get better every day." },
 ];
 
 export const CONVERSATION_DEFAULTS = {
@@ -4373,7 +4373,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s3-p3",
-              text: "Now here's the part that matters. Just about everyone else selling AI right now is selling you a chatbot — a little pop-up that answers a question and then hands you back the work. That's not an employee. What I do is build a real AI employee right into the same software you already use to run your business, so it works your leads and your calendar like a real member of your staff. That part is hard, and it's the part nobody else has figured out. I build it myself, by hand.",
+              text: "Now here's the part that matters. Just about everyone else selling AI right now is selling you a chatbot — a little pop-up that answers a question and then hands you back the work. That's not an employee. What I do is build a real AI employee into the five systems that run your business, so it works your leads and your calendar like a real member of your staff. That part is hard, and it's the part nobody else has figured out. I build it myself, by hand.",
               align: "left",
             },
           },
@@ -4410,7 +4410,7 @@ export const SEED: Data = {
             type: "Text",
             props: {
               id: "s4-p2",
-              text: "I set the AI employee up on top of the business you already run. I don't rip out what's working. I don't take the reins from you. I do the hard part in the background so you never have to think about it — and you keep your hand on every lead and every dollar.",
+              text: "I set the AI employee up on the five systems that make you money, and I keep them getting better. I don't take the reins from you. I do the hard part in the background so you never have to think about it — and you keep your hand on every lead and every dollar.",
               align: "left",
             },
           },
