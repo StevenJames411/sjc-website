@@ -1194,6 +1194,21 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   }
 }
 
+/* ⭐ TEN PILLS HAVE TO FIT A LAPTOP SCREEN (2026-09-18). The sixth system made the Systems menu ten
+   capsules tall. At his 25px gap that is ~840px of menu under a 72px header, and on an ~820px-tall
+   laptop window the last capsule ("For Coaches, Authors & Influencers") hung off the bottom where
+   nothing can scroll to it. On a SHORT window only, the gap and the capsule padding tighten so all
+   ten land on screen. A tall window keeps his 25px exactly as he set it. */
+@media (min-width: 1024px) and (max-height: 960px) {
+  #global-header .sjc-drop {
+    gap: 12px;
+    padding-top: 14px !important;
+  }
+  #global-header .sjc-drop a {
+    padding: 8px 22px !important;
+  }
+}
+
 /* ⭐ A SINGLE-COLUMN SECTION USES ITS COLUMN. IT DOES NOT LEAVE A HOLE ON THE RIGHT.
    Steven: *"a lot of sections were brought in from other places… the words are only using 60 or 70%
    of the column."* Measured on /ai-implementation at 1512px: 36 paragraphs rendering 684px wide,
