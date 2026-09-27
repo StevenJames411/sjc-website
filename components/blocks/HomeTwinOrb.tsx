@@ -58,6 +58,7 @@ const TAGLINE: Record<string, string> = {
   thinking: "Thinking…",
   speaking: "Talking… tap to stop.",
   typing: "I can't hear you in this browser. Type to me below.",
+  blocked: "Your microphone is off, so I can't hear you. Type to me below.",
 };
 
 type Box = { left: number; top: number; width: number; height: number; orbTop: number; orbLeft: number };
@@ -165,8 +166,8 @@ export default function HomeTwinOrb() {
     ssrOrb.setAttribute("data-phase", phase);
     ssrOrb.innerHTML = ICON[phase] || SPEAKER_SVG;
     const line = document.querySelector("[data-sjc-orb-slot] .sjc-twin-tagline");
-    if (line) line.textContent = TAGLINE[phase];
-  }, [ssrOrb, talkOn, phase]);
+    if (line) line.textContent = phase === "typing" && t.micProblem === "blocked" ? TAGLINE.blocked : TAGLINE[phase];
+  }, [ssrOrb, talkOn, phase, t.micProblem]);
 
   // Every start is an open: a stop-and-re-tap used to send nothing and sit on "Listening…" in silence.
   // The server answers each open with this page's greeting; the mic opens when the greeting ends.
