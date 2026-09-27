@@ -13,6 +13,7 @@ import { isChrome , isNoindex } from "@/lib/puckPages";
 import { defaultChrome } from "@/lib/siteChrome";
 import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
+import HomeTwinOrb from "@/components/blocks/HomeTwinOrb";
 import { fillBusinessTokens } from "@/lib/businessTokens";
 import { SiteProvider } from "@/components/blocks/SiteContext";
 import BrandStyle from "@/components/BrandStyle";
@@ -563,6 +564,9 @@ export async function SitePageBody({
             destination in particular must never depend on someone typing it correctly. */}
         {body}
       </main>
+      {/* THE TALKING TWIN, EVERY SJC PAGE (09-26): it only wakes where a hero's right column carries
+          data-sjc-twin-col, and the page slug rides with every message so the brain answers for it. */}
+      {siteId === SJC ? <HomeTwinOrb /> : null}
       {/* Wrapped in its own SiteProvider, same as the body: a footer routinely carries
           {{business.phone}} and an unwrapped Render would ship the raw token to a visitor. */}
       {chrome.footer ? (

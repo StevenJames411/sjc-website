@@ -973,7 +973,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   /* ⭐ REVERSED 2026-09-26 (Steven: "my picture is getting buried down the page"). The eyebrow now
      sits in its own full-width row ABOVE this split, so the words already come first on a phone;
      the portrait (and the twin that replaces it) follows the eyebrow, then the six systems. */
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:last-child {
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:last-child {
     order: -1;
   }
   /* The eyebrow centres on a phone, over the centred portrait; the desktop keeps it left. */
@@ -1013,23 +1013,23 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
      sit right under the eyebrow and both columns end together */
   /* LEFT COLUMN CENTRED ON THE TWIN (09-26): on a laptop the eyebrow lives inside the left column, and
      the whole left side - eyebrow, headline, six systems - is centred against the orb + photo. */
-  .sjc-design.sjc-design [data-sjc-hero-split] { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 32px !important; align-items: center !important; }
+  .sjc-design.sjc-design [data-sjc-hero-split]:has([data-sjc-twin-col]) { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 32px !important; align-items: center !important; }
   [data-sjc-eyebrow][data-sjc-eyebrow] { display: none !important; }
   [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: block !important; margin-bottom: 0; font-size: 26px; }
   /* THE LEFT COLUMN FILLS THE TWIN'S HEIGHT (09-26): no padding band above or below the words - the
      eyebrow starts level with the orb, the last system ends level with his picture, and the six
      systems spread across the height between. */
-  .sjc-design.sjc-design [data-sjc-hero-split] { align-items: stretch !important; }
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child {
+  .sjc-design.sjc-design [data-sjc-hero-split]:has([data-sjc-twin-col]) { align-items: stretch !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child {
     display: flex !important; flex-direction: column; padding-top: 0 !important; margin-top: 0 !important;
     padding-bottom: 20px;
   }
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > * { margin-top: 0 !important; }
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > h1 { margin: 36px 0 18px !important; font-size: 36px !important; }
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > div:last-child {
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > * { margin-top: 0 !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > h1 { margin: 36px 0 18px !important; font-size: 36px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child {
     flex: 1; display: flex; flex-direction: column; justify-content: space-between;
   }
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > div:last-child p { font-size: 20px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child p { font-size: 20px !important; }
 }
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
