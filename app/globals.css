@@ -1921,4 +1921,4 @@ a.sjc-sys-card--layer:focus-visible {
 }
 
 /* the laptop copy of the eyebrow (inside the left column) is hidden everywhere else */
-[data-sjc-eyebrow-lg] { display: none; }
+@media (max-width: 1023px) { [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: none !important; } }
