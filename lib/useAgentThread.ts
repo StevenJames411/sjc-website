@@ -215,8 +215,8 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
       return;
     }
     if (speakingRef.current) return; // the twin is talking; listenAgain reopens the mic when it finishes
-    window.speechSynthesis?.cancel();
-    try { audio.current?.pause(); } catch { /* ignore */ }
+    // No pause here: nothing real is playing (the guard above), and pausing killed the tap's silent
+    // unlock clip 300ms in — which can leave Safari's audio locked for the first reply.
     const r = new SR();
     r.lang = "en-US";
     r.interimResults = true;
