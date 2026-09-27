@@ -1,10 +1,11 @@
 "use client";
-// THE CALL CARD (ported 2026-09-27 from sjc-server/roleplay_routes.py's practice-page render()) —
-// the read-along screen that rides along the live Twilio call: the script names a card, code owns
-// every tile ("the tiles are mechanical the script names a card and code owns every button"). This
-// is a straight port, not a redesign — same fields, same taps, same stages (choices → slots →
-// contact lines → confirm → booked) — recoloured for the public site's solid-colour law (no gray
-// labels, no faint borders; the server's own #5b6785/#dfe6f3 become solid navy).
+// THE CALL CARD (2026-09-27, rebuilt same day after Steven's real call) — a colour-for-colour copy
+// of the PROVEN reference at agent-sjc.onrender.com/sjc/roleplay (roleplay_routes.py's `#twin #card`
+// / render()), not a reinterpretation: same title styling, same two-column navy/gold pills, same
+// hint line, same contact-line taps, same confirm/booked stages. The one thing that changes on the
+// website is POSITION — the reference's photo is full-height so its card floats over the bottom
+// third; this site's photo is small, so the SAME card sits in normal flow directly below it (his
+// face and body stay fully visible for the whole call) instead of overlapping it.
 
 import { useEffect, useRef, useState } from "react";
 
@@ -85,18 +86,13 @@ function Line({
   );
 }
 
-// ⭐ DEV-ONLY PREVIEW (see ?cardpreview=1 in HomeTwinOrb) — a stage the real call never reaches on
-// its own, kept here so the shape is proofread in one place.
-export const SAMPLE_CARD: CallCardData = {
-  choices: { title: "Are you using either one right now?", options: ["Paid ads", "Organic content", "Both", "Neither"] },
-  said: "Quick question so I point you the right way —",
-};
-
-export default function CallCard({ card, onTap, status }: { card: CallCardData; onTap: (tap: Tap) => void; status?: string }) {
+function CardBody({ card, onTap, status }: { card: CallCardData; onTap: (tap: Tap) => void; status?: string }) {
   const stage = card.stage || "";
   const slots = stage === "confirm" || stage === "booked" ? [] : card.slots || [];
   const showChoices = !!card.choices;
-  const title = card.choices ? card.choices.title : "Your call with Steven";
+  // BLANK-TITLE GUARD (Steven's 09-27 real call: tiles right, title area blank): fall back the
+  // instant the title string is empty for ANY reason, never render nothing.
+  const title = (card.choices && card.choices.title) || "Your call with Steven";
   const sk = slots.length ? card.slots_kind || "" : "";
   const hint =
     stage === "booked" ? "The invite is in your email."
@@ -108,7 +104,12 @@ export default function CallCard({ card, onTap, status }: { card: CallCardData; 
   const booked = stage === "booked";
 
   return (
-    <div className="sjc-call-card" aria-live="polite">
+    // data-sjc-ownbg: the card has its own white background, so it opts OUT of the band's forced
+    // white h1/h2/strong/b text (DesignSection.tsx markBandRoot) — without this the title (h2) and
+    // "You're booked." (a .big, not bold-tag, safe) render invisible-white on this white card. This
+    // is exactly what bit Steven on the real call: tiles right, title blank.
+    <div className="sjc-call-card" data-sjc-ownbg="" aria-live="polite">
+      {card.said && <p className="sjc-cc-caption">{card.said}</p>}
       <h2 className="sjc-cc-title">{title}</h2>
       {hint && <p className="sjc-cc-hint">{hint}</p>}
       {showChoices && (
@@ -149,6 +150,44 @@ export default function CallCard({ card, onTap, status }: { card: CallCardData; 
         </div>
       )}
       {status && <p className="sjc-cc-status">{status}</p>}
+    </div>
+  );
+}
+
+// ⭐ DEV-ONLY PREVIEW (see ?cardpreview=1 in HomeTwinOrb) — a stage the real call never reaches on
+// its own, kept here so the shape is proofread in one place.
+export const SAMPLE_CARD: CallCardData = {
+  choices: {
+    title: "Are you using either one right now?",
+    options: ["Paid ads", "Organic content", "Both", "Neither", "Never thought about it"],
+  },
+  said: "Quick question so I point you the right way —",
+};
+
+// THE ENTER/EXIT SHELL — normal document flow (never position:absolute, never overlapping the
+// photo): a real call fires the card in as soon as the brain names one, and out a few seconds after
+// hangup. `overflow:hidden` + a max-height transition on THIS wrapper only exist so the collapse on
+// exit is smooth; the card itself (CardBody) never scrolls and is never height-capped while shown.
+export default function CallCard({ card, onTap, status }: { card: CallCardData | null; onTap: (tap: Tap) => void; status?: string }) {
+  const [shown, setShown] = useState<CallCardData | null>(null);
+  const [phase, setPhase] = useState<"in" | "out">("in");
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (card) { setShown(card); setPhase("in"); return; }
+    if (!shown) return;
+    const el = wrapRef.current;
+    if (el) { el.style.maxHeight = el.scrollHeight + "px"; void el.offsetHeight; }
+    setPhase("out");
+    const t = setTimeout(() => setShown(null), 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [card]);
+
+  if (!shown) return null;
+  return (
+    <div ref={wrapRef} className={"sjc-cc-flow " + (phase === "in" ? "sjc-cc-flow-in" : "sjc-cc-flow-out")}>
+      <CardBody card={card || shown} onTap={onTap} status={status} />
     </div>
   );
 }

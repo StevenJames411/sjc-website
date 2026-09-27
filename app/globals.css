@@ -1092,64 +1092,77 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   border-radius: 1.5rem;
 }
 
-/* ⭐ THE CALL CARD (2026-09-27) — ported from sjc-server/roleplay_routes.py's practice-page card
-   (the same `#twin #card`), recoloured for the public site's law: solid colours only, full ink/white
-   text, no faded labels, no faint borders — the server's own grey label (#5b6785) and hairline
-   border (#dfe6f3) both become solid navy here. Bottom-sheet over the cutout's own box; the orb and
-   tagline live ABOVE this box (the slot), so the sheet can never cover the one control on the page. */
-.sjc-cc-wrap {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
-  display: flex; flex-direction: column; align-items: stretch; gap: 8px;
-  max-height: 92%; pointer-events: none;
+/* ⭐ THE CALL CARD (2026-09-27, redone same day after Steven's real call on /automated-five-star-
+   reviews) — a straight colour-for-colour copy of the PROVEN reference, agent-sjc's own practice
+   page (roleplay_routes.py `#twin #card` / `#twin #chips` / `#twin #slots`), not a reinterpretation.
+   ⛔ IN NORMAL FLOW, BELOW THE PHOTO, NEVER OVER IT — his face and body stay visible for the whole
+   call (his words: "the card basically covers my face"). It lives in a slot inserted right after the
+   photo's own wrapper, full column width, natural height, no inner scrollbar, ever. Colours carry
+   `!important` because this portal lands inside whichever PAGE's own imported design sheet (a
+   different one per page, injected after this file) — without it a page's own `h2`/`button` styling
+   can silently win and the title renders in that page's colour, invisible on this card's white. */
+.sjc-cc-flow {
+  width: 100%; overflow: hidden; max-height: 2400px; opacity: 1; transform: none;
+  transition: max-height .38s ease, opacity .3s ease, transform .3s ease;
 }
-.sjc-cc-caption {
-  pointer-events: auto; align-self: center; max-width: 92%;
-  background: #0A0E27; color: #fff; font-weight: 700; font-size: 15px; line-height: 1.35;
-  border-radius: 12px; padding: 8px 14px; text-align: center;
-}
+.sjc-cc-flow.sjc-cc-flow-in { animation: sjccrise .32s cubic-bezier(.2,.8,.2,1); }
+.sjc-cc-flow.sjc-cc-flow-out { max-height: 0 !important; opacity: 0; transform: translateY(-10px); }
+@keyframes sjccrise { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
 .sjc-call-card {
-  pointer-events: auto; background: #fff; color: #0A0E27; text-align: left;
-  border-radius: 20px 20px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
-  box-shadow: 0 -14px 34px rgba(0,0,0,.5); overflow: auto; max-height: 100%;
+  background: #fff !important; color: #0A0E27 !important; text-align: left; margin-top: 16px;
+  border-radius: 20px; padding: 18px; box-shadow: 0 14px 34px rgba(0,0,0,.35);
+  font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
-.sjc-cc-title { margin: 0 0 8px; font-size: 14px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #0A0E27; }
-.sjc-cc-hint { margin: -2px 0 10px; font-size: 13px; line-height: 1.35; font-weight: 700; color: #0A0E27; }
-.sjc-cc-chips { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.sjc-call-card * { font-family: inherit; }
+.sjc-cc-caption {
+  background: rgba(0,0,0,.7) !important; color: #fff !important; font-weight: 700; font-size: 16px;
+  line-height: 1.35; border-radius: 12px; padding: 9px 12px; margin: 0 0 10px; text-align: center;
+}
+.sjc-cc-title {
+  margin: 0 0 10px !important; font-size: 15px !important; letter-spacing: .07em !important;
+  text-transform: uppercase !important; color: #1a3fb0 !important; font-weight: 800 !important;
+}
+.sjc-cc-hint { margin: -4px 0 12px !important; font-size: 13px !important; line-height: 1.35 !important; color: #0A0E27 !important; }
+.sjc-cc-chips { display: flex !important; flex-wrap: wrap !important; gap: 10px !important; margin: 0 0 10px !important; }
 .sjc-cc-chips button {
-  width: 100%; min-height: 50px; border-radius: 999px; border: 2px solid #0A0E27; background: #0A0E27;
-  color: #ffd700; font-size: 15px; font-weight: 800; cursor: pointer; padding: 8px 16px;
+  flex: 1 1 46% !important; min-height: 62px !important; border-radius: 999px !important;
+  border: 2px solid #0A0E27 !important; background: #0A0E27 !important; color: #ffd700 !important;
+  font-size: 15px !important; font-weight: 800 !important; cursor: pointer; padding: 8px 14px !important;
 }
-.sjc-cc-slots { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.sjc-cc-slots { display: flex !important; flex-wrap: wrap !important; gap: 10px !important; margin: 0 0 10px !important; }
 .sjc-cc-slots button {
-  flex: 1 1 30%; min-height: 50px; border-radius: 14px; border: 2px solid #0A0E27; background: #fff;
-  color: #0A0E27; font-size: 15px; font-weight: 800; cursor: pointer;
+  flex: 1 1 30% !important; min-height: 54px !important; border-radius: 14px !important;
+  border: 2px solid #1a3fb0 !important; background: #eef3ff !important; color: #0A0E27 !important;
+  font-size: 15px !important; font-weight: 800 !important; cursor: pointer;
 }
-.sjc-cc-slots button.sjc-cc-picked { background: #0A0E27; color: #fff; }
+.sjc-cc-slots button.sjc-cc-picked { background: #1a3fb0 !important; color: #fff !important; }
 .sjc-cc-names { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .sjc-cc-line {
-  display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 2px solid #0A0E27;
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 2px solid #dfe6f3 !important;
   border-radius: 14px; margin-bottom: 8px; min-height: 50px; cursor: pointer;
 }
-.sjc-cc-k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #0A0E27; font-weight: 800; width: 54px; flex: none; }
+.sjc-cc-k { font-size: 11px !important; letter-spacing: .06em; text-transform: uppercase; color: #0A0E27 !important; font-weight: 700; width: 54px; flex: none; }
 .sjc-cc-names .sjc-cc-k { width: auto; }
-.sjc-cc-v { font-size: 18px; font-weight: 800; flex: 1; min-width: 0; overflow-wrap: anywhere; color: #0A0E27; }
-.sjc-cc-fix { font-size: 13px; font-weight: 800; color: #1a3fb0; text-decoration: underline; flex: none; }
-.sjc-cc-line.sjc-cc-ask .sjc-cc-v { color: #1a3fb0; font-weight: 700; font-size: 14px; }
-.sjc-cc-line.sjc-cc-flash { border-color: #85bb65; background: #f1f9ec; }
-.sjc-cc-input { flex: 1; min-width: 0; font-size: 18px; font-weight: 800; border: 0; outline: 0; background: transparent; color: #0A0E27; }
+.sjc-cc-v { font-size: 18px !important; font-weight: 800 !important; flex: 1; min-width: 0; overflow-wrap: anywhere; color: #0A0E27 !important; }
+.sjc-cc-fix { font-size: 13px !important; font-weight: 700 !important; color: #1a3fb0 !important; text-decoration: underline; flex: none; }
+.sjc-cc-line.sjc-cc-ask .sjc-cc-v { color: #1a3fb0 !important; font-weight: 700 !important; font-size: 15px !important; }
+.sjc-cc-line.sjc-cc-flash { border-color: #85bb65 !important; background: #f1f9ec; }
+.sjc-cc-input { flex: 1; min-width: 0; font-size: 18px; font-weight: 800; border: 0; outline: 0; background: transparent; color: #0A0E27 !important; }
 .sjc-cc-ok {
-  width: 100%; min-height: 52px; border: 0; border-radius: 16px; background: #85bb65; color: #08200a;
-  font-size: 18px; font-weight: 900; cursor: pointer; margin-top: 4px;
+  width: 100% !important; min-height: 54px !important; border: 0 !important; border-radius: 16px !important;
+  background: #85bb65 !important; color: #08200a !important; font-size: 19px !important; font-weight: 900 !important;
+  cursor: pointer; margin-top: 4px;
 }
-.sjc-cc-done { text-align: center; padding: 8px 0 2px; }
-.sjc-cc-done-big { font-size: 20px; font-weight: 900; color: #1b6b2a; }
-.sjc-cc-done-when { color: #0A0E27; font-weight: 800; margin-top: 2px; }
-.sjc-cc-add { display: inline-block; margin-top: 6px; color: #1a3fb0; font-weight: 800; }
-.sjc-cc-status { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: #1a3fb0; text-align: center; }
+.sjc-cc-done { text-align: center; padding: 6px 0 2px; }
+.sjc-cc-done-big { font-size: 21px !important; font-weight: 900 !important; color: #1b6b2a !important; }
+.sjc-cc-done-when { color: #0A0E27 !important; font-weight: 800; margin-top: 2px; }
+.sjc-cc-add { display: inline-block; margin-top: 6px; color: #1a3fb0 !important; font-weight: 800; }
+.sjc-cc-status { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: #1a3fb0 !important; text-align: center; }
 @media (max-width: 640px) {
-  .sjc-cc-title { font-size: 13px; }
+  .sjc-cc-title { font-size: 14px !important; }
   .sjc-cc-v, .sjc-cc-input { font-size: 17px; }
   .sjc-cc-line { min-height: 46px; padding: 6px 10px; }
+  .sjc-cc-chips button, .sjc-cc-slots button { min-height: 54px !important; }
 }
 
 /* ⭐ SECTION HEADINGS COME DOWN TWO STEPS (2026-09-01, Steven pointing at "In 2024 the math
