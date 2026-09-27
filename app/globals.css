@@ -1006,7 +1006,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-pills][data-sjc-pills] { align-items: flex-start !important; }
   [data-sjc-cta-col][data-sjc-cta-col] { display: none; }
   [data-sjc-cta-row][data-sjc-cta-row] { display: block; margin-top: 0 !important; }
-  [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 300px !important; }
+  [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 300px !important; max-width: none !important; }
   /* the cutout carries transparent margin; scale him up from his base so he reads at column size */
   .sjc-twin-stage .sjc-twin-video { transform: scale(1.22); transform-origin: 50% 100%; }
   /* the twin column rises beside the eyebrow (the eyebrow's right side is empty), so the six systems
@@ -1913,4 +1913,7 @@ a.sjc-sys-card--layer:focus-visible {
 .th-strip .th-strip-group > div button { color: #111827; }
 
 /* the lower Book A Call exists for the laptop layout only (09-26) */
-@media (max-width: 1023px) { [data-sjc-cta-row][data-sjc-cta-row] { display: none; } }
+@media (max-width: 1023px) {
+  [data-sjc-cta-row][data-sjc-cta-row] { display: none; }
+  [data-sjc-twin-col] img[data-sjc-img="i1"] { width: min(100%, 400px) !important; max-width: none !important; }
+}
