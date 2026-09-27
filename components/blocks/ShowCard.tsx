@@ -56,8 +56,8 @@ export default function ShowCard() {
           <span style={{ fontSize: "0.38em", marginLeft: 10, opacity: 0.9 }}>hours</span>
         </div>
       </div>
-      <div style={{ flex: 1, minHeight: 0, width: "100%", display: "flex", justifyContent: "center", alignItems: "flex-end", marginTop: "1.5%" }}>
-        <img src={PHOTO} alt="Steven Barchetti" style={{ height: "100%", width: "auto", maxWidth: "90%", objectFit: "contain", objectPosition: "bottom", transform: "scale(1.2)", transformOrigin: "50% 100%" }} />
+      <div style={{ flex: 1, minHeight: 0, width: "100%", display: "flex", justifyContent: "center", alignItems: "flex-end", marginTop: "7%" }}>
+        <img src={PHOTO} alt="Steven Barchetti" style={{ height: "100%", width: "auto", maxWidth: "90%", objectFit: "contain", objectPosition: "bottom", transform: "scale(1.14)", transformOrigin: "50% 100%" }} />
       </div>
     </div>,
     host
