@@ -1029,9 +1029,12 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > * { margin-top: 0 !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > h1 { margin: 36px 0 18px !important; font-size: 34px !important; }
+  /* the six systems stay close together - a package, not a spread (09-26); the left side centres on the twin */
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child {
-    flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+    display: flex; flex-direction: column; gap: 14px;
   }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child > * { margin: 0 !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child { justify-content: center; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child p { font-size: 19px !important; }
   /* THE OTHER PAGES (09-26): pill, headline, gold line, body - no six-systems list to spread. The left
      column runs the twin column's full height: pill level with the orb, the body text ending level
