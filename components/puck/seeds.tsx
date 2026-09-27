@@ -296,7 +296,7 @@ const HOME_SEED: Data = {
       { type: "Text", props: { id: "apply-eyebrow", text: "If you want in", align: "center", color: "#2563eb" } },
       { type: "Heading", props: { id: "apply-h2", text: "We're not for everybody — and that's on purpose.", align: "center" } },
       { type: "Text", props: { id: "apply-body", text: "We don't bolt this onto every business that asks. We take on a limited number of owners at a time, because we build and run each one by hand — and we'd rather do a few right than a lot halfway. So the next step isn't a sales pitch. It's an application. Tell us about your business. If it's a fit, we'll get on a call, show you exactly where your first hire plugs in and what it would look like on day one, and talk about what it costs. If it's not, we'll tell you that straight too. No pressure, no pitch deck — just a real conversation between people who run businesses.", align: "center" } },
-      { type: "Button", props: { id: "apply-btn", title: "Apply to work with me", subtitle: "Tell us about your business. If it's a fit, we'll talk.", href: "/apply" } },
+      { type: "Button", props: { id: "apply-btn", title: "Apply to work with me", subtitle: "Tell us about your business. If it's a fit, we'll talk.", href: "#book" } },
       { type: "PhoneLink", props: { id: "apply-phone", label: "Or call me directly: (210) 851-4906", tel: "+12108514906" } },
     ] } },
   ],

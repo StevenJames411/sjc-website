@@ -28,7 +28,6 @@ const SJC_PAGES: { path: string; priority: number }[] = [
   { path: "/faqs", priority: 0.7 },
   // /websites is deliberately absent: the studio moved to its own domain and that address only
   // forwards. A sitemap listing a redirect tells Google to index the redirect.
-  { path: "/apply", priority: 0.6 },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
