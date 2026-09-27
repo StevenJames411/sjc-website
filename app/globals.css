@@ -1982,7 +1982,7 @@ a.sjc-sys-card--layer:focus-visible {
   /* the player column is the wide one, so the player (not padding) fills the screen height */
   [data-sjc-fhl-split][data-sjc-fhl-split] { grid-template-columns: 4fr 7fr !important; column-gap: 56px !important; }
   [data-sjc-fhl-pill] { margin-bottom: 28px !important; padding: 12px 24px !important; }
-  [data-sjc-fhl-pill] strong { font-size: 34px !important; }
+  [data-sjc-fhl-pill][data-sjc-fhl-pill] strong { font-size: 32px !important; }
   [data-sjc-fhl-split] h1 { font-size: 34px !important; line-height: 1.25 !important; margin: 0 !important; }
   [data-sjc-fhl-split] h1 + p { font-size: 22px !important; line-height: 1.75 !important; margin-top: 22px !important; }
 }
@@ -1990,6 +1990,6 @@ a.sjc-sys-card--layer:focus-visible {
 @media (max-width: 1023px) { [data-sjc-fhl-pill] { font-size: 17px !important; border-radius: 1.25rem !important; } [data-sjc-fhl-split] h1 { font-size: 26px !important; } }
 
 /* the pill: show name big and gold, the time smaller, on one line (stacked on a phone) */
-[data-sjc-fhl-pill] strong { color: #ffd700 !important; font-size: 26px; display: inline-block; margin-right: 18px; }
-[data-sjc-fhl-pill] [data-sjc-fhl-time] { font-size: 20px; font-weight: 700; display: inline-block; }
+[data-sjc-fhl-pill][data-sjc-fhl-pill] strong { color: #ffd700 !important; font-size: 26px; display: inline-block; margin-right: 18px; vertical-align: middle; }
+[data-sjc-fhl-pill][data-sjc-fhl-pill] [data-sjc-fhl-time] { font-size: 20px !important; font-weight: 700; display: inline-block; vertical-align: middle; }
 @media (max-width: 1023px) { [data-sjc-fhl-pill] strong { display: block; margin: 0 0 2px; } [data-sjc-fhl-pill] [data-sjc-fhl-time] { font-size: 16px; } }
