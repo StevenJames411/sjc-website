@@ -1018,7 +1018,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
      the whole left side - eyebrow, headline, six systems - is centred against the orb + photo. */
   .sjc-design.sjc-design [data-sjc-hero-split]:has([data-sjc-twin-col]) { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 80px !important; align-items: center !important; }
   [data-sjc-eyebrow][data-sjc-eyebrow] { display: none !important; }
-  [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: block !important; margin-bottom: 0; font-size: 26px; }
+  [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: block !important; margin-bottom: 0; font-size: 28px; }
   /* THE LEFT COLUMN FILLS THE TWIN'S HEIGHT (09-26): no padding band above or below the words - the
      eyebrow starts level with the orb, the last system ends level with his picture, and the six
      systems spread across the height between. */
@@ -1034,7 +1034,11 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
     display: flex; flex-direction: column; gap: 14px;
   }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child > * { margin: 0 !important; }
-  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child { justify-content: center; }
+  /* HOME ONLY: the left column runs orb-top to photo-bottom. The six systems stay a tight group; the height
+     goes between the three blocks (eyebrow · headline · list), never inside the list. */
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child { justify-content: space-between; padding-bottom: 0 !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > h1 { margin: 0 !important; font-size: 38px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > div:last-child { gap: 20px; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child p { font-size: 19px !important; }
   /* THE OTHER PAGES (09-26): pill, headline, gold line, body - no six-systems list to spread. The left
      column runs the twin column's full height: pill level with the orb, the body text ending level
