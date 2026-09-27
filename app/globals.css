@@ -1032,6 +1032,15 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
     flex: 1; display: flex; flex-direction: column; justify-content: space-between;
   }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child p { font-size: 20px !important; }
+  /* THE OTHER PAGES (09-26): pill, headline, gold line, body - no six-systems list to spread. The left
+     column runs the twin column's full height: pill level with the orb, the body text ending level
+     with Book A Call, and the words a size up so the height is filled with text, not air. */
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child {
+    justify-content: space-between; padding-bottom: 6px !important;
+  }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child {
+    font-size: 21px !important; line-height: 1.75 !important;
+  }
 }
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
