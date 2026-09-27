@@ -1037,7 +1037,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   /* HOME ONLY: the left column runs orb-top to photo-bottom. The six systems stay a tight group; the height
      goes between the three blocks (eyebrow · headline · list), never inside the list. */
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child { justify-content: space-between; padding-bottom: 0 !important; }
-  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > h1 { margin: 0 !important; font-size: 38px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > h1 { margin: 0 !important; font-size: 34px !important; white-space: nowrap; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > div:last-child { gap: 20px; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child p { font-size: 19px !important; }
   /* THE OTHER PAGES (09-26): pill, headline, gold line, body - no six-systems list to spread. The left
