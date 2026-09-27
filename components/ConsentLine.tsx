@@ -15,7 +15,7 @@ import { useBusiness } from "@/components/blocks/SiteContext";
  *
  * `className` is caller-supplied on purpose: an imported design's own text colour, a dark hero
  * card and a plain white card all mute text differently, and this has no ambient style of its
- * own to fall back on. The default relies on INHERITED colour + opacity rather than a hardcoded
+ * own to fall back on. The default relies on INHERITED colour (no opacity: Steven rules out faded text) rather than a hardcoded
  * shade — the only version that reads on both a white section and a dark one with no caller effort.
  */
 /**
@@ -34,7 +34,7 @@ export default function ConsentLine({
   businessName,
   why = "appointment",
   reason,
-  className = "mt-3 text-center text-xs opacity-70",
+  className = "mt-3 text-center text-xs",
   id,
 }: {
   businessName?: string;

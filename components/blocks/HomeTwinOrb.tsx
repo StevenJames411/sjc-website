@@ -31,6 +31,11 @@ const SPEAKER_SVG =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
   '<path d="M5.2 9.7v4.6h2.3l3.2 2.8V6.9L7.5 9.7z" /><path d="M13.3 9.6a3.4 3.4 0 0 1 0 4.8" />' +
   '<path d="M15.4 7.6a6.2 6.2 0 0 1 0 8.8" /></svg>';
+// Steven 09-27: idle wears the MUTED speaker (the "tap me" look); a stop tap returns to it.
+const MUTED_SVG =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
+  '<path d="M5.2 9.7v4.6h2.3l3.2 2.8V6.9L7.5 9.7z" /><path d="M13.3 9.6a3.4 3.4 0 0 1 0 4.8" />' +
+  '<path d="M15.4 7.6a6.2 6.2 0 0 1 0 8.8" /><path d="M4.9 4.9 19.1 19.1" /></svg>';
 const MIC_SVG =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
   '<rect x="9.6" y="5.6" width="4.8" height="8.2" rx="2.4" /><path d="M7.4 11.6a4.6 4.6 0 0 0 9.2 0" />' +
@@ -43,7 +48,7 @@ const DOTS_SVG =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
   '<circle cx="8" cy="12" r="0.9" /><circle cx="12" cy="12" r="0.9" /><circle cx="16" cy="12" r="0.9" /></svg>';
 const ICON: Record<string, string> = {
-  idle: SPEAKER_SVG, on: MIC_SVG, listening: MIC_SVG, thinking: DOTS_SVG, speaking: WAVES_SVG, typing: SPEAKER_SVG,
+  idle: MUTED_SVG, on: MIC_SVG, listening: MIC_SVG, thinking: DOTS_SVG, speaking: WAVES_SVG, typing: SPEAKER_SVG,
 };
 const TAGLINE: Record<string, string> = {
   idle: "Tap and talk to me about growing your business.",
