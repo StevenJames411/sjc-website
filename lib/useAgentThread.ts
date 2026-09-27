@@ -62,6 +62,10 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
   // an idle mic after a few seconds, onend reopened it, and startListening PAUSED the voice — the
   // reply cut off mid-word and the film looped. While this is true, the mic stays shut.
   const speakingRef = useRef(false);
+  // ⛔ NEVER REPLAY (09-27): the thread follows the visitor across pages, and the voice spoke every
+  // reply this page load hadn't spoken — so the home orb opened with the Speed to Lead greeting.
+  // A tap speaks only what arrives after it.
+  const skipBacklog = useRef(false);
 
   useEffect(() => {
     session.current = sessionId();
@@ -86,6 +90,11 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
       const r = await fetch(`${AGENT_API}/${AGENT_PREFIX}/web/thread?session=${encodeURIComponent(session.current)}&after=${lastId.current}`);
       const j = await r.json();
       const fresh: Msg[] = j.messages || [];
+      if (skipBacklog.current) {
+        // The first answer after a tap is the history this visitor already had — shown, never re-spoken.
+        skipBacklog.current = false;
+        fresh.forEach((x) => { if (x.direction === "outbound") spoken.current.add(x.id); });
+      }
       if (fresh.length) {
         lastId.current = fresh[fresh.length - 1].id;
         setMsgs((m) => [
@@ -257,6 +266,9 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
       a.play().catch(() => {});
       window.speechSynthesis?.speak(new SpeechSynthesisUtterance(""));
     } catch { /* no audio on this device */ }
+    setMsgs((m) => { m.forEach((x) => { if (x.direction === "outbound") spoken.current.add(x.id); }); return m; });
+    skipBacklog.current = true;
+    poll();
     handsFree.current = true;
     setVoiceOn(true);
     setActive(true);
