@@ -33,7 +33,9 @@ export function prepTwinCol(html: string): string {
   const imgStart = html.lastIndexOf("<img", imgAt);
   const imgEnd = html.indexOf(">", imgAt) + 1;
   const wrapStart = html.lastIndexOf("<div", imgStart);
-  if (imgStart < 0 || imgEnd <= 0 || wrapStart < col) return html;
+  // On home the photo's wrapper IS the twin column (the attribute sits on it); on the system pages the
+  // wrapper is inside the column. Either is fine — it only has to start at or after the column's tag.
+  if (imgStart < 0 || imgEnd <= 0 || wrapStart < html.lastIndexOf("<", col)) return html;
   const wrapEnd = html.indexOf(">", wrapStart) + 1;
 
   let img = html.slice(imgStart, imgEnd).replace(/\s(?:srcset|sizes)="[^"]*"/g, "");
