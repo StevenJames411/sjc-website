@@ -26,7 +26,7 @@ function status(now: Date) {
   if (!(weekday && nowSecs < 11 * 3600)) { add = 86400 - nowSecs; d = (d + 1) % 7; while (d === 0 || d === 6) { add += 86400; d = (d + 1) % 7; } add += 11 * 3600; }
   else add = 11 * 3600 - nowSecs;
   const names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const label = add < 86400 && d === c.day ? "Today" : add < 2 * 86400 && d === (c.day + 1) % 7 ? "Tomorrow" : names[d];
+  const label = d === c.day ? "Today" : names[d];
   return { live: false, secs: add, label };
 }
 
@@ -51,6 +51,7 @@ export default function ShowCard() {
         <div style={{ fontWeight: 700, fontSize: "clamp(22px,2.6vw,38px)", lineHeight: 1.15, marginTop: 8 }}>{s.label}, 11 a.m. Central</div>
         <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(26px,3.4vw,52px)", marginTop: 14, color: "#ffd700" }}>
           {hh}:{pad(mm)}:{pad(ss)}
+          <span style={{ fontSize: "0.38em", marginLeft: 10, opacity: 0.9 }}>hours</span>
         </div>
         <div style={{ opacity: 0.8, marginTop: 10, fontSize: 15 }}>Live here, YouTube and Facebook.</div>
       </div>
