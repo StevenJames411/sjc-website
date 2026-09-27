@@ -1977,7 +1977,8 @@ a.sjc-sys-card--layer:focus-visible {
    nav like the twin pages. Same type sizes as the twin pages; never bigger to fill space. */
 @media (min-width: 1024px) {
   section:has([data-sjc-fhl-split]) {
-    padding-top: 28px !important; padding-bottom: 32px !important;
+    min-height: calc(100vh - 76px) !important; justify-content: center !important;
+    padding-top: 56px !important; padding-bottom: 56px !important;
   }
   /* the player column is the wide one, so the player (not padding) fills the screen height */
   [data-sjc-fhl-split][data-sjc-fhl-split] { grid-template-columns: 4fr 7fr !important; column-gap: 56px !important; }
