@@ -970,6 +970,16 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-hero-split][data-sjc-hero-split] > div[class] {
     order: 0;
   }
+  /* ⭐ REVERSED 2026-09-26 (Steven: "my picture is getting buried down the page"). The eyebrow now
+     sits in its own full-width row ABOVE this split, so the words already come first on a phone;
+     the portrait (and the twin that replaces it) follows the eyebrow, then the six systems. */
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:last-child {
+    order: -1;
+  }
+  /* The eyebrow centres on a phone, over the centred portrait; the desktop keeps it left. */
+  [data-sjc-eyebrow][data-sjc-eyebrow] {
+    text-align: center;
+  }
 }
 
 /* ⭐ SECTION HEADINGS COME DOWN TWO STEPS (2026-09-01, Steven pointing at "In 2024 the math
