@@ -1122,7 +1122,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   margin: 0 0 10px !important; font-size: 15px !important; letter-spacing: .07em !important;
   text-transform: uppercase !important; color: #1a3fb0 !important; font-weight: 800 !important;
 }
-.sjc-cc-hint { margin: -4px 0 12px !important; font-size: 13px !important; line-height: 1.35 !important; color: #5b6785 !important; }
+.sjc-cc-hint { margin: -4px 0 12px !important; font-size: 13px !important; line-height: 1.35 !important; color: #0A0E27 !important; }
 .sjc-cc-chips { display: flex !important; flex-wrap: wrap !important; gap: 10px !important; margin: 0 0 10px !important; }
 .sjc-cc-chips button {
   flex: 1 1 46% !important; min-height: 62px !important; border-radius: 999px !important;
@@ -1141,7 +1141,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 2px solid #dfe6f3 !important;
   border-radius: 14px; margin-bottom: 8px; min-height: 50px; cursor: pointer;
 }
-.sjc-cc-k { font-size: 11px !important; letter-spacing: .06em; text-transform: uppercase; color: #5b6785 !important; font-weight: 700; width: 54px; flex: none; }
+.sjc-cc-k { font-size: 11px !important; letter-spacing: .06em; text-transform: uppercase; color: #0A0E27 !important; font-weight: 700; width: 54px; flex: none; }
 .sjc-cc-names .sjc-cc-k { width: auto; }
 .sjc-cc-v { font-size: 18px !important; font-weight: 800 !important; flex: 1; min-width: 0; overflow-wrap: anywhere; color: #0A0E27 !important; }
 .sjc-cc-fix { font-size: 13px !important; font-weight: 700 !important; color: #1a3fb0 !important; text-decoration: underline; flex: none; }
