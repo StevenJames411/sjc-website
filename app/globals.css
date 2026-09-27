@@ -1994,3 +1994,7 @@ a.sjc-sys-card--layer:focus-visible {
 [data-sjc-fhl-pill][data-sjc-fhl-pill] strong { color: #ffd700 !important; font-size: 26px; display: inline-block; margin-right: 18px; vertical-align: middle; }
 [data-sjc-fhl-pill][data-sjc-fhl-pill] [data-sjc-fhl-time] { font-size: 20px !important; font-weight: 700; display: inline-block; vertical-align: middle; }
 @media (max-width: 1023px) { [data-sjc-fhl-pill] strong { display: block; margin: 0 0 2px; } [data-sjc-fhl-pill] [data-sjc-fhl-time] { font-size: 16px; } }
+@media (min-width: 1024px) {
+  /* centre the content in the full-screen hero: the container takes equal auto margins in the flex column */
+  section:has([data-sjc-fhl-split]) > .container { margin-top: auto !important; margin-bottom: auto !important; }
+}
