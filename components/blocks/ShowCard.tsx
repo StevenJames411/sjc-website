@@ -51,14 +51,13 @@ export default function ShowCard() {
           <span style={{ color: "#ffd700", letterSpacing: ".12em", textTransform: "uppercase", fontSize: "0.7em", marginRight: 14 }}>Next show</span>
           {s.label}, 11 a.m. Central
         </div>
-        <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(32px,3.8vw,58px)", color: "#ffd700", lineHeight: 1.1, marginTop: 6 }}>
+        <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(26px,3vw,46px)", color: "#ffd700", lineHeight: 1.1, marginTop: 6 }}>
           {hh}:{pad(mm)}:{pad(ss)}
           <span style={{ fontSize: "0.38em", marginLeft: 10, opacity: 0.9 }}>hours</span>
         </div>
-        <div style={{ opacity: 0.85, marginTop: 6, fontSize: "clamp(14px,1.2vw,17px)" }}>Live here, YouTube and Facebook.</div>
       </div>
-      <div style={{ flex: 1, minHeight: 0, width: "100%", display: "flex", justifyContent: "center", alignItems: "flex-end", marginTop: "1.5%" }}>
-        <img src={PHOTO} alt="Steven Barchetti" style={{ height: "100%", width: "auto", maxWidth: "90%", objectFit: "contain", objectPosition: "bottom", transform: "scale(1.1)", transformOrigin: "50% 100%" }} />
+      <div style={{ flex: 1, minHeight: 0, width: "100%", display: "flex", justifyContent: "center", alignItems: "flex-end", marginTop: "9%" }}>
+        <img src={PHOTO} alt="Steven Barchetti" style={{ height: "100%", width: "auto", maxWidth: "90%", objectFit: "contain", objectPosition: "bottom", transform: "scale(1.24)", transformOrigin: "50% 100%" }} />
       </div>
     </div>,
     host
