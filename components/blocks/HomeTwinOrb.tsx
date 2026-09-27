@@ -93,10 +93,15 @@ export default function HomeTwinOrb() {
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(img);
+    // The orb slot and the reshaped photo move the photo AFTER the first measure, and a moved box fires
+    // no resize - observe the column too, and re-measure once fonts and layout settle.
+    ro.observe(container);
+    const settle = [150, 600, 1500].map((ms) => window.setTimeout(measure, ms));
     window.addEventListener("resize", measure);
     window.addEventListener("scroll", measure, { passive: true });
     return () => {
       ro.disconnect();
+      settle.forEach(clearTimeout);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure);
     };
