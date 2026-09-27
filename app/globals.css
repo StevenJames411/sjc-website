@@ -2013,3 +2013,7 @@ a.sjc-sys-card--layer:focus-visible {
   [data-sjc-fhl-split] > div:last-child { display: flex; }
   [data-sjc-fhl-player][data-sjc-fhl-player] { aspect-ratio: auto !important; height: 100% !important; }
 }
+
+/* ⛔ THE LOGO HOLDS ITS SPACE BEFORE IT LOADS (09-27, Steven's Loom): the nav logo had a height and no
+   width, so on refresh it was 0px wide for a beat and "Steven James Consulting" jumped left, then back. */
+img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }

@@ -353,7 +353,7 @@ export default function TalkingHero(p: Partial<TalkingHeroProps> & { edit?: Hero
     if (as === "talk") t.startHandsFree(); else t.setActive(true);
     if (!started.current) {
       started.current = true;
-      t.send("Hi", { hidden: true });
+      t.send("Hi", { hidden: true, open: true });
     }
   }
   function toggleTalk() {
