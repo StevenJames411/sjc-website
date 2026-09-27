@@ -55,7 +55,7 @@ export default function ShowCard() {
         </div>
         <div style={{ opacity: 0.8, marginTop: 10, fontSize: 15 }}>Live here, YouTube and Facebook.</div>
       </div>
-      <img src={PHOTO} alt="Steven Barchetti" style={{ height: "92%", alignSelf: "flex-end", marginRight: "3%" }} />
+      <img src={PHOTO} alt="Steven Barchetti" style={{ maxHeight: "86%", maxWidth: "46%", width: "auto", height: "auto", objectFit: "contain", alignSelf: "flex-end", marginRight: "5%", flexShrink: 0 }} />
     </div>,
     host
   );
