@@ -34,7 +34,11 @@ export default function ShowCard() {
   const [host, setHost] = useState<Element | null>(null);
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
-    setHost(document.querySelector("[data-sjc-fhl-player]"));
+    const el = document.querySelector("[data-sjc-fhl-player]");
+    // Lifts the server-painted cover in globals.css (see "FHL PLAYER COVER"). Until this runs the
+    // player shows that cover, never YouTube's "This video is unavailable".
+    el?.setAttribute("data-fhl-ready", "");
+    setHost(el);
     setNow(new Date());
     const t = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(t);

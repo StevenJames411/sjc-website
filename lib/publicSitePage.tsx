@@ -200,7 +200,12 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
     propOf(data, "Heading", "text") ||
     "";
   const businessName = str("businessName") || site.seo?.businessName || label;
-  const ogImage = str("shareImage") || site.seo?.shareImage || firstImage(data);
+  // ⛔ SJC'S OWN PAGES FALL BACK TO THE GENERATED CARD (app/opengraph-image.tsx). Setting
+  // `openGraph` here REPLACES the inherited block, file-based image included, so "leave it unset
+  // and the card keeps winning" was false: 18 of 20 SJC pages shared with no picture and a
+  // `summary` twitter card (measured 2026-09-27). Client sites keep the honest no-image case.
+  const ogImage =
+    str("shareImage") || site.seo?.shareImage || firstImage(data) || (site.id === SJC ? "/opengraph-image" : "");
 
   const openGraph = {
         title: title || businessName,

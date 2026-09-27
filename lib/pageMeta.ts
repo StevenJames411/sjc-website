@@ -69,6 +69,7 @@ export async function pageMetadata(slug: string, fb: PageMetaFallback) {
   const ogTitle = set || fb.ogTitle || fb.title || SITE_DEFAULTS.ogTitle;
   const ogDescription = setDesc || fb.ogDescription || fb.description || SITE_DEFAULTS.ogDescription;
   const siteName = str("businessName") || SITE_NAME;
+  const card = shareImage || (slug === "websites" ? "" : "/opengraph-image");
 
   return {
     title: { absolute: title },
@@ -80,15 +81,17 @@ export async function pageMetadata(slug: string, fb: PageMetaFallback) {
       url: fb.path,
       siteName,
       type: "website" as const,
-      // Left unset unless a picture was chosen, so the generated card in the nearest
-      // opengraph-image.tsx keeps winning — setting `images` here would override it.
-      ...(shareImage ? { images: [shareImage] } : {}),
+      // ⛔ Set by default. Declaring `openGraph` here REPLACES the inherited block, file-based
+      // image included — leaving `images` unset shipped pages with no picture (09-27). The
+      // fallback IS the generated card from app/opengraph-image.tsx, named explicitly.
+      // The studio's own page ("websites") is not SJC's AI card, so it keeps no fallback.
+      ...(card ? { images: [card] } : {}),
     },
     twitter: {
       card: "summary_large_image" as const,
       title: ogTitle,
       description: ogDescription,
-      ...(shareImage ? { images: [shareImage] } : {}),
+      ...(card ? { images: [card] } : {}),
     },
   };
 }
