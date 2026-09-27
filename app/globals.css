@@ -1002,6 +1002,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-orb-slot] .sjc-twin-orb svg { width: 44px; height: 44px; }
   .sjc-twin-tagline { margin-top: 40px; font-size: 15px; }
   [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 290px !important; }
+  .sjc-design.sjc-design [data-sjc-hero-split] { grid-template-columns: minmax(0, 1fr) 340px !important; align-items: center !important; }
 }
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
