@@ -71,8 +71,24 @@ export default function HomeTwinOrb() {
         orbLeft: imgRect.left - colRect.left + imgRect.width / 2,
       });
     }
+    // THE ORB TAKES REAL SPACE (09-26): pinned over the old photo it floated into the section top on
+    // a laptop and onto the eyebrow on a phone. A slot in the flow, above the photo's wrapper, holds it.
+    const wrap = img.parentElement as HTMLElement;
+    if (!container.querySelector("[data-sjc-orb-slot]")) {
+      const slot = document.createElement("div");
+      slot.setAttribute("data-sjc-orb-slot", "");
+      slot.style.cssText = "display:flex;justify-content:center;padding:52px 0 44px";
+      wrap.parentElement!.insertBefore(slot, wrap);
+    }
+    // The photo box takes the cutout's own shape (900x810), so there is no dead band under him.
+    img.style.visibility = "hidden";
+    img.style.aspectRatio = "10 / 9";
+    img.style.width = "78%";
+    img.style.height = "auto";
+    img.style.objectFit = "cover";
+    wrap.style.paddingTop = "0";
+    wrap.style.paddingBottom = "0";
     measure();
-    img.style.visibility = "hidden"; // the white-polo cutout takes the photo's place
     const ro = new ResizeObserver(measure);
     ro.observe(img);
     window.addEventListener("resize", measure);
@@ -97,20 +113,19 @@ export default function HomeTwinOrb() {
   }
 
   if (!container || !box || !t.ready) return null;
+  const slot = container.querySelector("[data-sjc-orb-slot]");
 
   const state = t.listening ? "listening" : t.speaking ? "speaking" : t.busy ? "thinking" : "idle";
   const talkSrc = MEDIA + "talking-cutout" + ext.current;
   const listenSrc = MEDIA + "listening-cutout" + ext.current;
   const poster = MEDIA + "twin-cutout.webp";
 
-  return createPortal(
-    <>
+  const orb = (
       <button
         type="button"
         className="sjc-twin-orb"
         aria-label={talkOn ? "Tap to stop talking to Steven" : "Tap and I'll talk to you"}
         onClick={toggle}
-        style={{ position: "absolute", left: box.orbLeft, top: box.orbTop, transform: "translateX(-50%)", zIndex: 3 }}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="10" />
@@ -120,6 +135,11 @@ export default function HomeTwinOrb() {
           <path d="M4.9 4.9 19.1 19.1" />
         </svg>
       </button>
+  );
+
+  return createPortal(
+    <>
+      {slot && createPortal(orb, slot)}
       <div
         className="sjc-twin-stage"
         data-state={state}
