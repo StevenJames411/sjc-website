@@ -1998,3 +1998,7 @@ a.sjc-sys-card--layer:focus-visible {
   /* centre the content in the full-screen hero: the container takes equal auto margins in the flex column */
   section:has([data-sjc-fhl-split]) > .container { margin-top: auto !important; margin-bottom: auto !important; }
 }
+@media (min-width: 1024px) {
+  /* the design sheet forces the section to display:block, so centring is done as a grid with doubled specificity */
+  section.code-section.code-section:has([data-sjc-fhl-split]) { display: grid !important; align-content: center !important; }
+}
