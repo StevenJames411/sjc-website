@@ -982,6 +982,43 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   }
 }
 
+/* ⭐ THE HOME HERO'S TALK ORB (2026-09-26) — Kay's orb (kay-barchetti-demo.vercel.app) and
+   Steven's own talking-hero demo (agent-sjc.onrender.com/sjc/roleplay/home) share this exact
+   look: a gold orb with three rings of falling opacity, breathing on a pulse, over a cutout that
+   crossfades to a talking or listening film while the call is live. HomeTwinOrb.tsx portals both
+   into `[data-sjc-twin-col]`, absolutely positioned against the photo's own measured box — so
+   this rule only ever draws pixels, never layout; the column's height is unchanged with or
+   without JS. */
+[data-sjc-twin-col] { overflow: visible; }
+.sjc-twin-orb {
+  width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #ffd700; cursor: pointer; animation: sjctwinpulse 2.6s ease-in-out infinite;
+}
+@keyframes sjctwinpulse {
+  0%, 100% { box-shadow: 0 0 0 10px rgba(255,215,0,.22), 0 0 0 22px rgba(255,215,0,.12), 0 0 0 36px rgba(255,215,0,.06), 0 0 40px 18px rgba(255,215,0,.18); }
+  50% { box-shadow: 0 0 0 14px rgba(255,215,0,.26), 0 0 0 30px rgba(255,215,0,.14), 0 0 0 48px rgba(255,215,0,.07), 0 0 56px 26px rgba(255,215,0,.24); }
+}
+.sjc-twin-orb svg { width: 54px; height: 54px; stroke: #0A0E27; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 640px) { .sjc-twin-orb { width: 76px; height: 76px; } .sjc-twin-orb svg { width: 48px; height: 48px; } }
+@media (prefers-reduced-motion: reduce) { .sjc-twin-orb { animation: none; } }
+/* the breathing halo behind the cutout — gold speaking, green listening, same as the roleplay hero */
+.sjc-twin-stage { pointer-events: none; }
+.sjc-twin-stage::before {
+  content: ""; position: absolute; inset: -6%; border-radius: 50%; opacity: 0; filter: blur(22px); transition: opacity .4s;
+  background: radial-gradient(ellipse at 50% 55%, rgba(255,215,0,.95) 0%, rgba(255,215,0,.45) 40%, rgba(255,215,0,0) 70%);
+}
+.sjc-twin-stage[data-state="speaking"]::before, .sjc-twin-stage[data-state="thinking"]::before { opacity: 1; animation: sjctwinbreathe 1.6s ease-in-out infinite; }
+.sjc-twin-stage[data-state="listening"]::before {
+  opacity: .85; animation: sjctwinbreathe 2.6s ease-in-out infinite;
+  background: radial-gradient(ellipse at 50% 55%, rgba(133,187,101,.9) 0%, rgba(133,187,101,.4) 40%, rgba(133,187,101,0) 70%);
+}
+@keyframes sjctwinbreathe { 0%, 100% { opacity: .45; transform: scale(.96); } 50% { opacity: 1; transform: scale(1.06); } }
+.sjc-twin-video {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: opacity .45s;
+  border-radius: 1.5rem;
+}
+
 /* ⭐ SECTION HEADINGS COME DOWN TWO STEPS (2026-09-01, Steven pointing at "In 2024 the math
    changed, and it changed in your favor" on /ai-implementation: *"whatever this font size is, drop
    it two sizes"*).
