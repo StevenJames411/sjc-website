@@ -996,9 +996,17 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    the left column down, opening a gap under the eyebrow. Both columns start at the top; the twin
    column is tightened and the tap line stays on one line. Phones untouched. */
 @media (min-width: 1024px) {
-  .sjc-design.sjc-design [data-sjc-hero-split] { align-items: start !important; }
-  [data-sjc-orb-slot] { padding: 40px 0 10px !important; }
-  .sjc-twin-tagline { margin-top: 46px; font-size: 15px; white-space: nowrap; }
+  /* compact twin column so its height sits close to the six systems; columns centred on each other */
+  [data-sjc-orb-slot] { padding: 34px 0 6px !important; }
+  [data-sjc-orb-slot] .sjc-twin-orb { width: 70px; height: 70px; }
+  [data-sjc-orb-slot] .sjc-twin-orb svg { width: 44px; height: 44px; }
+  .sjc-twin-tagline { margin-top: 40px; font-size: 14px; white-space: nowrap; }
+  [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 270px !important; }
+  /* the twin column rises beside the eyebrow (the eyebrow's right side is empty), so the six systems
+     sit right under the eyebrow and both columns end together */
+  .sjc-design.sjc-design [data-sjc-hero-split] { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 32px !important; align-items: start !important; }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:last-child { margin-top: -104px; }
+  [data-sjc-eyebrow][data-sjc-eyebrow] { max-width: calc(100% - 332px); }
 }
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
