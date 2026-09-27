@@ -1011,9 +1011,11 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   .sjc-twin-stage .sjc-twin-video { transform: scale(1.22); transform-origin: 50% 100%; }
   /* the twin column rises beside the eyebrow (the eyebrow's right side is empty), so the six systems
      sit right under the eyebrow and both columns end together */
-  .sjc-design.sjc-design [data-sjc-hero-split] { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 32px !important; align-items: start !important; }
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:last-child { margin-top: -84px; }
-  [data-sjc-eyebrow][data-sjc-eyebrow] { max-width: calc(100% - 332px); }
+  /* LEFT COLUMN CENTRED ON THE TWIN (09-26): on a laptop the eyebrow lives inside the left column, and
+     the whole left side - eyebrow, headline, six systems - is centred against the orb + photo. */
+  .sjc-design.sjc-design [data-sjc-hero-split] { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 32px !important; align-items: center !important; }
+  [data-sjc-eyebrow][data-sjc-eyebrow] { display: none !important; }
+  [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: block !important; margin-bottom: 28px; }
 }
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
@@ -1917,3 +1919,6 @@ a.sjc-sys-card--layer:focus-visible {
   [data-sjc-cta-row][data-sjc-cta-row] { display: none; }
   [data-sjc-twin-col] img[data-sjc-img="i1"] { width: min(100%, 400px) !important; max-width: none !important; }
 }
+
+/* the laptop copy of the eyebrow (inside the left column) is hidden everywhere else */
+[data-sjc-eyebrow-lg] { display: none; }
