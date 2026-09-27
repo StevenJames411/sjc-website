@@ -992,6 +992,14 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
 [data-sjc-twin-col] { overflow: visible; }
 .sjc-twin-tagline { margin-top: 54px; color: rgba(255,255,255,.88); font-size: 17px; line-height: 1.4; text-align: center; }
 @media (max-width: 640px) { .sjc-twin-tagline { font-size: 16px; margin-top: 50px; } }
+/* LAPTOP (09-26): the twin column is taller than the six systems, and the split's items-center pushed
+   the left column down, opening a gap under the eyebrow. Both columns start at the top; the twin
+   column is tightened and the tap line stays on one line. Phones untouched. */
+@media (min-width: 1024px) {
+  .sjc-design.sjc-design [data-sjc-hero-split] { align-items: start !important; }
+  [data-sjc-orb-slot] { padding: 40px 0 10px !important; }
+  .sjc-twin-tagline { margin-top: 46px; font-size: 15px; white-space: nowrap; }
+}
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
   display: flex; align-items: center; justify-content: center;
