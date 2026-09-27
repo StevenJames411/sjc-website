@@ -46,16 +46,16 @@ export default function ShowCard() {
   const pad = (n: number) => String(n).padStart(2, "0");
   return createPortal(
     <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", alignItems: "center", background: "radial-gradient(ellipse at 70% 60%, #1b2a6b 0%, #0A0E27 70%)", overflow: "hidden" }}>
-      <div style={{ flex: 1, padding: "0 6%", color: "#fff", fontFamily: "var(--font-family-body)" }}>
-        <div style={{ color: "#ffd700", fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", fontSize: 14 }}>Next show</div>
-        <div style={{ fontWeight: 700, fontSize: "clamp(22px,2.6vw,38px)", lineHeight: 1.15, marginTop: 8 }}>{s.label}<br /><span style={{ whiteSpace: "nowrap" }}>11 a.m. Central</span></div>
-        <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(26px,3.4vw,52px)", marginTop: 14, color: "#ffd700" }}>
+      <div style={{ flex: 1, padding: "0 4% 0 7%", color: "#fff", fontFamily: "var(--font-family-body)" }}>
+        <div style={{ color: "#ffd700", fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", fontSize: "clamp(14px,1.2vw,18px)" }}>Next show</div>
+        <div style={{ fontWeight: 700, fontSize: "clamp(26px,3.1vw,46px)", lineHeight: 1.15, marginTop: 10 }}>{s.label}<br /><span style={{ whiteSpace: "nowrap" }}>11 a.m. Central</span></div>
+        <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(32px,4.2vw,64px)", marginTop: 22, color: "#ffd700" }}>
           {hh}:{pad(mm)}:{pad(ss)}
           <span style={{ fontSize: "0.38em", marginLeft: 10, opacity: 0.9 }}>hours</span>
         </div>
-        <div style={{ opacity: 0.8, marginTop: 10, fontSize: 15 }}>Live here, YouTube and Facebook.</div>
+        <div style={{ opacity: 0.85, marginTop: 18, fontSize: "clamp(15px,1.3vw,19px)" }}>Live here, YouTube and Facebook.</div>
       </div>
-      <img src={PHOTO} alt="Steven Barchetti" style={{ maxHeight: "86%", maxWidth: "46%", width: "auto", height: "auto", objectFit: "contain", alignSelf: "flex-end", marginRight: "5%", flexShrink: 0 }} />
+      <img src={PHOTO} alt="Steven Barchetti" style={{ height: "94%", maxWidth: "54%", width: "auto", objectFit: "contain", objectPosition: "bottom", alignSelf: "flex-end", marginRight: "2%", flexShrink: 0 }} />
     </div>,
     host
   );
