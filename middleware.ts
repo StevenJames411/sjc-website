@@ -11,7 +11,7 @@ import { normalizeHost, STUDIO_HOST } from "@/lib/hostShared";
 // GATED (owner-only, require the sjc_site_auth cookie): /edit/*, /api/puck, /api/pages,
 //   /api/site-content (draft read + publish), /api/upload.
 // OPEN: every public page + /api/login, /api/auth-status (self-reports authed:false),
-//   /api/apply, /api/guest, /api/send-roadmap (public form posts).
+//   /api/apply, /api/send-roadmap (public form posts).
 //
 // Required env: SITE_EDIT_PASSWORD  (set in Vercel, never committed; set to the SAME
 //               value as the cockpit's COCKPIT_PASSWORD so one password unlocks both)
@@ -46,7 +46,6 @@ const PUBLIC_API = [
   // leaks nothing, and GET is worthless without a 64-hex single-use token.
   "/api/auth/magic",
   "/api/apply", // the public lead form
-  "/api/guest", // podcast guest intake
   "/api/careers",
   "/api/send-roadmap",
   "/api/intake", // the client's own onboarding link — gated by its own capability token
