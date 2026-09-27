@@ -83,8 +83,9 @@ export default function HomeTwinOrb() {
     // The photo box takes the cutout's own shape (900x810), so there is no dead band under him.
     img.style.visibility = "hidden";
     img.style.aspectRatio = "10 / 9";
-    img.style.setProperty("width", "min(100%, 400px)", "important");
-    img.style.setProperty("max-width", "none", "important");
+    // Width lives in globals.css (phone vs laptop). The wrapper must span the column, or the photo's
+    // percentage width resolves against a shrink-to-fit box and he renders at ~210px.
+    wrap.style.width = "100%";
     img.style.height = "auto";
     img.style.objectFit = "cover";
     wrap.style.paddingTop = "0";

@@ -997,7 +997,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    column is tightened and the tap line stays on one line. Phones untouched. */
 @media (min-width: 1024px) {
   /* compact twin column so its height sits close to the six systems; columns centred on each other */
-  [data-sjc-orb-slot] { padding: 34px 0 6px !important; }
+  [data-sjc-orb-slot] { padding: 42px 0 40px !important; }
   [data-sjc-orb-slot] .sjc-twin-orb { width: 70px; height: 70px; }
   [data-sjc-orb-slot] .sjc-twin-orb svg { width: 44px; height: 44px; }
   .sjc-twin-tagline { margin-top: 40px; font-size: 14px; white-space: nowrap; }
@@ -1006,11 +1006,13 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-pills][data-sjc-pills] { align-items: flex-start !important; }
   [data-sjc-cta-col][data-sjc-cta-col] { display: none; }
   [data-sjc-cta-row][data-sjc-cta-row] { display: block; margin-top: 0 !important; }
-  [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 270px !important; }
+  [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 300px !important; max-width: none !important; }
+  /* the cutout carries transparent margin; scale him up from his base so he reads at column size */
+  .sjc-twin-stage .sjc-twin-video { transform: scale(1.22); transform-origin: 50% 100%; }
   /* the twin column rises beside the eyebrow (the eyebrow's right side is empty), so the six systems
      sit right under the eyebrow and both columns end together */
   .sjc-design.sjc-design [data-sjc-hero-split] { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 32px !important; align-items: start !important; }
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:last-child { margin-top: -104px; }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:last-child { margin-top: -84px; }
   [data-sjc-eyebrow][data-sjc-eyebrow] { max-width: calc(100% - 332px); }
 }
 .sjc-twin-orb {
@@ -1911,4 +1913,7 @@ a.sjc-sys-card--layer:focus-visible {
 .th-strip .th-strip-group > div button { color: #111827; }
 
 /* the lower Book A Call exists for the laptop layout only (09-26) */
-@media (max-width: 1023px) { [data-sjc-cta-row][data-sjc-cta-row] { display: none; } }
+@media (max-width: 1023px) {
+  [data-sjc-cta-row][data-sjc-cta-row] { display: none; }
+  [data-sjc-twin-col] img[data-sjc-img="i1"] { width: min(100%, 400px) !important; max-width: none !important; }
+}
