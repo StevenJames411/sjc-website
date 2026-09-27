@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { tenantPage, tenantPageMetadata } from "@/lib/sjcRoute";
 import { resolveHost } from "@/lib/host";
 import { SJC } from "@/lib/siteKeys";
+import TalkingHero from "@/components/blocks/TalkingHero";
+
+// AI_EMPLOYEE_NAME = "Chloe" — placeholder for later. The widget below still speaks as "Steven"
+// (NEXT_PUBLIC_AGENT_NAME) until that's renamed, so the framing line names Steven, not this.
 
 // Steven's YouTube channel. /embed/live_stream plays whatever is live now (or the next scheduled
 // stream) — the page never needs editing per show. Every bio points here: one link, on land we own.
@@ -66,7 +70,23 @@ export default async function LivePage() {
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
           />
         </div>
+
+        <p style={{ maxWidth: "62ch", margin: "clamp(40px,6vw,72px) 0 0", fontSize: 17, lineHeight: 1.8, color: "rgba(255,255,255,.7)", fontWeight: 300 }}>
+          Want Steven to look at your business? Talk to him right here — he'll get you on the
+          calendar.
+        </p>
       </div>
+
+      <TalkingHero
+        mode="live"
+        eyebrow=""
+        headline="Talk to him right here."
+        byline=""
+        opener="Hey — glad you caught the show. Tell me a little about your business and what's not working, and I'll find a time that works for both of us."
+        ctaTalk="Tap and I'll talk to you"
+        ctaType="Type instead"
+        minHeight={64}
+      />
     </main>
   );
 }
