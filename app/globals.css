@@ -1977,7 +1977,8 @@ a.sjc-sys-card--layer:focus-visible {
    nav like the twin pages. Same type sizes as the twin pages; never bigger to fill space. */
 @media (min-width: 1024px) {
   section:has([data-sjc-fhl-split]) {
-    padding-top: 28px !important; padding-bottom: 32px !important;
+    min-height: calc(100vh - 76px) !important; justify-content: center !important;
+    padding-top: 56px !important; padding-bottom: 56px !important;
   }
   /* the player column is the wide one, so the player (not padding) fills the screen height */
   [data-sjc-fhl-split][data-sjc-fhl-split] { grid-template-columns: 4fr 7fr !important; column-gap: 56px !important; }
@@ -1993,3 +1994,11 @@ a.sjc-sys-card--layer:focus-visible {
 [data-sjc-fhl-pill][data-sjc-fhl-pill] strong { color: #ffd700 !important; font-size: 26px; display: inline-block; margin-right: 18px; vertical-align: middle; }
 [data-sjc-fhl-pill][data-sjc-fhl-pill] [data-sjc-fhl-time] { font-size: 20px !important; font-weight: 700; display: inline-block; vertical-align: middle; }
 @media (max-width: 1023px) { [data-sjc-fhl-pill] strong { display: block; margin: 0 0 2px; } [data-sjc-fhl-pill] [data-sjc-fhl-time] { font-size: 16px; } }
+@media (min-width: 1024px) {
+  /* centre the content in the full-screen hero: the container takes equal auto margins in the flex column */
+  section:has([data-sjc-fhl-split]) > .container { margin-top: auto !important; margin-bottom: auto !important; }
+}
+@media (min-width: 1024px) {
+  /* the design sheet forces the section to display:block, so centring is done as a grid with doubled specificity */
+  section.code-section.code-section:has([data-sjc-fhl-split]) { display: grid !important; align-content: center !important; }
+}
