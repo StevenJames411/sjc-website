@@ -1015,7 +1015,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
      sit right under the eyebrow and both columns end together */
   /* LEFT COLUMN CENTRED ON THE TWIN (09-26): on a laptop the eyebrow lives inside the left column, and
      the whole left side - eyebrow, headline, six systems - is centred against the orb + photo. */
-  .sjc-design.sjc-design [data-sjc-hero-split]:has([data-sjc-twin-col]) { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 32px !important; align-items: center !important; }
+  .sjc-design.sjc-design [data-sjc-hero-split]:has([data-sjc-twin-col]) { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 80px !important; align-items: center !important; }
   [data-sjc-eyebrow][data-sjc-eyebrow] { display: none !important; }
   [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: block !important; margin-bottom: 0; font-size: 26px; }
   /* THE LEFT COLUMN FILLS THE TWIN'S HEIGHT (09-26): no padding band above or below the words - the
@@ -1038,6 +1038,8 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child {
     justify-content: flex-start; padding-bottom: 6px !important;
   }
+  /* the pill hugs its words - it is a label, not a bar across the column */
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > :first-child { align-self: flex-start; width: auto !important; max-width: 100%; }
   /* equal air above and below the headline pair; the headline and its gold second line stay together */
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 { margin: auto 0 0 !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 + p { margin-top: 8px !important; }
