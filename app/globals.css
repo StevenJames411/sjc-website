@@ -1044,7 +1044,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
      column runs the twin column's full height: pill level with the orb, the body text ending level
      with Book A Call, and the words a size up so the height is filled with text, not air. */
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child {
-    justify-content: flex-start; padding-bottom: 6px !important;
+    justify-content: flex-start; padding-bottom: 6px !important; padding-right: 56px !important; /* the text never runs into his picture (09-26) */
   }
   /* the pill hugs its words - it is a label, not a bar across the column */
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > :first-child { align-self: flex-start; width: auto !important; max-width: 100%; }
