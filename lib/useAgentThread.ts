@@ -58,6 +58,10 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
   const handsFree = useRef(false);
   const gotFinal = useRef(false);
   const audio = useRef<HTMLAudioElement | null>(null);
+  // ⛔ ONE MOUTH AT A TIME (09-27): the mic stayed open while the cloned voice played; Chrome drops
+  // an idle mic after a few seconds, onend reopened it, and startListening PAUSED the voice — the
+  // reply cut off mid-word and the film looped. While this is true, the mic stays shut.
+  const speakingRef = useRef(false);
 
   useEffect(() => {
     session.current = sessionId();
@@ -129,11 +133,24 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
   // One id, one line, one voice — used for real replies (id = the message id) AND for the two
   // canned nudge lines (id = "nudge-1" / "nudge-2", pre-cached on the voice server so a silent
   // visitor never waits on a cold GPU). Same server-first, browser-fallback order either way.
-  async function speakRaw(id: string | number, text: string, onEnd: () => void) {
+  async function speakRaw(id: string | number, text: string, onDone: () => void) {
+    speakingRef.current = true;
     setSpeaking(true);
+    try { recog.current?.abort(); } catch { /* not listening */ }
+    setListening(false);
+    let finished = false;
+    const onEnd = () => {
+      if (finished) return;
+      finished = true;
+      speakingRef.current = false;
+      onDone();
+    };
     try {
       const url = `${AGENT_API}/${AGENT_PREFIX}/web/speak/${id}`;
-      const head = await fetch(url, { method: "HEAD" });
+      // ⛔ NO-STORE (09-27): Chrome kept a failed answer for this URL and replayed it in 2ms, so the
+      // cloned voice was never asked for and the robot voice spoke instead. One retry before giving up.
+      const ask = () => fetch(url, { method: "HEAD", cache: "no-store" });
+      const head = await ask().catch(() => new Promise<Response>((r) => setTimeout(() => r(ask()), 1500)));
       if (head.ok) {
         const a = audio.current || new Audio();
         audio.current = a;
@@ -197,8 +214,9 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
       setHeard("Your browser can't listen — try Chrome or Safari, or type instead.");
       return;
     }
-    window.speechSynthesis?.cancel();
-    try { audio.current?.pause(); } catch { /* ignore */ }
+    if (speakingRef.current) return; // the twin is talking; listenAgain reopens the mic when it finishes
+    // No pause here: nothing real is playing (the guard above), and pausing killed the tap's silent
+    // unlock clip 300ms in — which can leave Safari's audio locked for the first reply.
     const r = new SR();
     r.lang = "en-US";
     r.interimResults = true;
@@ -218,7 +236,7 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
       setListening(false);
       // The browser drops the mic after a pause. Hands-free: if nothing final was heard and
       // nobody is talking, pick it straight back up.
-      if (handsFree.current && !gotFinal.current && !window.speechSynthesis?.speaking) {
+      if (handsFree.current && !gotFinal.current && !speakingRef.current) {
         setTimeout(() => { if (handsFree.current) startListening(); }, 250);
       }
     };
@@ -230,6 +248,15 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
   }
 
   function startHandsFree() {
+    // UNLOCK THE MOUTH ON THE TAP (09-27): the reply's audio starts seconds later, outside the tap,
+    // and Safari refuses that. Playing a silent clip on this same element inside the tap unlocks it.
+    try {
+      const a = audio.current || new Audio();
+      audio.current = a;
+      a.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+      a.play().catch(() => {});
+      window.speechSynthesis?.speak(new SpeechSynthesisUtterance(""));
+    } catch { /* no audio on this device */ }
     handsFree.current = true;
     setVoiceOn(true);
     setActive(true);
@@ -238,6 +265,7 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
 
   function stopHandsFree() {
     handsFree.current = false;
+    speakingRef.current = false;
     try { recog.current?.stop(); } catch { /* ignore */ }
     window.speechSynthesis?.cancel();
     try { audio.current?.pause(); } catch { /* ignore */ }
