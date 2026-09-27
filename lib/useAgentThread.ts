@@ -6,7 +6,7 @@
 // owner's cloned voice, one voice on every device — step 2 of the build) and falls back to the
 // browser's own voice until that endpoint exists.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export type Msg = { id: number; direction: "inbound" | "outbound"; author: string; body: string; hidden?: boolean };
 
@@ -213,7 +213,9 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
   // ⛔ ONE REPLY AT A TIME (09-27): the guard read only `speaking`, which turns true when sound starts —
   // a second reply arriving while the first one's voice was still loading started a second voice on the
   // same element. speakingRef is true from the moment a line is picked up until it finishes.
-  useEffect(() => {
+  // A layout effect, so "preparing" is set before the browser paints the frame where the reply
+  // landed — otherwise the film blinked to idle between "thinking" and "talking".
+  useLayoutEffect(() => {
     if (!voiceOn) return;
     if (speaking || preparing || speakingRef.current) return;
     const next = msgs.find((m) => m.direction === "outbound" && !spoken.current.has(m.id));

@@ -2030,3 +2030,50 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
   z-index: 3;
   background: radial-gradient(ellipse at 50% 70%, #1b2a6b 0%, #0A0E27 70%);
 }
+
+/* ⛔ NO FADED TEXT, VISIBLE DIVIDERS (swarm audit 2026-09-27, desktop-visual lane). Steven's standing
+   rule: text on dark is solid white, divider lines on dark are full white, light-band dividers must
+   actually separate the groups. The imported dark designs define --body #AFC0D8 / --muted #8FA6C4 /
+   --line 10% white at their root; their light bands (band--gray / band--white) redefine them dark.
+   Overriding on the DARK band classes only (hero/soft/deep exist only in the dark designs) leaves
+   every light band's own values alone. Class doubled to beat the design sheet's single scope class. */
+.sjc-design.sjc-design .band--hero,
+.sjc-design.sjc-design .band--soft,
+.sjc-design.sjc-design .band--deep {
+  --body: #ffffff;
+  --muted: #ffffff;
+  --line: #ffffff;
+  --line-strong: #ffffff;
+}
+.sjc-design.sjc-design .band--gray,
+.sjc-design.sjc-design .band--white {
+  --line: rgba(10, 14, 39, 0.45);
+  --line-strong: rgba(10, 14, 39, 0.6);
+}
+/* Footer dividers: full white on the dark footer. */
+.sjc-design.sjc-design.sjc-design .sjc-foot-disclaimer,
+.sjc-design.sjc-design.sjc-design .sjc-foot-bottom { border-top-color: #ffffff; }
+/* Careers hero chip: a solid cyan edge, not a 30% ghost. */
+.sjc-design.sjc-design .band--hero .eyebrow { border-color: #00D9FF; }
+/* Podcast: the "From the publisher" label and the episode write-up in solid ink, no fade. */
+.sjc-design.sjc-design.sjc-design .ep__src { opacity: 1; color: var(--ink); }
+.sjc-design.sjc-design.sjc-design .ep__text p,
+.sjc-design.sjc-design.sjc-design .ep__work { color: var(--ink); }
+/* System-page links sitting on the mid-blue cards (#3b7fb8 and the blue gradient card): navy on blue
+   measured 1.91. White, underlined, gold on hover — the pair the dark bands already use. */
+.sjc-design [class*="bg-[#3b7fb8]"] a.sjc-sys-link.sjc-sys-link,
+.sjc-design [class*="bg-gradient-to-br"] a.sjc-sys-link.sjc-sys-link { color: #ffffff; }
+.sjc-design [class*="bg-[#3b7fb8]"] a.sjc-sys-link.sjc-sys-link:hover,
+.sjc-design [class*="bg-gradient-to-br"] a.sjc-sys-link.sjc-sys-link:hover,
+.sjc-design [class*="bg-[#3b7fb8]"] a.sjc-sys-link.sjc-sys-link:focus-visible,
+.sjc-design [class*="bg-gradient-to-br"] a.sjc-sys-link.sjc-sys-link:focus-visible { color: #ffd700; }
+/* Premium Smart Websites FAQ answers were #888 on white. Solid ink. */
+.sjc-design.sjc-design .text-\[var\(--gray-text-color\)\] { color: #0A0E27; }
+/* How We Train AI Employees: diagram labels and "Automated system" tags were pale slate / 72% ink
+   on white. Solid navy; the gold "brain" step and the navy "her" header keep their own colours. */
+.sjc-design #chloe-page .step:not(.brain) .t,
+.sjc-design #chloe-page .rows .hd:not(.her),
+.sjc-design #chloe-page .job .also em { color: #0b1f47; }
+.sjc-design #chloe-page a.sys.sys.sys em { color: #0b1f47; }
+.sjc-design #chloe-page a.sys.sys.sys:hover em,
+.sjc-design #chloe-page a.sys.sys.sys:focus-visible em { color: #ffffff; }

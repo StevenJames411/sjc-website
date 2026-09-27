@@ -52,7 +52,8 @@ const ICON: Record<string, string> = {
 };
 const TAGLINE: Record<string, string> = {
   idle: "Tap and talk to me about growing your business.",
-  on: "I'm here. Go ahead.",
+  // "on" is only ever the 250ms while the mic reopens — it reads as listening, so the line doesn't flicker.
+  on: "Listening… go ahead.",
   listening: "Listening… go ahead.",
   thinking: "Thinking…",
   speaking: "Talking… tap to stop.",

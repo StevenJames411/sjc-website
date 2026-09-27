@@ -288,7 +288,7 @@ export default function LeadForm(props: LeadFormProps) {
               <h2 className="text-2xl font-bold leading-tight md:text-3xl">{fill(heading)}</h2>
             ) : null}
             {subheading ? (
-              <p className={`text-base leading-relaxed opacity-80${heading ? " mt-3" : ""}`}>
+              <p className={`text-base leading-relaxed${heading ? " mt-3" : ""}`}>
                 {fill(subheading)}
               </p>
             ) : null}
