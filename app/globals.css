@@ -1036,8 +1036,12 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
      column runs the twin column's full height: pill level with the orb, the body text ending level
      with Book A Call, and the words a size up so the height is filled with text, not air. */
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child {
-    justify-content: space-between; padding-bottom: 6px !important;
+    justify-content: flex-start; padding-bottom: 6px !important;
   }
+  /* equal air above and below the headline pair; the headline and its gold second line stay together */
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 { margin: auto 0 0 !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 + p { margin-top: 8px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child { margin-top: auto !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child {
     font-size: 21px !important; line-height: 1.75 !important;
   }
