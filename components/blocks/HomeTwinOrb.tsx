@@ -16,7 +16,9 @@ import { useAgentThread } from "@/lib/useAgentThread";
 
 const MEDIA = "https://agent-sjc.onrender.com/sjc/roleplay/media/";
 const ORB_SIZE = 84;
-const ORB_GAP = 14; // air between the orb's ring and the photo, matching the roleplay hero
+// The orb's outer ring reaches 48px past its edge (Kay's pulse), so the gap must clear the RINGS, not
+// the button — 14px put the rings on his head.
+const ORB_GAP = 58;
 
 function videoExt(): string {
   if (typeof navigator === "undefined") return ".webm";
@@ -70,6 +72,7 @@ export default function HomeTwinOrb() {
       });
     }
     measure();
+    img.style.visibility = "hidden"; // the white-polo cutout takes the photo's place
     const ro = new ResizeObserver(measure);
     ro.observe(img);
     window.addEventListener("resize", measure);
@@ -122,6 +125,7 @@ export default function HomeTwinOrb() {
         data-state={state}
         style={{ position: "absolute", left: box.left, top: box.top, width: box.width, height: box.height, zIndex: 2 }}
       >
+        <img className="sjc-twin-video" src={poster} alt="Steven Barchetti" style={{ opacity: 1 }} />
         <video
           className="sjc-twin-video"
           style={{ opacity: state === "listening" ? 1 : 0 }}
