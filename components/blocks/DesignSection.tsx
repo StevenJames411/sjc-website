@@ -675,7 +675,8 @@ const GRID_DARK =
 const INK_FADE = "linear-gradient(180deg,#0d1530 0%,#0A0E27 62%,#070B1C 100%)";
 const GLOW = "radial-gradient(900px 520px at 78% 14%,rgba(0,217,255,.16),transparent 62%)";
 const ON_DARK = { head: "#ffffff", body: "#ffffff" }; // solid white: no faded text on dark (Steven standing rule)
-const ON_LIGHT = { head: "#0A0E27", body: "#3E4B63" };
+// ⛔ No gray body copy (Steven, 09-27): light sections read solid ink, same as the headings.
+const ON_LIGHT = { head: "#0A0E27", body: "#0A0E27" };
 
 export const BAND_STYLES: Record<string, BandDef> = {
   ink: { label: "Deep ink", base: "#0A0E27", bg: INK_FADE, ...ON_DARK },
