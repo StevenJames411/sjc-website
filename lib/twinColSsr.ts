@@ -13,7 +13,7 @@ const POSTER = "https://agent-sjc.onrender.com/sjc/roleplay/media/twin-cutout.we
 const ORB_SVG =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
   '<path d="M5.2 9.7v4.6h2.3l3.2 2.8V6.9L7.5 9.7z" /><path d="M13.3 9.6a3.4 3.4 0 0 1 0 4.8" />' +
-  '<path d="M15.4 7.6a6.2 6.2 0 0 1 0 8.8" /></svg>';
+  '<path d="M15.4 7.6a6.2 6.2 0 0 1 0 8.8" /><path d="M4.9 4.9 19.1 19.1" /></svg>'; // idle = muted (Steven 09-27)
 
 const SLOT =
   '<div data-sjc-orb-slot="" style="display:flex;flex-direction:column;align-items:center;padding:52px 0 18px">' +
