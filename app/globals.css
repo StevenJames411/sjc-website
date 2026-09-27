@@ -1015,7 +1015,21 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
      the whole left side - eyebrow, headline, six systems - is centred against the orb + photo. */
   .sjc-design.sjc-design [data-sjc-hero-split] { grid-template-columns: minmax(0, 1fr) 300px !important; column-gap: 32px !important; align-items: center !important; }
   [data-sjc-eyebrow][data-sjc-eyebrow] { display: none !important; }
-  [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: block !important; margin-bottom: 28px; }
+  [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: block !important; margin-bottom: 0; font-size: 26px; }
+  /* THE LEFT COLUMN FILLS THE TWIN'S HEIGHT (09-26): no padding band above or below the words - the
+     eyebrow starts level with the orb, the last system ends level with his picture, and the six
+     systems spread across the height between. */
+  .sjc-design.sjc-design [data-sjc-hero-split] { align-items: stretch !important; }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child {
+    display: flex !important; flex-direction: column; padding-top: 0 !important; margin-top: 0 !important;
+    padding-bottom: 20px;
+  }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > * { margin-top: 0 !important; }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > h1 { margin: 36px 0 18px !important; font-size: 36px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > div:last-child {
+    flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > div:last-child p { font-size: 21px !important; }
 }
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
