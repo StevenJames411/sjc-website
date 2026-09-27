@@ -81,7 +81,8 @@ export default function HomeTwinOrb() {
       wrap.parentElement!.insertBefore(slot, wrap);
     }
     // The photo box takes the cutout's own shape (900x810), so there is no dead band under him.
-    img.style.visibility = "hidden";
+    // The server-built hero already paints the twin's poster here; only an old imported photo hides.
+    if (!(img as HTMLImageElement).src.includes("twin-cutout")) img.style.visibility = "hidden";
     img.style.aspectRatio = "10 / 9";
     // Width lives in globals.css (phone vs laptop). The wrapper must span the column, or the photo's
     // percentage width resolves against a shrink-to-fit box and he renders at ~210px.
@@ -109,6 +110,22 @@ export default function HomeTwinOrb() {
 
   useEffect(() => () => t.stopHandsFree(), []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // THE SERVER ALREADY DREW THE ORB (lib/twinColSsr, 09-27): wire that one instead of portaling a
+  // second, so the first paint and the live page are the same pixels and nothing swaps on hydration.
+  const toggleRef = useRef<() => void>(() => {});
+  const [ssrOrb, setSsrOrb] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    const b = document.querySelector("[data-sjc-orb-ssr]") as HTMLElement | null;
+    if (!b) return;
+    const onTap = () => toggleRef.current();
+    b.addEventListener("click", onTap);
+    setSsrOrb(b);
+    return () => b.removeEventListener("click", onTap);
+  }, []);
+  useEffect(() => {
+    ssrOrb?.setAttribute("aria-label", talkOn ? "Tap to stop talking to Steven" : "Tap and I'll talk to you");
+  }, [ssrOrb, talkOn]);
+
   function toggle() {
     if (!talkOn) {
       setTalkOn(true);
@@ -118,6 +135,7 @@ export default function HomeTwinOrb() {
     }
     if (t.handsFree()) { t.stopHandsFree(); setTalkOn(false); } else { t.startHandsFree(); }
   }
+  toggleRef.current = toggle;
 
   if (!container || !box || !t.ready) return null;
   // The slot sits ABOVE the photo's wrapper, which can be outside the column element itself.
@@ -147,7 +165,7 @@ export default function HomeTwinOrb() {
 
   return createPortal(
     <>
-      {slot && createPortal(
+      {slot && !ssrOrb && createPortal(
         <>
           {orb}
           {/* Kay's lesson: nobody taps a glowing circle unless it says to. Clears the orb's 48px rings. */}

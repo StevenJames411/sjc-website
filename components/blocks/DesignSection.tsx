@@ -31,6 +31,7 @@ import DesignFormMount from "./DesignFormMount";
 import DesignCalMount from "./DesignCalMount";
 import DesignMenu from "./DesignMenu";
 import type { LeadFormField } from "./LeadForm";
+import { prepTwinCol } from "@/lib/twinColSsr";
 
 /**
  * One editable line in an imported section.
@@ -1091,7 +1092,8 @@ export default function DesignSection(props: DesignSectionProps) {
     ),
     decls
   );
-  const marked = band ? markBandRoot(filled) : filled;
+  // The talking twin's hero is built finished on the server — lib/twinColSsr (Steven's Loom, 09-27).
+  const marked = prepTwinCol(band ? markBandRoot(filled) : filled);
   // The scope class rides on the block so the design styles identically in the builder canvas,
   // in preview and on the live page — see lib/designShared.
   const swapForm = !!hasForm && useRealForm !== false;
