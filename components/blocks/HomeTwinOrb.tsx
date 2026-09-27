@@ -35,12 +35,23 @@ const MIC_SVG =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
   '<rect x="9.6" y="5.6" width="4.8" height="8.2" rx="2.4" /><path d="M7.4 11.6a4.6 4.6 0 0 0 9.2 0" />' +
   '<path d="M12 16.2v2.4" /></svg>';
+// While he talks: the circle with three sound bars. While he thinks: three dots.
+const WAVES_SVG =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
+  '<path d="M8 10v4" /><path d="M10.7 7.5v9" /><path d="M13.3 9v6" /><path d="M16 10.5v3" /></svg>';
+const DOTS_SVG =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
+  '<circle cx="8" cy="12" r="0.9" /><circle cx="12" cy="12" r="0.9" /><circle cx="16" cy="12" r="0.9" /></svg>';
+const ICON: Record<string, string> = {
+  idle: SPEAKER_SVG, on: MIC_SVG, listening: MIC_SVG, thinking: DOTS_SVG, speaking: WAVES_SVG, typing: SPEAKER_SVG,
+};
 const TAGLINE: Record<string, string> = {
   idle: "Tap and talk to me about growing your business.",
   on: "I'm here. Go ahead.",
   listening: "Listening… go ahead.",
   thinking: "Thinking…",
   speaking: "Talking… tap to stop.",
+  typing: "I can't hear you in this browser. Type to me below.",
 };
 
 type Box = { left: number; top: number; width: number; height: number; orbTop: number; orbLeft: number };
@@ -50,7 +61,7 @@ export default function HomeTwinOrb() {
   const [container, setContainer] = useState<Element | null>(null);
   const [box, setBox] = useState<Box | null>(null);
   const [talkOn, setTalkOn] = useState(false);
-  const started = useRef(false);
+  const [draft, setDraft] = useState("");
   const ext = useRef(videoExt());
 
   // Find the builder's own column — it exists in the server-rendered HTML already, but retry a
@@ -141,24 +152,23 @@ export default function HomeTwinOrb() {
   // ⛔ NO MUTE SIGN, AND SAY WHAT IS HAPPENING (09-27): the orb wore a crossed-out speaker the whole
   // call, and a 15s think looked like a dead page. Speaker when idle, mic while it listens, sound waves
   // while it talks; the line under it names the state.
-  const phase = !talkOn ? "idle" : t.listening ? "listening" : t.speaking ? "speaking" : (t.busy || t.preparing) ? "thinking" : "on";
+  const phase = !talkOn ? "idle" : t.listening ? "listening" : t.speaking ? "speaking" : (t.busy || t.preparing) ? "thinking" : t.micProblem ? "typing" : "on";
   useEffect(() => {
     if (!ssrOrb) return;
     ssrOrb.setAttribute("aria-label", talkOn ? "Tap to stop talking to Steven" : "Tap and I'll talk to you");
     ssrOrb.setAttribute("data-phase", phase);
-    ssrOrb.innerHTML = phase === "listening" ? MIC_SVG : SPEAKER_SVG;
+    ssrOrb.innerHTML = ICON[phase] || SPEAKER_SVG;
     const line = document.querySelector("[data-sjc-orb-slot] .sjc-twin-tagline");
     if (line) line.textContent = TAGLINE[phase];
   }, [ssrOrb, talkOn, phase]);
 
+  // Every start is an open: a stop-and-re-tap used to send nothing and sit on "Listening…" in silence.
+  // The server answers each open with this page's greeting; the mic opens when the greeting ends.
   function toggle() {
-    if (!talkOn) {
-      setTalkOn(true);
-      t.startHandsFree();
-      if (!started.current) { started.current = true; t.send("Hi", { hidden: true, open: true }); }
-      return;
-    }
-    if (t.handsFree()) { t.stopHandsFree(); setTalkOn(false); } else { t.startHandsFree(); }
+    if (talkOn) { t.stopHandsFree(); setTalkOn(false); return; }
+    setTalkOn(true);
+    t.startHandsFree({ waitForReply: true });
+    t.send("Hi", { hidden: true, open: true });
   }
   toggleRef.current = toggle;
 
@@ -166,7 +176,8 @@ export default function HomeTwinOrb() {
   // The slot sits ABOVE the photo's wrapper, which can be outside the column element itself.
   const slot = document.querySelector("[data-sjc-orb-slot]");
 
-  const state = t.listening ? "listening" : t.speaking ? "speaking" : (t.busy || t.preparing) ? "thinking" : "idle";
+  // The film follows the same switch as the orb: once stopped, he is idle whatever is still settling.
+  const state = !talkOn ? "idle" : t.listening ? "listening" : t.speaking ? "speaking" : (t.busy || t.preparing) ? "thinking" : "idle";
   const talkSrc = MEDIA + "talking-cutout" + ext.current;
   const listenSrc = MEDIA + "listening-cutout" + ext.current;
   const poster = MEDIA + "twin-cutout.webp";
@@ -189,6 +200,25 @@ export default function HomeTwinOrb() {
 
   return createPortal(
     <>
+      {/* NO DEAD END (09-27): no speech recognition here (Firefox, some in-app browsers) or the mic is
+          blocked — a type box under the tagline keeps the conversation going; replies still speak. */}
+      {slot && talkOn && t.micProblem && createPortal(
+        <form
+          onSubmit={(e) => { e.preventDefault(); const v = draft.trim(); if (v) { t.send(v); setDraft(""); } }}
+          style={{ marginTop: 14, display: "flex", gap: 8, width: "100%", maxWidth: 340 }}
+        >
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            aria-label="Type your message"
+            style={{ flex: 1, minWidth: 0, padding: "10px 14px", borderRadius: 999, border: "1.5px solid #fff", background: "transparent", color: "#fff", fontSize: 16 }}
+          />
+          <button type="submit" style={{ padding: "10px 16px", borderRadius: 999, border: 0, background: "#f0b323", color: "#0A0E27", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
+            Send
+          </button>
+        </form>,
+        slot
+      )}
       {slot && !ssrOrb && createPortal(
         <>
           {orb}

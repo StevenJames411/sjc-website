@@ -2017,3 +2017,16 @@ a.sjc-sys-card--layer:focus-visible {
 /* ⛔ THE LOGO HOLDS ITS SPACE BEFORE IT LOADS (09-27, Steven's Loom): the nav logo had a height and no
    width, so on refresh it was 0px wide for a beat and "Steven James Consulting" jumped left, then back. */
 img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
+
+/* FHL PLAYER COVER (09-27). The show page's YouTube live embed is server-rendered, and the
+   "next show" card (components/blocks/ShowCard.tsx) only exists after hydration — so on a slow
+   phone the gold frame showed "This video is unavailable" first, then the card popped over it.
+   The server now paints the card's own background over the player; ShowCard lifts it on mount
+   (during the show that reveals the feed, outside it the card takes its place). */
+[data-sjc-fhl-player]:not([data-fhl-ready])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: radial-gradient(ellipse at 50% 70%, #1b2a6b 0%, #0A0E27 70%);
+}

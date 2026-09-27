@@ -22,7 +22,10 @@ import sys, pathlib, re
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import site_text as st
 
-SITE = "sjc-2026"
+# ⛔ Follow the editor's own default. This was hardcoded to "sjc-2026", which stopped existing when
+# the live site moved to sjc-website on 2026-09-03 — the auditor then 404'd on its first call and
+# checked nothing for weeks. One source for the site id, so a move can't blind it again.
+SITE = st.DEFAULT_SITE
 
 # Words that can appear inside an anchor -> the page that anchor must open.
 # Add a row here when a new service page ships.
@@ -30,13 +33,14 @@ SITE = "sjc-2026"
 # republished yet still carries the old label, and dropping it makes the auditor go silently blind
 # on exactly the links a rename is most likely to have broken.
 SLUGS = [
-    (("custom website",),                    "/custom-websites"),
+    # /custom-websites and /portfolio are gone (404); both now live on the websites page.
+    (("premium smart website", "custom website"), "/premium-smart-websites"),
     (("automated five star review", "five star review", "five-star review"), "/automated-five-star-reviews"),
     (("every lead answered", "speed to lead"), "/speed-to-lead"),
     (("booked appointment", "paid ads"),     "/booked-appointments"),
     (("organic content", "content engine"),  "/automated-organic-content-engine"),
     (("your ai employee", "ai implementation"), "/ai-implementation"),
-    (("portfolio",),                         "/portfolio"),
+    (("portfolio",),                         "/premium-smart-websites"),
     (("careers",),                           "/careers"),
     (("podcast",),                           "/podcast"),
 ]
@@ -87,7 +91,9 @@ def main() -> int:
                 if not words.strip():
                     continue
                 want = next((s for needles, s in SLUGS if any(n in words for n in needles)), None)
-                if want and want != href:
+                # Compare the PAGE only — "/premium-smart-websites#srj8qqe" opens the right page and
+                # lands on a section of it, which is a deliberate deep link, not a broken one.
+                if want and want != href.split("#", 1)[0].split("?", 1)[0]:
                     bad += 1
                     dirty = True
                     print(f"{pg}[{bi}].{ln.get('key')}: {href}  ->  {want}   « {words.strip()[:52]} »")
