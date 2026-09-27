@@ -990,6 +990,8 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    this rule only ever draws pixels, never layout; the column's height is unchanged with or
    without JS. */
 [data-sjc-twin-col] { overflow: visible; }
+.sjc-twin-tagline { margin-top: 54px; color: rgba(255,255,255,.88); font-size: 17px; line-height: 1.4; text-align: center; }
+@media (max-width: 640px) { .sjc-twin-tagline { font-size: 16px; margin-top: 50px; } }
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
   display: flex; align-items: center; justify-content: center;

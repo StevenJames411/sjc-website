@@ -77,13 +77,14 @@ export default function HomeTwinOrb() {
     if (!document.querySelector("[data-sjc-orb-slot]")) {
       const slot = document.createElement("div");
       slot.setAttribute("data-sjc-orb-slot", "");
-      slot.style.cssText = "display:flex;justify-content:center;padding:52px 0 44px";
+      slot.style.cssText = "display:flex;flex-direction:column;align-items:center;padding:52px 0 18px";
       wrap.parentElement!.insertBefore(slot, wrap);
     }
     // The photo box takes the cutout's own shape (900x810), so there is no dead band under him.
     img.style.visibility = "hidden";
     img.style.aspectRatio = "10 / 9";
-    img.style.width = "78%";
+    img.style.setProperty("width", "min(100%, 400px)", "important");
+    img.style.setProperty("max-width", "none", "important");
     img.style.height = "auto";
     img.style.objectFit = "cover";
     wrap.style.paddingTop = "0";
@@ -140,7 +141,14 @@ export default function HomeTwinOrb() {
 
   return createPortal(
     <>
-      {slot && createPortal(orb, slot)}
+      {slot && createPortal(
+        <>
+          {orb}
+          {/* Kay's lesson: nobody taps a glowing circle unless it says to. Clears the orb's 48px rings. */}
+          <div className="sjc-twin-tagline">Tap and talk to me about growing your business.</div>
+        </>,
+        slot
+      )}
       <div
         className="sjc-twin-stage"
         data-state={state}
