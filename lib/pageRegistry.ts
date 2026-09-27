@@ -301,7 +301,7 @@ export async function changeSlug(
 // The rest still hold real code (forms, custom layouts) and each one still costs every site a slug.
 const ROUTE_FOLDERS = [
   "api", "apply", "careers", "edit", "guest",
-  "i", "live", "llms.txt", "share", "v2", "websites",
+  "i", "llms.txt", "share", "v2", "websites",
 ];
 
 /**
@@ -325,7 +325,7 @@ const ROUTE_FOLDERS = [
  * scripts/check-route-folders.mjs already fails the build on an unwired folder, which is what
  * keeps this list honest.
  */
-const BRIDGED_FOLDERS = new Set(["apply", "careers", "guest", "live"]);
+const BRIDGED_FOLDERS = new Set(["apply", "careers", "guest"]);
 
 // Static segments under /edit/<site>/ — a page with one of these slugs would be shadowed in the
 // builder by the route of the same name and become uneditable.

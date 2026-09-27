@@ -10,7 +10,6 @@ import { resolveHost, publicUrlFor } from "@/lib/host";
 import { StudioBody } from "@/lib/studioPage";
 import { resolvePage, metadataFor, SitePageBody } from "@/lib/publicSitePage";
 import { SJC } from "@/lib/siteKeys";
-import HomeTwinOrb from "@/components/blocks/HomeTwinOrb";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +65,6 @@ export default async function Home() {
     return (
       <>
         <SitePageBody data={r.data} siteId={r.site.id} page={r.slug} />
-        {r.site.id === SJC && <HomeTwinOrb />}
       </>
     );
   }
@@ -82,7 +80,6 @@ export default async function Home() {
         <Render config={config} data={data} />
       </main>
       <Footer />
-      <HomeTwinOrb />
     </>
   );
 }
