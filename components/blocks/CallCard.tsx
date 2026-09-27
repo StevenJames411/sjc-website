@@ -164,20 +164,29 @@ export const SAMPLE_CARD: CallCardData = {
   said: "Quick question so I point you the right way —",
 };
 
-// THE ENTER/EXIT SHELL — normal document flow (never position:absolute, never overlapping the
-// photo): a real call fires the card in as soon as the brain names one, and out a few seconds after
-// hangup. `overflow:hidden` + a max-height transition on THIS wrapper only exist so the collapse on
-// exit is smooth; the card itself (CardBody) never scrolls and is never height-capped while shown.
-export default function CallCard({ card, onTap, status }: { card: CallCardData | null; onTap: (tap: Tap) => void; status?: string }) {
+// THE ENTER/EXIT SHELL — two variants of the exact same card:
+// "flow" (phone): normal document flow, never position:absolute, never overlapping the photo. A
+//   real call fires the card in as soon as the brain names one, and out a few seconds after hangup;
+//   `overflow:hidden` + a max-height transition on THIS wrapper only exist so the collapse on exit
+//   is smooth — the card itself (CardBody) never scrolls and is never height-capped while shown.
+// "float" (laptop, 09-27: "too tall for the hero... beside me, not under me"): the CALLER already
+//   positions this absolutely, left of the photo — this shell only fades/slides it in from the right
+//   and fades it out; no height collapse needed because nothing here is ever in flow to begin with.
+export default function CallCard({
+  card, onTap, status, variant = "flow",
+}: { card: CallCardData | null; onTap: (tap: Tap) => void; status?: string; variant?: "flow" | "float" }) {
   const [shown, setShown] = useState<CallCardData | null>(null);
   const [phase, setPhase] = useState<"in" | "out">("in");
   const wrapRef = useRef<HTMLDivElement>(null);
+  const cls = variant === "float" ? "sjc-cc-float" : "sjc-cc-flow";
 
   useEffect(() => {
     if (card) { setShown(card); setPhase("in"); return; }
     if (!shown) return;
-    const el = wrapRef.current;
-    if (el) { el.style.maxHeight = el.scrollHeight + "px"; void el.offsetHeight; }
+    if (variant === "flow") {
+      const el = wrapRef.current;
+      if (el) { el.style.maxHeight = el.scrollHeight + "px"; void el.offsetHeight; }
+    }
     setPhase("out");
     const t = setTimeout(() => setShown(null), 400);
     return () => clearTimeout(t);
@@ -186,7 +195,7 @@ export default function CallCard({ card, onTap, status }: { card: CallCardData |
 
   if (!shown) return null;
   return (
-    <div ref={wrapRef} className={"sjc-cc-flow " + (phase === "in" ? "sjc-cc-flow-in" : "sjc-cc-flow-out")}>
+    <div ref={wrapRef} className={cls + " " + (phase === "in" ? cls + "-in" : cls + "-out")}>
       <CardBody card={card || shown} onTap={onTap} status={status} />
     </div>
   );

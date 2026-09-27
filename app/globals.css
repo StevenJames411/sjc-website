@@ -1164,6 +1164,25 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   .sjc-cc-line { min-height: 46px; padding: 6px 10px; }
   .sjc-cc-chips button, .sjc-cc-slots button { min-height: 54px !important; }
 }
+/* PHONE ONLY: the in-flow slot below the photo. Zero height on laptop (09-27) — the card moves
+   beside the photo there (.sjc-cc-desk, absolute, in HomeTwinOrb.tsx) and must never also reserve
+   flow space here, or the hero would grow twice. */
+@media (min-width: 1024px) {
+  [data-sjc-cardflow-slot] { display: none !important; }
+}
+/* ⭐ THE CARD MOVES BESIDE HIM ON A LAPTOP (2026-09-27) — Steven, after seeing it under the photo:
+   "too tall for the hero... put it in the centre of the page, beside me, not under me." HomeTwinOrb
+   positions `.sjc-cc-desk` absolutely (left of the photo, top-aligned with it) against the twin
+   column, which never changes the hero's own height — the card is allowed to run over the left
+   column's text (his call) but never the photo or the orb. `.sjc-cc-float` only fades/slides; the
+   position itself is the caller's job, not this shell's. */
+.sjc-cc-desk { pointer-events: none; }
+.sjc-cc-desk .sjc-cc-float { pointer-events: auto; }
+.sjc-cc-float { opacity: 1; transform: none; }
+.sjc-cc-float .sjc-call-card { margin-top: 0; }
+.sjc-cc-float.sjc-cc-float-in { animation: sjccfloatin .32s cubic-bezier(.2,.8,.2,1); }
+.sjc-cc-float.sjc-cc-float-out { opacity: 0; transform: translateX(24px); transition: opacity .3s ease, transform .3s ease; }
+@keyframes sjccfloatin { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
 
 /* ⭐ SECTION HEADINGS COME DOWN TWO STEPS (2026-09-01, Steven pointing at "In 2024 the math
    changed, and it changed in your favor" on /ai-implementation: *"whatever this font size is, drop
