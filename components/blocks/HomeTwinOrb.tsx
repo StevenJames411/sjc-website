@@ -3,7 +3,10 @@
 // existing Book A Call button. The builder's right column keeps its own <img data-sjc-img="i1">
 // exactly as imported (zero visual change with JS off); this portals the orb + cutout stage on
 // TOP of it, absolutely positioned against the photo's own measured box, so the column's flow
-// height never changes and neither the eyebrow nor the left column ever move.
+// height never changes and neither the eyebrow nor the left column ever move — UNTIL a call card
+// is showing (09-27): that piece renders in NORMAL FLOW directly below the photo (its own slot,
+// inserted once after the photo's wrapper), so his face stays fully visible and the column/page
+// grow while it's up, same as Book A Call moving down. Never inside .sjc-twin-stage, never absolute.
 //
 // ⛔ FAST PATH ONLY (ruled 2026-09-27, live on camera 11am Central): the browser-speech-recognition
 // / whole-reply-MP3 thread (useAgentThread, 18-38s of silence per turn) is OUT of this orb. The
@@ -131,6 +134,15 @@ export default function HomeTwinOrb() {
       slot.style.cssText = "display:flex;flex-direction:column;align-items:center;padding:52px 0 18px";
       wrap.parentElement!.insertBefore(slot, wrap);
     }
+    // THE CALL CARD'S OWN SLOT (09-27, redone after his real call): IN FLOW, directly after the
+    // photo's wrapper — never inside the absolutely-positioned stage that sits over the photo. His
+    // face stays fully visible the whole call; this slot just grows the column (and the page) while
+    // a card is showing, and the CTA below shifts down with it.
+    if (!document.querySelector("[data-sjc-cardflow-slot]")) {
+      const flow = document.createElement("div");
+      flow.setAttribute("data-sjc-cardflow-slot", "");
+      wrap.parentElement!.insertBefore(flow, wrap.nextSibling);
+    }
     // The photo box takes the cutout's own shape (900x810), so there is no dead band under him.
     // The server-built hero already paints the twin's poster here; only an old imported photo hides.
     if (!(img as HTMLImageElement).src.includes("twin-cutout")) img.style.visibility = "hidden";
@@ -199,7 +211,6 @@ export default function HomeTwinOrb() {
   // live, poll /callcard on the CallSid every 600ms and render whatever the brain named. A tap goes
   // straight to /calltap, into the SAME live call's queue — no session line, no /turn. ─────────────
   const [callCard, setCallCard] = useState<CallCardData | null>(null);
-  const [caption, setCaption] = useState("");
   const [tapStatus, setTapStatus] = useState("");
   const [devPreview, setDevPreview] = useState(false);
   useEffect(() => {
@@ -208,7 +219,7 @@ export default function HomeTwinOrb() {
   const wasLiveRef = useRef(false);
   const lastSidRef = useRef("");
   useEffect(() => {
-    if (relay.state === "connecting") { setCallCard(null); setCaption(""); setTapStatus(""); return; }
+    if (relay.state === "connecting") { setCallCard(null); setTapStatus(""); return; }
     const sid = relay.callSid;
     if (relay.state !== "live" || !sid || !AGENT_API) return;
     wasLiveRef.current = true;
@@ -219,10 +230,7 @@ export default function HomeTwinOrb() {
         const r = await fetch(`${ROLEPLAY}/callcard?sid=${encodeURIComponent(sid)}`);
         const d = await r.json();
         if (stopped) return;
-        if (d && d.card && Object.keys(d.card).length) {
-          setCallCard(d.card);
-          if (d.card.said) setCaption(d.card.said);
-        }
+        if (d && d.card && Object.keys(d.card).length) setCallCard(d.card);
       } catch { /* the next tick tries again */ }
     };
     poll();
@@ -242,7 +250,7 @@ export default function HomeTwinOrb() {
       try {
         const r = await fetch(`${ROLEPLAY}/callcard?sid=${encodeURIComponent(sid)}`);
         const d = await r.json();
-        if (d && d.card && Object.keys(d.card).length) { setCallCard(d.card); if (d.card.said) setCaption(d.card.said); }
+        if (d && d.card && Object.keys(d.card).length) setCallCard(d.card);
       } catch { /* the panel just clears on schedule below */ }
     }, 400);
     const clearAfter = window.setTimeout(() => setCallCard(null), 6000);
@@ -285,6 +293,9 @@ export default function HomeTwinOrb() {
   if (!container || !box || !AGENT_API) return null;
   // The slot sits ABOVE the photo's wrapper, which can be outside the column element itself.
   const slot = document.querySelector("[data-sjc-orb-slot]");
+  // The card's own slot sits BELOW the photo's wrapper, in normal flow — never inside .sjc-twin-stage.
+  const cardSlot = document.querySelector("[data-sjc-cardflow-slot]");
+  const activeCard = devPreview ? SAMPLE_CARD : callCard;
 
   const talkSrc = MEDIA + "talking-cutout" + ext.current;
   const listenSrc = MEDIA + "listening-cutout" + ext.current;
@@ -332,15 +343,11 @@ export default function HomeTwinOrb() {
           style={{ opacity: phase === "speaking" ? 1 : 0 }}
           muted loop playsInline autoPlay preload="auto" poster={poster} src={talkSrc}
         />
-        {(devPreview ? SAMPLE_CARD : callCard) && (
-          <div className="sjc-cc-wrap">
-            {(devPreview ? SAMPLE_CARD.said : caption) && (
-              <div className="sjc-cc-caption">{devPreview ? SAMPLE_CARD.said : caption}</div>
-            )}
-            <CallCard card={(devPreview ? SAMPLE_CARD : callCard)!} onTap={tapCard} status={tapStatus} />
-          </div>
-        )}
       </div>
+      {cardSlot && createPortal(
+        <CallCard card={activeCard} onTap={tapCard} status={tapStatus} />,
+        cardSlot
+      )}
     </>,
     container
   );
