@@ -2044,6 +2044,7 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
   --muted: #ffffff;
   --line: #ffffff;
   --line-strong: #ffffff;
+  color: #ffffff; /* the root resolved color:var(--body) to #AFC0D8 and children inherit that value */
 }
 .sjc-design.sjc-design .band--gray,
 .sjc-design.sjc-design .band--white {
