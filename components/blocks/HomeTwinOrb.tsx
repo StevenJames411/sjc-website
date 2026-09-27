@@ -16,9 +16,13 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTwilioRelay } from "@/lib/useTwilioRelay";
+import CallCard, { CallCardData, SAMPLE_CARD } from "@/components/blocks/CallCard";
+import { AGENT_PREFIX } from "@/lib/useAgentThread";
 
 const AGENT_API = process.env.NEXT_PUBLIC_AGENT_API || "";
 const MEDIA = "https://agent-sjc.onrender.com/sjc/roleplay/media/";
+const ROLEPLAY = `${AGENT_API}/${AGENT_PREFIX}/roleplay`;
+const CALLCARD_POLL_MS = 600;
 const ORB_SIZE = 84;
 // The orb's outer ring reaches 48px past its edge (Kay's pulse), so the gap must clear the RINGS, not
 // the button — 14px put the rings on his head.
@@ -191,6 +195,75 @@ export default function HomeTwinOrb() {
     return () => cancelAnimationFrame(raf);
   }, [relay.state]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── THE CALL CARD (ported 2026-09-27 from the practice page's pollCard/tap): while the call is
+  // live, poll /callcard on the CallSid every 600ms and render whatever the brain named. A tap goes
+  // straight to /calltap, into the SAME live call's queue — no session line, no /turn. ─────────────
+  const [callCard, setCallCard] = useState<CallCardData | null>(null);
+  const [caption, setCaption] = useState("");
+  const [tapStatus, setTapStatus] = useState("");
+  const [devPreview, setDevPreview] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && /[?&]cardpreview=1\b/.test(window.location.search)) setDevPreview(true);
+  }, []);
+  const wasLiveRef = useRef(false);
+  const lastSidRef = useRef("");
+  useEffect(() => {
+    if (relay.state === "connecting") { setCallCard(null); setCaption(""); setTapStatus(""); return; }
+    const sid = relay.callSid;
+    if (relay.state !== "live" || !sid || !AGENT_API) return;
+    wasLiveRef.current = true;
+    lastSidRef.current = sid;
+    let stopped = false;
+    const poll = async () => {
+      try {
+        const r = await fetch(`${ROLEPLAY}/callcard?sid=${encodeURIComponent(sid)}`);
+        const d = await r.json();
+        if (stopped) return;
+        if (d && d.card && Object.keys(d.card).length) {
+          setCallCard(d.card);
+          if (d.card.said) setCaption(d.card.said);
+        }
+      } catch { /* the next tick tries again */ }
+    };
+    poll();
+    const id = window.setInterval(poll, CALLCARD_POLL_MS);
+    return () => { stopped = true; window.clearInterval(id); };
+  }, [relay.state, relay.callSid]);
+
+  // AFTER HANGUP (mirrors the practice page's endCall): the brain's closing card/booking often lands
+  // just after the SDK's disconnect event, so one more poll runs 400ms out; the panel then sits a few
+  // seconds for a visitor mid-read before it clears (or clears at once if a new call starts first).
+  useEffect(() => {
+    if (relay.state === "live" || relay.state === "connecting" || !wasLiveRef.current) return;
+    wasLiveRef.current = false;
+    const sid = lastSidRef.current;
+    const lastPoll = window.setTimeout(async () => {
+      if (!sid || !AGENT_API) return;
+      try {
+        const r = await fetch(`${ROLEPLAY}/callcard?sid=${encodeURIComponent(sid)}`);
+        const d = await r.json();
+        if (d && d.card && Object.keys(d.card).length) { setCallCard(d.card); if (d.card.said) setCaption(d.card.said); }
+      } catch { /* the panel just clears on schedule below */ }
+    }, 400);
+    const clearAfter = window.setTimeout(() => setCallCard(null), 6000);
+    return () => { window.clearTimeout(lastPoll); window.clearTimeout(clearAfter); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [relay.state]);
+
+  async function tapCard(t: { kind: "choice" | "slot" | "confirm"; text?: string } | { kind: "field"; field: "first_name" | "last_name" | "phone" | "email"; value: string }) {
+    if (!relay.callSid) return;
+    setTapStatus("");
+    try {
+      const r = await fetch(`${ROLEPLAY}/calltap`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sid: relay.callSid, ...t }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (d && d.reason) setTapStatus(d.reason);
+    } catch { /* the live call still has the visitor's voice as a fallback */ }
+  }
+
   const phase: Phase = relay.state === "connecting" ? "connecting" : relay.state === "live" ? (engaged ? "speaking" : "listening") : "idle";
   const tagline =
     phase === "idle" && relay.error
@@ -259,6 +332,14 @@ export default function HomeTwinOrb() {
           style={{ opacity: phase === "speaking" ? 1 : 0 }}
           muted loop playsInline autoPlay preload="auto" poster={poster} src={talkSrc}
         />
+        {(devPreview ? SAMPLE_CARD : callCard) && (
+          <div className="sjc-cc-wrap">
+            {(devPreview ? SAMPLE_CARD.said : caption) && (
+              <div className="sjc-cc-caption">{devPreview ? SAMPLE_CARD.said : caption}</div>
+            )}
+            <CallCard card={(devPreview ? SAMPLE_CARD : callCard)!} onTap={tapCard} status={tapStatus} />
+          </div>
+        )}
       </div>
     </>,
     container

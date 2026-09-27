@@ -15,9 +15,14 @@ function pageSlug(): string {
 
 // voiceId defaults to "" (the server's own default voice, Brian) — a caller with no voice picker,
 // like the public orb, calls this with zero arguments.
-export function useTwilioRelay(voiceId: string = "") {
+// screen defaults ON (ruled 2026-09-27, the call cards): the server only shows tiles when the call
+// carries params.screen==="1" (voice_routes.py has_screen) — harmless on every caller, so it is the
+// default rather than something each page has to remember to ask for.
+export function useTwilioRelay(voiceId: string = "", opts: { screen?: boolean } = {}) {
+  const withScreen = opts.screen !== false;
   const [state, setState] = useState<RelayState>("idle");
   const [error, setError] = useState("");
+  const [callSid, setCallSid] = useState("");
   const deviceRef = useRef<any>(null);
   const callRef = useRef<any>(null);
   const startingRef = useRef(false);
@@ -35,6 +40,7 @@ export function useTwilioRelay(voiceId: string = "") {
     deviceRef.current = null;
     inputVolume.current = 0;
     outputVolume.current = 0;
+    setCallSid("");
     setState("ended");
   }, []);
 
@@ -74,13 +80,14 @@ export function useTwilioRelay(voiceId: string = "") {
       device.on("error", (e: any) => { setError(e?.message || "device error"); setState("ended"); });
       const params: Record<string, string> = { page: pageSlug() };
       if (voiceId) params.voice = voiceId;
+      if (withScreen) params.screen = "1";
       const call = await device.connect({ params });
       callRef.current = call;
-      call.on("accept", () => setState("live"));
-      call.on("disconnect", () => { inputVolume.current = 0; outputVolume.current = 0; setState("ended"); });
-      call.on("cancel", () => { inputVolume.current = 0; outputVolume.current = 0; setState("ended"); });
-      call.on("reject", () => { inputVolume.current = 0; outputVolume.current = 0; setState("ended"); });
-      call.on("error", (e: any) => { inputVolume.current = 0; outputVolume.current = 0; setError(e?.message || "call error"); setState("ended"); });
+      call.on("accept", () => { setCallSid((call.parameters && call.parameters.CallSid) || ""); setState("live"); });
+      call.on("disconnect", () => { inputVolume.current = 0; outputVolume.current = 0; setCallSid(""); setState("ended"); });
+      call.on("cancel", () => { inputVolume.current = 0; outputVolume.current = 0; setCallSid(""); setState("ended"); });
+      call.on("reject", () => { inputVolume.current = 0; outputVolume.current = 0; setCallSid(""); setState("ended"); });
+      call.on("error", (e: any) => { inputVolume.current = 0; outputVolume.current = 0; setCallSid(""); setError(e?.message || "call error"); setState("ended"); });
       // inputVolume = the visitor's mic; outputVolume = the twin's voice. Both 0-1 (Voice JS SDK,
       // @twilio/voice-sdk ^2.18.5, verified in node_modules/@twilio/voice-sdk/es5/twilio/call.js).
       call.on("volume", (inVol: number, outVol: number) => {
@@ -93,11 +100,11 @@ export function useTwilioRelay(voiceId: string = "") {
     } finally {
       startingRef.current = false;
     }
-  }, [state, voiceId]);
+  }, [state, voiceId, withScreen]);
 
   const toggle = useCallback(() => {
     if (state === "idle" || state === "ended") start(); else hangup();
   }, [state, start, hangup]);
 
-  return { state, error, start, hangup, toggle, inputVolume, outputVolume };
+  return { state, error, start, hangup, toggle, inputVolume, outputVolume, callSid };
 }
