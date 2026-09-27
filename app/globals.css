@@ -1983,7 +1983,8 @@ a.sjc-sys-card--layer:focus-visible {
   /* the player column is the wide one, so the player (not padding) fills the screen height */
   [data-sjc-fhl-split][data-sjc-fhl-split] { grid-template-columns: 4fr 7fr !important; column-gap: 56px !important; }
   [data-sjc-fhl-pill] { margin-bottom: 28px !important; padding: 12px 24px !important; }
-  [data-sjc-fhl-pill][data-sjc-fhl-pill] strong { font-size: 32px !important; }
+  [data-sjc-fhl-pill][data-sjc-fhl-pill] strong { font-size: 52px !important; line-height: 1.1; }
+  [data-sjc-fhl-pill][data-sjc-fhl-pill] strong[data-sjc-fhl-time] { font-size: 22px !important; }
   [data-sjc-fhl-split] h1 { font-size: 34px !important; line-height: 1.25 !important; margin: 0 !important; }
   [data-sjc-fhl-split] h1 + p { font-size: 22px !important; line-height: 1.75 !important; margin-top: 22px !important; }
 }
