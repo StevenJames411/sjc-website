@@ -5,20 +5,31 @@
 // TOP of it, absolutely positioned against the photo's own measured box, so the column's flow
 // height never changes and neither the eyebrow nor the left column ever move.
 //
-// The conversation is the SAME engine as /live and the header's own thread (useAgentThread ->
-// agent-sjc.onrender.com /sjc/web/*) — no new backend, no new voice. The cutout media (twin's
-// muted-idle poster, talking loop, listening loop) is the film already shot and served from
-// /sjc/roleplay/media/ (built 2026-09-19/20, roleplay_routes.py).
+// ⛔ FAST PATH ONLY (ruled 2026-09-27, live on camera 11am Central): the browser-speech-recognition
+// / whole-reply-MP3 thread (useAgentThread, 18-38s of silence per turn) is OUT of this orb. The
+// conversation is now a real Twilio ConversationRelay call (useTwilioRelay — the same engine proven
+// on /voice-lab), server voice default (Brian) and server brain (SJC_TALK_MODEL=claude-opus-5) —
+// no voice id sent from here, so the server's own default is the only default that exists. The
+// cutout media (twin's muted-idle poster, talking loop, listening loop) is the film already shot
+// and served from /sjc/roleplay/media/ (built 2026-09-19/20, roleplay_routes.py).
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useAgentThread } from "@/lib/useAgentThread";
+import { useTwilioRelay } from "@/lib/useTwilioRelay";
 
+const AGENT_API = process.env.NEXT_PUBLIC_AGENT_API || "";
 const MEDIA = "https://agent-sjc.onrender.com/sjc/roleplay/media/";
 const ORB_SIZE = 84;
 // The orb's outer ring reaches 48px past its edge (Kay's pulse), so the gap must clear the RINGS, not
 // the button — 14px put the rings on his head.
 const ORB_GAP = 58;
+
+// THE TWIN'S MOVEMENT SIGNAL, same thresholds/hold as TalkingHero's relay mode (ruled 2026-09-18,
+// believable-movement-in-relay-mode) — reused, not reinvented. The orb only ever needs ONE boolean
+// (is the twin talking right now), because during a live call the visitor's turn IS "listening" —
+// there is no separate idle-while-live state here, unlike the hero's three-state machine.
+const OUT_THRESHOLD = 0.05;
+const ENGAGED_HOLD_MS = 300;
 
 function videoExt(): string {
   if (typeof navigator === "undefined") return ".webm";
@@ -47,28 +58,30 @@ const WAVES_SVG =
 const DOTS_SVG =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
   '<circle cx="8" cy="12" r="0.9" /><circle cx="12" cy="12" r="0.9" /><circle cx="16" cy="12" r="0.9" /></svg>';
-const ICON: Record<string, string> = {
-  idle: MUTED_SVG, on: MIC_SVG, listening: MIC_SVG, thinking: DOTS_SVG, speaking: WAVES_SVG, typing: SPEAKER_SVG,
-};
-const TAGLINE: Record<string, string> = {
+
+type Phase = "idle" | "connecting" | "listening" | "speaking";
+const ICON: Record<Phase, string> = { idle: MUTED_SVG, connecting: DOTS_SVG, listening: MIC_SVG, speaking: WAVES_SVG };
+const TAGLINE: Record<Phase, string> = {
   idle: "Tap and talk to me about growing your business.",
-  // "on" is only ever the 250ms while the mic reopens — it reads as listening, so the line doesn't flicker.
-  on: "Listening… go ahead.",
+  connecting: "Connecting…",
   listening: "Listening… go ahead.",
-  thinking: "Thinking…",
   speaking: "Talking… tap to stop.",
-  typing: "I can't hear you in this browser. Type to me below.",
-  blocked: "Your microphone is off, so I can't hear you. Type to me below.",
 };
+
+// The hook's own catch-all message ("microphone permission denied") plus the real DOMException
+// text every browser actually throws (Chrome: "Permission denied"; Safari: "...not allowed by the
+// user agent...") — none of them share one exact string, so this reads for the family of words.
+function micWasDenied(err: string): boolean {
+  const s = err.toLowerCase();
+  return s.includes("permission") || s.includes("denied") || s.includes("allow") || s.includes("microphone");
+}
 
 type Box = { left: number; top: number; width: number; height: number; orbTop: number; orbLeft: number };
 
 export default function HomeTwinOrb() {
-  const t = useAgentThread({ pollMs: 1200 });
+  const relay = useTwilioRelay();
   const [container, setContainer] = useState<Element | null>(null);
   const [box, setBox] = useState<Box | null>(null);
-  const [talkOn, setTalkOn] = useState(false);
-  const [draft, setDraft] = useState("");
   const ext = useRef(videoExt());
 
   // Find the builder's own column — it exists in the server-rendered HTML already, but retry a
@@ -142,8 +155,6 @@ export default function HomeTwinOrb() {
     };
   }, [container]);
 
-  useEffect(() => () => t.stopHandsFree(), []); // eslint-disable-line react-hooks/exhaustive-deps
-
   // THE SERVER ALREADY DREW THE ORB (lib/twinColSsr, 09-27): wire that one instead of portaling a
   // second, so the first paint and the live page are the same pixels and nothing swaps on hydration.
   const toggleRef = useRef<() => void>(() => {});
@@ -156,35 +167,52 @@ export default function HomeTwinOrb() {
     setSsrOrb(b);
     return () => b.removeEventListener("click", onTap);
   }, []);
-  // ⛔ NO MUTE SIGN, AND SAY WHAT IS HAPPENING (09-27): the orb wore a crossed-out speaker the whole
-  // call, and a 15s think looked like a dead page. Speaker when idle, mic while it listens, sound waves
-  // while it talks; the line under it names the state.
-  const phase = !talkOn ? "idle" : t.listening ? "listening" : t.speaking ? "speaking" : (t.busy || t.preparing) ? "thinking" : t.micProblem ? "typing" : "on";
+  toggleRef.current = relay.toggle;
+
+  // ── IS THE TWIN TALKING RIGHT NOW — a single held boolean off the call's own volume ref, on a
+  // rAF loop only while the call is live. The hold (ENGAGED_HOLD_MS) stops a half-second breath
+  // mid-sentence from flapping the film back to "listening". ──────────────────────────────────
+  const [engaged, setEngaged] = useState(false);
+  const engagedRef = useRef(false);
+  useEffect(() => {
+    if (relay.state !== "live") {
+      if (engagedRef.current) { engagedRef.current = false; setEngaged(false); }
+      return;
+    }
+    let raf = 0; let engagedUntil = 0;
+    const tick = () => {
+      const now = performance.now();
+      if (relay.outputVolume.current > OUT_THRESHOLD) engagedUntil = now + ENGAGED_HOLD_MS;
+      const next = now < engagedUntil;
+      if (next !== engagedRef.current) { engagedRef.current = next; setEngaged(next); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [relay.state]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const phase: Phase = relay.state === "connecting" ? "connecting" : relay.state === "live" ? (engaged ? "speaking" : "listening") : "idle";
+  const tagline =
+    phase === "idle" && relay.error
+      ? micWasDenied(relay.error)
+        ? "Your microphone is off. Allow it and tap again."
+        : "Couldn't connect. Tap to try again."
+      : TAGLINE[phase];
+
   useEffect(() => {
     if (!ssrOrb) return;
-    ssrOrb.setAttribute("aria-label", talkOn ? "Tap to stop talking to Steven" : "Tap and I'll talk to you");
+    const on = phase !== "idle";
+    ssrOrb.setAttribute("aria-label", on ? "Tap to stop talking to Steven" : "Tap and I'll talk to you");
     ssrOrb.setAttribute("data-phase", phase);
     ssrOrb.innerHTML = ICON[phase] || SPEAKER_SVG;
     const line = document.querySelector("[data-sjc-orb-slot] .sjc-twin-tagline");
-    if (line) line.textContent = phase === "typing" && t.micProblem === "blocked" ? TAGLINE.blocked : TAGLINE[phase];
-  }, [ssrOrb, talkOn, phase, t.micProblem]);
+    if (line) line.textContent = tagline;
+  }, [ssrOrb, phase, tagline]);
 
-  // Every start is an open: a stop-and-re-tap used to send nothing and sit on "Listening…" in silence.
-  // The server answers each open with this page's greeting; the mic opens when the greeting ends.
-  function toggle() {
-    if (talkOn) { t.stopHandsFree(); setTalkOn(false); return; }
-    setTalkOn(true);
-    t.startHandsFree({ waitForReply: true });
-    t.send("Hi", { hidden: true, open: true });
-  }
-  toggleRef.current = toggle;
-
-  if (!container || !box || !t.ready) return null;
+  if (!container || !box || !AGENT_API) return null;
   // The slot sits ABOVE the photo's wrapper, which can be outside the column element itself.
   const slot = document.querySelector("[data-sjc-orb-slot]");
 
-  // The film follows the same switch as the orb: once stopped, he is idle whatever is still settling.
-  const state = !talkOn ? "idle" : t.listening ? "listening" : t.speaking ? "speaking" : (t.busy || t.preparing) ? "thinking" : "idle";
   const talkSrc = MEDIA + "talking-cutout" + ext.current;
   const listenSrc = MEDIA + "listening-cutout" + ext.current;
   const poster = MEDIA + "twin-cutout.webp";
@@ -193,8 +221,8 @@ export default function HomeTwinOrb() {
       <button
         type="button"
         className="sjc-twin-orb"
-        aria-label={talkOn ? "Tap to stop talking to Steven" : "Tap and I'll talk to you"}
-        onClick={toggle}
+        aria-label={phase !== "idle" ? "Tap to stop talking to Steven" : "Tap and I'll talk to you"}
+        onClick={relay.toggle}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="10" />
@@ -207,47 +235,28 @@ export default function HomeTwinOrb() {
 
   return createPortal(
     <>
-      {/* NO DEAD END (09-27): no speech recognition here (Firefox, some in-app browsers) or the mic is
-          blocked — a type box under the tagline keeps the conversation going; replies still speak. */}
-      {slot && talkOn && t.micProblem && createPortal(
-        <form
-          onSubmit={(e) => { e.preventDefault(); const v = draft.trim(); if (v) { t.send(v); setDraft(""); } }}
-          style={{ marginTop: 14, display: "flex", gap: 8, width: "100%", maxWidth: 340 }}
-        >
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            aria-label="Type your message"
-            style={{ flex: 1, minWidth: 0, padding: "10px 14px", borderRadius: 999, border: "1.5px solid #fff", background: "transparent", color: "#fff", fontSize: 16 }}
-          />
-          <button type="submit" style={{ padding: "10px 16px", borderRadius: 999, border: 0, background: "#f0b323", color: "#0A0E27", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
-            Send
-          </button>
-        </form>,
-        slot
-      )}
       {slot && !ssrOrb && createPortal(
         <>
           {orb}
           {/* Kay's lesson: nobody taps a glowing circle unless it says to. Clears the orb's 48px rings. */}
-          <div className="sjc-twin-tagline">Tap and talk to me about growing your business.</div>
+          <div className="sjc-twin-tagline">{tagline}</div>
         </>,
         slot
       )}
       <div
         className="sjc-twin-stage"
-        data-state={state}
+        data-state={phase}
         style={{ position: "absolute", left: box.left, top: box.top, width: box.width, height: box.height, zIndex: 2 }}
       >
         <img className="sjc-twin-video" src={poster} alt="Steven Barchetti" style={{ opacity: 1 }} />
         <video
           className="sjc-twin-video"
-          style={{ opacity: state === "listening" ? 1 : 0 }}
+          style={{ opacity: phase === "listening" ? 1 : 0 }}
           muted loop playsInline autoPlay preload="auto" poster={poster} src={listenSrc}
         />
         <video
           className="sjc-twin-video"
-          style={{ opacity: state === "speaking" ? 1 : 0 }}
+          style={{ opacity: phase === "speaking" ? 1 : 0 }}
           muted loop playsInline autoPlay preload="auto" poster={poster} src={talkSrc}
         />
       </div>
