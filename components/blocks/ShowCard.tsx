@@ -52,7 +52,7 @@ export default function ShowCard() {
         <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(26px,3.4vw,52px)", marginTop: 14, color: "#ffd700" }}>
           {hh}:{pad(mm)}:{pad(ss)}
         </div>
-        <div style={{ opacity: 0.8, marginTop: 10, fontSize: 15 }}>Live on YouTube and Facebook, and right here.</div>
+        <div style={{ opacity: 0.8, marginTop: 10, fontSize: 15 }}>Live here, YouTube and Facebook.</div>
       </div>
       <img src={PHOTO} alt="Steven Barchetti" style={{ height: "92%", alignSelf: "flex-end", marginRight: "3%" }} />
     </div>,
