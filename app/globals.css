@@ -1000,7 +1000,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-orb-slot] { padding: 34px 0 6px !important; }
   [data-sjc-orb-slot] .sjc-twin-orb { width: 70px; height: 70px; }
   [data-sjc-orb-slot] .sjc-twin-orb svg { width: 44px; height: 44px; }
-  .sjc-twin-tagline { margin-top: 40px; font-size: 15px; }
+  .sjc-twin-tagline { margin-top: 40px; font-size: 14px; white-space: nowrap; }
   [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 270px !important; }
   /* the twin column rises beside the eyebrow (the eyebrow's right side is empty), so the six systems
      sit right under the eyebrow and both columns end together */
