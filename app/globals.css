@@ -1981,7 +1981,9 @@ a.sjc-sys-card--layer:focus-visible {
     padding-top: 40px !important; padding-bottom: 40px !important;
   }
   [data-sjc-fhl-split][data-sjc-fhl-split] { grid-template-columns: 5fr 6fr !important; column-gap: 64px !important; }
-  [data-sjc-fhl-split] h1 { font-size: 40px !important; margin: 28px 0 6px !important; }
-  [data-sjc-fhl-split] h1 + p { font-size: 30px !important; line-height: 1.25 !important; }
-  [data-sjc-fhl-split] h1 + p + p { font-size: 22px !important; line-height: 1.75 !important; margin-top: 22px !important; }
+  [data-sjc-fhl-pill] { font-size: 24px !important; }
+  [data-sjc-fhl-split] h1 { font-size: 34px !important; line-height: 1.25 !important; margin: 0 !important; }
+  [data-sjc-fhl-split] h1 + p { font-size: 22px !important; line-height: 1.75 !important; margin-top: 22px !important; }
 }
+
+@media (max-width: 1023px) { [data-sjc-fhl-pill] { font-size: 17px !important; border-radius: 1.25rem !important; } [data-sjc-fhl-split] h1 { font-size: 26px !important; } }
