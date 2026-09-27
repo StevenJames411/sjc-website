@@ -1029,7 +1029,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > div:last-child {
     flex: 1; display: flex; flex-direction: column; justify-content: space-between;
   }
-  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > div:last-child p { font-size: 21px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child > div:last-child p { font-size: 20px !important; }
 }
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
