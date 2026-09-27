@@ -1972,3 +1972,16 @@ a.sjc-sys-card--layer:focus-visible {
     padding-top: 48px !important; padding-bottom: 48px !important;
   }
 }
+
+/* FUNNEL HACK LIVE (09-27): the hero IS the fold - text left, live player right, filling the screen under the
+   nav like the twin pages. Same type sizes as the twin pages; never bigger to fill space. */
+@media (min-width: 1024px) {
+  section:has([data-sjc-fhl-split]) {
+    min-height: calc(100vh - 76px); display: flex !important; flex-direction: column; justify-content: center;
+    padding-top: 40px !important; padding-bottom: 40px !important;
+  }
+  [data-sjc-fhl-split][data-sjc-fhl-split] { grid-template-columns: 5fr 6fr !important; column-gap: 64px !important; }
+  [data-sjc-fhl-split] h1 { font-size: 40px !important; margin: 28px 0 6px !important; }
+  [data-sjc-fhl-split] h1 + p { font-size: 30px !important; line-height: 1.25 !important; }
+  [data-sjc-fhl-split] h1 + p + p { font-size: 22px !important; line-height: 1.75 !important; margin-top: 22px !important; }
+}
