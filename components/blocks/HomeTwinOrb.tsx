@@ -27,6 +27,22 @@ function videoExt(): string {
   return safari ? ".mov" : ".webm";
 }
 
+const SPEAKER_SVG =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
+  '<path d="M5.2 9.7v4.6h2.3l3.2 2.8V6.9L7.5 9.7z" /><path d="M13.3 9.6a3.4 3.4 0 0 1 0 4.8" />' +
+  '<path d="M15.4 7.6a6.2 6.2 0 0 1 0 8.8" /></svg>';
+const MIC_SVG =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" />' +
+  '<rect x="9.6" y="5.6" width="4.8" height="8.2" rx="2.4" /><path d="M7.4 11.6a4.6 4.6 0 0 0 9.2 0" />' +
+  '<path d="M12 16.2v2.4" /></svg>';
+const TAGLINE: Record<string, string> = {
+  idle: "Tap and talk to me about growing your business.",
+  on: "I'm here. Go ahead.",
+  listening: "Listening… go ahead.",
+  thinking: "Thinking…",
+  speaking: "Talking… tap to stop.",
+};
+
 type Box = { left: number; top: number; width: number; height: number; orbTop: number; orbLeft: number };
 
 export default function HomeTwinOrb() {
@@ -122,9 +138,18 @@ export default function HomeTwinOrb() {
     setSsrOrb(b);
     return () => b.removeEventListener("click", onTap);
   }, []);
+  // ⛔ NO MUTE SIGN, AND SAY WHAT IS HAPPENING (09-27): the orb wore a crossed-out speaker the whole
+  // call, and a 15s think looked like a dead page. Speaker when idle, mic while it listens, sound waves
+  // while it talks; the line under it names the state.
+  const phase = !talkOn ? "idle" : t.listening ? "listening" : t.speaking ? "speaking" : (t.busy || t.preparing) ? "thinking" : "on";
   useEffect(() => {
-    ssrOrb?.setAttribute("aria-label", talkOn ? "Tap to stop talking to Steven" : "Tap and I'll talk to you");
-  }, [ssrOrb, talkOn]);
+    if (!ssrOrb) return;
+    ssrOrb.setAttribute("aria-label", talkOn ? "Tap to stop talking to Steven" : "Tap and I'll talk to you");
+    ssrOrb.setAttribute("data-phase", phase);
+    ssrOrb.innerHTML = phase === "listening" ? MIC_SVG : SPEAKER_SVG;
+    const line = document.querySelector("[data-sjc-orb-slot] .sjc-twin-tagline");
+    if (line) line.textContent = TAGLINE[phase];
+  }, [ssrOrb, talkOn, phase]);
 
   function toggle() {
     if (!talkOn) {
@@ -141,7 +166,7 @@ export default function HomeTwinOrb() {
   // The slot sits ABOVE the photo's wrapper, which can be outside the column element itself.
   const slot = document.querySelector("[data-sjc-orb-slot]");
 
-  const state = t.listening ? "listening" : t.speaking ? "speaking" : t.busy ? "thinking" : "idle";
+  const state = t.listening ? "listening" : t.speaking ? "speaking" : (t.busy || t.preparing) ? "thinking" : "idle";
   const talkSrc = MEDIA + "talking-cutout" + ext.current;
   const listenSrc = MEDIA + "listening-cutout" + ext.current;
   const poster = MEDIA + "twin-cutout.webp";
@@ -158,7 +183,6 @@ export default function HomeTwinOrb() {
           <path d="M5.2 9.7v4.6h2.3l3.2 2.8V6.9L7.5 9.7z" />
           <path d="M13.3 9.6a3.4 3.4 0 0 1 0 4.8" />
           <path d="M15.4 7.6a6.2 6.2 0 0 1 0 8.8" />
-          <path d="M4.9 4.9 19.1 19.1" />
         </svg>
       </button>
   );
@@ -186,7 +210,7 @@ export default function HomeTwinOrb() {
         />
         <video
           className="sjc-twin-video"
-          style={{ opacity: state === "speaking" || state === "thinking" ? 1 : 0 }}
+          style={{ opacity: state === "speaking" ? 1 : 0 }}
           muted loop playsInline autoPlay preload="auto" poster={poster} src={talkSrc}
         />
       </div>

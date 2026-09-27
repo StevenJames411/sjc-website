@@ -47,6 +47,7 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);        // waiting on a reply
   const [speaking, setSpeaking] = useState(false); // a reply is being voiced
+  const [preparing, setPreparing] = useState(false); // a reply arrived; its voice is loading
   const [listening, setListening] = useState(false);
   const [heard, setHeard] = useState("");
   const [active, setActive] = useState(false);    // polling on/off
@@ -121,30 +122,15 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function speakWithBrowser(text: string, onEnd: () => void) {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) { onEnd(); return; }
-    const u = new SpeechSynthesisUtterance(sayItRight(text));
-    const voices = window.speechSynthesis.getVoices();
-    const want = process.env.NEXT_PUBLIC_AGENT_VOICE || "";
-    const pick =
-      (want && voices.find((v) => v.name.toLowerCase().includes(want.toLowerCase()))) ||
-      voices.find((v) => /^(Daniel|Oliver|Arthur)\b/i.test(v.name) && v.lang.startsWith("en")) ||
-      voices.find((v) => /Google UK English Male|Microsoft (Ryan|George|Guy)|Aaron|Fred/i.test(v.name)) ||
-      voices.find((v) => v.lang.startsWith("en-GB")) ||
-      voices.find((v) => v.lang.startsWith("en"));
-    if (pick) u.voice = pick;
-    u.rate = 1.0;
-    u.onend = onEnd;
-    u.onerror = onEnd;
-    window.speechSynthesis.speak(u);
-  }
-
   // One id, one line, one voice — used for real replies (id = the message id) AND for the two
   // canned nudge lines (id = "nudge-1" / "nudge-2", pre-cached on the voice server so a silent
   // visitor never waits on a cold GPU). Same server-first, browser-fallback order either way.
-  async function speakRaw(id: string | number, text: string, onDone: () => void) {
+  async function speakRaw(id: string | number, _text: string, onDone: () => void) {
+    // ⛔ HIS VOICE OR NOTHING (09-27): the robot browser voice is gone. It fired whenever the cloned
+    // voice was slow or a stop-tap aborted play() — "sounded like a computer piece of shit". Now a
+    // miss is silence (the words are still in the thread), and a stop is a stop.
     speakingRef.current = true;
-    setSpeaking(true);
+    setPreparing(true);
     try { recog.current?.abort(); } catch { /* not listening */ }
     setListening(false);
     let finished = false;
@@ -152,25 +138,26 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
       if (finished) return;
       finished = true;
       speakingRef.current = false;
+      setPreparing(false);
       onDone();
     };
-    try {
-      const url = `${AGENT_API}/${AGENT_PREFIX}/web/speak/${id}`;
-      // ⛔ NO-STORE (09-27): Chrome kept a failed answer for this URL and replayed it in 2ms, so the
-      // cloned voice was never asked for and the robot voice spoke instead. One retry before giving up.
-      const ask = () => fetch(url, { method: "HEAD", cache: "no-store" });
-      const head = await ask().catch(() => new Promise<Response>((r) => setTimeout(() => r(ask()), 1500)));
-      if (head.ok) {
-        const a = audio.current || new Audio();
-        audio.current = a;
-        a.src = url;
-        a.onended = onEnd;
-        a.onerror = () => speakWithBrowser(text, onEnd);
-        await a.play();
-        return;
-      }
-    } catch { /* fall through to the browser voice */ }
-    speakWithBrowser(text, onEnd);
+    const url = `${AGENT_API}/${AGENT_PREFIX}/web/speak/${id}`;
+    // ⛔ NO-STORE: Chrome once replayed a cached failure in 2ms. A fresh reply's voice takes ~5s to
+    // make; three tries 1.5s apart ride out a slow or cold voice server.
+    let ok = false;
+    for (let i = 0; i < 3 && !ok; i++) {
+      if (!speakingRef.current) return onEnd(); // stopped while we waited
+      try { ok = (await fetch(url, { method: "HEAD", cache: "no-store" })).ok; } catch { ok = false; }
+      if (!ok) await new Promise((r) => setTimeout(r, 1500));
+    }
+    if (!ok || !speakingRef.current) return onEnd();
+    const a = audio.current || new Audio();
+    audio.current = a;
+    a.src = url;
+    a.onplaying = () => { setPreparing(false); setSpeaking(true); }; // the mouth moves when the sound does
+    a.onended = onEnd;
+    a.onerror = onEnd;
+    try { await a.play(); } catch { onEnd(); }
   }
 
   async function speak(m: Msg) {
@@ -283,11 +270,12 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
     try { audio.current?.pause(); } catch { /* ignore */ }
     setListening(false);
     setSpeaking(false);
+    setPreparing(false);
   }
 
   return {
     ready: !!AGENT_API,
-    msgs, busy, speaking, listening, heard, active,
+    msgs, busy, speaking, preparing, listening, heard, active,
     handsFree: () => handsFree.current,
     send, startListening, startHandsFree, stopHandsFree, speakSystemLine,
     setActive, setVoiceOn,
