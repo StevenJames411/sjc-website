@@ -30,6 +30,14 @@ const ORB_SIZE = 84;
 // The orb's outer ring reaches 48px past its edge (Kay's pulse), so the gap must clear the RINGS, not
 // the button — 14px put the rings on his head.
 const ORB_GAP = 58;
+// THE CARD MOVES SIDE-ON A LAPTOP (09-27, Steven: "too tall for the hero... move it beside me, not
+// under me"). Fixed pixel width/gap so the card's right edge is computed straight off box.left —
+// it can only ever land left of the photo, never on it, whatever its own content height turns out
+// to be. It is allowed to run into the left column's text (his call); it may never reach the photo
+// or the orb, which top-alignment (not vertical centring) guarantees for free.
+const CARD_FLOAT_WIDTH = 340;
+const CARD_FLOAT_GAP = 28;
+const LAPTOP_MQ = "(min-width: 1024px)";
 
 // THE TWIN'S MOVEMENT SIGNAL, same thresholds/hold as TalkingHero's relay mode (ruled 2026-09-18,
 // believable-movement-in-relay-mode) — reused, not reinvented. The orb only ever needs ONE boolean
@@ -216,6 +224,14 @@ export default function HomeTwinOrb() {
   useEffect(() => {
     if (typeof window !== "undefined" && /[?&]cardpreview=1\b/.test(window.location.search)) setDevPreview(true);
   }, []);
+  const [isLaptop, setIsLaptop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(LAPTOP_MQ);
+    const update = () => setIsLaptop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
   const wasLiveRef = useRef(false);
   const lastSidRef = useRef("");
   useEffect(() => {
@@ -344,9 +360,19 @@ export default function HomeTwinOrb() {
           muted loop playsInline autoPlay preload="auto" poster={poster} src={talkSrc}
         />
       </div>
-      {cardSlot && createPortal(
+      {!isLaptop && cardSlot && createPortal(
         <CallCard card={activeCard} onTap={tapCard} status={tapStatus} />,
         cardSlot
+      )}
+      {/* LAPTOP: absolute against the twin column, left of the photo, top-aligned with it — never in
+          flow, so the hero's height (and everything below it) never moves while a card is showing. */}
+      {isLaptop && (
+        <div
+          className="sjc-cc-desk"
+          style={{ position: "absolute", top: box.top, left: box.left - CARD_FLOAT_GAP - CARD_FLOAT_WIDTH, width: CARD_FLOAT_WIDTH, zIndex: 6 }}
+        >
+          <CallCard card={activeCard} onTap={tapCard} status={tapStatus} variant="float" />
+        </div>
       )}
     </>,
     container
