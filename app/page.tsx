@@ -62,7 +62,13 @@ export default async function Home() {
     // from here on it is simply their website. homeFallback: whatever their FIRST page is called.
     const r = await resolvePage(h.site.id, "home", true);
     if (!r) notFound();
-    return <SitePageBody data={r.data} siteId={r.site.id} page={r.slug} />;
+    // SJC's own apex is a builder site too (kind "client", id SJC) — the twin mounts HERE for it.
+    return (
+      <>
+        <SitePageBody data={r.data} siteId={r.site.id} page={r.slug} />
+        {r.site.id === SJC && <HomeTwinOrb />}
+      </>
+    );
   }
 
   // SJC's home renders through the builder exactly like every other page: the published snapshot
