@@ -74,7 +74,7 @@ export default function HomeTwinOrb() {
     // THE ORB TAKES REAL SPACE (09-26): pinned over the old photo it floated into the section top on
     // a laptop and onto the eyebrow on a phone. A slot in the flow, above the photo's wrapper, holds it.
     const wrap = img.parentElement as HTMLElement;
-    if (!container.querySelector("[data-sjc-orb-slot]")) {
+    if (!document.querySelector("[data-sjc-orb-slot]")) {
       const slot = document.createElement("div");
       slot.setAttribute("data-sjc-orb-slot", "");
       slot.style.cssText = "display:flex;justify-content:center;padding:52px 0 44px";
@@ -113,7 +113,8 @@ export default function HomeTwinOrb() {
   }
 
   if (!container || !box || !t.ready) return null;
-  const slot = container.querySelector("[data-sjc-orb-slot]");
+  // The slot sits ABOVE the photo's wrapper, which can be outside the column element itself.
+  const slot = document.querySelector("[data-sjc-orb-slot]");
 
   const state = t.listening ? "listening" : t.speaking ? "speaking" : t.busy ? "thinking" : "idle";
   const talkSrc = MEDIA + "talking-cutout" + ext.current;
