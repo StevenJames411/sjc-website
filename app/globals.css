@@ -1041,11 +1041,11 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   /* the pill hugs its words - it is a label, not a bar across the column */
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > :first-child { align-self: flex-start; width: auto !important; max-width: 100%; }
   /* equal air above and below the headline pair; the headline and its gold second line stay together */
-  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 { margin: 40px 0 0 !important; font-size: 44px !important; line-height: 1.15 !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 { margin: 48px 0 0 !important; font-size: 44px !important; line-height: 1.15 !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 + p { margin-top: 10px !important; font-size: 30px !important; }
-  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child { margin-top: 32px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child { margin-top: 40px !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child {
-    font-size: 22px !important; line-height: 1.7 !important;
+    font-size: 22px !important; line-height: 1.85 !important;
   }
 }
 .sjc-twin-orb {
