@@ -197,7 +197,7 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
   }, [msgs, voiceOn, speaking]);
 
   // ── send ──────────────────────────────────────────────────────────────────────────────────
-  async function send(text: string, o: { hidden?: boolean } = {}) {
+  async function send(text: string, o: { hidden?: boolean; open?: boolean } = {}) {
     const t = text.trim();
     if (!t || !AGENT_API) return;
     if (o.hidden) hiddenTexts.current.add(t);
@@ -208,7 +208,7 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
         method: "POST",
         headers: { "content-type": "application/json" },
         // THE PAGE IS CONTEXT: the slug rides with every message so the twin opens on this page's subject.
-        body: JSON.stringify({ session: session.current, text: t, page: pageSlug() }),
+        body: JSON.stringify({ session: session.current, text: t, page: pageSlug(), ...(o.open ? { open: true } : {}) }),
       });
       setTimeout(poll, 600);
     } catch {

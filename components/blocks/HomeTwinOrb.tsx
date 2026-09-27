@@ -113,7 +113,7 @@ export default function HomeTwinOrb() {
     if (!talkOn) {
       setTalkOn(true);
       t.startHandsFree();
-      if (!started.current) { started.current = true; t.send("Hi", { hidden: true }); }
+      if (!started.current) { started.current = true; t.send("Hi", { hidden: true, open: true }); }
       return;
     }
     if (t.handsFree()) { t.stopHandsFree(); setTalkOn(false); } else { t.startHandsFree(); }
