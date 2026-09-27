@@ -992,7 +992,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
 /* the twin's picture is positioned against its OWN column on every page (on Premium Smart Websites it
    anchored to the section and landed on top of the left column's text) */
 [data-sjc-twin-col] { overflow: visible; position: relative; }
-.sjc-twin-tagline { margin-top: 54px; color: rgba(255,255,255,.88); font-size: 17px; line-height: 1.4; text-align: center; }
+.sjc-twin-tagline { margin-top: 54px; color: #fff; font-size: 17px; line-height: 1.4; text-align: center; }
 @media (max-width: 640px) { .sjc-twin-tagline { font-size: 16px; margin-top: 50px; } }
 /* LAPTOP (09-26): the twin column is taller than the six systems, and the split's items-center pushed
    the left column down, opening a gap under the eyebrow. Both columns start at the top; the twin
@@ -1441,7 +1441,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   max-width: none;
   font-size: 12px;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.55);
+  color: #fff;
 }
 
 /* ⭐ THE PODCAST DIVIDERS — ONE WEIGHT, TWO JOBS. Steven, 08-31: *"categories get a bar above it
@@ -1942,7 +1942,7 @@ a.sjc-sys-card--layer:focus-visible {
 .th-strip { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 8px 14px; background: #0a1530; color: #fff; border-bottom: 1px solid rgba(255, 255, 255, .12); font: 13px/1.3 "IBM Plex Sans", system-ui, sans-serif; }
 .th-strip-group { display: inline-flex; align-items: center; gap: 6px; }
 .th-strip-end { margin-left: auto; }
-.th-strip-sel { color: rgba(255, 255, 255, .75); font-size: 12.5px; }
+.th-strip-sel { color: #fff; font-size: 12.5px; }
 .th-strip-note { color: #f0b323; font-size: 12px; font-weight: 600; }
 /* ⛔ ONLY THE STRIP'S OWN PILLS. The px stepper inside the strip is the studio's SizeStepper with
    its own white buttons; the first cut painted every button white-on-white and the − and + were
@@ -1953,7 +1953,7 @@ a.sjc-sys-card--layer:focus-visible {
 /* the stepper inside the strip is the studio's own; give it the dark ground and keep its glyphs dark */
 .th-strip input[type="number"] { background: #06101f; color: #fff; border-color: rgba(255, 255, 255, .3); }
 .th-strip .th-strip-group > div > div { margin: 0; }
-.th-strip .th-strip-group > div > div > span { color: rgba(255, 255, 255, .7); }
+.th-strip .th-strip-group > div > div > span { color: #fff; }
 /* SizeStepper's − and + are white buttons that never set a text colour; inside the dark strip
    they inherited white and were blank squares (Steven's screenshot, 09-12 14:18). Name it. */
 .th-strip .th-strip-group > div button { color: #111827; }
