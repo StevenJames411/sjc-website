@@ -1049,8 +1049,8 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   /* the pill hugs its words - it is a label, not a bar across the column */
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > :first-child { align-self: flex-start; width: auto !important; max-width: 100%; }
   /* equal air above and below the headline pair; the headline and its gold second line stay together */
-  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 { margin: 48px 0 0 !important; font-size: 48px !important; line-height: 1.15 !important; }
-  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 + p { margin-top: 0 !important; font-size: 48px !important; line-height: 1.15 !important; font-weight: 700 !important; color: #fff !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 { margin: 48px 0 0 !important; font-size: 36px !important; line-height: 1.2 !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 + p { margin-top: 0 !important; font-size: 36px !important; line-height: 1.2 !important; font-weight: 700 !important; color: #fff !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child { margin-top: 40px !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child {
     font-size: 24px !important; line-height: 1.8 !important;
