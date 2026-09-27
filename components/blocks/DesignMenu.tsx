@@ -142,9 +142,13 @@ export default function DesignMenu() {
       Array.from(root.querySelectorAll<HTMLElement>("div,nav,ul")).find(looksLikePanel);
     if (!panel || panel === button) return;
 
+    // An icon-only hamburger announces as just "button" to a screen reader. If the design gave it
+    // no name, give it one that follows the state (globals.css turns the icon into an X while open).
+    const ownLabel = button.getAttribute("aria-label");
     const set = (open: boolean) => {
       panel.classList.toggle(HIDDEN, !open);
       button.setAttribute("aria-expanded", String(open));
+      if (!ownLabel) button.setAttribute("aria-label", open ? "Close menu" : "Open menu");
     };
     const isOpen = () => !panel.classList.contains(HIDDEN);
 

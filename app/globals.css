@@ -1237,6 +1237,59 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   }
 }
 
+/* ── PHONE LANE (swarm audit 2026-09-27) ─────────────────────────────────────────────────────
+   Phone-only layout fixes. Every rule sits inside a max-width query, so the laptop is unchanged. */
+@media (max-width: 1023px) {
+  /* The hamburger was a 30x32 target, the only door into navigation on a phone. 44x44 now, and it
+     becomes an X while the drawer is open so there is an obvious way out of a 15-item menu.
+     ⛔ The drawer itself keeps NO scrim — Steven ruled that twice (see the drawer block above). */
+  #global-header#global-header [data-landingsite-mobile-menu-toggle] {
+    min-width: 44px; min-height: 44px; margin-right: -7px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  #global-header#global-header [data-landingsite-mobile-menu-toggle][aria-expanded="true"] svg { display: none !important; }
+  #global-header#global-header [data-landingsite-mobile-menu-toggle][aria-expanded="true"]::before {
+    content: "\2715"; font-size: 28px; line-height: 1; font-weight: 700; color: #fff;
+  }
+  /* The page under the open drawer no longer scrolls along with it. */
+  html:has(#global-header [data-landingsite-mobile-menu]:not(.hidden)),
+  html:has(#global-header [data-landingsite-mobile-menu]:not(.hidden)) body { overflow: hidden; }
+}
+@media (max-width: 640px) {
+  /* A bare URL in body copy pushed blueprint-website 21px wider than the screen. */
+  main .rt, main p, main li { overflow-wrap: break-word; }
+
+  /* "Appointments" / "Reactivation" ran into the right edge of the half-width system cards. */
+  a.sjc-sys-card.sjc-sys-card { padding-left: 12px !important; padding-right: 12px !important; }
+  a.sjc-sys-card.sjc-sys-card > span:first-child { gap: 7px !important; font-size: min(16px, 3.8vw) !important; }
+  .sjc-design.sjc-design .sixgrid h3 { font-size: min(16px, 3.9vw) !important; }
+  .sjc-design.sjc-design .sixgrid .space-x-3 > h3 { margin-left: 8px !important; }
+  .sjc-design.sjc-design .sixgrid .space-x-3 > span:first-child { margin-right: 0 !important; }
+
+  /* Tap targets under 40px tall grow to 44px WITHOUT moving anything: the padding widens the hit
+     area and the equal negative margin gives the space straight back to the line. */
+  #global-footer .sjc-foot-legal a { padding-top: 12px; padding-bottom: 12px; margin-top: -12px; margin-bottom: -12px; }
+  .sjc-design a.sjc-sys-link.sjc-sys-link,
+  .sjc-design a.sjc-card-link.sjc-card-link,
+  .sjc-design .sixgrid a.underline,
+  .sjc-design .rounded-2xl > a.underline {
+    padding-top: 11px; padding-bottom: 11px; margin-top: -11px; margin-bottom: -11px;
+  }
+
+  /* The booking block ran edge to edge on About and Podcast; every other page insets it 16px. */
+  main > div.mx-auto.w-full:has(> div.rounded-2xl.border) { padding-left: 16px; padding-right: 16px; }
+
+  /* Labels at 10-11.5px come up to a readable phone size. */
+  .sjc-design.sjc-design .rrow .rwho em,
+  .sjc-design.sjc-design .msg__who { font-size: 12px; }
+  .sjc-design #chloe-page#chloe-page .job .also em,
+  .sjc-design #chloe-page#chloe-page .card .tag em,
+  .sjc-design #chloe-page#chloe-page .miss .lab,
+  .sjc-design.sjc-design .pm-tabname > span,
+  .sjc-design.sjc-design .pm-mgrp > span,
+  .sjc-design.sjc-design #pm-sec#pm-sec .pm-xe { font-size: 12.5px; }
+}
+
 /* ⭐ THE DESKTOP DROPDOWN WEARS THE PHONE DRAWER'S CLOTHES (2026-09-01, Steven's ask).
    The drawer above and the two Services/Company panels are the SAME menu at two widths, and they
    looked like two different websites: gold capsules on the phone, a flat royal-blue slab with

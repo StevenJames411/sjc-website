@@ -57,7 +57,7 @@ export default function ShowCard() {
         </div>
         <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(26px,3vw,46px)", color: "#ffd700", lineHeight: 1.1, marginTop: 6 }}>
           {hh}:{pad(mm)}:{pad(ss)}
-          <span style={{ fontSize: "0.38em", marginLeft: 10, opacity: 0.9 }}>hours</span>
+          <span style={{ fontSize: "max(0.38em, 13px)", marginLeft: 10 }}>hours</span>
         </div>
       </div>
       <div style={{ flex: 1, minHeight: 0, width: "100%", display: "flex", justifyContent: "center", alignItems: "flex-end", marginTop: "9%" }}>
