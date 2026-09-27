@@ -1062,6 +1062,9 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
   display: flex; align-items: center; justify-content: center;
   background: #f0b323 !important; cursor: pointer; animation: sjctwinpulse 2.6s ease-in-out infinite;
+  /* ⛔ ABOVE THE HERO'S GLOW (09-27): the builder's decorative blur circle (absolute, top-right, later
+     in the DOM) painted over the orb and swallowed every click — it looked right and did nothing. */
+  position: relative; z-index: 20;
 }
 /* the builder's own button reset out-ranks a single class and painted the orb navy — Kay's gold, forced */
 [data-sjc-twin-col] .sjc-twin-orb.sjc-twin-orb { background: #f0b323 !important; color: #0A0E27; }
