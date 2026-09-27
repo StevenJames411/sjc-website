@@ -45,17 +45,19 @@ export default function ShowCard() {
   const hh = Math.floor(s.secs / 3600), mm = Math.floor((s.secs % 3600) / 60), ss = s.secs % 60;
   const pad = (n: number) => String(n).padStart(2, "0");
   return createPortal(
-    <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", alignItems: "center", background: "radial-gradient(ellipse at 70% 60%, #1b2a6b 0%, #0A0E27 70%)", overflow: "hidden" }}>
-      <div style={{ flex: 1, padding: "0 4% 0 7%", color: "#fff", fontFamily: "var(--font-family-body)" }}>
-        <div style={{ color: "#ffd700", fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", fontSize: "clamp(14px,1.2vw,18px)" }}>Next show</div>
-        <div style={{ fontWeight: 700, fontSize: "clamp(26px,3.1vw,46px)", lineHeight: 1.15, marginTop: 10 }}>{s.label}<br /><span style={{ whiteSpace: "nowrap" }}>11 a.m. Central</span></div>
-        <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(32px,4.2vw,64px)", marginTop: 22, color: "#ffd700" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", background: "radial-gradient(ellipse at 50% 70%, #1b2a6b 0%, #0A0E27 70%)", overflow: "hidden", color: "#fff", fontFamily: "var(--font-family-body)", textAlign: "center" }}>
+      <div style={{ paddingTop: "5%" }}>
+        <div style={{ fontWeight: 700, fontSize: "clamp(18px,1.9vw,28px)" }}>
+          <span style={{ color: "#ffd700", letterSpacing: ".12em", textTransform: "uppercase", fontSize: "0.7em", marginRight: 14 }}>Next show</span>
+          {s.label}, 11 a.m. Central
+        </div>
+        <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(32px,3.8vw,58px)", color: "#ffd700", lineHeight: 1.1, marginTop: 6 }}>
           {hh}:{pad(mm)}:{pad(ss)}
           <span style={{ fontSize: "0.38em", marginLeft: 10, opacity: 0.9 }}>hours</span>
         </div>
-        <div style={{ opacity: 0.85, marginTop: 18, fontSize: "clamp(15px,1.3vw,19px)" }}>Live here, YouTube and Facebook.</div>
+        <div style={{ opacity: 0.85, marginTop: 6, fontSize: "clamp(14px,1.2vw,17px)" }}>Live here, YouTube and Facebook.</div>
       </div>
-      <img src={PHOTO} alt="Steven Barchetti" style={{ height: "94%", maxWidth: "54%", width: "auto", objectFit: "contain", objectPosition: "bottom", alignSelf: "flex-end", marginRight: "2%", flexShrink: 0 }} />
+      <img src={PHOTO} alt="Steven Barchetti" style={{ flex: 1, minHeight: 0, width: "auto", maxWidth: "80%", objectFit: "contain", objectPosition: "bottom", marginTop: "2%" }} />
     </div>,
     host
   );
