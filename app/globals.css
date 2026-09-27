@@ -999,10 +999,11 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    column is tightened and the tap line stays on one line. Phones untouched. */
 @media (min-width: 1024px) {
   /* compact twin column so its height sits close to the six systems; columns centred on each other */
-  [data-sjc-orb-slot] { padding: 42px 0 40px !important; }
+  /* the cutout is scaled 1.22 from its base, so his head rises ~60px into this padding - 100px leaves ~40px of real air */
+  [data-sjc-orb-slot] { padding: 30px 0 74px !important; }
   [data-sjc-orb-slot] .sjc-twin-orb { width: 70px; height: 70px; }
   [data-sjc-orb-slot] .sjc-twin-orb svg { width: 44px; height: 44px; }
-  .sjc-twin-tagline { margin-top: 40px; font-size: 14px; white-space: nowrap; }
+  .sjc-twin-tagline { margin-top: 58px; font-size: 14px; white-space: nowrap; }
   /* below the white line mirrors the split above it: green boxes left, Book A Call right under him */
   [data-sjc-boxes][data-sjc-boxes] { display: grid !important; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 32px; align-items: center; text-align: left !important; }
   [data-sjc-pills][data-sjc-pills] { align-items: flex-start !important; }
