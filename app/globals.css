@@ -1282,9 +1282,9 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   /* Labels at 10-11.5px come up to a readable phone size. */
   .sjc-design.sjc-design .rrow .rwho em,
   .sjc-design.sjc-design .msg__who { font-size: 12px; }
-  .sjc-design.sjc-design .job .also em,
-  .sjc-design.sjc-design .card .tag em,
-  .sjc-design.sjc-design .miss .lab,
+  .sjc-design #chloe-page#chloe-page .job .also em,
+  .sjc-design #chloe-page#chloe-page .card .tag em,
+  .sjc-design #chloe-page#chloe-page .miss .lab,
   .sjc-design.sjc-design .pm-tabname > span,
   .sjc-design.sjc-design .pm-mgrp > span,
   .sjc-design.sjc-design #pm-sec#pm-sec .pm-xe { font-size: 12.5px; }
