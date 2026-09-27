@@ -13,7 +13,9 @@ function pageSlug(): string {
   return window.location.pathname.replace(/^\/+|\/+$/g, "") || "home";
 }
 
-export function useTwilioRelay(voiceId: string) {
+// voiceId defaults to "" (the server's own default voice, Brian) — a caller with no voice picker,
+// like the public orb, calls this with zero arguments.
+export function useTwilioRelay(voiceId: string = "") {
   const [state, setState] = useState<RelayState>("idle");
   const [error, setError] = useState("");
   const deviceRef = useRef<any>(null);
