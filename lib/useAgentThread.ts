@@ -147,7 +147,10 @@ export function useAgentThread(opts: { pollMs?: number } = {}) {
     };
     try {
       const url = `${AGENT_API}/${AGENT_PREFIX}/web/speak/${id}`;
-      const head = await fetch(url, { method: "HEAD" });
+      // ⛔ NO-STORE (09-27): Chrome kept a failed answer for this URL and replayed it in 2ms, so the
+      // cloned voice was never asked for and the robot voice spoke instead. One retry before giving up.
+      const ask = () => fetch(url, { method: "HEAD", cache: "no-store" });
+      const head = await ask().catch(() => new Promise<Response>((r) => setTimeout(() => r(ask()), 1500)));
       if (head.ok) {
         const a = audio.current || new Audio();
         audio.current = a;
