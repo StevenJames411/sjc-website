@@ -1001,6 +1001,11 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-orb-slot] .sjc-twin-orb { width: 70px; height: 70px; }
   [data-sjc-orb-slot] .sjc-twin-orb svg { width: 44px; height: 44px; }
   .sjc-twin-tagline { margin-top: 40px; font-size: 14px; white-space: nowrap; }
+  /* below the white line mirrors the split above it: green boxes left, Book A Call right under him */
+  [data-sjc-boxes][data-sjc-boxes] { display: grid !important; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 32px; align-items: center; text-align: left !important; }
+  [data-sjc-pills][data-sjc-pills] { align-items: flex-start !important; }
+  [data-sjc-cta-col][data-sjc-cta-col] { display: none; }
+  [data-sjc-cta-row][data-sjc-cta-row] { display: block; margin-top: 0 !important; }
   [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 270px !important; }
   /* the twin column rises beside the eyebrow (the eyebrow's right side is empty), so the six systems
      sit right under the eyebrow and both columns end together */
@@ -1904,3 +1909,6 @@ a.sjc-sys-card--layer:focus-visible {
 /* SizeStepper's − and + are white buttons that never set a text colour; inside the dark strip
    they inherited white and were blank squares (Steven's screenshot, 09-12 14:18). Name it. */
 .th-strip .th-strip-group > div button { color: #111827; }
+
+/* the lower Book A Call exists for the laptop layout only (09-26) */
+@media (max-width: 1023px) { [data-sjc-cta-row][data-sjc-cta-row] { display: none; } }
