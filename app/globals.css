@@ -989,7 +989,9 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    into `[data-sjc-twin-col]`, absolutely positioned against the photo's own measured box — so
    this rule only ever draws pixels, never layout; the column's height is unchanged with or
    without JS. */
-[data-sjc-twin-col] { overflow: visible; }
+/* the twin's picture is positioned against its OWN column on every page (on Premium Smart Websites it
+   anchored to the section and landed on top of the left column's text) */
+[data-sjc-twin-col] { overflow: visible; position: relative; }
 .sjc-twin-tagline { margin-top: 54px; color: rgba(255,255,255,.88); font-size: 17px; line-height: 1.4; text-align: center; }
 @media (max-width: 640px) { .sjc-twin-tagline { font-size: 16px; margin-top: 50px; } }
 /* LAPTOP (09-26): the twin column is taller than the six systems, and the split's items-center pushed
