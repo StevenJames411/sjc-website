@@ -1033,6 +1033,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child {
     display: flex; flex-direction: column; gap: 14px;
   }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child > * { margin: 0 !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child { justify-content: center; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child p { font-size: 19px !important; }
   /* THE OTHER PAGES (09-26): pill, headline, gold line, body - no six-systems list to spread. The left
