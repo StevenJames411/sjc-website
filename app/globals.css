@@ -2002,3 +2002,4 @@ a.sjc-sys-card--layer:focus-visible {
   /* the design sheet forces the section to display:block, so centring is done as a grid with doubled specificity */
   section.code-section.code-section:has([data-sjc-fhl-split]) { display: grid !important; align-content: center !important; }
 }
+[data-sjc-fhl-pill][data-sjc-fhl-pill] strong[data-sjc-fhl-time] { color: #fff !important; }
