@@ -674,7 +674,7 @@ const GRID_DARK =
   "linear-gradient(90deg,rgba(148,197,255,.055) 1px,transparent 1px)";
 const INK_FADE = "linear-gradient(180deg,#0d1530 0%,#0A0E27 62%,#070B1C 100%)";
 const GLOW = "radial-gradient(900px 520px at 78% 14%,rgba(0,217,255,.16),transparent 62%)";
-const ON_DARK = { head: "#ffffff", body: "rgba(255,255,255,.86)" };
+const ON_DARK = { head: "#ffffff", body: "#ffffff" }; // solid white: no faded text on dark (Steven standing rule)
 const ON_LIGHT = { head: "#0A0E27", body: "#3E4B63" };
 
 export const BAND_STYLES: Record<string, BandDef> = {

@@ -7,6 +7,8 @@
 // the orb it already holds, and overlays the films on the same poster — nothing moves, nothing swaps.
 // A section without data-sjc-twin-col passes through untouched.
 
+import { preload } from "react-dom";
+
 const POSTER = "https://agent-sjc.onrender.com/sjc/roleplay/media/twin-cutout.webp";
 
 // Same markup HomeTwinOrb renders, so the server orb and the live orb are pixel-identical.
@@ -41,6 +43,11 @@ export function prepTwinCol(html: string): string {
   let img = html.slice(imgStart, imgEnd).replace(/\s(?:srcset|sizes)="[^"]*"/g, "");
   img = /\ssrc="/.test(img) ? img.replace(/\ssrc="[^"]*"/, ` src="${POSTER}"`) : img.replace("<img", `<img src="${POSTER}"`);
   img = withStyle(img, "aspect-ratio:10/9;height:auto;object-fit:cover");
+  // FIRST PAINT, NOT 1.5-3s LATER (09-27 audit): the imported photo carried loading="lazy", so the
+  // poster waited for layout and popped in under the orb. Eager + high priority, and a preload hint
+  // so the fetch starts with the HTML instead of after it.
+  img = img.replace(/\s(?:loading|decoding|fetchpriority)="[^"]*"/g, "").replace("<img", '<img loading="eager" fetchpriority="high" decoding="sync"');
+  try { preload(POSTER, { as: "image", fetchPriority: "high" }); } catch { /* not in a render pass */ }
   const wrap = withStyle(html.slice(wrapStart, wrapEnd), "width:100%;padding-top:0;padding-bottom:0");
 
   return html.slice(0, wrapStart) + SLOT + wrap + html.slice(wrapEnd, imgStart) + img + html.slice(imgEnd);
