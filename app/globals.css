@@ -1058,6 +1058,21 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
     font-size: 24px !important; line-height: 1.8 !important;
   }
 }
+/* TABLET LANDSCAPE / SMALL LAPTOP (1024-1279px, Steven 09-28): the laptop layout, but the text column is
+   only ~600px wide here, so the one-line headline spilled across into the orb and the space-between spread had
+   no spare height (eyebrow, headline and list jammed together). Here the headline wraps one size down, the
+   blocks stack from the top with fixed air between them, and the system lines drop a size. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child { justify-content: flex-start; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > h1 {
+    white-space: normal; font-size: 30px !important; line-height: 1.2 !important; margin: 28px 0 24px !important;
+  }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child p { font-size: 17px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > div:last-child { gap: 16px; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1,
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > h1 + p { font-size: 30px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) > div[class]:first-child > p:last-child { font-size: 20px !important; }
+}
 .sjc-twin-orb {
   width: 84px; height: 84px; border-radius: 50%; border: 0; padding: 0;
   display: flex; align-items: center; justify-content: center;
