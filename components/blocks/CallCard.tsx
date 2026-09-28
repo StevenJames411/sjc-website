@@ -24,6 +24,9 @@ export type CallCardData = {
   email?: string;
   need_email?: boolean;
   said?: string;
+  // dev-only stress-test flag (never sent by the server): shows slots AND the confirm button
+  // together so the widest/tallest possible card can be measured in one static frame.
+  __previewForceAll?: boolean;
 };
 
 type Field = "first_name" | "last_name" | "phone" | "email";
@@ -88,7 +91,8 @@ function Line({
 
 function CardBody({ card, onTap, status }: { card: CallCardData; onTap: (tap: Tap) => void; status?: string }) {
   const stage = card.stage || "";
-  const slots = stage === "confirm" || stage === "booked" ? [] : card.slots || [];
+  const forceAll = !!card.__previewForceAll;
+  const slots = (stage === "confirm" || stage === "booked") && !forceAll ? [] : card.slots || [];
   const showChoices = !!card.choices;
   // BLANK-TITLE GUARD (Steven's 09-27 real call: tiles right, title area blank): fall back the
   // instant the title string is empty for ANY reason, never render nothing.
@@ -139,7 +143,7 @@ function CardBody({ card, onTap, status }: { card: CallCardData; onTap: (tap: Ta
       </div>
       <Line label="Mobile" field="phone" value={card.phone || ""} editable={!booked} onSubmit={(v) => onTap({ kind: "field", field: "phone", value: v })} />
       <Line label="Email" field="email" value={card.email || ""} ask={!card.email && !!card.need_email} editable={!booked} onSubmit={(v) => onTap({ kind: "field", field: "email", value: v })} />
-      {stage === "confirm" && (
+      {(stage === "confirm" || forceAll) && (
         <button className="sjc-cc-ok" onClick={() => onTap({ kind: "confirm" })}>That's right</button>
       )}
       {booked && (
@@ -154,14 +158,23 @@ function CardBody({ card, onTap, status }: { card: CallCardData; onTap: (tap: Ta
   );
 }
 
-// ⭐ DEV-ONLY PREVIEW (see ?cardpreview=1 in HomeTwinOrb) — a stage the real call never reaches on
-// its own, kept here so the shape is proofread in one place.
+// ⭐ DEV-ONLY PREVIEW (see ?cardpreview=1 in HomeTwinOrb) — the WORST CASE, not a typical turn: the
+// server never shows slots and the confirm button together, but stress-testing the widest/tallest
+// possible card (caption + time slots + every contact line + the confirm button) in one static frame
+// is how the width/height/wrap fixes below get measured, not eyeballed (Steven's 09-27 real-call bugs
+// — "Rober/ts", "jackroberts@yahoo.c/om", "Wednesday at 4:00 / PM" — were all wrap bugs at the OLD
+// 340px width, and this sample carries every one of those exact strings).
 export const SAMPLE_CARD: CallCardData = {
-  choices: {
-    title: "Are you using either one right now?",
-    options: ["Paid ads", "Organic content", "Both", "Neither", "Never thought about it"],
-  },
-  said: "Quick question so I point you the right way —",
+  said: "Great — I've got a couple of times Wednesday afternoon open on my screen.",
+  slots_kind: "time",
+  slots: [{ label: "Wednesday at 4:00 PM" }, { label: "Wednesday at 5:30 PM" }],
+  picked: "Wednesday at 4:00 PM",
+  first_name: "Jack",
+  last_name: "Roberts",
+  phone: "(512) 555-0148",
+  email: "jackroberts@yahoo.com",
+  stage: "confirm",
+  __previewForceAll: true,
 };
 
 // THE ENTER/EXIT SHELL — two variants of the exact same card:
