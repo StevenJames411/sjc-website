@@ -2287,3 +2287,11 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
   .sjc-design main .grid:not(.pm-tabs), .sjc-design main [class*="grid-cols-"]:not(.pm-tabs),
   main .grid:not(.pm-tabs), .sjc-sys-grid, .sixgrid, .tally { grid-template-columns: minmax(0, 1fr) !important; }
 }
+
+/* NAV DROPDOWNS STAY ON SCREEN (09-28): centred under their word, Systems (423px) and Company overhung the right
+   edge below ~1440px - the page scrolled sideways and the open pills hung off the screen. There they anchor to
+   the right of their word. `translate` composes with the chrome's own transform (translateX(-50%) + the open
+   slide), cancelling only the -50%, so the animation is untouched. 1440+ keeps the centred look. */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  #global-header .sjc-menu .sjc-drop { left: auto !important; right: 0 !important; translate: 50% 0; }
+}
