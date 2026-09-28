@@ -776,7 +776,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    (0,1,0). Identical specificity means document order decides, and the design's sheet is injected
    into the BODY, after this file is linked in the head. The rule loaded, the media query matched,
    and the columns stayed 600/600. `.sjc-design.sjc-design` takes it to (0,3,0) and it wins. */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .sjc-design.sjc-design [data-sjc-hero-split] {
     grid-template-columns: 3fr 1fr;
   }
@@ -966,7 +966,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    move. `> div[class]` adds the third simple selector that actually wins.
    ⚠️ The attribute is on the HOME hero only — verified across all ten pages — so this cannot
    reach another page's split. */
-@media (max-width: 1023px) {
+@media (max-width: 767px) {
   [data-sjc-hero-split][data-sjc-hero-split] > div[class] {
     order: 0;
   }
@@ -997,7 +997,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
 /* LAPTOP (09-26): the twin column is taller than the six systems, and the split's items-center pushed
    the left column down, opening a gap under the eyebrow. Both columns start at the top; the twin
    column is tightened and the tap line stays on one line. Phones untouched. */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   /* compact twin column so its height sits close to the six systems; columns centred on each other */
   /* the cutout is scaled 1.22 from its base, so his head rises ~60px into this padding - 100px leaves ~40px of real air */
   [data-sjc-orb-slot] { padding: 30px 0 74px !important; }
@@ -1062,7 +1062,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
    only ~600px wide here, so the one-line headline spilled across into the orb and the space-between spread had
    no spare height (eyebrow, headline and list jammed together). Here the headline wraps one size down, the
    blocks stack from the top with fixed air between them, and the system lines drop a size. */
-@media (min-width: 1024px) and (max-width: 1279px) {
+@media (min-width: 768px) and (max-width: 1279px) {
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child { justify-content: flex-start; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > h1 {
     white-space: normal; font-size: 30px !important; line-height: 1.2 !important; margin: 28px 0 24px !important;
@@ -1201,7 +1201,7 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
 /* PHONE ONLY: the in-flow slot below the photo. Zero height on laptop (09-27) — the card moves
    beside the photo there (.sjc-cc-desk, absolute, in HomeTwinOrb.tsx) and must never also reserve
    flow space here, or the hero would grow twice. */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   [data-sjc-cardflow-slot] { display: none !important; }
 }
 /* ⭐ THE CARD MOVES BESIDE HIM ON A LAPTOP (2026-09-27) — Steven, after seeing it under the photo:
@@ -2138,17 +2138,17 @@ a.sjc-sys-card--layer:focus-visible {
 .th-strip .th-strip-group > div button { color: #111827; }
 
 /* the lower Book A Call exists for the laptop layout only (09-26) */
-@media (max-width: 1023px) {
+@media (max-width: 767px) {
   [data-sjc-cta-row][data-sjc-cta-row] { display: none; }
   [data-sjc-twin-col] img[data-sjc-img="i1"] { width: min(100%, 400px) !important; max-width: none !important; }
 }
 
 /* the laptop copy of the eyebrow (inside the left column) is hidden everywhere else */
-@media (max-width: 1023px) { [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: none !important; } }
+@media (max-width: 767px) { [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: none !important; } }
 
 /* THE HERO FILLS THE SCREEN ABOVE THE FOLD on every twin page, like home (09-26): the section is at
    least one screen tall under the nav and its content sits centred in it - no empty band below. */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   section:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) {
     min-height: calc(100vh - 76px); display: flex !important; flex-direction: column; justify-content: center;
     padding-top: 48px !important; padding-bottom: 48px !important;
@@ -2157,7 +2157,7 @@ a.sjc-sys-card--layer:focus-visible {
 
 /* FUNNEL HACK LIVE (09-27): the hero IS the fold - text left, live player right, filling the screen under the
    nav like the twin pages. Same type sizes as the twin pages; never bigger to fill space. */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   section:has([data-sjc-fhl-split]) {
     min-height: calc(100vh - 76px) !important; justify-content: center !important;
     padding-top: 56px !important; padding-bottom: 56px !important;
@@ -2171,7 +2171,7 @@ a.sjc-sys-card--layer:focus-visible {
   [data-sjc-fhl-split] h1 + p { font-size: 22px !important; line-height: 1.75 !important; margin-top: 22px !important; }
 }
 
-@media (max-width: 1023px) { [data-sjc-fhl-pill] { font-size: 17px !important; border-radius: 1.25rem !important; } [data-sjc-fhl-split] h1 { font-size: 26px !important; } }
+@media (max-width: 767px) { [data-sjc-fhl-pill] { font-size: 17px !important; border-radius: 1.25rem !important; } [data-sjc-fhl-split] h1 { font-size: 26px !important; } }
 
 /* the pill: show name big and gold, the time smaller, on one line (stacked on a phone) */
 [data-sjc-fhl-pill][data-sjc-fhl-pill] strong { color: #ffd700 !important; font-size: 26px; display: inline-block; margin-right: 18px; vertical-align: middle; }
@@ -2264,6 +2264,21 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 /* How We Train's step dividers were 13% ink — visible lines, per his rule. */
 #chloe-page#chloe-page { --line: rgba(11, 31, 71, .6); }
 
+/* UPRIGHT TABLET (768-1023px, Steven 09-28: "the tablet held normally"): the laptop's side-by-side hero,
+   narrower. The page markup's own two-column switch is Tailwind lg (1024), so the order and the twin column
+   width are set here; the twin column is slimmer and the gap tighter so the words keep ~60% of the width. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sjc-design.sjc-design [data-sjc-hero-split]:has([data-sjc-twin-col]) { grid-template-columns: minmax(0, 1fr) 240px !important; column-gap: 36px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child { order: 1 !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:last-child { order: 2 !important; }
+  [data-sjc-twin-col] img[data-sjc-img="i1"] { width: 240px !important; }
+  [data-sjc-boxes][data-sjc-boxes] { grid-template-columns: minmax(0, 1fr) 240px; column-gap: 24px; }
+  .sjc-twin-tagline { white-space: normal; font-size: 13px; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-eyebrow-lg]) > div[class]:first-child > h1 { font-size: 26px !important; }
+  [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { font-size: 22px !important; }
+  [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:first-child > div:last-child p { font-size: 16px !important; }
+}
+
 /* ONE COLUMN IS ALL A PHONE GETS (Steven, 09-28). Baseline phone = 390px (iPhone 12-15), checked 360-430.
    Below 640px every content grid stacks to a single column - the six systems cards, the industries grid,
    the system-page grid, the stat tiles. The pricing tier tabs (.pm-tabs) are a switch, not content columns,
@@ -2271,4 +2286,12 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 @media (max-width: 639px) {
   .sjc-design main .grid:not(.pm-tabs), .sjc-design main [class*="grid-cols-"]:not(.pm-tabs),
   main .grid:not(.pm-tabs), .sjc-sys-grid, .sixgrid, .tally { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* NAV DROPDOWNS STAY ON SCREEN (09-28): centred under their word, Systems (423px) and Company overhung the right
+   edge below ~1440px - the page scrolled sideways and the open pills hung off the screen. There they anchor to
+   the right of their word. `translate` composes with the chrome's own transform (translateX(-50%) + the open
+   slide), cancelling only the -50%, so the animation is untouched. 1440+ keeps the centred look. */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  #global-header .sjc-menu .sjc-drop { left: auto !important; right: 0 !important; translate: 50% 0; }
 }
