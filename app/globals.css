@@ -2263,3 +2263,12 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 .band--gray.band--gray, .band--white.band--white { --body: #0A0E27; --muted: #0A0E27; }
 /* How We Train's step dividers were 13% ink — visible lines, per his rule. */
 #chloe-page#chloe-page { --line: rgba(11, 31, 71, .6); }
+
+/* ONE COLUMN IS ALL A PHONE GETS (Steven, 09-28). Baseline phone = 390px (iPhone 12-15), checked 360-430.
+   Below 640px every content grid stacks to a single column - the six systems cards, the industries grid,
+   the system-page grid, the stat tiles. The pricing tier tabs (.pm-tabs) are a switch, not content columns,
+   and stay side by side. */
+@media (max-width: 639px) {
+  .sjc-design main .grid:not(.pm-tabs), .sjc-design main [class*="grid-cols-"]:not(.pm-tabs),
+  main .grid:not(.pm-tabs), .sjc-sys-grid, .sixgrid, .tally { grid-template-columns: minmax(0, 1fr) !important; }
+}
