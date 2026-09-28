@@ -190,6 +190,14 @@ export const SAMPLE_CARD: CallCardData = {
 // "float" (laptop, 09-27: "too tall for the hero... beside me, not under me"): the CALLER already
 //   positions this absolutely, left of the photo — this shell only fades/slides it in from the right
 //   and fades it out; no height collapse needed because nothing here is ever in flow to begin with.
+// Something a visitor can actually read or tap: the line the twin just said, or the booking part.
+// Between turns the server can send a card with neither — showing that flashed an empty box with a
+// bare heading (Steven, 09-28), so an empty update never replaces what's on screen.
+function hasContent(c: CallCardData): boolean {
+  return !!(c.said || c.choices || (c.slots && c.slots.length) || c.picked || c.first_name || c.last_name
+    || c.phone || c.email || c.need_email || c.stage === "confirm" || c.stage === "booked" || c.__previewForceAll);
+}
+
 export default function CallCard({
   card, onTap, status, variant = "flow",
 }: { card: CallCardData | null; onTap: (tap: Tap) => void; status?: string; variant?: "flow" | "float" }) {
@@ -199,7 +207,10 @@ export default function CallCard({
   const cls = variant === "float" ? "sjc-cc-float" : "sjc-cc-flow";
 
   useEffect(() => {
-    if (card) { setShown(card); setPhase("in"); return; }
+    if (card) {
+      if (hasContent(card)) { setShown(card); setPhase("in"); }
+      return;
+    }
     if (!shown) return;
     if (variant === "flow") {
       const el = wrapRef.current;
@@ -214,7 +225,7 @@ export default function CallCard({
   if (!shown) return null;
   return (
     <div ref={wrapRef} className={cls + " " + (phase === "in" ? cls + "-in" : cls + "-out")}>
-      <CardBody card={card || shown} onTap={onTap} status={status} />
+      <CardBody card={card && hasContent(card) ? card : shown} onTap={onTap} status={status} />
     </div>
   );
 }
