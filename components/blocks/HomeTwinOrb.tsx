@@ -41,7 +41,7 @@ const ORB_GAP = 58;
 // "Rober/ts", "jackroberts@yahoo.c/om" and "Wednesday at 4:00 / PM" to wrap mid-word.
 const CARD_FLOAT_WIDTH = 600;
 const CARD_FLOAT_GAP = 28;
-const LAPTOP_MQ = "(min-width: 1024px)";
+const LAPTOP_MQ = "(min-width: 768px)";
 
 // THE TWIN'S MOVEMENT SIGNAL, same thresholds/hold as TalkingHero's relay mode (ruled 2026-09-18,
 // believable-movement-in-relay-mode) — reused, not reinvented. The orb only ever needs ONE boolean
