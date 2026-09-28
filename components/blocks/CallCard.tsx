@@ -106,6 +106,11 @@ function CardBody({ card, onTap, status }: { card: CallCardData; onTap: (tap: Ta
     : (card.first_name || card.phone || card.email || card.need_email) ? "Tap a line to fix it, or just tell me."
     : "";
   const booked = stage === "booked";
+  // The heading belongs to the booking part of the card. While the twin is only talking (no
+  // choices, times, contact lines, confirm or booked yet) the card is the read-along text alone —
+  // a heading over nothing reads like a box that failed to open (Steven, 09-28 live call).
+  const hasBody = showChoices || slots.length > 0 || !!card.picked || !!card.first_name || !!card.last_name
+    || !!card.phone || !!card.email || !!card.need_email || stage === "confirm" || booked || forceAll;
 
   return (
     // data-sjc-ownbg: the card has its own white background, so it opts OUT of the band's forced
@@ -114,7 +119,7 @@ function CardBody({ card, onTap, status }: { card: CallCardData; onTap: (tap: Ta
     // is exactly what bit Steven on the real call: tiles right, title blank.
     <div className="sjc-call-card" data-sjc-ownbg="" aria-live="polite">
       {card.said && <p className="sjc-cc-caption">{card.said}</p>}
-      <h2 className="sjc-cc-title">{title}</h2>
+      {hasBody && <h2 className="sjc-cc-title">{title}</h2>}
       {hint && <p className="sjc-cc-hint">{hint}</p>}
       {showChoices && (
         <div className="sjc-cc-chips">
