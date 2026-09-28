@@ -34,8 +34,12 @@ const ORB_GAP = 58;
 // under me"). Fixed pixel width/gap so the card's right edge is computed straight off box.left —
 // it can only ever land left of the photo, never on it, whatever its own content height turns out
 // to be. It is allowed to run into the left column's text (his call); it may never reach the photo
-// or the orb, which top-alignment (not vertical centring) guarantees for free.
-const CARD_FLOAT_WIDTH = 340;
+// or the orb — using the ORB's own top (box.orbTop), not the photo's, keeps the tallest real card
+// (a question plus every contact line) above the fold instead of running off the bottom (09-27 #2:
+// "align it with the top of the orb... so it stays visible without scrolling").
+// WIDENED 560→620px (09-27 #1, "not enough breathing room... widen the box"): 340px is what forced
+// "Rober/ts", "jackroberts@yahoo.c/om" and "Wednesday at 4:00 / PM" to wrap mid-word.
+const CARD_FLOAT_WIDTH = 600;
 const CARD_FLOAT_GAP = 28;
 const LAPTOP_MQ = "(min-width: 1024px)";
 
@@ -97,6 +101,7 @@ export default function HomeTwinOrb() {
   const relay = useTwilioRelay();
   const [container, setContainer] = useState<Element | null>(null);
   const [box, setBox] = useState<Box | null>(null);
+  const [baseImg, setBaseImg] = useState<HTMLElement | null>(null);
   const ext = useRef(videoExt());
 
   // Find the builder's own column — it exists in the server-rendered HTML already, but retry a
@@ -119,17 +124,22 @@ export default function HomeTwinOrb() {
     function measure() {
       const colRect = container!.getBoundingClientRect();
       const imgRect = img!.getBoundingClientRect();
-      // ⛔ NEVER CLIP: the section around this hero ships `overflow-hidden`. The orb floats above
-      // the photo, but never above the section's own top edge, or Safari/Chrome would cut it off.
-      const section = container!.closest("section");
-      const minPageTop = (section?.getBoundingClientRect().top ?? 0) + 8;
-      const orbPageTop = Math.max(minPageTop, imgRect.top - ORB_SIZE - ORB_GAP);
+      // THE ORB'S REAL BOX, NOT A FORMULA (09-27 fix): the orb has been IN FLOW since the 09-26
+      // "takes real space" rework (a slot, flex-column, above the photo's wrapper) — its true page
+      // position depends on that slot's own padding, not on `imgRect.top - ORB_SIZE - ORB_GAP`. The
+      // card's new "start at the orb's top" rule measured 80px off using the stale formula; reading
+      // the orb's actual rendered rect is the only number that can't drift out of sync with the CSS.
+      // ⛔ QUERY FROM `document`, NOT `container`: on HOME, `data-sjc-twin-col` sits on the photo's
+      // own wrapper (twinColSsr.ts), and the orb slot is inserted as that wrapper's SIBLING — so it
+      // is never a descendant of `container` there, even though it is on the other nine pages.
+      const orbEl = document.querySelector("[data-sjc-orb-ssr], .sjc-twin-orb");
+      const orbRect = orbEl ? orbEl.getBoundingClientRect() : null;
       setBox({
         left: imgRect.left - colRect.left,
         top: imgRect.top - colRect.top,
         width: imgRect.width,
         height: imgRect.height,
-        orbTop: orbPageTop - colRect.top,
+        orbTop: (orbRect ? orbRect.top : imgRect.top - ORB_SIZE - ORB_GAP) - colRect.top,
         orbLeft: imgRect.left - colRect.left + imgRect.width / 2,
       });
     }
@@ -154,6 +164,7 @@ export default function HomeTwinOrb() {
     // The photo box takes the cutout's own shape (900x810), so there is no dead band under him.
     // The server-built hero already paints the twin's poster here; only an old imported photo hides.
     if (!(img as HTMLImageElement).src.includes("twin-cutout")) img.style.visibility = "hidden";
+    else setBaseImg(img);
     img.style.aspectRatio = "10 / 9";
     // Width lives in globals.css (phone vs laptop). The wrapper must span the column, or the photo's
     // percentage width resolves against a shrink-to-fit box and he renders at ~210px.
@@ -288,7 +299,27 @@ export default function HomeTwinOrb() {
     } catch { /* the live call still has the visitor's voice as a fallback */ }
   }
 
+  // ── THE GHOST HEAD (09-27, Steven: "when my head moves you see a copy of my head under the
+  // animation") — the talking/listening films are alpha-cutout webm/mov: transparent everywhere
+  // except him, so wherever the moving frame doesn't cover the STILL poster's own head, the poster
+  // shows through underneath it. Fix: the instant a video is actually the visible layer, BOTH still
+  // images (the stage's own poster <img> AND the server-built base <img data-sjc-img="i1"> the SSR
+  // hero paints, lib/twinColSsr.ts) go to opacity 0 — never just one of them.
+  // FLASH-FREE (same note): gate the FIRST hide behind the video's own 'playing' event, so there is
+  // never a blank frame between "poster visible" and "video actually has a frame on screen". After
+  // that first fire the videos are already looping continuously in the background, so every later
+  // phase change can hide/show the poster instantly — no re-gating needed.
+  const videosReadyRef = useRef(false);
+  const [videosReady, setVideosReady] = useState(false);
+  const markVideosReady = () => { if (!videosReadyRef.current) { videosReadyRef.current = true; setVideosReady(true); } };
+
   const phase: Phase = relay.state === "connecting" ? "connecting" : relay.state === "live" ? (engaged ? "speaking" : "listening") : "idle";
+  const posterVisible = !videosReady || phase === "idle" || phase === "connecting";
+  useEffect(() => {
+    if (!baseImg) return;
+    baseImg.style.transition = "opacity .35s ease";
+    baseImg.style.opacity = posterVisible ? "1" : "0";
+  }, [baseImg, posterVisible]);
   const tagline =
     phase === "idle" && relay.error
       ? micWasDenied(relay.error)
@@ -348,16 +379,18 @@ export default function HomeTwinOrb() {
         data-state={phase}
         style={{ position: "absolute", left: box.left, top: box.top, width: box.width, height: box.height, zIndex: 2 }}
       >
-        <img className="sjc-twin-video" src={poster} alt="Steven Barchetti" style={{ opacity: 1 }} />
+        <img className="sjc-twin-video" src={poster} alt="Steven Barchetti" style={{ opacity: posterVisible ? 1 : 0 }} />
         <video
           className="sjc-twin-video"
-          style={{ opacity: phase === "listening" ? 1 : 0 }}
+          style={{ opacity: !posterVisible && phase === "listening" ? 1 : 0 }}
           muted loop playsInline autoPlay preload="auto" poster={poster} src={listenSrc}
+          onPlaying={markVideosReady}
         />
         <video
           className="sjc-twin-video"
-          style={{ opacity: phase === "speaking" ? 1 : 0 }}
+          style={{ opacity: !posterVisible && phase === "speaking" ? 1 : 0 }}
           muted loop playsInline autoPlay preload="auto" poster={poster} src={talkSrc}
+          onPlaying={markVideosReady}
         />
       </div>
       {!isLaptop && cardSlot && createPortal(
@@ -369,7 +402,7 @@ export default function HomeTwinOrb() {
       {isLaptop && (
         <div
           className="sjc-cc-desk"
-          style={{ position: "absolute", top: box.top, left: box.left - CARD_FLOAT_GAP - CARD_FLOAT_WIDTH, width: CARD_FLOAT_WIDTH, zIndex: 6 }}
+          style={{ position: "absolute", top: box.orbTop, left: box.left - CARD_FLOAT_GAP - CARD_FLOAT_WIDTH, width: CARD_FLOAT_WIDTH, zIndex: 6 }}
         >
           <CallCard card={activeCard} onTap={tapCard} status={tapStatus} variant="float" />
         </div>
