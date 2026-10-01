@@ -13,6 +13,21 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "imagedelivery.net" },
     ],
   },
+  async rewrites() {
+    // Pretty Links: stevenjamesconsulting.com/go/<slug> is served by the Render route as client "sjc".
+    // A client's own domain gets its own line here, naming its client id.
+    return {
+      beforeFiles: [
+        {
+          source: "/go/:slug",
+          destination: "https://agent-sjc.onrender.com/go/sjc/:slug",
+          has: [{ type: "host" as const, value: "(www\\.)?stevenjamesconsulting\\.com" }],
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async redirects() {
     // ⛔ SJC'S HOST ONLY. A redirect here answers on EVERY hostname this deployment serves, so an
     // unguarded /live would steal that address from every customer site too.
