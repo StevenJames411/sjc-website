@@ -88,5 +88,8 @@ export const NOINDEX_SLUGS = new Set([
   "blueprint-reviews",
   "blueprint-database",
   "blueprint-ads",
+  // Reached only by handing over a name and an email for the book (2026-10-03). A stranger landing on
+  // the download from a search would skip the one thing the book is given away for.
+  "book-thank-you",
 ]);
 export const isNoindex = (slug: string) => NOINDEX_SLUGS.has(slug);
