@@ -2248,13 +2248,13 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 .sjc-design [class*="bg-[#3b7fb8]"] a.sjc-sys-link.sjc-sys-link:focus-visible,
 .sjc-design [class*="bg-gradient-to-br"] a.sjc-sys-link.sjc-sys-link:focus-visible { color: #ffd700; }
 /* Premium Smart Websites FAQ answers were #888 on white. Solid ink. */
-.sjc-design.sjc-design .text-\[var\(--gray-text-color\)\] { color: #0A0E27; }
+.sjc-design.sjc-design .text-\[var\(--gray-text-color\)\] { color: #D9CBB8; }
 /* How We Train AI Employees: diagram labels and "Automated system" tags were pale slate / 72% ink
-   on white. Solid navy; the gold "brain" step and the navy "her" header keep their own colours. */
+   on white. Copper on the dark site (2026-10-02); the gold "brain" step and the navy "her" header keep their own colours. */
 .sjc-design #chloe-page .step:not(.brain) .t,
 .sjc-design #chloe-page .rows .hd:not(.her),
-.sjc-design #chloe-page .job .also em { color: #0b1f47; }
-.sjc-design #chloe-page a.sys.sys.sys em { color: #0b1f47; }
+.sjc-design #chloe-page .job .also em { color: #F0AF66; }
+.sjc-design #chloe-page a.sys.sys.sys em { color: #F0AF66; }
 .sjc-design #chloe-page a.sys.sys.sys:hover em,
 .sjc-design #chloe-page a.sys.sys.sys:focus-visible em { color: #ffffff; }
 
