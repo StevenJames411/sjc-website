@@ -4144,13 +4144,15 @@ const baseConfig: Config<Props, RootProps> = {
             style={{
               width: "100%",
               maxWidth: "440px",
-              background: "#f5f5f7",
+              // ONE PALETTE FOR EVERY CHLOE CONVERSATION (Steven, 2026-10-02): three tones, like the
+              // application form - near-black panel, chocolate for the person texting in, copper for Chloe.
+              background: "#0B0906",
               borderRadius: "22px",
               padding: "18px 14px",
               display: "flex",
               flexDirection: "column",
               gap: "10px",
-              border: "1px solid var(--color-sjc-line)",
+              border: "1px solid rgba(222,134,52,.28)",
             }}
           >
             {(messages || []).map((m: { from: string; text: string }, i: number) => {
@@ -4168,7 +4170,7 @@ const baseConfig: Config<Props, RootProps> = {
                       // nothing if the reader cannot tell who is talking.
                       fontSize: "13px",
                       fontWeight: 600,
-                      color: "#000000",
+                      color: isChloe ? "#F6BC76" : "#B8A58C",
                       margin: isChloe ? "0 8px 2px 0" : "0 0 2px 8px",
                     }}
                   >
@@ -4182,8 +4184,9 @@ const baseConfig: Config<Props, RootProps> = {
                       fontSize: "15px",
                       lineHeight: 1.4,
                       whiteSpace: "pre-wrap" as const,
-                      background: isChloe ? "var(--color-sjc-blue)" : "var(--color-sjc-line)",
-                      color: isChloe ? "var(--color-sjc-white)" : "var(--color-sjc-ink)",
+                      background: isChloe ? "linear-gradient(180deg,#B35F1D,#8F4515)" : "#211C17",
+                      color: isChloe ? "#FFF3E0" : "#E9DCCB",
+                      border: isChloe ? "1px solid #DE8634" : "1px solid rgba(222,134,52,.18)",
                       borderBottomRightRadius: isChloe ? "5px" : "20px",
                       borderBottomLeftRadius: isChloe ? "20px" : "5px",
                     }}
@@ -4199,7 +4202,7 @@ const baseConfig: Config<Props, RootProps> = {
             // cascades NO text colour, so the old #6b7280 was grey on the navy band: invisible.
             // Both live threads (speed-to-lead, automated-five-star-reviews) are on #0a1f4d, so the
             // fallback is a light one; `captionColor` overrides it for a light band.
-            <p style={{ marginTop: "0.7rem", fontSize: "1rem", lineHeight: 1.5, color: resolveColorOr(captionColor, "#D6E0F0"), textAlign: "center", maxWidth: "440px" }}>
+            <p style={{ marginTop: "0.7rem", fontSize: "1rem", lineHeight: 1.5, color: resolveColorOr(captionColor, "#D9CBB8"), textAlign: "center", maxWidth: "440px" }}>
               {caption}
             </p>
           )}
