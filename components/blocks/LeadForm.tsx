@@ -379,7 +379,15 @@ export default function LeadForm(props: LeadFormProps) {
 
   const [uploading, setUploading] = useState<Record<string, string>>({});
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
-  const [trap, setTrap] = useState("");
+  // ⛔ THE BOT CHECK IS "DID A PERSON TOUCH THIS FORM", NOT A HIDDEN BOX (2026-10-03).
+  // The hidden honeypot box was filled by Steven's own password manager TWICE: once on the careers
+  // form (Next went dead), and once on the Growth Engine application, where it was worse — the form
+  // showed "Your application is in", sent nothing, stored nothing, emailed nobody. Reproduced in a
+  // test browser: box filled -> thank-you -> zero requests. A real applicant with the same password
+  // manager would have been lost the same way, silently.
+  // A box that software can fill will be filled by software. A real key press or tap cannot be:
+  // the browser marks those events trusted and a script's are not. No field, nothing to misfire.
+  const touched = useRef(false);
 
   const missing = list.filter(
     (f, i) => isRequired(f, list) && !(values[keyFor(f, i)] || "").trim()
@@ -477,10 +485,9 @@ export default function LeadForm(props: LeadFormProps) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    // ⚠️ THE TRAP ONLY GUARDS THE REAL SUBMIT, NEVER THE STEP NAVIGATION. Blocking Next made a
-    // misfire indistinguishable from a broken page — see the honeypot note below for how that
-    // actually happened. Navigation is free; the send is what a bot wants.
-    if (trap && lastScreen) {
+    // ⚠️ THE BOT CHECK ONLY GUARDS THE REAL SUBMIT, NEVER THE STEP NAVIGATION. Navigation is free;
+    // the send is what a bot wants. See `touched` above for why this is not a hidden field.
+    if (!touched.current && lastScreen) {
       // A bot gets a page that looks like it worked. Anything that reaches here and is NOT a bot
       // has already been let through the steps, so nobody is trapped behind a dead button.
       setState("done");
@@ -636,6 +643,8 @@ export default function LeadForm(props: LeadFormProps) {
 
   return banded(
     <form
+      onPointerDownCapture={(e) => { if (e.nativeEvent.isTrusted) touched.current = true; }}
+      onKeyDownCapture={(e) => { if (e.nativeEvent.isTrusted) touched.current = true; }}
       ref={formRef}
       onSubmit={submit}
       noValidate
@@ -802,34 +811,6 @@ export default function LeadForm(props: LeadFormProps) {
           );
         })}
       </div>
-
-      {/* ── HONEYPOT ──────────────────────────────────────────────────────────────────────────
-          Off-screen for people, irresistible to bots.
-
-          ⚠️ IT MUST BE INVISIBLE TO PASSWORD MANAGERS TOO, AND autoComplete="off" IS NOT ENOUGH.
-          Steven hit this on his own careers form: LastPass filled this box with his email address,
-          `trap` went truthy, and submit() returned silently — so the Next button did nothing, with
-          no error, forever. A real applicant with autofill would have hit exactly the same wall and
-          simply left.
-
-          So it now says no in every dialect a manager reads (LastPass, 1Password, Dashlane,
-          Bitwarden), carries a name nothing would map to a person, and is hidden from the
-          accessibility tree AND from layout — `left:-9999px` alone still leaves a fillable field. */}
-      <input
-        type="text"
-        name="fax-confirm"
-        id="lf-fax-confirm"
-        tabIndex={-1}
-        autoComplete="off"
-        aria-hidden="true"
-        data-lpignore="true"
-        data-1p-ignore=""
-        data-bwignore="true"
-        data-form-type="other"
-        value={trap}
-        onChange={(e) => setTrap(e.target.value)}
-        className="absolute left-[-9999px]"
-      />
 
       {/* ⚠️ BACK IS A BUTTON, NEVER THE BROWSER'S. The survey is state inside this block — the URL
           never changes — so a visitor reaching for the browser's back arrow would leave the page
