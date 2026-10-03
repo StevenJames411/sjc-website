@@ -536,11 +536,11 @@ export const IMAGE_DEFAULTS = {
 // them. Never counted as one of them, never listed alongside them: it renders as its own wide row.
 // The nav and the home hero already run this order; this const was the one place that disagreed.
 export const SIX_SYSTEMS = [
-  { slug: "/premium-smart-websites", name: "Premium Smart Websites", line: "Get found, and give a customer one obvious thing to do." },
-  { slug: "/speed-to-lead", name: "Speed to Lead", line: "Answer every lead in seconds, day or night." },
-  { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy customer into a review." },
-  { slug: "/database-reactivation", name: "Database Reactivation", line: "Work the list you already paid for." },
-  { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a time on your calendar." },
+  { slug: "/premium-smart-websites", name: "Premium Smart Websites", line: "One page you own that turns followers into buyers." },
+  { slug: "/speed-to-lead", name: "Speed to Lead", line: "Answer every follower in seconds, day or night." },
+  { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy student and reader into a review." },
+  { slug: "/database-reactivation", name: "Database Reactivation", line: "Wake up the list and past buyers you already have." },
+  { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a sales call on your calendar." },
   { slug: "/automated-organic-content-engine", name: "Automated Organic Content Engine", line: "Send attention to the website you own, every day, without remembering to post." },
   { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other six systems so they get better every day." },
 ];
@@ -2765,7 +2765,7 @@ const baseConfig: Config<Props, RootProps> = {
       },
       defaultProps: {
         current: "",
-        intro: "This is one of six systems we build. They are designed to connect, so a lead is never dropped between them.",
+        intro: "This is one of six systems we build. They are designed to connect, so a follower is never dropped between them.",
         onDark: false,
         spaceAbove: 40,
         spaceBelow: 40,
