@@ -163,6 +163,11 @@ const esc = (s: string) =>
 function leadName(answers: Answer[]): string {
   const byKey = answers.find((a) => a.key === "name" && a.value.trim());
   if (byKey) return byKey.value.trim();
+  // First and last name are separate questions on SJC's own forms (2026-10-03). Without this the
+  // subject line carried the first name alone.
+  const first = answers.find((a) => /first[- ]?name/i.test(`${a.key} ${a.label}`) && a.value.trim());
+  const last = answers.find((a) => /last[- ]?name/i.test(`${a.key} ${a.label}`) && a.value.trim());
+  if (first && last) return `${first.value.trim()} ${last.value.trim()}`;
   const byLabel = answers.find((a) => /(^|\b)(your |first |full )?name\b/i.test(a.label) && a.value.trim());
   if (byLabel) return byLabel.value.trim();
   const firstReal = answers.find((a) => a.key !== "source" && a.value.trim());
