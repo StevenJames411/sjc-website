@@ -2255,8 +2255,16 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 .sjc-design [class*="bg-gradient-to-br"] a.sjc-sys-link.sjc-sys-link:hover,
 .sjc-design [class*="bg-[#3b7fb8]"] a.sjc-sys-link.sjc-sys-link:focus-visible,
 .sjc-design [class*="bg-gradient-to-br"] a.sjc-sys-link.sjc-sys-link:focus-visible { color: #ffd700; }
-/* Premium Smart Websites FAQ answers were #888 on white. Solid ink. */
-.sjc-design.sjc-design .text-\[var\(--gray-text-color\)\] { color: #D9CBB8; }
+/* Premium Smart Websites FAQ answers were #888 on white. Solid ink.
+   ⛔ THIS FILE IS SHARED BY EVERY SITE IN THE BUILDER, NOT JUST SJC'S. On 2026-10-02 this value was
+   flipped to a pale beige (#D9CBB8) for SJC's new dark site. `.sjc-design` wraps every imported
+   design, so the same rule turned the body text pale on Tim's Firewood, a client's LIVE site with a
+   white background, and on two portfolio demos: 14 of 27 paragraphs unreadable for about 18 hours,
+   found 10-03 only because Steven happened to open the page. A colour that is right on one site's
+   background belongs in THAT site's own stylesheet (SJC's is the nav page's <style>, block
+   `sjc-only-text`). Anything in this file must be readable on a light page AND a dark one, or be
+   scoped to an id that exists on one site only (like #chloe-page below). */
+.sjc-design.sjc-design .text-\[var\(--gray-text-color\)\] { color: #0A0E27; }
 /* How We Train AI Employees: diagram labels and "Automated system" tags were pale slate / 72% ink
    on white. Copper on the dark site (2026-10-02); the gold "brain" step and the navy "her" header keep their own colours. */
 .sjc-design #chloe-page .step:not(.brain) .t,
@@ -2268,7 +2276,9 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 
 /* ⛔ NO GRAY ON THE LIGHT BANDS EITHER (09-27): imported designs redefine --body/--muted to slate
    (#3E4B63 / #56657E) on band--gray/band--white; body copy there is solid ink like the headings. */
-.band--gray.band--gray, .band--white.band--white { --body: #E9DCCB; --muted: #B8A58C; }
+/* Shared, so it stays dark ink: SJC's light values for these live in its own stylesheet (see the note
+   on --gray-text-color above). */
+.band--gray.band--gray, .band--white.band--white { --body: #0A0E27; --muted: #0A0E27; }
 /* How We Train's step dividers: visible copper lines on the dark site (was navy until 2026-10-02). */
 #chloe-page#chloe-page { --line: rgba(222, 134, 52, .32); }
 
