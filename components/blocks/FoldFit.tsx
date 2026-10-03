@@ -11,12 +11,12 @@
 //     exactly one screen (the spare height is shared out as padding above and below each one);
 //   · a section a little over one screen (up to 15%) gives up padding until it fits, down to a
 //     floor — the same trim that was done by hand on the home page;
-//   · a section genuinely longer than a screen, built as a heading over a list of like things (steps,
-//     cards, definitions), is PAGED: whole rows are pushed to the next screen so the fold lands in a
-//     gap, never through a card, and each screenful is centred. Same thing that was done by hand to
-//     the six cards on the home page.
-//   · anything else longer than a screen (long prose, one tall illustration) is left alone. It cannot
-//     fit, and padding it out would only add empty bands.
+//   · a section genuinely longer than a screen, built as a heading over a GRID OF CARDS, is PAGED:
+//     whole rows of cards are pushed to the next screen so the fold lands in a gap, never through a
+//     card, and each screenful is centred. Same thing that was done by hand to the six cards on the
+//     home page.
+//   · anything else longer than a screen (a stacked list of steps, long prose, one tall illustration)
+//     is left alone and simply scrolls. Splitting a list opens a hole in the middle of it.
 //
 // ⚠️ WHY A SCRIPT AND NOT CSS. A stylesheet can say "at least one screen tall", but it cannot pair
 // two half-screen sections into one screen, and a height tuned for one laptop is wrong on the next.
@@ -107,6 +107,11 @@ function paginate(s: HTMLElement, pt: number, pb: number, usable: number): boole
   }
   rows.sort((a, b) => a.top - b.top);
   if (rows.length < 2) return false;
+  // ⛔ A STACKED LIST IS NEVER SPLIT (Steven, 2026-10-03, looking at five numbered steps with a
+  // screen-sized hole between step 4 and step 5): "it just looks like we have too much padding on the
+  // page for no reason. Sections like that are just going to have to scroll below the fold."
+  // Only a grid of cards is paged, a whole row of cards at a time, like the six on the home page.
+  if (rows.every((r) => r.els.length === 1)) return false;
 
   const room = usable - PAGE_PAD * 2;
   // pages[k] = { from: where its content starts, to: where it ends, first: the row that opens it }
