@@ -2260,9 +2260,9 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 
 /* ⛔ NO GRAY ON THE LIGHT BANDS EITHER (09-27): imported designs redefine --body/--muted to slate
    (#3E4B63 / #56657E) on band--gray/band--white; body copy there is solid ink like the headings. */
-.band--gray.band--gray, .band--white.band--white { --body: #0A0E27; --muted: #0A0E27; }
-/* How We Train's step dividers were 13% ink — visible lines, per his rule. */
-#chloe-page#chloe-page { --line: rgba(11, 31, 71, .6); }
+.band--gray.band--gray, .band--white.band--white { --body: #E9DCCB; --muted: #B8A58C; }
+/* How We Train's step dividers: visible copper lines on the dark site (was navy until 2026-10-02). */
+#chloe-page#chloe-page { --line: rgba(222, 134, 52, .32); }
 
 /* UPRIGHT TABLET (768-1023px, Steven 09-28: "the tablet held normally"): the laptop's side-by-side hero,
    narrower. The page markup's own two-column switch is Tailwind lg (1024), so the order and the twin column
