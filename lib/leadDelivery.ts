@@ -243,7 +243,28 @@ export async function deliverLead(
   let toRecord: boolean | null = false;
   const ownSheet = (site?.sheetId || "").trim();
   const webhook = process.env.APPLY_WEBHOOK_URL;
-  if (ownSheet) {
+
+  // ── SJC'S OWN WEBSITE: one sheet, three tabs (2026-10-03) ──────────────────────────────────
+  // Clients / Careers / Podcast Guests, written straight to the Sheets API — see lib/intakeSheet.ts.
+  // If that write fails the lead falls through to the old webhook below, so a Google hiccup files
+  // the row in the old intake sheet instead of nowhere, and says so in `problems`.
+  let intakeDone = false;
+  if (siteId === SJC && !ownSheet) {
+    const { intakeConfigured, intakeTabFor, writeIntakeRow } = await import("./intakeSheet");
+    if (intakeConfigured()) {
+      try {
+        await writeIntakeRow(intakeTabFor(answers), answers, submittedAt);
+        toRecord = true;
+        intakeDone = true;
+      } catch (e) {
+        problems.push(`intake sheet failed, used the old intake instead: ${(e as Error).message}`);
+      }
+    }
+  }
+
+  if (intakeDone) {
+    // written above
+  } else if (ownSheet) {
     toRecord = null; // not owed — leg 2 writes this business's own sheet below
   } else if (!webhook) {
     problems.push("APPLY_WEBHOOK_URL not set — no record written");
