@@ -98,6 +98,13 @@ export type LeadFormProps = {
   successButtonLabel?: string;
   successButtonUrl?: string;
   /**
+   * AFTER A REAL SEND, GO TO THIS PAGE instead of showing the thank-you in place (2026-10-03, the book
+   * download: name, email, phone, then a thank-you PAGE Steven edits in the studio, with the download
+   * on it). Same-site paths only ("/book-thank-you"), so a form can never be made to send somebody
+   * off to another website. The answers are saved before the jump, like every other ending.
+   */
+  successRedirect?: string;
+  /**
    * PER-SCREEN ENDINGS, keyed by screen title. Today only `action: "submit"` is honoured, and it
    * means one thing: THE FORM ENDS HERE.
    *
@@ -227,6 +234,7 @@ export default function LeadForm(props: LeadFormProps) {
     altSuccess,
     successButtonLabel,
     successButtonUrl,
+    successRedirect,
     endings,
     background = "",
     bandPadding,
@@ -571,6 +579,11 @@ export default function LeadForm(props: LeadFormProps) {
         }
       }
 
+      const to = (successRedirect || "").trim();
+      if (/^\/[a-z0-9]/i.test(to) && typeof window !== "undefined") {
+        window.location.assign(to);
+        return; // stays on "Sending…" for the moment the next page takes to load
+      }
       setState("done");
     } catch {
       setState("error");

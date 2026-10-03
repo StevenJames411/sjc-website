@@ -259,6 +259,10 @@ export type DesignSectionProps = {
    */
   formId?: string;
   formButton?: string;
+  /** What the embedded form calls itself in the lead record (it decides the intake tab). Blank = the old label. */
+  formSource?: string;
+  /** After a real send, go to this same-site page instead of the in-place thank-you. See LeadForm. */
+  formRedirect?: string;
   /**
    * WHAT THE CUSTOMER READS AFTER PRESSING SEND.
    *
@@ -1010,6 +1014,8 @@ export default function DesignSection(props: DesignSectionProps) {
     useRealForm = true,
     formFields,
     formButton,
+    formSource,
+    formRedirect,
     successHeading,
     successBody,
     editing,
@@ -1251,7 +1257,8 @@ export default function DesignSection(props: DesignSectionProps) {
           theme="dark"
           fields={formFields?.length ? formFields : undefined}
           buttonLabel={formButton || undefined}
-          source="imported design — contact section"
+          source={formSource?.trim() || "imported design — contact section"}
+          successRedirect={formRedirect?.trim() || undefined}
           note=""
           successHeading={successHeading?.trim() || DESIGN_SUCCESS_HEADING}
           successBody={successBody?.trim() || DESIGN_SUCCESS_BODY}

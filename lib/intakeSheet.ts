@@ -1,4 +1,5 @@
-// SJC's own intake: ONE Google Sheet, THREE tabs (Steven, 2026-10-03).
+// SJC's own intake: ONE Google Sheet, a tab per reason (Steven, 2026-10-03). Three to start; the book
+// download became the fourth the same night - the email list he builds as people take the book.
 //
 // "My website has three different reasons somebody does an intake. One to become a client, one to
 // start working for me, and one to become a podcast guest. So that form on my website should go to
@@ -21,8 +22,19 @@
 
 type Answer = { key?: string; label: string; value: string };
 
-export const INTAKE_TABS = ["Clients", "Careers", "Podcast Guests"] as const;
+export const INTAKE_TABS = ["Clients", "Careers", "Podcast Guests", "Book Downloads"] as const;
 export type IntakeTab = (typeof INTAKE_TABS)[number];
+
+// ⛔ A TAB IS FOUND BY ITS ID, NOT ITS NAME. Steven renamed "Clients" to "New Clients" in the sheet the
+// same day it was built, which is his sheet to rename. Looking the tab up by name would have sent
+// every application to the old intake as "tab missing". The id never changes when a tab is renamed
+// or dragged; the name here is only what the tab was called when it was created.
+const INTAKE_TAB_IDS: Record<IntakeTab, number> = {
+  Clients: 1075829341,
+  Careers: 1842264944,
+  "Podcast Guests": 1632756491,
+  "Book Downloads": 716764380,
+};
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const API = "https://sheets.googleapis.com/v4/spreadsheets";
@@ -52,6 +64,9 @@ export function intakeTabFor(answers: Answer[]): IntakeTab {
   const src = (answers.find((a) => (a.key || a.label).toLowerCase() === "source")?.value || "").toLowerCase();
   if (src.includes("career") || src.includes("hiring") || src.includes("job")) return "Careers";
   if (src.includes("podcast") || src.includes("guest")) return "Podcast Guests";
+  // The book's own form ("book-download"). ⚠️ Not `includes("book")`: the Paid Ads page's application is
+  // "booked-appointments-application", and that is somebody asking to become a client.
+  if (src.includes("book-download") || src.includes("get-the-book")) return "Book Downloads";
   return "Clients";
 }
 
@@ -107,16 +122,23 @@ export async function writeIntakeRow(tab: IntakeTab, answers: Answer[], submitte
   const token = await accessToken();
   const auth = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 
+  const names = await fetch(`${API}/${id}?fields=sheets(properties(sheetId,title))`, { headers: auth, cache: "no-store" });
+  if (!names.ok) throw new Error(`could not open the intake sheet: http ${names.status}`);
+  const all = ((await names.json()) as { sheets?: { properties: { sheetId: number; title: string } }[] }).sheets || [];
+  const mine = all.find((x) => x.properties.sheetId === INTAKE_TAB_IDS[tab]) || all.find((x) => x.properties.title === tab);
+  if (!mine) throw new Error(`the ${tab} tab is missing from the intake sheet`);
+  const gid = mine.properties.sheetId;
+  const title = mine.properties.title.replace(/'/g, "''");     // whatever he calls it today
+
   const meta = await fetch(
-    `${API}/${id}?ranges=${encodeURIComponent(`'${tab}'!1:1`)}&fields=sheets(properties(sheetId,title),data(rowData(values(formattedValue,note))))`,
+    `${API}/${id}?ranges=${encodeURIComponent(`'${title}'!1:1`)}&fields=sheets(properties(sheetId),data(rowData(values(formattedValue,note))))`,
     { headers: auth, cache: "no-store" }
   );
   if (!meta.ok) throw new Error(`could not read the ${tab} tab: http ${meta.status}`);
   const sheet = ((await meta.json()) as {
-    sheets?: { properties: { sheetId: number; title: string }; data?: { rowData?: { values?: { formattedValue?: string; note?: string }[] }[] }[] }[];
-  }).sheets?.find((x) => x.properties.title === tab);
+    sheets?: { properties: { sheetId: number }; data?: { rowData?: { values?: { formattedValue?: string; note?: string }[] }[] }[] }[];
+  }).sheets?.find((x) => x.properties.sheetId === gid);
   if (!sheet) throw new Error(`the ${tab} tab is missing from the intake sheet`);
-  const gid = sheet.properties.sheetId;
   const head: HeadCell[] = (sheet.data?.[0]?.rowData?.[0]?.values || []).map((v) => ({
     text: String(v.formattedValue || ""),
     note: String(v.note || "").trim(),
@@ -179,7 +201,7 @@ export async function writeIntakeRow(tab: IntakeTab, answers: Answer[], submitte
   const row: string[] = head.map(() => "");
   for (const it of items) row[colOf.get(it.key) as number] = it.value;
   const add = await fetch(
-    `${API}/${id}/values/${encodeURIComponent(`'${tab}'!A1`)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+    `${API}/${id}/values/${encodeURIComponent(`'${title}'!A1`)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
     { method: "POST", headers: auth, body: JSON.stringify({ values: [row] }) }
   );
   if (!add.ok) throw new Error(`could not write the row to ${tab}: http ${add.status}`);
