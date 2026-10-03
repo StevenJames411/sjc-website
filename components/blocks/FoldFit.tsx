@@ -11,8 +11,12 @@
 //     exactly one screen (the spare height is shared out as padding above and below each one);
 //   · a section a little over one screen (up to 15%) gives up padding until it fits, down to a
 //     floor — the same trim that was done by hand on the home page;
-//   · a section genuinely longer than a screen is left alone. It cannot fit, and padding it out to
-//     two screens would only add empty bands.
+//   · a section genuinely longer than a screen, built as a heading over a list of like things (steps,
+//     cards, definitions), is PAGED: whole rows are pushed to the next screen so the fold lands in a
+//     gap, never through a card, and each screenful is centred. Same thing that was done by hand to
+//     the six cards on the home page.
+//   · anything else longer than a screen (long prose, one tall illustration) is left alone. It cannot
+//     fit, and padding it out would only add empty bands.
 //
 // ⚠️ WHY A SCRIPT AND NOT CSS. A stylesheet can say "at least one screen tall", but it cannot pair
 // two half-screen sections into one screen, and a height tuned for one laptop is wrong on the next.
@@ -31,8 +35,112 @@ const MIN_USABLE = 520; // a very short window: fitting to it would crush everyt
 const TRIM_LIMIT = 0.15; // how far over one screen a section may be and still get trimmed to fit
 const PAD_FLOOR = 16;
 
+const PAGE_PAD = 24; // least air above and below a paged screenful
+const MAX_PAGES = 10;
+
 type Saved = { pt: string; ptP: string; pb: string; pbP: string };
 const saved = new WeakMap<HTMLElement, Saved>();
+// Rows that were pushed down to start a new screen: element -> the inline margin-top it had before.
+const pushed = new Map<HTMLElement, [string, string]>();
+
+function unpush() {
+  pushed.forEach(([v, pr], el) => {
+    if (v) el.style.setProperty("margin-top", v, pr);
+    else el.style.removeProperty("margin-top");
+  });
+  pushed.clear();
+}
+
+// The list inside a long section: follow the only-child chain down to where the content fans out,
+// then take the biggest block there. It counts as a list only when its children are all the same
+// kind of thing and it is not itself a framed object (a chat mock-up is a tall box of like children
+// too, and splitting THAT across two screens would tear the picture in half).
+function findList(section: HTMLElement): HTMLElement | null {
+  const flow = (e: HTMLElement) =>
+    Array.from(e.children).filter((c): c is HTMLElement => {
+      if (!(c instanceof HTMLElement) || c.offsetHeight < 8) return false;
+      const pos = getComputedStyle(c).position;
+      return pos !== "absolute" && pos !== "fixed";
+    });
+  let box: HTMLElement = section;
+  for (let d = 0; d < 4; d += 1) {
+    const kids = flow(box);
+    if (kids.length !== 1) break;
+    box = kids[0];
+  }
+  const kids = flow(box);
+  if (kids.length < 2) return null;
+  const list = kids.reduce((a, b) => (b.offsetHeight > a.offsetHeight ? b : a));
+  if (list.offsetHeight < box.offsetHeight * 0.5) return null;
+  const items = flow(list);
+  if (items.length < 2) return null;
+  const kind = (e: HTMLElement) => `${e.tagName}.${e.className}`;
+  if (!items.every((e) => kind(e).split(" ")[0] === kind(items[0]).split(" ")[0])) return null;
+  const cs = getComputedStyle(list);
+  const framed =
+    parseFloat(cs.borderTopWidth) > 0 ||
+    parseFloat(cs.borderTopLeftRadius) > 0 ||
+    (cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent") ||
+    cs.backgroundImage !== "none" ||
+    cs.overflowY === "hidden" ||
+    cs.overflowY === "auto" ||
+    cs.overflowY === "scroll";
+  return framed ? null : list;
+}
+
+// Returns false (and changes nothing) when the section cannot be paged cleanly.
+function paginate(s: HTMLElement, pt: number, pb: number, usable: number): boolean {
+  const list = findList(s);
+  if (!list) return false;
+  const rect = s.getBoundingClientRect();
+  const start = rect.top + pt;
+  const end = rect.bottom - pb;
+  const rows: { top: number; bottom: number; els: HTMLElement[] }[] = [];
+  for (const el of Array.from(list.children)) {
+    if (!(el instanceof HTMLElement) || el.offsetHeight < 8) continue;
+    const r = el.getBoundingClientRect();
+    const row = rows.find((x) => Math.abs(x.top - r.top) < 4);
+    if (row) {
+      row.bottom = Math.max(row.bottom, r.bottom);
+      row.els.push(el);
+    } else rows.push({ top: r.top, bottom: r.bottom, els: [el] });
+  }
+  rows.sort((a, b) => a.top - b.top);
+  if (rows.length < 2) return false;
+
+  const room = usable - PAGE_PAD * 2;
+  // pages[k] = { from: where its content starts, to: where it ends, first: the row that opens it }
+  // The heading block counts as content of the first screen. When the heading plus the first row is
+  // already more than a screen (a lede over three tall conversation cards), the heading gets a screen
+  // to itself and the rows start on the next one.
+  const headEnd = list.getBoundingClientRect().top - (parseFloat(getComputedStyle(list).marginTop) || 0);
+  const hasHead = headEnd - start > 8;
+  const pages: { from: number; to: number; first: number }[] = [{ from: start, to: hasHead ? headEnd : rows[0].bottom, first: hasHead ? -1 : 0 }];
+  for (let r = 0; r < rows.length; r += 1) {
+    const page = pages[pages.length - 1];
+    if (rows[r].bottom - page.from > room && r !== page.first) {
+      pages.push({ from: rows[r].top, to: rows[r].bottom, first: r });
+    } else page.to = rows[r].bottom;
+  }
+  pages[pages.length - 1].to = Math.max(pages[pages.length - 1].to, end); // whatever follows the list
+  if (pages.length < 2 || pages.length > MAX_PAGES) return false;
+  if (pages.some((p) => p.to - p.from > room)) return false; // one row is taller than a screen
+
+  const air = pages.map((p) => (usable - (p.to - p.from)) / 2);
+  for (let k = 1; k < pages.length; k += 1) {
+    const natural = pages[k].from - pages[k - 1].to;
+    const extra = air[k - 1] + air[k] - natural;
+    if (extra <= 0) continue;
+    for (const el of rows[pages[k].first].els) {
+      if (!pushed.has(el)) pushed.set(el, [el.style.getPropertyValue("margin-top"), el.style.getPropertyPriority("margin-top")]);
+      const base = parseFloat(getComputedStyle(el).marginTop) || 0;
+      el.style.setProperty("margin-top", `${base + extra}px`, "important");
+    }
+  }
+  s.style.setProperty("padding-top", `${air[0]}px`, "important");
+  s.style.setProperty("padding-bottom", `${air[pages.length - 1]}px`, "important");
+  return true;
+}
 
 function restore(s: HTMLElement) {
   const o = saved.get(s);
@@ -62,6 +170,7 @@ function fit() {
     }
     restore(s);
   }
+  unpush();
 
   const usable = window.innerHeight - hdr;
   if (window.innerWidth < MIN_WIDTH || usable < MIN_USABLE) return;
@@ -85,7 +194,7 @@ function fit() {
       if (over <= usable * TRIM_LIMIT && room >= over) {
         const fromTop = (over * Math.max(0, x.pt - PAD_FLOOR)) / room;
         pad(x, x.pt - fromTop, x.pb - (over - fromTop));
-      }
+      } else paginate(x.s, x.pt, x.pb, usable);
       i += 1;
       continue;
     }
