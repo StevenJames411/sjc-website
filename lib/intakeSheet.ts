@@ -16,8 +16,8 @@
 //
 // ONE TAB = ONE QUESTION SET. The old rule was "one form, one spreadsheet", because two question
 // sets sharing columns is how columns drift. Three tabs keep that promise: each tab has only its
-// own form's questions. A new question on a form adds a column at the END of its tab; nothing
-// already collected moves.
+// own form's questions. A new question on a form adds a column at the END of its tab; a reworded
+// question renames its own column; nothing already collected moves.
 
 type Answer = { key?: string; label: string; value: string };
 
@@ -89,45 +89,97 @@ function readable(iso: string): string {
 
 const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
 
+// ⛔ A COLUMN BELONGS TO THE QUESTION, NOT TO ITS WORDING (Steven, 2026-10-03): "If I want to rename
+// it, the column just gets renamed… I'm going to go through the forms, change the questions, reword
+// shit. So I don't want it to be a never-ending growing sheet."
+// Every question in the form library has a permanent id (`fieldId`, e.g. q-skill) that survives
+// rewording. That id is kept as a NOTE on the column's heading cell. A submission finds its column
+// by the note, and if the heading no longer matches the question's current wording, the heading is
+// rewritten in place. A new column appears only for a question the sheet has never seen.
+const KEY_RECEIVED = "__received";
+const KEY_FORM = "__form";
+
+type HeadCell = { text: string; note: string };
+
 /** Append one submission to its tab. Throws with a readable reason; the caller decides what that costs. */
 export async function writeIntakeRow(tab: IntakeTab, answers: Answer[], submittedAt: string): Promise<void> {
   const id = intakeSheetId();
   const token = await accessToken();
   const auth = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-  const range = (a1: string) => encodeURIComponent(`'${tab}'!${a1}`);
 
-  const head = await fetch(`${API}/${id}/values/${range("1:1")}`, { headers: auth, cache: "no-store" });
-  if (!head.ok) throw new Error(`could not read the ${tab} tab: http ${head.status}`);
-  const headers: string[] = (((await head.json()) as { values?: string[][] }).values?.[0] || []).map(String);
-  if (!headers.length) headers.push("Received");
+  const meta = await fetch(
+    `${API}/${id}?ranges=${encodeURIComponent(`'${tab}'!1:1`)}&fields=sheets(properties(sheetId,title),data(rowData(values(formattedValue,note))))`,
+    { headers: auth, cache: "no-store" }
+  );
+  if (!meta.ok) throw new Error(`could not read the ${tab} tab: http ${meta.status}`);
+  const sheet = ((await meta.json()) as {
+    sheets?: { properties: { sheetId: number; title: string }; data?: { rowData?: { values?: { formattedValue?: string; note?: string }[] }[] }[] }[];
+  }).sheets?.find((x) => x.properties.title === tab);
+  if (!sheet) throw new Error(`the ${tab} tab is missing from the intake sheet`);
+  const gid = sheet.properties.sheetId;
+  const head: HeadCell[] = (sheet.data?.[0]?.rowData?.[0]?.values || []).map((v) => ({
+    text: String(v.formattedValue || ""),
+    note: String(v.note || "").trim(),
+  }));
 
-  // "Source" is the form naming itself; it is shown as the page it came from, not as an answer.
-  const cells: Record<string, string> = { Received: readable(submittedAt) };
+  // What this submission carries: [permanent id, current wording, value]. "Source" is the form
+  // naming itself; it is shown as the Form column, not as an answer.
+  const items: { key: string; label: string; value: string }[] = [
+    { key: KEY_RECEIVED, label: "Received", value: readable(submittedAt) },
+  ];
   for (const a of answers) {
-    const label = (a.key || "").toLowerCase() === "source" || norm(a.label) === "source" ? "Form" : a.label.trim();
+    const isSource = (a.key || "").toLowerCase() === "source" || norm(a.label) === "source";
+    const label = isSource ? "Form" : a.label.trim();
     if (!label) continue;
-    cells[label] = cells[label] ? `${cells[label]} | ${a.value}` : a.value;
+    const key = isSource ? KEY_FORM : (a.key || "").trim() || norm(label);
+    const dup = items.find((x) => x.key === key);
+    if (dup) dup.value = `${dup.value} | ${a.value}`;
+    else items.push({ key, label, value: a.value });
   }
 
-  const before = headers.length;
-  for (const label of Object.keys(cells)) {
-    if (!headers.some((h) => norm(h) === norm(label))) headers.push(label);
+  const changed = new Set<number>();
+  const colOf = new Map<string, number>();
+  for (const it of items) {
+    let c = head.findIndex((h) => h.note === it.key);
+    if (c < 0) c = head.findIndex((h, i) => !h.note && norm(h.text) === norm(it.label) && ![...colOf.values()].includes(i));
+    if (c < 0) {
+      head.push({ text: it.label, note: it.key });
+      c = head.length - 1;
+      changed.add(c);
+    } else if (head[c].note !== it.key || head[c].text !== it.label) {
+      head[c] = { text: it.label, note: it.key };
+      changed.add(c);
+    }
+    colOf.set(it.key, c);
   }
-  if (headers.length !== before) {
-    const put = await fetch(`${API}/${id}/values/${range("1:1")}?valueInputOption=RAW`, {
-      method: "PUT",
+
+  if (changed.size) {
+    const put = await fetch(`${API}/${id}:batchUpdate`, {
+      method: "POST",
       headers: auth,
-      body: JSON.stringify({ values: [headers] }),
+      body: JSON.stringify({
+        requests: [...changed].map((c) => ({
+          updateCells: {
+            range: { sheetId: gid, startRowIndex: 0, endRowIndex: 1, startColumnIndex: c, endColumnIndex: c + 1 },
+            rows: [{
+              values: [{
+                userEnteredValue: { stringValue: head[c].text },
+                note: head[c].note,
+                userEnteredFormat: { textFormat: { bold: true }, wrapStrategy: "WRAP", verticalAlignment: "TOP" },
+              }],
+            }],
+            fields: "userEnteredValue,note,userEnteredFormat(textFormat.bold,wrapStrategy,verticalAlignment)",
+          },
+        })),
+      }),
     });
-    if (!put.ok) throw new Error(`could not add a column to ${tab}: http ${put.status}`);
+    if (!put.ok) throw new Error(`could not update a heading on ${tab}: http ${put.status}`);
   }
 
-  const row = headers.map((h) => {
-    const key = Object.keys(cells).find((l) => norm(l) === norm(h));
-    return key ? cells[key] : "";
-  });
+  const row: string[] = head.map(() => "");
+  for (const it of items) row[colOf.get(it.key) as number] = it.value;
   const add = await fetch(
-    `${API}/${id}/values/${range("A1")}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+    `${API}/${id}/values/${encodeURIComponent(`'${tab}'!A1`)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
     { method: "POST", headers: auth, body: JSON.stringify({ values: [row] }) }
   );
   if (!add.ok) throw new Error(`could not write the row to ${tab}: http ${add.status}`);
