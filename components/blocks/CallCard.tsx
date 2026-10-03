@@ -24,6 +24,8 @@ export type CallCardData = {
   email?: string;
   need_email?: boolean;
   said?: string;
+  /** The last few lines of the conversation, both sides (server: voice_routes `_talk`). */
+  talk?: { who: "you" | "twin"; text: string }[];
   // dev-only stress-test flag (never sent by the server): shows slots AND the confirm button
   // together so the widest/tallest possible card can be measured in one static frame.
   __previewForceAll?: boolean;
@@ -118,7 +120,18 @@ function CardBody({ card, onTap, status }: { card: CallCardData; onTap: (tap: Ta
     // "You're booked." (a .big, not bold-tag, safe) render invisible-white on this white card. This
     // is exactly what bit Steven on the real call: tiles right, title blank.
     <div className="sjc-call-card" data-sjc-ownbg="" aria-live="polite">
-      {card.said && <p className="sjc-cc-caption">{card.said}</p>}
+      {/* CAPTIONS OR THE CARD (Steven, 2026-10-03): "it's either the captions or the cards that stay on
+          the screen as the conversation happens." With nothing to tap or check, the card is the
+          conversation itself, both sides. With buttons up, it is his question over the buttons. */}
+      {!hasBody && card.talk && card.talk.length > 0 ? (
+        <div className="sjc-cc-talk">
+          {card.talk.slice(-4).map((ln, i) => (
+            <p key={i} className={ln.who === "you" ? "sjc-cc-you" : "sjc-cc-them"}>{ln.text}</p>
+          ))}
+        </div>
+      ) : (
+        card.said && <p className="sjc-cc-caption">{card.said}</p>
+      )}
       {hasBody && <h2 className="sjc-cc-title">{title}</h2>}
       {hint && <p className="sjc-cc-hint">{hint}</p>}
       {showChoices && (
@@ -194,7 +207,7 @@ export const SAMPLE_CARD: CallCardData = {
 // Between turns the server can send a card with neither — showing that flashed an empty box with a
 // bare heading (Steven, 09-28), so an empty update never replaces what's on screen.
 function hasContent(c: CallCardData): boolean {
-  return !!(c.said || c.choices || (c.slots && c.slots.length) || c.picked || c.first_name || c.last_name
+  return !!(c.said || (c.talk && c.talk.length) || c.choices || (c.slots && c.slots.length) || c.picked || c.first_name || c.last_name
     || c.phone || c.email || c.need_email || c.stage === "confirm" || c.stage === "booked" || c.__previewForceAll);
 }
 

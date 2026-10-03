@@ -1129,6 +1129,12 @@ html[data-sjc-preview][data-talking-hero] #global-header#global-header img[data-
   font-family: var(--font-ibm-plex), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 .sjc-call-card * { font-family: inherit; }
+/* CAPTIONS (2026-10-03): the conversation itself, both sides, when the card has nothing to tap. His
+   words sit left on the dark bubble the single caption always used; the visitor's sit right. */
+.sjc-cc-talk { display: flex; flex-direction: column; gap: 8px; }
+.sjc-cc-talk p { margin: 0 !important; padding: 9px 14px; border-radius: 12px; font-size: 16px; line-height: 1.35; font-weight: 700; max-width: 90%; overflow-wrap: anywhere; }
+.sjc-cc-talk .sjc-cc-them { align-self: flex-start; background: rgba(0,0,0,.7) !important; color: #fff !important; }
+.sjc-cc-talk .sjc-cc-you { align-self: flex-end; background: #eef1f6 !important; color: #0A0E27 !important; }
 .sjc-cc-caption {
   background: rgba(0,0,0,.7) !important; color: #fff !important; font-weight: 700; font-size: 16px;
   line-height: 1.35; border-radius: 12px; padding: 9px 14px; margin: 0 0 10px; text-align: center;
