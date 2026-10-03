@@ -2147,10 +2147,12 @@ a.sjc-sys-card--layer:focus-visible {
 @media (max-width: 767px) { [data-sjc-eyebrow-lg][data-sjc-eyebrow-lg] { display: none !important; } }
 
 /* THE HERO FILLS THE SCREEN ABOVE THE FOLD on every twin page, like home (09-26): the section is at
-   least one screen tall under the nav and its content sits centred in it - no empty band below. */
+   least one screen tall under the nav and its content sits centred in it - no empty band below.
+   ⚠️ --sjc-hdr is the header's MEASURED height (FoldFit.tsx sets it). This was a hardcoded 76px, the
+   header grew to 97px with the new logo, and every hero ran 21px past the fold (10-03). */
 @media (min-width: 768px) {
   section:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) {
-    min-height: calc(100vh - 76px); display: flex !important; flex-direction: column; justify-content: center;
+    min-height: calc(100svh - var(--sjc-hdr, 97px)); display: flex !important; flex-direction: column; justify-content: center;
     padding-top: 48px !important; padding-bottom: 48px !important;
   }
 }
@@ -2159,7 +2161,7 @@ a.sjc-sys-card--layer:focus-visible {
    nav like the twin pages. Same type sizes as the twin pages; never bigger to fill space. */
 @media (min-width: 768px) {
   section:has([data-sjc-fhl-split]) {
-    min-height: calc(100vh - 76px) !important; justify-content: center !important;
+    min-height: calc(100svh - var(--sjc-hdr, 97px)) !important; justify-content: center !important;
     padding-top: 56px !important; padding-bottom: 56px !important;
   }
   /* the player column is the wide one, so the player (not padding) fills the screen height */
