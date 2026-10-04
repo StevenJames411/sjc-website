@@ -541,7 +541,7 @@ export const SIX_SYSTEMS = [
   { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy student and reader into a review." },
   { slug: "/database-reactivation", name: "Database Reactivation", line: "Wake up the list and past buyers you already have." },
   { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a sales call on your calendar." },
-  { slug: "/automated-organic-content-engine", name: "Automated Organic Content Engine", line: "Send attention to the website you own, every day, without remembering to post." },
+  { slug: "/automated-organic-content-engine", name: "Automated Organic Content Engine", line: "Send attention to the website you own, every day, without having to think about it." },
   { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other six systems so they get better every day." },
 ];
 
