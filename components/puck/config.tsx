@@ -535,13 +535,17 @@ export const IMAGE_DEFAULTS = {
 // ⛔ AI IMPLEMENTATION IS NOT A SEVENTH SYSTEM. It is the glue under the six — the plumbing between
 // them. Never counted as one of them, never listed alongside them: it renders as its own wide row.
 // The nav and the home hero already run this order; this const was the one place that disagreed.
+// ⭐ ORDER FOR COACHES, AUTHORS AND INFLUENCERS (Steven, 2026-10-04): the content engine is SECOND, right after the
+// website, because free social media is how this buyer gets attention; paid ads are LAST ("might die altogether").
+// This supersedes the customer-journey order described in the comment above. The nav, the home page and the number
+// on each system page were moved the same day; the strip below numbers by position.
 export const SIX_SYSTEMS = [
   { slug: "/premium-smart-websites", name: "Premium Smart Websites", line: "One page you own that turns followers into buyers." },
+  { slug: "/automated-organic-content-engine", name: "Automated Organic Content Engine", line: "Send attention to the website you own, every day, without having to think about it." },
   { slug: "/speed-to-lead", name: "Speed to Lead", line: "Answer every follower in seconds, day or night." },
   { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy student and reader into a review." },
   { slug: "/database-reactivation", name: "Database Reactivation", line: "Wake up the list and past buyers you already have." },
   { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a sales call on your calendar." },
-  { slug: "/automated-organic-content-engine", name: "Automated Organic Content Engine", line: "Send attention to the website you own, every day, without having to think about it." },
   { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other six systems so they get better every day." },
 ];
 
