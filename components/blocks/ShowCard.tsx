@@ -49,7 +49,7 @@ export default function ShowCard() {
   const hh = Math.floor(s.secs / 3600), mm = Math.floor((s.secs % 3600) / 60), ss = s.secs % 60;
   const pad = (n: number) => String(n).padStart(2, "0");
   return createPortal(
-    <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", background: "radial-gradient(ellipse at 50% 60%, #D3CBBA 0%, #CFC7B6 45%, #BDB39F 100%)", overflow: "hidden", color: "#2A1D10", fontFamily: "var(--font-family-body)", textAlign: "center" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", background: "radial-gradient(ellipse at 50% 60%, #BFB6A1 0%, #B6AC96 45%, #A0957D 100%)", overflow: "hidden", color: "#2A1D10", fontFamily: "var(--font-family-body)", textAlign: "center" }}>
       <div style={{ paddingTop: "5%" }}>
         <div style={{ fontWeight: 700, fontSize: "clamp(18px,1.9vw,28px)" }}>
           <span ref={(el) => { el?.style.setProperty("color", "#5A3210", "important"); }} style={{ letterSpacing: ".12em", textTransform: "uppercase", fontSize: "0.7em", marginRight: 14 }}>Next show</span>
