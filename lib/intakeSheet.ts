@@ -22,7 +22,7 @@
 
 type Answer = { key?: string; label: string; value: string };
 
-export const INTAKE_TABS = ["Clients", "Careers", "Podcast Guests", "Book Downloads"] as const;
+export const INTAKE_TABS = ["Clients", "Careers", "Podcast Guests", "Book Downloads", "Revenue Share"] as const;
 export type IntakeTab = (typeof INTAKE_TABS)[number];
 
 // ⛔ A TAB IS FOUND BY ITS ID, NOT ITS NAME. Steven renamed "Clients" to "New Clients" in the sheet the
@@ -34,6 +34,9 @@ const INTAKE_TAB_IDS: Record<IntakeTab, number> = {
   Careers: 1842264944,
   "Podcast Guests": 1632756491,
   "Book Downloads": 716764380,
+  // The revenue share / talent agency application (/revenue-share). Its own tab, Steven 2026-10-04:
+  // "This application gets added to our google sheet with a new tab."
+  "Revenue Share": 170306536,
 };
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -67,6 +70,7 @@ export function intakeTabFor(answers: Answer[]): IntakeTab {
   // The book's own form ("book-download"). ⚠️ Not `includes("book")`: the Paid Ads page's application is
   // "booked-appointments-application", and that is somebody asking to become a client.
   if (src.includes("book-download") || src.includes("get-the-book")) return "Book Downloads";
+  if (src.includes("revenue-share")) return "Revenue Share";
   return "Clients";
 }
 
