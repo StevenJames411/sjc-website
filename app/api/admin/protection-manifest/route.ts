@@ -152,6 +152,13 @@ export async function GET(req: Request) {
     // a false FREE costs a real client's work. The FREE list is still doing its job — the demo and
     // draft sites, which are the bulk, come back FREE regardless. Revisit only when the client
     // count makes the extra confirmations actually cost something.
+    //
+    // ⛔ SUPERSEDED 2026-10-04 — THE "CLIENT" BRANCH IS GONE. Steven: *"everything in the design
+    // studio is a demo. I'm the only client."* Every site in the registry carries kind "client"
+    // (it only means "not a template"), so that branch was printing his own demos — Tim's Firewood,
+    // My Full Calendar — as "a client site… it is their business", and a session repeated it back
+    // to him as fact. A site is now protected for what is actually on it: real leads, or a page
+    // the public can find. Nothing is protected for a label.
     let verdict: Row["verdict"] = "FREE";
     let why = "draft/demo, no real leads — change, rename, delete or rebuild freely";
     if (leads > 0) {
@@ -164,11 +171,6 @@ export async function GET(req: Request) {
     } else if (reach.onDomain && reach.indexable) {
       verdict = "PROTECTED";
       why = `live at ${s.domain} and indexable — the public can find it`;
-    } else if (s.kind === "client" && (reach.onDomain || wiring.notifiesSomeone)) {
-      verdict = "PROTECTED";
-      why = reach.onDomain
-        ? `a client site reachable at ${s.domain} — it is their business, indexed or not`
-        : "a client site with lead delivery wired — a client counts even in draft";
     } else if (reach.onDomain) {
       why = `on ${s.domain} but noindex and zero leads — reachable, but nobody is looking`;
     }
