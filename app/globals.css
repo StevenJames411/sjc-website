@@ -2215,7 +2215,7 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: radial-gradient(ellipse at 50% 60%, #BFB6A1 0%, #B6AC96 45%, #A0957D 100%);
+  background: radial-gradient(ellipse at 50% 60%, #ABA18A 0%, #A1967F 45%, #8A7F67 100%);
 }
 
 /* ⛔ NO FADED TEXT, VISIBLE DIVIDERS (swarm audit 2026-09-27, desktop-visual lane). Steven's standing
