@@ -22,8 +22,8 @@
 
 type Answer = { key?: string; label: string; value: string };
 
-export const INTAKE_TABS = ["Clients", "Careers", "Podcast Guests", "Book Downloads"] as const;
-export type IntakeTab = (typeof INTAKE_TABS)[number] | "Revenue Share";
+export const INTAKE_TABS = ["Clients", "Careers", "Podcast Guests", "Book Downloads", "Revenue Share"] as const;
+export type IntakeTab = (typeof INTAKE_TABS)[number];
 
 // ⛔ A TAB IS FOUND BY ITS ID, NOT ITS NAME. Steven renamed "Clients" to "New Clients" in the sheet the
 // same day it was built, which is his sheet to rename. Looking the tab up by name would have sent
