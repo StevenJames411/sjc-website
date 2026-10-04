@@ -33,11 +33,11 @@ Steven James Consulting works with coaches, authors and influencers who already 
 
 ## The six business systems
 - [Premium Smart Websites](https://stevenjamesconsulting.com/premium-smart-websites): one website you own that tells your story, sells your program or book, and books the call on the page.
+- [Automated Organic Content Engine](https://stevenjamesconsulting.com/automated-organic-content-engine): one recording becomes clips and episodes on every platform, all pointing back to your website.
 - [Speed to Lead](https://stevenjamesconsulting.com/speed-to-lead): every comment, message and form answered in under a minute, day or night.
 - [Automated Five Star Reviews](https://stevenjamesconsulting.com/automated-five-star-reviews): every client, student and reader asked for a testimonial, every time.
 - [Database Reactivation](https://stevenjamesconsulting.com/database-reactivation): everyone who ever followed, downloaded or bought, reached again and turned into sales.
 - [Paid Ads = Booked Appointments](https://stevenjamesconsulting.com/booked-appointments): added once the free attention is converting; what reaches you is a call on your calendar.
-- [Automated Organic Content Engine](https://stevenjamesconsulting.com/automated-organic-content-engine): one recording becomes clips and episodes on every platform, all pointing back to your website.
 - [AI Implementation](https://stevenjamesconsulting.com/ai-implementation): not a seventh service. The layer that connects the other six so they work as one.
 
 ## Other pages
