@@ -49,13 +49,13 @@ export default function ShowCard() {
   const hh = Math.floor(s.secs / 3600), mm = Math.floor((s.secs % 3600) / 60), ss = s.secs % 60;
   const pad = (n: number) => String(n).padStart(2, "0");
   return createPortal(
-    <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", background: "radial-gradient(ellipse at 50% 70%, #1b2a6b 0%, #0A0E27 70%)", overflow: "hidden", color: "#fff", fontFamily: "var(--font-family-body)", textAlign: "center" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", background: "radial-gradient(ellipse at 50% 66%, #E0A060 0%, #BC722F 36%, #7A4118 72%, #4E2A11 100%)", overflow: "hidden", color: "#fff", fontFamily: "var(--font-family-body)", textAlign: "center" }}>
       <div style={{ paddingTop: "5%" }}>
-        <div style={{ fontWeight: 700, fontSize: "clamp(18px,1.9vw,28px)" }}>
-          <span style={{ color: "#ffd700", letterSpacing: ".12em", textTransform: "uppercase", fontSize: "0.7em", marginRight: 14 }}>Next show</span>
+        <div style={{ fontWeight: 700, fontSize: "clamp(18px,1.9vw,28px)", textShadow: "0 2px 10px rgba(40,18,4,.55)" }}>
+          <span style={{ color: "#FFE9C7", letterSpacing: ".12em", textTransform: "uppercase", fontSize: "0.7em", marginRight: 14 }}>Next show</span>
           {s.label}, 11 a.m. Central
         </div>
-        <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(26px,3vw,46px)", color: "#ffd700", lineHeight: 1.1, marginTop: 6 }}>
+        <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: "clamp(26px,3vw,46px)", color: "#FFE9C7", textShadow: "0 2px 10px rgba(40,18,4,.55)", lineHeight: 1.1, marginTop: 6 }}>
           {hh}:{pad(mm)}:{pad(ss)}
         </div>
       </div>
