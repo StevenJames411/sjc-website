@@ -198,7 +198,7 @@ const organizationSchema = {
   telephone: "+1-210-851-4906",
   founder: { "@type": "Person", name: "Steven Barchetti" },
   description:
-    "Steven James Consulting installs a native AI operating system — a workforce of AI employees — on top of the software a service business already uses, so it can find, close, and keep more customers without hiring a bigger team. Founded by Steven Barchetti, a 40-year solo entrepreneur across five businesses who runs his own company on the same system.",
+    "Steven James Consulting helps coaches, authors and influencers turn the attention they already have into dollars: we package what you know into a product, send the attention you get from free social media to one website you own, and build the six systems that make the sale. Founded by Steven Barchetti, who has run five businesses over forty years.",
 };
 
 const serviceSchema = {
@@ -209,7 +209,7 @@ const serviceSchema = {
   provider: { "@type": "Organization", name: "Steven James Consulting" },
   areaServed: "United States",
   description:
-    "A native AI operating system installed on top of your existing software — one AI hire covering up to six seats: instant speed-to-lead, database reactivation, closing and booking, 24/7 call handling, customer retention, and cross-sell. Built and trained on your business and run for you; you stay in control. Typically a 4-8 week build, scope-based pricing discussed on the discovery call.",
+    "Done for you: one website you own and six business systems connected as one Growth Engine, with AI employees answering, following up and booking beside your own small team. Built for coaches, authors and influencers.",
 };
 
 const faqSchema = {

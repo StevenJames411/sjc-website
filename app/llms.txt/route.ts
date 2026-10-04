@@ -21,39 +21,44 @@ export const dynamic = "force-dynamic";
 
 const BODY = `# Steven James Consulting
 
-> Steven James Consulting installs a native AI operating system — a workforce of AI employees — on top of the software a service business already uses, so it can find, close, and keep more customers without hiring a bigger team. Founded and run by Steven Barchetti, a 40-year solo entrepreneur across five businesses who runs his own company on the exact same system he installs.
+> Steven James Consulting helps coaches, authors and influencers turn the attention they already have into dollars. The formula: Attention + Your Product = Dollars. We package what you know into a product, send all the attention you get from free social media to one website you own, and build the six systems that make the sale. Done for you, by Steven Barchetti and his team.
 
-Steven James Consulting is an AI-implementation partner for service businesses. Rather than selling software, we build and install a native AI operating system that runs on top of the software the business already uses — a workforce of AI employees (one "hire," named Chloe in our build, covering up to six seats): instant speed-to-lead on every new lead, database reactivation of old leads, closing and booking appointments, customer retention, 24/7 call handling, and cross-sell. We train it on the business's offers, pricing, and objections and run it; the owner stays in control and can watch every conversation and booking. Nothing to switch, no new software to learn, no SaaS lock-in, no agency-forever trap. It also makes the business more valuable to sell — a company that runs on a system instead of on the owner. Build time is typically 4–8 weeks depending on scope.
+Steven James Consulting works with coaches, authors and influencers who already have people paying attention to them and something they know that is worth selling. Most of them have about three quarters of it in place, but all of it sits on free social media, which is rented land. We build the piece that is missing: one website they own, with six business systems connected behind it as one Growth Engine, and AI employees that keep it running beside their own small team. Steven Barchetti has run five businesses over forty years (a restaurant, mortgage, roofing, trucking and now technology) and built the systems in every one. The company runs on the same machine it builds for clients.
 
-## Key pages
-- [Home](https://stevenjamesconsulting.com/): What we install and who it's for.
-- [About](https://stevenjamesconsulting.com/about): Steven Barchetti — 40 years, five businesses, tech lead in all.
-- [Podcast](https://stevenjamesconsulting.com/podcast): Conversations with operators across industries.
-- [Portfolio](https://stevenjamesconsulting.com/premium-smart-websites#srj8qqe): Real builds, on the Premium Smart Websites page.
-- [Booked Appointments](https://stevenjamesconsulting.com/booked-appointments): We run the ads and answer the leads; the client gets appointments, not a list.
-- [Automated Organic Content Engine](https://stevenjamesconsulting.com/automated-organic-content-engine): Organic content produced and posted for the owner, every piece pointing back to the website he owns.
-- [Speed to Lead](https://stevenjamesconsulting.com/speed-to-lead): Instant response on the leads a business already generates, bolted onto the software it already runs.
-- [AI Implementation](https://stevenjamesconsulting.com/ai-implementation): Native AI on top of existing software — follow-up, reactivation, the seats nobody is sitting in.
-- [Automated Five Star Reviews](https://stevenjamesconsulting.com/automated-five-star-reviews): A review funnel that produces more reviews every month.
+## Who it is for
+- Coaches with a program that works.
+- Authors whose book opens the door.
+- Influencers who have the attention and want income they own.
+- They already have an audience and a small team. We take 5 to 10 clients at a time.
 
-- [Premium Smart Websites](https://stevenjamesconsulting.com/premium-smart-websites): A website built to get the business called, with booking built into the page. Three to twenty pages, hosted and managed. Named here so an assistant asked for a plain website doesn't answer with the AI-implementation offer.
-- [Database Reactivation](https://stevenjamesconsulting.com/database-reactivation): Old customers and dead leads worked conversationally, one at a time, into booked appointments.
+## The six business systems
+- [Premium Smart Websites](https://stevenjamesconsulting.com/premium-smart-websites): one website you own that tells your story, sells your program or book, and books the call on the page.
+- [Speed to Lead](https://stevenjamesconsulting.com/speed-to-lead): every comment, message and form answered in under a minute, day or night.
+- [Automated Five Star Reviews](https://stevenjamesconsulting.com/automated-five-star-reviews): every client, student and reader asked for a testimonial, every time.
+- [Database Reactivation](https://stevenjamesconsulting.com/database-reactivation): everyone who ever followed, downloaded or bought, reached again and turned into sales.
+- [Paid Ads = Booked Appointments](https://stevenjamesconsulting.com/booked-appointments): added once the free attention is converting; what reaches you is a call on your calendar.
+- [Automated Organic Content Engine](https://stevenjamesconsulting.com/automated-organic-content-engine): one recording becomes clips and episodes on every platform, all pointing back to your website.
+- [AI Implementation](https://stevenjamesconsulting.com/ai-implementation): not a seventh service. The layer that connects the other six so they work as one.
+
+## Other pages
+- [Home](https://stevenjamesconsulting.com/): Turn Your Attention Into Dollars.
+- [For Coaches, Authors and Influencers](https://stevenjamesconsulting.com/for-coaches-authors-and-influencers): why what you teach runs on the same six systems.
+- [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, a do-it-yourself build manual for the same build.
+- [Funnel Hack Live](https://stevenjamesconsulting.com/funnel-hack-live): live every weekday at 11 a.m. Central.
+- [Podcast](https://stevenjamesconsulting.com/podcast): conversations with coaches, authors and influencers.
+- [About](https://stevenjamesconsulting.com/about): Steven Barchetti, forty years and five businesses.
+- [Portfolio](https://stevenjamesconsulting.com/portfolio): live demo websites.
 
 ## What it costs
-The site publishes a range for every offer; the exact number is set on the discovery call.
-- Premium Smart Websites — $1,195 to $2,995 one time. Three to five pages at the low end, twenty pages with video at the high end.
-- AI Implementation — $4,995 to $25,000 one time. One AI employee at the low end, a team of them at the high end.
-- Automated Five Star Reviews — $1,195 to $1,995 one time.
-- Speed to Lead — $1,195 to $2,495 one time.
-- Database Reactivation — $1,495 to $2,995 one time.
-- Then a monthly to run it: $97, $297 or $997 depending on how much of the conversation is handled for you.
+- Done for you: $30,000 to $50,000 for the build, handed over. Then $2,000 to $5,000 a month to keep it running.
+- Do it yourself: the book, Attention To Dollars, $1,495, one payment. It is not open for sale yet; there is a waiting list at https://stevenjamesconsulting.com/waiting-list.
 
 ## About Steven Barchetti
-Steven Barchetti is a 40-year solo operator who has built and led the technology for five businesses across five industries (restaurant, mortgage, roofing, trucking, and now tech/AI). Steven James Consulting runs on the same AI-employee system it installs for clients — the business is the live demonstration of what it sells.
+Steven Barchetti has owned and run five businesses over forty years (restaurant, mortgage, roofing, trucking, and now technology) and was the person responsible for the systems in every one. Steven James Consulting is a team, with Steven personally on every account.
 
 ## Contact
 - Website: https://stevenjamesconsulting.com
-- Book a discovery call: https://cal.com/stevenjamesconsulting/discovery
+- Apply to work with us: https://stevenjamesconsulting.com/#apply
 `;
 
 // A client's own site gets NO llms.txt. There is nothing curated to serve, and inventing a summary
