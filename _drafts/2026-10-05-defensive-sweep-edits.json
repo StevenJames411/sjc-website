@@ -1,0 +1,1593 @@
+{
+  "summary": "One copywriter per page removes every defensive or reassuring line and every second price the reviewers found, and replaces it with copy that sells forward. Nothing is published by the agents.",
+  "agentCount": 15,
+  "logs": [],
+  "result": {
+    "done": [
+      {
+        "page": "home",
+        "edits": [
+          {
+            "address": "design-vsl-book:t4",
+            "new_text": "It is all in here. Every system, every step, in the order we build it. The blueprint is $495.00.",
+            "removed": "\"Nothing is held back.\""
+          },
+          {
+            "address": "lf-none-of-this-is-new-what-is-new-is:t4",
+            "new_text": "Get people's attention. Have something to sell them. Stay in front of them until they are ready to buy. That is how every business that ever ran an advertisement has worked, and I watched it work in every business I owned. Not one piece my team and I use is a new idea. That is good news for you, because a model this old has been proven over and over. What is ours is the way the pieces are joined, and I will show you that further down.",
+            "removed": "\"If anybody tells you they invented this, keep a hand on your wallet.\""
+          },
+          {
+            "address": "home-how-it-ties:t6",
+            "new_text": "Why the website? Because it is the only place online you own. The social platforms can change the rules or shut your account off tomorrow. Your website is your own piece of digital real estate. It is open every hour of the day, and it is the one place people can actually buy from you.",
+            "removed": "\"Nobody can take it from you\""
+          },
+          {
+            "address": "lf-connecting-the-dots-one-person-fro:t6",
+            "new_text": "For you it keeps going, because that clip tells them where to go next. They tap through and arrive on your website, the one place online that is all about you. In a short visit they can see who you are, who you help and what you sell. They are no longer one face in a crowd on somebody else's platform. They are a guest in your house, and you decide what they see next.",
+            "removed": "\"that belongs to you\""
+          },
+          {
+            "address": "lf-the-six-systems-one-at-a-time-what:t10",
+            "new_text": "System three answers them. When a person comments, sends a message or fills out a form on your website, an AI employee replies in seconds, at any hour, in everyday words that sound like you. Without it, that person waits until you have a free moment, and interest does not wait. By the time you reply, they have moved on to whoever answered first. With it, everybody who raises a hand gets a real answer and a next step. And when a person is ready to talk to you, they are brought straight to you. What it hands on is a conversation that is still warm, or a call on your calendar.",
+            "removed": "\"when a question is not the AI employee's to answer, it comes to you\""
+          },
+          {
+            "address": "lf-here-is-what-you-own-when-we-are-d:t2",
+            "new_text": "Here is what my team and I build for you, piece by piece.",
+            "removed": "\"what you own when we are done\""
+          },
+          {
+            "address": "lf-here-is-what-you-own-when-we-are-d:t4",
+            "new_text": "You have seen the path one follower takes and the engine underneath it. Now here is the list of what is in your hands when my team and I are done. I mean hands. Every item below is something you can open on your phone and show your spouse across the kitchen table. And every item is there to make you money. The website, the list, the e-book, the podcast and the AI employees behind them are built to do one job together: turn the people already watching you into people who pay you.",
+            "removed": "\"And every item is in your name.\" \"the accounts they sit on\""
+          },
+          {
+            "address": "lf-here-is-what-you-own-when-we-are-d:t6",
+            "new_text": "This is where the money changes hands. Your audience lives today on platforms that belong to somebody else. They set the rules, and they can switch your account off without asking you. Your website is the one address online where you set the rules. Open it on your phone and you will see your name at the top, your story, your book for sale, your show, and a way to book a call with you. Every video, clip and episode you put out sends people to that address, and that address is where they buy.",
+            "removed": "\"This is the deed.\" \"that is yours\""
+          },
+          {
+            "address": "lf-here-is-what-you-own-when-we-are-d:t8",
+            "new_text": "This is what you know, with a price on it for the first time. Most people with a following have never written down what they know. It comes out one answer at a time, in comments and messages, for nothing. We get what you know onto the page and package it into a finished book, with your name on the cover, for sale on your website. You bring the knowledge. My team does the packaging. When it is done you are a published author with a product, and your followers finally have a first thing to buy from you.",
+            "removed": "\"that is entirely yours\""
+          },
+          {
+            "address": "lf-here-is-what-you-own-when-we-are-d:t10",
+            "new_text": "This is your stage, and it is where strangers get to know you. You sit down and talk about what you know. My team handles the technical side, produces the show and puts it on your website, the same way mine sits on this one. What you end up with is a shelf of episodes with your name on them. A stranger can spend real time with you there, long after the day you recorded. Every episode keeps working for you, and so does every video and clip cut from it.",
+            "removed": "\"nobody can cancel your hour\" \"What you end up owning\" \"Every episode is yours, and so is\""
+          },
+          {
+            "address": "lf-here-is-what-you-own-when-we-are-d:t12",
+            "new_text": "These are the staff you could never have afforded on a payroll. They are built for your business, they talk about your work and your offers, and they are on duty at every hour. What you hold is the result of their work. Every person who raised a hand got an answer. And when one of them brings you a person who is ready to talk, the whole conversation comes with it, written down, so you know exactly where things stand.",
+            "removed": "\"passes a question to you because it was not theirs to answer\""
+          },
+          {
+            "address": "lf-here-is-what-you-own-when-we-are-d:t16",
+            "new_text": "This may be the most valuable thing on the page, and most people with a following do not have one. A follower count belongs to the platform. A list is where the money is. It is the names of everyone who bought your book, booked a call, asked a question or raised a hand on your website, along with a way to reach them again. Every name on it is a person who already knows you, which makes it the warmest audience you will ever have. Your AI employees go back to that list with something new to say and something new to offer, including the people who went quiet.",
+            "removed": "\"A list belongs to you.\" \"No platform can take it away or charge you to talk to it.\""
+          },
+          {
+            "address": "lf-here-is-what-you-own-when-we-are-d:t18",
+            "new_text": "We put paid ads at the end on purpose. Paying to send strangers to something that cannot answer them, follow up with them or show them proof is how people burn money. So ads wait until the free attention is already turning into clients. Then they simply send more people into something that works. Every person an ad brings in gets answered the same way as the person who found you for nothing. That is when advertising pays, because every dollar is feeding something that already sells.",
+            "removed": "\"The accounts are in your name here too, the same as everything else on this list.\""
+          },
+          {
+            "address": "lf-what-your-week-looks-like-after-we:t7",
+            "new_text": "Where you come in.",
+            "removed": "\"What it will not answer.\""
+          },
+          {
+            "address": "lf-what-your-week-looks-like-after-we:t8",
+            "new_text": "If your sales have always happened in your own messages, this is the part you will like best. Your AI employee takes the everyday questions, the same ones you have typed answers to over and over. When a person is ready for you, or asks for something that calls for your judgment, it brings them to you with the whole conversation written down, so you pick up where it left off instead of starting over. You stop being the front desk. You get to be the expert again, talking only to people who are close to buying. Your best selling still happens in your own voice. It just happens with the right people.",
+            "removed": "\"the part you are worried about\" \"It does not guess.\" \"Nothing about this takes you out of your own business.\""
+          },
+          {
+            "address": "lf-what-your-week-looks-like-after-we:t18",
+            "new_text": "You may be asking a fair question. My book, Attention To Dollars, is the blueprint, and the whole thing is laid out in it. So why would anybody have my team build it? Because a blueprint and a finished building are two different things. The book shows you every system and the order they go in. The build is my team and I doing every step of it for you, with AI employees we tune and keep running, while you stay the expert. Read the blueprint first if you like. I would. Then decide who you want doing the work. That is the whole idea of a modern day talent agency. You do what only you can do, and somebody good stands behind you for the rest.",
+            "removed": "\"nothing is held back in it\""
+          },
+          {
+            "address": "home-two-services:t3",
+            "new_text": "Either way, you get the whole talent agency behind you, and the same build: the website you own, your own e-book, your own podcast and all six systems of the Revenue Engine. The difference is how you pay. If you cannot write the full check today, the Revenue Share Partnership is your way in. Both start with a discovery call. Your exact price is given on that call, and it is where my team and I get to know what you know and who is already watching you.",
+            "removed": "\"on Revenue Share the share and the total are agreed there and written down before we begin\""
+          },
+          {
+            "address": "home-two-services:t6",
+            "new_text": "For the coach, author or influencer who already sells what they know and has a small team. We build all six systems on a website you own, turn what you know into your own e-book, produce your own podcast on that website, and keep it running. You get a copy of my business, front to back. We work with 5 to 10 clients at a time. Most builds take 4 to 6 weeks from the day we start. Every client starts with a discovery call, and that is where we map out yours.",
+            "removed": "\"That is a range, and I confirm yours on the discovery call.\""
+          },
+          {
+            "address": "home-two-services:t10",
+            "new_text": "A modern day talent agency. Each month we pick two or three members of our community to work with. It is the same build, your own e-book and your own podcast included. My team does the work, and you get your shot to show the world what you know.",
+            "removed": "\"When it is paid for, the share stops and you keep 100 percent.\""
+          }
+        ],
+        "left_alone": [
+          "\"If having your own podcast and your own product scares you, we are not the right fit\" - fit selection, locked application form",
+          "\"In your hands. / I mean hands.\" - tangibility, not ownership reassurance",
+          "\"A website you own.\" (lead-in and cards) - plain positive fact, allowed",
+          "\"they can switch your account off without asking you\" - rented land teaching about platforms",
+          "\"I do not see anybody else offering all of this in one place\" - his claim, not defensive",
+          "Six Business Systems block listing eight items, out of order - structure issue, outside this law",
+          "Done For You card names no monthly - one price per offer",
+          "\"has a small team\" versus Revenue Share audience - fit selection, not reassurance",
+          "\"Your website is the front door\" repetition - repetition, not defensive copy",
+          "\"easiest money you'll ever make\" and \"seven to ten times\" repeats - his lines, not defensive",
+          "\"You may be asking a fair question\" (book or the build) - sells the build, kept",
+          "\"Nobody can hire a person they have never heard of\" - praised line, not defensive"
+        ],
+        "summary": "Home page (/) checked line by line against the no-defensive-copy law. 19 texts changed, nothing shortened, no file or website touched.\n\nWhat came out, by type:\n- Suspicion raised by the writer: \"keep a hand on your wallet\" (Why We Exist) and both \"nothing is held back\" lines (book block, and the book-or-build paragraph).\n- Ownership as reassurance, all in What We Build For You: the heading \"what you own when we are done\", \"every item is in your name\", \"This is the deed\", \"entirely yours\", \"nobody can cancel your hour\", \"Every episode is yours\", \"A list belongs to you\", \"No platform can take it away\", and \"The accounts are in your name here too\". Also \"Nobody can take it from you\" in the Attention block and \"belongs to you\" in One Follower's Path.\n- Risk answers about the AI employees: the whole \"What it will not answer\" paragraph is rewritten as \"Where you come in\", with the handoff fact and the written-down conversation kept. Two one-sentence versions of the same worry (Speed to Lead in the six-systems section, and Your AI employees) are turned into \"a person who is ready to talk is brought to you\".\n- Money small-print and second terms in the two-offers block: \"the share and the total are agreed there and written down before we begin\" (intro), \"the share stops and you keep 100 percent\" (Revenue Share card), and the hedge \"That is a range, and I confirm yours\" (Done For You card, replaced with the discovery call line).\n\nEvery replacement sells forward in about the same word count. All prices, system names, the 5 to 10 clients and the 4 to 6 weeks are intact. Proof, the rented-land teaching about the platforms, fit and \"put in the reps\" lines, and the application form are untouched.\n\nThree calls for the CEO seat to check:\n- home-how-it-ties:t6 sits in a section an earlier pass treated as locked. I changed one clause only (\"Nobody can take it from you\"), because it is on the named list and reviewers quoted it.\n- The Revenue Share card now ends on \"you get your shot to show the world what you know\", adapted from Steven's talent-agency line. The card no longer explains the share. The button to the Revenue Share page carries that.\n- Reviewers also flagged the Six Business Systems block (eight items, different order) and repeated boilerplate lines. Those are not defensive copy, so they are left for a separate pass."
+      },
+      {
+        "page": "for-coaches-authors-and-influencers",
+        "edits": [
+          {
+            "address": "dbr-how:t3",
+            "new_text": "Nothing else has anywhere to point until this exists, so it is always first. We start with what you already have. If your site is good enough, we build on it. If it is not, my team builds you a new one. Either way it ends up built to sell, with your e-book and your podcast on it. That is Premium Smart Websites.",
+            "removed": "\"it ends up in your name\""
+          },
+          {
+            "address": "dbr-how:t12",
+            "new_text": "Sixth, and only sixth, is Paid Ads = Booked Appointments. By now the first five are doing their jobs with attention that cost you nothing. That is the test. When the free attention is turning into buyers, we know paid attention will too, and not before. Then every ad dollar lands on an engine that is already selling.",
+            "removed": "\"I will not spend your ad money to find out whether the rest works.\""
+          },
+          {
+            "address": "lf-ai-employees-are-the-amplifier-on-:t7",
+            "new_text": "What they free up.",
+            "removed": "\"What they do not replace.\""
+          },
+          {
+            "address": "lf-ai-employees-are-the-amplifier-on-:t8",
+            "new_text": "They give you and your people your time back. Your knowledge, your face and your voice are the product. Your team still delivers what gets sold. The AI employees take the repeatable work, the answering, the following up and the reminding. That is the work that never gets done when a human is busy.",
+            "removed": "\"They do not replace you, and they do not replace your people.\""
+          },
+          {
+            "address": "lf-ai-employees-are-the-amplifier-on-:t10",
+            "new_text": "Every one of them has my team behind it. My team builds them, watches them and tunes them, and I am personally on your account. When something in your business changes, a new program, a new price, a new offer, we change what they say. That is what keeping it running means. The whole thing stays current and keeps getting better.",
+            "removed": "\"They are not left alone to run your business.\" \"That is what the monthly fee pays for.\""
+          },
+          {
+            "address": "dbr-engine:t1",
+            "new_text": "Here is what the money builds, one piece at a time, and what each piece does for you. You get a website you own, and every clip and episode sends people to it. You get your e-book, with your name on the cover, for sale on that website. You get your podcast, produced by my team. You get a list of people who gave you their details, and AI employees who follow up with every one of them. Put together, that is a business that sells what you know.",
+            "removed": "\"Fair question, and you should ask it before you spend this kind of money. Here is the answer.\" \"in your name\""
+          },
+          {
+            "address": "dbr-engine:t2",
+            "new_text": "The Revenue Engine is our own proprietary system, and the way the six connect is our work. What it produces for you is sales. A follower sees a clip, lands on your website, gets answered, reads the proof and buys. That happens while you are with a client, and again at eleven at night while you are asleep. You already got the attention. This is the part that gets you paid for it.",
+            "removed": "\"yours to keep\" \"I am not going to move you off rented land and onto mine\" \"not renting a seat\""
+          },
+          {
+            "address": "lf-what-you-do-and-what-my-team-and-i:t8",
+            "new_text": "You do not have to learn software, and neither does your team. This is done for you, not taught to you. A good system handed over as a lesson still leaves the building to the buyer, and building is a different trade than teaching, writing or showing up on camera. I would rather build it right, put it to work for you, and keep it running.",
+            "removed": "\"hand it to you working\""
+          },
+          {
+            "address": "lf-what-you-do-and-what-my-team-and-i:t10",
+            "new_text": "You are hiring a US company with a team behind the work, and you get me on your account. My team does the building and keeps it tuned. I am the one you talk to about where your business is going. When you bring me a hard question, you are talking to somebody who has had to make payroll, not somebody reading from a script. Most builds take 4 to 6 weeks from the day we start. Every client starts with a discovery call, and that is where we map out yours.",
+            "removed": "\"That is a range, and I confirm yours on the discovery call.\""
+          },
+          {
+            "address": "lf-what-your-week-looks-like-once-it-:t10",
+            "new_text": "You stop answering the same questions all day. You stop keeping a mental list of people to circle back to. You stop wondering what to put out tomorrow. Your week fills up with the work that pays. Here is where your hours go. They go to teaching, to the calls that matter and to the people who already paid you.",
+            "removed": "\"I am not promising you an empty week. I am telling you where your hours go.\""
+          },
+          {
+            "address": "lf-a-copy-of-my-business-with-your-na:t7",
+            "new_text": "What it adds up to.",
+            "removed": "\"It is yours.\""
+          },
+          {
+            "address": "lf-a-copy-of-my-business-with-your-na:t8",
+            "new_text": "The website sells for you day and night. The book, with your name on the cover, makes you the authority. The podcast gives people real time with you. The list of people who came through it is who you sell to next. Your AI employees keep working and my team keeps tuning it.",
+            "removed": "\"The website is yours. The book is yours. The podcast is yours.\" \"The monthly fee\" \"belongs to you\""
+          },
+          {
+            "address": "lf-a-copy-of-my-business-with-your-na:t10",
+            "new_text": "Most of what gets sold to coaches, authors and influencers is a lesson. You pay, you get a login, and the building is left to you. This is the opposite. You get the finished thing, running, with people behind it. That goes for my own book too. Attention To Dollars is the blueprint, and it lays out every step. A blueprint tells you what to build. It does not pour the concrete. The build is my team doing the work and staying on it afterwards.",
+            "removed": "\"it holds nothing back\""
+          },
+          {
+            "address": "dbr-first:t2",
+            "new_text": "The build is $30,000.00 to $50,000.00, and you get your exact number on the discovery call. If you would rather start smaller, there is a second way in. The Revenue Share Partnership is the same build for $3,995.00 to start. We take two or three people a month that way. It is the same website, the same e-book with your name on the cover, the same podcast, the same six systems and the same AI employees, with my team and me behind you. We back the people we believe in, the way a talent agent does. The Revenue Share page lays it out.",
+            "removed": "\"before anything starts\" \"with the rest paid from a share of the revenue\" \"agreed on the call and written down\" \"keep 100 percent\""
+          },
+          {
+            "address": "dbr-fit:t3",
+            "new_text": "The right fit",
+            "removed": "\"Straight answer\""
+          },
+          {
+            "address": "book-section:t4",
+            "new_text": "The whole build is in it. Every system, every step, in the order we build it. The blueprint is $495.00.",
+            "removed": "\"Nothing is held back.\""
+          }
+        ],
+        "left_alone": [
+          "'And if nobody works beside you yet... start there': fit and selection, allowed",
+          "'Do the work first' / 'on day one nobody believes in you yet': the reps, selection",
+          "'I can tell in about ten minutes whether you care': selection, not reassurance",
+          "'System one is the front door' / 'fills that front door': repetition, not defensive",
+          "'An expert's income is a direct reflection...': selection, his own line",
+          "McDonald's owner and 'I don't see anybody else offering this': positioning, not defensive",
+          "'The Revenue Share page lays it out': linking is a design job",
+          "Rented land section incl. 'your name on the deed': platform teaching, not us",
+          "'A website you own' (hero, cards, system one): plain positive fact, once",
+          "'When this is not for you' heading: who it is not for"
+        ],
+        "summary": "Sixteen texts changed on /for-coaches-authors-and-influencers; nothing was published and no file was touched. Each defensive line is replaced with a forward-selling line of about the same length, and the rest of each paragraph is word for word.\n\n- **Ownership as reassurance:** removed from the website step (\"in your name\"), from \"What you get for the money\" (\"yours to keep\", \"not onto mine\", \"not renting a seat\"), and from the whole \"It is yours.\" block, which is now \"What it adds up to.\" and says what each piece does.\n- **Monthly fee:** both mentions are gone (the AI employees section and the \"It is yours.\" block). The page now only says we keep it running.\n- **Revenue Share terms:** the \"One build, one price\" paragraph keeps $3,995.00 to start and two or three people a month, and drops the share, the agreed total, \"written down\" and \"keep 100 percent\".\n- **Suspicion and withheld promises:** removed \"I will not spend your ad money\", \"Fair question, and you should ask it\", \"They are not left alone to run your business\", \"I am not promising you an empty week\", and \"nothing held back\" in both book passages.\n- **\"Hand it to you working\":** now \"put it to work for you\".\n- **Defensive framing in labels:** \"What they do not replace.\" is now \"What they free up.\" and the \"Straight answer\" tag is now \"The right fit\".\n\nFour of these go slightly beyond the seven listed categories, so reject them if you disagree:\n- **Build time caveat:** I replaced \"That is a range, and I confirm yours on the discovery call\" after the 4 to 6 weeks line with the discovery-call line.\n- **\"Before anything starts\":** I cut it from the build price sentence.\n- **\"If that check is out of reach today\":** I softened it to \"If you would rather start smaller\".\n- **Two new lines in the Revenue Share paragraph:** \"with my team and me behind you\" and \"We back the people we believe in, the way a talent agent does\" are my wording to replace the removed terms.\n\nOne thing to check: the paragraph after \"What it adds up to.\" is still headed \"Why that matters.\" It still reads correctly, but it was written to follow the ownership block.\n\nI kept the rented-land section whole, including \"your name on the deed\", because it is about the platforms, not about us. I also left \"That is not a failure on your part\" and \"You are not disorganized\" as they are."
+      },
+      {
+        "page": "premium-smart-websites",
+        "edits": [
+          {
+            "address": "lf-your-website-has-one-job-give-your:t13",
+            "new_text": "A list you can reach.",
+            "removed": "\"A list that is yours.\""
+          },
+          {
+            "address": "lf-your-website-has-one-job-give-your:t14",
+            "new_text": "On social media you cannot reach your own followers unless the platform decides to show them your video. On your website, every person who buys, books or asks a question leaves a name, an email and a phone number. That list lets you reach them yourself, any day you choose. It keeps growing as more people buy, book and ask. Later in the Revenue Engine, system 5 goes back to that list and turns it into repeat sales. It starts filling up here.",
+            "removed": "\"That list belongs to you.\""
+          },
+          {
+            "address": "lf-your-website-has-one-job-give-your:t18",
+            "new_text": "Good. You are starting ahead. Your web address stays the same, so the people who already know where to find you still can. My team and I go through what is there with you and carry over what is true and still working, starting with your story and your own words. Then we build the new website around them, with the e-book, the show, the calendar and the AI employee the old one never had. What stays and what gets rebuilt is the first thing we work through on the discovery call. What goes live is your story, with something to buy sitting right beside it.",
+            "removed": "\"Nothing you built is wasted.\" \"settled with you... before any work starts. You will not be surprised by what goes live.\""
+          },
+          {
+            "address": "lf-what-you-know-packaged-into-a-book:t8",
+            "new_text": "We put what you said into chapters, in an order a reader can follow from the first page to the last. It is written to sound like you, not like a textbook. We design the cover in your colors with your name on it. We lay it out so it reads well on a phone, because that is where your followers will open it. You read every chapter before anybody else does, and you sharpen it until it sounds exactly like you.",
+            "removed": "\"and nothing goes out until you say it is right\""
+          },
+          {
+            "address": "lf-what-you-know-packaged-into-a-book:t10",
+            "new_text": "Your e-book gets its own page on your website. That page says what is inside, who it is for and what the reader will be able to do when they finish. There is a button to buy it, and a follower becomes a buyer right there. It is sold, not handed out. A reader who paid has a reason to finish. I sell mine on my website the same way. Yours works exactly like it.",
+            "removed": "\"and the money comes to you\""
+          },
+          {
+            "address": "lf-what-you-know-packaged-into-a-book:t18",
+            "new_text": "I built this for my own company first. My own book, Attention To Dollars, sits on this website and does this job for my company every day. What you get is the same piece, built the same way, with your knowledge inside it and your name on the cover. You can look at mine before we ever talk. That is the prototype. Yours is the copy.",
+            "removed": "\"I am not describing something I read about.\""
+          },
+          {
+            "address": "pf-design-8:t3",
+            "new_text": "Most coaches, authors and influencers build everything on Instagram, TikTok or YouTube. It works right up until the day the account gets restricted, the reach drops, or the page is taken down, and it happens for no reason anybody ever explains to you. Every follower you spent years earning goes with it, and you have no way left to reach them. Stay on those platforms. They are the best free stages ever built, and we use every one of them. Just do not keep the only copy of your business there. You do not have your followers' names, emails or phone numbers. The platform does.",
+            "removed": "\"I am not telling you to leave those platforms.\" \"I am telling you not to\""
+          },
+          {
+            "address": "pf-design-8:t4",
+            "new_text": "A website you own is the one address every road leads to. Every social page points to it. Every video points to it. It is where a follower becomes a buyer. When someone buys your e-book there, books a call or asks a question, you get their name and a way to reach them. So picture the morning after an account goes dark. You open your own list and reach every one of those people yourself, by email or by text, without asking a platform for permission. That is what I mean by control. You own the ground you are standing on.",
+            "removed": "\"the one address nobody can take away from you\""
+          },
+          {
+            "address": "pf-design-8:t6",
+            "new_text": "The website, the list, the e-book and the podcast all work as one machine. Each one sends people on to the next, until a follower becomes a buyer.",
+            "removed": "\"and the accounts are all in your name\""
+          },
+          {
+            "address": "lf-what-system-1-hands-to-system-2:t16",
+            "new_text": "Everything on this page is how my own company works. The website you are reading, the book on it, the podcast on it, the AI employee that answers when you ask a question. You get the same thing with your name on it, from front to back. If you can see your own name on a website like this one, tell us where you are today. Every client starts with a discovery call, and the exact price is given on that call. There is also the Revenue Share Partnership. It is the same build, and it has its own page on this website. We work with 5 to 10 clients at a time.",
+            "removed": "\"If the full build is out of reach today, ask about\" \"paid for a different way\""
+          }
+        ],
+        "left_alone": [
+          "\"If having your own podcast and your own product scares you, we are not the right fit.\" - fit and selection, not reassurance",
+          "\"My team stands behind them, and I am personally on your account.\" - plain positive fact, said once",
+          "\"In about nine seconds they decide whether to stay.\" and \"your name comes up in the answer\" - outside this law's scope",
+          "Rented land told in full (pf-design-8, Section-618, Section-623) - his core teaching, about platforms",
+          "\"You own the ground you are standing on.\" - his definition of control",
+          "Revenue Share named but not linked in the last section - a link, not copy",
+          "\"None of that is an argument against your social pages.\" - teaching about platforms, not us",
+          "\"Your web address stays the same\" - plain fact about the build",
+          "\"You are never the one fixing it.\" - a benefit, sells forward"
+        ],
+        "summary": "Ten texts changed on /premium-smart-websites, all at about the same length; the page carries no price and nothing was shortened. Nothing on the website or in any file was touched.\n\nWhat came out:\n- **Ownership as reassurance:** \"the accounts are all in your name\" (pf-design-8:t6), \"That list belongs to you\" and its heading \"A list that is yours\", \"the one address nobody can take away from you\", and \"the money comes to you\" on the e-book page.\n- **Promises withheld and small-print:** \"settled with you on the discovery call, before any work starts. You will not be surprised by what goes live\", \"Nothing you built is wasted\", and \"nothing goes out until you say it is right\".\n- **Suspicion raised by the writer:** \"I am not describing something I read about\" and \"I am not telling you to leave those platforms\".\n- **Scarcity and second terms beside the offer:** \"If the full build is out of reach today\" and \"paid for a different way\" in the closing paragraph. The Revenue Share Partnership is still named as the same build with its own page.\n\nEach was replaced with a line that sells forward: what the list lets you do, what goes live, the follower becoming a buyer on the book page, the four pieces working as one machine.\n\nThree of these are judgment calls the reviewers did not flag, so reverse them if they go too far:\n- **pf-design-8:t3 and t4:** the rented-land teaching is intact. I only removed the \"I am not telling you\" denial and the \"nobody can take away\" phrase.\n- **The list heading and line:** the contrast with the platform is kept. Only \"belongs to you\" and \"is yours\" went.\n- **The Revenue Share sentence in the last section:** it said nothing about a monthly fee or a share. I changed it because it spoke to the reader as someone who cannot afford the build.\n\nProof, the fit lines, the application form and the hero are untouched."
+      },
+      {
+        "page": "automated-organic-content-engine",
+        "edits": [
+          {
+            "address": "lf-why-free-attention-comes-before-pa:t12",
+            "new_text": "An ad stops the day you stop paying for it. A video does not. A clip you put out this month can still be found long after, by somebody typing what you teach into Google. A podcast episode sits on your website for as long as you want it there. Every piece adds to a library with your name on it, and that library points at a website you own. That is the difference between renting attention for a week and building a library that keeps sending people to you.",
+            "removed": "\"building something that is yours\""
+          },
+          {
+            "address": "design-4:t2",
+            "new_text": "Your face, your words, a full month of clips. Every clip points back to your website.",
+            "removed": "\"You own the accounts and the words.\""
+          },
+          {
+            "address": "design-4:t3",
+            "new_text": "Your audience followed you for your face, your voice and the way you explain things, so that is what goes out. Every clip is you, saying what you already teach, in the words your clients know you for. What we add is the part nobody has time for: turning one recording into a month of pieces, writing the captions and titles in the words your audience actually types, and getting them out on a schedule. That is self-promotion, done for you, and every piece of it sends people to the website where they can buy from you.",
+            "removed": "\"The social accounts are yours, and so is the website\" / \"We do not invent opinions for you or put a stranger's voice on your name.\""
+          },
+          {
+            "address": "design-4:t4",
+            "new_text": "We report on what your videos sent to your website and what that turned into, not on how many people liked a clip. Because my team built the website and the answering too, we can see the whole trip, from the clip to the call. If people watch and do not come over, we change the clips. If they come over and do not buy, we change the page. Each month is built on what the last one taught us about your buyers.",
+            "removed": "\"Either way, you hear it from us first.\""
+          },
+          {
+            "address": "Text-702.text",
+            "new_text": "The whole thing is built to send buyers to your website. You sit down and talk. This is what comes back, every month, ready before the month begins. Nobody hands you an editing program to learn. Nobody asks you to write captions at midnight or remember which day something is supposed to go out. What comes back is a finished month, in your voice, waiting on your phone for a yes.",
+            "removed": "\"No promises about going viral, and no homework.\" / \"without you chasing anybody for it\""
+          },
+          {
+            "address": "lf-what-actually-happens-to-your-ten-:t6",
+            "new_text": "When you sit down and talk about what you teach, you do not say one thing. You tell a story. You answer a question. You make a point you have made to clients over and over. You warn people off a mistake. Each of those stands on its own, so we find each one and lift it out. One becomes a short video. The same idea becomes a written piece for people who would rather read. A strong sentence becomes a caption. That is how one sitting turns into around thirty pieces. Every one of them is a real idea of yours. We are separating out what was already in there.",
+            "removed": "\"We are not padding anything.\""
+          },
+          {
+            "address": "design-6:t4",
+            "new_text": "This is the whole argument. A social account is borrowed space. The rules change, the reach changes, and one morning the account can be gone and the audience with it. You can spend years building a following on a platform and still own none of it. Your website is different. It is your own piece of digital real estate, the one place built to sell what you know, and the one place a person can actually buy from you. So we use the free platforms for what they are good at, which is getting you seen, and we point everything they give you at the place you own.",
+            "removed": "\"the one place nobody can switch off\""
+          },
+          {
+            "address": "design-6:t13",
+            "new_text": "The only thing on this list you own outright. Every clip and video points there, because that is where somebody can buy from you or book a call, and it is the one address where your e-book, your podcast and your program all sit together.",
+            "removed": "\"the one address nobody can change the rules on or switch off\""
+          },
+          {
+            "address": "book-section:t4",
+            "new_text": "The whole Revenue Engine is in it. Every system, every step, in the order we build it. The blueprint is $495.00.",
+            "removed": "\"Nothing is held back.\""
+          }
+        ],
+        "left_alone": [
+          "\"If having your own podcast and your own product scares you, we are not the right fit.\" - fit selection, not reassurance",
+          "\"Your own website (the front door)\" - repetition issue, not defensive",
+          "\"around thirty in all\" / \"One recording becomes a month of content\" / \"your ten minute recording\" - count dispute, outside this law",
+          "\"What your week looks like\" paragraph - repetition issue, not defensive",
+          "\"Know what you own and what you are only renting\" plus the rented land paragraph - his core teaching, kept"
+        ],
+        "summary": "Nine edits on /automated-organic-content-engine, each replacing a defensive line with one that sells forward at about the same length. Nothing was written to the website or any file.\n\nWhat came out:\n- **Ownership as reassurance:** the \"How it works\" heading and the opening of its first paragraph (\"You own the accounts and the words\", \"The social accounts are yours\"), and \"building something that is yours\" in the free-before-paid section.\n- **\"Nobody can switch off\":** two lines in the owned-versus-rented section. Both were about the platforms, not about us, but the phrase is on your list, so I cut the clause and kept the rented land teaching around it.\n- **Suspicion raised by the writer:** \"We do not invent opinions for you or put a stranger's voice on your name\", \"We are not padding anything\", and \"Nothing is held back\" on the book card.\n- **Promises withheld:** \"No promises about going viral, and no homework\" and \"Either way, you hear it from us first\".\n- **One extra the reviewers did not flag:** \"without you chasing anybody for it\", which implies the reader would have to chase us. It now reads \"ready before the month begins\", matching what section 7 already says.\n\nTwo things to check:\n- **Book card:** the \"Nothing is held back\" line sits in the book card (`book-section:t4`). If that card is shared across pages, the same line needs the same fix wherever else it appears.\n- **Price on a system page:** that card also carries $495.00 on a page meant to have no prices. I left it, because the brief said to keep every price in a rewritten text.\n\nLeft alone on purpose: the hero (not lengthened or touched), the \"Nobody hands you an editing program\" lines (the reader's own pain, not a fear about us), \"you cannot buy this one by itself\" (how the build works), and the \"not the right fit\" filter."
+      },
+      {
+        "page": "speed-to-lead",
+        "edits": [
+          {
+            "address": "lf-the-same-message-on-two-different-:t20",
+            "new_text": "Plenty of people ask a question and then life gets in the way. The baby wakes up. The phone dies. They are not saying no. They got busy. A person on your team might follow up once and then forget. The AI employee does not forget. It reaches out again by text and email, spaced out the way a thoughtful person would, until she answers or asks it to stop. Some of the sales you are missing today may be sitting right there.",
+            "removed": "\"so it never feels like pestering\""
+          },
+          {
+            "address": "Heading-517.text",
+            "new_text": "It brings in your team",
+            "removed": "\"It knows its limits\""
+          },
+          {
+            "address": "Text-518.text",
+            "new_text": "A conversation that needs a person goes to someone on your team, with the whole conversation written down.",
+            "removed": "\"A question that is not its to answer\""
+          },
+          {
+            "address": "lf-everything-in-speed-to-lead-one-pi:t11",
+            "new_text": "When it needs a person.",
+            "removed": "\"What it will not do.\""
+          },
+          {
+            "address": "lf-everything-in-speed-to-lead-one-pi:t12",
+            "new_text": "Your AI employee handles the questions people always ask, and it brings your team in for the rest. A special request, something personal, anything we have not taught it yet. Those go to you or the person on your team you choose, with the whole conversation written down, so nobody has to ask the buyer to repeat a word. The buyer goes straight from a fast answer to the right person. When somebody asks what your program costs, it gives the answer you decided on during the build. Your people spend their time on the conversations that need a human.",
+            "removed": "\"It will not guess, because we teach it not to\", \"The buyer never feels dropped\", \"and nothing else\""
+          },
+          {
+            "address": "design-5:t13",
+            "new_text": "Every message is tracked",
+            "removed": "\"Nothing is lost\""
+          },
+          {
+            "address": "design-5:t14",
+            "new_text": "Every message is tracked from the second it arrives to the call on your calendar. Every buyer who raises a hand gets an answer and a next step, which a busy inbox has never done for you.",
+            "removed": "\"If a message ever fails to reach the right person, you hear about it. A buyer is never lost quietly\""
+          },
+          {
+            "address": "lf-what-speed-to-lead-hands-to-system:t7",
+            "new_text": "And it builds your list.",
+            "removed": "\"And the record is yours.\""
+          },
+          {
+            "address": "lf-what-speed-to-lead-hands-to-system:t8",
+            "new_text": "Everything Speed to Lead writes down goes onto your list. Every person who raised a hand is there, with their name and what they asked for. That list sits on the website you own, beside your e-book and your podcast. This is the system that builds your list, one conversation at a time, while you are doing something else. A following is a crowd you hope will see you. A list is people you can reach any day you choose, by email or by text. And it is what system five goes back to.",
+            "removed": "\"I say it on this page because\""
+          }
+        ],
+        "left_alone": [
+          "design-hero-twin:t4 \"already looking at two other programs\": accuracy question, not defensive",
+          "design-hero-twin:t4 \"in under a minute\" versus \"in seconds\": consistency issue, outside this law",
+          "lf-the-same-message-on-two-different-:t10 \"She was serious. She bought.\": praised story, sells forward",
+          "lf-the-same-message-on-two-different-:t16 \"This is the first time she heard back\": praised line, sells forward",
+          "lf-what-speed-to-lead-hands-to-system:t16 no button after last section: layout change, not copy",
+          "Browser tab title em dash: no address on this page"
+        ],
+        "summary": "Nine texts changed on /speed-to-lead across five spots; nothing on the site or in any file was touched. The page carries no prices, exit lines or hand-over lines, so the changes are all risk and ownership-reassurance framing.\n\n- **\"What it will not do\" (section 7):** the heading is now \"When it needs a person.\" The paragraph opens on what the AI employee handles and how it brings the team in. \"It will not guess\", \"The buyer never feels dropped\" and \"and nothing else\" are gone; every fact stays.\n- **\"It knows its limits\" card (section 6):** now \"It brings in your team\", with the same routing fact said positively.\n- **\"Nothing is lost\" card (section 8):** this was the line all three reviewers quoted (\"If a message ever fails... you hear about it. A buyer is never lost quietly\"). It now reads \"Every message is tracked\", from arrival to the booked call. It runs about five words longer than the original, at the edge of the 15 percent allowance.\n- **\"And the record is yours\" (section 9):** the heading is now \"And it builds your list.\" I also cut \"I say it on this page because\", which had the copy justifying itself. \"The website you own\" stays as the plain fact said once.\n- **Follow-up paragraph (section 5):** \"so it never feels like pestering\" became \"the way a thoughtful person would\". No reviewer flagged this one; I cut it because it names a fear the reader did not have.\n\nOne line I weighed and kept: \"Somebody who goes quiet is not dropped\" on the follow-up card (design-5:t11). It describes the follow-up rather than answering a fear, but it is a \"not\" framing if you want it turned.\n\nThe reviewer items I left are in the left-alone list: they are accuracy, consistency, layout and tab-title points, not defensive copy."
+      },
+      {
+        "page": "automated-five-star-reviews",
+        "edits": [
+          {
+            "address": "lf-exactly-how-every-client-student-a:t10",
+            "new_text": "You find out the same day, privately, while the program is still running. The note you get is short. It tells you who it is, where they are in your program and what they said, in their own words. Your AI employee brings that one straight to you, because a call from you is worth more to that student than any message. A student who is stuck in the middle is a problem you can fix with one phone call. You do not need a script. You ask what happened, you listen, and you put right what you can. The same student, called that day, can still finish, and a student who finishes is your next review.",
+            "removed": "\"does not try to fix it or talk them out of it. That one is not its to answer\" / \"is a refund request or a bad review\""
+          },
+          {
+            "address": "lf-exactly-how-every-client-student-a:t12",
+            "new_text": "They get asked right then, while the good feeling is fresh. The message carries the link, so there is nothing to look for and no new account to open. Some will write a few lines in public. That is the review. Some will tell the whole story, in writing or on video, for your website. That is the testimonial. Either one is gold. And they add up. Every review makes the next stranger easier to win, and every testimonial hands my team another story to put in front of your audience. Ask every person, every time, and what you get is a wall of proof a buyer reads before the call.",
+            "removed": "\"to be plain about it, we do not hide the unhappy ones. Anybody can say whatever they like about you\""
+          }
+        ],
+        "left_alone": [
+          "\"An expert's income is a direct reflection...\" (t16): repetition finding, not defensive",
+          "\"I do not see anybody else offering it this way\": his claim, not reassurance",
+          "\"What your week looks like\" paragraph: repetition finding, not defensive",
+          "\"A talent agent never walks into a room...\": praised as the standard"
+        ],
+        "summary": "Two edits on /automated-five-star-reviews, both in section 6 (lf-exactly-how-every-client-student-a). No file or website was touched.\n\n1. t10 \"If somebody is unhappy\": removed the \"what the AI employee will not do\" sentences and the closing \"refund request or a bad review\" line. In their place: the AI employee brings it straight to you because your call is worth more, and the student you call that day can still finish and become your next review. The rest of the paragraph is word for word.\n\n2. t12 \"If somebody is happy\": removed \"to be plain about it, we do not hide the unhappy ones\" and the two sentences after it about bad reviews going public. In their place: reviews add up, each one makes the next stranger easier to win, and each testimonial gives my team another story for your audience. The rest is word for word.\n\nBoth replacements are within a few words of the original length. No price, number, result or timeline was added.\n\nI read every other address and found nothing else under the seven categories. The page has no prices, no hand-over lines, no exit or lock-in lines and no ownership reassurance about us. The \"you do not own them\" and \"the page you own\" lines in section 7 are the rented-land teaching about the platforms, so they stay.\n\nTwo lines I left that the CEO seat may want to rule on:\n- Hero (design-hero-twin:t4): \"so you hear about a problem while you can still fix it, not in a public review on Saturday.\" It names a bad public review, the same fear I cut from t12. I left it because it describes what the system does and is not reassurance about us, and the hero is not to be lengthened. A same-length swap is easy if wanted.\n- Section 8 (lf-where-your-proof-shows-up-and-what:t8): \"if you are early, with only a handful of clients so far, do not let that stop you. This system is not sold separately.\" It answers an objection the reader may not have raised. I read it as fit and package fact, so I kept it."
+      },
+      {
+        "page": "database-reactivation",
+        "edits": [
+          {
+            "address": "lf-what-happens-to-your-list-every-we:t9",
+            "new_text": "A note worth answering.",
+            "removed": "\"Your people, treated right.\""
+          },
+          {
+            "address": "lf-what-happens-to-your-list-every-we:t10",
+            "new_text": "Think about who these people are. At some point each of them chose to hear from you. A short note that picks up where the two of you left off is somebody they liked remembering them, and people answer that. The ones who are ready say so, and they get the next step. The ones who want more time get it, and they hear from you again when they asked to. A question that deserves you personally comes to you. Every reply teaches us which words your people answer. My team and I watch what goes out and what comes back, and we keep tuning it.",
+            "removed": "\"People ask me if their list will be upset\" / \"Being chased is\" / \"thanked and left alone\" / \"your name on every note\""
+          },
+          {
+            "address": "dbr-how:t6",
+            "new_text": "Your programs, your prices, the questions you hear all day, and how you like your people spoken to. Every note goes out in your words, about the things your people care about. It sounds like the relationship you already had with them.",
+            "removed": "\"Nothing goes out sounding like a stranger who bought your list.\""
+          },
+          {
+            "address": "dbr-how:t9",
+            "new_text": "A short, human note that reads like it came from you and picks up where the two of you left off. It goes out at a sensible hour, spaced out so each note gets read and answered.",
+            "removed": "\"so nobody feels chased\""
+          },
+          {
+            "address": "dbr-notabot:t2",
+            "new_text": "This holds a real conversation. Say a past student writes back, \"Let me think about it.\" A chatbot goes quiet or sends a button. This one answers, \"Of course. Is it the timing, or is there a question I did not answer? I am glad to check back with you after the summer.\" She picks one, and the two of them keep talking. It answers the price question the same way. And when a question deserves you personally, it brings it to you with the whole conversation written down. That difference is the entire reason old followers reply at all.",
+            "removed": "\"it knows which questions are not its to answer and hands them to you\""
+          },
+          {
+            "address": "dbr-call:t8",
+            "new_text": "And notice who she is calling. She is calling the warmest people you have, the ones who already bought from you: your own students, clients and readers, who gave you their number and expect to hear from you. Booking the check-in, the next program, the call somebody has been putting off. It is the same list from the top of this page, worked by voice instead of by text.",
+            "removed": "\"She is not ringing strangers off a list somebody bought.\""
+          },
+          {
+            "address": "dbr-fit:t1",
+            "new_text": "If you have been at this six months and your list is forty people, system 5 waits. It is one build and all six systems go in, in the same order every time. So we build the first four, the Automated Organic Content Engine and your website fill the list, and then this one goes to work. The same is true if all you have is followers and no emails or phone numbers. Every follower who buys your e-book or books a call becomes a name on it. Everybody's list was forty people once. How big is big enough? Send us what you have on the application and we will go through it with you on the discovery call.",
+            "removed": "\"There is no shame in that.\" / \"we will tell you on the call, before you pay for anything\""
+          },
+          {
+            "address": "dbr-fit:t2",
+            "new_text": "And if you have been blasting that list every week already, we change the order of what they hear. People who have been sold to every week are ready for something worth hearing first, your podcast and your videos. Then we come back to the list with an offer. By then they are listening again, and the offer lands. The build does not change. Only the timing of this one system does.",
+            "removed": "\"the well is dry, and we will tell you so on the call\" / \"need a rest, not another message\""
+          },
+          {
+            "address": "dbr-fit:t3",
+            "new_text": "Timing",
+            "removed": "\"Straight answer\""
+          }
+        ],
+        "left_alone": [
+          "dbr-first:t4 'This is usually the first money you see' - already live, not defensive",
+          "dbr-first:t1 'days rather than months' - existing claim, sells forward",
+          "dbr-first:t2 'the honest way to find out' - teaching about attention, not us",
+          "dbr-fit:t4 'When this system waits.' - fit and timing, selection",
+          "dbr-nobody:t2 'That is not a character flaw' - empathy about the problem",
+          "design-hero-twin:t4 'Not because you stopped caring' - hero, describes their pain",
+          "dbr-notabot:t4 'It is not a chatbot' - stakes ground, contrast sells",
+          "lf-what-happens:t4 'Not a one-time push / Nobody gets buried' - explains the weekly method",
+          "dbr-how:t3 'our job, not yours' - who does the work",
+          "dbr-how:t15 'You do not get a list to chase' - contrast states the outcome",
+          "Browser tab title em dash - not page text, no address"
+        ],
+        "summary": "Nine edits on /database-reactivation, nothing written to the website or any file. The page had no ownership-as-reassurance, exit, second-price or \"hand it over\" lines about the build. What it did have was risk and suspicion raised by the writer, plus one money small-print line.\n\n- **The annoyed-list paragraph** (`lf-what-happens-to-your-list-every-we:t9` and `:t10`): the heading and paragraph raised the fear that the list would be upset, then answered it. It now says why these people answer and what each one gets next. The closing \"my team and I watch what goes out\" sentence is kept word for word.\n- **How it works** (`dbr-how:t6`, `dbr-how:t9`): \"a stranger who bought your list\" and \"so nobody feels chased\" are replaced with what the note does.\n- **Not a chatbot** (`dbr-notabot:t2`): the \"questions that are not its to answer\" sentence now says a question that deserves you comes to you with the conversation written down.\n- **The call** (`dbr-call:t8`): \"not ringing strangers off a list somebody bought\" becomes \"the warmest people you have\".\n- **When this system waits** (`dbr-fit:t1`, `:t2`, `:t3`): \"before you pay for anything\", \"there is no shame in that\", \"the well is dry, and we will tell you so\" and the \"Straight answer\" tag are gone. The fit and timing facts stay, and the section still routes to the application and the discovery call.\n\nEvery rewritten text is within about 15 percent of its length, no price was added, and the restaurant and dessert proof is untouched.\n\nOne addition to check: `dbr-fit:t1` now includes \"Every follower who buys your e-book or books a call becomes a name on it.\" It restates what `dbr-what:t2` already says on this page, so it is not a new claim, but it is a new sentence in that paragraph.\n\nI left \"This is usually the first money you see\" and \"days rather than months\" alone. The copy chief flagged them as promises, but they are already live and are not defensive under this law. The heading \"When this system waits.\" also stays, since it is fit, though it remains the last heading before the application."
+      },
+      {
+        "page": "booked-appointments",
+        "edits": [
+          {
+            "address": "design-hero-twin:t4",
+            "new_text": "Most coaches, authors and influencers who tried ads got a pile of names, chased a few of them, gave up, and decided ads do not work for what they sell. Ads work fine. What went wrong happened after the person raised a hand: the message sat in an inbox until they had already bought from someone else. Once your free attention is turning into sales, we build and run the campaigns on Facebook and Google, then answer every person who comes back in under a minute, day or night, until they book. Every ad dollar goes behind the message that already made people book. What lands on your calendar is sales calls, not a list to chase. The ads send people to the website we built for you, where your own e-book and your own podcast are waiting.",
+            "removed": "\"on your own ... accounts\"; \"You pay the platforms directly and see every dollar of it.\""
+          },
+          {
+            "address": "design-4:t2",
+            "new_text": "My team builds the campaigns. You take the calls.",
+            "removed": "\"You own the accounts. We do the work on top of them.\""
+          },
+          {
+            "address": "design-4:t3",
+            "new_text": "The Facebook and Google ad accounts, the piece of code on your website that tells Facebook and Google which ads actually turned into buyers, and the calendar all get tied together, so the platforms learn who your buyers are and go find more people like them. What we add is the part those platforms do not do on their own: campaigns built around what one student or client is actually worth to you, and an answer to every person the moment they raise a hand. So every dollar you spend is aimed at one thing, a call with a buyer on your calendar.",
+            "removed": "\"are yours. You pay the platforms directly and see every dollar of spend.\""
+          },
+          {
+            "address": "design-4:t4",
+            "new_text": "It also means we report on sales calls on your calendar, not on how many people filled out a form. Sending more people to a website that does not sell just loses money faster, so my team and I tune the follow-up and the website first, and every person an ad brings lands on something built to turn a visitor into a buyer.",
+            "removed": "\"you will hear that from us before you hear it from your bank\""
+          },
+          {
+            "address": "Text-722.text",
+            "new_text": "Most ad shops sell you traffic on day one, because traffic is the easy part to sell and the easy part to show. We do it the other way around, and the reason is simple. A talent agent does not rent the big room for an act that has never been tried in a small one. Your self-promotion starts on platforms that cost you nothing, so that is where we find out what people respond to, what they ask, and what makes them book. Every message gets tried and sharpened there, until we know the ones that fill a calendar. Then, and only then, my team and I put money behind you. That is the one thing a talent agent does through advertising. We do not buy you attention and hope. We buy more of the attention that has already proven it pays. By the time the ads go on, you are not testing whether this works. You are sending more people into something that already does.",
+            "removed": "\"Every mistake gets made and fixed there, before a dollar of your ad money is at risk.\""
+          },
+          {
+            "address": "lf-what-you-get-when-ads-land-on-five:t4",
+            "new_text": "We do not turn on an ad because a date came up on a calendar. We turn it on because of what we are seeing. People are finding you on the free platforms and coming to your website. They are asking questions and getting answered. Some of them are buying your e-book. Some of them are booking calls, and some of those calls are turning into clients. When free attention is doing that on its own, steadily, the ads have something real to feed. If it is not doing that yet, we keep working on the first five until it is, so the ads go to work on something that already sells.",
+            "removed": "\"and your ad money stays in your pocket\""
+          },
+          {
+            "address": "lf-what-you-get-when-ads-land-on-five:t6",
+            "new_text": "By then you have put out a lot of videos, clips and episodes, and people have told us which ones matter. Not with likes. With what they did next. One clip made people go to your website. One episode made people book a call. Those are the ones we put money behind. So your ad is not something a stranger wrote about you in an afternoon. It is you, saying the thing that already made people act when it cost you nothing. Your best message, in front of more of the right people.",
+            "removed": "\"We are not guessing with your money.\""
+          },
+          {
+            "address": "lf-what-you-get-when-ads-land-on-five:t10",
+            "new_text": "Advertising stops being a bet and becomes a dial. Everything behind it is already selling on free attention, so ads just put more people in front of it. We start the dial low on purpose. A small amount, watched closely, tells us what a booked call costs you, and that number tells us how far to turn it. When the numbers hold, we turn it up a notch and watch again. When you have all the calls you can handle, we turn it down. More calls when you want to grow, fewer when your calendar is full. You set the pace and my team and I work the dial.",
+            "removed": "\"before real money goes in\"; \"The lowest setting is off. It is your money and your account, so that is always your call.\""
+          },
+          {
+            "address": "lf-what-you-get-when-ads-land-on-five:t12",
+            "new_text": "Once a week you hear from us with four numbers, the ones listed just below, and what we did about them. If plenty of people raised a hand and few booked, the trouble is in the answering, and we fix the answering. If they booked and did not buy, we look at who the ad is reaching and what it promised them. If what each buyer cost went up, we find out why and change what is causing it. You never get a report full of charts to decode. You get four numbers, a few plain sentences, and what happens next.",
+            "removed": "\"we say so and tell you what we changed\""
+          },
+          {
+            "address": "lf-what-you-get-when-ads-land-on-five:t13",
+            "new_text": "When the ads go on.",
+            "removed": "\"If you never turn them on.\""
+          },
+          {
+            "address": "lf-what-you-get-when-ads-land-on-five:t14",
+            "new_text": "Ads are the sixth system because they multiply the other five. It is one build and all six systems go in, so the ad side is built and ready from the start. The website, the videos and clips, the answering, the testimonials and the follow-up do the selling on the audience you already have. The ads put more people in front of all of it. When you want more calls than free attention brings, the dial is sitting there waiting. That is how what you know reaches people who have never heard of you.",
+            "removed": "\"Then you never turn them on\"; \"the one you can live without\"; \"up to you\"; \"Both are fine with us.\""
+          },
+          {
+            "address": "lf-what-you-get-when-ads-land-on-five:t16",
+            "new_text": "Here is the split. You sit down with us once and agree on the number everything gets built to. You keep showing up for your audience, which is where our best ads come from. You show up to your calls. My team and I do the rest. We build the campaigns, write the ads, send people to your website, answer everyone who raises a hand, watch the numbers every week, and tell you plainly what is working and what we are doing next. And when a message starts filling your calendar, we put more behind it.",
+            "removed": "\"The ad accounts are in your name and the bill ... comes to you\"; \"the ads should be off, you will hear that from us first\""
+          },
+          {
+            "address": "design-5:t2",
+            "new_text": "Every campaign is built to one number.",
+            "removed": "\"The ads run on your own accounts.\""
+          },
+          {
+            "address": "design-5:t16",
+            "new_text": "We put more behind what pays",
+            "removed": "\"We tell you when to stop\""
+          },
+          {
+            "address": "design-5:t17",
+            "new_text": "When a campaign is filling your calendar at the right cost, we turn it up a notch. The other five systems keep working on the audience you already have.",
+            "removed": "\"If the ads stop paying, we turn them off and tell you why.\""
+          },
+          {
+            "address": "design-6:t4",
+            "new_text": "This is the whole job. A booked call only pays if what it costs to produce one sits comfortably below what that buyer is worth. Get that arithmetic right and you know what a booked call is worth before you say hello. If you have never run a business on these numbers, do not let the letters scare you. It is the same question a restaurant asks about a table or a roofer asks about a job: what did it cost me to get this customer, and what do they pay me over time? We work both numbers out with you in plain English before anything gets turned on, and we go over them with you every week after that. You will know what a buyer costs you, what one is worth, and how many more of them you want.",
+            "removed": "\"Because the spend is yours, you can check that arithmetic yourself\"; \"You will never have to take our word\""
+          }
+        ],
+        "left_alone": [
+          "Riverbend proof block (Text-702, Text-710): proof is never edited",
+          "\"Your part is small on purpose.\": describes the work split, not protection",
+          "\"A dial, not a bet.\" and its opening sentence: teaching line, sells forward",
+          "\"We do not buy you attention and hope.\": method contrast, not suspicion",
+          "\"it was not bad luck and it was not you\": teaches the order, past tense",
+          "\"Until there is a place you own\": rented land teaching, kept",
+          "\"Nothing gets launched until we both know what one buyer is worth\": method step, not reassurance",
+          "\"Not a dashboard nobody opens.\" glossary ending: not defensive, outside this law",
+          "\"in under a minute\" versus \"in seconds\": consistency issue, not this law",
+          "Tab title em dash and \"We Fill Your Calendar\": no address on page file",
+          "\"or they tell us no\" in the week paragraph: plain follow-up fact, not exit"
+        ],
+        "summary": "16 edits on /booked-appointments, no files touched. I read the whole page line by line; the reviewers' list was incomplete, and the copy chief was right that this page kept telling the reader their ad money was safe.\n\nWhat came out:\n- **Account ownership as reassurance:** the hero's \"your own accounts\", the \"You own the accounts\" heading, \"are yours\", \"in your name\", and \"The ads run on your own accounts\".\n- **Money small-print:** \"You pay the platforms directly and see every dollar\" (twice), \"the bill from the platforms comes to you\", and \"Because the spend is yours, you can check that arithmetic yourself\".\n- **Risk and failure lines:** \"before a dollar of your ad money is at risk\", \"your ad money stays in your pocket\", \"We are not guessing with your money\", \"before real money goes in\", \"you will hear that from us before you hear it from your bank\", \"You will never have to take our word\", and step 05 \"We tell you when to stop\".\n- **The opt-out paragraph:** \"If you never turn them on\" with \"the one you can live without\" and \"Both are fine with us\". It is now \"When the ads go on\", and says ads multiply the other five.\n\nEach replacement sells forward at about the same length: the proven message getting the money, the platforms finding more buyers, the dial turning up as the calendar fills. The page is not shorter, the hero is not longer, and there are no prices.\n\nThree things for the CEO seat to check:\n- **The client paying the ad platforms is no longer stated anywhere on this page.** The law called for removing it; it now belongs on the discovery call.\n- **Two replacement lines describe the work in new words.** \"The platforms learn who your buyers are and go find more people like them\" is in design-4:t3. \"You keep showing up for your audience, which is where our best ads come from\" is in the \"Your part and ours\" paragraph. Both follow from what the page already says, but neither sentence was on it before.\n- **design-5:t16 and t17 changed meaning, not just tone.** Step 05 was about turning ads off when they stop paying; it is now about turning up what pays.\n\nNot fixed because they fall outside this law: the glossary is still the last thing before the application, the Riverbend block still shows no figures in text, and \"under a minute\" still disagrees with \"in seconds\" elsewhere."
+      },
+      {
+        "page": "ai-implementation",
+        "edits": [
+          {
+            "address": "lf-radio-tv-and-a-payroll-flipped-on-:t16",
+            "new_text": "The timing is on your side, and the opening is right in front of you. None of this is new. What is new is that someone your size can finally afford to run it. The companies pulling ahead of you figured that out first, and that is the only head start they have. You do not have to learn how any of it works. My team and I build it, connect it and keep it running, and you keep doing the part people follow you for.",
+            "removed": "\"You are not late, and you did not miss some secret.\""
+          },
+          {
+            "address": "design-13:t2",
+            "new_text": "You do not build any of it, and it earns for you day and night.",
+            "removed": "\"and for the first time you own it\""
+          },
+          {
+            "address": "design-13:t4",
+            "new_text": "It runs on a website you own, not on a platform that can change the rules on you. You see every conversation and every booking happen, and you can change anything, any time. That matters more than it sounds. If everything you have built lives on a social platform, you are a tenant, and the landlord can change the locks. Your website is the one piece of digital real estate you own and control, and it is where attention turns into dollars. Your e-book sits there. Your podcast sits there. Your AI employees work from there. They answer every question, follow up with every person and book the calls, day and night, with my team behind them and me on your account.",
+            "removed": "\"with your name on the deed\""
+          },
+          {
+            "address": "design-13:t5",
+            "new_text": "That is the difference between this and most of what gets sold as AI. Most of it is a login and a library of training videos, and good luck. You know what happens to that library. It sits unwatched, because you have an audience to show up for and you never signed up to become a technician. You get a finished AI employee, already working. If you would rather do the building yourself, my book is the blueprint for it. This page is the other road. You get the worker and none of the technical homework, with my team behind it and me personally on your account. That is what a modern day talent agency does. You are the talent, and the work behind you is ours. I do not see anybody else offering it.",
+            "removed": "\"We hand you\""
+          },
+          {
+            "address": "design-17:t3",
+            "new_text": "This is the question everybody asks, and the answer is simple. A person can only do one job at a time, and only while they are awake. That is the whole reason you could never staff all six seats.",
+            "removed": "\"so let us answer it straight\""
+          },
+          {
+            "address": "design-20:t6",
+            "new_text": "So this is the rare deal where you get more and pay less for it. You get the consistency a six-person team wishes it could deliver, every message answered, every follower worked, every student followed up with, for a fraction of what that team would cost you. That is the part that makes people sit up: better coverage, better consistency, and a smaller number at the bottom of the page.",
+            "removed": "\"So this was never about settling for less to save money. It is the opposite.\""
+          },
+          {
+            "address": "lf-what-your-people-do-while-the-ai-e:t13",
+            "new_text": "Your team gets stronger.",
+            "removed": "\"Nobody gets replaced.\""
+          },
+          {
+            "address": "lf-what-your-people-do-while-the-ai-e:t14",
+            "new_text": "Everybody on your team moves up to the work only a person can do, and the AI employees take the work no person could ever keep up with. Behind them is a US company with a team of its own. My team and I run your AI employees, read what they say and keep making them better, and I am personally on your account. You are adding workers to your team, and every one of your people gets more done because of it.",
+            "removed": "\"Nobody on your team loses a job to this, and nobody has to become a technician\" / \"You are not trading anybody in.\""
+          },
+          {
+            "address": "design-24:t3",
+            "new_text": "We take on 5 to 10 clients at a time. Each one of these gets built by hand for that person, and there is only so much of that we can do well. An AI employee that sounds like you has to be trained on you: your programs, your prices and the way you treat a student. That cannot be stamped out on an assembly line. I am personally on every account, with my team behind me, and we keep the list short so every build gets our full attention.",
+            "removed": "\"I would sooner turn people away than build yours halfway\""
+          },
+          {
+            "address": "design-24:t4",
+            "new_text": "So the next step is simple. It is a short application: what you sell, how big your audience is, who is on your team. If it fits, we get on a call and walk your day end to end, every DM, every sale, what gets promised, what gets forgotten. Then we tell you whether we are the right fit for each other.",
+            "removed": "\"is not a sales pitch\" / \"tell you straight whether we can help\""
+          },
+          {
+            "address": "design-24:t5",
+            "new_text": "Done for you fits the person who already sells what they know and has a small team in place. If the work fits and writing the whole check today does not, the Revenue Share Partnership is the other way in. It starts at $3,995.00, and its own page explains the rest. Either way it begins with a discovery call, and that call is where you get your exact price and see what we would build.",
+            "removed": "\"before we hang up\""
+          },
+          {
+            "address": "design-pricing-band:t1",
+            "new_text": "Done for you, the build is $30,000.00 to $50,000.00.",
+            "removed": "\"You pay once to get it built\""
+          },
+          {
+            "address": "design-pricing-band:t2",
+            "new_text": "That is a spread, because no two audiences are the same. The build is done for you: your website, your own e-book, your own podcast, your AI employees on all six systems, trained on your programs, your prices and your rules, connected so they work as one machine and hand work to each other. You also get reports that show you what each one did. Then we keep it running and getting better: your AI employees working day and night, with our team behind them. Where you land depends on how much you sell, how many places your audience lives, and how much of your business it has to learn. Fill in the application below, and if we are a fit I will give you your exact price. Most builds take 4 to 6 weeks from the day we start, and I walk you through yours on the discovery call.",
+            "removed": "\"The monthly keeps it running\" / \"That is a range, and I confirm yours\""
+          },
+          {
+            "address": "design-pricing-band:t3",
+            "new_text": "Price this against people. The team it would take to cover all six seats costs more every year than this entire build. And people do not work nights, weekends or holidays.",
+            "removed": "\"than this build costs once\""
+          }
+        ],
+        "left_alone": [
+          "design-13:t4 tenant and landlord lines: rented land teaching about platforms",
+          "design-18:t7 'No contracts, no memberships, just pay as you go': quoted proof, never edited",
+          "design-20:t7 'The number is further down this page': a tease, not defensive",
+          "design-21:t5 'a bigger check if you ever do sell it': results claim, outside this law",
+          "design-16:t3 'The six seats are not the six systems': structure issue, outside this law",
+          "design-hero-twin:t4 'because software does it, not a person': hero text, not defensive",
+          "lf-what-your-people-do-while-the-ai-e:t4 'people who already have a small team': fit and selection, allowed",
+          "design-24:t2 'We are not for everybody, and that is on purpose': fit and selection, allowed",
+          "design-24:t5 'It starts at $3,995.00, and its own page explains the rest': one number, no terms",
+          "design-pricing-band price band on this page: prices public, one build price",
+          "design-12:t1 'The part nobody else will tell you': a hook, raises no suspicion",
+          "design-20:t4 'here is the honest math': sets up the cost comparison"
+        ],
+        "summary": "14 edits on /ai-implementation, covering the whole page line by line; no file or site was touched.\n\nWhat came out:\n- **Ownership as reassurance:** the \"for the first time you own it\" heading, and \"with your name on the deed\". The rented-land teaching about platforms stays.\n- **Money small-print and the second price:** \"You pay once\" in the price heading, \"costs once\" in the comparison, and \"The monthly keeps it running\" (now \"Then we keep it running and getting better\", no number). The $30,000.00 to $50,000.00 build and the $3,995.00 mention are unchanged.\n- **Fears the page raised itself:** \"Nobody gets replaced\" and \"Nobody on your team loses a job\" (now \"Your team gets stronger\"), \"You are not trading anybody in\", \"You are not late, and you did not miss some secret\", \"never about settling for less\", and \"build yours halfway\".\n- **Suspicion and hedges:** \"not a sales pitch\", \"tell you straight\", \"answer it straight\", \"before we hang up\", and \"That is a range, and I confirm yours\".\n- **\"We hand you\" a finished AI employee** is now \"You get\". This one is a judgement call: it describes delivery, not ownership, but it sits close to the \"hand it over\" wording.\n\nEvery fact, price and system name is kept, the Chloe transcripts are untouched, and each rewrite stays close to its original length.\n\nReviewer findings I left because they fall outside this law: the price tease in section 15, the six-seats vocabulary, the \"bigger check if you ever do sell it\" line, and whether this page should carry a price at all."
+      },
+      {
+        "page": "about",
+        "edits": [
+          {
+            "address": "design-8:t4",
+            "new_text": "And I built it for my own company first. Steven James Consulting runs on its own AI employees today, the same thing we will set up for you. The website you are reading, the book on it and the podcast are the same pieces every client gets, built the same way. So what you are looking at right now is what yours will look like, with your name on it.",
+            "removed": "\"So you can look at all of it, as long as you like, before you ever talk to me.\""
+          },
+          {
+            "address": "design-8:t5",
+            "new_text": "You are looking at the finished product. Everything I am describing is running right now, on the website you are reading. So walk through it the way one of your own buyers will walk through yours. Open the book page. Listen to the podcast. Then decide whether you want your own.",
+            "removed": "\"I am not selling you an idea.\" / \"judge it the way you would judge anything else you were about to pay for\""
+          },
+          {
+            "address": "design-9:t5",
+            "new_text": "on the six systems that sell what you know, and we put all of it on your website, where attention turns into dollars.",
+            "removed": "\"a website that belongs to you\""
+          },
+          {
+            "address": "design-9:t6",
+            "new_text": "We give you control you have never had. A website you own, with all the attention you get pointing to it. Social media is where you get the attention. Your website is where it lands, and that is where it turns into dollars. Your e-book sits there. Your podcast sits there. The names of the people who raised their hand sit there. If a platform changes its rules next year, you still have every one of them.",
+            "removed": "\"and nobody can take that from you\""
+          },
+          {
+            "address": "design-10:t4",
+            "new_text": "You get the numbers that pay the bills. There are deeper numbers too, like what a buyer cost to win and what one is worth to you over the whole relationship. My team and I track those for you and show them to you in plain words. I learned every one of them making a payroll. Those are the numbers that decided whether I made money for forty years.",
+            "removed": "\"I will never hand you one of those reports.\" / \"I am not quoting a framework when I say that.\""
+          },
+          {
+            "address": "design-10:t5",
+            "new_text": "So I build for you the way I would want it built for me: the numbers in plain sight, and every system earning its keep. You will know how many people came to your website, how many asked a question, how many booked a call and how many paid you. Those four numbers tell you more than any stack of likes and clicks ever told me.",
+            "removed": "\"nothing sold that does not earn its keep\""
+          },
+          {
+            "address": "lf-the-same-map-i-drew-in-2008-with-y:t6",
+            "new_text": "The middle of the map comes first. It is the one place online that you own. It tells your story, shows what you sell, and lets a person buy or book a call right there. Your part is to tell us your story and what you teach. My team writes it, designs it and builds it. From that day on, every video, clip and episode you put out has somewhere to send people, and a place for them to buy when they land.",
+            "removed": "\"belongs to you\" / \"and you own the place they land\" (ownership said twice in one paragraph)"
+          },
+          {
+            "address": "lf-the-same-map-i-drew-in-2008-with-y:t14",
+            "new_text": "A person cannot answer every message at two in the morning, follow up with every follower and remember to ask every client for a testimonial. An AI employee can. We train yours on your programs, your prices, your audience and the way you talk, so it sounds like your company and nobody else's. It works day and night. When a question calls for you, it comes to you with the whole conversation written down, so you walk in knowing the whole story. My team stands behind it, and I am on your account personally.",
+            "removed": "\"It also knows which questions are not its to answer.\""
+          },
+          {
+            "address": "ahp-4.text",
+            "new_text": "You do not have to love the numbers the way I do. You do have to look at them. Four numbers, a short look, and you know where your next dollar is coming from. The deeper ones, like what a buyer cost to win, which video or system brought them in, and what that buyer is worth to you over time, my team and I track for you and show you in plain words. That is the difference between running this as a business and hoping it works out.",
+            "removed": "\"you know whether what we built is working\""
+          },
+          {
+            "address": "lf-what-it-is-like-to-work-with-my-te:t4",
+            "new_text": "You fill out the application, and then you and I get on a call. I ask what you sell, where your audience is, and who is on your team. There are three ways in, and I will tell you in plain words which one fits you. Done for you is my team building all of it, with a few people on your side working next to the AI employees. The price range is on the home page, and you get the exact price on that call. The Revenue Share Partnership is for the person who cannot write that check today. It starts at $3,995.00 and it has its own page. And my book, Attention To Dollars, is the blueprint, for the person who wants to read every step first. Most builds take 4 to 6 weeks from the day we start. You get your own timeline on the discovery call.",
+            "removed": "\"and handing it to a few people on your side\" / \"That is a range, and I confirm yours\""
+          },
+          {
+            "address": "lf-what-it-is-like-to-work-with-my-te:t16",
+            "new_text": "We stay after it is built. My team and I watch the numbers with you, find the step where people are dropping off, and fix that step. When you add a program, change a price or write a second book, your AI employees get trained on it. When something is earning well, I will show you the number and we put more behind it. That is how what you know keeps earning more.",
+            "removed": "\"If something is not earning its keep, I will show you the number and tell you so. That is how I would want to be treated.\""
+          }
+        ],
+        "left_alone": [
+          "\"If having your own podcast and your own product scares you, we are not the right fit.\" - fit selection, not reassurance",
+          "\"I do not see anyone who gets behind one person, does all of it for them, and stays... it is only what I see from where I sit.\" - his claim, lens requires phrasing",
+          "\"seven to ten times\" - his approved teaching line",
+          "\"There are three ways in\" and \"your part is four things\" - count mismatch, not defensive copy",
+          "\"Forty year business owner, lead systems integrator\" / CTO explanation - identity question, not this law",
+          "\"It starts at $3,995.00 and it has its own page.\" - one price, no terms attached",
+          "\"What your week looks like\" and talent agent passages - repetition, outside this law"
+        ],
+        "summary": "Eleven texts changed on /about; nothing written to the site or any file. The page had no second prices, no monthly amount and no Revenue Share terms beside the $3,995.00, so nothing was needed there.\n\nWhat came out:\n- **Ownership as reassurance (3):** \"a website that belongs to you\" (design-9:t5), \"nobody can take that from you\" (design-9:t6), and \"you own the place they land\" (map t6), where ownership was said twice in one paragraph. The plain fact \"a website you own\" stays once in each place, and the platform-rules sentence stays as rented-land teaching.\n- **Suspicion raised by the writer (4):** \"I am not selling you an idea\" with \"judge it the way you would judge anything else you were about to pay for\" (design-8:t5), \"before you ever talk to me\" (design-8:t4), \"I will never hand you one of those reports\" with \"I am not quoting a framework\" (design-10:t4), and \"nothing sold that does not earn its keep\" (design-10:t5).\n- **Risk and failure (3):** \"If something is not earning its keep, I will show you the number and tell you so\" (working-with-us t16), \"It also knows which questions are not its to answer\" (map t14), and \"you know whether what we built is working\" (ahp-4).\n- **Handover and small-print (1 text, 2 clauses):** \"handing it to a few people on your side\" and \"That is a range, and I confirm yours\" (working-with-us t4). \"Most builds take 4 to 6 weeks\" stays.\n\nEach replacement sells forward at about the same length, and every price, fact and system name is kept.\n\nThree replacements add a small claim that was not on the page, worth a glance before publishing:\n- design-10:t4 now says \"I learned every one of them making a payroll.\"\n- working-with-us t16 now says \"When something is earning well, I will show you the number and we put more behind it.\"\n- working-with-us t4 now says \"You get your own timeline on the discovery call\" in place of \"I confirm yours\".\n\nLines I read and kept on purpose, beyond the reviewer-flagged ones:\n- \"A website you own is still the one place online that belongs to you\" (design-7:t4) is the rented-land teaching about platforms, not about us.\n- \"so you are never handed a set of lessons and left to work it out\" (what-we-are t12) is positioning against courses, not about the build handover.\n- \"one build at one price... We do not sell it in pieces\" (map t12) is the packaging fact, not money small-print.\n- The story of being sold reports of likes and clicks (design-10:t3) is his own history, treated as proof."
+      },
+      {
+        "page": "revenue-share",
+        "edits": [
+          {
+            "address": "design-7:t4",
+            "new_text": "So this is the other way in. We call it the Revenue Share Partnership. For $3,995.00 to start, my team and I build you the same thing those clients pay for: the website, your own e-book, your own podcast, the Revenue Engine and the AI employees trained on you. You get every piece of it, built to the same standard. You do not need a big audience to begin. Getting you the attention is part of what we build.",
+            "removed": "\"Nothing is left out and nothing is a lighter version.\""
+          },
+          {
+            "address": "design-7:t5",
+            "new_text": "Think about that from our side. A full build is weeks of work for my team. On Revenue Share we put all of it in for a small piece of the price, because we see what you can become. That is a bet on talent, and we like making it. So you do not start the day you decide. We choose who we work with, and we choose carefully.",
+            "removed": "\"and we wait for the rest. We are the ones taking the risk.\""
+          },
+          {
+            "address": "lf-what-3-995-00-puts-to-work-for-you:t4",
+            "new_text": "Let me say this as plainly as I can. A done-for-you client pays $30,000.00 to $50,000.00 for my team to build a business around what they know. On Revenue Share you get that build. It is the same team, working in the same order, to the same standard. Every piece of it is pointed at getting you seen and getting you paid. If we pick you, you get all of it.",
+            "removed": "\"There is no smaller version for people who pay less to start.\""
+          },
+          {
+            "address": "lf-what-3-995-00-puts-to-work-for-you:t10",
+            "new_text": "Most builds take 4 to 6 weeks from the day we start. We lay out yours on the discovery call. For those weeks my team is on your build, and I am on your account personally. When the build is finished, the work keeps going. The AI employees run it day and night, and my team stays behind them.",
+            "removed": "\"That is a range, and I confirm yours on the discovery call.\""
+          },
+          {
+            "address": "lf-what-3-995-00-puts-to-work-for-you:t11",
+            "new_text": "Why we bet on you.",
+            "removed": "\"Who carries the cost.\""
+          },
+          {
+            "address": "lf-what-3-995-00-puts-to-work-for-you:t12",
+            "new_text": "You have put in $3,995.00. We have put in a full build. The gap between those two is my team's time, and we put it behind you because we believe in what you know. That is the bet a talent agent makes on talent. I am glad to make it, because it is how a talent agency is supposed to work. We get paid when you do.",
+            "removed": "\"it sits with us until what we built starts selling for you. We are the ones taking the risk here.\""
+          },
+          {
+            "address": "lf-what-3-995-00-puts-to-work-for-you:t14",
+            "new_text": "So understand what this is. You are applying for a team, and for a business built around what you know. You are asking for my team's time and effort, all of it, pointed at you. We can only do that for a few people at once. I would rather do it right for two or three members a month than do it halfway for everybody who asks.",
+            "removed": "\"You are not buying a course and you are not renting a tool.\""
+          },
+          {
+            "address": "lf-why-we-call-ourselves-a-talent-age:t16",
+            "new_text": "If you already sell what you know, have a small team and can write the check, our done-for-you service on the home page is the straighter road. You go straight to a discovery call, and my team builds from there. Both doors lead into the same agency. If you cannot tell which door is yours, fill in the application on this page and say so. Every client starts with a discovery call, and that call is where we work it out together.",
+            "removed": "\"You do not wait to be picked and the total is lower.\""
+          },
+          {
+            "address": "lf-the-same-build-our-done-for-you-cl:t4",
+            "new_text": "This is system one, Premium Smart Websites, and it comes first because everything else points to it. Your social pages sit on rented land. The platform owns the ground and can change the rules any day it likes. Your website is yours. My team writes it, designs it and builds it around you: your story, what you sell, and a way for a person to buy or book a call with you right on the page. It is where a stranger turns into a buyer, and it is where your e-book and your podcast will sit. Every video, clip and episode you put out sends people to that one address.",
+            "removed": "\"It goes in your name from the first day\""
+          },
+          {
+            "address": "lf-the-same-build-our-done-for-you-cl:t18",
+            "new_text": "Those six systems together are the Revenue Engine. My team builds each one and connects it to the others so they run as one. AI employees then run them around the clock. They do the answering, the following up and the asking that no one person could keep up with. My team stays behind them, and I am on your account personally. This is done for you, from the first page to the last system. You get a working copy of my own business with your name on it, built by the same people who build it for clients paying $30,000.00 to $50,000.00.",
+            "removed": "\"You are not handed a login and a set of lessons.\""
+          },
+          {
+            "address": "design-9:t5",
+            "new_text": "go to work on the full build, the same one our done-for-you clients pay $30,000.00 to $50,000.00 for. Two, once people are buying from you, a share of that revenue goes toward a total we both agreed to. Three, when that total is paid, the share stops. Until then, the full build is out there working for you. That is the bet we are making on you. We set your numbers together on the discovery call. Then the website, the e-book, the podcast and the Revenue Engine go to work turning the people who watch you into people who pay you.",
+            "removed": "\"most of the cost of your build sits with us\", \"written down before any work begins\", \"the accounts go in your name from the start\""
+          },
+          {
+            "address": "lf-how-the-money-works-one-step-at-a-:t5",
+            "new_text": "Then, the numbers.",
+            "removed": "\"in writing\""
+          },
+          {
+            "address": "lf-how-the-money-works-one-step-at-a-:t6",
+            "new_text": "On that call we agree the total for your build and the share of revenue that goes toward it. Paying over time costs more than paying up front. As an example, a build that is $40,000.00 up front might come to $55,000.00 or $60,000.00 paid over time. Your numbers are set around you and what you sell, and then my team goes to work.",
+            "removed": "\"Before any work begins\", \"and we write both down\", \"You see your numbers before you pay anything.\""
+          },
+          {
+            "address": "lf-how-the-money-works-one-step-at-a-:t12",
+            "new_text": "Once it is running and people are buying from you, a share of that revenue goes toward the total. The share is not one number for everybody. I set it with you on the discovery call, around what you sell and what the build can do for you, and it sits right beside the total.",
+            "removed": "\"I will not print a percentage on this page\", \"so you can do the arithmetic yourself before you decide\""
+          },
+          {
+            "address": "lf-what-happens-the-day-the-total-is-:t4",
+            "new_text": "When the agreed total has been paid, the share ends. From that day you keep 100 percent of what you earn. We wrote it that way on purpose. The whole point is a business that pays you. Every sale your website, your e-book and your podcast bring in goes to you, and the Revenue Engine keeps running.",
+            "removed": "\"A share that never ends would mean you work for us. This one has a finish line, and you know where it is before you start.\""
+          },
+          {
+            "address": "lf-what-happens-the-day-the-total-is-:t6",
+            "new_text": "Start with what my team built for you, the pieces a person can see and buy from. A website you own. An e-book with your name on the cover. A podcast that is your show. The rest is what your weekly work stacks on top of that: the audience that knows where to find you, the testimonials from people you helped, and the buyers who come back for the next thing. We build the first part. You and the Revenue Engine build the second part together, week by week. You started with something you knew. The aim is a business built around it.",
+            "removed": "\"Some of it is yours for certain, because we build it and put it in your name.\""
+          },
+          {
+            "address": "lf-what-happens-the-day-the-total-is-:t8",
+            "new_text": "I have run five businesses over forty years, and the deals that lasted were the ones where both sides came out ahead. You get a whole team building a business you could not have paid for on day one. We get paid for the work and for the wait. From there you keep building on all of it. By that day your website, your list, your e-book and your podcast have brought in enough to pay for the whole build, and they are still bringing it in. That is what a modern day talent agency is for: get you seen, get you paid, and put a real business under your name.",
+            "removed": "\"Then the share stops and you keep 100 percent.\" (third telling of the same terms; still stated once in this section)"
+          },
+          {
+            "address": "lf-why-we-only-pick-two-or-three-memb:t4",
+            "new_text": "Everything on this page takes my team weeks to build for one person. When that person has paid $30,000.00 to $50,000.00, the work is covered on the day we start. On Revenue Share, my team puts the work in first. So every member we pick is a real investment of my team's time, made because we believe in what that person knows.",
+            "removed": "\"most of it is covered by us\", \"made before we know how it turns out\""
+          }
+        ],
+        "left_alone": [
+          "\"Paying over time costs more\" and the $40,000.00 example: Steven left the money section",
+          "\"Why it costs more.\" paragraph: part of the kept money section",
+          "\"we carry the cost of it while it gets going\": inside the kept money section",
+          "The three-line arrangement in How it works: section's whole job, terms kept",
+          "\"By that day ... brought in enough to pay for the whole build\": not defensive, different law",
+          "\"If having your own podcast and your own product scares you\": fit selection, not reassurance",
+          "\"You do not need a big audience\" / \"never sold any of it yet, that is fine\": fit, not reassurance",
+          "\"Give me ten minutes with a person\" (twice): repetition, not defensive copy",
+          "\"An expert's income is a direct reflection\" (twice): repetition, not defensive copy",
+          "\"Your website is yours\" beside rented land: his core teaching",
+          "\"A website you own\" (three places): plain positive fact",
+          "\"We are betting our own time on you\": backing talent, sells forward"
+        ],
+        "summary": "18 edits on /revenue-share. Nothing on the site or disk was touched.\n\nWhat came out:\n- **Ownership as reassurance:** \"It goes in your name from the first day\", \"the accounts go in your name from the start\", \"Some of it is yours for certain, because we build it and put it in your name\".\n- **Lock-in:** \"A share that never ends would mean you work for us. This one has a finish line, and you know where it is before you start.\"\n- **Risk:** \"We are the ones taking the risk\" (both places), the \"Who carries the cost.\" lead-in (now \"Why we bet on you.\"), \"most of the cost of your build sits with us\", \"made before we know how it turns out\".\n- **Money small-print:** \"we write both down\", \"written down before any work begins\", \"You see your numbers before you pay anything\", and the heading \"Then, the numbers in writing.\" (now \"Then, the numbers.\").\n- **Things held back:** \"I will not print a percentage on this page\" and \"so you can do the arithmetic yourself before you decide\".\n- **Second-price talk outside the money section:** \"we wait for the rest\" and \"the total is lower\".\n- **Negative framings:** \"Nothing is left out and nothing is a lighter version\", \"There is no smaller version for people who pay less\", \"You are not buying a course and you are not renting a tool\", \"You are not handed a login and a set of lessons\", \"That is a range, and I confirm yours\".\n\nEach was replaced at about the same length with a line that sells forward. Every price, fact and system name is kept, and the rest of each paragraph is word for word.\n\nThree judgment calls for the CEO seat:\n1. **Which section is \"the one money section\".** The brief's description spans three sections: How it works (design-9), The money (section 7, which holds the $40,000.00 example) and After it is paid (section 8). I kept the terms once in each and took out only the defensive lines and the third telling in section 8's last paragraph. I did not gut design-9's three-line arrangement, because that would mean rewriting the whole section under its own heading. If Steven wants the terms told in only one of the three, that is a structural cut.\n2. **I edited inside the money section Steven left.** Three texts in section 7 changed (t5, t6, t12), limited to the phrases the law lists by name plus the \"I will not print a percentage\" sentence. The $3,995.00, the agreed total, the share, the $40,000.00 to $55,000.00 or $60,000.00 example and \"Why it costs more\" are untouched.\n3. **One replacement line states a sequence that was not on the page.** In \"If you can pay today\", \"You do not wait to be picked and the total is lower\" became \"You go straight to a discovery call, and my team builds from there.\" It adds no timeline, but check it reads true for done-for-you.\n\nNot handled on this pass because they are not this law: the repeated \"ten minutes\" and \"expert's income\" lines, the team-requirement mismatch with the for-coaches page, and the design findings."
+      },
+      {
+        "page": "attention-to-dollars",
+        "edits": [
+          {
+            "address": "book-hero:t4",
+            "new_text": "The whole method is in it. Every system, every step, in the order we build it.",
+            "removed": "\"Nothing is held back.\""
+          },
+          {
+            "address": "book-hero:t6",
+            "new_text": "Download it the minute you buy.",
+            "removed": "\"One payment. Yours to keep.\""
+          },
+          {
+            "address": "lf-a-blueprint-is-the-whole-plan-this:t11",
+            "new_text": "From plan to house.",
+            "removed": "\"A blueprint is not a house.\""
+          },
+          {
+            "address": "lf-a-blueprint-is-the-whole-plan-this:t12",
+            "new_text": "A plan is worth what gets built from it, so this one is written to be built from. That can be you, on your own time. It can be a helper you pay, working from the chapters. What the blueprint gives you is the plan itself: what goes where, what comes first, and how to check that each piece works before you build the next one on top of it.",
+            "removed": "\"I will say this now so nobody is surprised later.\" \"It is not the house. Somebody still has to build.\""
+          },
+          {
+            "address": "lf-none-of-this-is-new-what-is-new-is:t16",
+            "new_text": "Here is the honest split. Getting good at what you teach took you years. Call it your ten thousand hours. No book can hand them to you, and that is what makes them worth so much. A talent agent stands behind real talent. He does not manufacture it. You have already put those hours in, or you are putting them in now. The blueprint is everything else. Where the attention goes, what you sell, how it gets sold, and who does the work while you sleep. You bring the reps. The book brings the rest.",
+            "removed": "\"and I would not trust one that claimed to\""
+          },
+          {
+            "address": "book-why:t4",
+            "new_text": "The blueprint is laid out in the order my team and I build, in plain words. It is the same method clients pay my team to build for them. Every system gets its own chapter, and no chapter ends until you have proved the thing works, on your own phone, the way a stranger would meet it. You are not paying for a description of a business. You are paying for the working drawings: what to open, what to write, what to connect, and how to know you are finished. Build from it yourself, or hand the book to somebody you pay and have them follow it.",
+            "removed": "\"Nothing is held back to protect a bigger sale.\""
+          },
+          {
+            "address": "book-why:t5",
+            "new_text": "None of the pieces in here is new, and that is good news for you, because none of it is an experiment. Every one of them has been around for years. What you are paying for is the order and the tests. Which system goes in first, and why. What each one needs from the one before it. How you prove a piece works before you build the next one on top of it. That is what forty years of building systems taught me, and it is the part I see people get wrong when they build from scattered advice. Read it, and you will know how a business like yours gets built, start to finish.",
+            "removed": "\"You may wonder what is in here that you could not piece together yourself. The pieces, probably nothing.\" \"nobody will be able to sell you a mystery again\""
+          },
+          {
+            "address": "lf-the-book-and-the-done-for-you-buil:t2",
+            "new_text": "The blueprint shows you our proprietary Revenue Engine. The build puts it to work for you.",
+            "removed": "\"The build hands it to you running.\""
+          },
+          {
+            "address": "lf-the-book-and-the-done-for-you-buil:t4",
+            "new_text": "The engine in the book is the engine my team builds for clients. There is one. We call it the Revenue Engine, and it is how my own company runs. When a client pays us to build it, my team does the work. When you buy the book, you do the work, or somebody you pay does. The parts are the same, the order is the same, and the tests at the end are the same. The whole thing comes down to one line: Attention + Your Product = Dollars. Here is what each of those three words means on both roads.",
+            "removed": "\"There is not a small version in the book and a real version for clients.\""
+          },
+          {
+            "address": "lf-the-book-and-the-done-for-you-buil:t10",
+            "new_text": "A person rarely pays the first time they come across you. It takes seven to ten times. The Revenue Engine is six business systems that keep you in front of a person until they are ready: Premium Smart Websites, the Automated Organic Content Engine, Speed to Lead, Automated Five Star Reviews, Database Reactivation, and Paid Ads = Booked Appointments, added last. Together they sort, sift and funnel your audience from a follower to a paying client. The book gives each system its own chapter. On the build, my team connects all six and has them running.",
+            "removed": "\"The build hands you all six, connected and already running.\""
+          },
+          {
+            "address": "lf-the-book-and-the-done-for-you-buil:t18",
+            "new_text": "What you end up with. A website that sells for you at any hour. A list of people who raised their hand, that you can reach whenever you have something new. What you know, turned into a product with a name and a price. That is what you have if you build it from the book on a Saturday. It is what you have if your assistant builds it from the book. And it is what you have if my team builds it. The social platforms stay what they always were, free stages you use on purpose. Every one of them now sends people to the place where you get paid.",
+            "removed": "\"What you end up owning. The website is yours. The list... is yours.\" \"belongs to you on every road\""
+          },
+          {
+            "address": "lf-the-book-and-the-done-for-you-buil:t20",
+            "new_text": "Because the person who understands the engine gets the most out of it. I don't see anybody else writing the whole method down and selling it by itself. I would sooner put it in your hands for $495.00 and let you see every piece of it for yourself. If you read it and build it, good. If you read it and apply to have us build it, you come to the first call already knowing what each system does, and we spend that call on your business instead of on explaining ours.",
+            "removed": "\"before you spend real money on it\" \"handing it over before the sale\" \"decide with your eyes open\""
+          },
+          {
+            "address": "lf-what-is-in-the-book-and-what-you-w:t10",
+            "new_text": "One chapter comes before the building, and it saves you the most money. It lists what you own and what you rent, names the job each rented account does, and gives you the monthly total for the whole thing on one page. It also gives you the build order, and the reason ads go last. You see the whole build laid out before you start, the way a builder reads the plans before the first delivery arrives. When you finish this chapter you know your real monthly number and you know exactly what you are building first.",
+            "removed": "\"whose name goes on everything\" \"a guest can be shown out\" \"nobody can walk off with your front door\" \"before you sign up\""
+          },
+          {
+            "address": "lf-what-is-in-the-book-and-what-you-w:t26",
+            "new_text": "When you close the book you can explain the whole model to your spouse at the kitchen table. You can draw the map from memory. You can build it yourself in order, or hand a chapter to a helper and know what must be true when the job is done. You can look at your own business and see which piece to build next, and why it goes there. And if you decide to have my team build it, you already know every piece we will be putting to work for you.",
+            "removed": "\"sit across from anybody who wants to sell you a website or a marketing package\" \"know what you are buying... before we ever talk\""
+          },
+          {
+            "address": "lf-part-two-is-the-build-eight-chapte:t4",
+            "new_text": "Before You Build: What You Own, What You Rent, What It Costs. This is the whole build on one page, read before you open a single account. It lists the four things you own. It lists every account you rent and the one job each of them does, in plain words. It gives you the monthly totals, so you know your number before you start. It gives you the build order and the reason ads go last. And it gives you the rule the whole book runs on: every system gets tested before the next one is built on top of it. You finish it having decided who does the work.",
+            "removed": "\"says plainly which items it does not price\" \"every account is opened by you, in your name, with your card on it\""
+          },
+          {
+            "address": "lf-part-two-is-the-build-eight-chapte:t12",
+            "new_text": "Build System Four: The Names You Already Have. There is money you already earned sitting in a place you never look. Everybody who bought once, signed up for something, or asked a question you meant to answer. You gather every name into one list you own, take out the doubles, and mark where each one came from. Then you write a first message that is a question, with no link, no price and no offer. It goes out in small daily groups, and every reply gets worked until it ends as a booked call or a polite no. This is where the cross-sells and upsells live, and it is the easiest money you'll ever make.",
+            "removed": "\"tells you honestly when your list is too small for this yet\""
+          },
+          {
+            "address": "lf-part-two-is-the-build-eight-chapte:t16",
+            "new_text": "Build System Five Last: Paid Ads. Paid ads work, and the chapter says so first. They go last because an ad does not fix what is behind it. It sends more people into it. You do not advertise the grand opening until the kitchen can serve the line. Before any money moves, you write down two numbers: what one buyer is worth to you over time, and the most you will pay to win one. Every ad sends people to the website and the systems you have already tested. And you decide when to turn the ads off before you spend the first dollar, while your head is clear.",
+            "removed": "\"The ad account is in your name and your card pays the platform directly.\""
+          },
+          {
+            "address": "lf-part-two-is-the-build-eight-chapte:t18",
+            "new_text": "Your AI Twin. Show up every day and people write back, and there is one of you. Your twin is the AI employee from chapter seven, taught more of you and put to work in more places: on your website, and in the comments and messages where people try to reach you. It has one job, which is to bring people home and book the call. The sale and the teaching stay with you, and the twin's work is getting the right people onto your calendar. You write its question sheet and its price lines yourself. Then you play the difficult buyer on a private practice page before a stranger ever meets it.",
+            "removed": "\"never closes the sale, never teaches the program, and never pretends to be you\""
+          },
+          {
+            "address": "lf-part-three-is-where-six-systems-be:t8",
+            "new_text": "Do It Yourself, Or Have It Built. By now you hold the whole thing, and this chapter is about who does the building. It gives you three ways, and all three are fine with me. Build it yourself, in order, passing each test before you open the next chapter. Hand it to somebody you pay, with three rules that get you a finished job. Or have my team build it, and the chapter tells you what that involves and who it suits. It also tells you what you end up with on any road: a website, a list, your words and a product, all working together to bring in buyers.",
+            "removed": "\"rules that keep the arrangement honest\" \"what never changes... your accounts, your website, your list... are yours\""
+          },
+          {
+            "address": "lf-read-it-once-then-build-from-it-on:t14",
+            "new_text": "If you have an assistant or somebody on your team who is good with a computer, the book is your written order. Hand them the chapter and the \"Done when\" line, and pay for the result on that line, not for hours. They work from the same steps you read, and you run the test at the end to see the finished piece working. The book marks which steps most readers hand to a builder, and it tells you what kind of person to look for.",
+            "removed": "\"inside your accounts as an invited user. When the job is done you can remove them, and everything stays where it was.\""
+          },
+          {
+            "address": "lf-when-you-have-followed-it-here-is-:t1",
+            "new_text": "What You Build",
+            "removed": "\"What You Own\""
+          },
+          {
+            "address": "lf-when-you-have-followed-it-here-is-:t2",
+            "new_text": "When you have followed it, here is what you have working for you, and what it takes to keep it running.",
+            "removed": "\"here is what is yours\""
+          },
+          {
+            "address": "lf-when-you-have-followed-it-here-is-:t4",
+            "new_text": "The book comes back to one short list again and again. You own four things: your website, your list, your words and your product. You set the price on those four. They sell while you sleep. They grow every week you show up. Everything else in the plan is a tool, and a tool is rented. You rent the best one for each job, and when a better one comes along you put it to work for the same four.",
+            "removed": "\"Nobody sets the price... Nobody takes a cut... Nobody can switch them off.\" \"without losing any of the four\""
+          },
+          {
+            "address": "lf-when-you-have-followed-it-here-is-:t6",
+            "new_text": "One address on the internet with your name in it. One page that tells your story, takes a name, books a call and makes the sale, built for the phone your visitor is holding. Every profile you run points at it, and nothing on it points back out. It is the address you say out loud at the end of every video, and it is open for business every hour of the day, including the ones you are asleep for.",
+            "removed": "\"registered to you, with the receipt in your own email. If the person who built the page moves on...\""
+          },
+          {
+            "address": "lf-when-you-have-followed-it-here-is-:t12",
+            "new_text": "Six of them, connected, tested by you, running together as one Revenue Engine. An AI employee set up to answer at any hour. A follow-up that goes out when somebody goes quiet. A review asked for at the moment of the win. An old list worked a few names at a time. Clips going out every day from one recording. Ads, when you choose, sending buyers into a system that is ready for them. And a twin that brings people home.",
+            "removed": "\"in accounts that are all in your name\" \"that you can switch off without touching anything else\""
+          },
+          {
+            "address": "lf-when-you-have-followed-it-here-is-:t14",
+            "new_text": "Chapter five lays this out on one page. You rent a short list of tools, one for each job, from the company that does that job best. The chapter gives you the monthly totals for all of them together, so you know your number on day one. It names the job each tool does, in plain words, so you know what every dollar is doing for you. It also says this: a lot of people I talk to pay more each month for one piece of software that does one job.",
+            "removed": "\"and no further\" \"Nothing goes through me.\" \"which few items it does not price\" \"before you open one account\""
+          },
+          {
+            "address": "lf-when-you-have-followed-it-here-is-:t15",
+            "new_text": "Built to last.",
+            "removed": "\"No lock.\""
+          },
+          {
+            "address": "lf-when-you-have-followed-it-here-is-:t16",
+            "new_text": "Where the book names a tool, it is naming today's tool. The tool will change. The job will not. When a better tool comes along you put it to work, and your website, your list, your words and your product keep right on selling. That is why the blueprint is written around the jobs and not the gadgets. It is the same three questions I have asked for forty years, and it will still be useful to you years from now. I wrote it that way on purpose.",
+            "removed": "\"Nothing in the book ties you to me\" \"raises its price or gets bought\" \"your exit plan\""
+          },
+          {
+            "address": "lf-forty-years-five-businesses-and-on:t8",
+            "new_text": "My company runs on what is in this book. We built ours first. The website you are on is system one. My twin is on the home page, and you can talk to it right now. The application is live. And you are reading a page that sells my own book from my own website, which is chapter three and chapter six doing their jobs. Everything I am describing is running right here, in front of you.",
+            "removed": "\"You can check everything... before you spend anything.\""
+          },
+          {
+            "address": "lf-who-should-read-the-book-and-who-s:t3",
+            "new_text": "Two good roads.",
+            "removed": "\"Both are fine.\""
+          },
+          {
+            "address": "lf-who-should-read-the-book-and-who-s:t4",
+            "new_text": "The right choice gets you there faster. A book reader with hours to spend gets the whole business for the price of the blueprint. A person whose hours are worth more on camera gets my team doing the building while they keep selling. So here is how I would sort it if you were sitting across the table from me. Find yourself in one of the next few paragraphs and you will know which button at the bottom of this page is yours.",
+            "removed": "\"The wrong choice costs you either way.\" \"spent money you did not need to spend\""
+          },
+          {
+            "address": "lf-who-should-read-the-book-and-who-s:t6",
+            "new_text": "Read the book if you like knowing how a thing works before you trust it, and you have more hours than money right now. You are willing to open the accounts, follow the steps in order, and run the test at the end of each chapter before you start the next one. You do not need a technical background. You need patience and a phone to test on. If that sounds like you, the book is the whole job written down, and $495.00 puts it in your hands.",
+            "removed": "\"$495.00 is all you owe me\""
+          },
+          {
+            "address": "lf-who-should-read-the-book-and-who-s:t8",
+            "new_text": "Read the book if you have an assistant or a team member who is good with a computer. A lot of readers finish the steps and think, I understand this, and I am not the one who should be doing it. Then the book is your written order. Hand over the chapter. They build, one chapter at a time, in the order the book sets. You write the parts only you can write, like what you sell and the questions your buyers ask. And you run the tests yourself, on your own phone, as the stranger.",
+            "removed": "\"inside accounts that are in your name\""
+          },
+          {
+            "address": "lf-who-should-read-the-book-and-who-s:t9",
+            "new_text": "The reader who will hire.",
+            "removed": "\"The careful buyer.\""
+          },
+          {
+            "address": "lf-who-should-read-the-book-and-who-s:t10",
+            "new_text": "Read the book if you already know you will have this built for you. You are about to put real money to work. The book lets you do it knowing what each system does, what finished looks like, and what it is there to earn. You will come to the call with your map drawn and your product in one sentence. I would sooner talk to a buyer who has read it. That call goes faster, and we spend it on your business.",
+            "removed": "\"whether that is us or anybody else\" \"you will know a real answer when you hear one\" \"nobody on it is guessing\""
+          },
+          {
+            "address": "lf-who-should-read-the-book-and-who-s:t20",
+            "new_text": "Then start with the book. By the last chapter you will know which reader you are, because that chapter lays out the same choice in more detail than I have room for here. Everything in it carries over if you apply later. You will know what we are building and why, you will have your map drawn, and you may already have every profile pointing at one address. We work with 5 to 10 clients at a time, so I would sooner you came to the application sure than came early.",
+            "removed": "\"Nothing in it is wasted if you apply later.\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t1",
+            "new_text": "Questions I Hear",
+            "removed": "\"Straight Answers\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t2",
+            "new_text": "What readers ask me before they buy, and what I tell them.",
+            "removed": "\"a careful buyer\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t4",
+            "new_text": "Neither is the reader I wrote it for. Where a technical word appears, its meaning is attached in the next breath. You never have to read code. For much of the building you describe what you want in plain sentences, and the book gives you the words. It marks the few steps most readers hand to a builder, and it tells you what kind of person to hire and what must be true when they finish. Your part is the writing, the deciding and the testing. If you can use your phone and follow a list, you can do your part.",
+            "removed": "\"But I will not tell you every step is easy. The book says plainly that\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t8",
+            "new_text": "The book was written for you as much as for the person with 50,000 followers. You build the middle first, so nobody you ever reach has nowhere to go. Then the content engine builds the attention, week after week, on stages that cost you nothing. Attention builds over months, and every week you show up adds to it. And here is the advantage you have. When five messages a month is all you get, every one of them matters, and the plan is built so each one gets an answer.",
+            "removed": "\"I am honest in the book\" \"I make you no promise about how many people will show up\" \"you cannot afford to lose one\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t10",
+            "new_text": "It is a book, not an encyclopedia, and Part One is short on purpose. You can read that part in a chair, and by the end of it your map is drawn. Building goes one chapter at a time. Every build chapter has its own first-week list, so you always know what this week's work is. One step waits on the phone carriers, which is why the book has you send that paperwork in early. And attention takes months, which is why the recording starts in your first week. Each chapter you finish is a piece of your business that is working.",
+            "removed": "\"I am not going to give you a number of hours\" \"I will not give you a date\" \"Be careful of anybody who does.\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t14",
+            "new_text": "Because of what is in it. Most books teach one idea, and they are priced like one idea. This one is the plan for an entire business, with every system in it. Set it beside what you have already paid for tactics that each covered one room of the house. Set it beside a month of some piece of software that does one job. And notice who set the price. I did, on my own website, which is the lesson of chapter three in practice. A plan you can use for the rest of your working life is worth a real number.",
+            "removed": "\"Fair question, and here is the short answer.\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t16",
+            "new_text": "Then say so. That is what my team and I are for. The book is the plan. The build is my team doing the work: all six systems, your own e-book and your own podcast, built and then kept running. You get a copy of my business, front to back, with your name on it and me on your account. The two ways sit side by side at the bottom of this page. Every client starts with a discovery call, and you get your exact price on that call. If you want it built and cannot write that check today, read the Revenue Share Partnership page. I would still tell you to read the blueprint first. The person who knows the plan makes a better decision about who builds it.",
+            "removed": "\"and nobody here will argue with you\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t17",
+            "new_text": "What I walk away with.",
+            "removed": "\"Will it work for me.\""
+          },
+          {
+            "address": "lf-what-a-careful-buyer-asks-me-befor:t18",
+            "new_text": "Every system, in order, with a test for each one. You walk away knowing what you sell, where it is sold, and how a follower becomes a buyer. And you find out early how much people want what you know, because the book has you say your price out loud to ten people who could buy before you build anything behind it. The rest is the part only you bring: what you teach, how good you are at it, and showing up to record every week.",
+            "removed": "\"I cannot promise you a result and I will not.\""
+          },
+          {
+            "address": "lf-here-is-what-i-would-do-if-i-were-:t4",
+            "new_text": "If you saw yourself anywhere on this page, get the book. It is $495.00, right here on this website. You download it right away and read it in Apple Books or Kindle on whatever you are holding. Start at the introduction and do not skip Part One. It is short, and everything you build later stands on it.",
+            "removed": "\"paid once\""
+          }
+        ],
+        "left_alone": [
+          "book-own (Amazon, rented land, labels and studios): his core teaching, kept whole",
+          "Section 18 'Who Should Not Buy' and the podcast filter line: selection, not reassurance",
+          "'I did not invent any of this' (section 4): the none-of-this-is-new teaching",
+          "Chapter 7 list of what the AI employee must never do: describes the book's content",
+          "'Nothing goes out without your yes' and 'approve what goes out': the reader's weekly job",
+          "FAQ questions 'I am not technical' and 'My following is small': kept, answers rewritten forward",
+          "'The million-dollar blueprint' hero tag: hero locked, not a disclaimer",
+          "Kindle beside 'not on Amazon': factual contradiction, outside this law",
+          "Chapter titles with system numbers out of order: printed book titles, not mine",
+          "Time lines (one hour a week, ten minutes, five minutes): different ruling, not defensive",
+          "book-buy closing cards: locked, already carry no terms",
+          "'keeps it running every month' in section 6: no number, no fee stated",
+          "'I would sooner' repeated five times: voice tic, outside this pass",
+          "Repeated passes through the contents (sections 7 to 11): length is wanted",
+          "'a website you own', 'in a place you own', 'the ground they are standing on': plain positive facts"
+        ],
+        "summary": "47 edits on /attention-to-dollars. No file or website was touched. Nothing was shortened: each defensive line was replaced at about the same length with a line that sells forward.\n\nWhat came out, by type:\n- Ownership as reassurance: the \"What You Own\" tag and heading (now \"What You Build\"), \"The website is yours / the list is yours\", \"registered to you\", \"in your name\" (five places), \"Nobody can switch them off\", \"your accounts ... are yours\" in Chapter 15.\n- Exit and lock-in: the \"No lock.\" paragraph and \"exit plan\" (now \"Built to last.\"), \"a guest can be shown out\", \"nobody can walk off with your front door\", \"if the person who built the page moves on\", \"you can remove them, and everything stays where it was\".\n- Risk and withheld promises: the \"Will it work for me\" question (now \"What I walk away with.\"), \"I cannot promise you a result\", \"I make you no promise\", \"I will not give you a date\", \"A blueprint is not a house\", \"The wrong choice costs you either way\", \"which items it does not price\", \"when your list is too small\".\n- Suspicion raised by the writer: \"Nothing is held back\" (hero and section 5), \"nobody will be able to sell you a mystery again\", \"Be careful of anybody who does\", \"I would not trust one that claimed to\", \"There is not a small version in the book and a real version for clients\", \"three rules that keep the arrangement honest\", \"The pieces, probably nothing\", the \"Straight Answers\" tag (now \"Questions I Hear\"), \"The careful buyer\" (now \"The reader who will hire.\").\n- Money small-print: \"One payment. Yours to keep.\" (now \"Download it the minute you buy.\"), \"paid once\", \"$495.00 is all you owe me\", \"Nothing goes through me\", \"before you spend anything\".\n- \"Hands it to you\" about the build: section 6 heading and the Dollars paragraph.\n\nThings the CEO seat should check:\n- New statements about what the book contains were built only from facts elsewhere on the page, but four are worth a glance against the book itself: Chapter 5 \"the rule the whole book runs on: every system gets tested before the next one is built on top of it\"; Chapter 9 now ends on the cross-sells and upsells line; Chapter 11 \"Every ad sends people to the website and the systems you have already tested\"; Chapter 15 \"three rules that get you a finished job\".\n- Two lines lean on phrases Steven may want to hear aloud first: \"They sell while you sleep. They grow every week you show up.\" (section 14, Four things) and \"open for business every hour of the day, including the ones you are asleep for\" (Your website).\n- The hero line book-hero:t4 was changed (\"Nothing is held back.\" to \"The whole method is in it.\") under the remove-a-defensive-line exception. It is one word longer than before. Revert it if the hero is meant to stay untouched beyond t6.\n- book-buy was not edited. No build price, monthly amount or Revenue Share terms were added anywhere.\n- Not fixed, because they fall outside this law: the Kindle versus \"not on Amazon\" contradiction, the system numbering in the chapter titles, the \"two readers\" count in section 2, and the time-it-takes lines."
+      },
+      {
+        "page": "podcast",
+        "edits": [
+          {
+            "address": "lf-i-have-run-a-podcast-since-2008-he:t12",
+            "new_text": "Every social platform is rented land. You can build something good there, but the landlord sets the rules, and a landlord can change them or lock the door without asking you. A clip in a feed also has a short life. It is seen for a little while and then it is buried. An episode on a website you own does not expire and does not answer to anybody. Somebody can find it years from now and it still does its job. You are looking at the proof. The interviews on this page were recorded a long time ago and they are still working for me. Yours will sit on your website, doing that same job for you and bringing people to what you sell long after the day you recorded it.",
+            "removed": "\"in your name\""
+          },
+          {
+            "address": "lf-my-team-and-i-produce-a-podcast-li:t4",
+            "new_text": "Every client we work with gets their own show. It carries your name and it lives on your website, laid out like the page you are reading now. This is not a guest spot on my podcast. It is the stage you sell from. Here is what arrives. The show, set up from scratch. Its home on your website. Every episode produced and put up for you. The clips cut from each one. And your own e-book, with your name on the cover, for sale beside every episode. It comes with the build whichever way you work with us, done for you or the Revenue Share Partnership. It is a copy of my business, front to back, built to turn the people listening into people paying.",
+            "removed": "\"It is yours.\" and \"and the show, the website and the book are in your name\""
+          },
+          {
+            "address": "lf-my-team-and-i-produce-a-podcast-li:t10",
+            "new_text": "Everything else. My team and I set the show up from scratch and build its home on your website. After you record, we clean up the conversation and turn it into a finished episode. Then we cut it into short clips for Facebook, Instagram, TikTok and YouTube and put them out for you, each one pointing back to your website. Every episode gets its own spot on your page, with your e-book sitting right beside it. AI employees do the heavy lifting, my team checks the work, and I am personally on your account. We are a US company with a team behind this, and every episode you record gets the whole team's work.",
+            "removed": "\"so your show never rests on one pair of hands\""
+          },
+          {
+            "address": "lf-my-team-and-i-produce-a-podcast-li:t16",
+            "new_text": "If having your own podcast and your own product scares you, we are not the right fit, and I would rather tell you that now. You do not have to be polished. You do not need a radio voice. The honest episodes are always the best ones. You do have to be willing to sit down, be heard, and put your name on what you know. If that is you, there are two ways in. Done for you is $30,000.00 to $50,000.00. The Revenue Share Partnership is $3,995.00 to start, and it is the same build. Your own show, your website, your e-book and all six systems of the Revenue Engine, with my team doing the work. Every client starts with a discovery call, and the exact price is set on that call. If you would rather tell your story on my show, the guest form is at the bottom of this page.",
+            "removed": "\"the rest comes from a share of the revenue until an agreed total is paid\", \"the share stops\", \"and the share\""
+          },
+          {
+            "address": "book-section:t4",
+            "new_text": "The whole method is in it. Every system, every step, in the order we build it. The blueprint is $495.00.",
+            "removed": "\"Nothing is held back.\""
+          }
+        ],
+        "left_alone": [
+          "\"If having your own podcast and your own product scares you, we are not the right fit\" - fit selection, not reassurance",
+          "\"A fair warning.\" heading - introduces the fit filter",
+          "\"Not on rented land.\" section, landlord lines - his core platform teaching",
+          "\"with your name on it, on a website you own\" - plain positive fact, once",
+          "\"On your page, the thing for sale is yours.\" - names their product, not ownership",
+          "\"I do not see anybody else offering this\" - not on this page"
+        ],
+        "summary": "Five texts changed on /podcast; nothing on the site or any file was touched.\n\n- **Ownership reassurance (three places):** removed \"in your name\" from the rented land paragraph, and \"It is yours\" plus \"the show, the website and the book are in your name\" from \"What you are getting\". Each is replaced with what the show does: it is the stage you sell from, and it turns listeners into paying clients.\n- **\"Never rests on one pair of hands\":** removed from \"What we do\". It now says every episode gets the whole team's work.\n- **Second terms beside the $3,995.00:** removed the share-of-revenue explanation and \"the share stops and you keep 100 percent\" from \"A fair warning\". The line now says it is the same build and lists what is in it. Both prices and the discovery call line stay.\n- **\"Nothing is held back\":** replaced on the book card with \"The whole method is in it.\"\n\nEverything else on the page reads clean against the seven categories and stays word for word, including the guest proof and the rented land teaching.\n\nOne call for the CEO seat: I left the \"You do not edit anything. You do not learn a new program.\" run in \"What you do\" alone. It describes the split of work and is outside the seven categories, but it does brush the \"say what it does, not what it won't do\" law.\n\nThe reviewers' other points on this page (hero button going to the guest form, Amazon links, the page ending on the guest form) are structure, not defensive copy, so I did not act on them."
+      },
+      {
+        "page": "funnel-hack-live",
+        "edits": [
+          {
+            "address": "lf-a-funnel-hack-is-me-walking-the-sa:t4",
+            "new_text": "A funnel is just the path a stranger takes from the first time they see you to the day they pay you. Every coach, author and influencer has one, whether they built it on purpose or not. A funnel hack is me walking that path the way a follower would, on screen, out loud, one step at a time. I tap what they tap and I read what they read. I am doing what your follower does and telling you what I see.",
+            "removed": "\"I am not guessing and I am not grading anybody's videos.\""
+          },
+          {
+            "address": "lf-a-big-audience-and-nothing-to-sell:t12",
+            "new_text": "This is a show about people who are good at what they do. I walk real pages that anybody can pull up on a phone, the biggest names included, and I say whose they are. Pull one up and walk it along with me. Some of them are my favorite people to watch. Everybody I look at has done the hard half. They earned the attention, and most people never do. That is the whole reason the show exists. I have run five businesses over forty years, and the lesson was the same in every one. The talent was never the problem. The system behind it was. So I call it like I see it and I show what goes in the gap. A gap can be fixed, and every gap that gets closed is attention turning into dollars.",
+            "removed": "\"This is not a show where I make fun of people\"; \"you can check my work\"; \"I leave it there\"; \"is their business\""
+          },
+          {
+            "address": "lf-how-to-get-your-own-setup-looked-a:t6",
+            "new_text": "There are two good ways to close the gaps. You can do the work yourself. My book, Attention To Dollars, is the blueprint, written down, and it is right below. It tells you what to put together and in what order, and then your own hands do the work. Or my team and I do the work for you, the way a talent agency gets behind its talent. That means a website you own, your own e-book and your own podcast on it, the six systems connected, and AI employees doing the work day and night. You get a copy of my business, front to back, with your name on it. Your part is the part only you can do. You record. You take the calls with people who are ready. You take care of your clients.",
+            "removed": "\"honest\" in \"two honest ways\""
+          },
+          {
+            "address": "lf-how-to-get-your-own-setup-looked-a:t8",
+            "new_text": "The pages I walk on the show are public ones, and watching costs you nothing. If you want my team and me to sit down and look at yours with you, the application at the bottom of this page is how you ask. It is a few plain questions about what you sell and who is on your team. Answer it straight. The ones that fit get a discovery call with us. On that call we walk your path together, the same way I do it on the show, and tell you what we would build. The order is the one you watch me keep score in. The website goes in first and paid ads go in last, every time. It is one build at one price, all six systems working as one. The price range is on the home page, in plain numbers. Your exact price is given on that call.",
+            "removed": "\"The order is never a surprise\"; \"it is never sold in pieces\"; \"out in the open\""
+          },
+          {
+            "address": "lf-how-to-get-your-own-setup-looked-a:t10",
+            "new_text": "We only work with a few clients at a time, so I will save you the trouble. This is for a coach, author or influencer who has people paying attention, has put in the reps at what they teach, and is willing to put a product in front of that audience. If having your own podcast and your own product scares you, we are not the right fit. The Revenue Share Partnership is the other way in. It starts at $3,995.00, and it is how my team and I get behind an expert who has an audience and something to teach, the way a talent agency always has. It has its own page, and it starts with the same discovery call. Either way, my team builds the same thing: the website, the list, your e-book, your podcast and the six systems of the Revenue Engine, with your name on all of it. There are two doors below. The book comes first, if you want to do the work yourself. The application is under it, if you want it done for you.",
+            "removed": "\"If writing the whole check today is what stops you\"; \"the rest comes out of a share of the revenue... share stops and you keep 100 percent\""
+          },
+          {
+            "address": "book-section:t4",
+            "new_text": "It is all in there. Every system, every step, in the order we build it. The blueprint is $495.00.",
+            "removed": "\"Nothing is held back.\""
+          }
+        ],
+        "left_alone": [
+          "\"If having your own podcast and your own product scares you, we are not the right fit.\" - fit selection, allowed by brief",
+          "\"It is the same build I walk through on the show\" (book card) - accuracy issue, not defensive copy",
+          "Talent agency paragraph repeated across pages (section 3 t14) - repetition, not this law",
+          "\"That is a crowd clapping for somebody who never passes the hat.\" - praised as the standard",
+          "Browser tab title em dash - no address on this page",
+          "Hero and section 2 rented land lines (\"If that account were gone in the morning\") - core teaching, not about us"
+        ],
+        "summary": "Six texts changed on /funnel-hack-live. Each rewrite stays close to its current length, and nothing else on the page was touched. No file or website was edited.\n\nOne thing to confirm: in \"Who it is for\" I put $3,995.00 on the Revenue Share sentence. The live line said only \"a smaller amount\" and then explained the share terms. I cut the terms (second price beside an offer) and named the one sanctioned starting price instead. If you want no number there, change \"It starts at $3,995.00, and it is\" to \"It is\".\n\nWhat changed, by section:\n- **Section 2, \"In plain words\":** \"I am not guessing and I am not grading anybody's videos\" became \"I tap what they tap and I read what they read.\"\n- **Section 3, \"Respect first\":** this was the line the copy chief flagged. The opening \"This is not a show where I make fun of people\" is now \"This is a show about people who are good at what they do.\" \"You can check my work\" became an invitation to walk the page along with me. The close now ends on gaps turning into dollars instead of \"what somebody does about theirs is their business.\" The heading stays.\n- **Section 4, \"Two ways to fix it\":** \"two honest ways\" is now \"two good ways.\"\n- **Section 4, \"If you want us to look\":** removed \"The order is never a surprise,\" \"never sold in pieces\" and \"out in the open.\" The replacements say the order is the one from the show, all six systems work as one, and the price range is on the home page.\n- **Section 4, \"Who it is for\":** removed \"If writing the whole check today is what stops you\" and the share explanation. Revenue Share is now described as how my team and I get behind an expert with an audience, with its own page and the same discovery call.\n- **Book card:** \"Nothing is held back\" is now \"It is all in there.\"\n\nThe page had no \"hand it over\", exit or lock-in, refund or risk FAQ, or monthly fee lines to remove. The hero is untouched, and so are the rented land teaching, the \"not the right fit\" line and the application form."
+      },
+      {
+        "page": "portfolio",
+        "edits": [
+          {
+            "address": "lf-it-works-on-anything-that-s-why-we:t4",
+            "new_text": "You are a coach, an author or an influencer, and this page shows you a truck bed builder, a pet wash and a firewood company. You are right to wonder what any of that has to do with you. Here is what you are looking at. These eight are demo sites. My team and I built every one of them to show how we build. Each one is live, which means you can open it on your own phone and use it the way a customer would, instead of looking at a picture of a website and guessing how it feels. They are here for one reason. I want you to judge the build with your own eyes before you ever talk to us.",
+            "removed": "\"and taking my word for it\""
+          },
+          {
+            "address": "lf-for-you-the-website-is-only-the-fr:t14",
+            "new_text": "A fair thing to ask after looking at eight finished websites is who wrote all those words. My team did. On yours, we start by sitting down with you and getting you talking. Your story, who you help, what you teach and how you say it. Then my team writes the website from that, so it reads like you on a good day and not like a brochure. You talk, and my team turns it into finished pages. After it is live, AI employees do the answering and the following up, day and night, which is the part no person can keep up with for every follower. Behind those AI employees is my team, a US company with real people on the work, and I am personally on your account.",
+            "removed": "\"You are never handed a blank page and a deadline.\""
+          },
+          {
+            "address": "lf-for-you-the-website-is-only-the-fr:t17",
+            "new_text": "My business, your name.",
+            "removed": "\"Yours to keep.\""
+          },
+          {
+            "address": "lf-for-you-the-website-is-only-the-fr:t18",
+            "new_text": "Everything in this half of the page is how my own company runs. This website, my book, my podcast and the six systems behind them are the prototype. What a client gets is that same business model, front to back, with their name on it instead of mine. I mean that literally. You get the website, the list of people who raise a hand, your e-book, your podcast and the six systems, with AI employees working them day and night. Every video, clip and episode you put out sends people to that one address. That is the whole reason to build on a website you own. My team and I build every page of it to a standard I would put my own name on, and I do not see anybody else building a person the whole thing.",
+            "removed": "\"handing a person the whole thing\""
+          },
+          {
+            "address": "lf-for-you-the-website-is-only-the-fr:t20",
+            "new_text": "Here is who this is built for. If having your own podcast and your own product scares you, we are not the right fit, and it is better you know that now. If you read this and thought, that is the piece I have been missing, there are two ways to work with us, and the build is the same in both. Done for you is $30,000.00 to $50,000.00, for the person who already sells what they know and has a small team in place. We work with 5 to 10 of those clients at a time. The Revenue Share Partnership is $3,995.00 up front. It is how a modern day talent agency gets behind a person with something to say and an audience already listening. You get the same website, your own e-book, your own podcast and all six systems, with my team and AI employees working them day and night, so what you know starts earning the way it should. Every client starts with a discovery call, and that is where you get your exact price. The application is one tap from here.",
+            "removed": "\"I will be straight with you\"; \"If you cannot write that check\"; \"the rest comes from a share\"; \"written down before we begin\""
+          }
+        ],
+        "left_alone": [
+          "\"If having your own podcast and your own product scares you, we are not the right fit\" - selection, not reassurance",
+          "\"a US company with real people on the work, and I am personally on your account\" - plain positive fact, said once",
+          "\"I do not see anybody else\" - his own stated claim (only \"handing\" changed)",
+          "\"For you, the website is only the front door.\" - flagged for repetition, not defensiveness",
+          "\"your part comes down to four things\" - count mismatch, outside this law",
+          "\"That is a talent agency\" paragraph - repetition finding, not defensive copy",
+          "\"Everything you put out on the social platforms sits on rented land. This page is the piece you own\" - core teaching, not about us",
+          "\"It is one build at one price, and all six go in. We never sell it in pieces.\" - package framing, no money small-print"
+        ],
+        "summary": "Five texts changed on /portfolio, all in the two long-form sections. Nothing was written to the website or to any file. The eight demo cards and the hero are untouched.\n\n- **\"Who this fits\" (t20):** this was the main offender. I took out the second half of the Revenue Share terms (the rest from a share, the agreed total, the share stopping, \"written down before we begin\") and \"If you cannot write that check today\". In their place is what the $3,995.00 buys: the same website, e-book, podcast and six systems, with the talent agency behind the person. I also swapped the opener \"I will be straight with you\" for \"Here is who this is built for.\"\n- **\"Yours to keep.\" heading (t17):** now \"My business, your name.\"\n- **Its paragraph (t18):** \"handing a person the whole thing\" became \"building a person the whole thing\". The rest is word for word.\n- **\"Who writes it\" (t14):** \"You are never handed a blank page and a deadline\" became \"You talk, and my team turns it into finished pages.\"\n- **\"A fair question\" (t4):** \"and taking my word for it\" became \"and guessing how it feels\".\n\nThree of these (t4, t14 and the t20 opener) are milder than the examples in the brief and are my own reading of the law, so drop them if they go too far.\n\nDecision for the CEO seat: I wrote the Revenue Share price as \"$3,995.00 up front\" instead of \"to start\". It keeps one price on the table, but \"up front\" still hints that more follows. If the hint should go entirely, change it to \"is $3,995.00\".\n\nEvery text stays within about 15 percent of its length. No numbers, results or timelines were added."
+      }
+    ],
+    "missing": []
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Sweep"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "sweep:home",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a4c3a9c326ca7887e",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640144,
+      "queuedAt": 1791228640132,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228749418,
+      "tokens": 57627,
+      "toolCalls": 5,
+      "durationMs": 109265,
+      "resultPreview": "{\"page\":\"/\",\"edits\":[{\"address\":\"design-vsl-book:t4\",\"new_text\":\"It is all in here. Every system, every step, in the order we build it. The blueprint is $495.00.\",\"removed\":\"\\\"Nothing is held back.\\\"\"},{\"address\":\"lf-none-of-this-is-new-what-is-new-is:t4\",\"new_text\":\"Get people's attention. Have something to sell them. Stay in front of them until they are ready to buy. That is how every business t…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "sweep:for-coaches-authors-and-influencers",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "ab6c630be974187a4",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640145,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/for-coaches-authors-and-influencers",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228727366,
+      "tokens": 63388,
+      "toolCalls": 6,
+      "durationMs": 85858,
+      "resultPreview": "{\"page\":\"/for-coaches-authors-and-influencers\",\"edits\":[{\"address\":\"dbr-how:t3\",\"new_text\":\"Nothing else has anywhere to point until this exists, so it is always first. We start with what you already have. If your site is good enough, we build on it. If it is not, my team builds you a new one. Either way it ends up built to sell, with your e-book and your podcast on it. That is Premium Smart Websi…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "sweep:premium-smart-websites",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a099b214c5083f0a9",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640146,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/premium-smart-websites",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228707328,
+      "tokens": 55142,
+      "toolCalls": 6,
+      "durationMs": 65819,
+      "resultPreview": "{\"page\":\"/premium-smart-websites\",\"edits\":[{\"address\":\"lf-your-website-has-one-job-give-your:t13\",\"new_text\":\"A list you can reach.\",\"removed\":\"\\\"A list that is yours.\\\"\"},{\"address\":\"lf-your-website-has-one-job-give-your:t14\",\"new_text\":\"On social media you cannot reach your own followers unless the platform decides to show them your video. On your website, every person who buys, books or asks a …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "sweep:automated-organic-content-engine",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "ad925a53265eea7c5",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640147,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/automated-organic-content-engine",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228699520,
+      "tokens": 53207,
+      "toolCalls": 6,
+      "durationMs": 58009,
+      "resultPreview": "{\"page\":\"/automated-organic-content-engine\",\"edits\":[{\"address\":\"lf-why-free-attention-comes-before-pa:t12\",\"new_text\":\"An ad stops the day you stop paying for it. A video does not. A clip you put out this month can still be found long after, by somebody typing what you teach into Google. A podcast episode sits on your website for as long as you want it there. Every piece adds to a library with yo…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "sweep:speed-to-lead",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "aba74e79ce3321c8e",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640148,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/speed-to-lead",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228686359,
+      "tokens": 53616,
+      "toolCalls": 6,
+      "durationMs": 44847,
+      "resultPreview": "{\"page\":\"/speed-to-lead\",\"edits\":[{\"address\":\"lf-the-same-message-on-two-different-:t20\",\"new_text\":\"Plenty of people ask a question and then life gets in the way. The baby wakes up. The phone dies. They are not saying no. They got busy. A person on your team might follow up once and then forget. The AI employee does not forget. It reaches out again by text and email, spaced out the way a thoughtf…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "sweep:automated-five-star-reviews",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a94c4ace1a9da2e6d",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640149,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/automated-five-star-reviews",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228682163,
+      "tokens": 43771,
+      "toolCalls": 5,
+      "durationMs": 40652,
+      "resultPreview": "{\"page\":\"/automated-five-star-reviews\",\"edits\":[{\"address\":\"lf-exactly-how-every-client-student-a:t10\",\"new_text\":\"You find out the same day, privately, while the program is still running. The note you get is short. It tells you who it is, where they are in your program and what they said, in their own words. Your AI employee brings that one straight to you, because a call from you is worth more t…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "sweep:database-reactivation",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a16a0076af97f43c8",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640149,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/database-reactivation",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228701971,
+      "tokens": 54337,
+      "toolCalls": 6,
+      "durationMs": 60459,
+      "resultPreview": "{\"page\":\"/database-reactivation\",\"edits\":[{\"address\":\"lf-what-happens-to-your-list-every-we:t9\",\"new_text\":\"A note worth answering.\",\"removed\":\"\\\"Your people, treated right.\\\"\"},{\"address\":\"lf-what-happens-to-your-list-every-we:t10\",\"new_text\":\"Think about who these people are. At some point each of them chose to hear from you. A short note that picks up where the two of you left off is somebody t…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "sweep:booked-appointments",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a84355ef522f0df28",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640150,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/booked-appointments",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228725109,
+      "tokens": 45010,
+      "toolCalls": 5,
+      "durationMs": 83597,
+      "resultPreview": "{\"page\":\"/booked-appointments\",\"edits\":[{\"address\":\"design-hero-twin:t4\",\"new_text\":\"Most coaches, authors and influencers who tried ads got a pile of names, chased a few of them, gave up, and decided ads do not work for what they sell. Ads work fine. What went wrong happened after the person raised a hand: the message sat in an inbox until they had already bought from someone else. Once your free…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 9,
+      "label": "sweep:ai-implementation",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "ab959e2975fb33944",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640151,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/ai-implementation",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228717777,
+      "tokens": 61072,
+      "toolCalls": 6,
+      "durationMs": 76264,
+      "resultPreview": "{\"page\":\"/ai-implementation\",\"edits\":[{\"address\":\"lf-radio-tv-and-a-payroll-flipped-on-:t16\",\"new_text\":\"The timing is on your side, and the opening is right in front of you. None of this is new. What is new is that someone your size can finally afford to run it. The companies pulling ahead of you figured that out first, and that is the only head start they have. You do not have to learn how any o…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 10,
+      "label": "sweep:about",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a4d47f65ccce43cf5",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228640152,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/about",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228711553,
+      "tokens": 47494,
+      "toolCalls": 5,
+      "durationMs": 70040,
+      "resultPreview": "{\"page\":\"/about\",\"edits\":[{\"address\":\"design-8:t4\",\"new_text\":\"And I built it for my own company first. Steven James Consulting runs on its own AI employees today, the same thing we will set up for you. The website you are reading, the book on it and the podcast are the same pieces every client gets, built the same way. So what you are looking at right now is what yours will look like, with your n…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 11,
+      "label": "sweep:revenue-share",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a83c333b203269a8e",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228683505,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/revenue-share",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228795379,
+      "tokens": 60310,
+      "toolCalls": 6,
+      "durationMs": 111873,
+      "resultPreview": "{\"page\":\"/revenue-share\",\"edits\":[{\"address\":\"design-7:t4\",\"new_text\":\"So this is the other way in. We call it the Revenue Share Partnership. For $3,995.00 to start, my team and I build you the same thing those clients pay for: the website, your own e-book, your own podcast, the Revenue Engine and the AI employees trained on you. You get every piece of it, built to the same standard. You do not ne…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 12,
+      "label": "sweep:attention-to-dollars",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a13678ff98549d07c",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228687852,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/attention-to-dollars",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228858468,
+      "tokens": 70907,
+      "toolCalls": 5,
+      "durationMs": 170616,
+      "resultPreview": "{\"page\":\"/attention-to-dollars\",\"edits\":[{\"address\":\"book-hero:t4\",\"new_text\":\"The whole method is in it. Every system, every step, in the order we build it.\",\"removed\":\"\\\"Nothing is held back.\\\"\"},{\"address\":\"book-hero:t6\",\"new_text\":\"Download it the minute you buy.\",\"removed\":\"\\\"One payment. Yours to keep.\\\"\"},{\"address\":\"lf-a-blueprint-is-the-whole-plan-this:t11\",\"new_text\":\"From plan to house.…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 13,
+      "label": "sweep:podcast",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a1c81497276a241d7",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228700864,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/podcast",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228747336,
+      "tokens": 53445,
+      "toolCalls": 6,
+      "durationMs": 46472,
+      "resultPreview": "{\"page\":\"/podcast\",\"edits\":[{\"address\":\"lf-i-have-run-a-podcast-since-2008-he:t12\",\"new_text\":\"Every social platform is rented land. You can build something good there, but the landlord sets the rules, and a landlord can change them or lock the door without asking you. A clip in a feed also has a short life. It is seen for a little while and then it is buried. An episode on a website you own does …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 14,
+      "label": "sweep:funnel-hack-live",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "a09fb1a8489ca0c63",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228703416,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/funnel-hack-live",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228753935,
+      "tokens": 50571,
+      "toolCalls": 6,
+      "durationMs": 50519,
+      "resultPreview": "{\"page\":\"/funnel-hack-live\",\"edits\":[{\"address\":\"lf-a-funnel-hack-is-me-walking-the-sa:t4\",\"new_text\":\"A funnel is just the path a stranger takes from the first time they see you to the day they pay you. Every coach, author and influencer has one, whether they built it on purpose or not. A funnel hack is me walking that path the way a follower would, on screen, out loud, one step at a time. I tap …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 15,
+      "label": "sweep:portfolio",
+      "phaseIndex": 1,
+      "phaseTitle": "Sweep",
+      "agentId": "ae3741fb8874aa814",
+      "agentType": "content-and-copy",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1791228708627,
+      "queuedAt": 1791228640133,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "/portfolio",
+      "promptPreview": "You are the copywriter for Steven James Consulting, enforcing one of the owner's laws on one page. Read /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/BRIEF.md and /private/tmp/claude-501/-Users-stevenbarchetti-SJC-CEO/f9f24311-4cea-4843-bf53-a7e3fbf84e8f/scratchpad/longform/LENS.md for the voice and hard rules. Then read /private/tm…",
+      "promptFramed": true,
+      "lastProgressAt": 1791228752171,
+      "tokens": 51816,
+      "toolCalls": 6,
+      "durationMs": 43544,
+      "resultPreview": "{\"page\":\"/portfolio\",\"edits\":[{\"address\":\"lf-it-works-on-anything-that-s-why-we:t4\",\"new_text\":\"You are a coach, an author or an influencer, and this page shows you a truck bed builder, a pet wash and a firewood company. You are right to wonder what any of that has to do with you. Here is what you are looking at. These eight are demo sites. My team and I built every one of them to show how we buil…"
+    }
+  ],
+  "totalTokens": 821713,
+  "totalToolCalls": 85
+}
