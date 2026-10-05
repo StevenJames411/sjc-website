@@ -5,6 +5,10 @@
 //   GET  /api/book-checkout?session_id=... -> { paid }            did this session finish paying
 // PUBLIC on purpose (listed in middleware PUBLIC_API): a buyer has no login. It can only ever sell ONE
 // thing, the book's own price, so there is nothing for a stranger to choose or change.
+import { ownerOnly } from "@/lib/siteAccess";
+import { createKvStore } from "@/lib/kvStateStore";
+import { getClient } from "@/lib/store";
+
 export const dynamic = "force-dynamic";
 
 const STRIPE = "https://api.stripe.com/v1";
@@ -62,13 +66,45 @@ export async function POST(req: Request) {
 // with the session id Stripe put on its address, and only a finished order gets the two links back.
 // "no_payment_required" is a completed $0 order (the free test run), which counts.
 const FILES = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/book/atd-7c41f09be2d6/";
+// WHO BOUGHT THE BOOK goes on the "Book Downloads" tab of the SJC intake sheet (Steven, 2026-10-04), once per
+// order. The store key is the guard against writing the same buyer again every time they reload the page.
+async function recordBuyer(id: string, json: Record<string, unknown>) {
+  try {
+    const seen = createKvStore(getClient(), `sjc-book-order-${id}`);
+    if (await seen.read()) return;
+    const c = (json.customer_details || {}) as { email?: string; name?: string; phone?: string };
+    const [first, ...rest] = String(c.name || "").trim().split(/\s+/);
+    const { intakeConfigured, writeIntakeRow } = await import("@/lib/intakeSheet");
+    if (!intakeConfigured()) return;
+    await writeIntakeRow("Book Downloads", [
+      { key: "source", label: "Source", value: "book-purchase" },
+      { key: "q-first-name", label: "First name", value: first || "" },
+      { key: "q-last-name", label: "Last name", value: rest.join(" ") },
+      { key: "q-email", label: "Email", value: c.email || "" },
+      { key: "q-phone", label: "Mobile phone", value: c.phone || "" },
+      { key: "paid", label: "Paid", value: "$" + (Number(json.amount_total || 0) / 100).toFixed(2) },
+      { key: "order", label: "Stripe order", value: String(json.payment_intent || id) },
+    ], new Date().toISOString());
+    await seen.write({ at: new Date().toISOString() });
+  } catch (e) {
+    console.error("book buyer NOT written to the sheet:", e);
+  }
+}
+
 export async function GET(req: Request) {
-  const id = new URL(req.url).searchParams.get("session_id") || "";
+  const url = new URL(req.url);
+  const links = { apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub" };
+  // The owner's own look at the page (opened from Smart Links in the design studio): signed in = unlocked.
+  if (url.searchParams.get("preview") === "1") {
+    return (await ownerOnly()) === null ? Response.json({ paid: true, preview: true, ...links }) : Response.json({ paid: false });
+  }
+  const id = url.searchParams.get("session_id") || "";
   if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return Response.json({ paid: false });
   const k = id.startsWith("cs_test_") ? testKey() : key(); // a test order is checked with the test key
   if (!k) return Response.json({ paid: false });
   const { ok, json } = await stripe(`/checkout/sessions/${id}`, undefined, k);
   const paid = Boolean(ok && json?.status === "complete" && (json?.payment_status === "paid" || json?.payment_status === "no_payment_required"));
   if (!paid) return Response.json({ paid: false });
-  return Response.json({ paid: true, apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub" });
+  if (id.startsWith("cs_live_") && json) await recordBuyer(id, json);
+  return Response.json({ paid: true, ...links });
 }
