@@ -91,20 +91,22 @@ async function recordBuyer(id: string, json: Record<string, unknown>) {
   }
 }
 
+// ⛔ NEVER CACHED. An unlocked answer stored at the edge would hand the files to the next stranger asking the same address.
+const NO_STORE = { headers: { "Cache-Control": "private, no-store, max-age=0" } };
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const links = { apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub" };
   // The owner's own look at the page (opened from Smart Links in the design studio): signed in = unlocked.
   if (url.searchParams.get("preview") === "1") {
-    return (await ownerOnly()) === null ? Response.json({ paid: true, preview: true, ...links }) : Response.json({ paid: false });
+    return (await ownerOnly()) === null ? Response.json({ paid: true, preview: true, ...links }, NO_STORE) : Response.json({ paid: false }, NO_STORE);
   }
   const id = url.searchParams.get("session_id") || "";
-  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return Response.json({ paid: false });
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return Response.json({ paid: false }, NO_STORE);
   const k = id.startsWith("cs_test_") ? testKey() : key(); // a test order is checked with the test key
-  if (!k) return Response.json({ paid: false });
+  if (!k) return Response.json({ paid: false }, NO_STORE);
   const { ok, json } = await stripe(`/checkout/sessions/${id}`, undefined, k);
   const paid = Boolean(ok && json?.status === "complete" && (json?.payment_status === "paid" || json?.payment_status === "no_payment_required"));
-  if (!paid) return Response.json({ paid: false });
+  if (!paid) return Response.json({ paid: false }, NO_STORE);
   if (id.startsWith("cs_live_") && json) await recordBuyer(id, json);
-  return Response.json({ paid: true, ...links });
+  return Response.json({ paid: true, ...links }, NO_STORE);
 }
