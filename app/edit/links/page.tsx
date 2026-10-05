@@ -30,8 +30,6 @@ export default async function LinksPage({ searchParams }: { searchParams: Promis
   const hidden: [string, string, string][] = [
     ["The download page a buyer sees after paying", `${origin}/book-thank-you?preview=1`, "Unlocked for you because you are signed in. Check the wording and both download buttons."],
     ["The buy page (the card form)", `${origin}/get-the-book`, "Where every Get The Book button goes."],
-    ["The book page", `${origin}/attention-to-dollars`, "In the menu as The Book."],
-    ["The revenue share page and its application", `${origin}/revenue-share`, "In the menu under Company."],
     ["The old waiting list address", `${origin}/waiting-list`, "Now says the book is open and sends people to the buy page."],
   ];
   const lands: [string, string, string][] = [
