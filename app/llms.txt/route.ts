@@ -44,7 +44,7 @@ Steven James Consulting works with coaches, authors and influencers who already 
 - [Home](https://stevenjamesconsulting.com/): Turn Your Attention Into Dollars.
 - [For Coaches, Authors and Influencers](https://stevenjamesconsulting.com/for-coaches-authors-and-influencers): why what you teach runs on the same six systems.
 - [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, a do-it-yourself build manual for the same build.
-- [Funnel Hack Live](https://stevenjamesconsulting.com/funnel-hack-live): live every weekday at 11 a.m. Central.
+- [Funnel Hack Live](https://stevenjamesconsulting.com/funnel-hack-live): live on TikTok every weekday at 3 p.m. Central, with the replay on this page.
 - [Podcast](https://stevenjamesconsulting.com/podcast): conversations with coaches, authors and influencers.
 - [About](https://stevenjamesconsulting.com/about): Steven Barchetti, forty years and five businesses.
 - [Portfolio](https://stevenjamesconsulting.com/portfolio): live demo websites.
