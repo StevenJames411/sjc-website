@@ -2166,6 +2166,28 @@ a.sjc-sys-card--layer:focus-visible {
   }
 }
 
+/* LONG-FORM TEXT SECTIONS (10-05). The sections written for "what is in it for them" are plain text blocks whose
+   section id starts with "lf" (plus the home "how it ties together" block). The design review found three things:
+   lines ran about 105 characters wide, the blocks sat at a different left edge from the older `.wrap` sections on
+   the same page, and on a phone the bold lead-in gave no scan line. So: one reading width, the older sections'
+   inset wherever a page has them, and the lead-in in copper on its own line on a phone. The header's Apply button
+   lives in the nav document (desktop bar) and at the top of the phone menu; a pill in the phone bar pushed the
+   menu button off the screen. */
+/* ⚠️ The reading width matches the older sections (100ch), not a narrow column: a 780px cap was tried first and
+   left the new blocks visibly narrower than the older ones beside them, and Steven's 10-03 rule is that a
+   section uses the whole laptop screen. */
+.sjc-design section[id^="lf"] p,
+.sjc-design section[id^="lf"] h2,
+.sjc-design #sjcties p { max-width: 100ch; }
+main:has(.wrap) section[id^="lf"] > .container { max-width: var(--maxw, 1180px); padding-left: 28px; padding-right: 28px; }
+.sjc-design section[id^="lf"] p > strong:first-child,
+.sjc-design #sjcties p > strong:first-child { color: #E8AA68; }
+.sjc-design section[id^="lf"] [data-lf-cta] { margin-top: 28px; max-width: 360px; }
+@media (max-width: 767px) {
+  .sjc-design section[id^="lf"] p > strong:first-child,
+  .sjc-design #sjcties p > strong:first-child { display: block; margin-bottom: 4px; }
+  .sjc-design section[id^="lf"] p { margin-bottom: 22px; }
+}
 /* FUNNEL HACK LIVE (09-27): the hero IS the fold - text left, live player right, filling the screen under the
    nav like the twin pages. Same type sizes as the twin pages; never bigger to fill space. */
 @media (min-width: 768px) {
