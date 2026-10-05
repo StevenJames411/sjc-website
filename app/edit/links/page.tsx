@@ -49,9 +49,11 @@ export default async function LinksPage({ searchParams }: { searchParams: Promis
       />
       {(!site || site.id === SJC) && (
         <div style={{ maxWidth: 1100, margin: "-40px auto 0", padding: "0 24px 80px" }}>
+          <div style={{ borderTop: "2px solid var(--e-line)", margin: "0 0 28px" }} />
           <h2 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 10px", color: "var(--e-ink-strong)" }}>Pages that are not in the menu</h2>
           {list(hidden)}
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: "36px 0 10px", color: "var(--e-ink-strong)" }}>Where things land</h2>
+          <div style={{ borderTop: "2px solid var(--e-line)", margin: "36px 0 28px" }} />
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 10px", color: "var(--e-ink-strong)" }}>Where things land</h2>
           {list(lands)}
         </div>
       )}

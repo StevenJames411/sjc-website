@@ -162,7 +162,17 @@ export default function LinksManager({
       const g = groupOf(l.name);
       (out.find((x) => x.name === g) || out[out.push({ name: g, links: [] }) - 1]).links.push(l);
     }
-    return out;
+    // THE ORDER OF THE SECTIONS (Steven, 2026-10-04): social media first, then the book, then everything else,
+    // "just like a long scrolling web page", each section under its own divider. A link with no heading of
+    // its own (no " - " in the name) is filed under "Other links" so it does not become a one-card section.
+    const rank = (n: string) => (/^social/i.test(n) ? 0 : /attention to dollars|book$/i.test(n) ? 1 : n === "Other links" ? 9 : 2);
+    const filed: { name: string; links: SmartLink[] }[] = [];
+    for (const g of out) {
+      const solo = g.links.length === 1 && g.links[0].name === g.name;
+      const name = solo ? "Other links" : g.name;
+      (filed.find((x) => x.name === name) || filed[filed.push({ name, links: [] }) - 1]).links.push(...g.links);
+    }
+    return filed.sort((x, y) => rank(x.name) - rank(y.name) || x.name.localeCompare(y.name));
   }, [links]);
 
   return (
@@ -189,7 +199,7 @@ export default function LinksManager({
       {links !== null && !groups.length && !err && <div style={empty}>No links yet. Add the first one below.</div>}
 
       {groups.map((g) => (
-        <section key={g.name}>
+        <section key={g.name} style={{ borderTop: "2px solid var(--e-line)", marginTop: 36, paddingTop: 4 }}>
           <h2 style={h2}>{g.name}</h2>
           <div style={grid}>
             {g.links.map((l) => (
@@ -199,6 +209,7 @@ export default function LinksManager({
         </section>
       ))}
 
+      <div style={{ borderTop: "2px solid var(--e-line)", marginTop: 36, paddingTop: 4 }} />
       <h2 style={h2}>Add a link</h2>
       <div style={{ ...card, maxWidth: 520 }}>
         <label style={lbl}>Name</label>
