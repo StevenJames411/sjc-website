@@ -1,4 +1,5 @@
 "use client";
+import { useScreenOrder } from "@/components/edit/useScreenOrder";
 // Smart Links — one website's short links, made, renamed, re-pointed and deleted here.
 // The dashboard only looks at them; this is where they are changed.
 //
@@ -100,11 +101,14 @@ export default function LinksManager({
   siteId,
   origin,
   sites,
+  extra = [],
 }: {
   title: string;
   siteId: string;
   origin: string;
   sites: { id: string; name: string }[];
+  /** Read-only sections the page adds (name, then rows of [label, address, note]). They move like any other. */
+  extra?: { name: string; items: [string, string, string][] }[];
 }) {
   const router = useRouter();
   const api = `?site=${encodeURIComponent(siteId)}`;
@@ -175,6 +179,11 @@ export default function LinksManager({
     return filed.sort((x, y) => rank(x.name) - rank(y.name) || x.name.localeCompare(y.name));
   }, [links]);
 
+  // Every section on this screen, link groups and the rest alike, in the order he put them (see useScreenOrder).
+  const names = useMemo(() => [...groups.map((g) => g.name), "Add a link", ...extra.map((e) => e.name)], [groups, extra]);
+  const { ordered, hasLine, Bar } = useScreenOrder("links", siteId, names);
+  const shell = (name: string): React.CSSProperties => ({ borderTop: hasLine(name) ? "2px solid var(--e-line)" : "none", marginTop: 36, paddingTop: 4 });
+
   return (
     <div style={page}>
       <div style={head}>
@@ -198,19 +207,31 @@ export default function LinksManager({
       {links === null && <div style={empty}>Loading...</div>}
       {links !== null && !groups.length && !err && <div style={empty}>No links yet. Add the first one below.</div>}
 
-      {groups.map((g) => (
-        <section key={g.name} style={{ borderTop: "2px solid var(--e-line)", marginTop: 36, paddingTop: 4 }}>
-          <h2 style={h2}>{g.name}</h2>
-          <div style={grid}>
-            {g.links.map((l) => (
-              <Row key={l.slug + l.name + l.destination + l.note} link={l} origin={origin} api={api} onChange={load} />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      <div style={{ borderTop: "2px solid var(--e-line)", marginTop: 36, paddingTop: 4 }} />
-      <h2 style={h2}>Add a link</h2>
+      {ordered.map((name) => {
+        const g = groups.find((x) => x.name === name);
+        const x = extra.find((e) => e.name === name);
+        return (
+          <section key={name} style={shell(name)}>
+            <h2 style={h2}>{name}<Bar name={name} /></h2>
+            {g && (
+              <div style={grid}>
+                {g.links.map((l) => (
+                  <Row key={l.slug + l.name + l.destination + l.note} link={l} origin={origin} api={api} onChange={load} />
+                ))}
+              </div>
+            )}
+            {x && (
+              <div style={{ marginTop: 10 }}>
+                {x.items.map(([label, href, why]) => (
+                  <div key={href} style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "baseline", padding: "12px 0", borderTop: "1px solid var(--e-line)" }}>
+                    <a style={{ fontWeight: 700, color: "var(--e-ink-strong)", textDecoration: "underline" }} href={href} target="_blank" rel="noopener">{label}</a>
+                    <span style={{ color: "var(--e-muted)", fontSize: 13.5 }}>{why}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {name === "Add a link" && (
+              <>
       <div style={{ ...card, maxWidth: 520 }}>
         <label style={lbl}>Name</label>
         <input style={input} value={nm} onChange={(e) => setNm(e.target.value)} placeholder="Attention To Dollars - Introduction" />
@@ -225,6 +246,11 @@ export default function LinksManager({
           <button type="button" style={{ ...primaryBtn, opacity: nm.trim() && slug.trim() && dest.trim() ? 1 : 0.5 }} onClick={add} disabled={!nm.trim() || !slug.trim() || !dest.trim()}>Add</button>
         </div>
       </div>
+              </>
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }
