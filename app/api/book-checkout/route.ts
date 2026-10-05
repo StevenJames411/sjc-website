@@ -31,7 +31,11 @@ async function stripe(path: string, body?: URLSearchParams, k: string = key()) {
 // same checkout on Stripe's test keys and a test copy of the book, paid with the fake card 4242 4242 4242 4242.
 // No money moves. A test order ends on the same download page a real buyer gets.
 const TEST_PRICE = "price_1UN10zGPJwwUDkyIympwXRHE";
-const testKey = () => (process.env.STRIPE_TEST_SECRET_KEY || "").trim();
+// ⛔ CLOSED UNLESS OPENED ON PURPOSE. A test order costs nothing and unlocks the real files, so an open test
+// door is a free book for anyone who finds it. Proven end to end by Steven on 2026-10-04 (fake card → download
+// page unlocked), then shut. To test again: set BOOK_SANDBOX_OPEN=1 in Vercel, redeploy, test, remove it.
+const sandboxOpen = () => process.env.BOOK_SANDBOX_OPEN === "1";
+const testKey = () => (sandboxOpen() ? (process.env.STRIPE_TEST_SECRET_KEY || "").trim() : "");
 
 export async function POST(req: Request) {
   const sandbox = Boolean((await req.json().catch(() => ({})) as { sandbox?: boolean }).sandbox);
