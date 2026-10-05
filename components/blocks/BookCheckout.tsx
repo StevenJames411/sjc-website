@@ -8,6 +8,7 @@ declare global {
 }
 
 const PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+const TEST_PK = process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY || "";
 
 export default function BookCheckout() {
   const [problem, setProblem] = useState("");
@@ -18,11 +19,12 @@ export default function BookCheckout() {
     let gone = false;
     const start = async () => {
       try {
-        if (!PK || !window.Stripe) throw new Error("not ready");
-        const c = await window.Stripe(PK).initEmbeddedCheckout({
+        const sandbox = new URLSearchParams(window.location.search).get("sandbox") === "1";
+        const pk = sandbox ? TEST_PK : PK;
+        if (!pk || !window.Stripe) throw new Error("not ready");
+        const c = await window.Stripe(pk).initEmbeddedCheckout({
           fetchClientSecret: async () => {
-            const test = new URLSearchParams(window.location.search).get("test") || "";
-            const r = await fetch("/api/book-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(test ? { test } : {}) });
+            const r = await fetch("/api/book-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sandbox ? { sandbox: true } : {}) });
             const j = await r.json();
             if (!r.ok || !j.clientSecret) throw new Error(j.error || "no session");
             return j.clientSecret as string;
