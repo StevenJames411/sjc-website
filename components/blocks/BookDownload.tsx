@@ -20,10 +20,12 @@ export default function BookDownload() {
       const eyebrow = h?.previousElementSibling; if (eyebrow) eyebrow.textContent = "The book";
       const lede = h?.nextElementSibling; if (lede && lede !== box) (lede as HTMLElement).style.display = "none";
     };
-    const id = new URLSearchParams(window.location.search).get("session_id") || "";
-    if (!id) { lock("This page opens after you buy the book."); return; }
+    const q = new URLSearchParams(window.location.search);
+    const id = q.get("session_id") || "";
+    const preview = q.get("preview") === "1";
+    if (!id && !preview) { lock("This page opens after you buy the book."); return; }
     box.style.opacity = "0.5";
-    fetch("/api/book-checkout?session_id=" + encodeURIComponent(id))
+    fetch((preview ? "/api/book-checkout?preview=1" : "/api/book-checkout?session_id=" + encodeURIComponent(id)) + "&t=" + Date.now(), { cache: "no-store" })
       .then((r) => r.json())
       .then((j) => {
         if (!j.paid) { lock("We could not find a finished order for this link. If you paid, email support@stevenjamesconsulting.com and we will send the book."); return; }
