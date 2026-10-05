@@ -43,7 +43,7 @@ Steven James Consulting works with coaches, authors and influencers who already 
 ## Other pages
 - [Home](https://stevenjamesconsulting.com/): Turn Your Attention Into Dollars.
 - [For Coaches, Authors and Influencers](https://stevenjamesconsulting.com/for-coaches-authors-and-influencers): why what you teach runs on the same six systems.
-- [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, a do-it-yourself build manual for the same build.
+- [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, the blueprint for turning what you know into money.
 - [Funnel Hack Live](https://stevenjamesconsulting.com/funnel-hack-live): live on TikTok every weekday at 3 p.m. Central, with the replay on this page.
 - [Podcast](https://stevenjamesconsulting.com/podcast): conversations with coaches, authors and influencers.
 - [About](https://stevenjamesconsulting.com/about): Steven Barchetti, forty years and five businesses.
@@ -51,7 +51,7 @@ Steven James Consulting works with coaches, authors and influencers who already 
 
 ## What it costs
 - Done for you: $30,000.00 to $50,000.00 for the build, handed over. Then $2,000.00 to $5,000.00 a month to keep it running.
-- Do it yourself: the book, Attention To Dollars, $495.00, one payment. It is not open for sale yet; there is a waiting list at https://stevenjamesconsulting.com/waiting-list.
+- The blueprint: the book, Attention To Dollars, $495.00, one payment, for sale now at https://stevenjamesconsulting.com/get-the-book.
 
 ## About Steven Barchetti
 Steven Barchetti has owned and run five businesses over forty years (restaurant, mortgage, roofing, trucking, and now technology) and was the person responsible for the systems in every one. Steven James Consulting is a team, with Steven personally on every account.
