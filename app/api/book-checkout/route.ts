@@ -27,8 +27,19 @@ async function stripe(path: string, body?: URLSearchParams) {
   return { ok: res.ok, json };
 }
 
-export async function POST() {
+// A FREE TEST RUN (Steven, 2026-10-04: no paying $495 and refunding to test our own checkout). The page
+// address /get-the-book?test=<code> applies a 100%-off coupon, so the whole path runs for $0 with no card
+// and no fee. The code is derived from the secret key, so only someone holding the key can make it.
+const TEST_COUPON = "ATD-TEST-100";
+async function testCode(): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("atd-test:" + key()));
+  return Array.from(new Uint8Array(d)).map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
+}
+
+export async function POST(req: Request) {
   if (!key()) return Response.json({ error: "Checkout is not set up yet." }, { status: 503 });
+  const asked = (await req.json().catch(() => ({})) as { test?: string }).test || "";
+  const isTest = asked.length === 16 && asked === (await testCode());
   const body = new URLSearchParams({
     ui_mode: "embedded",
     mode: "payment",
@@ -37,6 +48,7 @@ export async function POST() {
     "automatic_tax[enabled]": "true",
     return_url: `${SITE}/book-thank-you?session_id={CHECKOUT_SESSION_ID}`,
   });
+  if (isTest) body.set("discounts[0][coupon]", TEST_COUPON);
   const { ok, json } = await stripe("/checkout/sessions", body);
   if (!ok || !json?.client_secret) {
     const why = (json?.error as { message?: string } | undefined)?.message || "Stripe refused the checkout.";

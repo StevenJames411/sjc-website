@@ -21,7 +21,8 @@ export default function BookCheckout() {
         if (!PK || !window.Stripe) throw new Error("not ready");
         const c = await window.Stripe(PK).initEmbeddedCheckout({
           fetchClientSecret: async () => {
-            const r = await fetch("/api/book-checkout", { method: "POST" });
+            const test = new URLSearchParams(window.location.search).get("test") || "";
+            const r = await fetch("/api/book-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(test ? { test } : {}) });
             const j = await r.json();
             if (!r.ok || !j.clientSecret) throw new Error(j.error || "no session");
             return j.clientSecret as string;
