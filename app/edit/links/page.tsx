@@ -22,9 +22,6 @@ export default async function LinksPage({ searchParams }: { searchParams: Promis
   const site = live.find((s) => s.id === wanted) || live.find((s) => s.id === SJC) || live[0];
   const origin = !site || site.id === SJC ? `https://${SJC_HOST}` : publicBaseFor(site).origin;
   const sheet = (process.env.INTAKE_SHEET_ID || "").trim();
-  const row: React.CSSProperties = { display: "flex", justifyContent: "space-between", gap: 16, alignItems: "baseline", padding: "12px 0", borderTop: "1px solid var(--e-line)" };
-  const a: React.CSSProperties = { fontWeight: 700, color: "var(--e-ink-strong)", textDecoration: "underline" };
-  const note: React.CSSProperties = { color: "var(--e-muted)", fontSize: 13.5 };
   // PAGES NOBODY REACHES FROM THE MENU, AND WHERE THINGS LAND (Steven, 2026-10-04): "put that on our dashboard so I
   // could take a look at it." One list, so a page he cannot click to from the site is still one click from here.
   const hidden: [string, string, string][] = [
@@ -36,27 +33,14 @@ export default async function LinksPage({ searchParams }: { searchParams: Promis
     ...(sheet ? [["The intake sheet", `https://docs.google.com/spreadsheets/d/${sheet}/edit`, "One tab each: New Clients, Revenue Share, Careers, Podcast Guests, Book Downloads (who bought the book)."] as [string, string, string]] : []),
     ["Book payments in Stripe", "https://dashboard.stripe.com/payments", "Every book sale, with the buyer and the amount."],
   ];
-  const list = (items: [string, string, string][]) => items.map(([name, href, why]) => (
-    <div key={href} style={row}><a style={a} href={href} target="_blank" rel="noopener">{name}</a><span style={note}>{why}</span></div>
-  ));
+  const extra = !site || site.id === SJC ? [{ name: "Pages that are not in the menu", items: hidden }, { name: "Where things land", items: lands }] : [];
   return (
-    <>
-      <LinksManager
-        title={title}
-        siteId={site?.id || SJC}
-        origin={origin}
-        sites={live.map((s) => ({ id: s.id, name: s.business?.name?.trim() || s.name }))}
-      />
-      {(!site || site.id === SJC) && (
-        <div style={{ maxWidth: 1100, margin: "-40px auto 0", padding: "0 24px 80px" }}>
-          <div style={{ borderTop: "2px solid var(--e-line)", margin: "0 0 28px" }} />
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 10px", color: "var(--e-ink-strong)" }}>Pages that are not in the menu</h2>
-          {list(hidden)}
-          <div style={{ borderTop: "2px solid var(--e-line)", margin: "36px 0 28px" }} />
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 10px", color: "var(--e-ink-strong)" }}>Where things land</h2>
-          {list(lands)}
-        </div>
-      )}
-    </>
+    <LinksManager
+      title={title}
+      siteId={site?.id || SJC}
+      origin={origin}
+      sites={live.map((s) => ({ id: s.id, name: s.business?.name?.trim() || s.name }))}
+      extra={extra}
+    />
   );
 }
