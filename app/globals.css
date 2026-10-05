@@ -2182,7 +2182,16 @@ a.sjc-sys-card--layer:focus-visible {
 main:has(.wrap) section[id^="lf"] > .container { max-width: var(--maxw, 1180px); padding-left: 28px; padding-right: 28px; }
 .sjc-design section[id^="lf"] p > strong:first-child,
 .sjc-design #sjcties p > strong:first-child { color: #E8AA68; }
-.sjc-design section[id^="lf"] [data-lf-cta] { margin-top: 28px; max-width: 360px; }
+/* The apply line and its button at the foot of a long section. On a laptop they sit CENTRED under the text
+   (Steven, 10-05: stacked at the left edge "looks stupid" on a laptop); on a phone they stack at the left the
+   way everything else does. */
+.sjc-design section[id^="lf"] [data-lf-cta] { margin-top: 28px; max-width: none; }
+.sjc-design section[id^="lf"] [data-lf-cta] p { max-width: none; }
+@media (min-width: 768px) {
+  .sjc-design section[id^="lf"] [data-lf-cta] { margin-top: 44px !important; text-align: center; }
+  .sjc-design section[id^="lf"] [data-lf-cta] p { margin: 0 auto 18px !important; }
+  .sjc-design section[id^="lf"] [data-lf-cta] > div { margin: 0 auto; max-width: 400px !important; }
+}
 @media (max-width: 767px) {
   .sjc-design section[id^="lf"] p > strong:first-child,
   .sjc-design #sjcties p > strong:first-child { display: block; margin-bottom: 4px; }
