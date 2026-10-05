@@ -58,9 +58,15 @@ export async function POST(req: Request) {
   return Response.json({ clientSecret: json.client_secret });
 }
 
+// THE DOWNLOAD IS FOR BUYERS (2026-10-04). /book-thank-you carries no file addresses of its own; it asks here
+// with the session id Stripe put on its address, and only a finished order gets the two links back.
+// "no_payment_required" is a completed $0 order (the free test run), which counts.
+const FILES = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/book/atd-7c41f09be2d6/";
 export async function GET(req: Request) {
   const id = new URL(req.url).searchParams.get("session_id") || "";
   if (!/^cs_[A-Za-z0-9_]+$/.test(id) || !key()) return Response.json({ paid: false });
   const { ok, json } = await stripe(`/checkout/sessions/${id}`);
-  return Response.json({ paid: Boolean(ok && json?.payment_status === "paid") });
+  const paid = Boolean(ok && json?.status === "complete" && (json?.payment_status === "paid" || json?.payment_status === "no_payment_required"));
+  if (!paid) return Response.json({ paid: false });
+  return Response.json({ paid: true, apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub" });
 }
