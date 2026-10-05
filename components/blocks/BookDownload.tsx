@@ -11,8 +11,14 @@ export default function BookDownload() {
     const lock = (msg: string) => {
       box.innerHTML = "";
       const p = document.createElement("p"); p.textContent = msg; p.style.cssText = "color:#fff;margin:0 0 14px;line-height:1.5";
-      const b = document.createElement("a"); b.href = "/get-the-book"; b.textContent = "Get The Book"; b.className = a.className;
+      const b = document.createElement("a"); b.href = "/get-the-book"; b.textContent = "Get The Book";
+      b.style.cssText = "display:block;text-align:center;font-weight:700;padding:14px 24px;border-radius:9999px;color:#1A0E06;border:1.5px solid #F6C48A;background:linear-gradient(90deg,#8F4515 0%,#BF7530 31%,#D58A42 50%,#BF7530 69%,#8F4515 100%);box-shadow:0 0 24px rgba(224,138,46,.35)";
       box.append(p, b);
+      // The page's own words say "Here is your book", which is only true for a buyer.
+      const sec = box.closest("section");
+      const h = sec?.querySelector("h1"); if (h) h.textContent = "Attention To Dollars";
+      const eyebrow = h?.previousElementSibling; if (eyebrow) eyebrow.textContent = "The book";
+      const lede = h?.nextElementSibling; if (lede && lede !== box) (lede as HTMLElement).style.display = "none";
     };
     const id = new URLSearchParams(window.location.search).get("session_id") || "";
     if (!id) { lock("This page opens after you buy the book."); return; }
