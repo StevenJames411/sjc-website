@@ -15,6 +15,7 @@ import { findSite } from "@/lib/sites";
 import { SJC } from "@/lib/siteKeys";
 import HomeTwinOrb from "@/components/blocks/HomeTwinOrb";
 import ShowCard from "@/components/blocks/ShowCard";
+import BookCheckout from "@/components/blocks/BookCheckout";
 import FoldFit from "@/components/blocks/FoldFit";
 import { fillBusinessTokens } from "@/lib/businessTokens";
 import { SiteProvider } from "@/components/blocks/SiteContext";
@@ -578,6 +579,8 @@ export async function SitePageBody({
           a client's site keeps the spacing its design shipped with. */}
       {siteId === SJC ? <FoldFit /> : null}
       {siteId === SJC && page === "funnel-hack-live" ? <ShowCard /> : null}
+      {/* The book's card form, on our own page (10-04): mounts into [data-sjc-book-checkout]. */}
+      {siteId === SJC && page === "get-the-book" ? <BookCheckout /> : null}
       {/* Wrapped in its own SiteProvider, same as the body: a footer routinely carries
           {{business.phone}} and an unwrapped Render would ship the raw token to a visitor. */}
       {chrome.footer ? (
