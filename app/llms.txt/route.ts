@@ -50,8 +50,8 @@ Steven James Consulting works with coaches, authors and influencers who already 
 - [Portfolio](https://stevenjamesconsulting.com/portfolio): live demo websites.
 
 ## What it costs
-- Done for you: $30,000 to $50,000 for the build, handed over. Then $2,000 to $5,000 a month to keep it running.
-- Do it yourself: the book, Attention To Dollars, $495, one payment. It is not open for sale yet; there is a waiting list at https://stevenjamesconsulting.com/waiting-list.
+- Done for you: $30,000.00 to $50,000.00 for the build, handed over. Then $2,000.00 to $5,000.00 a month to keep it running.
+- Do it yourself: the book, Attention To Dollars, $495.00, one payment. It is not open for sale yet; there is a waiting list at https://stevenjamesconsulting.com/waiting-list.
 
 ## About Steven Barchetti
 Steven Barchetti has owned and run five businesses over forty years (restaurant, mortgage, roofing, trucking, and now technology) and was the person responsible for the systems in every one. Steven James Consulting is a team, with Steven personally on every account.
