@@ -16,10 +16,10 @@ function key(): string {
   return (process.env.STRIPE_SECRET_KEY || "").trim();
 }
 
-async function stripe(path: string, body?: URLSearchParams) {
+async function stripe(path: string, body?: URLSearchParams, k: string = key()) {
   const res = await fetch(`${STRIPE}${path}`, {
     method: body ? "POST" : "GET",
-    headers: { Authorization: `Bearer ${key()}`, ...(body ? { "Content-Type": "application/x-www-form-urlencoded" } : {}) },
+    headers: { Authorization: `Bearer ${k}`, ...(body ? { "Content-Type": "application/x-www-form-urlencoded" } : {}) },
     body,
     cache: "no-store",
   });
@@ -27,29 +27,25 @@ async function stripe(path: string, body?: URLSearchParams) {
   return { ok: res.ok, json };
 }
 
-// A FREE TEST RUN (Steven, 2026-10-04: no paying $495 and refunding to test our own checkout). The page
-// address /get-the-book?test=<code> applies a 100%-off coupon, so the whole path runs for $0 with no card
-// and no fee. The code is derived from the secret key, so only someone holding the key can make it.
-const TEST_COUPON = "ATD-TEST-100";
-async function testCode(): Promise<string> {
-  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("atd-test:" + key()));
-  return Array.from(new Uint8Array(d)).map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
-}
+// STRIPE'S TEST MODE (Steven, 2026-10-04: test it properly, no real charge). /get-the-book?sandbox=1 runs the
+// same checkout on Stripe's test keys and a test copy of the book, paid with the fake card 4242 4242 4242 4242.
+// No money moves. A test order ends on the same download page a real buyer gets.
+const TEST_PRICE = "price_1UN10zGPJwwUDkyIympwXRHE";
+const testKey = () => (process.env.STRIPE_TEST_SECRET_KEY || "").trim();
 
 export async function POST(req: Request) {
-  if (!key()) return Response.json({ error: "Checkout is not set up yet." }, { status: 503 });
-  const asked = (await req.json().catch(() => ({})) as { test?: string }).test || "";
-  const isTest = asked.length === 16 && asked === (await testCode());
+  const sandbox = Boolean((await req.json().catch(() => ({})) as { sandbox?: boolean }).sandbox);
+  const k = sandbox ? testKey() : key();
+  if (!k) return Response.json({ error: "Checkout is not set up yet." }, { status: 503 });
   const body = new URLSearchParams({
     ui_mode: "embedded",
     mode: "payment",
-    "line_items[0][price]": BOOK_PRICE,
+    "line_items[0][price]": sandbox ? TEST_PRICE : BOOK_PRICE,
     "line_items[0][quantity]": "1",
-    "automatic_tax[enabled]": "true",
     return_url: `${SITE}/book-thank-you?session_id={CHECKOUT_SESSION_ID}`,
   });
-  if (isTest) body.set("discounts[0][coupon]", TEST_COUPON);
-  const { ok, json } = await stripe("/checkout/sessions", body);
+  if (!sandbox) body.set("automatic_tax[enabled]", "true");
+  const { ok, json } = await stripe("/checkout/sessions", body, k);
   if (!ok || !json?.client_secret) {
     const why = (json?.error as { message?: string } | undefined)?.message || "Stripe refused the checkout.";
     console.error("book-checkout:", why);
@@ -64,8 +60,10 @@ export async function POST(req: Request) {
 const FILES = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/book/atd-7c41f09be2d6/";
 export async function GET(req: Request) {
   const id = new URL(req.url).searchParams.get("session_id") || "";
-  if (!/^cs_[A-Za-z0-9_]+$/.test(id) || !key()) return Response.json({ paid: false });
-  const { ok, json } = await stripe(`/checkout/sessions/${id}`);
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return Response.json({ paid: false });
+  const k = id.startsWith("cs_test_") ? testKey() : key(); // a test order is checked with the test key
+  if (!k) return Response.json({ paid: false });
+  const { ok, json } = await stripe(`/checkout/sessions/${id}`, undefined, k);
   const paid = Boolean(ok && json?.status === "complete" && (json?.payment_status === "paid" || json?.payment_status === "no_payment_required"));
   if (!paid) return Response.json({ paid: false });
   return Response.json({ paid: true, apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub" });
