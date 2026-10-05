@@ -2155,11 +2155,14 @@ a.sjc-sys-card--layer:focus-visible {
 /* THE HERO FILLS THE SCREEN ABOVE THE FOLD on every twin page, like home (09-26): the section is at
    least one screen tall under the nav and its content sits centred in it - no empty band below.
    ⚠️ --sjc-hdr is the header's MEASURED height (FoldFit.tsx sets it). This was a hardcoded 76px, the
-   header grew to 97px with the new logo, and every hero ran 21px past the fold (10-03). */
+   header grew to 97px with the new logo, and every hero ran 21px past the fold (10-03).
+   ⚠️ TOP-ALIGNED, NOT CENTRED (10-05): centring put the name tag a different distance from the nav on every
+   page, because the paragraphs are different lengths - the long pages sat tight under the nav and the short
+   ones floated. Every twin hero now starts the same 64px below the nav; spare room goes to the bottom. */
 @media (min-width: 768px) {
   section:has([data-sjc-twin-col]):not(:has([data-sjc-eyebrow-lg])) {
-    min-height: calc(100svh - var(--sjc-hdr, 97px)); display: flex !important; flex-direction: column; justify-content: center;
-    padding-top: 48px !important; padding-bottom: 48px !important;
+    min-height: calc(100svh - var(--sjc-hdr, 97px)); display: flex !important; flex-direction: column; justify-content: flex-start;
+    padding-top: 64px !important; padding-bottom: 48px !important;
   }
 }
 

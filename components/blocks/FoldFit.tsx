@@ -87,7 +87,13 @@ function fit() {
     if (x.h > usable + 1) {
       const over = x.h - usable;
       const room = Math.max(0, x.pt - PAD_FLOOR) + Math.max(0, x.pb - PAD_FLOOR);
-      if (over <= usable * TRIM_LIMIT && room >= over) {
+      // ⛔ A HERO'S TOP PADDING IS NEVER TRIMMED (Steven, 2026-10-05): "they should have the same padding
+      // from the navigation, and they don't." Trimming top and bottom together put the name tag 30px
+      // higher on the two pages whose paragraph ran a little over one screen. A twin hero gives up
+      // bottom padding only; whatever is still over simply scrolls.
+      if (x.s.querySelector("[data-sjc-twin-col]")) {
+        pad(x, x.pt, Math.max(PAD_FLOOR, x.pb - over));
+      } else if (over <= usable * TRIM_LIMIT && room >= over) {
         const fromTop = (over * Math.max(0, x.pt - PAD_FLOOR)) / room;
         pad(x, x.pt - fromTop, x.pb - (over - fromTop));
       }
