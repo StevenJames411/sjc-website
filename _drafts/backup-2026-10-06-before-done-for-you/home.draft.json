@@ -1,0 +1,1605 @@
+{
+ "root": {
+  "props": {
+   "title": "Turn Your Attention Into Dollars | Steven James Consulting",
+   "description": "We help coaches, authors and influencers turn the attention they already have into dollars: one website you own and six systems behind it, built and kept running for you."
+  }
+ },
+ "zones": {},
+ "content": [
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "design-vsl-hero",
+    "band": "ink-glow",
+    "html": "<section class=\"code-section relative bg-[#e5e5e5] py-6 pt-20 lg:py-10 overflow-hidden lg:pt-[100px]\" id=\"svslhero\">\n  <style>#svslhero [data-sjc-vsl-player]:has(video:playing) [data-sjc-vsl-play]{display:none}@media (min-width:1024px){#svslhero#svslhero{min-height:calc(100svh - 97px)!important;padding-top:36px!important;padding-bottom:36px!important;display:flex!important;flex-direction:column!important;justify-content:center!important}#svslhero>.container{width:100%}#svslhero h1{margin-bottom:48px!important}#svslhero [data-sjc-hero-split]{align-items:stretch!important;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)!important;column-gap:48px!important}#svslhero [data-sjc-hero-split]>div:first-child{display:flex}#svslhero [data-sjc-vsl-player]{aspect-ratio:16/9!important;height:auto;flex:1}}</style>\n  <div class=\"absolute top-0 right-0 w-96 h-96 bg-[var(--primary-color)] opacity-5 rounded-full blur-3xl\"></div>\n  <div class=\"container mx-auto px-4\">\n    <h1 class=\"text-3xl sm:text-4xl lg:text-5xl font-bold font-[var(--font-family-heading)] leading-tight text-center\" style=\"color:#fff;margin:0 0 36px\">{{t:t1}}</h1>\n    <div class=\"grid lg:grid-cols-2 gap-6 lg:gap-12 items-center\" data-sjc-hero-split>\n      <div>\n        <div data-sjc-vsl-player style=\"position:relative;width:100%;aspect-ratio:16/9;border-radius:1.25rem;overflow:hidden;border:2px solid #DE8634;box-shadow:0 20px 50px rgba(0,0,0,.45);background:#0B0906\">\n          <video controls controlslist=\"nodownload noplaybackrate\" disablepictureinpicture playsinline preload=\"none\" poster=\"https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/uploads/1791141904345-V11-hero-video-thumbnail.webp\" src=\"https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/video/welcome-2026-10-06.mp4\" style=\"position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0B0906\"><track kind=\"captions\" src=\"/captions/welcome-2026-10-05.vtt\" srclang=\"en\" label=\"English\" default></video>\n          <div aria-hidden=\"true\" data-sjc-vsl-play style=\"pointer-events:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:999px;border:3px solid #F6BC76;background:rgba(11,9,6,.72);box-shadow:0 0 28px rgba(222,134,52,.55);display:flex;align-items:center;justify-content:center\"><div style=\"width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-left:26px solid #F6BC76;margin-left:6px\"></div></div>\n          <p class=\"font-[var(--font-family-body)] font-bold\" style=\"position:absolute;left:0;right:0;bottom:12px;margin:0;text-align:center;font-size:1rem;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.9)\">{{t:t2}}</p>\n        </div>\n      </div>\n      <div class=\"pt-0\" data-sjc-hero-say style=\"display:flex;flex-direction:column;justify-content:center;gap:18px;text-align:left\">\n        <h2 class=\"font-bold font-[var(--font-family-heading)] leading-tight\" style=\"color:#fff;margin:0;font-size:clamp(1.5rem,2.1vw,1.9rem)\">{{t:t20}}</h2>\n        <p class=\"font-[var(--font-family-body)] text-lg\" style=\"color:#fff;line-height:1.55;margin:0\">{{t:t21}}</p>\n        <p class=\"font-[var(--font-family-body)] text-lg\" style=\"color:#fff;line-height:1.55;margin:0\">{{t:t22}}</p>\n        <p class=\"font-bold font-[var(--font-family-heading)]\" style=\"color:#E8AA68;margin:0;font-size:1.25rem\">{{t:t23}}</p>\n        <p class=\"font-[var(--font-family-body)]\" style=\"color:#d9cfc2;margin:0;font-size:1rem\">{{t:t24}}</p>\n      </div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: Turn Your Attention Into Dollars",
+      "value": "Turn Your Attention Into Dollars"
+     },
+     {
+      "key": "t2",
+      "label": "Text: video placeholder",
+      "value": ""
+     },
+     {
+      "key": "t20",
+      "label": "Heading: We turn coaches, authors and influencers",
+      "value": "We turn coaches, authors and influencers into money-making machines."
+     },
+     {
+      "key": "t21",
+      "label": "Text: I go online every day",
+      "value": "I go online every day like a consumer and try to buy from people like you. 75 percent of the time, I can\u2019t. No website. No product."
+     },
+     {
+      "key": "t22",
+      "label": "Text: We package your intellectual property",
+      "value": "We package your intellectual property and drive the attention you generate to a website you own and control."
+     },
+     {
+      "key": "t23",
+      "label": "Text: Attention + Your Product = Dollars",
+      "value": "Attention + Your Product = Dollars"
+     },
+     {
+      "key": "t24",
+      "label": "Text: Do it yourself \u00b7 Done with you \u00b7 Done for you",
+      "value": "Do it yourself \u00b7 Done with you \u00b7 Done for you"
+     }
+    ],
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 72,
+    "useRealForm": false,
+    "paddingBottom": 96
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "design-vsl-book",
+    "band": "ink-glow",
+    "html": "<section class=\"code-section relative bg-[#e5e5e5] py-10 lg:py-14 overflow-hidden\" id=\"svslbook\">\n  <style>\n  #svslbook .bk-grid{display:grid;grid-template-columns:1fr;gap:32px;align-items:center}\n  #svslbook .bk-book{order:-1}\n  #svslbook .bk-phone{order:1}\n  #svslbook .bk-book img{display:block;margin:0 auto;width:100%;height:auto}\n  #svslbook .bk-phone img{display:block;margin:0 auto;width:64%;max-width:256px;height:auto}\n  @media (min-width:1024px){\n    #svslbook{padding-top:32px!important;padding-bottom:32px!important}\n    #svslbook .bk-grid{grid-template-columns:minmax(0,1fr) auto auto;column-gap:40px;min-height:calc(100svh - 161px)}\n    #svslbook .bk-text{order:1}\n    #svslbook .bk-phone{order:2}\n    #svslbook .bk-book{order:3}\n    #svslbook .bk-book img{width:auto;max-width:none;height:min(calc(100svh - 161px),900px)}\n    #svslbook .bk-phone img{width:auto;max-width:none;height:min(calc(100svh - 261px),780px)}\n  }\n  </style>\n  <div class=\"container mx-auto px-4\">\n    <div class=\"bk-grid\">\n      <div class=\"bk-text space-y-4\">\n        <div class=\"label\" style=\"margin-bottom:14px\">{{t:t1}}</div>\n        <h2 class=\"text-3xl lg:text-4xl font-bold font-[var(--font-family-heading)] leading-tight\" style=\"color:#fff;margin:0\">{{t:t2}}</h2>\n        <p class=\"font-[var(--font-family-body)] text-lg lg:text-xl\" style=\"color:#fff;line-height:1.6;margin:0\">{{t:t3}}</p>\n        <p class=\"font-[var(--font-family-body)] text-lg lg:text-xl\" style=\"color:#fff;line-height:1.6;margin:0\">{{t:t4}}</p>\n        <div style=\"max-width:400px;padding-top:8px\"><a href=\"{{h:h1}}\" class=\"sjc-cta block w-full bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"h1\">{{t:t5}}</a></div>\n      </div>\n      <div class=\"bk-phone\"><img width=\"419\" height=\"926\" src=\"{{i:i3}}\" alt=\"Attention To Dollars shown on a phone\" loading=\"lazy\" decoding=\"async\" data-sjc-img=\"i3\"></div>\n      <div class=\"bk-book\">\n        <img width=\"800\" height=\"1228\" src=\"{{i:i2}}\" alt=\"The book Attention To Dollars by Steven Barchetti, Steven James Consulting\" loading=\"lazy\" decoding=\"async\" data-sjc-img=\"i2\">\n      </div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: The million-dollar blueprint: how to turn what you know into",
+      "value": "The million-dollar blueprint"
+     },
+     {
+      "key": "t2",
+      "label": "Text: Attention To Dollars",
+      "value": "Attention To Dollars"
+     },
+     {
+      "key": "t3",
+      "label": "Text: What you know is worth money. This book shows you how to col",
+      "value": "What you know is worth money. This book shows you how to collect it. It is the blueprint, start to finish: take the attention you already have, package what you know into something people can buy, and sell it from a website you own."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Nothing is held back. Every system, every step, in the order",
+      "value": "Nothing is held back. Every system, every step, in the order we build it. The blueprint is $495.00."
+     },
+     {
+      "key": "t5",
+      "label": "Text: Get The Book",
+      "value": "Get The Book"
+     }
+    ],
+    "boxes": [],
+    "links": [
+     {
+      "key": "h1",
+      "href": "/attention-to-dollars",
+      "label": "Get The Book"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [
+     {
+      "alt": "The book Attention To Dollars by Steven Barchetti, Steven James Consulting",
+      "key": "i2",
+      "src": "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/uploads/1791141819271-V11-copper-book-alone-transparent.webp"
+     },
+     {
+      "alt": "Attention To Dollars shown on a phone",
+      "key": "i3",
+      "src": "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/uploads/1791141819992-V11-copper-phone-alone-transparent.webp"
+     }
+    ],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 72,
+    "useRealForm": false,
+    "paddingBottom": 96
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-my-team-and-i-are-a-modern-day-tal",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfmyteamandiareamoderndaytal\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t13}}</strong> {{t:t14}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: Who We Are",
+      "value": "Who We Are"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: My team and I are a modern day talent agency. Here is what t",
+      "value": "My team and I are a modern day talent agency. Here is what that means."
+     },
+     {
+      "key": "t3",
+      "label": "Text: The short answer.",
+      "value": "The short answer."
+     },
+     {
+      "key": "t4",
+      "label": "Text: You are very good at something. People are watching. And the",
+      "value": "You are very good at something. People are watching. And the money does not match either one. That is the person my team and I work for. So when somebody asks what Steven James Consulting does, this is the answer. We are a modern day talent agency. A talent agent has always had one job. Find somebody who is very good at something, get them in front of the people who need them, and make sure they get paid for it. We do that job for coaches, authors, speakers and influencers. You are the talent. We are the people behind you."
+     },
+     {
+      "key": "t5",
+      "label": "Text: What that looks like.",
+      "value": "What that looks like."
+     },
+     {
+      "key": "t6",
+      "label": "Text: In practice it comes down to three things. We teach you self",
+      "value": "In practice it comes down to three things. We teach you self-promotion, which is simply letting people know you exist and what you can do for them. We take what you know and package it into something a person can buy. And we build the website and the sales system that sells it for you, day and night. You stay the expert. We build everything that carries your knowledge to the person who will pay for it."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Forty years.",
+      "value": "Forty years."
+     },
+     {
+      "key": "t8",
+      "label": "Text: I opened my first business, a restaurant, in 1986. After tha",
+      "value": "I opened my first business, a restaurant, in 1986. After that came mortgage, roofing, trucking and now technology. That is five businesses over forty years, and in every one of them I was the person who built the systems. The work was different each time. The lesson never changed. The business people knew about, with a system behind it to catch them, beat the business that was simply good at the work. Being good was only the starting line. That is as true for a coach with a following as it was for a restaurant on a corner."
+     },
+     {
+      "key": "t9",
+      "label": "Text: My team and I.",
+      "value": "My team and I."
+     },
+     {
+      "key": "t10",
+      "label": "Text: Steven James Consulting is a US company with a team behind t",
+      "value": "Steven James Consulting is a US company with a team behind the work. They build the websites, produce the shows, put the books together and keep the AI employees tuned. I am personally on your account. You get both. A team that does the building, and somebody across the table who has run his own businesses through good years and slow ones and had to work out where the next customer was coming from."
+     },
+     {
+      "key": "t11",
+      "label": "Text: We run on it ourselves.",
+      "value": "We run on it ourselves."
+     },
+     {
+      "key": "t12",
+      "label": "Text: Everything we build for a client, we built for ourselves fir",
+      "value": "Everything we build for a client, we built for ourselves first. This website is the same kind of website. My book, Attention To Dollars, is for sale on it. I started my own podcast in 2008, and it lives here too. If a clip or a video brought you to this page, it did the same job yours will do for you. So you are looking at the product right now, and you can judge it for yourself before you ever speak to us."
+     },
+     {
+      "key": "t13",
+      "label": "Text: Why agency is the word.",
+      "value": "Why agency is the word."
+     },
+     {
+      "key": "t14",
+      "label": "Text: I use the word agency on purpose. A talent agency only does ",
+      "value": "I use the word agency on purpose. A talent agency only does well when its talent does well. That keeps us on the same side of the table as you. Your name is on the cover, your voice is on the show and your face is on the screen. Our work is everything behind it, and we are proud to stay behind it."
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "A talent agency only does well when its talent does well."
+     }
+    ],
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-none-of-this-is-new-what-is-new-is",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfnoneofthisisnewwhatisnewis\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t13}}</strong> {{t:t14}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: Why We Exist",
+      "value": "Why We Exist"
+     },
+     {
+      "key": "t2",
+      "label": "Text: The idea is as old as business. What is new is what it costs",
+      "value": "The idea is as old as business. What is new is what it costs."
+     },
+     {
+      "key": "t3",
+      "label": "Text: The oldest model there is.",
+      "value": "The oldest model there is."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Get people's attention. Have something to sell them. Stay in",
+      "value": "Get people's attention. Have something to sell them. Stay in front of them until they are ready to buy. That is how every business that ever ran an advertisement has worked, and I watched it work in every business I owned. Not one piece my team and I use is a new idea. That is good news for you, because a model this old has been proven over and over. What is ours is the way the pieces are joined, and I will show you that further down."
+     },
+     {
+      "key": "t5",
+      "label": "Text: What it used to cost.",
+      "value": "What it used to cost."
+     },
+     {
+      "key": "t6",
+      "label": "Text: When I opened that restaurant in 1986, attention was somethi",
+      "value": "When I opened that restaurant in 1986, attention was something you bought. You paid the newspaper, the radio station or the TV station, and somebody there decided whether you got on at all. If you wanted a book in a store, a publisher had to say yes. If you wanted a show, a station had to give you the hour. And once the phone started ringing, you needed people on a payroll to answer it and follow up."
+     },
+     {
+      "key": "t7",
+      "label": "Text: The doors are open.",
+      "value": "The doors are open."
+     },
+     {
+      "key": "t8",
+      "label": "Text: Every one of those doors is open today. The social platforms",
+      "value": "Every one of those doors is open today. The social platforms let you stand in front of thousands of people and charge you nothing for it. A podcast costs next to nothing once the technical work is handled. You can publish your own book, with your own name on the cover, and sell it from your own website. Nobody is left to tell you no. The people who used to decide who got heard have lost that job."
+     },
+     {
+      "key": "t9",
+      "label": "Text: The payroll changed too.",
+      "value": "The payroll changed too."
+     },
+     {
+      "key": "t10",
+      "label": "Text: The stage was only ever half of it. The other half was peopl",
+      "value": "The stage was only ever half of it. The other half was people. Somebody had to answer every question, get back to everyone who showed interest, ask happy customers to say so, and go back through the old names. That took a staff, and a staff took money most experts never had. AI employees do that work now. They do it at any hour, and they do it the same way every time."
+     },
+     {
+      "key": "t11",
+      "label": "Text: Never this cheap.",
+      "value": "Never this cheap."
+     },
+     {
+      "key": "t12",
+      "label": "Text: Put those two changes side by side. The stages cost nothing,",
+      "value": "Put those two changes side by side. The stages cost nothing, and the staff no longer has to be a payroll. We have never had a time in history where you had access to so much of it at such a low price. A coach, an author or an influencer with a small team now stands on the same stages that used to belong to companies with an advertising budget."
+     },
+     {
+      "key": "t13",
+      "label": "Text: So why us.",
+      "value": "So why us."
+     },
+     {
+      "key": "t14",
+      "label": "Text: Because cheap tools in a pile are not a business. Almost eve",
+      "value": "Because cheap tools in a pile are not a business. Almost everybody has a few of these pieces. Hardly anybody has them connected, in the right order, pointing at something a person can buy. The pieces are old. The way my team and I connect them is our own, and we call it the Revenue Engine. That is why we exist. We take the stages that cost nothing, the website, the show and the book that you own, and the AI employees that do the follow-up, and we build them into one working thing with your name on it."
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "We have never had a time in history where you had access to so much of it at such a low price."
+     }
+    ],
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-if-you-are-truly-an-expert-there-s",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfifyouaretrulyanexperttheres\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t13}}</strong> {{t:t14}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: If You Are The Expert",
+      "value": "If You Are The Expert"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: If you are truly an expert, there should be no reason you ar",
+      "value": "If you are truly an expert, there should be no reason you are not making a lot of money."
+     },
+     {
+      "key": "t3",
+      "label": "Text: I mean that.",
+      "value": "I mean that."
+     },
+     {
+      "key": "t4",
+      "label": "Text: I mean that line exactly the way it reads, and I mean it as ",
+      "value": "I mean that line exactly the way it reads, and I mean it as good news. If you are truly an expert in your space, with everything that is available today, there should be no reason you are not making a lot of money. The stages are free. The tools are cheap. The people who need your help are on their phones every day looking for somebody like you. So if the money is not showing up, do not read that as a verdict on you. Something is not joined up, and joining things up is a job that can be done."
+     },
+     {
+      "key": "t5",
+      "label": "Text: The real reason.",
+      "value": "The real reason."
+     },
+     {
+      "key": "t6",
+      "label": "Text: It is almost never your talent. The reason is that you are n",
+      "value": "It is almost never your talent. The reason is that you are not connecting all the dots properly, and you are not letting the world know you are here to help them with your talent. You show up on one platform and it leads nowhere. You have a website nobody is sent to. You know enough to fill a book and none of it is written down for sale. Each dot is there. Nothing joins them."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Self-promotion is not bragging.",
+      "value": "Self-promotion is not bragging."
+     },
+     {
+      "key": "t8",
+      "label": "Text: A lot of very good people are uncomfortable with self-promot",
+      "value": "A lot of very good people are uncomfortable with self-promotion. They think the work should speak for itself. I understand that, and I disagree with it. Nobody can hire a person they have never heard of. The people you could help are out there right now, buying from whoever they happened to hear about first. Letting them know you exist is part of helping them. A talent agent's first job is to get you comfortable with that, and then to do the heavy lifting for you."
+     },
+     {
+      "key": "t9",
+      "label": "Text: The reps are yours.",
+      "value": "The reps are yours."
+     },
+     {
+      "key": "t10",
+      "label": "Text: Here is the one thing my team and I cannot build. If you are",
+      "value": "Here is the one thing my team and I cannot build. If you are a coach, an author or an influencer, you have to be the best at what you do. Nobody wants to listen to somebody who has not done the work. The ten thousand hours it takes to become an expert, the years, the clients, the mistakes you learned from, those are the reps. You have to put in the reps. That knowledge is the product, and it only comes from you."
+     },
+     {
+      "key": "t11",
+      "label": "Text: Everything else is ours.",
+      "value": "Everything else is ours."
+     },
+     {
+      "key": "t12",
+      "label": "Text: If you have put in the reps, you already hold the part that ",
+      "value": "If you have put in the reps, you already hold the part that takes the longest and that money cannot buy. What is left is building, and building is what we do. The website, the book, the podcast, the videos and clips, the answering and the following up can all be built for you by people who do it every day. Expertise takes years to earn. The rest is a matter of putting the right pieces in the right order."
+     },
+     {
+      "key": "t13",
+      "label": "Text: If you are still early.",
+      "value": "If you are still early."
+     },
+     {
+      "key": "t14",
+      "label": "Text: Maybe you are still putting in your reps. That is a good pla",
+      "value": "Maybe you are still putting in your reps. That is a good place to be, and it is where every expert started. Keep going. Keep showing up, keep helping people and keep getting better at the thing you do. The stages will still be there when you are ready, and so will we. When you can say in a sentence who you help and what you help them do, you have something worth building around. If you are not sure which side of that line you are on, apply anyway. There are no wrong answers, only a fit today or a fit later."
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "If you have put in the reps, you already hold the part that takes the longest and that money cannot buy."
+     }
+    ],
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "home-how-it-ties",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"sjcties\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        {{t:t3}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t4}}</strong> {{t:t5}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        {{t:t11}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t12}}</strong> {{t:t13}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: How it all ties together",
+      "value": "How it all ties together"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: Attention + Your Product = Dollars",
+      "value": "Attention + Your Product = Dollars"
+     },
+     {
+      "key": "t3",
+      "label": "Text: None of this is new. Every piece of it has been around for y",
+      "value": "None of this is new. Every piece of it has been around for years. What almost nobody has done is sit down and show you how the pieces fit together. So here it is, start to finish."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Attention.",
+      "value": "Attention."
+     },
+     {
+      "key": "t5",
+      "label": "Text: Facebook, Instagram, TikTok and YouTube cost you nothing, an",
+      "value": "Facebook, Instagram, TikTok and YouTube cost you nothing, and your audience is on them every day. A podcast costs next to nothing once somebody sets it up for you. Those are your free stages, and we use every one of them for one job: sending people to your website."
+     },
+     {
+      "key": "t6",
+      "label": "Text: Why the website? Because it is the only place online you own",
+      "value": "Why the website? Because it is the only place online you own. The social platforms can change the rules or shut your account off tomorrow. Your website is your own piece of digital real estate. It is open every hour of the day, and it is the one place people can actually buy from you."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Your Product.",
+      "value": "Your Product."
+     },
+     {
+      "key": "t8",
+      "label": "Text: Attention with nothing to sell is just a crowd. Plenty of pe",
+      "value": "Attention with nothing to sell is just a crowd. Plenty of people have 5,000, 10,000, even 50,000 followers and nothing to offer them. So we take what you already know and package it into something a person can buy, starting with your own e-book, with your name on the cover, sitting on your website."
+     },
+     {
+      "key": "t9",
+      "label": "Text: Dollars.",
+      "value": "Dollars."
+     },
+     {
+      "key": "t10",
+      "label": "Text: Here is the part most people never see. Almost nobody buys t",
+      "value": "Here is the part most people never see. Almost nobody buys the first time they hear from you. They need to see you and hear from you seven to ten times before they trust you enough to pay. No person can keep that up for every follower."
+     },
+     {
+      "key": "t11",
+      "label": "Text: That is the job of the Revenue Engine, our own proprietary sy",
+      "value": "That is the job of the Revenue Engine, our own proprietary system. It is six business systems working as one. They sort, sift and funnel your audience: answering every message in seconds, following up, showing proof from the people you have already helped, and going back to the ones who went quiet, until a follower becomes a paying client."
+     },
+     {
+      "key": "t12",
+      "label": "Text: AI employees are the amplifier.",
+      "value": "AI employees are the amplifier."
+     },
+     {
+      "key": "t13",
+      "label": "Text: You used to need radio, TV and a payroll full of people to d",
+      "value": "You used to need radio, TV and a payroll full of people to do all of this. That has been flipped on its head. AI employees do that work now, day and night. That is what lets you do at scale what only big companies could afford, and my team and I build all of it for you."
+     }
+    ],
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "design-2",
+    "band": "ink-glow",
+    "html": "<section class=\"code-section relative bg-[#e5e5e5] py-10 lg:py-14 overflow-hidden\" id=\"sf0of7a\">\n  \n  <div class=\"absolute top-0 right-0 w-96 h-96 bg-[var(--primary-color)] opacity-5 rounded-full blur-3xl\"></div>\n  <div class=\"absolute bottom-0 left-0 w-96 h-96 bg-[var(--accent3-color)] opacity-5 rounded-full blur-3xl\"></div>\n\n  <style>@media (min-width:1024px){\n  #sf0of7a{padding-top:20px!important;padding-bottom:20px!important;min-height:calc(100svh - 97px);display:flex;flex-direction:column;justify-content:center}\n  #sf0of7a>.container{width:100%}\n  #sf0of7a [data-sjc-boxes]{margin-top:14px!important;padding-top:14px!important}\n  #sf0of7a .sjc-close{margin-top:16px!important}\n  }</style>\n  <div class=\"container mx-auto px-4\">\n\n    <div class=\"max-w-4xl mx-auto\">\n      \n      <div class=\"space-y-3 pt-0 lg:pt-3 mt-0 lg:mt-0\">\n        <h1 class=\"text-2xl sm:text-3xl lg:text-3xl font-bold font-[var(--font-family-heading)] text-black leading-tight 2xl:text-3xl\">\n          {{t:t2}}</h1>\n        <p class=\"text-black font-[var(--font-family-body)] text-base sm:text-lg\">{{t:t21}}</p>\n\n        \n        <div class=\"space-y-1.5\">\n          <div class=\"flex items-start space-x-3\">\n            <span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:.9em;line-height:1;flex:none;margin-top:.2em\">1</span>\n            <p class=\"text-black font-[var(--font-family-body)] text-base sm:text-lg lg:text-xl\">\n              <strong>{{t:t3}}</strong> {{t:t4}}\n            </p>\n          </div><div class=\"flex items-start space-x-3\">\n            <span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:.9em;line-height:1;flex:none;margin-top:.2em\">2</span>\n            <p class=\"text-black font-[var(--font-family-body)] text-base sm:text-lg lg:text-xl\">\n              <strong>{{t:t19}}</strong> {{t:t20}}\n            </p>\n          </div><div class=\"flex items-start space-x-3\">\n            <span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:.9em;line-height:1;flex:none;margin-top:.2em\">3</span>\n            <p class=\"text-black font-[var(--font-family-body)] text-base sm:text-lg lg:text-xl\">\n              <strong>{{t:t5}}</strong> {{t:t6}}\n            </p>\n          </div><div class=\"flex items-start space-x-3\">\n            <span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:.9em;line-height:1;flex:none;margin-top:.2em\">4</span>\n            <p class=\"text-black font-[var(--font-family-body)] text-base sm:text-lg lg:text-xl\">\n              <strong>{{t:t7}}</strong> {{t:t8}}\n            </p>\n          </div><div class=\"flex items-start space-x-3\">\n            <span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:.9em;line-height:1;flex:none;margin-top:.2em\">5</span>\n            <p class=\"text-black font-[var(--font-family-body)] text-base sm:text-lg lg:text-xl\">\n              <strong>{{t:t9}}</strong> {{t:t10}}\n            </p>\n          </div><div class=\"flex items-start space-x-3\">\n            <span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:.9em;line-height:1;flex:none;margin-top:.2em\">6</span>\n            <p class=\"text-black font-[var(--font-family-body)] text-base sm:text-lg lg:text-xl\">\n              <strong>{{t:t11}}</strong> {{t:t12}}\n            </p>\n          </div></div>\n\n\n\n        \n        \n      </div>\n\n      \n      \n    </div>\n\n    <div data-sjc-boxes style=\"display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;margin-top:32px;padding-top:32px;border-top:2px solid rgba(255,255,255,.92)\">\n      <div data-sjc-pills style=\"display:flex;flex-direction:column;align-items:center;gap:12px\">\n          <p data-sjc-ownbg class=\"font-[var(--font-family-body)] text-base sm:text-lg\" style=\"display:inline-block;margin:0;padding:10px 22px;border:2px solid #85bb65;border-radius:999px;background:transparent\">\n            <strong style=\"color:#ffd700\">{{t:t15}}</strong> <span style=\"color:#85bb65\">{{t:t16}}</span>\n          </p>\n          <div>\n          <p data-sjc-ownbg class=\"font-[var(--font-family-body)] text-base sm:text-lg\" style=\"display:inline-block;margin:0;padding:10px 22px;border:2px solid #85bb65;border-radius:999px;background:transparent\">\n            <strong style=\"color:#ffd700\">{{t:t17}}</strong> <span style=\"color:#85bb65\">{{t:t18}}</span>\n          </p>\n          </div>\n      </div>\n        </div>\n\n    <p class=\"sjc-close text-sm text-black font-[var(--font-family-body)] text-center\" style=\"margin-top:40px;white-space:pre-line;line-height:1.75\">\n      {{t:t13}}\n    </p>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t2",
+      "label": "Heading: You Do the Work. We Answer Your Clients & Fill\u2026",
+      "value": "Six Business Systems = One Revenue Engine"
+     },
+     {
+      "key": "t3",
+      "label": "Text: Premium Smart Websites",
+      "value": "Premium Smart Websites"
+     },
+     {
+      "key": "t4",
+      "label": "Text: - One page you own: your story, your program or book, and a ",
+      "value": "- One page you own: your story, your program or book, and a call booked right there"
+     },
+     {
+      "key": "t5",
+      "label": "Text: Speed to Lead",
+      "value": "Speed to Lead"
+     },
+     {
+      "key": "t6",
+      "label": "Text: - Every comment, DM and form answered in seconds, day or nig",
+      "value": "- Every comment, DM and form answered in seconds, day or night, while they still care"
+     },
+     {
+      "key": "t7",
+      "label": "Text: Automated Five Star Reviews",
+      "value": "Automated Five Star Reviews"
+     },
+     {
+      "key": "t8",
+      "label": "Text: - Every client, student and reader asked for a testimonial, ",
+      "value": "- Every client, student and reader asked for a testimonial, so the next buyer sees proof"
+     },
+     {
+      "key": "t9",
+      "label": "Text: Database Reactivation",
+      "value": "Database Reactivation"
+     },
+     {
+      "key": "t10",
+      "label": "Text: - Everyone who ever followed, downloaded or bought from you,",
+      "value": "- Everyone who ever followed, downloaded or bought from you, turned back into sales. That is where the cross-sells and upsells live. Easiest money you'll ever make"
+     },
+     {
+      "key": "t11",
+      "label": "Text: Paid Ads = Booked Appointments",
+      "value": "Paid Ads = Booked Appointments"
+     },
+     {
+      "key": "t12",
+      "label": "Text: - Added once the free attention converts. Calls from people ",
+      "value": "- Added once the free attention converts. Calls from people who want what you teach"
+     },
+     {
+      "key": "t13",
+      "size": 20,
+      "label": "Text: Your audience is listening. What you tea",
+      "value": "Your audience is listening. What you teach already works.\nPeople rarely buy the first time they hear from you. It takes seven to ten times.\nThe Revenue Engine keeps you in front of them until they do, so the growth lands on your calendar instead of on you."
+     },
+     {
+      "key": "t14",
+      "label": "Link: Apply To Work With Us",
+      "value": "Apply To Work With Us"
+     },
+     {
+      "key": "t15",
+      "label": "Text: AI Implementation",
+      "value": "AI Implementation"
+     },
+     {
+      "key": "t16",
+      "label": "Text: - We connect all of it to the software you alr\u2026",
+      "value": "- connects all six systems so they talk to each other and keep getting better"
+     },
+     {
+      "key": "t17",
+      "label": "Text: Automate and Delegate",
+      "value": "Automate and Delegate"
+     },
+     {
+      "key": "t18",
+      "label": "Text: - the only way to scale what you teach past your own hours",
+      "value": "- the only way to scale what you teach past your own hours"
+     },
+     {
+      "key": "t19",
+      "label": "Automated Organic Content Engine",
+      "value": "Automated Organic Content Engine"
+     },
+     {
+      "key": "t20",
+      "label": "Text: - One recording becomes clips everywhere",
+      "value": "- One recording becomes clips everywhere, and every one points back to your website"
+     },
+     {
+      "key": "t21",
+      "label": "Text: This is our proprietary Revenue Engine. Each system does one ",
+      "value": "This is our proprietary Revenue Engine. Each system does one job. Connected, they take a stranger from the first time they see you to the day they pay you."
+     }
+    ],
+    "boxes": [],
+    "links": [
+     {
+      "key": "h1",
+      "href": "#apply",
+      "label": "Apply To Work With Us"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 72,
+    "useRealForm": false,
+    "paddingBottom": 96
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "design-six",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"sjcsix\">\n  <div class=\"container mx-auto px-4\">\n    <style>\n  #sjcsix .six-all{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}\n  #sjcsix .six-a,#sjcsix .six-b,#sjcsix .sixgrid{display:contents}\n  #sjcsix .six-head,#sjcsix .six-layer{grid-column:1/-1}\n  #sjcsix .six-layer{margin-top:0!important}\n  @media (max-width:639px){#sjcsix .six-all{gap:12px}#sjcsix .sixgrid>*{padding:14px}#sjcsix .sixgrid h3{font-size:16px;line-height:1.25}#sjcsix .sixgrid p{font-size:14px;line-height:1.4}#sjcsix .six-head{margin-bottom:20px!important}}\n  @media (min-width:1024px){\n    #sjcsix .six-all{display:block}\n    #sjcsix .six-a,#sjcsix .six-b{display:block}\n    #sjcsix .sixgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}\n    #sjcsix .six-b{margin-top:32px}\n    #sjcsix .six-head{margin-bottom:40px!important}\n    #sjcsix .six-layer{margin-top:32px!important}\n    #sjcsix .sixgrid p,#sjcsix .six-layer p{font-size:17px;line-height:1.55}\n  }\n  </style>\n    <div class=\"six-all\">\n    <div class=\"six-a\">\n    <div class=\"six-head text-left mb-16\">\n      <div class=\"label\">{{t:t1}}</div>\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed\">\n        {{t:t3}}\n      </p>\n    </div>\n    <div class=\"sixgrid\">\n      <div class=\"bg-[#3b7fb8] p-8 rounded-2xl border border-[#5599cc]\">\n        <div class=\"flex items-start space-x-3 mb-3\"><span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:1.15rem;line-height:1;flex:none\">1</span><h3 class=\"text-xl font-bold font-[var(--font-family-heading)] text-white\">{{t:t4}}</h3></div>\n        <p class=\"text-white font-[var(--font-family-body)] mb-4\">{{t:t5}}</p>\n        <p class=\"text-white font-bold font-[var(--font-family-body)] mb-6\">{{t:t6}}</p>\n        <a href=\"{{h:h1}}\" class=\"inline-block font-bold text-white underline font-[var(--font-family-body)] sjc-card-link\" data-sjc-link=\"h1\">Learn more &#8594;</a>\n      </div>\n\n      <div class=\"bg-[#3b7fb8] p-8 rounded-2xl border border-[#5599cc]\">\n        <div class=\"flex items-start space-x-3 mb-3\"><span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:1.15rem;line-height:1;flex:none\">2</span><h3 class=\"text-xl font-bold font-[var(--font-family-heading)] text-white\">{{t:t22}}</h3></div>\n        <p class=\"text-white font-[var(--font-family-body)] mb-4\">{{t:t23}}</p>\n        <p class=\"text-white font-bold font-[var(--font-family-body)] mb-6\">{{t:t24}}</p>\n        <a href=\"{{h:h7}}\" class=\"inline-block font-bold text-white underline font-[var(--font-family-body)] sjc-card-link\" data-sjc-link=\"h7\">Learn more &#8594;</a>\n      </div>\n\n      <div class=\"bg-[#3b7fb8] p-8 rounded-2xl border border-[#5599cc]\">\n        <div class=\"flex items-start space-x-3 mb-3\"><span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:1.15rem;line-height:1;flex:none\">3</span><h3 class=\"text-xl font-bold font-[var(--font-family-heading)] text-white\">{{t:t7}}</h3></div>\n        <p class=\"text-white font-[var(--font-family-body)] mb-4\">{{t:t8}}</p>\n        <p class=\"text-white font-bold font-[var(--font-family-body)] mb-6\">{{t:t9}}</p>\n        <a href=\"{{h:h2}}\" class=\"inline-block font-bold text-white underline font-[var(--font-family-body)] sjc-card-link\" data-sjc-link=\"h2\">Learn more &#8594;</a>\n      </div>\n      </div>\n    </div>\n    <div class=\"six-b\">\n    <div class=\"sixgrid\">\n      <div class=\"bg-[#3b7fb8] p-8 rounded-2xl border border-[#5599cc]\">\n        <div class=\"flex items-start space-x-3 mb-3\"><span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:1.15rem;line-height:1;flex:none\">4</span><h3 class=\"text-xl font-bold font-[var(--font-family-heading)] text-white\">{{t:t10}}</h3></div>\n        <p class=\"text-white font-[var(--font-family-body)] mb-4\">{{t:t11}}</p>\n        <p class=\"text-white font-bold font-[var(--font-family-body)] mb-6\">{{t:t12}}</p>\n        <a href=\"{{h:h3}}\" class=\"inline-block font-bold text-white underline font-[var(--font-family-body)] sjc-card-link\" data-sjc-link=\"h3\">Learn more &#8594;</a>\n      </div>\n\n      <div class=\"bg-[#3b7fb8] p-8 rounded-2xl border border-[#5599cc]\">\n        <div class=\"flex items-start space-x-3 mb-3\"><span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:1.15rem;line-height:1;flex:none\">5</span><h3 class=\"text-xl font-bold font-[var(--font-family-heading)] text-white\">{{t:t13}}</h3></div>\n        <p class=\"text-white font-[var(--font-family-body)] mb-4\">{{t:t14}}</p>\n        <p class=\"text-white font-bold font-[var(--font-family-body)] mb-6\">{{t:t15}}</p>\n        <a href=\"{{h:h4}}\" class=\"inline-block font-bold text-white underline font-[var(--font-family-body)] sjc-card-link\" data-sjc-link=\"h4\">Learn more &#8594;</a>\n      </div>\n\n      <div class=\"bg-[#3b7fb8] p-8 rounded-2xl border border-[#5599cc]\">\n        <div class=\"flex items-start space-x-3 mb-3\"><span aria-hidden=\"true\" style=\"display:inline-flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:9999px;background:var(--accent3-color);color:#fff;font-weight:700;font-size:1.15rem;line-height:1;flex:none\">6</span><h3 class=\"text-xl font-bold font-[var(--font-family-heading)] text-white\">{{t:t16}}</h3></div>\n        <p class=\"text-white font-[var(--font-family-body)] mb-4\">{{t:t17}}</p>\n        <p class=\"text-white font-bold font-[var(--font-family-body)] mb-6\">{{t:t18}}</p>\n        <a href=\"{{h:h5}}\" class=\"inline-block font-bold text-white underline font-[var(--font-family-body)] sjc-card-link\" data-sjc-link=\"h5\">Learn more &#8594;</a>\n      </div>\n      </div>\n    <div data-sjc-ownbg class=\"six-layer mt-8 p-8 rounded-2xl\" style=\"background:#15100B;border:1px solid #DE8634\">\n      <div class=\"text-xs font-bold tracking-[0.18em] uppercase mb-3\" style=\"color:#F6BC76\">The layer underneath the six above</div>\n      <h3 class=\"text-xl font-bold font-[var(--font-family-heading)] mb-3\" style=\"color:#fff\">{{t:t19}}</h3>\n      <p class=\"font-[var(--font-family-body)] mb-4\" style=\"color:#fff\">{{t:t20}}</p>\n      <p class=\"font-bold font-[var(--font-family-body)] mb-6\" style=\"color:#fff\">{{t:t21}}</p>\n      <a href=\"{{h:h6}}\" class=\"inline-block font-bold underline font-[var(--font-family-body)] sjc-layer-link\" data-sjc-link=\"h6\" style=\"color:#F6BC76\">Learn more &#8594;</a>\n    </div>\n    </div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: What We Do",
+      "value": "What We Do"
+     },
+     {
+      "key": "t2",
+      "label": "Text: We take what you already know and the audience you already h",
+      "value": "We take what you already know and the audience you already have, and connect six systems that turn them into income."
+     },
+     {
+      "key": "t3",
+      "label": "Text: Your website is the front door. Everythi",
+      "value": "Your website is the front door. Everything you publish points to it."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Premium Smart Websites",
+      "value": "Premium Smart Websites"
+     },
+     {
+      "key": "t5",
+      "label": "Text: One page you own that tells your story, sells your program o",
+      "value": "One page you own that tells your story, sells your program or book, and lets a buyer book a call right there. Your own e-book and your own podcast live on it."
+     },
+     {
+      "key": "t6",
+      "label": "Text: You see: Followers finally have somewhere to go.",
+      "value": "You see: Followers finally have somewhere to go."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Speed to Lead",
+      "value": "Speed to Lead"
+     },
+     {
+      "key": "t8",
+      "label": "Text: Every comment, DM and form answered in seconds, day or night",
+      "value": "Every comment, DM and form answered in seconds, day or night, by an AI employee, before the interest cools off."
+     },
+     {
+      "key": "t9",
+      "label": "Text: You see: Fewer buyers lost in your inbox.",
+      "value": "You see: Fewer buyers lost in your inbox."
+     },
+     {
+      "key": "t10",
+      "label": "Text: Automated Five Star Reviews",
+      "value": "Automated Five Star Reviews"
+     },
+     {
+      "key": "t11",
+      "label": "Text: Every client, student and reader asked for a testimonial, ev",
+      "value": "Every client, student and reader asked for a testimonial, every single time, without anybody having to remember."
+     },
+     {
+      "key": "t12",
+      "label": "Text: You see: Proof piling up that sells for you.",
+      "value": "You see: Proof piling up that sells for you."
+     },
+     {
+      "key": "t13",
+      "label": "Text: Database Reactivation",
+      "value": "Database Reactivation"
+     },
+     {
+      "key": "t14",
+      "label": "Text: Everyone who ever followed you, downloaded something or boug",
+      "value": "Everyone who ever followed you, downloaded something or bought once gets reached again. You already earned that attention."
+     },
+     {
+      "key": "t15",
+      "label": "Text: You see: Past followers and buyers turning into new sales.",
+      "value": "You see: Past followers and buyers turning into new sales."
+     },
+     {
+      "key": "t16",
+      "label": "Text: Paid Ads = Booked Appointments",
+      "value": "Paid Ads = Booked Appointments"
+     },
+     {
+      "key": "t17",
+      "label": "Text: Once the free attention is converting, we add advertising an",
+      "value": "Once the free attention is converting, we add advertising and answer everything that comes in, so what reaches you is a call on your calendar."
+     },
+     {
+      "key": "t18",
+      "label": "Text: You see: Calls with people who want what you teach.",
+      "value": "You see: Calls with people who want what you teach."
+     },
+     {
+      "key": "t19",
+      "label": "Text: AI Implementation",
+      "value": "AI Implementation"
+     },
+     {
+      "key": "t20",
+      "label": "Text: Not a seventh system. This is what connects the six. AI empl",
+      "value": "Not a seventh system. This is what connects the six. AI employees tie your website, your inbox, your calendar and every social page together, so they work as one."
+     },
+     {
+      "key": "t21",
+      "label": "Text: So you see: One machine instead of six things you have to ru",
+      "value": "So you see: One machine instead of six things you have to run by hand."
+     },
+     {
+      "key": "t22",
+      "label": "Automated Organic Content Engine",
+      "value": "Automated Organic Content Engine"
+     },
+     {
+      "key": "t23",
+      "label": "Text: One recording from you becomes a steady ",
+      "value": "One recording from you becomes a steady flow of videos, clips and episodes on every platform, and every one of them points back to your website."
+     },
+     {
+      "key": "t24",
+      "label": "You see: Attention landing on a website you own, not on a platform you rent.",
+      "value": "You see: Attention landing on a website you own, not on a platform you rent."
+     }
+    ],
+    "boxes": [],
+    "links": [
+     {
+      "key": "h1",
+      "href": "/premium-smart-websites",
+      "label": "Premium Smart Websites"
+     },
+     {
+      "key": "h2",
+      "href": "/speed-to-lead",
+      "label": "Speed to Lead"
+     },
+     {
+      "key": "h3",
+      "href": "/automated-five-star-reviews",
+      "label": "Automated Five Star Reviews"
+     },
+     {
+      "key": "h4",
+      "href": "/database-reactivation",
+      "label": "Database Reactivation"
+     },
+     {
+      "key": "h5",
+      "href": "/booked-appointments",
+      "label": "Paid Ads = Booked Appointments"
+     },
+     {
+      "key": "h6",
+      "href": "/ai-implementation",
+      "label": "AI Implementation"
+     },
+     {
+      "key": "h7",
+      "href": "/automated-organic-content-engine",
+      "label": "Automated Organic Content Engine"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "background": "",
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 80,
+    "useRealForm": false,
+    "paddingBottom": 88
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-connecting-the-dots-one-person-fro",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfconnectingthedotsonepersonfro\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t13}}</strong> {{t:t14}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t15}}</strong> {{t:t16}}\n      </p>\n      <div data-lf-cta style=\"margin-top:28px\"><p class=\"text-xl font-[var(--font-family-body)]\" style=\"font-weight:700;margin:0 0 14px\">{{t:t57}}</p><div style=\"max-width:360px\"><a href=\"{{h:h9}}\" class=\"sjc-cta block w-full bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"h9\">{{t:t58}}</a></div></div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: One Follower's Path",
+      "value": "One Follower's Path"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: Connecting the dots: one person, from the first time they se",
+      "value": "Connecting the dots: one person, from the first time they see you to the day they pay you."
+     },
+     {
+      "key": "t3",
+      "label": "Text: A stranger with a phone.",
+      "value": "A stranger with a phone."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Picture one person who has never heard of you. They are scro",
+      "value": "Picture one person who has never heard of you. They are scrolling on a free platform and one of your clips comes up. It is a short piece of something you recorded once, talking about what you know. They stop and watch. It cost you nothing to reach them, and it cost them nothing to listen. That is the first dot, which is attention. For most people with a following, the story ends right here. The person smiles, keeps scrolling and is gone."
+     },
+     {
+      "key": "t5",
+      "label": "Text: They land on your website.",
+      "value": "They land on your website."
+     },
+     {
+      "key": "t6",
+      "label": "Text: For you it keeps going, because that clip tells them where t",
+      "value": "For you it keeps going, because that clip tells them where to go next. They tap through and arrive on your website, the one place online that is all about you. In a short visit they can see who you are, who you help and what you sell. They are no longer one face in a crowd on somebody else's platform. They are a guest in your house, and you decide what they see next."
+     },
+     {
+      "key": "t7",
+      "label": "Text: They listen to you.",
+      "value": "They listen to you."
+     },
+     {
+      "key": "t8",
+      "label": "Text: Your podcast is sitting right there on the website, so they ",
+      "value": "Your podcast is sitting right there on the website, so they play an episode. Now they have a lot more of you than a few seconds. They hear how you think, how you talk and the stories behind what you teach. A clip earns a moment of interest. An episode earns the beginning of trust. You recorded it once, and it does that same job for every stranger who arrives after this one."
+     },
+     {
+      "key": "t9",
+      "label": "Text: They buy your book.",
+      "value": "They buy your book."
+     },
+     {
+      "key": "t10",
+      "label": "Text: Next to the podcast is your own e-book, with your name on th",
+      "value": "Next to the podcast is your own e-book, with your name on the cover, for sale. This person is not ready for your program yet, but a book is a small and easy yes. They buy it. That one purchase changes who they are to you. A moment ago they were a follower. Now they are a customer who has paid you, is reading what you know and has given you a way to reach them again."
+     },
+     {
+      "key": "t11",
+      "label": "Text: They hear from you again.",
+      "value": "They hear from you again."
+     },
+     {
+      "key": "t12",
+      "label": "Text: Most people need to see you and hear from you seven to ten t",
+      "value": "Most people need to see you and hear from you seven to ten times before they pay for the bigger thing. So the Revenue Engine stays with them. Their questions get answered in seconds. They see what the people you have helped say about you. A new episode reaches them that fits what they asked about. Nobody on your side has to remember this person. The systems do, and they keep you in front of them at a steady pace."
+     },
+     {
+      "key": "t13",
+      "label": "Text: They pay you.",
+      "value": "They pay you."
+     },
+     {
+      "key": "t14",
+      "label": "Text: One day the timing is right. They go back to your website an",
+      "value": "One day the timing is right. They go back to your website and book a call, or they buy your program right on the page. By then they have watched you, listened to you and read you. The call is short on convincing and long on details, because the convincing was finished before you ever picked up. Those are the only calls I want on your calendar."
+     },
+     {
+      "key": "t15",
+      "label": "Text: Count the dots.",
+      "value": "Count the dots."
+     },
+     {
+      "key": "t16",
+      "label": "Text: Look back at what that person touched. A free platform. A we",
+      "value": "Look back at what that person touched. A free platform. A website you own. A podcast you own. A book with your name on it. A system that kept in touch. Something to buy at the end. Not one of those pieces is hard to find, and most of them cost very little. What made it work is that each one pointed at the next. That is what I mean by connecting the dots, and it is the work my team and I do."
+     },
+     {
+      "key": "t57",
+      "label": "Text: If you can already see your own follower walking that path, ",
+      "value": "If you can already see your own follower walking that path, tell us about yourself."
+     },
+     {
+      "key": "t58",
+      "label": "Button: Apply To Work With Us",
+      "value": "Apply To Work With Us"
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "Most people need to see you and hear from you seven to ten times before they pay for the bigger thing."
+     }
+    ],
+    "boxes": [],
+    "links": [
+     {
+      "key": "h9",
+      "href": "#apply",
+      "label": "Apply To Work With Us"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-the-six-systems-one-at-a-time-what",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfthesixsystemsoneatatimewhat\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t13}}</strong> {{t:t14}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t15}}</strong> {{t:t16}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t17}}</strong> {{t:t18}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: The Revenue Engine, Up Close",
+      "value": "The Revenue Engine, Up Close"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: The six systems, one at a time: what each one does, what goe",
+      "value": "The six systems, one at a time: what each one does, what goes wrong without it, and what it hands to the next."
+     },
+     {
+      "key": "t3",
+      "label": "Text: Our own engine.",
+      "value": "Our own engine."
+     },
+     {
+      "key": "t4",
+      "label": "Text: That path runs on the Revenue Engine. My team and I put it t",
+      "value": "That path runs on the Revenue Engine. My team and I put it together out of six business systems, and the way they connect is ours. They go in a set order, and the order never changes, because each one needs the one before it. Every system has a single job. When one is missing, people drop out at that exact spot, quietly, and you never learn they were there. So for each one I will tell you three things. What it does, what goes wrong without it, and what it hands to the next."
+     },
+     {
+      "key": "t5",
+      "label": "Text: Premium Smart Websites.",
+      "value": "Premium Smart Websites."
+     },
+     {
+      "key": "t6",
+      "label": "Text: System one is your website, and it is the front door to ever",
+      "value": "System one is your website, and it is the front door to everything else. In plain words, it is one place you own that tells your story, sells your e-book and your program, carries your podcast and lets a person book a call right on the page. Without it, your followers enjoy you and have nowhere to go, so the attention you earned stays on a platform you do not control. With it, every clip has a destination. What it hands to the next system is a place to send people, and it starts your own list of everyone who raises a hand."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Automated Organic Content Engine.",
+      "value": "Automated Organic Content Engine."
+     },
+     {
+      "key": "t8",
+      "label": "Text: System two brings the people. You sit down and record once, ",
+      "value": "System two brings the people. You sit down and record once, talking about what you know. That recording becomes a podcast episode and a steady flow of videos and clips on every free platform, each one pointing to your website. This is the self-promotion, done for you. Without this system, showing up depends on your mood and your schedule, and when life gets busy you disappear. With it, one sitting keeps you in front of your audience day after day. What it hands on is visitors who already like what they heard."
+     },
+     {
+      "key": "t9",
+      "label": "Text: Speed to Lead.",
+      "value": "Speed to Lead."
+     },
+     {
+      "key": "t10",
+      "label": "Text: System three answers them. When a person comments, sends a m",
+      "value": "System three answers them. When a person comments, sends a message or fills out a form on your website, an AI employee replies in seconds, at any hour, in everyday words that sound like you. Without it, that person waits until you have a free moment, and interest does not wait. By the time you reply, they have moved on to whoever answered first. With it, everybody who raises a hand gets a real answer and a next step. And when a person is ready to talk to you, they are brought straight to you. What it hands on is a conversation that is still warm, or a call on your calendar."
+     },
+     {
+      "key": "t11",
+      "label": "Text: Automated Five Star Reviews.",
+      "value": "Automated Five Star Reviews."
+     },
+     {
+      "key": "t12",
+      "label": "Text: System four collects your proof. Every client, student and r",
+      "value": "System four collects your proof. Every client, student and reader is asked how it went, at the right moment, and their words are placed where your next buyer will see them. Without it, your best results stay private. Happy people mean to say something nice and never get around to it, and you feel awkward asking. So a stranger has only your word that you are good. With it, the proof builds month after month. What it hands on is trust, and trust makes every other system work better."
+     },
+     {
+      "key": "t13",
+      "label": "Text: Database Reactivation.",
+      "value": "Database Reactivation."
+     },
+     {
+      "key": "t14",
+      "label": "Text: System five goes back to people you already earned. Your dat",
+      "value": "System five goes back to people you already earned. Your database is simply the list of everyone who ever followed you, bought your book, asked a question or booked a call. Without this system, that list sits untouched while you chase new strangers. With it, your AI employees reach back out with something new to say and something new to offer. This is where the cross-sells and upsells live. The reader gets offered the program. The past client gets offered the next step. It is the easiest money you will ever make, because nobody on that list needs an introduction. What it hands on is repeat buyers."
+     },
+     {
+      "key": "t15",
+      "label": "Text: Paid Ads = Booked Appointments.",
+      "value": "Paid Ads = Booked Appointments."
+     },
+     {
+      "key": "t16",
+      "label": "Text: System six is advertising, and it goes in last on purpose. A",
+      "value": "System six is advertising, and it goes in last on purpose. An ad does one thing. It sends more strangers to whatever you already have. Turn it on too early and you are buying visitors for a house with nobody home. Turn it on after the first five systems are working, and every dollar lands on something that already turns free attention into clients. The people who respond get answered like everyone else, and what reaches you is a booked call with somebody who wants what you teach."
+     },
+     {
+      "key": "t17",
+      "label": "Text: AI employees, the amplifier.",
+      "value": "AI employees, the amplifier."
+     },
+     {
+      "key": "t18",
+      "label": "Text: Six systems is a lot of work, and that work used to need a r",
+      "value": "Six systems is a lot of work, and that work used to need a room full of people. AI employees are what let a coach, an author or an influencer run all six at once. One answers. One follows up. One asks for the testimonial. One goes back through the old names. They pass each person from one system to the next so nobody is dropped in between. Your audience can double and the work still gets done, because an AI employee handles the next message as easily as the first. My team and I build them, watch them and keep them tuned."
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "Your audience can double and the work still gets done, because an AI employee handles the next message as easily as the first."
+     }
+    ],
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-here-is-what-you-own-when-we-are-d",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfhereiswhatyouownwhenweared\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t13}}</strong> {{t:t14}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t15}}</strong> {{t:t16}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t17}}</strong> {{t:t18}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t19}}</strong> {{t:t20}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t21}}</strong> {{t:t22}}\n      </p>\n      <div data-lf-cta style=\"margin-top:28px\"><p class=\"text-xl font-[var(--font-family-body)]\" style=\"font-weight:700;margin:0 0 14px\">{{t:t63}}</p><div style=\"max-width:360px\"><a href=\"{{h:h9}}\" class=\"sjc-cta block w-full bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"h9\">{{t:t64}}</a></div></div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: What We Build For You",
+      "value": "What We Build For You"
+     },
+     {
+      "key": "t2",
+      "label": "Text: Here is what my team and I build for you, piece by piece.",
+      "value": "Here is what my team and I build for you, piece by piece."
+     },
+     {
+      "key": "t3",
+      "label": "Text: In your hands.",
+      "value": "In your hands."
+     },
+     {
+      "key": "t4",
+      "label": "Text: You have seen the path one follower takes and the engine und",
+      "value": "You have seen the path one follower takes and the engine underneath it. Now here is the list of what is in your hands when my team and I are done. I mean hands. Every item below is something you can open on your phone and show your spouse across the kitchen table. And every item is there to make you money. The website, the list, the e-book, the podcast and the AI employees behind them are built to do one job together: turn the people already watching you into people who pay you."
+     },
+     {
+      "key": "t5",
+      "label": "Text: A website you own.",
+      "value": "A website you own."
+     },
+     {
+      "key": "t6",
+      "label": "Text: This is where the money changes hands. Your audience lives t",
+      "value": "This is where the money changes hands. Your audience lives today on platforms that belong to somebody else. They set the rules, and they can switch your account off without asking you. Your website is the one address online where you set the rules. Open it on your phone and you will see your name at the top, your story, your book for sale, your show, and a way to book a call with you. Every video, clip and episode you put out sends people to that address, and that address is where they buy."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Your own e-book.",
+      "value": "Your own e-book."
+     },
+     {
+      "key": "t8",
+      "label": "Text: This is what you know, with a price on it for the first time",
+      "value": "This is what you know, with a price on it for the first time. Most people with a following have never written down what they know. It comes out one answer at a time, in comments and messages, for nothing. We get what you know onto the page and package it into a finished book, with your name on the cover, for sale on your website. You bring the knowledge. My team does the packaging. When it is done you are a published author with a product, and your followers finally have a first thing to buy from you."
+     },
+     {
+      "key": "t9",
+      "label": "Text: Your own podcast.",
+      "value": "Your own podcast."
+     },
+     {
+      "key": "t10",
+      "label": "Text: This is your stage, and it is where strangers get to know yo",
+      "value": "This is your stage, and it is where strangers get to know you. You sit down and talk about what you know. My team handles the technical side, produces the show and puts it on your website, the same way mine sits on this one. What you end up with is a shelf of episodes with your name on them. A stranger can spend real time with you there, long after the day you recorded. Every episode keeps working for you, and so does every video and clip cut from it."
+     },
+     {
+      "key": "t11",
+      "label": "Text: Your AI employees.",
+      "value": "Your AI employees."
+     },
+     {
+      "key": "t12",
+      "label": "Text: These are the staff you could never have afforded on a payro",
+      "value": "These are the staff you could never have afforded on a payroll. They are built for your business, they talk about your work and your offers, and they are on duty at every hour. What you hold is the result of their work. Every person who raised a hand got an answer. And when one of them brings you a person who is ready to talk, the whole conversation comes with it, written down, so you know exactly where things stand."
+     },
+     {
+      "key": "t13",
+      "label": "Text: A wall of proof.",
+      "value": "A wall of proof."
+     },
+     {
+      "key": "t14",
+      "label": "Text: A stranger believes your clients long before they believe yo",
+      "value": "A stranger believes your clients long before they believe you. So every client, every student and every reader gets asked how it went, and what they say goes on your website where the next buyer will see it. Give it time and you own something most experts never collect. A wall of real people, in their own words, saying you did what you said you would do. You earned those words, they sit on your website, and they go on selling for you while you are busy doing the work."
+     },
+     {
+      "key": "t15",
+      "label": "Text: Your list.",
+      "value": "Your list."
+     },
+     {
+      "key": "t16",
+      "label": "Text: This may be the most valuable thing on the page, and most pe",
+      "value": "This may be the most valuable thing on the page, and most people with a following do not have one. A follower count belongs to the platform. A list is where the money is. It is the names of everyone who bought your book, booked a call, asked a question or raised a hand on your website, along with a way to reach them again. Every name on it is a person who already knows you, which makes it the warmest audience you will ever have. Your AI employees go back to that list with something new to say and something new to offer, including the people who went quiet."
+     },
+     {
+      "key": "t17",
+      "label": "Text: Advertising, added last.",
+      "value": "Advertising, added last."
+     },
+     {
+      "key": "t18",
+      "label": "Text: We put paid ads at the end on purpose. Paying to send strang",
+      "value": "We put paid ads at the end on purpose. Paying to send strangers to something that cannot answer them, follow up with them or show them proof is how people burn money. So ads wait until the free attention is already turning into clients. Then they simply send more people into something that works. Every person an ad brings in gets answered the same way as the person who found you for nothing. That is when advertising pays, because every dollar is feeding something that already sells."
+     },
+     {
+      "key": "t19",
+      "label": "Text: One build.",
+      "value": "One build."
+     },
+     {
+      "key": "t20",
+      "label": "Text: All of this is one build. All six systems go in, in the same",
+      "value": "All of this is one build. All six systems go in, in the same order every time, and we do not sell it in pieces. A website with nobody answering is a brochure. An answering system with no proof behind it is a polite conversation that goes nowhere. AI employees tie the pieces together, so the person who was answered gets followed up with, the buyer gets asked for a testimonial, and that testimonial is waiting for the next stranger. That is the difference between owning six separate things and owning one Revenue Engine."
+     },
+     {
+      "key": "t21",
+      "label": "Text: A copy of my business.",
+      "value": "A copy of my business."
+     },
+     {
+      "key": "t22",
+      "label": "Text: Put that list together and you are looking at how my own com",
+      "value": "Put that list together and you are looking at how my own company runs. This website, my book, my podcast and the six systems behind them are the same thing we build for you. You get the prototype, front to back, with your name and your face on it instead of mine. Every page and every system in it is built to be world class. I do not see anybody else offering all of this in one place. You also get the people. We are a US company with a team behind the work, and I am personally on your account."
+     },
+     {
+      "key": "t63",
+      "label": "Text: If you want that list with your name on every piece, the app",
+      "value": "If you want that list with your name on every piece, the application is the next step."
+     },
+     {
+      "key": "t64",
+      "label": "Button: Apply To Work With Us",
+      "value": "Apply To Work With Us"
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "A stranger believes your clients long before they believe you."
+     }
+    ],
+    "boxes": [],
+    "links": [
+     {
+      "key": "h9",
+      "href": "#apply",
+      "label": "Apply To Work With Us"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "design-machine",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"sjcmachine\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        {{t:t3}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        {{t:t5}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: Why You Are Stuck",
+      "value": "Why You Are Stuck"
+     },
+     {
+      "key": "t2",
+      "label": "Text: What built your audience will not build your income.",
+      "value": "What built your audience will not build your income."
+     },
+     {
+      "key": "t3",
+      "label": "Text: You built a following because you are great at what you teac",
+      "value": "You built a following because you are great at what you teach. People watch you, listen to you and trust you. That part is real, and it is the hard part. Most people never get that far. Maybe people already buy a program or a book from you. Maybe you have the crowd and nothing yet to sell them. Wherever you are today, you are 80 percent of the way there. Here is what happened next. It all started running through you. Every message, every question, every sale and every client lands on your phone, and nothing moves unless you move it. There are only so many hours in your day, so your income stops where your hours stop. Working harder does not fix that. You are already working hard."
+     },
+     {
+      "key": "t4",
+      "label": "Text: The last 20 percent is a system. Think about a McDonald's. T",
+      "value": "The last 20 percent is a system. Think about a McDonald's. The owner is not in the kitchen, and the food still comes out the same, because the people in that building follow a system instead of waiting for him. We build that for what you teach. It is a copy of my business, front to back, with your name on it. And here is who does what once it is running. You stay the expert and the face. Your AI employees do the answering and the following up. Your small team looks after the clients it brings in. My team and I build it and stay on it every month. That is how your audience starts paying you back without more hours from you."
+     },
+     {
+      "key": "t5",
+      "label": "Text: Nothing gets ripped out. Nobody has to learn a\u2026",
+      "value": ""
+     }
+    ],
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-what-your-week-looks-like-after-we",
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfwhatyourweeklookslikeafterwe\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t13}}</strong> {{t:t14}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t15}}</strong> {{t:t16}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t17}}</strong> {{t:t18}}\n      </p>\n      <div data-lf-cta style=\"margin-top:28px\"><p class=\"text-xl font-[var(--font-family-body)]\" style=\"font-weight:700;margin:0 0 14px\">{{t:t59}}</p><div style=\"max-width:360px\"><a href=\"{{h:h9}}\" class=\"sjc-cta block w-full bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"h9\">{{t:t60}}</a></div></div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: Once It Is Running",
+      "value": "Once It Is Running"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: What your week looks like after we build it.",
+      "value": "What your week looks like after we build it."
+     },
+     {
+      "key": "t3",
+      "label": "Text: You record.",
+      "value": "You record."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Your main job is the one you are already good at. You sit do",
+      "value": "Your main job is the one you are already good at. You sit down and talk about what you know. That is self-promotion, and whatever you do for a living, you have to do it to make your business work. Most people were never taught how. We teach you, and then we do the heavy part. My team takes that recording and turns it into your podcast episode, plus videos and clips sized for Facebook, Instagram, TikTok and YouTube. Every one of them points back to your website. The editing, the captions and keeping up with what each platform wants belong to us."
+     },
+     {
+      "key": "t5",
+      "label": "Text: While you are busy.",
+      "value": "While you are busy."
+     },
+     {
+      "key": "t6",
+      "label": "Text: Now look at the same week from your chair. You are with a cl",
+      "value": "Now look at the same week from your chair. You are with a client, or asleep, or at dinner with your family. Somewhere a person who has never heard of you watches one of those clips and sends a message. You do not see it come in, and you do not need to. An AI employee answers what they asked, sends them to your website, and keeps in touch with them in the days after. None of that waited on you. You find out about that person when they are ready to talk."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Where you come in.",
+      "value": "Where you come in."
+     },
+     {
+      "key": "t8",
+      "label": "Text: If your sales have always happened in your own messages, thi",
+      "value": "If your sales have always happened in your own messages, this is the part you will like best. Your AI employee takes the everyday questions, the same ones you have typed answers to over and over. When a person is ready for you, or asks for something that calls for your judgment, it brings them to you with the whole conversation written down, so you pick up where it left off instead of starting over. You stop being the front desk. You get to be the expert again, talking only to people who are close to buying. Your best selling still happens in your own voice. It just happens with the right people."
+     },
+     {
+      "key": "t9",
+      "label": "Text: The calls come to you.",
+      "value": "The calls come to you."
+     },
+     {
+      "key": "t10",
+      "label": "Text: By the time a person lands on your calendar, they have watch",
+      "value": "By the time a person lands on your calendar, they have watched you, read you and listened to you. They know what you teach and what you sell. You are not explaining who you are to a cold stranger. You are having a conversation with somebody who already decided they like you. Those calls are the part that still needs you, and they are the best use of your time."
+     },
+     {
+      "key": "t11",
+      "label": "Text: After they buy.",
+      "value": "After they buy."
+     },
+     {
+      "key": "t12",
+      "label": "Text: The sale is where most people stop paying attention to a cli",
+      "value": "The sale is where most people stop paying attention to a client. The system keeps going. Your new client gets asked how it went, and their words become proof for the next person. Later they hear from you again about the next thing you offer. One buyer becomes a testimonial, then a repeat buyer, and sometimes the person who sends you their friends. All of that runs on a schedule nobody has to remember."
+     },
+     {
+      "key": "t13",
+      "label": "Text: Where your hours go.",
+      "value": "Where your hours go."
+     },
+     {
+      "key": "t14",
+      "label": "Text: Add it up and your week has three things in it that only you",
+      "value": "Add it up and your week has three things in it that only you can do. You record. You take calls with people who are ready. You take care of your clients. The answering, the following up, the asking for testimonials and the going back to old names are handled. Your small team stops chasing messages and starts working alongside your AI employees. That team matters. We build this for people who already have a few good hands beside them, because somebody has to look after the clients it brings in."
+     },
+     {
+      "key": "t15",
+      "label": "Text: Who keeps it running.",
+      "value": "Who keeps it running."
+     },
+     {
+      "key": "t16",
+      "label": "Text: The build is the beginning. My team and I stay on it every m",
+      "value": "The build is the beginning. My team and I stay on it every month. We watch what your audience responds to, we tune what your AI employees say, and we fix what needs fixing. The systems talk to each other and keep getting better the longer they run. When you want to add a new program, a second book or a new offer, it plugs into what is already there."
+     },
+     {
+      "key": "t17",
+      "label": "Text: The book or the build.",
+      "value": "The book, the partnership or the build."
+     },
+     {
+      "key": "t18",
+      "label": "Text: You may be asking a fair question. My book, Attention To Dol",
+      "value": "You may be asking a fair question. My book, Attention To Dollars, is the blueprint, and the whole thing is laid out in it. So why would anybody have my team build it? Because a blueprint and a finished building are two different things. The book shows you every system and the order they go in. The build is my team and I doing every step of it for you, with AI employees we tune and keep running, while you stay the expert. Read the blueprint first if you like. I would. Then decide who you want doing the work. That is the whole idea of a modern day talent agency. You do what only you can do, and somebody good stands behind you for the rest. And if you have the talent and cannot write that check today, there is a middle road. On the Revenue Share Partnership my team and I do the building, with you in it beside us."
+     },
+     {
+      "key": "t59",
+      "label": "Text: If that is the week you want, apply and we will set up a dis",
+      "value": "If that is the week you want, apply and we will set up a discovery call."
+     },
+     {
+      "key": "t60",
+      "label": "Button: Apply To Work With Us",
+      "value": "Apply To Work With Us"
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "You stop being the front desk. You get to be the expert again, talking only to people who are close to buying."
+     }
+    ],
+    "boxes": [],
+    "links": [
+     {
+      "key": "h9",
+      "href": "#apply",
+      "label": "Apply To Work With Us"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "design-7",
+    "band": null,
+    "html": "<section class=\"code-section bg-gradient-to-br from-[var(--primary-color)] to-[var(--accent3-color)] pt-4 pb-4 lg:pt-6 lg:pb-6 scroll-mt-20 lg:scroll-mt-24 relative overflow-hidden\" id=\"sxq4oqf\"><style>@media (min-width:1024px){#sxq4oqf [data-serve-three][data-serve-three]{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:980px;margin-left:auto;margin-right:auto}}@media (max-width:639px){#sxq4oqf [data-serve-three][data-serve-three]>div:last-child{max-width:none!important}}</style>\n  \n  <div class=\"absolute top-0 left-0 w-72 h-72 bg-white opacity-5 rounded-full blur-3xl\"></div>\n  <div class=\"absolute bottom-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl\"></div>\n  <div class=\"container mx-auto px-4 relative z-10\">\n    \n    <div class=\"text-center mb-12\">\n      <h2 class=\"text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] text-white mb-4\">\n        {{t:t1}}\n      </h2>\n    </div>\n\n    \n    <div class=\"grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8\" data-serve-three>\n      \n      <div class=\"bg-white/25 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20 shadow-lg\" data-sjc-box=\"s7b1\" data-sjc-box-i=\"0\">\n        <div class=\"bg-white/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 512\" class=\"text-white text-2xl\" style=\"width:1em;height:1em;display:inline-block;vertical-align:-0.125em;fill:currentColor\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M192 80a56 56 0 1 0 0-112 56 56 0 1 0 0 112zM176 512l0-160c0-8.8 7.2-16 16-16s16 7.2 16 16l0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-336 128 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-16 0 0-48 192 0 0 192-192 0 0-32-64 0 0 48c0 26.5 21.5 48 48 48l224 0c26.5 0 48-21.5 48-48l0-224c0-26.5-21.5-48-48-48L368 0c-26.5 0-48 21.5-48 48l0 64-122.7 0c-45.6 0-88.5 21.6-115.6 58.2L14.3 260.9c-10.5 14.2-7.6 34.2 6.6 44.8s34.2 7.6 44.8-6.6L112 236.7 112 512c0 17.7 14.3 32 32 32s32-14.3 32-32z\"></path></svg>\n        </div>\n        <h3 class=\"text-lg font-bold font-[var(--font-family-heading)] text-white mb-2\">\n          {{t:t101}}\n        </h3>\n        <p class=\"text-sm text-white font-[var(--font-family-body)]\">\n          {{t:t102}}\n        </p>\n      </div>\n\n      <div class=\"bg-white/25 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20 shadow-lg\" data-sjc-box=\"s7b1\" data-sjc-box-i=\"1\">\n        <div class=\"bg-white/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\" class=\"text-white text-2xl\" style=\"width:1em;height:1em;display:inline-block;vertical-align:-0.125em;fill:currentColor\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M256 141.3l0 309.3 .5-.2C311.1 427.7 369.7 416 428.8 416l19.2 0 0-320-19.2 0c-42.2 0-84.1 8.4-123.1 24.6-16.8 7-33.4 13.9-49.7 20.7zM230.9 61.5L256 72 281.1 61.5C327.9 42 378.1 32 428.8 32L464 32c26.5 0 48 21.5 48 48l0 352c0 26.5-21.5 48-48 48l-35.2 0c-50.7 0-100.9 10-147.7 29.5l-12.8 5.3c-7.9 3.3-16.7 3.3-24.6 0l-12.8-5.3C184.1 490 133.9 480 83.2 480L48 480c-26.5 0-48-21.5-48-48L0 80C0 53.5 21.5 32 48 32l35.2 0c50.7 0 100.9 10 147.7 29.5z\"></path></svg>\n        </div>\n        <h3 class=\"text-lg font-bold font-[var(--font-family-heading)] text-white mb-2\">\n          {{t:t103}}\n        </h3>\n        <p class=\"text-sm text-white font-[var(--font-family-body)]\">\n          {{t:t104}}\n        </p>\n      </div>\n\n      <div class=\"bg-white/25 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20 shadow-lg\" data-sjc-box=\"s7b1\" data-sjc-box-i=\"2\">\n        <div class=\"bg-white/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\" class=\"text-white text-2xl\" style=\"width:1em;height:1em;display:inline-block;vertical-align:-0.125em;fill:currentColor\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M461.2 18.9C472.7 24 480 35.4 480 48l0 416c0 12.6-7.3 24-18.8 29.1s-24.8 3.2-34.3-5.1l-46.6-40.7c-43.6-38.1-98.7-60.3-156.4-63l0 95.7c0 17.7-14.3 32-32 32l-32 0c-17.7 0-32-14.3-32-32l0-96C57.3 384 0 326.7 0 256S57.3 128 128 128l84.5 0c61.8-.2 121.4-22.7 167.9-63.3l46.6-40.7c9.4-8.3 22.9-10.2 34.3-5.1zM224 320l0 .2c70.3 2.7 137.8 28.5 192 73.4l0-275.3c-54.2 44.9-121.7 70.7-192 73.4L224 320z\"></path></svg>\n        </div>\n        <h3 class=\"text-lg font-bold font-[var(--font-family-heading)] text-white mb-2\">\n          {{t:t105}}\n        </h3>\n        <p class=\"text-sm text-white font-[var(--font-family-body)]\">\n          {{t:t106}}\n        </p>\n      </div>\n            \n    </div>\n    <p class=\"font-[var(--font-family-body)] text-lg lg:text-xl text-center\" style=\"color:#fff;line-height:1.6;max-width:60rem;margin:28px auto 0;white-space:pre-line\">{{t:t109}}</p>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: Who We Serve",
+      "value": "Who We Serve"
+     },
+     {
+      "key": "t101",
+      "label": "Text: Coaches",
+      "value": "Coaches"
+     },
+     {
+      "key": "t102",
+      "label": "Text: Your program works. We build what sells it without you in ev",
+      "value": "Your program works. We build what sells it without you in every conversation."
+     },
+     {
+      "key": "t103",
+      "label": "Text: Authors",
+      "value": "Authors"
+     },
+     {
+      "key": "t104",
+      "label": "Text: What you know becomes a book that opens the door. We build w",
+      "value": "What you know becomes a book that opens the door. We build what sells behind it."
+     },
+     {
+      "key": "t105",
+      "label": "Text: Influencers",
+      "value": "Influencers"
+     },
+     {
+      "key": "t106",
+      "label": "Text: You have the attention. We turn it into income you own.",
+      "value": "You have the attention. We turn it into income you own."
+     },
+     {
+      "key": "t109",
+      "label": "Text: We take what you know, package it into your own e-book and y",
+      "value": "We take what you know, package it into your own e-book and your own podcast, and put the Revenue Engine behind it.\nYou build the audience. We build the system behind it.\nIt does not matter what you teach. If people pay attention to you and you know something worth paying for, the model is the same. The free platforms bring the attention. Your website holds your product. The Revenue Engine and your AI employees turn a follower into a paying client."
+     }
+    ],
+    "boxes": [
+     {
+      "key": "s7b1",
+      "count": 3,
+      "hrefs": [
+       "",
+       "",
+       ""
+      ],
+      "label": "Feature cards (3)",
+      "captions": [
+       "{{t:t101}}",
+       "{{t:t103}}",
+       "{{t:t105}}"
+      ]
+     }
+    ],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 24,
+    "useRealForm": false,
+    "paddingBottom": 24
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "home-two-services",
+    "html": "<section class=\"code-section py-16 lg:py-20\" id=\"stwo\">\n  <style>\n  #stwo .w3-grid{display:grid;grid-template-columns:1fr;gap:24px;margin:0 auto}\n  #stwo .w3-card{border:1.5px solid #DE8634;border-radius:1.25rem;padding:28px;background:rgba(222,134,52,.06);display:flex;flex-direction:column}\n  #stwo .w3-tag{font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#E8AA68;margin:0 0 10px}\n  #stwo .w3-card h3{color:#F6BC76;font-size:1.45rem;line-height:1.2;margin:0 0 6px;font-weight:700}\n  #stwo .w3-card .amt{color:#fff;font-weight:700;font-size:1.35rem;margin:0 0 14px}\n  #stwo .w3-card p{color:#fff;line-height:1.6;margin:0 0 22px}\n  #stwo .w3-card a{margin-top:auto}\n  @media (min-width:1000px){#stwo .w3-grid{grid-template-columns:1fr 1fr 1fr;gap:24px}}\n  </style>\n  <span id=\"buy\" style=\"position:relative;top:-97px\"></span>\n  <div class=\"container mx-auto px-4\">\n    <div class=\"label\" style=\"margin-bottom:14px\">{{t:t1}}</div>\n    <h2 class=\"text-3xl lg:text-4xl font-bold font-[var(--font-family-heading)] leading-tight\" style=\"color:#fff;margin:0 0 16px\">{{t:t2}}</h2>\n    <p class=\"font-[var(--font-family-body)] text-lg lg:text-xl\" style=\"color:#fff;line-height:1.6;margin:0 0 28px;max-width:100ch\">{{t:t3}}</p>\n    <div class=\"w3-grid\">\n      <div class=\"w3-card\" data-sjc-ownbg><div class=\"w3-tag\">{{t:t20}}</div><h3 class=\"font-[var(--font-family-heading)]\">{{t:t21}}</h3><p class=\"amt font-[var(--font-family-heading)]\">{{t:t22}}</p><p class=\"font-[var(--font-family-body)]\">{{t:t23}}</p><a href=\"{{h:w1}}\" class=\"sjc-cta block w-full bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"w1\">{{t:t24}}</a></div>\n      <div class=\"w3-card\" data-sjc-ownbg><div class=\"w3-tag\">{{t:t25}}</div><h3 class=\"font-[var(--font-family-heading)]\">{{t:t26}}</h3><p class=\"amt font-[var(--font-family-heading)]\">{{t:t27}}</p><p class=\"font-[var(--font-family-body)]\">{{t:t28}}</p><a href=\"{{h:w2}}\" class=\"sjc-cta block w-full bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"w2\">{{t:t29}}</a></div>\n      <div class=\"w3-card\" data-sjc-ownbg><div class=\"w3-tag\">{{t:t30}}</div><h3 class=\"font-[var(--font-family-heading)]\">{{t:t31}}</h3><p class=\"amt font-[var(--font-family-heading)]\">{{t:t32}}</p><p class=\"font-[var(--font-family-body)]\">{{t:t33}}</p><a href=\"{{h:w3}}\" class=\"sjc-cta block w-full bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"w3\">{{t:t34}}</a></div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: Three ways to work with us",
+      "value": "Three ways to work with us"
+     },
+     {
+      "key": "t2",
+      "label": "Text: One Revenue Engine. Three ways to make it yours.",
+      "value": "One Revenue Engine. Three ways to make it yours."
+     },
+     {
+      "key": "t3",
+      "label": "Text: There are three doors: do it yourself, done with you and don",
+      "value": "There are three doors: do it yourself, done with you and done for you. Which one is yours depends on where you are today with time and money. Being short on one of them is a stage, and I did not want to leave anybody behind. Every door opens onto the same Revenue Engine."
+     },
+     {
+      "key": "t20",
+      "label": "Text: Do It Yourself",
+      "value": "Do It Yourself"
+     },
+     {
+      "key": "t21",
+      "label": "Text: The Blueprint",
+      "value": "The Blueprint"
+     },
+     {
+      "key": "t22",
+      "label": "Text: $495.00",
+      "value": "$495.00"
+     },
+     {
+      "key": "t23",
+      "label": "Text: For the person with more time than money right now. My book,",
+      "value": "For the person with more time than money right now. My book, Attention To Dollars, is the whole plan in plain words, in the order my team and I build it. You build it yourself, one chapter at a time. The people who build it with their own hands understand it better than anybody."
+     },
+     {
+      "key": "t24",
+      "label": "Text: Get The Book",
+      "value": "Get The Book"
+     },
+     {
+      "key": "t25",
+      "label": "Text: Done With You",
+      "value": "Done With You"
+     },
+     {
+      "key": "t26",
+      "label": "Text: Revenue Share Partnership",
+      "value": "Revenue Share Partnership"
+     },
+     {
+      "key": "t27",
+      "label": "Text: $3,995.00 to start",
+      "value": "$3,995.00 to start"
+     },
+     {
+      "key": "t28",
+      "label": "Text: For the person with real talent who cannot write the full ch",
+      "value": "For the person with real talent who cannot write the full check today. My team and I do the building, and you are in it with us: your website, your own e-book, your own podcast and all six systems of the Revenue Engine. We pick two or three members of our community a month."
+     },
+     {
+      "key": "t29",
+      "label": "Text: See How The Partnership Works",
+      "value": "See How The Partnership Works"
+     },
+     {
+      "key": "t30",
+      "label": "Text: Done For You",
+      "value": "Done For You"
+     },
+     {
+      "key": "t31",
+      "label": "Text: The Full Build",
+      "value": "The Full Build"
+     },
+     {
+      "key": "t32",
+      "label": "Text: $40,000.00 to $60,000.00",
+      "value": "$40,000.00 to $60,000.00"
+     },
+     {
+      "key": "t33",
+      "label": "Text: For the person who is ready to have it built now. My team bu",
+      "value": "For the person who is ready to have it built now. My team builds all of it and keeps it running: the website you own, your own e-book, your own podcast and all six systems of the Revenue Engine. Every client starts with a discovery call, and you get your exact price there."
+     },
+     {
+      "key": "t34",
+      "label": "Text: Apply For A Discovery Call",
+      "value": "Apply For A Discovery Call"
+     }
+    ],
+    "boxes": [],
+    "links": [
+     {
+      "key": "w1",
+      "href": "/attention-to-dollars",
+      "label": "Get The Book"
+     },
+     {
+      "key": "w2",
+      "href": "/revenue-share",
+      "label": "See How The Partnership Works"
+     },
+     {
+      "key": "w3",
+      "href": "#apply",
+      "label": "Apply For A Discovery Call"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 0,
+    "useRealForm": false,
+    "paddingBottom": 0
+   }
+  },
+  {
+   "type": "LeadForm",
+   "props": {
+    "id": "home-application",
+    "note": "",
+    "theme": "dark",
+    "anchor": "apply",
+    "fields": [],
+    "formId": "growth-engine-application-sjc",
+    "preset": "",
+    "source": "home-application",
+    "heading": "Apply To Work With Us",
+    "inColumn": false,
+    "background": "#16120E",
+    "paddingTop": 72,
+    "subheading": "We only work with 5 to 10 clients at a time. Answer straight: there are no wrong answers, only a fit today or a fit later. If having your own podcast and your own product scares you, we are not the right fit.",
+    "buttonColor": "#B35F1D",
+    "buttonLabel": "Send My Application",
+    "successBody": "",
+    "headingColor": "#FFFFFF",
+    "paddingBottom": 72,
+    "successHeading": ""
+   }
+  }
+ ]
+}
