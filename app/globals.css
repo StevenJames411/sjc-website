@@ -2350,3 +2350,18 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 
 /* The play button drawn over a video-sales-letter poster goes away once the video has started (FoldFit marks the frame). */
 [data-sjc-vsl-player][data-started] [data-sjc-vsl-play] { display: none !important; }
+
+/* The mouse shows the video is clickable (Steven, 2026-10-06: "they want to see their mouse do something").
+   The whole frame gets the hand; before it starts, the drawn play button grows and glows and the frame
+   lights up. Mouse only: a touch screen has no hover, and a stuck hover after a tap looks broken. */
+@media (hover: hover) and (pointer: fine) {
+  [data-sjc-vsl-player], [data-sjc-vsl-player] video { cursor: pointer; }
+  [data-sjc-vsl-player] { transition: box-shadow .2s ease; }
+  [data-sjc-vsl-player] [data-sjc-vsl-play] { transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease; }
+  [data-sjc-vsl-player]:hover { box-shadow: 0 0 44px rgba(224,138,46,.5), 0 20px 50px rgba(0,0,0,.55) !important; }
+  [data-sjc-vsl-player]:hover [data-sjc-vsl-play] {
+    transform: translate(-50%, -50%) scale(1.14) !important;
+    background: rgba(179,95,29,.9) !important;
+    box-shadow: 0 0 44px rgba(246,188,118,.85) !important;
+  }
+}
