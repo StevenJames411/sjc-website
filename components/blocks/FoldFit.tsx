@@ -141,9 +141,16 @@ export default function FoldFit() {
     // the browser's own controls so the seek bar, volume, captions and full screen still work.
     // ⚠️ A FINGER TAP IS LEFT TO THE PHONE (2026-10-06). On a phone the browser's own play button answers
     // the same tap, so the video was told to play and pause in the same instant and never started.
+    // ⚠️ Safari reports a finger tap's click as pointerType "mouse", so the click itself cannot be asked.
+    // A touch screen, or a touch in the last second, means the browser's own controls own this tap.
+    let lastTouch = 0;
+    const touched = () => {
+      lastTouch = Date.now();
+    };
+    document.addEventListener("touchstart", touched, { capture: true, passive: true });
+    document.addEventListener("touchend", touched, { capture: true, passive: true });
     const clickPlay = (e: MouseEvent) => {
-      const pt = (e as PointerEvent).pointerType;
-      if (pt ? pt !== "mouse" : window.matchMedia("(pointer: coarse)").matches) return;
+      if (Date.now() - lastTouch < 1000 || window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
       const box =(e.target as HTMLElement | null)?.closest?.("[data-sjc-vsl-player]");
       const v = box?.querySelector("video");
       if (!v) return;
@@ -200,6 +207,8 @@ export default function FoldFit() {
       window.clearTimeout(t);
       document.removeEventListener("play", started, true);
       document.removeEventListener("click", clickPlay, true);
+      document.removeEventListener("touchstart", touched, true);
+      document.removeEventListener("touchend", touched, true);
       document.removeEventListener("play", vPlay, true);
       document.removeEventListener("timeupdate", vTime, true);
       document.removeEventListener("ended", vEnd, true);
