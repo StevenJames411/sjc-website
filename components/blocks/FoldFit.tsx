@@ -136,12 +136,26 @@ export default function FoldFit() {
       if (v?.tagName === "VIDEO") v.closest("[data-sjc-vsl-player]")?.setAttribute("data-started", "");
     };
     document.addEventListener("play", started, true);
+    // The whole frame plays and pauses the video, not only the small button in the control bar
+    // (Steven, 2026-10-05: "have the whole damn video player clickable"). The bottom strip is left to
+    // the browser's own controls so the seek bar, volume, captions and full screen still work.
+    const clickPlay = (e: MouseEvent) => {
+      const box = (e.target as HTMLElement | null)?.closest?.("[data-sjc-vsl-player]");
+      const v = box?.querySelector("video");
+      if (!v) return;
+      if (e.clientY > v.getBoundingClientRect().bottom - 56) return;
+      e.preventDefault();
+      if (v.paused) void v.play();
+      else v.pause();
+    };
+    document.addEventListener("click", clickPlay, true);
     window.addEventListener("load", later);
     window.addEventListener("resize", later);
     document.fonts?.ready.then(later).catch(() => {});
     return () => {
       window.clearTimeout(t);
       document.removeEventListener("play", started, true);
+      document.removeEventListener("click", clickPlay, true);
       window.removeEventListener("load", later);
       window.removeEventListener("resize", later);
     };
