@@ -50,7 +50,7 @@ Steven James Consulting works with coaches, authors and influencers who already 
 - [Portfolio](https://stevenjamesconsulting.com/portfolio): live demo websites.
 
 ## What it costs
-- Done for you: $30,000.00 to $50,000.00. My team builds it and keeps it running.
+- Done for you: $40,000.00 to $60,000.00. My team builds it and keeps it running.
 - Revenue Share Partnership: the same build for $3,995.00 to start. Two or three community members a month.
 - The blueprint: the book, Attention To Dollars, $495.00, one payment, for sale now at https://stevenjamesconsulting.com/get-the-book.
 
