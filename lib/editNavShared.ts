@@ -53,6 +53,7 @@ export const ENTRIES: NavEntry[] = [
   { type: "item", key: "dial", label: "Dial board", href: "/edit/dial" },
   { type: "item", key: "forms", label: "Forms", href: "/edit/forms" },
   { type: "item", key: "links", label: "Smart Links", href: "/edit/links" },
+  { type: "item", key: "video", label: "Video views", href: "/edit/video" },
   { type: "item", key: "brand", label: "Brand", href: "/edit/brand" },
   { type: "item", key: "import", label: "Import a design", href: "/edit/import" },
 ];

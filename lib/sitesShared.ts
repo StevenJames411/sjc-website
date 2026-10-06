@@ -456,6 +456,8 @@ export const RESERVED_SITE_IDS = [
   "forms",
   // Smart Links lives at /edit/links, same static-segment reason as "forms".
   "links",
+  // Video views lives at /edit/video, same static-segment reason.
+  "video",
   // The invoice book lives at /edit/invoices, same static-segment reason as "forms".
   "invoices",
   // The dial board lives at /edit/dial, same static-segment reason as "forms".

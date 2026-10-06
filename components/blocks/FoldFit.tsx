@@ -149,6 +149,46 @@ export default function FoldFit() {
       else v.pause();
     };
     document.addEventListener("click", clickPlay, true);
+    // Welcome-video counters: counts only, no cookies, no ids. Each event once per video per page load.
+    const sent = new Set<string>();
+    const beacon = (v: HTMLVideoElement, event: string) => {
+      const src = v.currentSrc || v.getAttribute("src") || v.querySelector("source")?.getAttribute("src") || "";
+      const video = decodeURIComponent(src.split("?")[0].split("/").pop() || "");
+      const key = `${video}|${event}`;
+      if (!video || sent.has(key)) return;
+      sent.add(key);
+      const body = JSON.stringify({ video, event, page: location.pathname });
+      try {
+        if (!navigator.sendBeacon?.("/api/video-event", new Blob([body], { type: "application/json" }))) throw 0;
+      } catch {
+        fetch("/api/video-event", { method: "POST", body, keepalive: true, headers: { "Content-Type": "application/json" } }).catch(() => {});
+      }
+    };
+    const players = () => Array.from(document.querySelectorAll<HTMLVideoElement>("[data-sjc-vsl-player] video"));
+    players().forEach((v) => beacon(v, "view"));
+    const inPlayer = (e: Event) => {
+      const v = e.target as HTMLVideoElement | null;
+      return v?.tagName === "VIDEO" && v.closest("[data-sjc-vsl-player]") ? v : null;
+    };
+    const vPlay = (e: Event) => {
+      const v = inPlayer(e);
+      if (v) beacon(v, "play");
+    };
+    const vTime = (e: Event) => {
+      const v = inPlayer(e);
+      if (!v || !(v.duration > 0)) return;
+      const f = v.currentTime / v.duration;
+      if (f >= 0.25) beacon(v, "p25");
+      if (f >= 0.5) beacon(v, "p50");
+      if (f >= 0.75) beacon(v, "p75");
+    };
+    const vEnd = (e: Event) => {
+      const v = inPlayer(e);
+      if (v) beacon(v, "done");
+    };
+    document.addEventListener("play", vPlay, true);
+    document.addEventListener("timeupdate", vTime, true);
+    document.addEventListener("ended", vEnd, true);
     window.addEventListener("load", later);
     window.addEventListener("resize", later);
     document.fonts?.ready.then(later).catch(() => {});
@@ -156,6 +196,9 @@ export default function FoldFit() {
       window.clearTimeout(t);
       document.removeEventListener("play", started, true);
       document.removeEventListener("click", clickPlay, true);
+      document.removeEventListener("play", vPlay, true);
+      document.removeEventListener("timeupdate", vTime, true);
+      document.removeEventListener("ended", vEnd, true);
       window.removeEventListener("load", later);
       window.removeEventListener("resize", later);
     };
