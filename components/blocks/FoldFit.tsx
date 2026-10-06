@@ -129,11 +129,19 @@ export default function FoldFit() {
       t = window.setTimeout(fit, 150);
     };
     run();
+    // A video-sales-letter frame draws its own big play button over the poster. Once the video has
+    // started, mark the frame so globals.css takes the button away (Chrome has no :playing selector).
+    const started = (e: Event) => {
+      const v = e.target as HTMLElement | null;
+      if (v?.tagName === "VIDEO") v.closest("[data-sjc-vsl-player]")?.setAttribute("data-started", "");
+    };
+    document.addEventListener("play", started, true);
     window.addEventListener("load", later);
     window.addEventListener("resize", later);
     document.fonts?.ready.then(later).catch(() => {});
     return () => {
       window.clearTimeout(t);
+      document.removeEventListener("play", started, true);
       window.removeEventListener("load", later);
       window.removeEventListener("resize", later);
     };
