@@ -139,8 +139,12 @@ export default function FoldFit() {
     // The whole frame plays and pauses the video, not only the small button in the control bar
     // (Steven, 2026-10-05: "have the whole damn video player clickable"). The bottom strip is left to
     // the browser's own controls so the seek bar, volume, captions and full screen still work.
+    // ⚠️ A FINGER TAP IS LEFT TO THE PHONE (2026-10-06). On a phone the browser's own play button answers
+    // the same tap, so the video was told to play and pause in the same instant and never started.
     const clickPlay = (e: MouseEvent) => {
-      const box = (e.target as HTMLElement | null)?.closest?.("[data-sjc-vsl-player]");
+      const pt = (e as PointerEvent).pointerType;
+      if (pt ? pt !== "mouse" : window.matchMedia("(pointer: coarse)").matches) return;
+      const box =(e.target as HTMLElement | null)?.closest?.("[data-sjc-vsl-player]");
       const v = box?.querySelector("video");
       if (!v) return;
       if (e.clientY > v.getBoundingClientRect().bottom - 56) return;

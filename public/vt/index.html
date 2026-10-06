@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Video test</title>
+<style>
+  body{margin:0;padding:16px;background:#0B0906;color:#fff;font:18px/1.4 -apple-system,system-ui,sans-serif}
+  h1{font-size:22px;margin:0 0 4px}
+  .t{margin:22px 0 0;padding:12px;border:2px solid #DE8634;border-radius:14px}
+  .n{font-size:26px;font-weight:800;color:#F6BC76}
+  video{display:block;width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;margin:8px 0}
+  .s{font-size:24px;font-weight:800;padding:8px 10px;border-radius:8px;background:#333}
+  .ok{background:#0a7a2f}.bad{background:#a01818}
+  .d{font-size:13px;color:#bbb;word-break:break-word;margin-top:6px}
+  #sum{font-size:26px;font-weight:800;margin:14px 0;padding:12px;border-radius:10px;background:#333}
+</style>
+</head>
+<body>
+<h1>Video test</h1>
+<div>Wait ten seconds. Then read me the line in the box below.</div>
+<div id="sum">Testing…</div>
+<div id="list"></div>
+<div class="d" id="ua"></div>
+<script>
+var B = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/video/";
+var tests = [
+  ["1", "The home page video, from storage", B + "welcome-2026-10-06.mp4"],
+  ["2", "15 second clip, from storage", B + "welcome-test-clip.mp4"],
+  ["3", "Same 15 second clip, from the website itself", "/vt/clip.mp4"],
+  ["4", "Same clip, Apple streaming format", "/vt/hls/v.m3u8"],
+  ["5", "A video from somebody else's server", "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"]
+];
+var res = {};
+var EV = ["loadstart","loadedmetadata","loadeddata","canplay","play","playing","waiting","stalled","suspend","abort","emptied","error","pause"];
+tests.forEach(function (t) {
+  var box = document.createElement("div"); box.className = "t";
+  box.innerHTML = '<div class="n">' + t[0] + '</div><div>' + t[1] + '</div>';
+  var v = document.createElement("video");
+  v.controls = true; v.muted = true; v.playsInline = true; v.setAttribute("playsinline", ""); v.setAttribute("muted", ""); v.preload = "auto"; v.src = t[2];
+  var s = document.createElement("div"); s.className = "s"; s.textContent = "testing…";
+  var d = document.createElement("div"); d.className = "d";
+  box.appendChild(v); box.appendChild(s); box.appendChild(d);
+  document.getElementById("list").appendChild(box);
+  var log = [], playErr = "";
+  EV.forEach(function (n) { v.addEventListener(n, function () { log.push(n); show(); }); });
+  function show() {
+    var good = v.currentTime > 0.3 && !v.error;
+    res[t[0]] = good ? "YES" : (v.error ? "NO" : (res[t[0]] === "NO" ? "NO" : "…"));
+    s.textContent = good ? "PLAYS" : (v.error ? "FAILED" : s.textContent);
+    s.className = "s" + (good ? " ok" : (v.error ? " bad" : (s.className.indexOf("bad") > -1 ? " bad" : "")));
+    d.textContent = "time " + v.currentTime.toFixed(1) + " · ready " + v.readyState + " · net " + v.networkState +
+      (v.error ? " · error " + v.error.code + " " + (v.error.message || "") : "") + (playErr ? " · play() " + playErr : "") + " · " + log.join(" > ");
+    sum();
+  }
+  v.addEventListener("timeupdate", show);
+  var p = v.play(); if (p && p.catch) p.catch(function (e) { playErr = e.name + ": " + e.message; show(); });
+  setTimeout(function () { if (!(v.currentTime > 0.3)) { res[t[0]] = "NO"; s.textContent = "DID NOT PLAY"; s.className = "s bad"; } show(); }, 10000);
+});
+function sum() {
+  document.getElementById("sum").textContent = tests.map(function (t) { return t[0] + " " + (res[t[0]] || "…"); }).join("   ");
+}
+document.getElementById("ua").textContent = navigator.userAgent + " · mp4 " + document.createElement("video").canPlayType('video/mp4; codecs="avc1.640029, mp4a.40.2"') + " · hls " + document.createElement("video").canPlayType("application/vnd.apple.mpegurl") + " · online " + navigator.onLine + (navigator.connection ? " · saveData " + navigator.connection.saveData : "");
+</script>
+</body>
+</html>
