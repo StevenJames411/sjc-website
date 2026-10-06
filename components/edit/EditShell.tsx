@@ -42,7 +42,7 @@ function isBare(pathname: string): boolean {
   const [, site, page] = m;
   // ⚠️ These are real sections, not site ids. Everything else in that shape is the builder.
   // Keys, not labels — renaming "The board" must not turn the board into the page editor.
-  const SECTIONS = ["board", "forms", "links", "invoices", "brand", "import"];
+  const SECTIONS = ["board", "forms", "links", "video", "invoices", "brand", "import"];
   return !SECTIONS.includes(site) && page !== "settings";
 }
 

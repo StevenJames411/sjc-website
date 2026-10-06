@@ -46,6 +46,7 @@ const PUBLIC_API = [
   // leaks nothing, and GET is worthless without a 64-hex single-use token.
   "/api/auth/magic",
   "/api/apply", // the public lead form
+  "/api/video-event", // the welcome video's beacon; counts only, validated strictly, always 204
   "/api/book-checkout", // the book's embedded Stripe checkout; a buyer has no login, and it sells one fixed price
   "/api/careers",
   "/api/send-roadmap",

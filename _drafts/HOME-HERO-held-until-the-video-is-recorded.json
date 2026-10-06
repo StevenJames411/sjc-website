@@ -1,0 +1,58 @@
+{
+ "held": "2026-10-05",
+ "put_back": "as the FIRST section of the home page when the home video is recorded",
+ "section": {
+  "type": "DesignSection",
+  "props": {
+   "id": "design-vsl-hero",
+   "band": "ink-glow",
+   "html": "<section class=\"code-section relative bg-[#e5e5e5] py-6 pt-20 lg:py-10 overflow-hidden lg:pt-[100px]\" id=\"svslhero\">\n  <style>@media (min-width:1024px){#svslhero{min-height:calc(100svh - 97px)!important;padding-top:36px!important;padding-bottom:36px!important}#svslhero [data-sjc-hero-split]{align-items:stretch!important;grid-template-columns:minmax(0,1fr) 380px!important;column-gap:64px!important}#svslhero [data-sjc-hero-split]>div:first-child{display:flex}#svslhero [data-sjc-vsl-player]{aspect-ratio:auto!important;height:auto;min-height:100%;flex:1}}</style>\n  <div class=\"absolute top-0 right-0 w-96 h-96 bg-[var(--primary-color)] opacity-5 rounded-full blur-3xl\"></div>\n  <div class=\"container mx-auto px-4\">\n    <h1 class=\"text-3xl sm:text-4xl lg:text-5xl font-bold font-[var(--font-family-heading)] leading-tight text-center\" style=\"color:#fff;margin:0 0 36px\">{{t:t1}}</h1>\n    <div class=\"grid lg:grid-cols-2 gap-6 lg:gap-12 items-center\" data-sjc-hero-split>\n      <div>\n        <div data-sjc-vsl-player style=\"position:relative;width:100%;aspect-ratio:16/9;border-radius:1.25rem;overflow:hidden;border:2px solid #DE8634;box-shadow:0 20px 50px rgba(0,0,0,.45);background:#0B0906\">\n          <img width=\"1600\" height=\"900\" src=\"{{i:i3}}\" alt=\"Attention To Dollars, the book, on a phone and as a hardback\" style=\"position:absolute;inset:0;width:100%;height:100%;object-fit:cover\" loading=\"eager\" decoding=\"async\" data-sjc-img=\"i3\">\n          <div aria-hidden=\"true\" style=\"position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:999px;border:3px solid #F6BC76;background:rgba(11,9,6,.72);box-shadow:0 0 28px rgba(222,134,52,.55);display:flex;align-items:center;justify-content:center\"><div style=\"width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-left:26px solid #F6BC76;margin-left:6px\"></div></div>\n          <p class=\"font-[var(--font-family-body)] font-bold\" style=\"position:absolute;left:0;right:0;bottom:12px;margin:0;text-align:center;font-size:1rem;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.9)\">{{t:t2}}</p>\n        </div>\n      </div>\n      <div class=\"pt-0\">\n        <div class=\"relative py-4\" data-sjc-twin-col>\n          <img width=\"450\" height=\"450\" src=\"{{i:i1}}\" alt=\"Middle-aged man with gray beard wearing white Nike cap, smiling at camera against dark background\" class=\"relative rounded-3xl shadow-2xl w-1/2 mx-auto\" loading=\"lazy\" decoding=\"async\" data-sjc-img=\"i1\">\n        </div>\n      </div>\n    </div>\n  </div>\n</section>",
+   "text": [
+    {
+     "key": "t1",
+     "label": "Text: Turn Your Attention Into Dollars",
+     "value": "Turn Your Attention Into Dollars"
+    },
+    {
+     "key": "t2",
+     "label": "Text: video placeholder",
+     "value": ""
+    },
+    {
+     "key": "t14",
+     "label": "Link: Apply To Work With Us",
+     "value": "Apply To Work With Us"
+    }
+   ],
+   "boxes": [],
+   "links": [
+    {
+     "key": "h1",
+     "href": "#apply",
+     "label": "Apply To Work With Us"
+    }
+   ],
+   "sheet": "7b6d59e91bbcfde5",
+   "images": [
+    {
+     "alt": "Middle-aged man with gray beard wearing white Nike cap, smiling at camera against dark background",
+     "key": "i1",
+     "src": "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-landingsite-build/home/1787778083514-2.webp",
+     "frameWidth": 70
+    },
+    {
+     "alt": "Attention To Dollars, the book, on a phone and as a hardback",
+     "key": "i3",
+     "src": "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/uploads/1791141904345-V11-hero-video-thumbnail.webp"
+    }
+   ],
+   "calLink": "",
+   "hasForm": false,
+   "formButton": "",
+   "formFields": [],
+   "paddingTop": 72,
+   "useRealForm": false,
+   "paddingBottom": 96
+  }
+ }
+}

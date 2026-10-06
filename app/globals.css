@@ -2347,3 +2347,6 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
 @media (min-width: 1024px) and (max-width: 1439px) {
   #global-header .sjc-menu .sjc-drop { left: auto !important; right: 0 !important; translate: 50% 0; }
 }
+
+/* The play button drawn over a video-sales-letter poster goes away once the video has started (FoldFit marks the frame). */
+[data-sjc-vsl-player][data-started] [data-sjc-vsl-play] { display: none !important; }
