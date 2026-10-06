@@ -1,0 +1,864 @@
+{
+ "root": {
+  "props": {
+   "title": "Done For You | Steven James Consulting",
+   "description": "Done For You is a fifteen-stage system my team builds for coaches, authors and influencers: your website, your own e-book, your own podcast, your AI employees and the Revenue Engine. $40,000.00 to $60,000.00."
+  }
+ },
+ "zones": {},
+ "content": [
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "design-hero-twin",
+    "band": "ink-glow",
+    "html": "<section class=\"code-section relative bg-[#e5e5e5] py-6 pt-20 lg:py-10 overflow-hidden lg:pt-[100px]\" id=\"sf0of7a\">\n  \n  <div class=\"absolute top-0 right-0 w-96 h-96 bg-[var(--primary-color)] opacity-5 rounded-full blur-3xl\"></div>\n  <div class=\"absolute bottom-0 left-0 w-96 h-96 bg-[var(--accent3-color)] opacity-5 rounded-full blur-3xl\"></div>\n\n  <div class=\"container mx-auto px-4\">\n    <div class=\"grid lg:grid-cols-2 gap-4 lg:gap-12 items-center\" data-sjc-hero-split>\n      \n      <div class=\"order-1 lg:order-1 space-y-3 pt-0 lg:pt-3 mt-0 lg:mt-0\">\n        <div class=\"inline-block bg-[var(--primary-color)] text-white px-8 py-4 rounded-full font-[var(--font-family-body)] font-bold text-lg sm:text-xl lg:text-2xl shadow-lg 2xl:text-xl\">\n          {{t:t1}}\n        </div>\n\n        <h1 class=\"text-3xl sm:text-3xl lg:text-3xl font-bold font-[var(--font-family-heading)] text-black leading-tight 2xl:text-3xl\">\n          {{t:t2}}</h1>\n\n        \n        <p class=\"text-black font-[var(--font-family-body)] text-lg lg:text-xl\" style=\"margin:0;font-size:1.6em;line-height:1.2;font-weight:700;color:#ffd700\">{{t:t3}}</p>\n        <p class=\"text-black font-[var(--font-family-body)] text-lg lg:text-xl\" style=\"margin-top:18px;line-height:1.6\">{{t:t4}}</p>\n      </div>\n\n      \n      <div class=\"order-2 lg:order-2 pt-8 lg:pt-0\">\n        <div class=\"relative py-4\">\n          <img width=\"450\" height=\"450\" src=\"{{i:i1}}\" alt=\"Steven Barchetti\" class=\"relative w-1/2 mx-auto\" loading=\"lazy\" decoding=\"async\" data-sjc-img=\"i1\">\n        </div>\n        \n        <div class=\"mt-4\">\n          <a href=\"{{h:h1}}\" class=\"sjc-cta block w-1/2 mx-auto bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] transition-all duration-300 shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"h1\">\n            {{t:t14}}\n          </a>\n        </div>\n      </div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "size": 20,
+      "label": "Text: Done For You",
+      "value": "Done For You"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: A fifteen-stage system, built for you.",
+      "value": "A fifteen-stage system, built for you."
+     },
+     {
+      "key": "t3",
+      "label": "Text: Done For You: $40,000.00 to $60,000.00",
+      "value": "Done For You: $40,000.00 to $60,000.00"
+     },
+     {
+      "key": "t4",
+      "label": "Text: My team and I build the whole business behind what you know,",
+      "value": "My team and I build the whole business behind what you know, in fifteen stages, in a set order: your website, your own e-book, your own podcast, your AI employees and our proprietary Revenue Engine. You get a prototype of my own business model, front to back, with your name on it. A team does the work, and I am on your account personally."
+     },
+     {
+      "key": "t14",
+      "label": "Link: Apply To Work With Us",
+      "value": "Apply To Work With Us"
+     }
+    ],
+    "boxes": [],
+    "links": [
+     {
+      "key": "h1",
+      "href": "#apply",
+      "label": "Apply To Work With Us"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [
+     {
+      "alt": "Steven Barchetti",
+      "key": "i1",
+      "src": "https://agent-sjc.onrender.com/sjc/roleplay/media/twin-cutout.webp",
+      "frameWidth": 100
+     }
+    ],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 72,
+    "useRealForm": false,
+    "paddingBottom": 96
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-done-for-you-what-it-is",
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72,
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfdoneforyouwhatitis\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: What it is",
+      "value": "What it is"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: My team builds the whole business behind what you know.",
+      "value": "My team builds the whole business behind what you know."
+     },
+     {
+      "key": "t3",
+      "label": "Text: Who it is for.",
+      "value": "Who it is for."
+     },
+     {
+      "key": "t4",
+      "label": "Text: You are a coach, an author or an influencer. People already ",
+      "value": "You are a coach, an author or an influencer. People already pay attention to you. You already sell what you know, or you are ready to. And you would rather have the whole thing built right than spend the next year learning how to build it yourself. Done For You is for the person who is ready to have it built now."
+     },
+     {
+      "key": "t5",
+      "label": "Text: What we are.",
+      "value": "What we are."
+     },
+     {
+      "key": "t6",
+      "label": "Text: Steven James Consulting is a modern day talent agency. A tal",
+      "value": "Steven James Consulting is a modern day talent agency. A talent agent does the work behind the stage so the talent can do the one thing they are great at. My team and I take coaches, authors and influencers and show them how to make money with their attention and their product, and then we do the building for them. Our whole model is one line: Attention + Your Product = Dollars."
+     },
+     {
+      "key": "t7",
+      "label": "Text: What gets built.",
+      "value": "What gets built."
+     },
+     {
+      "key": "t8",
+      "label": "Text: A fifteen-stage system. It starts with your email and it end",
+      "value": "A fifteen-stage system. It starts with your email and it ends with a team keeping everything running. In between are your phone number, your social channels, your product, your e-book, your AI employees, your website, your podcast and the six business systems that turn people who watch you into people who pay you. Every stage is on this page, by name, in the order we build it."
+     },
+     {
+      "key": "t9",
+      "label": "Text: Who does the work.",
+      "value": "Who does the work."
+     },
+     {
+      "key": "t10",
+      "label": "Text: My team does. This is a company with a team behind the work,",
+      "value": "My team does. This is a company with a team behind the work, and I am on your account personally. You are not asked to learn software, and neither is anybody who works with you. You tell us what you know, you show up to record, and you check that it sounds like you."
+     },
+     {
+      "key": "t11",
+      "label": "Text: Why fifteen.",
+      "value": "Why fifteen."
+     },
+     {
+      "key": "t12",
+      "label": "Text: Because that is how many it takes. Most people picture a web",
+      "value": "Because that is how many it takes. Most people picture a website, or a podcast, or a book. Each of those is one stage. On its own, one stage does very little. A website with nobody arriving is a brochure. An audience with nothing to buy stays an audience. The money shows up when all of it is built and every piece is connected to the next one. That is the work you are asking my team to do."
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "Attention + Your Product = Dollars."
+     }
+    ]
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "dfy-fifteen-stages",
+    "boxes": [],
+    "links": [],
+    "sheet": "eada73da40065947",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": null,
+    "useRealForm": false,
+    "paddingBottom": null,
+    "sticky": false,
+    "html": "<section class=\"band band--soft sec\" id=\"stages\"><div class=\"wrap\"><div class=\"label\">{{t:t90}}</div><h2 class=\"sec\">{{t:t91}}</h2><p class=\"lede\" style=\"margin-top:20px\">{{t:t92}}</p><div style=\"margin-top:34px\"><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"0\"><div class=\"step__n\">{{t:t1}}</div><div><h3>{{t:t2}}</h3><p>{{t:t3}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"1\"><div class=\"step__n\">{{t:t4}}</div><div><h3>{{t:t5}}</h3><p>{{t:t6}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"2\"><div class=\"step__n\">{{t:t7}}</div><div><h3>{{t:t8}}</h3><p>{{t:t9}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"3\"><div class=\"step__n\">{{t:t10}}</div><div><h3>{{t:t11}}</h3><p>{{t:t12}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"4\"><div class=\"step__n\">{{t:t13}}</div><div><h3>{{t:t14}}</h3><p>{{t:t15}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"5\"><div class=\"step__n\">{{t:t16}}</div><div><h3>{{t:t17}}</h3><p>{{t:t18}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"6\"><div class=\"step__n\">{{t:t19}}</div><div><h3>{{t:t20}}</h3><p>{{t:t21}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"7\"><div class=\"step__n\">{{t:t22}}</div><div><h3>{{t:t23}}</h3><p>{{t:t24}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"8\"><div class=\"step__n\">{{t:t25}}</div><div><h3>{{t:t26}}</h3><p>{{t:t27}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"9\"><div class=\"step__n\">{{t:t28}}</div><div><h3>{{t:t29}}</h3><p>{{t:t30}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"10\"><div class=\"step__n\">{{t:t31}}</div><div><h3>{{t:t32}}</h3><p>{{t:t33}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"11\"><div class=\"step__n\">{{t:t34}}</div><div><h3>{{t:t35}}</h3><p>{{t:t36}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"12\"><div class=\"step__n\">{{t:t37}}</div><div><h3>{{t:t38}}</h3><p>{{t:t39}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"13\"><div class=\"step__n\">{{t:t40}}</div><div><h3>{{t:t41}}</h3><p>{{t:t42}}</p></div></div><div class=\"step\" data-sjc-box=\"dfyb1\" data-sjc-box-i=\"14\"><div class=\"step__n\">{{t:t43}}</div><div><h3>{{t:t44}}</h3><p>{{t:t45}}</p></div></div></div></div></section>",
+    "text": [
+     {
+      "key": "t90",
+      "label": "Text: The fifteen stages",
+      "value": "The fifteen stages"
+     },
+     {
+      "key": "t91",
+      "label": "Heading: Fifteen stages, built in this order.",
+      "value": "Fifteen stages, built in this order."
+     },
+     {
+      "key": "t92",
+      "label": "Text: This is the whole build, by name. We start at stage one and ",
+      "value": "This is the whole build, by name. We start at stage one and we do not skip ahead, because each stage is what the next one stands on."
+     },
+     {
+      "key": "t1",
+      "label": "Stage number 1",
+      "value": "1"
+     },
+     {
+      "key": "t2",
+      "label": "Stage name: Email and accounts",
+      "value": "Email and accounts"
+     },
+     {
+      "key": "t3",
+      "label": "Text: Professional email at your own web address, and every accoun",
+      "value": "Professional email at your own web address, and every account your business runs on opened in your name, with all the logins kept in one safe place."
+     },
+     {
+      "key": "t4",
+      "label": "Stage number 2",
+      "value": "2"
+     },
+     {
+      "key": "t5",
+      "label": "Stage name: The one phone number",
+      "value": "The one phone number"
+     },
+     {
+      "key": "t6",
+      "label": "Text: One number for texting and for calls in and out. Your AI emp",
+      "value": "One number for texting and for calls in and out. Your AI employees answer on it, on your website and in your social media messages, day or night."
+     },
+     {
+      "key": "t7",
+      "label": "Stage number 3",
+      "value": "3"
+     },
+     {
+      "key": "t8",
+      "label": "Stage name: The social channels and profiles",
+      "value": "The social channels and profiles"
+     },
+     {
+      "key": "t9",
+      "label": "Text: The same name, photo and one line about you on every platfor",
+      "value": "The same name, photo and one line about you on every platform, and every profile sends people to your website."
+     },
+     {
+      "key": "t10",
+      "label": "Stage number 4",
+      "value": "4"
+     },
+     {
+      "key": "t11",
+      "label": "Stage name: Packaging what you know",
+      "value": "Packaging what you know"
+     },
+     {
+      "key": "t12",
+      "label": "Text: What you know, written down and shaped into a product with a",
+      "value": "What you know, written down and shaped into a product with a name, a price and a look, so people have something to buy from you."
+     },
+     {
+      "key": "t13",
+      "label": "Stage number 5",
+      "value": "5"
+     },
+     {
+      "key": "t14",
+      "label": "Stage name: Your e-book",
+      "value": "Your e-book"
+     },
+     {
+      "key": "t15",
+      "label": "Text: Your own e-book, written from what you know, with your name ",
+      "value": "Your own e-book, written from what you know, with your name on the cover. It is the lead magnet for your business: the reason a stranger gives you their name."
+     },
+     {
+      "key": "t16",
+      "label": "Stage number 6",
+      "value": "6"
+     },
+     {
+      "key": "t17",
+      "label": "Stage name: Training your AI employees",
+      "value": "Training your AI employees"
+     },
+     {
+      "key": "t18",
+      "label": "Text: AI employees taught what you sell, who it is for and how you",
+      "value": "AI employees taught what you sell, who it is for and how you talk, and tested before they answer a single person for you."
+     },
+     {
+      "key": "t19",
+      "label": "Stage number 7",
+      "value": "7"
+     },
+     {
+      "key": "t20",
+      "label": "Stage name: The website",
+      "value": "The website"
+     },
+     {
+      "key": "t21",
+      "label": "Text: A website written and built around you, where a person can r",
+      "value": "A website written and built around you, where a person can read your story, book a call with you and buy."
+     },
+     {
+      "key": "t22",
+      "label": "Stage number 8",
+      "value": "8"
+     },
+     {
+      "key": "t23",
+      "label": "Stage name: Your podcast and your live show",
+      "value": "Your podcast and your live show"
+     },
+     {
+      "key": "t24",
+      "label": "Text: Your own podcast, produced by my team and living on your web",
+      "value": "Your own podcast, produced by my team and living on your website, and a live show with every replay saved there too."
+     },
+     {
+      "key": "t25",
+      "label": "Stage number 9",
+      "value": "9"
+     },
+     {
+      "key": "t26",
+      "label": "Stage name: Automated Organic Content Engine",
+      "value": "Automated Organic Content Engine"
+     },
+     {
+      "key": "t27",
+      "label": "Text: You record once. One recording becomes a week of clips on ev",
+      "value": "You record once. One recording becomes a week of clips on every platform you keep, and every clip sends people to your website."
+     },
+     {
+      "key": "t28",
+      "label": "Stage number 10",
+      "value": "10"
+     },
+     {
+      "key": "t29",
+      "label": "Stage name: Five Star Reviews",
+      "value": "Five Star Reviews"
+     },
+     {
+      "key": "t30",
+      "label": "Text: Every happy client is asked for a review and a video testimo",
+      "value": "Every happy client is asked for a review and a video testimonial, and that proof shows up on your website."
+     },
+     {
+      "key": "t31",
+      "label": "Stage number 11",
+      "value": "11"
+     },
+     {
+      "key": "t32",
+      "label": "Stage name: Database Reactivation",
+      "value": "Database Reactivation"
+     },
+     {
+      "key": "t33",
+      "label": "Text: Every name you already have, gathered into one list and reac",
+      "value": "Every name you already have, gathered into one list and reached again, and the people who bought once are offered the next thing."
+     },
+     {
+      "key": "t34",
+      "label": "Stage number 12",
+      "value": "12"
+     },
+     {
+      "key": "t35",
+      "label": "Stage name: Paid Ads",
+      "value": "Paid Ads"
+     },
+     {
+      "key": "t36",
+      "label": "Text: Added last, and only if you want it. This system is built to",
+      "value": "Added last, and only if you want it. This system is built to run on attention that costs you nothing."
+     },
+     {
+      "key": "t37",
+      "label": "Stage number 13",
+      "value": "13"
+     },
+     {
+      "key": "t38",
+      "label": "Stage name: Build a proper KPI dashboard",
+      "value": "Build a proper KPI dashboard"
+     },
+     {
+      "key": "t39",
+      "label": "Text: One private screen on your phone with your inbox, your calen",
+      "value": "One private screen on your phone with your inbox, your calendar and the few numbers that tell you each week how the business is doing."
+     },
+     {
+      "key": "t40",
+      "label": "Stage number 14",
+      "value": "14"
+     },
+     {
+      "key": "t41",
+      "label": "Stage name: The community and the videos",
+      "value": "The community and the videos"
+     },
+     {
+      "key": "t42",
+      "label": "Text: Your own online community, with a free level and paid levels",
+      "value": "Your own online community, with a free level and paid levels above it, and the videos that welcome people in."
+     },
+     {
+      "key": "t43",
+      "label": "Stage number 15",
+      "value": "15"
+     },
+     {
+      "key": "t44",
+      "label": "Stage name: The people, and keeping it running",
+      "value": "The people, and keeping it running"
+     },
+     {
+      "key": "t45",
+      "label": "Text: A plan with dates on every stage, a call with us every week,",
+      "value": "A plan with dates on every stage, a call with us every week, and my team keeping your AI employees trained and the whole system running."
+     }
+    ]
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-done-for-you-why-this-order",
+    "boxes": [],
+    "links": [
+     {
+      "key": "h9",
+      "href": "#apply",
+      "label": "Apply To Work With Us"
+     }
+    ],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72,
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfdoneforyouwhythisorder\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t13}}</strong> {{t:t14}}\n      </p>\n      <div data-lf-cta style=\"margin-top:28px\"><p class=\"text-xl font-[var(--font-family-body)]\" style=\"font-weight:700;margin:0 0 14px\">{{t:t59}}</p><div style=\"max-width:360px\"><a href=\"{{h:h9}}\" class=\"sjc-cta block w-full bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-bold font-[var(--font-family-body)] shadow-xl text-center text-base border-2 border-[var(--primary-color)]\" data-sjc-link=\"h9\">{{t:t60}}</a></div></div>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: The order",
+      "value": "The order"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: Why the order matters as much as the stages.",
+      "value": "Why the order matters as much as the stages."
+     },
+     {
+      "key": "t3",
+      "label": "Text: First, the ground.",
+      "value": "First, the ground."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Stages one, two and three are the things a business cannot r",
+      "value": "Stages one, two and three are the things a business cannot run without: email at your own web address, one phone number, and your name claimed on every platform. Nobody ever sees this work, and everything after it stands on it. Your AI employees need the number before they can answer anybody. Your profiles need one place to send people. We set all of it up in your name, once, the right way."
+     },
+     {
+      "key": "t5",
+      "label": "Text: Then, something to sell.",
+      "value": "Then, something to sell."
+     },
+     {
+      "key": "t6",
+      "label": "Text: Stages four and five turn what you know into something a per",
+      "value": "Stages four and five turn what you know into something a person can buy. We get it out of your head and write it down. We give it a name, a price and a look. Then we put it in a book with your name on the cover. This is the part most experts never finish alone, because it is hard to see what you know from the outside. Seeing it from the outside is our job."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Then, the staff and the front door.",
+      "value": "Then, the staff and the front door."
+     },
+     {
+      "key": "t8",
+      "label": "Text: Stage six trains your AI employees on you: what you sell, wh",
+      "value": "Stage six trains your AI employees on you: what you sell, who it is for and how you talk. Stage seven is your website, written and built around you. So on the day the website opens, there is already somebody trained to answer every person who shows up, in seconds, at any hour."
+     },
+     {
+      "key": "t9",
+      "label": "Text: Then, the attention.",
+      "value": "Then, the attention."
+     },
+     {
+      "key": "t10",
+      "label": "Text: Stages eight and nine are your podcast, your live show and t",
+      "value": "Stages eight and nine are your podcast, your live show and the Automated Organic Content Engine. You sit down and talk about what you know. My team produces the show and puts it on your website. Then one recording becomes a week of clips across every platform your audience is on. You record once and you show up everywhere, all week, and every piece tells the viewer the same thing: go to the website."
+     },
+     {
+      "key": "t11",
+      "label": "Text: Then, the money already sitting there.",
+      "value": "Then, the money already sitting there."
+     },
+     {
+      "key": "t12",
+      "label": "Text: Stages ten, eleven and twelve are Five Star Reviews, Databas",
+      "value": "Stages ten, eleven and twelve are Five Star Reviews, Database Reactivation and Paid Ads. Every happy client gets asked for a review and a testimonial, so the next buyer sees proof before they ever talk to you. Everyone who followed you, bought once or went quiet gets reached again with the next thing you offer. Paid ads come last, and only if you want them. The system is built to work on attention that costs you nothing."
+     },
+     {
+      "key": "t13",
+      "label": "Text: Last, what keeps it alive.",
+      "value": "Last, what keeps it alive."
+     },
+     {
+      "key": "t14",
+      "label": "Text: Stage thirteen puts your numbers on one screen, so you can s",
+      "value": "Stage thirteen puts your numbers on one screen, so you can see every week what is working. Stage fourteen builds your community and the videos that welcome people into it. Stage fifteen is the people: a plan with dates, a call with us every week, and my team keeping your AI employees trained and the whole system running."
+     },
+     {
+      "key": "t59",
+      "label": "Text: If that is the build you want behind your name, tell us abou",
+      "value": "If that is the build you want behind your name, tell us about yourself."
+     },
+     {
+      "key": "t60",
+      "label": "Button: Apply To Work With Us",
+      "value": "Apply To Work With Us"
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "You record once and you show up everywhere, all week."
+     }
+    ]
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-done-for-you-revenue-engine",
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72,
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfdoneforyourevenueengine\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: The Revenue Engine",
+      "value": "The Revenue Engine"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: Six Business Systems = One Revenue Engine",
+      "value": "Six Business Systems = One Revenue Engine"
+     },
+     {
+      "key": "t3",
+      "label": "Text: Our proprietary system.",
+      "value": "Our proprietary system."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Inside the fifteen stages sit six business systems. Connecte",
+      "value": "Inside the fifteen stages sit six business systems. Connected so they run as one, they are the Revenue Engine. Their job is to sort, sift and funnel your audience from attention to a paying client."
+     },
+     {
+      "key": "t5",
+      "label": "Text: Where each one sits.",
+      "value": "Where each one sits."
+     },
+     {
+      "key": "t6",
+      "label": "Text: Premium Smart Websites is stage seven. The Automated Organic",
+      "value": "Premium Smart Websites is stage seven. The Automated Organic Content Engine is stage nine. Speed to Lead is built across stages two and six: the one phone number, and the AI employees trained to answer on it in seconds. Automated Five Star Reviews is stage ten. Database Reactivation is stage eleven. Paid Ads = Booked Appointments is stage twelve."
+     },
+     {
+      "key": "t7",
+      "label": "Text: The amplifier.",
+      "value": "The amplifier."
+     },
+     {
+      "key": "t8",
+      "label": "Text: AI employees are the amplifier on all six. They answer every",
+      "value": "AI employees are the amplifier on all six. They answer every message in seconds, day or night. They follow up when somebody goes quiet. They book the call on your calendar. They ask for the review. And when you want a person in the conversation, somebody on your team takes it over."
+     },
+     {
+      "key": "t9",
+      "label": "Text: Why the other stages are there.",
+      "value": "Why the other stages are there."
+     },
+     {
+      "key": "t10",
+      "label": "Text: Six systems with nothing underneath them do not run. They ne",
+      "value": "Six systems with nothing underneath them do not run. They need the accounts, the phone number, the product, the book, the show, the dashboard, the community and the people. That is the difference between buying one piece and having the whole thing built."
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "Six systems sort, sift and funnel your audience from attention to a paying client."
+     }
+    ]
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-done-for-you-prototype",
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72,
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfdoneforyouprototype\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: What you get",
+      "value": "What you get"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: A prototype of my own business model, front to back, with yo",
+      "value": "A prototype of my own business model, front to back, with your name on it."
+     },
+     {
+      "key": "t3",
+      "label": "Text: The same model I run.",
+      "value": "The same model I run."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Look around this website. There is a book. There is a podcas",
+      "value": "Look around this website. There is a book. There is a podcast, and it lives right here on the site. There are AI employees answering for me. There are six systems moving a stranger from watching to buying. That is my business model. When my team builds for you, you get that same model from front to back, built around what you know."
+     },
+     {
+      "key": "t5",
+      "label": "Text: Your own e-book.",
+      "value": "Your own e-book."
+     },
+     {
+      "key": "t6",
+      "label": "Text: We package what you know and put it in an e-book with your n",
+      "value": "We package what you know and put it in an e-book with your name on the cover. That e-book is the lead magnet for your business. In plain words, it is the reason a stranger hands you their name, and it is the first proof they see that you are the real thing. My team does the writing, the layout and the cover. You read the draft and tell us what to change."
+     },
+     {
+      "key": "t7",
+      "label": "Text: Your own podcast.",
+      "value": "Your own podcast."
+     },
+     {
+      "key": "t8",
+      "label": "Text: We produce your podcast, and it lives on your website, just ",
+      "value": "We produce your podcast, and it lives on your website, just like mine. You sit down and talk about what you know. My team handles the setup, the recording, the editing and getting every episode out."
+     },
+     {
+      "key": "t9",
+      "label": "Text: AI employees in every part of it.",
+      "value": "AI employees in every part of it."
+     },
+     {
+      "key": "t10",
+      "label": "Text: AI employees are woven into every part of the business: the ",
+      "value": "AI employees are woven into every part of the business: the phone, the website, your social media messages, the clips, the reviews and the follow-up. They are trained on you before they talk to anybody."
+     },
+     {
+      "key": "t11",
+      "label": "Text: The one thing we ask.",
+      "value": "The one thing we ask."
+     },
+     {
+      "key": "t12",
+      "label": "Text: If having your own podcast and your own product scares you, ",
+      "value": "If having your own podcast and your own product scares you, we are not the right fit, and it is better to know that now."
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "You are getting a prototype of my business model, from front to back."
+     }
+    ]
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "lf-done-for-you-who-does-what",
+    "boxes": [],
+    "links": [],
+    "sheet": "7b6d59e91bbcfde5",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": 76,
+    "useRealForm": false,
+    "paddingBottom": 72,
+    "band": "ink-grid",
+    "html": "<section class=\"code-section pt-15 pb-5 lg:pt-20 lg:pb-7\" id=\"lfdoneforyouwhodoeswhat\">\n  <div class=\"container mx-auto px-4\">\n    <div class=\"text-left\">\n      <div class=\"label\">{{t:t1}}</div>\n\n      <h2 class=\"text-3xl sm:text-4xl lg:text-3xl font-bold font-[var(--font-family-heading)] leading-tight mb-6\">\n        {{t:t2}}\n      </h2>\n\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t3}}</strong> {{t:t4}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t5}}</strong> {{t:t6}}\n      </p>\n      <p data-lf-pull style=\"font-size:1.75rem;line-height:1.3;font-weight:700;color:#E8AA68;border-left:3px solid #DA9450;padding:6px 0 6px 22px;margin:36px 0 36px;max-width:900px\">{{t:t70}}</p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t7}}</strong> {{t:t8}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t9}}</strong> {{t:t10}}\n      </p>\n      <p class=\"text-xl font-[var(--font-family-body)] leading-relaxed mb-4\">\n        <strong>{{t:t11}}</strong> {{t:t12}}\n      </p>\n    </div>\n  </div>\n</section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: Who does what",
+      "value": "Who does what"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: What you do, and what my team and I do.",
+      "value": "What you do, and what my team and I do."
+     },
+     {
+      "key": "t3",
+      "label": "Text: Your part.",
+      "value": "Your part."
+     },
+     {
+      "key": "t4",
+      "label": "Text: You tell us what you know. You read the draft of your book a",
+      "value": "You tell us what you know. You read the draft of your book and tell us what to change. You practice with your AI employee before it talks to anybody. You record. Once the system is running, your week is a short video, your show, and a yes, a no or a change on what goes out under your name."
+     },
+     {
+      "key": "t5",
+      "label": "Text: Our part.",
+      "value": "Our part."
+     },
+     {
+      "key": "t6",
+      "label": "Text: Everything else on the list of fifteen. The accounts, the wr",
+      "value": "Everything else on the list of fifteen. The accounts, the writing, the design, the building, the training, the producing, the testing and the connecting. Each stage is tested before the next one starts."
+     },
+     {
+      "key": "t7",
+      "label": "Text: How you know where things stand.",
+      "value": "How you know where things stand."
+     },
+     {
+      "key": "t8",
+      "label": "Text: Before we build, you see the plan: which stage comes when, w",
+      "value": "Before we build, you see the plan: which stage comes when, with dates on each one, and the short list of things only you can do. During the build you get a progress update every week and a call with us every week."
+     },
+     {
+      "key": "t9",
+      "label": "Text: Me, personally.",
+      "value": "Me, personally."
+     },
+     {
+      "key": "t10",
+      "label": "Text: I have run five businesses over forty years, and I was the o",
+      "value": "I have run five businesses over forty years, and I was the one responsible for the systems in every one of them. I approve your plan before the build starts, and I approve changes before they go live. My team does the work, and I am on your account."
+     },
+     {
+      "key": "t11",
+      "label": "Text: After the build.",
+      "value": "After the build."
+     },
+     {
+      "key": "t12",
+      "label": "Text: My team keeps going. We keep training your AI employees, we ",
+      "value": "My team keeps going. We keep training your AI employees, we check every day that everything is running, and we pick and build one improvement every month."
+     },
+     {
+      "key": "t70",
+      "label": "Pull line",
+      "value": "Each stage is tested before the next one starts."
+     }
+    ]
+   }
+  },
+  {
+   "type": "DesignSection",
+   "props": {
+    "id": "dfy-price",
+    "boxes": [],
+    "links": [
+     {
+      "key": "c1",
+      "href": "/revenue-share",
+      "label": "Done With You: Revenue Share \u2192"
+     },
+     {
+      "key": "c2",
+      "href": "/attention-to-dollars",
+      "label": "Do It Yourself: The Book \u2192"
+     }
+    ],
+    "sheet": "eada73da40065947",
+    "images": [],
+    "calLink": "",
+    "hasForm": false,
+    "formButton": "",
+    "formFields": [],
+    "paddingTop": null,
+    "useRealForm": false,
+    "paddingBottom": null,
+    "sticky": false,
+    "html": "<section class=\"band band--soft sec\" id=\"price\"><div class=\"wrap\"><div class=\"label\">{{t:t1}}</div><h2 class=\"sec\">{{t:t2}}</h2><p class=\"lede\" style=\"margin-top:20px\">{{t:t3}}</p><p class=\"lede\" style=\"margin-top:20px\">{{t:t4}}</p><p style=\"margin-top:14px\"><a href=\"{{h:c1}}\" data-sjc-link=\"c1\" class=\"sjc-card-link\" style=\"display:inline-block;font-weight:800;font-size:15.5px;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px\">{{t:c1lab}}</a></p><p style=\"margin-top:10px\"><a href=\"{{h:c2}}\" data-sjc-link=\"c2\" class=\"sjc-card-link\" style=\"display:inline-block;font-weight:800;font-size:15.5px;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:2px\">{{t:c2lab}}</a></p></div></section>",
+    "text": [
+     {
+      "key": "t1",
+      "label": "Text: One build, one price",
+      "value": "One build, one price"
+     },
+     {
+      "key": "t2",
+      "label": "Heading: Done For You: $40,000.00 to $60,000.00",
+      "value": "Done For You: $40,000.00 to $60,000.00"
+     },
+     {
+      "key": "t3",
+      "label": "Text: It is one build at one price. All fifteen stages go in, in o",
+      "value": "It is one build at one price. All fifteen stages go in, in order, because each one only pays off with the others beside it. Every client starts with a discovery call, and you get your exact price there."
+     },
+     {
+      "key": "t4",
+      "label": "Text: Done For You is one of three ways to work with us. If you ha",
+      "value": "Done For You is one of three ways to work with us. If you have real talent and cannot write the full check today, look at done with you. If you have more time than money right now, do it yourself from my book, the blueprint."
+     },
+     {
+      "key": "c1lab",
+      "label": "Link: Done With You: Revenue Share \u2192",
+      "value": "Done With You: Revenue Share \u2192"
+     },
+     {
+      "key": "c2lab",
+      "label": "Link: Do It Yourself: The Book \u2192",
+      "value": "Do It Yourself: The Book \u2192"
+     }
+    ]
+   }
+  },
+  {
+   "type": "LeadForm",
+   "props": {
+    "id": "done-for-you-application",
+    "note": "",
+    "theme": "dark",
+    "anchor": "apply",
+    "fields": [],
+    "formId": "growth-engine-application-sjc",
+    "preset": "",
+    "source": "done-for-you-application",
+    "heading": "Apply To Work With Us",
+    "inColumn": false,
+    "background": "#16120E",
+    "paddingTop": 72,
+    "subheading": "We only work with 5 to 10 clients at a time. Answer straight: there are no wrong answers, only a fit today or a fit later. If having your own podcast and your own product scares you, we are not the right fit.",
+    "buttonColor": "#B35F1D",
+    "buttonLabel": "Send My Application",
+    "successBody": "",
+    "headingColor": "#FFFFFF",
+    "paddingBottom": 72,
+    "successHeading": ""
+   }
+  }
+ ]
+}

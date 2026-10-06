@@ -43,6 +43,7 @@ Steven James Consulting works with coaches, authors and influencers who already 
 ## Other pages
 - [Home](https://stevenjamesconsulting.com/): Turn Your Attention Into Dollars.
 - [For Coaches, Authors and Influencers](https://stevenjamesconsulting.com/for-coaches-authors-and-influencers): why what you teach runs on the same six systems.
+- [Done For You](https://stevenjamesconsulting.com/done-for-you): the fifteen-stage system my team builds for a client, stage by stage. $40,000.00 to $60,000.00.
 - [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, the blueprint for turning what you know into money.
 - [Funnel Hack Live](https://stevenjamesconsulting.com/funnel-hack-live): live on TikTok every weekday at 3 p.m. Central, with the replay on this page.
 - [Podcast](https://stevenjamesconsulting.com/podcast): conversations with coaches, authors and influencers.

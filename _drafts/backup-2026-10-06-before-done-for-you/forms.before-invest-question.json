@@ -1,0 +1,2192 @@
+{
+ "forms": [
+  {
+   "id": "contact",
+   "name": "Contact",
+   "kind": "builtin",
+   "description": "The everyday four. Name, phone, what they need, and room to explain.",
+   "fields": [
+    {
+     "fieldId": "name",
+     "label": "Your name",
+     "type": "text",
+     "required": true
+    },
+    {
+     "fieldId": "phone",
+     "label": "Best phone number",
+     "type": "tel",
+     "required": true
+    },
+    {
+     "fieldId": "service",
+     "label": "What do you need done?",
+     "type": "text",
+     "required": true
+    },
+    {
+     "fieldId": "message",
+     "label": "Anything else?",
+     "type": "textarea"
+    }
+   ],
+   "buttonLabel": "Send it",
+   "note": "",
+   "successHeading": "Got it \u2014 thank you.",
+   "successBody": "We'll be in touch shortly. Rather talk now? Call {{business.phone}}."
+  },
+  {
+   "id": "quote",
+   "name": "Quote request",
+   "kind": "builtin",
+   "description": "For trades quoting work \u2014 adds the address and when they need it.",
+   "fields": [
+    {
+     "fieldId": "name",
+     "label": "Your name",
+     "type": "text",
+     "required": true
+    },
+    {
+     "fieldId": "phone",
+     "label": "Best phone number",
+     "type": "tel",
+     "required": true
+    },
+    {
+     "fieldId": "service",
+     "label": "What are you looking to have done?",
+     "type": "text",
+     "required": true
+    },
+    {
+     "fieldId": "address",
+     "label": "Where's the job?",
+     "type": "text"
+    },
+    {
+     "fieldId": "when",
+     "label": "When were you hoping to start?",
+     "type": "text"
+    },
+    {
+     "fieldId": "message",
+     "label": "Anything else we should know?",
+     "type": "textarea"
+    }
+   ],
+   "buttonLabel": "Get my quote",
+   "note": "No obligation. We'll call you back to talk it through.",
+   "successHeading": "Got it \u2014 thank you.",
+   "successBody": "We'll call you back shortly. Rather talk now? Call {{business.phone}}."
+  },
+  {
+   "id": "review",
+   "name": "Review survey",
+   "kind": "builtin",
+   "description": "After a finished job. Happy customers get sent to Google; unhappy ones get a call.",
+   "fields": [
+    {
+     "fieldId": "rating",
+     "label": "How did we do?",
+     "type": "choice",
+     "required": true,
+     "options": [
+      "\u2605\u2605\u2605\u2605\u2605 Great",
+      "\u2605\u2605\u2605\u2605 Good",
+      "\u2605\u2605\u2605 OK",
+      "\u2605\u2605 Not great",
+      "\u2605 Bad"
+     ]
+    },
+    {
+     "fieldId": "message",
+     "label": "Anything you'd like to tell us?",
+     "type": "textarea"
+    },
+    {
+     "fieldId": "name",
+     "label": "Your name",
+     "type": "text"
+    },
+    {
+     "fieldId": "phone",
+     "label": "Best phone number",
+     "type": "tel"
+    }
+   ],
+   "buttonLabel": "Send it",
+   "note": "",
+   "successHeading": "Thank you \u2014 that's really helpful.",
+   "successBody": "Someone will give you a call to put it right. If it's urgent, ring {{business.phone}}.",
+   "altSuccess": {
+    "fieldId": "rating",
+    "values": [
+     "\u2605\u2605\u2605\u2605\u2605 Great",
+     "\u2605\u2605\u2605\u2605 Good"
+    ],
+    "heading": "That's great to hear \u2014 thank you.",
+    "body": "Would you mind saying that on Google? It takes a minute and it's the single biggest thing that helps people find us.",
+    "buttonLabel": "Leave a Google review"
+   }
+  },
+  {
+   "id": "callback",
+   "name": "Call me back",
+   "kind": "builtin",
+   "description": "The shortest one that still works. Two boxes.",
+   "fields": [
+    {
+     "fieldId": "name",
+     "label": "Your name",
+     "type": "text",
+     "required": true
+    },
+    {
+     "fieldId": "phone",
+     "label": "Best number to reach you",
+     "type": "tel",
+     "required": true
+    }
+   ],
+   "buttonLabel": "Call me back",
+   "note": "",
+   "successHeading": "Got it \u2014 thank you.",
+   "successBody": "We'll call you back shortly."
+  },
+  {
+   "id": "onboarding",
+   "name": "Client onboarding",
+   "kind": "builtin",
+   "description": "AFTER they've paid \u2014 what a new client tells us so their website can be built. Sent as a link, filled in on a phone.",
+   "fields": [
+    {
+     "fieldId": "gbpUrl",
+     "label": "Your Google Business listing",
+     "help": "Search your business name on Google, then copy the link to your listing. This saves you typing your address, hours and phone number \u2014 we can read all of it from there.",
+     "type": "url",
+     "placeholder": "https://maps.google.com/\u2026"
+    },
+    {
+     "fieldId": "businessName",
+     "label": "Business name",
+     "type": "text",
+     "required": true,
+     "satisfiedBy": "business.name"
+    },
+    {
+     "fieldId": "phone",
+     "label": "Best number for customers to reach you",
+     "type": "tel",
+     "required": true,
+     "satisfiedBy": "business.phoneDisplay"
+    },
+    {
+     "fieldId": "address",
+     "label": "Where you're based",
+     "help": "Or the towns you cover, if customers don't come to you.",
+     "type": "text",
+     "satisfiedBy": "business.address"
+    },
+    {
+     "fieldId": "hours",
+     "label": "Your hours",
+     "type": "textarea",
+     "placeholder": "Mon\u2013Fri 8\u20136, Sat 9\u20132, closed Sunday",
+     "satisfiedBy": "business.hours"
+    },
+    {
+     "fieldId": "currentSite",
+     "label": "Do you have a website now?",
+     "type": "choice",
+     "options": [
+      "No, nothing",
+      "Something old I can't update",
+      "Yes, and it works fine"
+     ]
+    },
+    {
+     "fieldId": "whyYou",
+     "label": "Why do customers pick you over the other guy?",
+     "help": "In your own words. Don't polish it \u2014 I'd rather have how you'd say it out loud.",
+     "type": "textarea",
+     "required": true
+    },
+    {
+     "fieldId": "photos",
+     "label": "Photos of your work",
+     "help": "Ten or so is plenty. Straight off your phone is fine \u2014 we'll size and clean them up. Real photos of your own work beat anything we could buy.",
+     "type": "photos",
+     "required": true
+    },
+    {
+     "fieldId": "anythingElse",
+     "label": "Anything else we should know?",
+     "type": "textarea"
+    }
+   ],
+   "buttonLabel": "Send it in",
+   "note": "",
+   "successHeading": "Got it \u2014 thank you.",
+   "successBody": "That's everything we need. We'll put it together and send you the site to look at before anyone else sees it.",
+   "oneQuestionPerScreen": true
+  },
+  {
+   "id": "systems-onboarding",
+   "name": "Systems onboarding \u2014 the full audit",
+   "kind": "builtin",
+   "description": "The A-to-Z survey for a website + GoHighLevel + community engagement. Lists everything a client with zero assets would need; `satisfiedBy` removes whatever we already know, and whatever comes back empty is the work order.",
+   "fields": [
+    {
+     "fieldId": "gbpUrl",
+     "label": "Your Google Business listing",
+     "help": "Search your business on Google and copy the link. It saves you typing your address, hours and phone, and it tells us what a customer sees before they ever reach your site.",
+     "type": "url",
+     "placeholder": "https://maps.google.com/\u2026"
+    },
+    {
+     "fieldId": "businessName",
+     "label": "Business name",
+     "type": "text",
+     "required": true,
+     "satisfiedBy": "business.name"
+    },
+    {
+     "fieldId": "phone",
+     "label": "Best number for customers",
+     "type": "tel",
+     "required": true,
+     "satisfiedBy": "business.phoneDisplay"
+    },
+    {
+     "fieldId": "address",
+     "label": "Where you are based",
+     "help": "Or the areas you cover, if customers do not come to you.",
+     "type": "text",
+     "satisfiedBy": "business.address"
+    },
+    {
+     "fieldId": "emailProvider",
+     "label": "What email do you actually use for the business?",
+     "help": "This matters more than it sounds. Google Workspace connects to your calendar, your customer records and your review requests with nothing in between. The others each need a workaround, and it is better to know now than to find out in week three.",
+     "type": "choice",
+     "options": [
+      "Google Workspace (a paid @yourbusiness.com Google account)",
+      "Free Gmail (@gmail.com)",
+      "Microsoft 365 / Outlook",
+      "Yahoo",
+      "Hotmail / Live / MSN",
+      "AOL",
+      "Whatever came with my website host",
+      "Something else / I am not sure"
+     ],
+     "required": true
+    },
+    {
+     "fieldId": "emailAddresses",
+     "label": "Which addresses are in use, and who reads them?",
+     "help": "info@, the owner's personal one, an old one nobody checks \u2014 all of it. We need to know where a lead currently lands.",
+     "type": "textarea",
+     "placeholder": "info@ \u2014 goes to me\nbookings@ \u2014 nobody has checked it in a year"
+    },
+    {
+     "fieldId": "currentSite",
+     "label": "Your website today",
+     "help": "Whatever you have, including nothing. We would rather tune up something decent than replace it for the sake of it.",
+     "type": "choice",
+     "options": [
+      "Nothing at all",
+      "Something old I cannot update",
+      "Something decent that needs work",
+      "Yes, and I am happy with it"
+     ],
+     "required": true
+    },
+    {
+     "fieldId": "currentSiteUrl",
+     "label": "Link to it",
+     "type": "url",
+     "placeholder": "https://\u2026"
+    },
+    {
+     "fieldId": "sitePlatform",
+     "label": "What is it built on, if you know?",
+     "help": "Wix, Squarespace, WordPress, GoDaddy, a guy who has stopped answering. Not knowing is a normal answer.",
+     "type": "text"
+    },
+    {
+     "fieldId": "domainRegistrar",
+     "label": "Where is your domain name registered, and can you log in?",
+     "help": "GoDaddy, Namecheap, Google Domains, or whoever set it up. This is the single most common thing a business cannot get back into, and it is the one thing we cannot do without.",
+     "type": "text"
+    },
+    {
+     "fieldId": "crm",
+     "label": "How do you keep track of customers and follow-ups right now?",
+     "help": "Be honest \u2014 a notebook and your memory is the most common answer we get, and it is not a problem. We just need to know what we are moving from.",
+     "type": "choice",
+     "options": [
+      "Nothing formal \u2014 my phone and my memory",
+      "A spreadsheet",
+      "GoHighLevel",
+      "HubSpot / Salesforce / Zoho",
+      "Jobber / Housecall Pro / ServiceTitan",
+      "Something else"
+     ],
+     "required": true
+    },
+    {
+     "fieldId": "crmDetail",
+     "label": "If you named one, which and how long?",
+     "type": "text"
+    },
+    {
+     "fieldId": "crmKeep",
+     "label": "If you already have one \u2014 keep it or move?",
+     "help": "No wrong answer. What decides it is whether it will talk to the new website: some connect cleanly, some only through a middleman, and a couple not at all. If you are happy where you are we will tell you honestly whether it can carry what you want it to do.",
+     "type": "choice",
+     "options": [
+      "I do not have one \u2014 build me one",
+      "Keep what I have if it works with the site",
+      "Move me to whatever works best",
+      "Not sure \u2014 tell me"
+     ]
+    },
+    {
+     "fieldId": "automationsWanted",
+     "label": "Do you want texts, reminders and follow-up going out automatically?",
+     "help": "Almost everyone says yes, and it is worth asking plainly because the answer decides the next four questions. Anything that texts a customer has to be registered with the phone carriers first, and that registration is the longest wait in the whole build \u2014 so we start it on day one.",
+     "type": "choice",
+     "options": [
+      "Yes",
+      "No, just the website",
+      "Not sure yet"
+     ],
+     "required": true
+    },
+    {
+     "fieldId": "legalName",
+     "label": "Your exact legal business name",
+     "help": "Not the sign on the door \u2014 the name on your registration, character for character, including the LLC or Inc. The phone companies check it against public records, and one wrong character sends the whole thing back to the start of a queue that takes weeks.",
+     "type": "text",
+     "placeholder": "Acme Home Services LLC"
+    },
+    {
+     "fieldId": "dbaName",
+     "label": "And the name customers actually know you by, if it differs",
+     "help": "The DBA or trading name. Both can be registered; they just have to be declared honestly.",
+     "type": "text"
+    },
+    {
+     "fieldId": "ein",
+     "label": "EIN or Tax ID",
+     "help": "The federal number on your tax filings. A sole trader without one can still register \u2014 say so and we will use the route that fits. \u26d4 Nobody else sees this; it goes to the carrier registration and nowhere else.",
+     "type": "text"
+    },
+    {
+     "fieldId": "entityType",
+     "label": "How is the business registered?",
+     "type": "choice",
+     "options": [
+      "Sole proprietor",
+      "LLC",
+      "S-Corp",
+      "C-Corp",
+      "Partnership",
+      "Non-profit",
+      "Not registered yet"
+     ]
+    },
+    {
+     "fieldId": "registeredAddress",
+     "label": "The address on the registration",
+     "help": "Where the business is legally registered, which is often not where you work from. This has to match the record too.",
+     "type": "text"
+    },
+    {
+     "fieldId": "authorizedRep",
+     "label": "Who can sign for the business?",
+     "help": "Name, title and email of the person the carriers can verify. Usually you.",
+     "type": "textarea",
+     "placeholder": "Jane Doe, Owner, jane@\u2026"
+    },
+    {
+     "fieldId": "customerList",
+     "label": "Your customer list",
+     "help": "Everyone who has ever bought or enquired. Export it however it comes out \u2014 a CSV, a spreadsheet, a screenshot of your contacts. Names you already paid for are the fastest money in the whole engagement, and most people are sitting on more of them than they think.",
+     "type": "file"
+    },
+    {
+     "fieldId": "socialPlatforms",
+     "label": "Which social accounts exist? Tick everything, even the abandoned ones.",
+     "help": "Nothing is a fine answer. We are not judging the accounts \u2014 we are deciding which ones get pointed at the new site and which ones we leave alone.",
+     "type": "multi",
+     "options": [
+      "Facebook page",
+      "Instagram",
+      "LinkedIn",
+      "YouTube",
+      "TikTok",
+      "X / Twitter",
+      "Pinterest",
+      "Nextdoor",
+      "None of these"
+     ]
+    },
+    {
+     "fieldId": "socialLinks",
+     "label": "Paste the links to the ones that matter",
+     "type": "textarea",
+     "placeholder": "facebook.com/\u2026\ninstagram.com/\u2026"
+    },
+    {
+     "fieldId": "adAccounts",
+     "label": "Have you ever run paid ads?",
+     "help": "If there is an old Meta or Google ad account, it usually still holds the audience and the history \u2014 worth recovering rather than starting cold.",
+     "type": "choice",
+     "options": [
+      "Never",
+      "Facebook / Instagram ads",
+      "Google ads",
+      "Both",
+      "Someone ran them for me and I do not know what happened to the account"
+     ]
+    },
+    {
+     "fieldId": "reviewsToday",
+     "label": "How do you get reviews at the moment?",
+     "help": "Almost everyone says 'when I remember'. That is the honest answer and it is the one we are here to fix.",
+     "type": "choice",
+     "options": [
+      "I do not ask",
+      "I ask when I remember",
+      "I have a system that asks automatically"
+     ]
+    },
+    {
+     "fieldId": "payments",
+     "label": "How do you take money today?",
+     "help": "It decides what we can wire the booking and the coaching platform into without you changing banks.",
+     "type": "multi",
+     "options": [
+      "Cash / cheque",
+      "Card reader in person",
+      "Stripe",
+      "Square",
+      "PayPal",
+      "Invoices by email",
+      "QuickBooks",
+      "Something else"
+     ]
+    },
+    {
+     "fieldId": "hasProgram",
+     "label": "Are you running, or planning, a course, membership or coaching program?",
+     "help": "If not, say no and skip the next few \u2014 this whole section only applies to people selling what they know.",
+     "type": "choice",
+     "options": [
+      "No",
+      "Planning one",
+      "Yes, running it now"
+     ],
+     "required": true
+    },
+    {
+     "fieldId": "programPlatform",
+     "label": "Where does it live today?",
+     "help": "Skool, Kajabi, Teachable, a Facebook group, a shared Drive folder, nowhere yet. A Facebook group you do not own is the most common answer and the one worth moving.",
+     "type": "text"
+    },
+    {
+     "fieldId": "programOffer",
+     "label": "What is the program and what does it cost?",
+     "help": "In your words. The price matters because it sets what the funnel around it has to do.",
+     "type": "textarea"
+    },
+    {
+     "fieldId": "programMaterials",
+     "label": "Upload whatever exists of it",
+     "help": "Slides, a curriculum, recorded calls, a rough outline on a napkin. Half-finished is normal.",
+     "type": "file"
+    },
+    {
+     "fieldId": "emailList",
+     "label": "Do you have an email list, and where?",
+     "help": "Mailchimp, ConvertKit, a spreadsheet, the contacts in your phone. Size does not matter here \u2014 ownership does.",
+     "type": "text"
+    },
+    {
+     "fieldId": "logo",
+     "label": "Your logo, in the best quality you have",
+     "help": "If someone designed it, ask them for the original file \u2014 a version off your website is a photograph of a logo, not the logo. If you have never had one, say so; that is a job, not a problem.",
+     "type": "file"
+    },
+    {
+     "fieldId": "brandColors",
+     "label": "Brand colours and fonts, if they were ever decided",
+     "type": "text",
+     "placeholder": "Navy and gold. Or: nobody ever decided."
+    },
+    {
+     "fieldId": "photos",
+     "label": "Photos of your own work, your team, your place",
+     "help": "Ten or so is plenty to start. Straight off your phone is fine \u2014 we resize and clean them up at our end. Real photos of your own work beat anything we could buy, every time.",
+     "type": "photos"
+    },
+    {
+     "fieldId": "video",
+     "label": "Any video at all?",
+     "help": "Phone footage counts. A wide clip cannot be cropped into a phone-shaped one, so if you are shooting new material, shoot it upright as well.",
+     "type": "file"
+    },
+    {
+     "fieldId": "computer",
+     "label": "What laptop or desktop do you actually work on?",
+     "help": "We are going to install things you use every day, and some of it behaves differently on a Mac than on a Windows machine. Easier to plan around your setup now than to hand you something that fights it.",
+     "type": "choice",
+     "options": [
+      "Mac laptop",
+      "Mac desktop / iMac",
+      "Windows laptop",
+      "Windows desktop",
+      "Chromebook",
+      "I mostly use my phone",
+      "A mix"
+     ],
+     "required": true
+    },
+    {
+     "fieldId": "phoneDevice",
+     "label": "And your phone?",
+     "help": "The apps differ, the notifications differ, and how a booking reaches you differs. It is a thirty-second question that saves a support call.",
+     "type": "choice",
+     "options": [
+      "iPhone",
+      "Android",
+      "Both"
+     ],
+     "required": true
+    },
+    {
+     "fieldId": "techComfort",
+     "label": "How do you feel about all this?",
+     "help": "There is no wrong answer and it changes how we hand things over, not what we build.",
+     "type": "choice",
+     "options": [
+      "I am fine with technology",
+      "I get by",
+      "I would rather never touch it \u2014 just make it work"
+     ]
+    },
+    {
+     "fieldId": "whoElse",
+     "label": "Who else touches any of this?",
+     "help": "An office manager, a nephew who built the site, an agency still running your ads. We need to know who we will be coordinating with \u2014 or replacing.",
+     "type": "textarea"
+    },
+    {
+     "fieldId": "whoAnswers",
+     "label": "Who answers the phone and the messages today?",
+     "help": "This is the seat we are most often filling, so it helps to know whether it is you at nine at night.",
+     "type": "text"
+    },
+    {
+     "fieldId": "whyYou",
+     "label": "Why do customers pick you over the other guy?",
+     "help": "In your own words. Do not polish it \u2014 I would rather have how you would say it out loud.",
+     "type": "textarea",
+     "required": true
+    },
+    {
+     "fieldId": "biggestGap",
+     "label": "What is the one thing that, if it just worked, would change your month?",
+     "type": "textarea"
+    },
+    {
+     "fieldId": "anythingElse",
+     "label": "Anything else we should know?",
+     "type": "textarea"
+    }
+   ],
+   "buttonLabel": "Send it in",
+   "note": "These questions go deeper than you are used to, and there is a reason. Your tools have to work together, and they do not all play nicely with each other \u2014 the email you use decides what your calendar can do, and the phone in your pocket decides what we can install. Twenty minutes here saves a month of surprises. Wherever the answer is 'nothing', say nothing. That is useful too.",
+   "successHeading": "That is everything \u2014 thank you.",
+   "successBody": "Now we know exactly what you have and what is missing, which means the plan we come back with is built on your actual setup rather than a guess. Nothing you left blank is a problem; the blanks are simply the list of what we build first.",
+   "oneQuestionPerScreen": true
+  },
+  {
+   "id": "apply-sjc-intake-form-form",
+   "kind": "preset",
+   "name": "Booked Appointments \u2014 Application (SJC)",
+   "note": "",
+   "fields": [
+    {
+     "step": "Contact Details & Company Info",
+     "type": "text",
+     "label": "First name",
+     "fieldId": "q-first",
+     "required": true
+    },
+    {
+     "step": "Contact Details & Company Info",
+     "type": "text",
+     "label": "Last name",
+     "fieldId": "q-last",
+     "required": true
+    },
+    {
+     "step": "Contact Details & Company Info",
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    },
+    {
+     "step": "Contact Details & Company Info",
+     "type": "tel",
+     "label": "Cell Number",
+     "fieldId": "q-cell",
+     "required": true
+    },
+    {
+     "step": "Contact Details & Company Info",
+     "type": "url",
+     "label": "Company Web Address. If none put N/A.",
+     "fieldId": "q-website",
+     "required": true
+    },
+    {
+     "step": "Tell us about your business.",
+     "type": "text",
+     "label": "What industry are you in / what do you do?",
+     "fieldId": "q-industry",
+     "required": true
+    },
+    {
+     "step": "Tell us about your business.",
+     "type": "choice",
+     "label": "What outcome are you looking for?",
+     "fieldId": "q-growth",
+     "options": [
+      "I want more customers \u2014 now",
+      "I'm growing, but it's chaos",
+      "I'm Maxed out \u2014 can't take on more work",
+      "Just exploring"
+     ],
+     "required": true
+    },
+    {
+     "step": "Tell us about your business.",
+     "type": "text",
+     "label": "Your own outcome, share below",
+     "fieldId": "q-outcome-other"
+    },
+    {
+     "step": "Where are you \u2014 and where do you want to be?",
+     "type": "choice",
+     "label": "What is your Gross monthly revenue now?",
+     "fieldId": "q-rev-now",
+     "options": [
+      "Under $10k / mo",
+      "$10k \u2013 $25k / mo",
+      "$25k \u2013 $50k / mo",
+      "$50k \u2013 $100k / mo",
+      "$100k+ / mo"
+     ],
+     "required": true
+    },
+    {
+     "step": "Where are you \u2014 and where do you want to be?",
+     "type": "choice",
+     "label": "Where would you like to be in the next 12 months?",
+     "fieldId": "q-rev-goal",
+     "options": [
+      "Under $10k / mo",
+      "$10k \u2013 $25k / mo",
+      "$25k \u2013 $50k / mo",
+      "$50k \u2013 $100k / mo",
+      "$150k+ / mo"
+     ],
+     "required": true
+    },
+    {
+     "step": "How do you generate new business now?",
+     "type": "choice",
+     "label": "Channel, pick all that apply.",
+     "fieldId": "q-emergency",
+     "options": [
+      "Google Ads",
+      "Facebook Ads",
+      "Organic Content",
+      "Referral Partners",
+      "I don't really do any marketing yet",
+      "Something else \u2014 I'll share it below"
+     ],
+     "required": true
+    },
+    {
+     "step": "How do you generate new business now?",
+     "type": "text",
+     "label": "Your own method, share below",
+     "fieldId": "q-channel-other"
+    },
+    {
+     "step": "One last question \u2014 the important one.",
+     "type": "choice",
+     "label": "If a health emergency kept you out of work for 4\u20136 weeks, would your business thrive \u2014 or be in serious jeopardy?",
+     "fieldId": "q-emergency-risk",
+     "options": [
+      "It'd thrive without me",
+      "It'd hold steady for a while",
+      "It'd be in serious jeopardy"
+     ],
+     "required": true
+    }
+   ],
+   "buttonLabel": "Send it",
+   "description": "",
+   "successBody": "We'll be in touch shortly.",
+   "successHeading": "Got it \u2014 thank you.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "podcast-guest-sjc-intake-form",
+   "kind": "preset",
+   "name": "Podcast Guest (SJC) (Intake form)",
+   "note": "",
+   "fields": [
+    {
+     "type": "text",
+     "label": "First name",
+     "fieldId": "q-first-name",
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "Last name",
+     "fieldId": "q-last-name",
+     "required": true
+    },
+    {
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    },
+    {
+     "type": "tel",
+     "label": "Phone",
+     "fieldId": "q-phone",
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "Company / what you're known for",
+     "fieldId": "q-company",
+     "required": true
+    },
+    {
+     "type": "url",
+     "label": "Website (or N/A)",
+     "fieldId": "q-website"
+    },
+    {
+     "type": "url",
+     "label": "Best link to see your work (LinkedIn, IG, YouTube\u2026)",
+     "fieldId": "q-link"
+    },
+    {
+     "type": "text",
+     "label": "Do you host your own show? If so, which one?",
+     "fieldId": "q-own-show"
+    },
+    {
+     "type": "textarea",
+     "label": "The story or topic you'd want to get into",
+     "fieldId": "q-topic",
+     "required": true
+    },
+    {
+     "type": "textarea",
+     "label": "Anything else that makes you a great fit?",
+     "fieldId": "q-notes"
+    }
+   ],
+   "buttonLabel": "Submit",
+   "description": "",
+   "successBody": "We'll be in touch shortly.",
+   "successHeading": "Got it \u2014 thank you.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "websites-offer",
+   "kind": "preset",
+   "name": "Websites (offer)",
+   "note": "",
+   "fields": [
+    {
+     "step": "About you",
+     "type": "text",
+     "label": "Your name",
+     "fieldId": "q-your-name-f92c",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "text",
+     "label": "Business name",
+     "fieldId": "q-business-name-1286",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email-l7ju",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "tel",
+     "label": "Best phone number",
+     "fieldId": "q-best-phone-number-cj2o",
+     "required": true
+    },
+    {
+     "step": "Your website",
+     "type": "choice",
+     "label": "Do you have a website now?",
+     "routes": [
+      {
+       "goTo": "Starting from scratch",
+       "when": "No \u2014 nothing yet"
+      },
+      {
+       "goTo": "Starting from scratch",
+       "when": "We had one and took it down"
+      }
+     ],
+     "fieldId": "q-do-you-have-a-website-now-t9bl",
+     "options": [
+      "Yes, and it's how people find us",
+      "Yes, but we barely use it",
+      "No \u2014 nothing yet",
+      "We had one and took it down"
+     ],
+     "required": true
+    },
+    {
+     "step": "Your website",
+     "type": "choice",
+     "label": "When would you want it live?",
+     "fieldId": "q-when-would-you-want-it-live-xjdm",
+     "options": [
+      "As soon as possible",
+      "Next 1\u20133 months",
+      "Just getting pricing for now",
+      "Not sure yet"
+     ],
+     "required": true
+    },
+    {
+     "step": "Replacing what you have",
+     "type": "url",
+     "label": "What's the address?",
+     "fieldId": "q-what-s-the-address-m0vl",
+     "required": true
+    },
+    {
+     "step": "Replacing what you have",
+     "type": "multi",
+     "label": "What isn't it doing for you? Pick any.",
+     "fieldId": "q-what-isn-t-it-doing-for-you-pick-eyxd",
+     "required": true
+    },
+    {
+     "step": "Replacing what you have",
+     "type": "choice",
+     "label": "Who built it?",
+     "fieldId": "q-who-built-it-n3s2",
+     "required": true
+    },
+    {
+     "step": "Replacing what you have",
+     "type": "choice",
+     "label": "Can you still get into it?",
+     "fieldId": "q-can-you-still-get-into-it-3tt9",
+     "options": [
+      "Yes, I have the logins",
+      "Someone else has them",
+      "No idea"
+     ],
+     "required": true
+    },
+    {
+     "step": "Starting from scratch",
+     "type": "text",
+     "label": "What does it need to do for you?",
+     "fieldId": "q-what-does-it-need-to-do-for-you-u17a",
+     "required": true,
+     "placeholder": "Get found on Google, take bookings, show the work\u2026"
+    },
+    {
+     "step": "Starting from scratch",
+     "type": "choice",
+     "label": "Do you own the domain name yet?",
+     "fieldId": "q-do-you-own-the-domain-name-yet-iaau",
+     "options": [
+      "Yes",
+      "No",
+      "I'm not sure what that means"
+     ],
+     "required": true
+    },
+    {
+     "step": "Starting from scratch",
+     "type": "choice",
+     "label": "Do you have a logo and brand colours?",
+     "fieldId": "q-do-you-have-a-logo-and-brand-col-19dn",
+     "options": [
+      "Yes, all of it",
+      "Some of it",
+      "No \u2014 we'd need help with that"
+     ],
+     "required": true
+    }
+   ],
+   "endings": {
+    "Starting from scratch": {
+     "action": "submit"
+    },
+    "Replacing what you have": {
+     "action": "submit"
+    }
+   },
+   "buttonLabel": "Send it",
+   "description": "",
+   "successBody": "We'll be in touch shortly.",
+   "successHeading": "Got it \u2014 thank you.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "marbleford-pet-wash",
+   "kind": "preset",
+   "name": "Marbleford Pet Wash",
+   "note": "",
+   "fields": [
+    {
+     "type": "text",
+     "label": "Your name",
+     "fieldId": "your-name",
+     "required": true
+    },
+    {
+     "type": "tel",
+     "label": "Best phone number",
+     "fieldId": "best-phone-number",
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "Your dog's breed and size",
+     "fieldId": "your-dog-s-breed-and-size",
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "What service are you after?",
+     "fieldId": "what-service-are-you-after",
+     "required": true
+    }
+   ],
+   "buttonLabel": "Send it",
+   "description": "",
+   "successBody": "We'll be in touch shortly.",
+   "successHeading": "Got it \u2014 thank you."
+  },
+  {
+   "id": "home",
+   "kind": "preset",
+   "name": "Home",
+   "note": "",
+   "fields": [
+    {
+     "type": "text",
+     "label": "Your Name",
+     "fieldId": "your-name",
+     "required": true
+    },
+    {
+     "type": "email",
+     "label": "Email Address",
+     "fieldId": "email-address",
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "Tell Us About Your Project",
+     "fieldId": "tell-us-about-your-project",
+     "required": true
+    }
+   ],
+   "buttonLabel": "Send it",
+   "description": "",
+   "successBody": "We'll be in touch shortly.",
+   "successHeading": "Got it \u2014 thank you."
+  },
+  {
+   "id": "discovery-call",
+   "kind": "preset",
+   "name": "Discovery Call",
+   "note": "",
+   "fields": [
+    {
+     "type": "choice",
+     "label": "Which one would you like to talk about?",
+     "fieldId": "service",
+     "options": [
+      "1 \u00b7 Custom Websites",
+      "2 \u00b7 Five Star Reviews",
+      "3 \u00b7 AI Implementation",
+      "4 \u00b7 Booked Appointments",
+      "5 \u00b7 Speed To Lead",
+      "Not sure yet \u2014 help me work it out"
+     ],
+     "dropdown": true,
+     "required": true,
+     "placeholder": "Select a service"
+    }
+   ],
+   "buttonLabel": "Next \u2014 pick a time",
+   "description": "One question \u2014 which of the five. Google takes the name and email at booking.",
+   "successBody": "Choose any slot on the calendar underneath. Rather talk now? Call {{business.phone}}.",
+   "successHeading": "Great \u2014 now pick a time below.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "careers-application-sjc",
+   "kind": "preset",
+   "name": "Careers Application (SJC)",
+   "note": "The Loom does not need to be polished \u2014 one or two minutes, five at the very most. Tell me about your experience and what you would bring to the role you are applying for.",
+   "fields": [
+    {
+     "type": "choice",
+     "label": "Which role are you applying for?",
+     "fieldId": "q-role",
+     "options": [
+      "Sales",
+      "Web Designer",
+      "Media Buyer",
+      "AI Systems Builder"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "First name",
+     "fieldId": "q-first-name",
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "Last name",
+     "fieldId": "q-last-name",
+     "required": true
+    },
+    {
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    },
+    {
+     "type": "tel",
+     "label": "Phone",
+     "fieldId": "q-phone",
+     "required": true
+    },
+    {
+     "type": "file",
+     "label": "Upload your resume",
+     "fieldId": "q-resume",
+     "required": true,
+     "newScreen": true
+    },
+    {
+     "type": "url",
+     "label": "Paste Your Loom video link Here",
+     "fieldId": "q-loom",
+     "required": true,
+     "placeholder": "https://www.loom.com/share/\u2026"
+    }
+   ],
+   "buttonLabel": "Submit",
+   "description": "Four roles \u2014 sales, web design, media buying, AI. Resume upload + Loom link.",
+   "successBody": "Your resume and video are in. If it looks like a fit you will hear from me directly.",
+   "successHeading": "Got it \u2014 thank you.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "speed-to-lead-enquiry-sjc",
+   "kind": "preset",
+   "name": "Speed to Lead \u2014 Enquiry (SJC)",
+   "note": "",
+   "fields": [
+    {
+     "step": "About you",
+     "type": "text",
+     "label": "Your name",
+     "fieldId": "q-name",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "text",
+     "label": "Business name",
+     "fieldId": "q-business",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "tel",
+     "label": "Best phone number",
+     "fieldId": "q-phone",
+     "required": true
+    },
+    {
+     "step": "Your leads",
+     "type": "multi",
+     "label": "How do new leads reach you? Pick any.",
+     "fieldId": "q-channels",
+     "options": [
+      "Facebook / Instagram ads",
+      "Google",
+      "A form on our website",
+      "They phone in",
+      "Referrals",
+      "Not sure"
+     ]
+    },
+    {
+     "step": "Your leads",
+     "type": "choice",
+     "label": "Who answers a new lead first?",
+     "fieldId": "q-who-answers",
+     "options": [
+      "I do",
+      "Front desk",
+      "Whoever is free",
+      "An answering service",
+      "Nobody consistently"
+     ],
+     "required": true
+    },
+    {
+     "step": "Your leads",
+     "type": "choice",
+     "label": "How long does that usually take?",
+     "fieldId": "q-response-time",
+     "options": [
+      "Minutes",
+      "Within an hour",
+      "Same day",
+      "Next day or later",
+      "Honestly, I don't know"
+     ],
+     "required": true
+    },
+    {
+     "step": "Your leads",
+     "type": "choice",
+     "label": "What happens to a lead that comes in at 9pm or on a Sunday?",
+     "fieldId": "q-after-hours",
+     "options": [
+      "Someone answers",
+      "It waits until morning",
+      "It waits until Monday",
+      "It gets missed",
+      "Not sure"
+     ],
+     "required": true
+    },
+    {
+     "help": "If there isn't one, just say so \u2014 that's a common answer.",
+     "step": "Your leads",
+     "type": "text",
+     "label": "What system are those leads sitting in?",
+     "fieldId": "q-crm",
+     "placeholder": "GoHighLevel, a spreadsheet, my inbox\u2026"
+    }
+   ],
+   "buttonLabel": "Send it",
+   "description": "",
+   "successBody": "We'll be in touch shortly.",
+   "successHeading": "Got it \u2014 thank you.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "ai-implementation-enquiry-sjc",
+   "kind": "preset",
+   "name": "AI Implementation \u2014 Enquiry (SJC)",
+   "note": "",
+   "fields": [
+    {
+     "step": "About you",
+     "type": "text",
+     "label": "Your name",
+     "fieldId": "q-name",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "text",
+     "label": "Business name",
+     "fieldId": "q-business",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "tel",
+     "label": "Best phone number",
+     "fieldId": "q-phone",
+     "required": true
+    },
+    {
+     "help": "List whatever you actually open every day.",
+     "step": "How you run things",
+     "type": "text",
+     "label": "What software runs the business today?",
+     "fieldId": "q-software",
+     "required": true,
+     "placeholder": "GoHighLevel, Jobber, Square, spreadsheets\u2026"
+    },
+    {
+     "step": "How you run things",
+     "type": "choice",
+     "label": "What eats the most time in a week?",
+     "fieldId": "q-time-sink",
+     "options": [
+      "Answering new leads",
+      "Chasing follow-ups",
+      "Scheduling",
+      "Quotes and proposals",
+      "Billing",
+      "Reporting",
+      "Something else"
+     ],
+     "required": true
+    },
+    {
+     "step": "How you run things",
+     "type": "choice",
+     "label": "Who does that work now?",
+     "fieldId": "q-who-does-it",
+     "options": [
+      "Me",
+      "One staff member",
+      "Several people",
+      "Nobody consistently \u2014 it just piles up"
+     ],
+     "required": true
+    },
+    {
+     "step": "How you run things",
+     "type": "choice",
+     "label": "How many people on the team?",
+     "fieldId": "q-team-size",
+     "options": [
+      "Just me",
+      "2\u20133",
+      "4\u20137",
+      "8 or more",
+      "Varies a lot"
+     ],
+     "required": true
+    },
+    {
+     "step": "How you run things",
+     "type": "textarea",
+     "label": "If you could hand one job over tomorrow, what would it be?",
+     "fieldId": "q-first-job",
+     "required": true
+    }
+   ],
+   "buttonLabel": "Send it",
+   "description": "",
+   "successBody": "We'll be in touch shortly.",
+   "successHeading": "Got it \u2014 thank you.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "five-star-reviews-enquiry-sjc",
+   "kind": "preset",
+   "name": "Five Star Reviews \u2014 Enquiry (SJC)",
+   "note": "",
+   "fields": [
+    {
+     "step": "About you",
+     "type": "text",
+     "label": "Your name",
+     "fieldId": "q-name",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "text",
+     "label": "Business name",
+     "fieldId": "q-business",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    },
+    {
+     "step": "About you",
+     "type": "tel",
+     "label": "Best phone number",
+     "fieldId": "q-phone",
+     "required": true
+    },
+    {
+     "step": "Your reviews",
+     "type": "choice",
+     "label": "Is your Google Business Profile set up?",
+     "routes": [
+      {
+       "goTo": "Getting you set up",
+       "when": "No \u2014 not set up"
+      },
+      {
+       "goTo": "Getting you set up",
+       "when": "Not sure"
+      }
+     ],
+     "fieldId": "q-gbp",
+     "options": [
+      "Yes, and we manage it",
+      "Yes, but nobody touches it",
+      "I think so, but I've never logged in",
+      "No \u2014 not set up",
+      "Not sure"
+     ],
+     "required": true
+    },
+    {
+     "step": "How it's going",
+     "type": "choice",
+     "label": "Roughly how many reviews?",
+     "fieldId": "q-review-count",
+     "options": [
+      "None yet",
+      "Under 10",
+      "10\u201350",
+      "50\u2013150",
+      "150+",
+      "Don't know"
+     ],
+     "required": true
+    },
+    {
+     "step": "How it's going",
+     "type": "choice",
+     "label": "And the rating?",
+     "fieldId": "q-rating",
+     "options": [
+      "No reviews yet",
+      "Under 4.0",
+      "4.0\u20134.5",
+      "4.5\u20134.8",
+      "4.8 or better",
+      "Don't know"
+     ],
+     "required": true
+    },
+    {
+     "step": "How it's going",
+     "type": "choice",
+     "label": "Who asks a happy customer for a review today?",
+     "fieldId": "q-who-asks",
+     "options": [
+      "I do",
+      "Staff, when they remember",
+      "Something automated",
+      "Nobody \u2014 that's the problem"
+     ],
+     "required": true
+    },
+    {
+     "help": "Optional.",
+     "step": "How it's going",
+     "type": "text",
+     "label": "Which competitor do you keep losing to?",
+     "fieldId": "q-losing-to"
+    },
+    {
+     "step": "Getting you set up",
+     "type": "choice",
+     "label": "How long have you been in business?",
+     "fieldId": "q-years",
+     "options": [
+      "Under a year",
+      "1\u20133 years",
+      "3\u201310 years",
+      "10+ years"
+     ],
+     "required": true
+    },
+    {
+     "help": "Optional.",
+     "step": "Getting you set up",
+     "type": "text",
+     "label": "Which competitor comes up when someone searches for you?",
+     "fieldId": "q-competitor"
+    }
+   ],
+   "endings": {
+    "How it's going": {
+     "action": "submit"
+    },
+    "Getting you set up": {
+     "action": "submit"
+    }
+   },
+   "buttonLabel": "Send it",
+   "description": "",
+   "successBody": "We'll be in touch shortly.",
+   "successHeading": "Got it \u2014 thank you.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "five-star-funnel-customer-survey",
+   "kind": "preset",
+   "name": "Five Star Funnel \u2014 Customer Survey",
+   "note": "",
+   "fields": [
+    {
+     "step": "How did we do?",
+     "type": "choice",
+     "label": "How did we do?",
+     "routes": [
+      {
+       "goTo": "What should we have done differently?",
+       "when": "Okay"
+      },
+      {
+       "goTo": "What should we have done differently?",
+       "when": "Not great"
+      },
+      {
+       "goTo": "What should we have done differently?",
+       "when": "Poor"
+      }
+     ],
+     "fieldId": "q-rating",
+     "options": [
+      "Excellent \u2014 better than expected",
+      "Good",
+      "Okay",
+      "Not great",
+      "Poor"
+     ],
+     "required": true
+    },
+    {
+     "step": "Thank you",
+     "type": "text",
+     "label": "Your name",
+     "fieldId": "q-name",
+     "required": true
+    },
+    {
+     "help": "Only used if we need to follow up \u2014 never shared.",
+     "step": "Thank you",
+     "type": "tel",
+     "label": "Best number to reach you",
+     "fieldId": "q-phone"
+    },
+    {
+     "help": "Say it straight. This goes to the owner, not to a public page.",
+     "step": "What should we have done differently?",
+     "type": "textarea",
+     "label": "What should we have done differently?",
+     "fieldId": "q-improve",
+     "required": true
+    }
+   ],
+   "buttonLabel": "Send",
+   "description": "The survey funnel. One question branches: happy goes to the review profile, unhappy goes to service recovery \u2014 and then still gets invited to review.",
+   "successBody": "This goes straight to the owner today, and if we owe you a call you'll get one. If you'd share how it turns out, it means a lot.",
+   "successHeading": "Thank you \u2014 that helps.",
+   "successButtonUrl": "{{business.reviewUrl}}",
+   "successButtonLabel": "Leave a review",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "database-reactivation-enquiry-sjc",
+   "kind": "preset",
+   "name": "Database Reactivation \u2014 Enquiry (SJC)",
+   "note": "",
+   "fields": [
+    {
+     "type": "text",
+     "label": "Your name",
+     "fieldId": "name",
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "Business name",
+     "fieldId": "business",
+     "required": true
+    },
+    {
+     "type": "email",
+     "label": "Email",
+     "fieldId": "email",
+     "required": true
+    },
+    {
+     "type": "tel",
+     "label": "Best phone number",
+     "fieldId": "phone",
+     "required": true
+    },
+    {
+     "type": "choice",
+     "label": "Where do your old customers and quotes live right now?",
+     "fieldId": "software",
+     "options": [
+      "GoHighLevel",
+      "Another CRM",
+      "A spreadsheet",
+      "My phone and my email",
+      "Honestly, more than one place"
+     ],
+     "required": true
+    },
+    {
+     "type": "choice",
+     "label": "Roughly how many old leads and past customers are in there?",
+     "fieldId": "size",
+     "options": [
+      "Under 500",
+      "500 to 2,000",
+      "2,000 to 10,000",
+      "More than 10,000",
+      "No idea"
+     ],
+     "required": true
+    },
+    {
+     "type": "choice",
+     "label": "When did anyone last go back through that list?",
+     "fieldId": "lasttouch",
+     "options": [
+      "In the last few months",
+      "Sometime last year",
+      "Longer than that",
+      "Never"
+     ],
+     "required": true
+    },
+    {
+     "help": "A ballpark is fine \u2014 it decides what working the list is worth.",
+     "type": "text",
+     "label": "What is one customer worth to you, roughly?",
+     "fieldId": "ticket",
+     "required": true
+    },
+    {
+     "type": "textarea",
+     "label": "Anything else we should know?",
+     "fieldId": "notes"
+    }
+   ],
+   "buttonLabel": "Send it over",
+   "description": "",
+   "successBody": "We'll come back to you with what your list is likely worth and what it would take to work it. No obligation either way.",
+   "successHeading": "Got it.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "growth-engine-application-sjc",
+   "kind": "preset",
+   "name": "Growth Engine Application (SJC)",
+   "note": "",
+   "fields": [
+    {
+     "help": "Everybody has one, and it does not have to be rocket science. Martha Stewart packaged homemaking and cooking. A top realtor packages how to get more listings. Tell us yours in a sentence or two.",
+     "step": "Your skill",
+     "type": "textarea",
+     "label": "What skill have you packaged and are you selling?",
+     "fieldId": "q-skill",
+     "required": true,
+     "placeholder": "I teach realtors how to get listings from Instagram..."
+    },
+    {
+     "step": "Your skill",
+     "type": "choice",
+     "label": "How do you sell it today?",
+     "fieldId": "q-package",
+     "options": [
+      "A coaching program",
+      "An online course",
+      "A book",
+      "Speaking and events",
+      "A membership or community",
+      "A done-for-you service",
+      "More than one of these",
+      "I have not packaged it yet"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your skill",
+     "type": "choice",
+     "label": "Have you sold it yet?",
+     "fieldId": "q-sold",
+     "options": [
+      "Yes, I sell it now and want to scale it",
+      "Not yet, I want to launch it"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your skill",
+     "type": "choice",
+     "label": "Roughly what does one sale of it bring in?",
+     "fieldId": "q-sale-value",
+     "options": [
+      "Under $2,000.00",
+      "$2,000.00 to $7,000.00",
+      "$7,000.00 to $15,000.00",
+      "$15,000.00 to $30,000.00",
+      "More than $30,000.00",
+      "Not selling it yet"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "YouTube subscribers",
+     "fieldId": "q-aud-youtube",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "Instagram followers",
+     "fieldId": "q-aud-instagram",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "TikTok followers",
+     "fieldId": "q-aud-tiktok",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "Facebook followers",
+     "fieldId": "q-aud-facebook",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "LinkedIn followers",
+     "fieldId": "q-aud-linkedin",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "X followers",
+     "fieldId": "q-aud-x",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "Podcast listeners per month",
+     "fieldId": "q-aud-podcast",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "Email list",
+     "fieldId": "q-aud-email",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your business",
+     "type": "choice",
+     "label": "How many people are on your team today, not counting you?",
+     "fieldId": "q-team",
+     "options": [
+      "It is just me right now",
+      "1 to 2",
+      "3 to 5",
+      "6 to 15",
+      "More than 15"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your business",
+     "type": "choice",
+     "label": "If people flooded your website after you spoke, could you fulfill it in a timely fashion?",
+     "fieldId": "q-fulfil",
+     "options": [
+      "Yes",
+      "No, not today",
+      "I have never been tested"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your business",
+     "type": "choice",
+     "label": "Our builds start at $30,000.00, plus $2,000.00 to $5,000.00 a month. Are you prepared to invest at that level?",
+     "fieldId": "q-invest",
+     "options": [
+      "Yes",
+      "Not yet"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your business",
+     "type": "url",
+     "label": "What is your website?",
+     "fieldId": "q-website",
+     "required": true,
+     "placeholder": "If you do not have one, type none"
+    },
+    {
+     "step": "How we reach you",
+     "type": "text",
+     "label": "First name",
+     "fieldId": "q-first-name",
+     "required": true
+    },
+    {
+     "step": "How we reach you",
+     "type": "text",
+     "label": "Last name",
+     "fieldId": "q-last-name",
+     "required": true
+    },
+    {
+     "help": "We text you to set up your call. Use the phone you carry, not the office line.",
+     "step": "How we reach you",
+     "type": "tel",
+     "label": "Mobile phone (must receive texts)",
+     "fieldId": "q-phone",
+     "required": true
+    },
+    {
+     "step": "How we reach you",
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    }
+   ],
+   "buttonLabel": "Send My Application",
+   "description": "Home page application: sorts by what they sell, team size, audience, fulfilment, investment. Replaces the calendar.",
+   "successBody": "Thank you. If it is a fit, we will text you within one business day to set up your call. Not a fit yet? Start with the book. It is the whole plan in pictures.",
+   "successHeading": "Your application is in.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "book-download-sjc",
+   "kind": "preset",
+   "name": "Book Download (SJC)",
+   "note": "",
+   "fields": [
+    {
+     "type": "text",
+     "label": "First name",
+     "fieldId": "q-first-name",
+     "required": true
+    },
+    {
+     "type": "text",
+     "label": "Last name",
+     "fieldId": "q-last-name",
+     "required": true
+    },
+    {
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    },
+    {
+     "type": "tel",
+     "label": "Mobile phone",
+     "fieldId": "q-phone",
+     "required": true
+    }
+   ],
+   "buttonLabel": "Send Me The Book",
+   "description": "Get The Book page: name, email, mobile. Sends them to the thank-you page with the download. Rows land on the Book Downloads tab.",
+   "successBody": "Taking you to the download now.",
+   "successHeading": "Your book is ready.",
+   "oneQuestionPerScreen": false
+  },
+  {
+   "id": "revenue-share-application-sjc",
+   "kind": "preset",
+   "name": "Revenue Share Application (SJC)",
+   "note": "",
+   "fields": [
+    {
+     "help": "It does not have to be rocket science. Tell us in a sentence or two.",
+     "step": "Your skill",
+     "type": "textarea",
+     "label": "What do you know that other people want to learn?",
+     "fieldId": "q-skill",
+     "required": true,
+     "placeholder": "I teach realtors how to get listings from Instagram..."
+    },
+    {
+     "step": "Your skill",
+     "type": "choice",
+     "label": "Have you sold it yet?",
+     "fieldId": "q-sold",
+     "options": [
+      "Yes, I sell it now and want to scale it",
+      "Not yet, I want to launch it"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your skill",
+     "type": "choice",
+     "label": "What would one sale of it bring in?",
+     "fieldId": "q-sale-value",
+     "options": [
+      "Under $2,000.00",
+      "$2,000.00 to $7,000.00",
+      "$7,000.00 to $15,000.00",
+      "$15,000.00 to $30,000.00",
+      "More than $30,000.00",
+      "Not selling it yet"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your skill",
+     "type": "textarea",
+     "label": "Who have you helped with it so far? Tell us what happened.",
+     "fieldId": "q-proof",
+     "required": true,
+     "placeholder": "A client, a student, a friend, yourself..."
+    },
+    {
+     "help": "Any platform. A phone video is fine.",
+     "step": "Your skill",
+     "type": "url",
+     "label": "Link to a video of you talking about it",
+     "fieldId": "q-video",
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "YouTube subscribers",
+     "fieldId": "q-aud-youtube",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "Instagram followers",
+     "fieldId": "q-aud-instagram",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "TikTok followers",
+     "fieldId": "q-aud-tiktok",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "Facebook followers",
+     "fieldId": "q-aud-facebook",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "LinkedIn followers",
+     "fieldId": "q-aud-linkedin",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "X followers",
+     "fieldId": "q-aud-x",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "Podcast listeners per month",
+     "fieldId": "q-aud-podcast",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "choice",
+     "label": "Email list",
+     "fieldId": "q-aud-email",
+     "options": [
+      "Not on it",
+      "Under 1,000",
+      "1,000 to 10,000",
+      "10,000 to 50,000",
+      "50,000 to 250,000",
+      "250,000 to 1 million",
+      "Over 1 million"
+     ],
+     "dropdown": true,
+     "required": true
+    },
+    {
+     "step": "Your audience",
+     "type": "url",
+     "label": "Your website, if you have one",
+     "fieldId": "q-website",
+     "placeholder": "If you do not have one, type none"
+    },
+    {
+     "step": "How we reach you",
+     "type": "text",
+     "label": "First name",
+     "fieldId": "q-first-name",
+     "required": true
+    },
+    {
+     "step": "How we reach you",
+     "type": "text",
+     "label": "Last name",
+     "fieldId": "q-last-name",
+     "required": true
+    },
+    {
+     "help": "We text you to set up your call. Use the phone you carry, not the office line.",
+     "step": "How we reach you",
+     "type": "tel",
+     "label": "Mobile phone (must receive texts)",
+     "fieldId": "q-phone",
+     "required": true
+    },
+    {
+     "step": "How we reach you",
+     "type": "email",
+     "label": "Email",
+     "fieldId": "q-email",
+     "required": true
+    }
+   ],
+   "buttonLabel": "Send My Application",
+   "description": "Revenue share / talent search application: the skill, proof it sells, a video of them selling it, audience, contact.",
+   "successBody": "Thank you. We read every one. Each month we pick one or two members to talk with. Keep showing up in the community.",
+   "successHeading": "Your application is in.",
+   "oneQuestionPerScreen": false
+  }
+ ],
+ "sections": {
+  "mine": "My Digital Assets",
+  "inUse": "Client Onboarding Form",
+  "samples": "Samples to start from"
+ }
+}
