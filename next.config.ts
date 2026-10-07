@@ -32,19 +32,21 @@ const nextConfig: NextConfig = {
     // ⛔ SJC'S HOST ONLY. A redirect here answers on EVERY hostname this deployment serves, so an
     // unguarded /live would steal that address from every customer site too.
     const sjcHost = [{ type: "host" as const, value: "(www\\.)?stevenjamesconsulting\\.com" }];
-    const tiger =
-      "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/uploads/1788577050534-favicon-tiger-512-YVmB3SnJtByxa60gm1a5XiJ6UFuCPW.png";
+    // The copper ring + S (brand ruled 2026-10-02). This pointed at the old tiger until 2026-10-06, which is
+    // why YouTube and Google kept showing the tiger beside every link to the site.
+    const siteIcon =
+      "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/uploads/1791001773873-sjc-favicon-copper-round-512.png";
     return [
       // /live was the first address of the show page (built 09-26, said on camera and in the
       // bios), retired for the builder page /funnel-hack-live with no redirect — so it 404'd.
       // Temporary on purpose: /live may become its own page again, and a 308 is cached forever.
       { source: "/live", destination: "/funnel-hack-live", permanent: false, has: sjcHost },
       // Crawlers, readers and the 404 page ask for these fixed addresses; the tab icon itself is
-      // the tiger declared in <head> from the site record. Same picture, so nothing 404s.
-      { source: "/favicon.ico", destination: tiger, permanent: false, has: sjcHost },
-      { source: "/icon.png", destination: tiger, permanent: false, has: sjcHost },
-      { source: "/apple-touch-icon.png", destination: tiger, permanent: false, has: sjcHost },
-      { source: "/apple-touch-icon-precomposed.png", destination: tiger, permanent: false, has: sjcHost },
+      // declared in <head> from the site record. Same picture, so nothing 404s.
+      { source: "/favicon.ico", destination: siteIcon, permanent: false, has: sjcHost },
+      { source: "/icon.png", destination: siteIcon, permanent: false, has: sjcHost },
+      { source: "/apple-touch-icon.png", destination: siteIcon, permanent: false, has: sjcHost },
+      { source: "/apple-touch-icon-precomposed.png", destination: siteIcon, permanent: false, has: sjcHost },
       {
         source: "/who-we-serve",
         destination: "/discover-the-lies",
