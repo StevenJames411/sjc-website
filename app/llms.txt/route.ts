@@ -21,9 +21,9 @@ export const dynamic = "force-dynamic";
 
 const BODY = `# Steven James Consulting
 
-> Steven James Consulting helps coaches, authors and influencers turn the attention they already have into dollars. The formula: Attention + Your Product = Dollars. We package what you know into a product, send all the attention you get from free social media to one website you own, and build the six systems that make the sale. Done for you, by Steven Barchetti and his team.
+> Steven James Consulting is a modern day talent agency for coaches, authors, speakers and influencers. We turn what you know into a premium product and build the fifteen-stage system that sells it. The formula: Attention + Your Product = Dollars. We turn your attention into dollars. Three ways to work with us: do it yourself with the book, done with you on a revenue share, or done for you by Steven Barchetti and his team.
 
-Steven James Consulting works with coaches, authors and influencers who already have people paying attention to them and something they know that is worth selling. Most of them have about three quarters of it in place, but all of it sits on free social media, which is rented land. We build the piece that is missing: one website they own, with six business systems connected behind it as one Growth Engine, and AI employees that keep it running beside their own small team. Steven Barchetti has run five businesses over forty years (a restaurant, mortgage, roofing, trucking and now technology) and built the systems in every one. The company runs on the same machine it builds for clients.
+Steven James Consulting works with coaches, authors and influencers who already have people paying attention to them and something they know that is worth selling. Most of them have about three quarters of it in place, but all of it sits on free social media, which is rented land. We build the piece that is missing: one website they own, with six business systems connected behind it as one Revenue Engine (Six Business Systems = One Revenue Engine), built in fifteen stages, and AI employees that keep it running beside their own small team. Steven Barchetti has run five businesses over forty years (a restaurant, mortgage, roofing, trucking and now technology) and built the systems in every one. The company runs on the same machine it builds for clients.
 
 ## Who it is for
 - Coaches with a program that works.
@@ -44,6 +44,8 @@ Steven James Consulting works with coaches, authors and influencers who already 
 - [Home](https://stevenjamesconsulting.com/): Turn Your Attention Into Dollars.
 - [For Coaches, Authors and Influencers](https://stevenjamesconsulting.com/for-coaches-authors-and-influencers): why what you teach runs on the same six systems.
 - [Done For You](https://stevenjamesconsulting.com/done-for-you): the fifteen-stage system my team builds for a client, stage by stage. $40,000.00 to $60,000.00.
+- [Revenue Share Partnership](https://stevenjamesconsulting.com/revenue-share): the same fifteen-stage system, built with you. $3,995.00 to start. Two or three community members a month.
+- [Apply](https://stevenjamesconsulting.com/apply): the three ways to work with us, each explained, with the next step for each.
 - [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, the blueprint for turning what you know into money.
 - [Funnel Hack Live](https://stevenjamesconsulting.com/funnel-hack-live): live on TikTok every weekday at 3 p.m. Central, with the replay on this page.
 - [Podcast](https://stevenjamesconsulting.com/podcast): conversations with coaches, authors and influencers.
