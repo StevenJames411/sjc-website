@@ -60,7 +60,7 @@ Steven Barchetti has owned and run five businesses over forty years (restaurant,
 
 ## Contact
 - Website: https://stevenjamesconsulting.com
-- Apply to work with us: https://stevenjamesconsulting.com/#apply
+- Apply to work with us (three ways: the Blueprint, Revenue Share, Done For You): https://stevenjamesconsulting.com/apply
 `;
 
 // A client's own site gets NO llms.txt. There is nothing curated to serve, and inventing a summary
