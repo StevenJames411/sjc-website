@@ -65,7 +65,7 @@ export async function POST(req: Request) {
 // THE DOWNLOAD IS FOR BUYERS (2026-10-04). /book-thank-you carries no file addresses of its own; it asks here
 // with the session id Stripe put on its address, and only a finished order gets the two links back.
 // "no_payment_required" is a completed $0 order (the free test run), which counts.
-const FILES = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/book/atd-7c41f09be2d6/";
+const FILES = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/book/atd-f87d15eee4a6/";   // third edition (2026-10-06): fifteen stages, 55 pictures. The second edition stays at atd-7c41f09be2d6.
 // WHO BOUGHT THE BOOK goes on the "Book Downloads" tab of the SJC intake sheet (Steven, 2026-10-04), once per
 // order. The store key is the guard against writing the same buyer again every time they reload the page.
 async function recordBuyer(id: string, json: Record<string, unknown>) {
@@ -86,6 +86,13 @@ async function recordBuyer(id: string, json: Record<string, unknown>) {
       { key: "order", label: "Stripe order", value: String(json.payment_intent || id) },
     ], new Date().toISOString());
     await seen.write({ at: new Date().toISOString() });
+    // One running list of orders (time and amount only, no person) so the owner's KPI screen can count
+    // book sales: app/api/kpi-stats. Kept beside, not instead of, the per-order guard above.
+    const log = createKvStore(getClient(), "sjc-book-orders");
+    const prior = ((await log.read<{ orders?: { id: string; at: string; cents: number }[] }>()) || {}).orders || [];
+    if (!prior.some((o) => o.id === id)) {
+      await log.write({ orders: [...prior, { id, at: new Date().toISOString(), cents: Number(json.amount_total || 0) }] });
+    }
   } catch (e) {
     console.error("book buyer NOT written to the sheet:", e);
   }

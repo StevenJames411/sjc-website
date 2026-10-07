@@ -168,14 +168,14 @@ const FONT_VARS = [lexend, inter, poppins, montserrat, merriweather, playfair, s
 // The card image comes from app/opengraph-image.tsx; `images` stays unset so it isn't overridden,
 // and so each segment's own opengraph-image.tsx can take over.
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.stevenjamesconsulting.com"),
+  metadataBase: new URL("https://stevenjamesconsulting.com"),
   title: SITE_DEFAULTS.title,
   description: SITE_DEFAULTS.description,
   alternates: { canonical: "/" },
   openGraph: {
     title: SITE_DEFAULTS.ogTitle,
     description: SITE_DEFAULTS.ogDescription,
-    url: "https://www.stevenjamesconsulting.com",
+    url: "https://stevenjamesconsulting.com",
     siteName: SITE_NAME,
     type: "website",
   },
@@ -187,61 +187,87 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+// ⚠️ REWRITTEN 2026-10-06 FOR WHO THE SITE NOW SPEAKS TO (coaches, authors and influencers).
+// Until then these blocks still described the old offer ("AI Employee Operating System Installation",
+// "Growth Engine", a price FAQ that said "it depends on scope" while every page printed the price) —
+// and none of it was reaching Google anyway, because the host test below had stopped matching.
+// The numbers here are the public ones in ~/SJC/CEO/GTM.md; change them there first.
+const SITE_URL = "https://stevenjamesconsulting.com";
+const steven = { "@type": "Person", name: "Steven Barchetti", url: `${SITE_URL}/about` };
+
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Steven James Consulting",
   legalName: "ARV Venture Group LLC",
-  url: "https://www.stevenjamesconsulting.com",
-  logo: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/uploads/1785815543979-logo.png",
+  url: SITE_URL,
+  logo: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/uploads/1791001773873-sjc-favicon-copper-round-512.png",
   email: "support@stevenjamesconsulting.com",
   telephone: "+1-210-851-4906",
-  founder: { "@type": "Person", name: "Steven Barchetti" },
+  founder: steven,
+  slogan: "We turn your attention into dollars.",
+  areaServed: { "@type": "Country", name: "United States" },
+  sameAs: [
+    "https://www.youtube.com/@stevenjamesconsulting",
+    "https://www.facebook.com/stevenjamesconsulting",
+  ],
   description:
-    "Steven James Consulting helps coaches, authors and influencers turn the attention they already have into dollars: we package what you know into a product, send the attention you get from free social media to one website you own, and build the six systems that make the sale. Founded by Steven Barchetti, who has run five businesses over forty years.",
+    "Steven James Consulting is a modern day talent agency for coaches, authors, speakers and influencers. We turn what you know into a premium product and build the fifteen-stage system that sells it: your website, your own e-book, your own podcast, and AI employees answering for you. Founded by Steven Barchetti, who has run five businesses over forty years.",
 };
 
-const serviceSchema = {
+const provider = { "@type": "Organization", name: "Steven James Consulting", url: SITE_URL };
+
+const doneForYouSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
-  name: "AI Employee Operating System Installation",
-  serviceType: "AI Employee Operating System",
-  provider: { "@type": "Organization", name: "Steven James Consulting" },
+  name: "Done For You",
+  serviceType: "Talent agency for coaches, authors and influencers",
+  provider,
   areaServed: "United States",
+  url: `${SITE_URL}/done-for-you`,
   description:
-    "Done for you: one website you own and six business systems connected as one Growth Engine, with AI employees answering, following up and booking beside your own small team. Built for coaches, authors and influencers.",
+    "My team builds all fifteen stages for you: what you know packaged into a premium product, your own e-book, your own podcast, a website you own, and AI employees answering for you.",
+  offers: { "@type": "AggregateOffer", priceCurrency: "USD", lowPrice: "40000.00", highPrice: "60000.00" },
 };
 
-const faqSchema = {
+const revenueShareSchema = {
   "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "What exactly do you install?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "A native AI system that connects the six systems your business runs on. It's a workforce of AI employees — one hire covering up to six seats: instant speed-to-lead, database reactivation of your old leads, closing and booking, customer retention, 24/7 call handling, and cross-sell. We build and train it on your business and run it; you keep full control and can watch every conversation and booking.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What does this cost?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "It depends on scope — how many seats you want covered and the complexity of your systems. It's a fraction of what the same roles would cost you in salaries, with no SaaS lock-in and no agency-forever trap. The exact number is the easy conversation we have on the discovery call.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How long does the install take?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Typically 4-8 weeks depending on scope. We connect your six systems and keep them getting better from the day they go live.",
-      },
-    },
-  ],
+  "@type": "Service",
+  name: "Revenue Share Partnership",
+  serviceType: "Talent agency for coaches, authors and influencers",
+  provider,
+  areaServed: "United States",
+  url: `${SITE_URL}/revenue-share`,
+  description:
+    "The same fifteen-stage system, built with you, for real talent that cannot write the full check today. We pick two or three members of our community each month.",
+  offers: { "@type": "Offer", priceCurrency: "USD", price: "3995.00", url: `${SITE_URL}/apply-revenue-share` },
 };
+
+const bookSchema = {
+  "@context": "https://schema.org",
+  "@type": "Book",
+  name: "Attention To Dollars",
+  alternateName: "The Blueprint",
+  author: steven,
+  publisher: provider,
+  bookFormat: "https://schema.org/EBook",
+  numberOfPages: 346,
+  inLanguage: "en",
+  url: `${SITE_URL}/attention-to-dollars`,
+  description:
+    "The million-dollar blueprint: how to turn what you know into money. All fifteen stages in the order we build them, every step spelled out in plain words, with illustrations.",
+  offers: {
+    "@type": "Offer",
+    priceCurrency: "USD",
+    price: "495.00",
+    availability: "https://schema.org/InStock",
+    url: `${SITE_URL}/get-the-book`,
+  },
+};
+
+// ⛔ No FAQPage block. Google only accepts it when the same questions and answers are printed on
+// the page, and no page prints them; the old one had drifted into contradicting the pages.
+const SJC_SCHEMAS = [organizationSchema, doneForYouSchema, revenueShareSchema, bookSchema];
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // ⚠️ SJC'S IDENTITY IS SCOPED TO SJC'S OWN DOMAIN.
@@ -260,7 +286,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // SitePageBody's per-site brand comes later in document order and wins. Scoping it too would be
   // churn on a path that already behaves.
   const h = await resolveHost();
-  const isSjc = h.kind === "sjc";
+  // ⚠️ The apex resolves as an ordinary site row now ({kind:"client", site: sjc-website}), so the
+  // old `h.kind === "sjc"` test went false on the live domain and these blocks silently stopped
+  // being sent (found 2026-10-06: zero structured data on any page). Match the row too.
+  const isSjc = h.kind === "sjc" || (h.kind === "client" && h.site.id === SJC);
   const brand = await readBrand(true, SJC);
 
   return (
@@ -268,9 +297,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         {isSjc ? (
           <>
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+            {SJC_SCHEMAS.map((x, i) => (
+              <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(x) }} />
+            ))}
             {/* THE PIXEL (ruled 2026-09-17): first-party visits/events, ours, feeding the
                 owner's KPI screen. Scoped to SJC's own domain, same as the JSON-LD above. */}
             {process.env.NEXT_PUBLIC_PIXEL_URL ? (

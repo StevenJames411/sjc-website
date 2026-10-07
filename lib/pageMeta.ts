@@ -19,14 +19,14 @@ export const SITE_NAME = "Steven James Consulting";
 // The site-wide defaults, also imported by app/layout.tsx so the inherited values and the
 // fallbacks here can never drift into disagreeing with each other.
 export const SITE_DEFAULTS = {
-  title: "Steven James Consulting — Your AI Growth Partner",
+  title: "Turn Your Attention Into Dollars | Steven James Consulting",
   description:
-    "We connect the six systems your business runs on and put AI employees to work on them — answering every lead in seconds, working your old leads, closing and booking appointments, covering the phones 24/7, and keeping customers coming back. The systems get better every day, and you stay in control.",
-  ogTitle: "Steven James Consulting — AI employees for your business",
+    "A modern day talent agency for coaches, authors and influencers. We turn what you know into a premium product and build the fifteen-stage system that sells it. We turn your attention into dollars.",
+  ogTitle: "Steven James Consulting: A Modern Day Talent Agency",
   ogDescription:
-    "AI employees that answer every lead in seconds, work your old leads, book the appointments, and cover the phones 24/7 — connected to the six systems that run your business, getting better every day.",
+    "For coaches, authors and influencers. We turn what you know into a premium product and build the fifteen-stage system that sells it. We turn your attention into dollars.",
   twitterDescription:
-    "AI employees that answer every lead in seconds, book the appointments, and cover the phones 24/7 — connected to the six systems that run your business.",
+    "A modern day talent agency for coaches, authors and influencers. We turn your attention into dollars.",
 };
 
 export type PageMetaFallback = {
