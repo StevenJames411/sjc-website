@@ -86,6 +86,13 @@ async function recordBuyer(id: string, json: Record<string, unknown>) {
       { key: "order", label: "Stripe order", value: String(json.payment_intent || id) },
     ], new Date().toISOString());
     await seen.write({ at: new Date().toISOString() });
+    // One running list of orders (time and amount only, no person) so the owner's KPI screen can count
+    // book sales: app/api/kpi-stats. Kept beside, not instead of, the per-order guard above.
+    const log = createKvStore(getClient(), "sjc-book-orders");
+    const prior = ((await log.read<{ orders?: { id: string; at: string; cents: number }[] }>()) || {}).orders || [];
+    if (!prior.some((o) => o.id === id)) {
+      await log.write({ orders: [...prior, { id, at: new Date().toISOString(), cents: Number(json.amount_total || 0) }] });
+    }
   } catch (e) {
     console.error("book buyer NOT written to the sheet:", e);
   }
