@@ -2320,6 +2320,10 @@ img[src$="1787778083280-1.webp"] { aspect-ratio: 60.38 / 56; width: auto; }
    narrower. The page markup's own two-column switch is Tailwind lg (1024), so the order and the twin column
    width are set here; the twin column is slimmer and the gap tighter so the words keep ~60% of the width. */
 @media (min-width: 768px) and (max-width: 1023px) {
+  /* ⛔ A HERO WITHOUT THE TWIN IS ONE COLUMN ON AN UPRIGHT TABLET (Steven, 10-07, holding his iPad on the
+     home page: "when I hold it upright, it should go to a single column"). The 768px `3fr 1fr` rule above
+     squeezed the words beside the welcome video into a 178px strip. Video on top, words under it, full width. */
+  .sjc-design.sjc-design [data-sjc-hero-split]:not(:has([data-sjc-twin-col])) { grid-template-columns: minmax(0, 1fr) !important; }
   .sjc-design.sjc-design [data-sjc-hero-split]:has([data-sjc-twin-col]) { grid-template-columns: minmax(0, 1fr) 240px !important; column-gap: 36px !important; }
   [data-sjc-hero-split][data-sjc-hero-split] > div[class]:first-child { order: 1 !important; }
   [data-sjc-hero-split][data-sjc-hero-split]:has([data-sjc-twin-col]) > div[class]:last-child { order: 2 !important; }
