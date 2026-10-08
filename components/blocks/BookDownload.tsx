@@ -21,7 +21,7 @@ export default function BookDownload() {
       const input = document.createElement("input"); input.type = "email"; input.required = true; input.autocomplete = "email";
       input.placeholder = "The email you bought the book with"; input.setAttribute("aria-label", "The email you bought the book with");
       input.style.cssText = "width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid #F6C48A;background:#FBF6EA;color:#1A0E06;font-size:16px";
-      const send = document.createElement("button"); send.type = "submit"; send.textContent = "Send My Fresh Link"; send.style.cssText = COPPER;
+      const send = document.createElement("button"); send.type = "submit"; send.textContent = "Send My Digital Asset Page"; send.style.cssText = COPPER;
       form.append(input, send);
       form.addEventListener("submit", (e) => {
         e.preventDefault();
