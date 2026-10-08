@@ -24,7 +24,7 @@ const NOTE = (b: Buyer) =>
   // shared". Never "you paid for it, it's your copy": that is understood once the notice is there.
   `© ${YEAR} Steven Barchetti, Steven James Consulting. All rights reserved. This signature edition was made for ${who(b)}` +
   (b.name && b.email ? ` (${b.email})` : "") +
-  `. It is a copyrighted edition and is not to be shared.`;
+  `. It is a copyrighted edition, not to be shared.`;
 
 // The built-in PDF fonts only know Western European letters. Anything else is dropped rather than failing the
 // whole download; the email on the note still names the buyer.
