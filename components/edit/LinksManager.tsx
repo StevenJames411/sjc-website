@@ -224,7 +224,8 @@ export default function LinksManager({
       <div style={split}>
       <nav style={side} aria-label="Folders">
         <button type="button" style={sideBtn(!folder)} onClick={() => setFolder("")}><span>All links</span><span style={sideNum}>{total}</span></button>
-        {ordered.map((name) => (
+        {/* The link folders first, in their fixed order; the screen's other sections after them. */}
+        {[...groups.map((g) => g.name), ...ordered.filter((n) => !groups.some((g) => g.name === n))].map((name) => (
           <button key={name} type="button" style={sideBtn(folder === name)} onClick={() => setFolder(name)}>
             <span>{name}</span>{countOf(name) !== undefined && <span style={sideNum}>{countOf(name)}</span>}
           </button>
