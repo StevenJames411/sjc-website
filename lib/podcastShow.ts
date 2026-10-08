@@ -4,15 +4,16 @@
 const AUDIO = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/podcast/audio/";
 
 export const SHOW = {
-  // ⚠️ A WORKING NAME (2026-10-08): the show has never been given a name in the record. It carries the book's
-  // title until Steven names it. The name is also drawn on the cover picture.
-  title: "Attention To Dollars",
+  // His name for the show (2026-10-08): the business name, so any subject fits under one umbrella. Not the
+  // book's title: "the Attention To Dollars book is just one of the things that I'm known for." The name is also
+  // drawn on the cover picture, with the SJC emblem.
+  title: "Steven James Consulting Podcast",
   author: "Steven Barchetti",
   // Spotify and Apple send their "is this your show" email to this address.
   email: "support@stevenjamesconsulting.com",
   site: "https://stevenjamesconsulting.com/podcast",
   feed: "https://stevenjamesconsulting.com/podcast.xml",
-  cover: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/podcast/attention-to-dollars-podcast-cover-3000.jpg",
+  cover: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/podcast/steven-james-consulting-podcast-cover-3000.jpg",
   description:
     "Conversations with coaches, authors and influencers about turning what they know into a product and their attention into dollars. Long conversations with people who build things, hosted by Steven Barchetti of Steven James Consulting, a modern day talent agency. Attention + Your Product = Dollars.",
 };
