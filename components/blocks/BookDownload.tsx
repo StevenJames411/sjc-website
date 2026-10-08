@@ -51,19 +51,20 @@ export default function BookDownload() {
     const q = new URLSearchParams(window.location.search);
     const id = q.get("session_id") || "";
     const fresh = q.get("k") || "";
-    const preview = q.get("preview") === "1";
+    // THE OWNER ALWAYS SEES THE BUYER'S PAGE (Steven, 2026-10-08: he opened "?preview=" without the 1 and got the
+    // locked view). With no order and no fresh link in the address, the page asks as the owner; the server
+    // says yes only to the signed-in owner, so a stranger still lands on the locked view.
+    const preview = !id && !fresh;
     const AGAIN = "Already bought the book? Type the email you bought it with and we will send a fresh download page to that inbox.";
-    if (!id && !fresh && !preview) {
-      lock(q.get("expired") === "1" ? "That download link has run out. Type the email you bought the book with and we will send a fresh download page to that inbox." : AGAIN, q.get("expired") !== "1");
-      return;
-    }
+    const OUT = "That download link has run out. Type the email you bought the book with and we will send a fresh download page to that inbox.";
     box.style.opacity = "0.5";
     const ask = preview ? "preview=1" : fresh ? "k=" + encodeURIComponent(fresh) : "session_id=" + encodeURIComponent(id);
     fetch("/api/book-checkout?" + ask + "&t=" + Date.now(), { cache: "no-store" })
       .then((r) => r.json())
       .then((j) => {
         if (!j.paid) {
-          lock(j.expired ? "This link has run out. Type the email you bought the book with and we will send a fresh download page to that inbox." : AGAIN, !j.expired);
+          const ranOut = j.expired || q.get("expired") === "1";
+          lock(ranOut ? OUT : AGAIN, !ranOut);
           return;
         }
         a.href = j.apple; k.href = j.kindle; box.style.opacity = "1";
