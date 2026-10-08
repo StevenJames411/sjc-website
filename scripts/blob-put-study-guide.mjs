@@ -7,7 +7,7 @@ const HOME = process.env.HOME;
 const token = readFileSync(HOME + "/SJC/AI-Employee-Dashboard/projects/sjc-website/.env.local", "utf8")
   .split("\n").find(l => l.startsWith("BLOB_READ_WRITE_TOKEN="))?.split("=").slice(1).join("=").trim().replace(/^["']|["']$/g, "");
 const SRC = HOME + "/SJC/CEO/build-checklist/study-guide/drafts-2026-10-08/three-sizes/";
-const FOLDER = "sites/sjc-website/book/atd-f87d15eee4a6"; // same folder as the third edition of the book
+const FOLDER = "sites/sjc-website/book/vault-2921e475e79657ae46332ea6c14fc917e0e6d4d9"; // the locked folder: its address never reaches a browser (see app/api/book-checkout)
 for (const size of ["Phone", "Tablet", "Laptop"]) {
   const { url } = await put(`${FOLDER}/Attention-To-Dollars-Study-Guide-${size}.pdf`, readFileSync(`${SRC}Study Guide - ${size}.pdf`), {
     access: "public", token, addRandomSuffix: false, allowOverwrite: true,

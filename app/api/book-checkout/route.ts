@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 // THE DOWNLOAD IS FOR BUYERS (2026-10-04). /book-thank-you carries no file addresses of its own; it asks here
 // with the session id Stripe put on its address, and only a finished order gets the two links back.
 // "no_payment_required" is a completed $0 order (the free test run), which counts.
-const FILES = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/book/atd-f87d15eee4a6/";   // third edition (2026-10-06): fifteen stages, 55 pictures. The second edition stays at atd-7c41f09be2d6.
+// (The files used to sit at a fixed public folder, book/atd-f87d15eee4a6, and before that atd-7c41f09be2d6. See VAULT below.)
 // WHO BOUGHT THE BOOK goes on the "Book Downloads" tab of the SJC intake sheet (Steven, 2026-10-04), once per
 // order. The store key is the guard against writing the same buyer again every time they reload the page.
 async function recordBuyer(id: string, json: Record<string, unknown>) {
@@ -125,33 +125,64 @@ function freshLinkIsGood(k: string): boolean {
 
 // ⛔ NEVER CACHED. An unlocked answer stored at the edge would hand the files to the next stranger asking the same address.
 const NO_STORE = { headers: { "Cache-Control": "private, no-store, max-age=0" } };
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  // The study guide goes with the book (Steven, 2026-10-08): three PDFs, one sized for each screen, because a PDF
-  // cannot resize itself the way the two e-reader files do. "?download=1" makes the browser SAVE the file rather
-  // than preview it: ticks made in a preview are not kept, ticks made in the saved copy are.
-  const guide = (size: string) => FILES + `Attention-To-Dollars-Study-Guide-${size}.pdf?download=1`;
-  const links = {
-    apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub",
-    guidePhone: guide("Phone"), guideTablet: guide("Tablet"), guideLaptop: guide("Laptop"),
-  };
+// THE FILES ARE LOCKED WITH THE SAME KEY AS THE PAGE (Steven, 2026-10-08: "the thank you page is the room that
+// gets locked, but then all the files in the room are not locked... how do you tie the room to the product?").
+// The five files sit in a storage folder whose address is never sent to a browser. A download button points
+// back at THIS route with the buyer's own key (the purchase address, a fresh link, or the owner's sign-in);
+// the route checks the key exactly as the page does and only then passes the file through. A copied download
+// address therefore dies with the key it carries, 24 hours after it was issued.
+const VAULT = "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/book/vault-2921e475e79657ae46332ea6c14fc917e0e6d4d9/";
+const SHELF: Record<string, { file: string; type: string }> = {
+  apple: { file: "Attention-To-Dollars-Apple-Books.epub", type: "application/epub+zip" },
+  kindle: { file: "Attention-To-Dollars-Kindle.epub", type: "application/epub+zip" },
+  // The study guide goes with the book: three PDFs, one sized for each screen, because a PDF cannot resize
+  // itself the way the two e-reader files do. Sent as a download so the reader SAVES it: ticks made in a
+  // browser preview are not kept, ticks made in the saved copy are.
+  guidePhone: { file: "Attention-To-Dollars-Study-Guide-Phone.pdf", type: "application/pdf" },
+  guideTablet: { file: "Attention-To-Dollars-Study-Guide-Tablet.pdf", type: "application/pdf" },
+  guideLaptop: { file: "Attention-To-Dollars-Study-Guide-Laptop.pdf", type: "application/pdf" },
+};
+export const maxDuration = 300; // a 15 MB book over a slow phone connection
+
+// One check for the page and for every file. `pass` is the key as it travels in an address.
+async function access(url: URL): Promise<{ ok: boolean; expired?: boolean; preview?: boolean; pass: string }> {
   // The owner's own look at the page (opened from Smart Links in the design studio): signed in = unlocked.
-  if (url.searchParams.get("preview") === "1") {
-    return (await ownerOnly()) === null ? Response.json({ paid: true, preview: true, ...links }, NO_STORE) : Response.json({ paid: false }, NO_STORE);
-  }
+  if (url.searchParams.get("preview") === "1") return { ok: (await ownerOnly()) === null, preview: true, pass: "preview=1" };
   const k2 = url.searchParams.get("k") || "";
-  if (k2) return Response.json(freshLinkIsGood(k2) ? { paid: true, ...links } : { paid: false, expired: true }, NO_STORE);
+  if (k2) return freshLinkIsGood(k2) ? { ok: true, pass: "k=" + encodeURIComponent(k2) } : { ok: false, expired: true, pass: "" };
   const id = url.searchParams.get("session_id") || "";
-  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return Response.json({ paid: false }, NO_STORE);
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return { ok: false, pass: "" };
   const k = id.startsWith("cs_test_") ? testKey() : key(); // a test order is checked with the test key
-  if (!k) return Response.json({ paid: false }, NO_STORE);
+  if (!k) return { ok: false, pass: "" };
   const { ok, json } = await stripe(`/checkout/sessions/${id}`, undefined, k);
   const paid = Boolean(ok && json?.status === "complete" && (json?.payment_status === "paid" || json?.payment_status === "no_payment_required"));
-  if (!paid) return Response.json({ paid: false }, NO_STORE);
+  if (!paid) return { ok: false, pass: "" };
   if (id.startsWith("cs_live_") && json) await recordBuyer(id, json);
   // The address from the day of purchase is good for LINK_HOURS. After that the buyer asks for a fresh one.
-  if (Date.now() / 1000 - Number(json?.created || 0) > LINK_HOURS * 3600) return Response.json({ paid: false, expired: true }, NO_STORE);
-  return Response.json({ paid: true, ...links }, NO_STORE);
+  if (Date.now() / 1000 - Number(json?.created || 0) > LINK_HOURS * 3600) return { ok: false, expired: true, pass: "" };
+  return { ok: true, pass: "session_id=" + id };
+}
+
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const a = await access(url);
+  const want = url.searchParams.get("file");
+  if (want) {
+    const item = SHELF[want];
+    // A key that has run out lands back on the page, which shows the "send me a fresh link" box.
+    if (!item || !a.ok) return Response.redirect(`${SITE}/book-thank-you?expired=1`, 302);
+    const up = await fetch(VAULT + item.file, { cache: "no-store" });
+    if (!up.ok || !up.body) return new Response("The file could not be loaded. Please try again.", { status: 502 });
+    const head: Record<string, string> = {
+      "Content-Type": item.type, "Content-Disposition": `attachment; filename="${item.file}"`,
+      "Cache-Control": "private, no-store, max-age=0", "X-Robots-Tag": "noindex",
+    };
+    const len = up.headers.get("content-length"); if (len) head["Content-Length"] = len;
+    return new Response(up.body, { headers: head });
+  }
+  if (!a.ok) return Response.json(a.expired ? { paid: false, expired: true } : { paid: false }, NO_STORE);
+  const links = Object.fromEntries(Object.keys(SHELF).map((f) => [f, `/api/book-checkout?file=${f}&${a.pass}`]));
+  return Response.json({ paid: true, ...(a.preview ? { preview: true } : {}), ...links }, NO_STORE);
 }
 
 // "Send me a fresh link." ⛔ ALWAYS ANSWERS THE SAME, whether or not the email bought the book, so the box

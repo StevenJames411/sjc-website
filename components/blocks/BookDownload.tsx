@@ -53,7 +53,10 @@ export default function BookDownload() {
     const fresh = q.get("k") || "";
     const preview = q.get("preview") === "1";
     const AGAIN = "Already bought the book? Type the email you bought it with and we will send a fresh download page to that inbox.";
-    if (!id && !fresh && !preview) { lock(AGAIN, true); return; }
+    if (!id && !fresh && !preview) {
+      lock(q.get("expired") === "1" ? "That download link has run out. Type the email you bought the book with and we will send a fresh download page to that inbox." : AGAIN, q.get("expired") !== "1");
+      return;
+    }
     box.style.opacity = "0.5";
     const ask = preview ? "preview=1" : fresh ? "k=" + encodeURIComponent(fresh) : "session_id=" + encodeURIComponent(id);
     fetch("/api/book-checkout?" + ask + "&t=" + Date.now(), { cache: "no-store" })
