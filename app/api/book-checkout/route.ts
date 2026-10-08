@@ -102,7 +102,14 @@ async function recordBuyer(id: string, json: Record<string, unknown>) {
 const NO_STORE = { headers: { "Cache-Control": "private, no-store, max-age=0" } };
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const links = { apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub" };
+  // The study guide goes with the book (Steven, 2026-10-08): three PDFs, one sized for each screen, because a PDF
+  // cannot resize itself the way the two e-reader files do. "?download=1" makes the browser SAVE the file rather
+  // than preview it: ticks made in a preview are not kept, ticks made in the saved copy are.
+  const guide = (size: string) => FILES + `Attention-To-Dollars-Study-Guide-${size}.pdf?download=1`;
+  const links = {
+    apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub",
+    guidePhone: guide("iPhone"), guideTablet: guide("Tablet"), guideLaptop: guide("Laptop"),
+  };
   // The owner's own look at the page (opened from Smart Links in the design studio): signed in = unlocked.
   if (url.searchParams.get("preview") === "1") {
     return (await ownerOnly()) === null ? Response.json({ paid: true, preview: true, ...links }, NO_STORE) : Response.json({ paid: false }, NO_STORE);

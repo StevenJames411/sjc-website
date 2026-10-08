@@ -1,5 +1,6 @@
 "use client";
-// /book-thank-you: the two download buttons only work for a finished order (see app/api/book-checkout GET).
+// /book-thank-you: the download buttons (two for the book, three for the study guide) only work for a finished
+// order (see app/api/book-checkout GET).
 import { useEffect } from "react";
 
 export default function BookDownload() {
@@ -30,6 +31,11 @@ export default function BookDownload() {
       .then((j) => {
         if (!j.paid) { lock("We could not find a finished order for this link. If you paid, email support@stevenjamesconsulting.com and we will send the book."); return; }
         a.href = j.apple; k.href = j.kindle; box.style.opacity = "1";
+        // The three study guide buttons sit in the same box, so the lock above clears them with the rest.
+        for (const [key, href] of [["h4", j.guidePhone], ["h5", j.guideTablet], ["h6", j.guideLaptop]] as const) {
+          const g = box.querySelector<HTMLAnchorElement>(`a[data-sjc-link="${key}"]`);
+          if (g && href) g.href = href;
+        }
       })
       .catch(() => lock("Something went wrong loading your download. Refresh the page, or email support@stevenjamesconsulting.com."));
   }, []);
