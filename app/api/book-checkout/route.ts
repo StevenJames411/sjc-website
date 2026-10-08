@@ -108,7 +108,7 @@ export async function GET(req: Request) {
   const guide = (size: string) => FILES + `Attention-To-Dollars-Study-Guide-${size}.pdf?download=1`;
   const links = {
     apple: FILES + "Attention-To-Dollars-Apple-Books.epub", kindle: FILES + "Attention-To-Dollars-Kindle.epub",
-    guidePhone: guide("iPhone"), guideTablet: guide("Tablet"), guideLaptop: guide("Laptop"),
+    guidePhone: guide("Phone"), guideTablet: guide("Tablet"), guideLaptop: guide("Laptop"),
   };
   // The owner's own look at the page (opened from Smart Links in the design studio): signed in = unlocked.
   if (url.searchParams.get("preview") === "1") {
