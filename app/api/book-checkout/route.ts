@@ -12,6 +12,7 @@ import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { sendAlert } from "@/lib/leadDelivery";
+import { signEpub, signPdf, type Buyer, type GuideKey } from "@/lib/signedCopy";
 
 export const dynamic = "force-dynamic";
 
@@ -114,14 +115,21 @@ function freshLink(order: string): string {
   const body = Buffer.from(`${order}.${Date.now() + LINK_HOURS * 3600_000}`).toString("base64url");
   return `${SITE}/book-thank-you?k=${body}.${mac(body)}`;
 }
-function freshLinkIsGood(k: string): boolean {
+// Returns the order the note was written for, or "" when the note is forged or has run out.
+function freshLinkOrder(k: string): string {
   const [body, sig] = k.split(".");
-  if (!body || !sig || !signer()) return false;
+  if (!body || !sig || !signer()) return "";
   const want = mac(body);
-  if (sig.length !== want.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return false;
-  const until = Number(Buffer.from(body, "base64url").toString().split(".").pop());
-  return Number.isFinite(until) && Date.now() < until;
+  if (sig.length !== want.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return "";
+  const parts = Buffer.from(body, "base64url").toString().split(".");
+  const until = Number(parts.pop());
+  return Number.isFinite(until) && Date.now() < until ? parts.join(".") : "";
 }
+const OWNER: Buyer = { name: "Steven Barchetti", email: "" };
+const buyerOf = (json: Record<string, unknown> | null): Buyer => {
+  const c = (json?.customer_details || {}) as { name?: string; email?: string };
+  return { name: String(c.name || "").trim(), email: String(c.email || "").trim() };
+};
 
 // ⛔ NEVER CACHED. An unlocked answer stored at the edge would hand the files to the next stranger asking the same address.
 const NO_STORE = { headers: { "Cache-Control": "private, no-store, max-age=0" } };
@@ -145,11 +153,21 @@ const SHELF: Record<string, { file: string; type: string }> = {
 export const maxDuration = 300; // a 15 MB book over a slow phone connection
 
 // One check for the page and for every file. `pass` is the key as it travels in an address.
-async function access(url: URL): Promise<{ ok: boolean; expired?: boolean; preview?: boolean; pass: string }> {
+// `who` is the buyer the copy is signed for; it is only looked up when a FILE is asked for.
+async function access(url: URL, forFile = false): Promise<{ ok: boolean; expired?: boolean; preview?: boolean; pass: string; who?: Buyer }> {
   // The owner's own look at the page (opened from Smart Links in the design studio): signed in = unlocked.
-  if (url.searchParams.get("preview") === "1") return { ok: (await ownerOnly()) === null, preview: true, pass: "preview=1" };
+  if (url.searchParams.get("preview") === "1") return { ok: (await ownerOnly()) === null, preview: true, pass: "preview=1", who: OWNER };
   const k2 = url.searchParams.get("k") || "";
-  if (k2) return freshLinkIsGood(k2) ? { ok: true, pass: "k=" + encodeURIComponent(k2) } : { ok: false, expired: true, pass: "" };
+  if (k2) {
+    const order = freshLinkOrder(k2);
+    if (!order) return { ok: false, expired: true, pass: "" };
+    let who = OWNER;
+    if (forFile && order.startsWith("cs_")) {
+      const sk = order.startsWith("cs_test_") ? testKey() : key();
+      who = buyerOf(sk ? (await stripe(`/checkout/sessions/${order}`, undefined, sk)).json : null);
+    }
+    return { ok: true, pass: "k=" + encodeURIComponent(k2), who };
+  }
   const id = url.searchParams.get("session_id") || "";
   if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return { ok: false, pass: "" };
   const k = id.startsWith("cs_test_") ? testKey() : key(); // a test order is checked with the test key
@@ -160,25 +178,38 @@ async function access(url: URL): Promise<{ ok: boolean; expired?: boolean; previ
   if (id.startsWith("cs_live_") && json) await recordBuyer(id, json);
   // The address from the day of purchase is good for LINK_HOURS. After that the buyer asks for a fresh one.
   if (Date.now() / 1000 - Number(json?.created || 0) > LINK_HOURS * 3600) return { ok: false, expired: true, pass: "" };
-  return { ok: true, pass: "session_id=" + id };
+  return { ok: true, pass: "session_id=" + id, who: buyerOf(json) };
 }
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const a = await access(url);
   const want = url.searchParams.get("file");
+  const a = await access(url, Boolean(want));
   if (want) {
     const item = SHELF[want];
     // A key that has run out lands back on the page, which shows the "send me a fresh link" box.
     if (!item || !a.ok) return Response.redirect(`${SITE}/book-thank-you?expired=1`, 302);
     const up = await fetch(VAULT + item.file, { cache: "no-store" });
     if (!up.ok || !up.body) return new Response("The file could not be loaded. Please try again.", { status: 502 });
+    // EVERY COPY IS A SIGNATURE EDITION: the stored file is a template and the buyer's name goes in here
+    // (lib/signedCopy.ts). If the signing ever fails, the buyer still gets the file; they paid for it.
+    let bytes: Uint8Array = new Uint8Array(await up.arrayBuffer());
+    try {
+      const who = a.who && (a.who.name || a.who.email) ? a.who : null;
+      if (who) bytes = item.type === "application/pdf" ? await signPdf(bytes, want as GuideKey, who) : signEpub(bytes, who);
+    } catch (e) {
+      console.error("book copy NOT signed, sent as it is:", want, e);
+    }
     const head: Record<string, string> = {
       "Content-Type": item.type, "Content-Disposition": `attachment; filename="${item.file}"`,
-      "Cache-Control": "private, no-store, max-age=0", "X-Robots-Tag": "noindex",
+      "Cache-Control": "private, no-store, max-age=0", "X-Robots-Tag": "noindex", "Content-Length": String(bytes.length),
     };
-    const len = up.headers.get("content-length"); if (len) head["Content-Length"] = len;
-    return new Response(up.body, { headers: head });
+    // Sent in pieces, so a 15 MB book is not held to the size limit on a single reply.
+    const PIECE = 256 * 1024; let at = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(c) { if (at >= bytes.length) return c.close(); c.enqueue(bytes.subarray(at, at + PIECE)); at += PIECE; },
+    });
+    return new Response(body, { headers: head });
   }
   if (!a.ok) return Response.json(a.expired ? { paid: false, expired: true } : { paid: false }, NO_STORE);
   const links = Object.fromEntries(Object.keys(SHELF).map((f) => [f, `/api/book-checkout?file=${f}&${a.pass}`]));

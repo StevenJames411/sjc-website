@@ -1,12 +1,14 @@
 // Put the three study guide PDFs (Phone, Tablet, Laptop) beside the book files the buyer's download page hands out.
 //   node scripts/blob-put-study-guide.mjs     (re-run after every rebuild; the addresses do not change)
+// These are TEMPLATES: the left footer and the signature places are empty, and the website fills in the buyer's
+// name when it hands out each copy (lib/signedCopy.ts).
 // Built in ~/SJC/CEO/build-checklist/study-guide (build_study_guide.py, then make_tappable.py).
 import { put } from "@vercel/blob";
 import { readFileSync } from "node:fs";
 const HOME = process.env.HOME;
 const token = readFileSync(HOME + "/SJC/AI-Employee-Dashboard/projects/sjc-website/.env.local", "utf8")
   .split("\n").find(l => l.startsWith("BLOB_READ_WRITE_TOKEN="))?.split("=").slice(1).join("=").trim().replace(/^["']|["']$/g, "");
-const SRC = HOME + "/SJC/CEO/build-checklist/study-guide/drafts-2026-10-08/three-sizes/";
+const SRC = HOME + "/SJC/CEO/build-checklist/study-guide/drafts-2026-10-08/templates-for-signing/";
 const FOLDER = "sites/sjc-website/book/vault-2921e475e79657ae46332ea6c14fc917e0e6d4d9"; // the locked folder: its address never reaches a browser (see app/api/book-checkout)
 for (const size of ["Phone", "Tablet", "Laptop"]) {
   const { url } = await put(`${FOLDER}/Attention-To-Dollars-Study-Guide-${size}.pdf`, readFileSync(`${SRC}Study Guide - ${size}.pdf`), {
