@@ -1,0 +1,271 @@
+{
+  "story": {
+    "one_line": "Forty years as the systems and technology person in five businesses is why my team and I can be a modern day talent agency: you bring the knowledge and the attention, and we package it and build what sells it.",
+    "short": "I opened a restaurant in 1986, and through five businesses over forty years I was the systems and technology person, learning each tool as it got better and putting it to work. That is why my team and I are a modern day talent agency: coaches, authors and influencers have the knowledge and the attention, and we are the technical people who package it and build what sells it. My book, Attention To Dollars, is the showcase. We did it for ourselves, and we do it for you.",
+    "full": "I opened my first business, a restaurant, in 1986. Mortgage, roofing, trucking and now technology followed. That is five businesses over forty years, and in every one I was the systems and technology person. Every time a better tool came along, I learned it and put it to work. That is the plain reason my team and I are a modern day talent agency. Coaches, authors and influencers have the knowledge and the attention. What is missing is the technical person who packages it and grows it. Systems and processes are our special sauce. When you package your knowledge and sell it, it is your intellectual property. My team and I package it and build what sells it, so you make a real living from what you know. My book, Attention To Dollars, is the showcase. We packaged our own knowledge the same way. We did it for ourselves, and we do it for you. From the outside it looks like a couple of websites. It is fifteen stages and about five hundred steps."
+  },
+  "edits": [
+    {
+      "page": "home",
+      "key": "s3.t2",
+      "old_starts": "My team and I are a modern day",
+      "new": "Forty years of systems made my team and me a modern day talent agency.",
+      "from": "B",
+      "why": "The headline now states the connection: the forty years is the reason for the talent agency."
+    },
+    {
+      "page": "home",
+      "key": "s3.t3",
+      "old_starts": "The short answer.",
+      "new": "Forty years.",
+      "from": "B",
+      "why": "The story opens with the forty years, the same place the About page opens."
+    },
+    {
+      "page": "home",
+      "key": "s3.t4",
+      "old_starts": "You are very good at something. People are",
+      "new": "I opened my first business, a restaurant, in 1986. After that came mortgage, roofing, trucking and now technology. That is five businesses over forty years, and in every one of them I was the systems and technology person. Every time a better tool came along, I learned it and put it to work. The work was different each time. The lesson never changed. The business people knew about, with a system behind it to catch them, beat the business that was simply good at the work. That is as true for a coach with a following as it was for a restaurant on a corner.",
+      "from": "B",
+      "why": "Step 1 of the story, moved to the top and given the missing fact: he learned and implemented each tool as it got better."
+    },
+    {
+      "page": "home",
+      "key": "s3.t5",
+      "old_starts": "What that looks like.",
+      "new": "Why a talent agency.",
+      "from": "B",
+      "why": "Heading for step 2."
+    },
+    {
+      "page": "home",
+      "key": "s3.t6",
+      "old_starts": "In practice it comes down to three things.",
+      "new": "That is the plain reason my team and I are a modern day talent agency. A talent agent finds somebody who is very good at something, gets them in front of the people who need them, and makes sure they get paid for it. We do that job for coaches, authors and influencers. You are very good at something, and people are already watching. What is missing is the technical person who packages it and grows it. Systems and processes are our special sauce. You are the talent. We are the people behind you.",
+      "from": "B",
+      "why": "Step 2: ties the forty years to the agency and names the special sauce, which the page never said."
+    },
+    {
+      "page": "home",
+      "key": "s3.t7",
+      "old_starts": "Forty years.",
+      "new": "Packaged and sold.",
+      "from": "B",
+      "why": "Heading for step 3."
+    },
+    {
+      "page": "home",
+      "key": "s3.t8",
+      "old_starts": "I opened my first business, a restaurant, in",
+      "new": "When you package your knowledge and sell it, it is your intellectual property. In practice our work comes down to three things. We teach you self-promotion, which is simply letting people know you exist and what you can do for them. We take what you know and package it into something a person can buy. And we build the website and the sales system that sells it, day and night. My team and I do the technical work. You stay the expert, and you make a real living from what you know.",
+      "from": "editor",
+      "why": "B's paragraph and order, with the intellectual property sentence in the owner's own words (the same sentence About uses) and the three things kept as they read on the live page."
+    },
+    {
+      "page": "home",
+      "key": "s3.t11",
+      "old_starts": "We run on it ourselves.",
+      "new": "We did it for ourselves. We do it for you.",
+      "from": "editor",
+      "why": "His phrase, word for word the same heading as the About page (B's About heading used here too), so the paragraph under it does not have to say it again."
+    },
+    {
+      "page": "home",
+      "key": "s3.t12",
+      "old_starts": "Everything we build for a client, we built",
+      "new": "My book, Attention To Dollars, is the showcase. It is my own knowledge, packaged the same way my team and I will package yours, and it is for sale on this website next to the podcast I started in 2008. The book is one piece. From the outside the whole build looks like a couple of websites. It is fifteen stages and about five hundred steps. You are looking at the product right now, and you can judge it for yourself before you ever speak to us.",
+      "from": "editor",
+      "why": "B's paragraph with its first sentence removed (the heading now says it), 'my team and I', and the fifteen stages sentence worded the same as on About."
+    },
+    {
+      "page": "about",
+      "key": "s1.t4",
+      "old_starts": "I have run five businesses: a restaurant, a",
+      "new": "I opened my first business, a restaurant, in 1986. Four more followed, and I have signed the front of the checks, not just the back. In all five I was the systems and technology person, learning each new tool as it got better and putting it to work. That is why my team and I are a modern day talent agency today. You have the knowledge and the attention. We are the technical people who package it and build what sells it, so the attention you already have turns into dollars.",
+      "from": "editor",
+      "why": "B's hero, with the checks line moved up so 'That is why' follows the systems sentence, and the live ending (attention into dollars) kept so 'a real living' is said once, further down."
+    },
+    {
+      "page": "about",
+      "key": "s2.t3",
+      "old_starts": "I opened a restaurant in 1986 and I",
+      "new": "In all five businesses I was the one who picked the tools, connected them and made them work. Big companies have a name for that job. A CTO is a Chief Technology Officer, the person who decides which tools a company runs on and makes all of them work together. Most people who are very good at what they teach have never had that person beside them.",
+      "from": "editor",
+      "why": "B's paragraph, stopped two sentences early: the special sauce and 'the half we bring' are told once, under What is still missing."
+    },
+    {
+      "page": "about",
+      "key": "s2.t6",
+      "old_starts": "Good help was hard to find and harder",
+      "new": "Good help was hard to find and harder to keep, so in the first four I did it all myself: the work, the books, the follow-up, the ads, and yes, I was the computer guy too.",
+      "from": "editor",
+      "why": "B's cut of the tools sentence (said in the hero and told in full under What changed), without the added closing line, which echoed the next paragraph."
+    },
+    {
+      "page": "about",
+      "key": "s2.t7",
+      "old_starts": "So I have sat in your chair. I",
+      "new": "So I have sat in your chair. I know what it feels like to be great at the work and still buried under every message, every sale and every follow-up. I have lived it four times. Steven James Consulting does not run that way. It has a team behind the work, and the systems that finally make a team worth having. That is the difference between then and now, and it is why my team and I can get behind somebody else's talent.",
+      "from": "editor",
+      "why": "Rule fix B missed, taken from A and shortened: the live ending said 'I package your knowledge and build it all for you' (solo) right after saying there is a team. Now hands off to the talent agency section."
+    },
+    {
+      "page": "about",
+      "key": "s3.t4",
+      "old_starts": "It is hard to see yourself clearly. For",
+      "new": "For years I could tell you everything my team and I build and still not tell you what we are. Then I looked at who we build it for: people who are very good at something, with an audience already watching. Getting behind talent is what an agent does. So Steven James Consulting is a modern day talent agency, self-proclaimed, and forty years of systems and processes is the reason we can be one.",
+      "from": "B",
+      "why": "Gives the reason we became a talent agency instead of only announcing it; drops the every-page line that s3.t14 says again."
+    },
+    {
+      "page": "about",
+      "key": "s3.t8",
+      "old_starts": "Being seen and being paid are two different",
+      "new": "Being seen and being paid are two different things. Plenty of people have the audience now and still have nothing to sell it, or no way to sell it without answering every message themselves. What they need is a technical person, somebody who can package what they know and grow it. Systems and processes are our special sauce. That is the job, and it is the one my team and I do.",
+      "from": "A",
+      "why": "A's line is closer to how he said it ('you need a technical person to package it and grow it; that is our special sauce') and matches the Home wording. It is the one place About says special sauce."
+    },
+    {
+      "page": "about",
+      "key": "s3.t12",
+      "old_starts": "Next we take what you know and package",
+      "new": "Next we take what you know and package it into something a person can buy, starting with your own e-book with your name on the cover. When you package your knowledge and sell it, it is your intellectual property. Then my team builds the modern website and the sales system that sell it. That sales system has a name. It is our proprietary Revenue Engine, six business systems working as one, with AI employees doing the work day and night. Self-promotion brings the attention. The package gives people something to buy. The Revenue Engine makes the sale. That is how what you know becomes a real living.",
+      "from": "editor",
+      "why": "Intellectual property explained in his own sentence, the same one Home uses; ends on a real living (B). The 'handed a set of lessons and left to work it out' clause is dropped (A's catch: it reads as a knock on coaches)."
+    },
+    {
+      "page": "about",
+      "key": "s3.t14",
+      "old_starts": "I see people who will build you a",
+      "new": "I see people who will build you a website. I see people who will edit your videos. I do not see anyone who gets behind one person, does all of it for them, and stays. I will say that plainly, and it is only what I see from where I sit. So every page on this website and every system my team and I build has one job, which is to do that whole thing at a world class level.",
+      "from": "B",
+      "why": "The you-bring-what-you-know line is said again under Your part (s13.t8), which is where it belongs."
+    },
+    {
+      "page": "about",
+      "key": "s3.t16",
+      "old_starts": "A talent agent is only as good as",
+      "new": "A talent agent is only as good as the talent. I put in my own reps, and I look for the same thing in the people we take on. Nobody listens to somebody who has not done the work. If you have put in your ten thousand hours and you know your subject cold, you have something worth promoting. Our job is to make sure it gets seen and gets paid.",
+      "from": "B",
+      "why": "Forty years and five businesses were being counted out for the fourth time; cut to a short clause."
+    },
+    {
+      "page": "about",
+      "key": "s5.t5",
+      "old_starts": "I could finally hire the employee I had",
+      "new": "I could finally hire the employee I had been looking for my whole career: an AI employee. It takes the training. It does not quit. It does not call in sick or take days off. It answers every message and every question the second it comes in, follows up, books the call, and circles back on the ones who went quiet. It does the job the same way every time, and I can see everything it does. That is what changed the math. You now have AI employees where you used to need human employees. They take the grinding, repetitive work that burned out every good person I ever hired, so a small team of people worth having can do what used to take a department. That is how this company runs, and it is what my team and I build for you.",
+      "from": "B",
+      "why": "One sentence removed: it repeated the heading directly above it word for word."
+    },
+    {
+      "page": "about",
+      "key": "s7.t55",
+      "old_starts": "You get the forty years without spending forty",
+      "new": "If you want those lessons working for what you teach, tell us about yourself.",
+      "from": "B",
+      "why": "The forty-years line was printed three times in a row (paragraph, this line, pull quote)."
+    },
+    {
+      "page": "about",
+      "key": "s8.t2",
+      "old_starts": "The book is the blueprint, written down.",
+      "new": "We did it for ourselves. We do it for you.",
+      "from": "B",
+      "why": "His words; the book is the showcase, not the whole identity."
+    },
+    {
+      "page": "about",
+      "key": "s8.t3",
+      "old_starts": "Those forty years are what led to my",
+      "new": "My book, Attention To Dollars, is where a lot of people meet us first, but it is not the only thing we are known for. It is the showcase. I took what forty years taught me, and my team and I packaged it the same way we will package what you know: written down in plain words, turned into a book and sold from a website we own. It is also a working blueprint, in the same order we build, for the person who has more time than money right now. Read it and build it yourself. Or read it and have us build it for you.",
+      "from": "editor",
+      "why": "B's paragraph; 'a client's knowledge' changed to 'what you know' so it speaks to the reader, and 'my team and I'."
+    },
+    {
+      "page": "about",
+      "key": "s8.t4",
+      "old_starts": "And I built it for my own company",
+      "new": "And the book is only one piece. Steven James Consulting runs on its own AI employees today, the same thing we will set up for you. The website you are reading, the book on it and the podcast are the same pieces every client gets, built the same way. So what you are looking at right now is what yours will look like, with your name on it.",
+      "from": "B",
+      "why": "The built-it-for-ourselves point now sits in the heading; this line moves on."
+    },
+    {
+      "page": "about",
+      "key": "s8.t5",
+      "old_starts": "You are looking at the finished product. Everything",
+      "new": "From the outside it looks like a couple of websites. It is fifteen stages and about five hundred steps, and putting them together is the technical work my team and I do. Walk through this website the way one of your own buyers will walk through yours. Open the book page. Listen to the podcast. Then decide whether you want your own.",
+      "from": "editor",
+      "why": "B's paragraph with the fifteen stages sentence worded the same as Home. 'Try putting it together' is dropped because it argues with the reader the book is sold to."
+    },
+    {
+      "page": "about",
+      "key": "s10.t5",
+      "old_starts": "So I build for you the way I",
+      "new": "So my team and I build it for you the way I would want it built for me: who came, who asked, who booked and who paid, in plain sight, and every system earning its keep.",
+      "from": "editor",
+      "why": "B's cut of the four numbers listed twice in one section, reworded so the line stands on its own. Also fixes 'So I build for you' (solo)."
+    },
+    {
+      "page": "about",
+      "key": "s11.t12",
+      "old_starts": "Behind the website sits the Revenue Engine, six",
+      "new": "Behind the website sits the Revenue Engine, six business systems that work as one. They are the lessons from my first four businesses, built for somebody who sells what they know. It is one build at one price, and all six go in. We do not sell it in pieces, because a piece on its own leaves a hole where people fall out. The order never changes either. Your website goes in first, because everything else needs somewhere to send people. Paid advertising goes in last, after the free attention is already turning into sales.",
+      "from": "B",
+      "why": "The four businesses had already been named one by one twice."
+    },
+    {
+      "page": "about",
+      "key": "s11.t14",
+      "old_starts": "A person cannot answer every message at two",
+      "new": "A person cannot answer every message at two in the morning, follow up with every follower and remember to ask every client for a testimonial. An AI employee can. We train yours on your programs, your prices, your audience and the way you talk, so it sounds like your company and nobody else's. It works day and night. When a question calls for you, it comes to you with the whole conversation written down, so you walk in knowing the whole story. My team keeps it tuned.",
+      "from": "B",
+      "why": "On-your-account-personally was said three times; it now lives once, under A company, and me (s13.t6)."
+    },
+    {
+      "page": "about",
+      "key": "s11.t16",
+      "old_starts": "Put the pieces side by side and you",
+      "new": "Put the pieces side by side and you have a working business built around what you know. A website in the middle. A book for sale on it. A podcast feeding it. Six systems behind it, with AI employees working them day and night. My team builds all of it. Your part is what you know and the willingness to get in front of people. If that sounds like what you have been missing, we should talk.",
+      "from": "editor",
+      "why": "B's cut-down, with 'AI employees' said once in place of twice in back to back sentences."
+    }
+  ],
+  "left_alone_on_purpose": [
+    "home s1.t22: the hero uses 'intellectual property' before section 3 explains it; not to be edited per instructions. Section 3 (s3.t8) now explains it.",
+    "home s3.t9, s3.t10: 'My team and I' already says a US company with a team and Steven personally on the account; nothing to fix.",
+    "home s3.t13, s3.t14, s3.t70: 'Why agency is the word' says it well and is the only place Home makes that point.",
+    "home s4.t6: 'When I opened that restaurant in 1986' still reads correctly now that 1986 is the first thing section 3 says.",
+    "home s13.t18: the book, the partnership or the build. Uses 'modern day talent agency' once more, far down the page, to explain the three ways in; not part of the who-we-are telling.",
+    "about s1.t2, s1.t3, s2.t2: headline and byline ('Forty year business owner, lead systems integrator' and 'fractional CTO'). The byline is the owner's ruling and it carries the forty years so the hero paragraph does not have to.",
+    "about s2.t4, s2.t5: the one full list of the five businesses on the page; the hero now says 'four more followed' so the list is said once.",
+    "about s3.t2, s3.t3, s3.t6, s3.t10: already tell the story in order and say nothing twice.",
+    "about s5.t2: Writer B rewrote this headline to 'I learned each one and put it to work'. Dropped: it would say the hero's tools sentence a second time, and the live headline (ending 'YET...') is the setup for 'Then the tool started doing the work'.",
+    "about s7.t14, s7.t70: 'You get the forty years without spending forty years' stays in the paragraph and its pull quote; only the third printing (s7.t55) was rewritten.",
+    "about s6.t6, s9.t6, s14.t3: each lists the website, e-book, podcast and AI employees. Outside the who-we-are story; the brief says leave them.",
+    "about s13.t6, s13.t8, s13.t12: working-with-us section. s13.t6 is now the only place About says 'I am on your account personally', and s13.t8 the only place it says 'You bring what you know'.",
+    "about pull quotes s3.t70, s11.t70, s13.t70: each repeats one sentence from its own section by design; all three source sentences are still on the page."
+  ],
+  "checks": {
+    "dashes_found": 0,
+    "edits_over_length": [
+      "home s3.t3: -29 percent (a 2 word heading, 17 characters down to 12)",
+      "home s3.t7: +50 percent (a heading, 12 characters up to 18)",
+      "home s3.t11: +83 percent (a heading, 23 characters up to 42; the same section type already carries a 39 character heading at s13.t17, so it should fit, but look at it on a phone)",
+      "about s2.t3: -35 percent (deliberate cut of a repetition)",
+      "about s2.t6: -38 percent (deliberate cut of a repetition)",
+      "about s10.t5: -48 percent (deliberate cut of a repetition)"
+    ],
+    "anything_the_owner_should_know": [
+      "Home section 3 now runs in his order: forty years, why a talent agency, packaged and sold, my team and I, the book. The three sub-headings change with it, and the big headline (s3.t2) becomes 'Forty years of systems made my team and me a modern day talent agency.' The section's web address anchor is built from the old headline; nobody checked here whether a link depends on it.",
+      "Home drops 'speakers' from 'coaches, authors, speakers and influencers' in s3.t6, to match the three words used everywhere else. Say so if he wants speakers kept.",
+      "About s3.t12 loses the clause 'so you are never handed a set of lessons and left to work it out'. It was live wording, removed under the standing rule against knocking coaches. Easy to put back.",
+      "About s2.t7 had a solo line on the live page ('I package your knowledge and build it all for you') and s10.t5 had 'So I build for you'. Both now say my team and I. Writer B had left s2.t7 alone.",
+      "About s2.t6 still says 'in the first four I did it all myself'. That is about the earlier businesses, which he did run alone, and the next paragraph says SJC does not run that way, so it stays.",
+      "About s10.t5, s11.t12, s11.t14, s11.t16 and s5.t5 sit outside the who-we-are sections. They are edited only to cut repeats (the four numbers, the four businesses named again, 'on your account personally' three times, a sentence that repeated its heading). Drop those five if he wants the change kept to the story sections only.",
+      "'I am on your account personally' now appears once on About (s13.t6). 'Modern day talent agency' appears twice on About: the hero's short telling and the section that explains it.",
+      "The number is written 'fifteen stages and about five hundred steps' on both pages, in words, the same sentence. 'About' is the brief's wording; he said 'five hundred step process' out loud.",
+      "Writer B's rewrite of the About headline s5.t2 (ending 'YET...') was not taken; see left_alone_on_purpose.",
+      "Nothing was checked on the rendered pages. Lengths were measured in characters against the live text only."
+    ]
+  }
+}
