@@ -20,9 +20,11 @@ const YEAR = new Date().getFullYear();
 const who = (b: Buyer) => (b.name || b.email || "you").trim();
 const possessive = (n: string) => (/s$/i.test(n) ? `${n}'` : `${n}'s`);
 const NOTE = (b: Buyer) =>
-  `© ${YEAR} Steven Barchetti, Steven James Consulting. This signature edition was made for ${who(b)}` +
+  // His wording rule (2026-10-08): say it the way a copyright notice says it, "a copyrighted edition, not to be
+  // shared". Never "you paid for it, it's your copy": that is understood once the notice is there.
+  `© ${YEAR} Steven Barchetti, Steven James Consulting. All rights reserved. This signature edition was made for ${who(b)}` +
   (b.name && b.email ? ` (${b.email})` : "") +
-  `. You paid for it and it is your copy. It is not yours to hand to other people.`;
+  `. It is a copyrighted edition and is not to be shared.`;
 
 // The built-in PDF fonts only know Western European letters. Anything else is dropped rather than failing the
 // whole download; the email on the note still names the buyer.
