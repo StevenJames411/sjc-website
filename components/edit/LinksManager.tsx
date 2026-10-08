@@ -19,6 +19,12 @@ type SmartLink = {
   aliases?: string[];
 };
 
+// The part of the name after its folder, which is what a card shows (the folder is already the heading).
+const nameIn = (name: string) => {
+  const i = (name || "").indexOf(" - ");
+  return i > 0 ? name.slice(i + 3).trim() : name;
+};
+
 const groupOf = (name: string) => {
   const i = (name || "").indexOf(" - ");
   const g = i > 0 ? name.slice(0, i).trim() : "";
@@ -67,7 +73,7 @@ function Row({ link, origin, api, onChange }: { link: SmartLink; origin: string;
   return (
     <div style={card}>
       <div style={rowTop}>
-        <div style={cardName}>{link.name || link.slug}</div>
+        <div style={cardName}>{nameIn(link.name) || link.slug}</div>
         <button type="button" style={navBtn} onClick={copy}>Copy</button>
       </div>
       <div style={{ ...hint, wordBreak: "break-all" }}>{url}</div>
@@ -169,7 +175,10 @@ export default function LinksManager({
     // THE ORDER OF THE SECTIONS (Steven, 2026-10-04): social media first, then the book, then everything else,
     // "just like a long scrolling web page", each section under its own divider. A link with no heading of
     // its own (no " - " in the name) is filed under "Other links" so it does not become a one-card section.
-    const rank = (n: string) => (/^social/i.test(n) ? 0 : /attention to dollars|book$/i.test(n) ? 1 : n === "Other links" ? 9 : 2);
+    // FOLDERS (Steven, 2026-10-08): the links are filed in a handful of folders so the list does not get out
+    // of hand: Social Media, Skool, Podcast, Book Buyers, Website Visitors. A folder is the text before " - ".
+    const ORDER = ["social media", "skool", "podcast", "book buyers", "website visitors"];
+    const rank = (n: string) => (n === "Other links" ? 99 : ORDER.indexOf(n.toLowerCase()) >= 0 ? ORDER.indexOf(n.toLowerCase()) : 50);
     const filed: { name: string; links: SmartLink[] }[] = [];
     for (const g of out) {
       const solo = g.links.length === 1 && g.links[0].name === g.name;
@@ -182,7 +191,12 @@ export default function LinksManager({
   // Every section on this screen, link groups and the rest alike, in the order he put them (see useScreenOrder).
   const names = useMemo(() => [...groups.map((g) => g.name), "Add a link", ...extra.map((e) => e.name)], [groups, extra]);
   const { ordered, hasLine, Bar } = useScreenOrder("links", siteId, names);
-  const shell = (name: string): React.CSSProperties => ({ borderTop: hasLine(name) ? "2px solid var(--e-line)" : "none", marginTop: 36, paddingTop: 4 });
+  const shell = (name: string): React.CSSProperties => ({ borderTop: hasLine(name) && !folder ? "2px solid var(--e-line)" : "none", marginTop: folder ? 0 : 36, paddingTop: 4 });
+  // THE FOLDER LIST down the left side. "" is every folder at once, the long page it used to be.
+  const [folder, setFolder] = useState("");
+  const shown = folder && ordered.includes(folder) ? [folder] : ordered;
+  const countOf = (name: string) => groups.find((g) => g.name === name)?.links.length;
+  const total = groups.reduce((n, g) => n + g.links.length, 0);
 
   return (
     <div style={page}>
@@ -207,7 +221,17 @@ export default function LinksManager({
       {links === null && <div style={empty}>Loading...</div>}
       {links !== null && !groups.length && !err && <div style={empty}>No links yet. Add the first one below.</div>}
 
-      {ordered.map((name) => {
+      <div style={split}>
+      <nav style={side} aria-label="Folders">
+        <button type="button" style={sideBtn(!folder)} onClick={() => setFolder("")}><span>All links</span><span style={sideNum}>{total}</span></button>
+        {ordered.map((name) => (
+          <button key={name} type="button" style={sideBtn(folder === name)} onClick={() => setFolder(name)}>
+            <span>{name}</span>{countOf(name) !== undefined && <span style={sideNum}>{countOf(name)}</span>}
+          </button>
+        ))}
+      </nav>
+      <div style={{ flex: 1, minWidth: 0 }}>
+      {shown.map((name) => {
         const g = groups.find((x) => x.name === name);
         const x = extra.find((e) => e.name === name);
         return (
@@ -234,8 +258,8 @@ export default function LinksManager({
               <>
       <div style={{ ...card, maxWidth: 520 }}>
         <label style={lbl}>Name</label>
-        <input style={input} value={nm} onChange={(e) => setNm(e.target.value)} placeholder="Attention To Dollars - Introduction" />
-        <div style={hint}>Put " - " in the name to file it under a heading.</div>
+        <input style={input} value={nm} onChange={(e) => setNm(e.target.value)} placeholder="Social Media - Pinterest" />
+        <div style={hint}>Start the name with a folder and " - " to file it there: Social Media, Skool, Podcast, Book Buyers or Website Visitors.</div>
         <label style={lbl}>Where it is used (optional)</label>
         <input style={input} value={nt} onChange={(e) => setNt(e.target.value)} />
         <label style={lbl}>Short link (after /go/)</label>
@@ -251,12 +275,18 @@ export default function LinksManager({
           </section>
         );
       })}
+      </div>
+      </div>
     </div>
   );
 }
 
 const font = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-const page: React.CSSProperties = { maxWidth: 1100, margin: "0 auto", padding: "40px 24px 80px", fontFamily: font };
+const split: React.CSSProperties = { display: "flex", gap: 28, alignItems: "flex-start", flexWrap: "wrap", marginTop: 8 };
+const side: React.CSSProperties = { flex: "0 0 220px", position: "sticky", top: 16, display: "flex", flexDirection: "column", gap: 4, marginTop: 36 };
+const sideBtn = (on: boolean): React.CSSProperties => ({ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, textAlign: "left", width: "100%", border: "1px solid " + (on ? "var(--e-ink)" : "transparent"), background: on ? "var(--e-panel)" : "transparent", color: "var(--e-ink-strong)", borderRadius: 8, padding: "9px 12px", fontSize: 14, fontWeight: on ? 700 : 600, cursor: "pointer", fontFamily: font });
+const sideNum: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: "var(--e-muted)", background: "var(--e-line-soft)", borderRadius: 999, padding: "2px 8px" };
+const page: React.CSSProperties = { maxWidth: 1320, margin: "0 auto", padding: "40px 24px 80px", fontFamily: font };
 const head: React.CSSProperties = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" };
 const h1: React.CSSProperties = { fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em", marginTop: 6 };
 const h2: React.CSSProperties = { fontSize: 18, fontWeight: 700, margin: "32px 0 0", color: "var(--e-ink-strong)" };
