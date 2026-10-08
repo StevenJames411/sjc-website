@@ -11,6 +11,9 @@ export default function BookDownload() {
     if (!a || !k || !box) return;
     const lock = (msg: string) => {
       box.innerHTML = "";
+      // The box is dimmed to half while the order is being checked. A locked page must come back to full
+      // strength, or the Get The Book button and the message sit at half brightness (Steven, 2026-10-08).
+      box.style.opacity = "1";
       const p = document.createElement("p"); p.textContent = msg; p.style.cssText = "color:#fff;margin:0 0 14px;line-height:1.5";
       const b = document.createElement("a"); b.href = "/get-the-book"; b.textContent = "Get The Book";
       b.style.cssText = "display:block;text-align:center;font-weight:700;padding:14px 24px;border-radius:9999px;color:#1A0E06;border:1.5px solid #F6C48A;background:linear-gradient(90deg,#8F4515 0%,#BF7530 31%,#D58A42 50%,#BF7530 69%,#8F4515 100%);box-shadow:0 0 24px rgba(224,138,46,.35)";
