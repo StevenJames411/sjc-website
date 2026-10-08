@@ -44,6 +44,10 @@ export default function BookDownload() {
       const h = sec?.querySelector("h1"); if (h) h.textContent = "Attention To Dollars";
       const eyebrow = h?.previousElementSibling; if (eyebrow) eyebrow.textContent = "The book";
       const lede = h?.nextElementSibling; if (lede && lede !== box) (lede as HTMLElement).style.display = "none";
+      // The download area sits BELOW the top of the page. A returning buyer must not have to scroll past the
+      // book to find the email box, so when the page is locked the box moves up under the heading.
+      const lead = h?.parentElement;
+      if (lead && !lead.contains(box)) { box.style.marginTop = "18px"; lead.appendChild(box); }
     };
     const q = new URLSearchParams(window.location.search);
     const id = q.get("session_id") || "";
