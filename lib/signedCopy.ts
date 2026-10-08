@@ -47,10 +47,11 @@ function wrap(text: string, font: PDFFont, size: number, width: number): string[
 }
 
 // Where the empty places are on each of the three page sizes, in points. Matches the @page rules in the builder.
+// coverY is how far up from the bottom the signature line sits: just above the cover's copper "FOR YOUR ..." band.
 const LAYOUT = {
-  guidePhone: { left: 17.3, footY: 14, foot: 6.3, cover: 6.5, coverY: 36, note: 6.2, noteY: 74 },
-  guideTablet: { left: 36, footY: 20, foot: 8, cover: 8.5, coverY: 50, note: 7.5, noteY: 92 },
-  guideLaptop: { left: 32.4, footY: 18, foot: 8, cover: 8, coverY: 42, note: 7.2, noteY: 84 },
+  guidePhone: { left: 17.3, footY: 14, foot: 6.3, cover: 6.5, coverY: 57, note: 6.2, noteY: 74 },
+  guideTablet: { left: 36, footY: 20, foot: 8, cover: 8.5, coverY: 80, note: 7.5, noteY: 92 },
+  guideLaptop: { left: 32.4, footY: 18, foot: 8, cover: 8, coverY: 69, note: 7.2, noteY: 84 },
 } as const;
 export type GuideKey = keyof typeof LAYOUT;
 
