@@ -3,11 +3,15 @@
 // payment pipe". So the card form is embedded in /get-the-book and Stripe handles nothing but the card.
 //   POST /api/book-checkout                -> { clientSecret }   a new embedded Checkout Session
 //   GET  /api/book-checkout?session_id=... -> { paid }            did this session finish paying
+//   GET  /api/book-checkout?k=...          -> { paid }            a fresh link from the buyer's inbox
+//   PUT  /api/book-checkout { email }      -> { ok }              email that buyer a fresh download link
 // PUBLIC on purpose (listed in middleware PUBLIC_API): a buyer has no login. It can only ever sell ONE
 // thing, the book's own price, so there is nothing for a stranger to choose or change.
 import { ownerOnly } from "@/lib/siteAccess";
 import { createKvStore } from "@/lib/kvStateStore";
 import { getClient } from "@/lib/store";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { sendAlert } from "@/lib/leadDelivery";
 
 export const dynamic = "force-dynamic";
 
@@ -98,6 +102,27 @@ async function recordBuyer(id: string, json: Record<string, unknown>) {
   }
 }
 
+// THE DOWNLOAD PAGE WORKS LIKE A FORGOTTEN PASSWORD (Steven, 2026-10-08). The address a buyer lands on after
+// paying opens the page for LINK_HOURS and then goes dead, so a link passed to friends and family stops
+// working. To come back, the buyer types the email they bought with; if that email has a paid book order, a
+// fresh link goes to THAT inbox and nowhere else. Nobody has to ask Steven for anything.
+// A fresh link is a signed note ("this order, good until this time"), so reading one needs no lookup.
+const LINK_HOURS = 24;
+const signer = () => (process.env.SITE_EDIT_TOKEN || "").trim();
+const mac = (body: string) => createHmac("sha256", "book-download:" + signer()).update(body).digest("base64url");
+function freshLink(order: string): string {
+  const body = Buffer.from(`${order}.${Date.now() + LINK_HOURS * 3600_000}`).toString("base64url");
+  return `${SITE}/book-thank-you?k=${body}.${mac(body)}`;
+}
+function freshLinkIsGood(k: string): boolean {
+  const [body, sig] = k.split(".");
+  if (!body || !sig || !signer()) return false;
+  const want = mac(body);
+  if (sig.length !== want.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return false;
+  const until = Number(Buffer.from(body, "base64url").toString().split(".").pop());
+  return Number.isFinite(until) && Date.now() < until;
+}
+
 // ⛔ NEVER CACHED. An unlocked answer stored at the edge would hand the files to the next stranger asking the same address.
 const NO_STORE = { headers: { "Cache-Control": "private, no-store, max-age=0" } };
 export async function GET(req: Request) {
@@ -114,6 +139,8 @@ export async function GET(req: Request) {
   if (url.searchParams.get("preview") === "1") {
     return (await ownerOnly()) === null ? Response.json({ paid: true, preview: true, ...links }, NO_STORE) : Response.json({ paid: false }, NO_STORE);
   }
+  const k2 = url.searchParams.get("k") || "";
+  if (k2) return Response.json(freshLinkIsGood(k2) ? { paid: true, ...links } : { paid: false, expired: true }, NO_STORE);
   const id = url.searchParams.get("session_id") || "";
   if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return Response.json({ paid: false }, NO_STORE);
   const k = id.startsWith("cs_test_") ? testKey() : key(); // a test order is checked with the test key
@@ -122,5 +149,51 @@ export async function GET(req: Request) {
   const paid = Boolean(ok && json?.status === "complete" && (json?.payment_status === "paid" || json?.payment_status === "no_payment_required"));
   if (!paid) return Response.json({ paid: false }, NO_STORE);
   if (id.startsWith("cs_live_") && json) await recordBuyer(id, json);
+  // The address from the day of purchase is good for LINK_HOURS. After that the buyer asks for a fresh one.
+  if (Date.now() / 1000 - Number(json?.created || 0) > LINK_HOURS * 3600) return Response.json({ paid: false, expired: true }, NO_STORE);
   return Response.json({ paid: true, ...links }, NO_STORE);
+}
+
+// "Send me a fresh link." ⛔ ALWAYS ANSWERS THE SAME, whether or not the email bought the book, so the box
+// cannot be used to find out who is a customer. One email per address every two minutes.
+export async function PUT(req: Request) {
+  const done = Response.json({ ok: true }, NO_STORE);
+  const b = (await req.json().catch(() => ({}))) as { email?: string; preview?: boolean };
+  const email = String(b.email || "").trim().toLowerCase();
+  if (email.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return done;
+  try {
+    const gate = createKvStore(getClient(), `sjc-book-fresh-${createHash("sha256").update(email).digest("hex").slice(0, 32)}`);
+    if (Date.now() - Number((await gate.read<{ at?: number }>())?.at || 0) < 120_000) return done;
+    await gate.write({ at: Date.now() });
+    let order = "";
+    // The owner's own test of the email (signed in, from the terminal): no order needed.
+    if (b.preview && (await ownerOnly()) === null) order = "owner-preview";
+    else if (key()) {
+      const { ok, json } = await stripe(`/checkout/sessions?customer_details[email]=${encodeURIComponent(email)}&status=complete&limit=20`);
+      const found = ((ok && (json?.data as { id: string; payment_status?: string }[])) || []).filter((s) => s.payment_status === "paid" || s.payment_status === "no_payment_required");
+      for (const s of found) {
+        // This Stripe account sells other things too. Only an order for the BOOK opens the book's page.
+        const items = await stripe(`/checkout/sessions/${s.id}/line_items?limit=10`);
+        const prices = ((items.json?.data as { price?: { id?: string } }[]) || []).map((i) => i.price?.id);
+        if (prices.includes(BOOK_PRICE)) { order = s.id; break; }
+      }
+    }
+    if (!order) return done;
+    const link = freshLink(order);
+    await sendAlert({
+      to: email,
+      from: "notifications@send.stevenjamesconsulting.com",
+      fromName: "Steven James Consulting",
+      replyTo: "support@stevenjamesconsulting.com",
+      subject: "Your fresh download page for Attention To Dollars",
+      text: `Here is a fresh link to your download page. It has the book and the three study guides.\n\n${link}\n\nThis link works for ${LINK_HOURS} hours. Need it again after that? Go back to the page, type your email, and a new one is sent to you.\n\nSteven Barchetti\nSteven James Consulting`,
+      html: `<p>Here is a fresh link to your download page. It has the book and the three study guides.</p><p><a href="${link}" style="display:inline-block;padding:14px 26px;border-radius:9999px;background:#BF7530;color:#1A0E06;font-weight:700;text-decoration:none">Open My Download Page</a></p><p>This link works for ${LINK_HOURS} hours. Need it again after that? Go back to the page, type your email, and a new one is sent to you.</p><p>Steven Barchetti<br>Steven James Consulting</p>`,
+    });
+    // Only the signed-in owner testing it is told whether the email really went.
+    if (order === "owner-preview") return Response.json({ ok: true, sent: true }, NO_STORE);
+  } catch (e) {
+    console.error("book fresh link NOT sent:", e);
+    if (b.preview && (await ownerOnly()) === null) return Response.json({ ok: true, sent: false, why: String(e) }, NO_STORE);
+  }
+  return done;
 }

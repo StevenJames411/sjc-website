@@ -9,15 +9,39 @@ export default function BookDownload() {
     const k = document.querySelector<HTMLAnchorElement>('[data-sjc-sec="book-thank-you"] a[data-sjc-link="h2"], #sbookty a[data-sjc-link="h2"]');
     const box = a?.parentElement;
     if (!a || !k || !box) return;
-    const lock = (msg: string) => {
+    // The locked view. A stranger gets the way to buy; a buyer whose link has run out (or who came back
+    // without one) gets the "forgot my password" box: type the email, a fresh link goes to that inbox.
+    const COPPER = "display:block;width:100%;text-align:center;font-weight:700;padding:14px 24px;border-radius:9999px;color:#1A0E06;border:1.5px solid #F6C48A;background:linear-gradient(90deg,#8F4515 0%,#BF7530 31%,#D58A42 50%,#BF7530 69%,#8F4515 100%);box-shadow:0 0 24px rgba(224,138,46,.35);cursor:pointer;font-size:16px";
+    const lock = (msg: string, buy: boolean) => {
       box.innerHTML = "";
       // The box is dimmed to half while the order is being checked. A locked page must come back to full
-      // strength, or the Get The Book button and the message sit at half brightness (Steven, 2026-10-08).
+      // strength, or the buttons and the message sit at half brightness (Steven, 2026-10-08).
       box.style.opacity = "1";
-      const p = document.createElement("p"); p.textContent = msg; p.style.cssText = "color:#fff;margin:0 0 14px;line-height:1.5";
-      const b = document.createElement("a"); b.href = "/get-the-book"; b.textContent = "Get The Book";
-      b.style.cssText = "display:block;text-align:center;font-weight:700;padding:14px 24px;border-radius:9999px;color:#1A0E06;border:1.5px solid #F6C48A;background:linear-gradient(90deg,#8F4515 0%,#BF7530 31%,#D58A42 50%,#BF7530 69%,#8F4515 100%);box-shadow:0 0 24px rgba(224,138,46,.35)";
-      box.append(p, b);
+      const p = document.createElement("p"); p.textContent = msg; p.style.cssText = "color:#fff;margin:0 0 4px;line-height:1.5";
+      const form = document.createElement("form"); form.style.cssText = "display:flex;flex-direction:column;gap:12px;margin:0";
+      const input = document.createElement("input"); input.type = "email"; input.required = true; input.autocomplete = "email";
+      input.placeholder = "The email you bought the book with"; input.setAttribute("aria-label", "The email you bought the book with");
+      input.style.cssText = "width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid #F6C48A;background:#FBF6EA;color:#1A0E06;font-size:16px";
+      const send = document.createElement("button"); send.type = "submit"; send.textContent = "Send My Fresh Link"; send.style.cssText = COPPER;
+      form.append(input, send);
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = input.value.trim(); if (!email) return;
+        send.disabled = true; send.textContent = "Sending...";
+        fetch("/api/book-checkout", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) })
+          .catch(() => null)
+          .then(() => {
+            const ok = document.createElement("p"); ok.style.cssText = "color:#fff;margin:0;line-height:1.5";
+            ok.textContent = "If that email bought the book, a fresh link is on its way to it now. Check your inbox, and your spam folder too.";
+            form.replaceWith(ok);
+          });
+      });
+      box.append(p, form);
+      if (buy) {
+        const or = document.createElement("p"); or.textContent = "Have not bought it yet?"; or.style.cssText = "color:#fff;margin:10px 0 0;line-height:1.5";
+        const b = document.createElement("a"); b.href = "/get-the-book"; b.textContent = "Get The Book"; b.style.cssText = COPPER;
+        box.append(or, b);
+      }
       // The page's own words say "Here is your book", which is only true for a buyer.
       const sec = box.closest("section");
       const h = sec?.querySelector("h1"); if (h) h.textContent = "Attention To Dollars";
@@ -26,13 +50,19 @@ export default function BookDownload() {
     };
     const q = new URLSearchParams(window.location.search);
     const id = q.get("session_id") || "";
+    const fresh = q.get("k") || "";
     const preview = q.get("preview") === "1";
-    if (!id && !preview) { lock("This page opens after you buy the book."); return; }
+    const AGAIN = "Already bought the book? Type the email you bought it with and we will send a fresh download page to that inbox.";
+    if (!id && !fresh && !preview) { lock(AGAIN, true); return; }
     box.style.opacity = "0.5";
-    fetch((preview ? "/api/book-checkout?preview=1" : "/api/book-checkout?session_id=" + encodeURIComponent(id)) + "&t=" + Date.now(), { cache: "no-store" })
+    const ask = preview ? "preview=1" : fresh ? "k=" + encodeURIComponent(fresh) : "session_id=" + encodeURIComponent(id);
+    fetch("/api/book-checkout?" + ask + "&t=" + Date.now(), { cache: "no-store" })
       .then((r) => r.json())
       .then((j) => {
-        if (!j.paid) { lock("We could not find a finished order for this link. If you paid, email support@stevenjamesconsulting.com and we will send the book."); return; }
+        if (!j.paid) {
+          lock(j.expired ? "This link has run out. Type the email you bought the book with and we will send a fresh download page to that inbox." : AGAIN, !j.expired);
+          return;
+        }
         a.href = j.apple; k.href = j.kindle; box.style.opacity = "1";
         // The three study guide buttons sit in the same box, so the lock above clears them with the rest.
         for (const [key, href] of [["h4", j.guidePhone], ["h5", j.guideTablet], ["h6", j.guideLaptop]] as const) {
@@ -40,7 +70,7 @@ export default function BookDownload() {
           if (g && href) g.href = href;
         }
       })
-      .catch(() => lock("Something went wrong loading your download. Refresh the page, or email support@stevenjamesconsulting.com."));
+      .catch(() => lock("Something went wrong loading your download. Refresh the page, or type the email you bought the book with and we will send a fresh link.", false));
   }, []);
   return null;
 }
