@@ -7,7 +7,9 @@ export default function BookDownload() {
   useEffect(() => {
     const a = document.querySelector<HTMLAnchorElement>('[data-sjc-sec="book-thank-you"] a[data-sjc-link="h1"], #sbookty a[data-sjc-link="h1"]');
     const k = document.querySelector<HTMLAnchorElement>('[data-sjc-sec="book-thank-you"] a[data-sjc-link="h2"], #sbookty a[data-sjc-link="h2"]');
-    const box = a?.parentElement;
+    // The downloads sit in one marked area (pictures with a button under each); older layouts had the buttons
+    // directly in one box, so that still works.
+    const box = (a?.closest("[data-sjc-dl]") as HTMLElement | null) || a?.parentElement;
     if (!a || !k || !box) return;
     // The locked view: the "forgot my password" box. Type the email, a fresh link goes to that inbox.
     const COPPER = "display:block;width:100%;text-align:center;font-weight:700;padding:14px 24px;border-radius:9999px;color:#1A0E06;border:1.5px solid #F6C48A;background:linear-gradient(90deg,#8F4515 0%,#BF7530 31%,#D58A42 50%,#BF7530 69%,#8F4515 100%);box-shadow:0 0 24px rgba(224,138,46,.35);cursor:pointer;font-size:16px";
@@ -15,7 +17,7 @@ export default function BookDownload() {
       box.innerHTML = "";
       // The box is dimmed to half while the order is being checked. A locked page must come back to full
       // strength, or the buttons and the message sit at half brightness (Steven, 2026-10-08).
-      box.style.opacity = "1";
+      box.style.opacity = "1"; box.style.maxWidth = "440px";
       const p = document.createElement("p"); p.textContent = msg; p.style.cssText = "color:#fff;margin:0 0 4px;line-height:1.5";
       const form = document.createElement("form"); form.style.cssText = "display:flex;flex-direction:column;gap:12px;margin:0";
       const input = document.createElement("input"); input.type = "email"; input.required = true; input.autocomplete = "email";
