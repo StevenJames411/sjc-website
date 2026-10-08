@@ -9,10 +9,9 @@ export default function BookDownload() {
     const k = document.querySelector<HTMLAnchorElement>('[data-sjc-sec="book-thank-you"] a[data-sjc-link="h2"], #sbookty a[data-sjc-link="h2"]');
     const box = a?.parentElement;
     if (!a || !k || !box) return;
-    // The locked view. A stranger gets the way to buy; a buyer whose link has run out (or who came back
-    // without one) gets the "forgot my password" box: type the email, a fresh link goes to that inbox.
+    // The locked view: the "forgot my password" box. Type the email, a fresh link goes to that inbox.
     const COPPER = "display:block;width:100%;text-align:center;font-weight:700;padding:14px 24px;border-radius:9999px;color:#1A0E06;border:1.5px solid #F6C48A;background:linear-gradient(90deg,#8F4515 0%,#BF7530 31%,#D58A42 50%,#BF7530 69%,#8F4515 100%);box-shadow:0 0 24px rgba(224,138,46,.35);cursor:pointer;font-size:16px";
-    const lock = (msg: string, buy: boolean) => {
+    const lock = (msg: string) => {
       box.innerHTML = "";
       // The box is dimmed to half while the order is being checked. A locked page must come back to full
       // strength, or the buttons and the message sit at half brightness (Steven, 2026-10-08).
@@ -37,11 +36,7 @@ export default function BookDownload() {
           });
       });
       box.append(p, form);
-      if (buy) {
-        const or = document.createElement("p"); or.textContent = "Have not bought it yet?"; or.style.cssText = "color:#fff;margin:10px 0 0;line-height:1.5";
-        const b = document.createElement("a"); b.href = "/get-the-book"; b.textContent = "Get The Book"; b.style.cssText = COPPER;
-        box.append(or, b);
-      }
+      // No "Get The Book" button here (Steven, 2026-10-08): nobody reaches this page without having bought it.
       // The page's own words say "Here is your book", which is only true for a buyer.
       const sec = box.closest("section");
       const h = sec?.querySelector("h1"); if (h) h.textContent = "Attention To Dollars";
@@ -55,7 +50,7 @@ export default function BookDownload() {
     // locked view). With no order and no fresh link in the address, the page asks as the owner; the server
     // says yes only to the signed-in owner, so a stranger still lands on the locked view.
     const preview = !id && !fresh;
-    const AGAIN = "Already bought the book? Type the email you bought it with and we will send a fresh download page to that inbox.";
+    const AGAIN = "Type the email you bought the book with and we will send a fresh download page to that inbox.";
     const OUT = "That download link has run out. Type the email you bought the book with and we will send a fresh download page to that inbox.";
     box.style.opacity = "0.5";
     const ask = preview ? "preview=1" : fresh ? "k=" + encodeURIComponent(fresh) : "session_id=" + encodeURIComponent(id);
@@ -64,7 +59,7 @@ export default function BookDownload() {
       .then((j) => {
         if (!j.paid) {
           const ranOut = j.expired || q.get("expired") === "1";
-          lock(ranOut ? OUT : AGAIN, !ranOut);
+          lock(ranOut ? OUT : AGAIN);
           return;
         }
         a.href = j.apple; k.href = j.kindle; box.style.opacity = "1";
@@ -74,7 +69,7 @@ export default function BookDownload() {
           if (g && href) g.href = href;
         }
       })
-      .catch(() => lock("Something went wrong loading your download. Refresh the page, or type the email you bought the book with and we will send a fresh link.", false));
+      .catch(() => lock("Something went wrong loading your download. Refresh the page, or type the email you bought the book with and we will send a fresh link."));
   }, []);
   return null;
 }
