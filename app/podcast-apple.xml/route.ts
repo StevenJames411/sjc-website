@@ -4,4 +4,4 @@ import { podcastFeed } from "@/lib/podcastFeed";
 export const dynamic = "force-static";
 export const revalidate = 3600;
 
-export const GET = () => podcastFeed("other");
+export const GET = () => podcastFeed("apple");
