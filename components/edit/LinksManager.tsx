@@ -1,5 +1,6 @@
 "use client";
 import { useScreenOrder } from "@/components/edit/useScreenOrder";
+import BuyersPanel from "@/components/edit/BuyersPanel";
 // Smart Links — one website's short links, made, renamed, re-pointed and deleted here.
 // The dashboard only looks at them; this is where they are changed.
 //
@@ -245,6 +246,8 @@ export default function LinksManager({
                 ))}
               </div>
             )}
+            {/* The buyers themselves sit in the Book Buyers folder, under its links. */}
+            {g && /^book buyers$/i.test(name) && <BuyersPanel />}
             {x && (
               <div style={{ marginTop: 10 }}>
                 {x.items.map(([label, href, why]) => (

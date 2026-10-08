@@ -10,10 +10,16 @@
 //   study guides (PDF)  the cover line, the left footer on every page, and the copyright note on the last page
 //   the book (EPUB)     the signature and the copyright note on the title page
 // The templates leave those places empty (CEO repo: build-checklist/study-guide/build_study_guide.py).
-import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
+import { PDFDict, PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, rgb, type PDFFont } from "pdf-lib";
 import { strToU8, strFromU8, unzipSync, zipSync, type Zippable } from "fflate";
 
 export type Buyer = { name: string; email: string };
+
+// THE BUYER'S OWN LINKS (see lib/bookBuyers.ts). Inside a buyer's copy, every tracked link carries their short
+// code:  /go/<slug>  becomes  /b/<code>/<slug>, which logs the tap under their name and then counts it on the
+// same smart link as before. No code (the owner's preview) leaves the links as they are.
+const GO = "stevenjamesconsulting.com/go/";
+const personal = (url: string, code?: string) => (code ? url.split(GO).join(`stevenjamesconsulting.com/b/${code}/`) : url);
 
 const YEAR = new Date().getFullYear();
 // The name as it is printed. No name on the order (Stripe did not collect one) falls back to the email.
@@ -48,7 +54,7 @@ const LAYOUT = {
 } as const;
 export type GuideKey = keyof typeof LAYOUT;
 
-export async function signPdf(bytes: Uint8Array, key: GuideKey, buyer: Buyer): Promise<Uint8Array> {
+export async function signPdf(bytes: Uint8Array, key: GuideKey, buyer: Buyer, code?: string): Promise<Uint8Array> {
   const L = LAYOUT[key];
   const b = { name: plain(buyer.name), email: plain(buyer.email) };
   const pdf = await PDFDocument.load(bytes);
@@ -75,13 +81,27 @@ export async function signPdf(bytes: Uint8Array, key: GuideKey, buyer: Buyer): P
   const lines = wrap(NOTE(b), sans, L.note, lw - L.left * 2 - 8);
   lines.forEach((t, i) => last.drawText(t, { x: centre(t, sans, L.note, lw), y: L.noteY - i * L.note * 1.45, size: L.note, font: sans, color: brown }));
 
+  // the links on the cover and the last page
+  if (code) {
+    for (const p of pages) {
+      const annots = p.node.Annots();
+      for (let i = 0; i < (annots?.size() || 0); i++) {
+        const act = annots!.lookupMaybe(i, PDFDict)?.lookupMaybe(PDFName.of("A"), PDFDict);
+        const uri = act?.lookup(PDFName.of("URI"));
+        if (act && (uri instanceof PDFString || uri instanceof PDFHexString) && uri.decodeText().includes(GO)) {
+          act.set(PDFName.of("URI"), PDFString.of(personal(uri.decodeText(), code)));
+        }
+      }
+    }
+  }
+
   pdf.setTitle(`Attention To Dollars: The 15-Stage Checklist. ${possessive(who(b))} Signature Edition`);
   return pdf.save();
 }
 
 const xml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-export function signEpub(bytes: Uint8Array, buyer: Buyer): Uint8Array {
+export function signEpub(bytes: Uint8Array, buyer: Buyer, code?: string): Uint8Array {
   const files = unzipSync(bytes);
   const path = Object.keys(files).find((n) => /(^|\/)title\.xhtml$/.test(n));
   if (!path) return bytes; // a book without a title page is handed over as it is
@@ -94,6 +114,13 @@ export function signEpub(bytes: Uint8Array, buyer: Buyer): Uint8Array {
   const at = page.lastIndexOf("</div>");
   if (at < 0) return bytes;
   files[path] = strToU8(page.slice(0, at) + add + page.slice(at));
+  if (code) {
+    for (const name of Object.keys(files)) {
+      if (!/\.xhtml$/i.test(name)) continue;
+      const text = strFromU8(files[name]);
+      if (text.includes(GO)) files[name] = strToU8(personal(text, code));
+    }
+  }
   // An e-book file must open with its "mimetype" entry, stored uncompressed. Pictures are already compressed,
   // so they are stored as they are, which keeps a 15 MB book to about a second of work.
   const out: Zippable = {};
