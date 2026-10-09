@@ -23,11 +23,9 @@ a{color:inherit;text-decoration:none}
 .toptab button{position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(28,28,30,.78);color:#f1f1f3;display:grid;place-items:center;cursor:pointer}
 .cta{display:flex;align-items:center;margin:0 12px;background:var(--gold);border-radius:12px;padding-right:8px}
 .cta .col{background:#1c1c1e;border:0;color:var(--gold)}
-.strip{position:relative}
-.strip button.ar{position:absolute;top:calc(50% - 22px);width:26px;height:26px;border-radius:50%;border:0;background:rgba(28,28,30,.72);color:#f1f1f3;opacity:.75;display:grid;place-items:center;cursor:pointer;z-index:2;padding:0}
-.strip button.ar svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.strip button.ar.l{left:4px}.strip button.ar.r{right:4px}
-.strip button.ar[hidden]{display:none}
+.dashes{display:flex;justify-content:center;gap:6px;padding:8px 0 2px}
+.dashes button{width:26px;height:4px;border-radius:2px;border:0;padding:0;background:#6a6a72;cursor:pointer}
+.dashes button.in{background:var(--gold)}
 .bar img{width:36px;height:36px;border-radius:8px;object-fit:cover}
 .bar b{font-size:18px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .free{background:var(--gold);color:#1c1c1e;font-weight:800;font-size:14px;letter-spacing:.04em;padding:6px 12px;border-radius:999px}
@@ -107,7 +105,8 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
     <div class="bar"><img src="/skool-phone/icon.jpg" alt=""><b>Steven James Consulting</b><span class="free">FREE</span><button class="col" id="colTop" aria-label="Collapse the top bar"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg></button></div>
     <div class="toptab" id="topTab"><button aria-label="Show the top bar"><svg viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg></button></div>
     <div class="player" id="player"></div>
-    <div class="strip"><button class="ar l" id="arL" hidden aria-label="Slide back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><div class="list" id="list"></div><button class="ar r" id="arR" aria-label="Slide to more"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
+    <div class="list" id="list"></div>
+    <div class="dashes" id="dashes"></div>
     <div class="now"><h1 id="title"></h1><p id="text"></p></div>
 
     <div class="group"><h2>Steven James Consulting</h2><div class="url">skool.com/stevenjamesconsulting</div>
@@ -174,11 +173,10 @@ function show(i,play){
 }
 V.forEach((x,i)=>{const b=document.createElement("button");b.className="row";b.innerHTML=`<img src="${x.p}" alt=""><span>${x.s||x.t}</span>`;b.onclick=()=>{show(i,true);b.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})};list.appendChild(b)});
 show(0);
-const arL=document.getElementById('arL'),arR=document.getElementById('arR');
-function ends(){arL.hidden=list.scrollLeft<20;arR.hidden=list.scrollLeft>list.scrollWidth-list.clientWidth-20}
-list.addEventListener('scroll',ends,{passive:true});
-arL.onclick=()=>list.scrollBy({left:-list.clientWidth*.8,behavior:'smooth'});
-arR.onclick=()=>list.scrollBy({left:list.clientWidth*.8,behavior:'smooth'});
+const dashes=document.getElementById('dashes');
+V.forEach((x,n)=>{const d=document.createElement('button');d.setAttribute('aria-label','Slide to '+(x.s||x.t));d.onclick=()=>list.children[n].scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'});dashes.appendChild(d)});
+function ends(){const a=list.scrollLeft,b=a+list.clientWidth;[...list.children].forEach((r,n)=>{const m=r.offsetLeft-list.offsetLeft+r.offsetWidth/2;dashes.children[n].classList.toggle('in',m>a&&m<b)})}
+list.addEventListener('scroll',ends,{passive:true});addEventListener('resize',ends);
 ends();
 const bar=document.querySelector('.bar'),join=document.getElementById('join'),fab=document.getElementById('fab'),topTab=document.getElementById('topTab'),ph=document.querySelector('.phone');
 // Two ways out of the way: scrolling down hides both bars and a deliberate scroll up brings them back (away);
