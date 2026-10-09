@@ -14,7 +14,13 @@ a{color:inherit;text-decoration:none}
 .before{display:none}
 .phone{width:100%;max-width:480px;min-height:100vh;background:var(--bg);position:relative;padding-bottom:calc(164px + env(safe-area-inset-bottom))}
 .bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5;transition:translate .25s}
-.bar.up{translate:0 -110%}
+.bar.up{display:none}
+.col{background:#3a3a3e;border:0;color:#f1f1f3;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
+.col svg,.toptab svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.toptab{position:sticky;top:0;height:0;z-index:6;display:none}
+.toptab.on{display:block}
+.toptab button{position:absolute;right:10px;top:8px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(28,28,30,.78);color:#f1f1f3;display:grid;place-items:center;cursor:pointer}
+.join .col{position:absolute;right:12px;top:-30px}
 .bar img{width:36px;height:36px;border-radius:8px;object-fit:cover}
 .bar b{font-size:18px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .free{background:var(--gold);color:#1c1c1e;font-weight:800;font-size:14px;letter-spacing:.04em;padding:6px 12px;border-radius:999px}
@@ -91,7 +97,8 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
   <div class="before" id="before"><p class="cap">The About page on a phone today</p><img src="/skool-phone/today.jpg" onerror="document.getElementById('before').remove()" alt="The Skool About page as it shows on a phone today"></div>
   <div class="after"><p class="cap before">The same page, using the whole screen</p>
   <div class="phone">
-    <div class="bar"><img src="/skool-phone/icon.jpg" alt=""><b>Steven James Consulting</b><span class="free">FREE</span></div>
+    <div class="bar"><img src="/skool-phone/icon.jpg" alt=""><b>Steven James Consulting</b><span class="free">FREE</span><button class="col" id="colTop" aria-label="Collapse the top bar"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg></button></div>
+    <div class="toptab" id="topTab"><button aria-label="Show the top bar"><svg viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg></button></div>
     <div class="player" id="player"></div>
     <div class="list" id="list"></div>
     <div class="now"><h1 id="title"></h1><p id="text"></p></div>
@@ -128,7 +135,7 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
     <div class="pow">Powered by <b><span style="color:#3b5bdb">s</span><span style="color:#e0563f">k</span><span style="color:#e9b949">o</span><span style="color:#62b6e8">o</span><span style="color:#e0563f">l</span></b></div>
 
   </div>
-    <div class="join hide" id="join"><div class="sheet" id="sheet"><div>Members</div><div>Map</div><div>Leaderboards</div></div>
+    <div class="join" id="join"><button class="col" id="colBot" aria-label="Collapse the bottom bar"><svg viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg></button><div class="sheet" id="sheet"><div>Members</div><div>Map</div><div>Leaderboards</div></div>
     <a href="https://stevenjamesconsulting.com/go/skool-phone-join">JOIN GROUP<small>Free</small></a>
     <nav>
       <button class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg>About</button>
@@ -160,14 +167,11 @@ function show(i,play){
 }
 V.forEach((x,i)=>{const b=document.createElement("button");b.className="row";b.innerHTML=`<img src="${x.p}" alt=""><span>${x.s||x.t}</span>`;b.onclick=()=>{show(i,true);b.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})};list.appendChild(b)});
 show(0);
-const bar=document.querySelector('.bar'),join=document.getElementById('join'),fab=document.getElementById('fab'),ph=document.querySelector('.phone');
-function bars(on,y){join.classList.toggle('hide',!on);fab.classList.toggle('hide',on);bar.classList.toggle('up',!on&&y>60);if(!on)document.getElementById('sheet').classList.remove('open')}
-let last=0;
-function scrolled(y,max){if(y>=max-8)bars(true,y);else if(y>last+6)bars(false,y);else if(y<last-6)bars(true,y);last=y}
-addEventListener('scroll',()=>{if(innerWidth<1000)scrolled(scrollY,document.documentElement.scrollHeight-innerHeight)},{passive:true});
-ph.addEventListener('scroll',()=>scrolled(ph.scrollTop,ph.scrollHeight-ph.clientHeight),{passive:true});
-fab.onclick=()=>bars(true,last);
-bars(false,0);
+const bar=document.querySelector('.bar'),join=document.getElementById('join'),fab=document.getElementById('fab'),topTab=document.getElementById('topTab');
+function bottom(on){join.classList.toggle('hide',!on);fab.classList.toggle('hide',on);if(!on)document.getElementById('sheet').classList.remove('open')}
+function topBar(on){bar.classList.toggle('up',!on);topTab.classList.toggle('on',!on)}
+document.getElementById('colBot').onclick=()=>bottom(false);fab.onclick=()=>bottom(true);
+document.getElementById('colTop').onclick=()=>topBar(false);topTab.firstChild.onclick=()=>topBar(true);
 document.getElementById('more').onclick=()=>document.getElementById('sheet').classList.toggle('open');
 </script>
 </body>
