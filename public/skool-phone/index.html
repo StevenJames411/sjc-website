@@ -12,7 +12,7 @@ html,body{margin:0;background:#0e0e10;color:var(--text);font-family:Roboto,-appl
 a{color:inherit;text-decoration:none}
 .stage{display:flex;justify-content:center;gap:56px;align-items:flex-start}
 .before{display:none}
-.phone{width:100%;max-width:480px;min-height:100vh;background:var(--bg);position:relative;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+.phone{width:100%;max-width:480px;min-height:100vh;background:var(--bg);position:relative;padding-bottom:calc(164px + env(safe-area-inset-bottom))}
 .bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
 .bar img{width:36px;height:36px;border-radius:8px;object-fit:cover}
 .bar b{font-size:18px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -56,8 +56,16 @@ a{color:inherit;text-decoration:none}
 .about p{margin:0 0 14px}
 .by{display:flex;align-items:center;gap:12px;padding:8px 16px 28px;font-size:17px;color:var(--dim)}
 .by img{width:44px;height:44px;border-radius:50%;object-fit:cover}
-.join{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;padding:12px 12px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(28,28,30,0),var(--bg) 30%);z-index:6}
-.join a{display:block;text-align:center;background:var(--gold);color:#1c1c1e;font-weight:800;font-size:20px;letter-spacing:.04em;padding:18px;border-radius:14px}
+.join{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;padding:12px 0 0;background:linear-gradient(180deg,rgba(28,28,30,0),var(--bg) 22%);z-index:6}
+nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:var(--bg);padding:6px 4px calc(6px + env(safe-area-inset-bottom));margin-top:10px}
+nav button{background:none;border:0;color:var(--dim);font:inherit;font-size:13px;font-weight:700;display:grid;justify-items:center;gap:3px;padding:6px 0;cursor:pointer}
+nav button.on{color:var(--gold)}
+nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sheet{display:none;margin:0 12px 10px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.sheet.open{display:block}
+.sheet div{padding:16px;font-size:18px;font-weight:700;border-top:1px solid var(--line)}
+.sheet div:first-child{border-top:0}
+.join a{margin:0 12px;display:block;text-align:center;background:var(--gold);color:#1c1c1e;font-weight:800;font-size:20px;letter-spacing:.04em;padding:18px;border-radius:14px}
 .join a small{display:block;font-size:14px;font-weight:600;letter-spacing:0;margin-top:2px}
 @media (min-width:1000px){
   .stage{padding:40px 24px 60px}
@@ -65,10 +73,10 @@ a{color:inherit;text-decoration:none}
   .before img{width:100%;border-radius:36px;border:10px solid #2a2a2d;display:block}
   .cap{font-size:15px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center;margin:0 0 14px}
   .after{width:420px}
-  .phone{min-height:0;height:calc(100vh - 120px);max-height:910px;overflow-y:auto;border-radius:36px;border:10px solid #2a2a2d;padding-bottom:100px;scrollbar-width:none}
+  .phone{min-height:0;height:calc(100vh - 120px);max-height:910px;overflow-y:auto;border-radius:36px;border:10px solid #2a2a2d;padding-bottom:170px;scrollbar-width:none}
   .phone::-webkit-scrollbar{display:none}
   .after{position:relative}
-  .join{position:absolute;left:10px;right:10px;bottom:10px;transform:none;width:auto;max-width:none;border-radius:0 0 26px 26px}
+  .join{position:absolute;left:10px;right:10px;bottom:10px;transform:none;width:auto;max-width:none;border-radius:0 0 26px 26px;overflow:hidden}
 }
 </style>
 </head>
@@ -114,7 +122,15 @@ a{color:inherit;text-decoration:none}
     <div class="pow">Powered by <b><span style="color:#3b5bdb">s</span><span style="color:#e0563f">k</span><span style="color:#e9b949">o</span><span style="color:#62b6e8">o</span><span style="color:#e0563f">l</span></b></div>
 
   </div>
-    <div class="join"><a href="https://stevenjamesconsulting.com/go/skool-phone-join">JOIN GROUP<small>Free</small></a></div>
+    <div class="join"><div class="sheet" id="sheet"><div>Members</div><div>Map</div><div>Leaderboards</div></div>
+    <a href="https://stevenjamesconsulting.com/go/skool-phone-join">JOIN GROUP<small>Free</small></a>
+    <nav>
+      <button class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg>About</button>
+      <button><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Community</button>
+      <button><svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.5V16c3 2.5 7 2.5 10 0v-4.5"/></svg>Classroom</button>
+      <button><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>Calendar</button>
+      <button id="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
+    </nav></div>
   </div>
 </div>
 <script>
@@ -137,6 +153,7 @@ function show(i,play){
 }
 V.forEach((x,i)=>{const b=document.createElement("button");b.className="row";b.innerHTML=`<img src="${x.p}" alt=""><span>${x.s||x.t}</span>`;b.onclick=()=>{show(i,true);b.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})};list.appendChild(b)});
 show(0);
+document.getElementById('more').onclick=()=>document.getElementById('sheet').classList.toggle('open');
 </script>
 </body>
 </html>
