@@ -24,7 +24,14 @@ const nextConfig: NextConfig = {
           has: [{ type: "host" as const, value: "(www\\.)?stevenjamesconsulting\\.com" }],
         },
       ],
-      afterFiles: [],
+      afterFiles: [
+        // The phone-first mock-up of the Skool About page (a static file in public/skool-phone).
+        {
+          source: "/skool-phone",
+          destination: "/skool-phone/index.html",
+          has: [{ type: "host" as const, value: "(www\\.)?stevenjamesconsulting\\.com" }],
+        },
+      ],
       fallback: [],
     };
   },

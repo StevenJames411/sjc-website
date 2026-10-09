@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Steven James Consulting community - the phone screen, used</title>
+<style>
+:root{--bg:#1c1c1e;--card:#2a2a2d;--line:#3a3a3e;--text:#f1f1f3;--dim:#a6a6ad;--gold:#f8d481;--copper:#e8964a}
+*{box-sizing:border-box}
+html,body{margin:0;background:#0e0e10;color:var(--text);font-family:Roboto,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.stage{display:flex;justify-content:center;gap:56px;align-items:flex-start}
+.before{display:none}
+.phone{width:100%;max-width:480px;min-height:100vh;background:var(--bg);position:relative;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+.bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.bar img{width:36px;height:36px;border-radius:8px;object-fit:cover}
+.bar b{font-size:18px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.free{background:var(--gold);color:#1c1c1e;font-weight:800;font-size:14px;letter-spacing:.04em;padding:6px 12px;border-radius:999px}
+.player{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.player video,.player img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.soon{position:absolute;left:12px;top:12px;background:rgba(0,0,0,.72);color:#fff;font-size:14px;font-weight:700;padding:7px 12px;border-radius:999px}
+.now{padding:16px 16px 6px}
+.now h1{margin:0 0 8px;font-size:25px;line-height:1.15}
+.now p{margin:0;font-size:18px;line-height:1.45;color:#dcdce0}
+.h{padding:22px 16px 10px;font-size:14px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+.list{padding:0 12px;display:grid;gap:8px}
+.row{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:2px solid transparent;border-radius:14px;padding:10px;color:var(--text);font:inherit;cursor:pointer;min-height:76px}
+.row[aria-pressed=true]{border-color:var(--gold)}
+.row img{width:96px;height:54px;border-radius:8px;object-fit:cover;flex:none}
+.row span{flex:1;font-size:18px;font-weight:700;line-height:1.2}
+.row i{font-style:normal;width:36px;height:36px;border-radius:50%;background:var(--gold);color:#1c1c1e;display:grid;place-items:center;font-size:15px;flex:none;padding-left:3px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;margin:22px 12px 0;background:var(--card);border-radius:14px}
+.stats div{padding:16px 6px;text-align:center;border-left:1px solid var(--line)}
+.stats div:first-child{border-left:0}
+.stats b{display:block;font-size:26px}
+.stats small{font-size:14px;color:var(--dim)}
+.why{padding:0 12px;display:grid;gap:8px}
+.why div{background:var(--card);border-radius:14px;padding:16px;font-size:18px;line-height:1.4}
+.why b{display:block;font-size:20px;margin-bottom:4px;color:var(--gold)}
+.ways{padding:0 12px;display:grid;gap:8px}
+.ways div{background:var(--card);border-radius:14px;padding:18px 16px}
+.ways small{font-size:15px;color:var(--dim);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.ways b{display:block;font-size:26px;margin-top:6px;color:var(--copper)}
+.about{padding:0 16px;font-size:18px;line-height:1.5;color:#dcdce0}
+.about p{margin:0 0 14px}
+.by{display:flex;align-items:center;gap:12px;padding:8px 16px 28px;font-size:17px;color:var(--dim)}
+.by img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.join{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;padding:12px 12px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(28,28,30,0),var(--bg) 30%);z-index:6}
+.join a{display:block;text-align:center;background:var(--gold);color:#1c1c1e;font-weight:800;font-size:20px;letter-spacing:.04em;padding:18px;border-radius:14px}
+.join a small{display:block;font-size:14px;font-weight:600;letter-spacing:0;margin-top:2px}
+@media (min-width:1000px){
+  .stage{padding:40px 24px 60px}
+  .before{display:block;width:420px;position:sticky;top:40px}
+  .before img{width:100%;border-radius:36px;border:10px solid #2a2a2d;display:block}
+  .cap{font-size:15px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center;margin:0 0 14px}
+  .after{width:420px}
+  .phone{min-height:0;height:calc(100vh - 120px);max-height:910px;overflow-y:auto;border-radius:36px;border:10px solid #2a2a2d;padding-bottom:100px;scrollbar-width:none}
+  .phone::-webkit-scrollbar{display:none}
+  .after{position:relative}
+  .join{position:absolute;left:10px;right:10px;bottom:10px;transform:none;width:auto;max-width:none;border-radius:0 0 26px 26px}
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="before" id="before"><p class="cap">The About page on a phone today</p><img src="/skool-phone/today.jpg" onerror="document.getElementById('before').remove()" alt="The Skool About page as it shows on a phone today"></div>
+  <div class="after"><p class="cap before">The same page, using the whole screen</p>
+  <div class="phone">
+    <div class="bar"><img src="/skool-phone/icon.jpg" alt=""><b>Steven James Consulting</b><span class="free">FREE</span></div>
+    <div class="player" id="player"></div>
+    <div class="now"><h1 id="title"></h1><p id="text"></p></div>
+
+    <div class="h">Watch: what you get</div>
+    <div class="list" id="list"></div>
+
+    <div class="stats"><div><b>Free</b><small>to join</small></div><div><b>52</b><small>members</small></div><div><b>2 or 3</b><small>picked a month</small></div></div>
+
+    <div class="h">Why join</div>
+    <div class="why">
+      <div><b>Attention + Your Product = Dollars</b>If you are truly an expert, there is no reason you are not making a lot of money. The dots are not connected, and the world does not know you are here.</div>
+      <div><b>Each month we pick two or three members</b>My team and I build a business around what they know. Join and tell us what you know better than anybody.</div>
+      <div><b>Your own e-book and podcast</b>We package what you know into your own e-book and podcast, build the website you own, and put our Proprietary Revenue Engine behind it.</div>
+    </div>
+
+    <div class="h">Two ways we build it for you</div>
+    <div class="ways">
+      <div><small>Revenue Share Partnership</small><b>$3,995.00 to start</b></div>
+      <div><small>Done For You</small><b>$40,000.00 to $60,000.00</b></div>
+    </div>
+
+    <div class="h">About</div>
+    <div class="about">
+      <p>We are a modern day talent agency for coaches, authors and influencers.</p>
+      <p>Not everybody can pay the Done For You price up front. We understand that. We pick the people who show us real talent.</p>
+      <p>If we pick you, my team and I put a $40,000.00 to $60,000.00 build behind your name for $3,995.00 to start.</p>
+    </div>
+    <div class="by"><img src="/skool-phone/icon.jpg" alt=""><span>By Steven Barchetti · Public group</span></div>
+
+  </div>
+    <div class="join"><a href="https://stevenjamesconsulting.com/go/skool-phone-join">JOIN FREE<small>Opens the community on Skool</small></a></div>
+  </div>
+</div>
+<script>
+const V=[
+ {t:"Welcome: a modern day talent agency",s:"Welcome",p:"/skool-phone/welcome.jpg",v:"https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/video/welcome-2026-10-06.mp4",d:"For coaches, authors and influencers. We package your knowledge and build it all for you."},
+ {t:"Premium Smart Websites",p:"/skool-phone/websites.jpg",d:"One website you own that tells your story, sells your program or book, and lets a buyer book a call right there. This is where all your attention lands."},
+ {t:"Your Own E-Book and Podcast",p:"/skool-phone/ebook.jpg",d:"We take what you know and turn it into your own e-book, with your name on the cover. And we produce your own podcast, on a website you own."},
+ {t:"Automated Organic Content Engine",p:"/skool-phone/content.jpg",d:"One recording from you becomes clips and episodes on every platform, and every one of them points back to your website."},
+ {t:"Speed to Lead",p:"/skool-phone/speed.jpg",d:"Every comment, message and form answered in seconds, day or night, by an AI employee, before the interest cools off."},
+ {t:"CRM Mastery",p:"/skool-phone/crm.jpg",d:"Cross-sells and upsells to people who already know, like and trust you. The easiest money you will ever make."}
+];
+const player=document.getElementById("player"),list=document.getElementById("list");
+function show(i,play){
+  const x=V[i];
+  player.innerHTML=x.v?`<video controls playsinline preload="none" poster="${x.p}" src="${x.v}"></video>`:`<img src="${x.p}" alt=""><span class="soon">Video coming soon</span>`;
+  if(x.v&&play)player.firstChild.play();
+  document.getElementById("title").textContent=x.t;
+  document.getElementById("text").textContent=x.d;
+  [...list.children].forEach((b,n)=>b.setAttribute("aria-pressed",n===i));
+}
+V.forEach((x,i)=>{const b=document.createElement("button");b.className="row";b.innerHTML=`<img src="${x.p}" alt=""><span>${x.s||x.t}</span><i>&#9654;</i>`;b.onclick=()=>{show(i,true);player.scrollIntoView({behavior:"smooth",block:"start"})};list.appendChild(b)});
+show(0);
+</script>
+</body>
+</html>
