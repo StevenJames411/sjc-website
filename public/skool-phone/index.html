@@ -13,7 +13,8 @@ a{color:inherit;text-decoration:none}
 .stage{display:flex;justify-content:center;gap:56px;align-items:flex-start}
 .before{display:none}
 .phone{width:100%;max-width:480px;min-height:100vh;background:var(--bg);position:relative;padding-bottom:calc(164px + env(safe-area-inset-bottom))}
-.bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5;transition:translate .25s}
+.bar.up{translate:0 -110%}
 .bar img{width:36px;height:36px;border-radius:8px;object-fit:cover}
 .bar b{font-size:18px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .free{background:var(--gold);color:#1c1c1e;font-weight:800;font-size:14px;letter-spacing:.04em;padding:6px 12px;border-radius:999px}
@@ -56,7 +57,11 @@ a{color:inherit;text-decoration:none}
 .about p{margin:0 0 14px}
 .by{display:flex;align-items:center;gap:12px;padding:8px 16px 28px;font-size:17px;color:var(--dim)}
 .by img{width:44px;height:44px;border-radius:50%;object-fit:cover}
-.join{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;padding:12px 0 0;background:linear-gradient(180deg,rgba(28,28,30,0),var(--bg) 22%);z-index:6}
+.join{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;padding:12px 0 0;background:linear-gradient(180deg,rgba(28,28,30,0),var(--bg) 22%);z-index:6;transition:translate .25s,opacity .25s}
+.join.hide{translate:0 40px;opacity:0;pointer-events:none}
+.fab{position:fixed;right:max(14px,calc(50% - 226px));bottom:calc(14px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:0;background:var(--gold);color:#1c1c1e;display:grid;place-items:center;z-index:7;box-shadow:0 4px 14px rgba(0,0,0,.5);cursor:pointer;transition:opacity .2s}
+.fab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.fab.hide{opacity:0;pointer-events:none}
 nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:var(--bg);padding:6px 4px calc(6px + env(safe-area-inset-bottom));margin-top:10px}
 nav button{background:none;border:0;color:var(--dim);font:inherit;font-size:13px;font-weight:700;display:grid;justify-items:center;gap:3px;padding:6px 0;cursor:pointer}
 nav button.on{color:var(--gold)}
@@ -77,6 +82,7 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
   .phone::-webkit-scrollbar{display:none}
   .after{position:relative}
   .join{position:absolute;left:10px;right:10px;bottom:10px;transform:none;width:auto;max-width:none;border-radius:0 0 26px 26px;overflow:hidden}
+  .fab{position:absolute;right:24px;bottom:24px}
 }
 </style>
 </head>
@@ -122,7 +128,7 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
     <div class="pow">Powered by <b><span style="color:#3b5bdb">s</span><span style="color:#e0563f">k</span><span style="color:#e9b949">o</span><span style="color:#62b6e8">o</span><span style="color:#e0563f">l</span></b></div>
 
   </div>
-    <div class="join"><div class="sheet" id="sheet"><div>Members</div><div>Map</div><div>Leaderboards</div></div>
+    <div class="join hide" id="join"><div class="sheet" id="sheet"><div>Members</div><div>Map</div><div>Leaderboards</div></div>
     <a href="https://stevenjamesconsulting.com/go/skool-phone-join">JOIN GROUP<small>Free</small></a>
     <nav>
       <button class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg>About</button>
@@ -131,6 +137,7 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
       <button><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>Calendar</button>
       <button id="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
     </nav></div>
+  <button class="fab hide" id="fab" aria-label="Show the menu"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg></button>
   </div>
 </div>
 <script>
@@ -153,6 +160,14 @@ function show(i,play){
 }
 V.forEach((x,i)=>{const b=document.createElement("button");b.className="row";b.innerHTML=`<img src="${x.p}" alt=""><span>${x.s||x.t}</span>`;b.onclick=()=>{show(i,true);b.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})};list.appendChild(b)});
 show(0);
+const bar=document.querySelector('.bar'),join=document.getElementById('join'),fab=document.getElementById('fab'),ph=document.querySelector('.phone');
+function bars(on,y){join.classList.toggle('hide',!on);fab.classList.toggle('hide',on);bar.classList.toggle('up',!on&&y>60);if(!on)document.getElementById('sheet').classList.remove('open')}
+let last=0;
+function scrolled(y,max){if(y>=max-8)bars(true,y);else if(y>last+6)bars(false,y);else if(y<last-6)bars(true,y);last=y}
+addEventListener('scroll',()=>{if(innerWidth<1000)scrolled(scrollY,document.documentElement.scrollHeight-innerHeight)},{passive:true});
+ph.addEventListener('scroll',()=>scrolled(ph.scrollTop,ph.scrollHeight-ph.clientHeight),{passive:true});
+fab.onclick=()=>bars(true,last);
+bars(false,0);
 document.getElementById('more').onclick=()=>document.getElementById('sheet').classList.toggle('open');
 </script>
 </body>
