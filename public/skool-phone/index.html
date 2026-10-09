@@ -15,6 +15,7 @@ a{color:inherit;text-decoration:none}
 .phone{width:100%;max-width:480px;min-height:100vh;background:var(--bg);position:relative;padding-bottom:calc(164px + env(safe-area-inset-bottom))}
 .bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5;transition:translate .25s}
 .bar.up{display:none}
+.bar.away{translate:0 -110%}
 .col{background:#1c1c1e;border:2px solid var(--gold);color:var(--gold);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
 .col svg,.toptab svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .toptab{position:sticky;top:0;height:0;z-index:6;display:none}
@@ -167,11 +168,26 @@ function show(i,play){
 }
 V.forEach((x,i)=>{const b=document.createElement("button");b.className="row";b.innerHTML=`<img src="${x.p}" alt=""><span>${x.s||x.t}</span>`;b.onclick=()=>{show(i,true);b.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})};list.appendChild(b)});
 show(0);
-const bar=document.querySelector('.bar'),join=document.getElementById('join'),fab=document.getElementById('fab'),topTab=document.getElementById('topTab');
-function bottom(on){join.classList.toggle('hide',!on);fab.classList.toggle('hide',on);if(!on)document.getElementById('sheet').classList.remove('open')}
-function topBar(on){bar.classList.toggle('up',!on);topTab.classList.toggle('on',!on)}
-document.getElementById('colBot').onclick=()=>bottom(false);fab.onclick=()=>bottom(true);
-document.getElementById('colTop').onclick=()=>topBar(false);topTab.firstChild.onclick=()=>topBar(true);
+const bar=document.querySelector('.bar'),join=document.getElementById('join'),fab=document.getElementById('fab'),topTab=document.getElementById('topTab'),ph=document.querySelector('.phone');
+// Two ways out of the way: scrolling down hides both bars and a deliberate scroll up brings them back (away);
+// a collapse arrow puts one bar away until its corner button is tapped (pinTop / pinBot).
+let pinTop=false,pinBot=false,away=false,last=0,anchor=0,dir=0;
+function paint(){
+  join.classList.toggle('hide',pinBot||away);fab.classList.toggle('hide',!pinBot);
+  bar.classList.toggle('up',pinTop);bar.classList.toggle('away',away&&!pinTop);topTab.classList.toggle('on',pinTop);
+  if(pinBot||away)document.getElementById('sheet').classList.remove('open');
+}
+function scrolled(y){
+  const d=y>last?1:y<last?-1:0;
+  if(d&&d!==dir){dir=d;anchor=last}
+  if(dir>0&&y-anchor>12&&y>60&&!away){away=true;paint()}
+  if(dir<0&&(anchor-y>50||y<10)&&away){away=false;paint()}
+  last=y;
+}
+addEventListener('scroll',()=>{if(innerWidth<1000)scrolled(scrollY)},{passive:true});
+ph.addEventListener('scroll',()=>scrolled(ph.scrollTop),{passive:true});
+document.getElementById('colBot').onclick=()=>{pinBot=true;paint()};fab.onclick=()=>{pinBot=false;away=false;paint()};
+document.getElementById('colTop').onclick=()=>{pinTop=true;paint()};topTab.firstChild.onclick=()=>{pinTop=false;away=false;paint()};
 document.getElementById('more').onclick=()=>document.getElementById('sheet').classList.toggle('open');
 </script>
 </body>
