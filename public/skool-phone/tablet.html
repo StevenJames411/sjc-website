@@ -23,11 +23,9 @@ a{color:inherit;text-decoration:none}
 .toptab button{position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(28,28,30,.78);color:#f1f1f3;display:grid;place-items:center;cursor:pointer}
 .cta{display:flex;align-items:center;margin:0 12px;background:var(--gold);border-radius:12px;padding-right:8px}
 .cta .col{background:#1c1c1e;border:0;color:var(--gold)}
-.strip{position:relative}
-.strip button.ar{position:absolute;top:calc(50% - 22px);width:26px;height:26px;border-radius:50%;border:0;background:rgba(28,28,30,.72);color:#f1f1f3;opacity:.75;display:grid;place-items:center;cursor:pointer;z-index:2;padding:0}
-.strip button.ar svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.strip button.ar.l{left:4px}.strip button.ar.r{right:4px}
-.strip button.ar[hidden]{display:none}
+.dashes{display:flex;justify-content:center;gap:6px;padding:8px 0 2px}
+.dashes button{width:26px;height:4px;border-radius:2px;border:0;padding:0;background:#6a6a72;cursor:pointer}
+.dashes button.in{background:var(--gold)}
 .bar img{width:36px;height:36px;border-radius:8px;object-fit:cover}
 .bar b{font-size:18px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .free{background:var(--gold);color:#1c1c1e;font-weight:800;font-size:14px;letter-spacing:.04em;padding:6px 12px;border-radius:999px}
@@ -98,18 +96,15 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
   .fab{position:absolute;right:18px;bottom:18px}
 }
 
-/* TABLET: two columns at the top, everything else spread across the width, one bar at the bottom */
+/* TABLET = the phone design with more room: one column, full-width video, the same strip, the same bottom tray */
 .phone{max-width:860px;padding-bottom:calc(86px + env(safe-area-inset-bottom))}
-.hero{display:grid;grid-template-columns:1.55fr 1fr;gap:0 4px;align-items:start}
-.heroR .group{padding-top:14px}.heroR .meta{grid-template-columns:1fr 1fr;font-size:16px}
-.heroR .stats{margin:18px 16px 0}
-.bigjoin{display:block;margin:16px 16px 0;text-align:center;background:var(--gold);color:#1c1c1e;font-weight:800;font-size:18px;letter-spacing:.04em;padding:14px;border-radius:12px}
-.list{display:grid;grid-template-columns:repeat(6,1fr);overflow:visible;padding:18px 12px 4px}
-.row{flex:none}.row span{font-size:14px}
-.strip button.ar{display:none}
+.bar b{font-size:22px}.bar img{width:44px;height:44px}
+.row{flex:0 0 27%}.row span{font-size:17px}
+.now h1{font-size:32px}.now p,.group p,.why div,.about{font-size:20px}
+.group h2{font-size:28px}
+.meta{grid-template-columns:repeat(4,auto);justify-content:space-between;font-size:19px}
 .why{grid-template-columns:repeat(3,1fr)}
 .ways{grid-template-columns:1fr 1fr}
-.about{columns:2;column-gap:28px}
 .join{max-width:860px;display:flex;align-items:center;padding:0;background:var(--bg);border-top:1px solid var(--line)}
 .join .sheet{display:none}
 .join nav{order:1;flex:1;grid-template-columns:repeat(7,1fr);border-top:0;margin:0}
@@ -122,18 +117,22 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
   .join{left:10px;right:10px;bottom:10px;max-width:none}
   .fab{right:18px}
 }
-@media (max-width:700px){.hero{grid-template-columns:1fr}.list{grid-template-columns:repeat(3,1fr)}.why,.ways{grid-template-columns:1fr}.about{columns:1}.join nav{display:none}.join .cta{flex:1;margin:8px 12px}}
+@media (max-width:700px){.row{flex:0 0 42%}.meta{grid-template-columns:1fr 1fr}.why,.ways{grid-template-columns:1fr}.join nav{display:none}.join .cta{flex:1;margin:8px 12px}}
 </style>
 </head>
 <body>
 <div class="stage">
   
-  <div class="after"><p class="cap before">The same page on a tablet</p>
+  <div class="after"><p class="cap before">The same design on a tablet</p>
   <div class="phone">
     <div class="bar"><img src="/skool-phone/icon.jpg" alt=""><b>Steven James Consulting</b><span class="free">FREE</span><button class="col" id="colTop" aria-label="Collapse the top bar"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg></button></div>
     <div class="toptab" id="topTab"><button aria-label="Show the top bar"><svg viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg></button></div>
+    <div class="player" id="player"></div>
+    <div class="list" id="list"></div>
+    <div class="dashes" id="dashes"></div>
+    <div class="now"><h1 id="title"></h1><p id="text"></p></div>
 
-    <div class="hero"><div class="heroL"><div class="player" id="player"></div><div class="now"><h1 id="title"></h1><p id="text"></p></div></div><div class="heroR"><div class="group"><h2>Steven James Consulting</h2><div class="url">skool.com/stevenjamesconsulting</div>
+    <div class="group"><h2>Steven James Consulting</h2><div class="url">skool.com/stevenjamesconsulting</div>
       <p>A modern day talent agency for coaches, authors and influencers. Each month we pick two or three members and build a business around what they know.</p></div>
     <div class="meta">
       <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Public</span>
@@ -141,8 +140,7 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
       <span><svg viewBox="0 0 24 24"><path d="M3 4h8l10 10-7 7L4 11z"/><circle cx="8" cy="8" r="1.3"/></svg>Free</span>
       <span><img src="/skool-phone/icon.jpg" alt="">By Steven Barchetti</span>
     </div>
-    <div class="stats"><div><b>52</b><small>Members</small></div><div><b>3</b><small>Online</small></div><div><b>1</b><small>Admin</small></div></div><a class="bigjoin" href="https://stevenjamesconsulting.com/go/skool-tablet-join">JOIN GROUP · FREE</a></div></div>
-    <div class="strip"><button class="ar l" id="arL" hidden aria-label="Slide back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><div class="list" id="list"></div><button class="ar r" id="arR" aria-label="Slide to more"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
+    <div class="stats"><div><b>52</b><small>Members</small></div><div><b>3</b><small>Online</small></div><div><b>1</b><small>Admin</small></div></div>
 
     <div class="h">Why join</div>
     <div class="why">
@@ -200,11 +198,10 @@ function show(i,play){
 }
 V.forEach((x,i)=>{const b=document.createElement("button");b.className="row";b.innerHTML=`<img src="${x.p}" alt=""><span>${x.s||x.t}</span>`;b.onclick=()=>{show(i,true);b.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})};list.appendChild(b)});
 show(0);
-const arL=document.getElementById('arL'),arR=document.getElementById('arR');
-function ends(){arL.hidden=list.scrollLeft<20;arR.hidden=list.scrollLeft>list.scrollWidth-list.clientWidth-20}
-list.addEventListener('scroll',ends,{passive:true});
-arL.onclick=()=>list.scrollBy({left:-list.clientWidth*.8,behavior:'smooth'});
-arR.onclick=()=>list.scrollBy({left:list.clientWidth*.8,behavior:'smooth'});
+const dashes=document.getElementById('dashes');
+V.forEach((x,n)=>{const d=document.createElement('button');d.setAttribute('aria-label','Slide to '+(x.s||x.t));d.onclick=()=>list.children[n].scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'});dashes.appendChild(d)});
+function ends(){const a=list.scrollLeft,b=a+list.clientWidth;[...list.children].forEach((r,n)=>{const m=r.offsetLeft-list.offsetLeft+r.offsetWidth/2;dashes.children[n].classList.toggle('in',m>a&&m<b)})}
+list.addEventListener('scroll',ends,{passive:true});addEventListener('resize',ends);
 ends();
 const bar=document.querySelector('.bar'),join=document.getElementById('join'),fab=document.getElementById('fab'),topTab=document.getElementById('topTab'),ph=document.querySelector('.phone');
 // Two ways out of the way: scrolling down hides both bars and a deliberate scroll up brings them back (away);
