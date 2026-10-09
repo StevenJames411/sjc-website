@@ -15,12 +15,12 @@ a{color:inherit;text-decoration:none}
 .phone{width:100%;max-width:480px;min-height:100vh;background:var(--bg);position:relative;padding-bottom:calc(164px + env(safe-area-inset-bottom))}
 .bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5;transition:translate .25s}
 .bar.up{display:none}
-.col{background:#3a3a3e;border:0;color:#f1f1f3;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
-.col svg,.toptab svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.col{background:#1c1c1e;border:2px solid var(--gold);color:var(--gold);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
+.col svg,.toptab svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .toptab{position:sticky;top:0;height:0;z-index:6;display:none}
 .toptab.on{display:block}
-.toptab button{position:absolute;right:10px;top:8px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(28,28,30,.78);color:#f1f1f3;display:grid;place-items:center;cursor:pointer}
-.join .col{position:absolute;right:12px;top:-30px}
+.toptab button{position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(28,28,30,.78);color:#f1f1f3;display:grid;place-items:center;cursor:pointer}
+.join .col{position:absolute;right:12px;top:10px;background:#1c1c1e;border:2px solid var(--gold);color:var(--gold)}
 .bar img{width:36px;height:36px;border-radius:8px;object-fit:cover}
 .bar b{font-size:18px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .free{background:var(--gold);color:#1c1c1e;font-weight:800;font-size:14px;letter-spacing:.04em;padding:6px 12px;border-radius:999px}
@@ -63,10 +63,10 @@ a{color:inherit;text-decoration:none}
 .about p{margin:0 0 14px}
 .by{display:flex;align-items:center;gap:12px;padding:8px 16px 28px;font-size:17px;color:var(--dim)}
 .by img{width:44px;height:44px;border-radius:50%;object-fit:cover}
-.join{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;padding:12px 0 0;background:linear-gradient(180deg,rgba(28,28,30,0),var(--bg) 22%);z-index:6;transition:translate .25s,opacity .25s}
+.join{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;padding:46px 0 0;background:linear-gradient(180deg,rgba(28,28,30,0),var(--bg) 26%);z-index:6;transition:translate .25s,opacity .25s}
 .join.hide{translate:0 40px;opacity:0;pointer-events:none}
-.fab{position:fixed;right:max(14px,calc(50% - 226px));bottom:calc(14px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:0;background:var(--gold);color:#1c1c1e;display:grid;place-items:center;z-index:7;box-shadow:0 4px 14px rgba(0,0,0,.5);cursor:pointer;transition:opacity .2s}
-.fab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.fab{position:fixed;right:max(8px,calc(50% - 232px));bottom:calc(8px + env(safe-area-inset-bottom));width:30px;height:30px;border-radius:50%;border:0;background:var(--gold);color:#1c1c1e;display:grid;place-items:center;z-index:7;box-shadow:0 2px 8px rgba(0,0,0,.5);opacity:.9;cursor:pointer;transition:opacity .2s}
+.fab svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .fab.hide{opacity:0;pointer-events:none}
 nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:var(--bg);padding:6px 4px calc(6px + env(safe-area-inset-bottom));margin-top:10px}
 nav button{background:none;border:0;color:var(--dim);font:inherit;font-size:13px;font-weight:700;display:grid;justify-items:center;gap:3px;padding:6px 0;cursor:pointer}
@@ -88,7 +88,7 @@ nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stro
   .phone::-webkit-scrollbar{display:none}
   .after{position:relative}
   .join{position:absolute;left:10px;right:10px;bottom:10px;transform:none;width:auto;max-width:none;border-radius:0 0 26px 26px;overflow:hidden}
-  .fab{position:absolute;right:24px;bottom:24px}
+  .fab{position:absolute;right:18px;bottom:18px}
 }
 </style>
 </head>
