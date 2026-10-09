@@ -17,6 +17,7 @@ import HomeTwinOrb from "@/components/blocks/HomeTwinOrb";
 import ShowCard from "@/components/blocks/ShowCard";
 import BookCheckout from "@/components/blocks/BookCheckout";
 import BookDownload from "@/components/blocks/BookDownload";
+import BuyerBeacon from "@/components/blocks/BuyerBeacon";
 import FoldFit from "@/components/blocks/FoldFit";
 import { fillBusinessTokens } from "@/lib/businessTokens";
 import { SiteProvider } from "@/components/blocks/SiteContext";
@@ -583,6 +584,8 @@ export async function SitePageBody({
       {/* The book's card form, on our own page (10-04): mounts into [data-sjc-book-checkout]. */}
       {siteId === SJC && page === "get-the-book" ? <BookCheckout /> : null}
       {siteId === SJC && page === "book-thank-you" ? <BookDownload /> : null}
+      {/* A book buyer's page views, logged under their name (lib/bookBuyers.ts). Silent for everyone else. */}
+      {siteId === SJC ? <BuyerBeacon /> : null}
       {/* Wrapped in its own SiteProvider, same as the body: a footer routinely carries
           {{business.phone}} and an unwrapped Render would ship the raw token to a visitor. */}
       {chrome.footer ? (

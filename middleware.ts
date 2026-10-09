@@ -48,6 +48,7 @@ const PUBLIC_API = [
   "/api/apply", // the public lead form
   "/api/video-event", // the welcome video's beacon; counts only, validated strictly, always 204
   "/api/book-checkout", // the book's embedded Stripe checkout; a buyer has no login, and it sells one fixed price
+  "/api/buyer-view", // a book buyer's page view; useless without the signed cookie their download page set, always answers 204
   "/api/careers",
   "/api/send-roadmap",
   "/api/intake", // the client's own onboarding link — gated by its own capability token

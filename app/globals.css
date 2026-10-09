@@ -2213,6 +2213,14 @@ main:has(.wrap) section[id^="lf"] > .container { max-width: var(--maxw, 1180px);
   [data-sjc-fhl-split] h1 + p { font-size: 22px !important; line-height: 1.75 !important; margin-top: 22px !important; }
 }
 
+/* ⛔ ONE COLUMN ON AN UPRIGHT TABLET, LIKE THE HOME HERO (Steven, 10-07: "when we put a video in the hero
+   section, it smashes the text"). A hero with a video stacks at 768-1023px: player on top at full width,
+   words under it. The heroes with his picture beside the words stay two columns there. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-sjc-fhl-split][data-sjc-fhl-split] { grid-template-columns: minmax(0, 1fr) !important; row-gap: 32px !important; }
+  [data-sjc-fhl-split][data-sjc-fhl-split] > div:last-child { order: -1; }
+}
+
 @media (max-width: 767px) { [data-sjc-fhl-pill] { font-size: 17px !important; border-radius: 1.25rem !important; } [data-sjc-fhl-split] h1 { font-size: 26px !important; } }
 
 /* the pill: show name big and gold, the time smaller, on one line (stacked on a phone) */
