@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
           destination: "/skool-phone/tablet.html",
           has: [{ type: "host" as const, value: "(www\\.)?stevenjamesconsulting\\.com" }],
         },
+        {
+          source: "/skool-demo",
+          destination: "/skool-phone/demo.html",
+          has: [{ type: "host" as const, value: "(www\\.)?stevenjamesconsulting\\.com" }],
+        },
       ],
       fallback: [],
     };
