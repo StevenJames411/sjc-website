@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>A phone-first About page for Skool: two working demos</title>
+<style>
+:root{--bg:#1c1c1e;--card:#2a2a2d;--line:#3a3a3e;--text:#f1f1f3;--dim:#a6a6ad;--gold:#f8d481}
+*{box-sizing:border-box}
+body{margin:0;background:#0e0e10;color:var(--text);font-family:Roboto,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+main{max-width:860px;margin:0 auto;padding:40px 20px 70px}
+.k{font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+h1{font-size:34px;line-height:1.15;margin:10px 0 14px}
+p{font-size:19px;color:#dcdce0;margin:0 0 14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:28px 0 12px}
+.two a{display:block;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px;color:var(--text);text-decoration:none}
+.two a:hover{border-color:var(--gold)}
+.two b{display:block;font-size:24px;margin-bottom:6px}
+.two span{font-size:17px;color:var(--dim)}
+.two i{display:inline-block;margin-top:16px;font-style:normal;font-weight:800;background:var(--gold);color:#1c1c1e;padding:10px 18px;border-radius:10px}
+.tip{font-size:16px;color:var(--dim)}
+h2{font-size:22px;margin:36px 0 12px}
+ol{margin:0;padding-left:22px}
+li{font-size:18px;color:#dcdce0;margin-bottom:12px}
+li b{color:var(--text)}
+.by{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);font-size:17px;color:var(--dim)}
+@media (max-width:640px){.two{grid-template-columns:1fr}h1{font-size:27px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="k">A suggestion from a group owner</div>
+  <h1>The Skool About page, built for the phone first</h1>
+  <p>Most people open a Skool group on a phone. On a phone today the About page shows a small video, six tiny thumbnails nobody can read, and no sidebar at all.</p>
+  <p>These two pages are working demos of the same About page with the same content Skool already allows. Nothing was added. The only change is how the screen is used.</p>
+
+  <div class="two">
+    <a href="/skool-phone"><b>Phone demo</b><span>Open it on a phone, or narrow your browser window.</span><br><i>Open the phone demo</i></a>
+    <a href="/skool-tablet"><b>Tablet demo</b><span>The phone design with more room, not the laptop layout made smaller.</span><br><i>Open the tablet demo</i></a>
+  </div>
+  <p class="tip">On a laptop each demo sits inside a device frame. On a real phone or tablet it fills the screen.</p>
+
+  <h2>What is different, for the designers</h2>
+  <ol>
+    <li><b>The video runs the full width of the screen.</b> It is the first thing a visitor sees and it plays in the page.</li>
+    <li><b>The six media slots are a swipe row.</b> Each tile is large enough to read, with its title under it. A row of short lines under the tiles shows there are six and which ones are on screen.</li>
+    <li><b>The sections live in a tray at the bottom,</b> where the thumb already is. A phone holds five plus More. A tablet holds all seven.</li>
+    <li><b>The top bar and the bottom tray get out of the way.</b> Scroll down and they hide. Scroll back up and they return. Each one also has a small arrow to put it away until it is wanted.</li>
+    <li><b>The Join button is one short line</b> and sits just above the tray, always in reach.</li>
+    <li><b>No sidebar is needed.</b> Public, members, Free and the owner fit in one row under the video.</li>
+    <li><b>The tablet follows the phone,</b> not the laptop: one column, the same order, larger type.</li>
+  </ol>
+
+  <p class="by">Built by Steven James, Steven James Consulting, a Skool group owner. The member numbers in the demos are typed in, and five of the six tiles are placeholders for videos.</p>
+</main>
+</body>
+</html>
