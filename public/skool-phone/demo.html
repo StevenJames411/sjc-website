@@ -13,7 +13,11 @@ main{max-width:860px;margin:0 auto;padding:40px 20px 70px}
 .k{font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
 h1{font-size:34px;line-height:1.15;margin:10px 0 14px}
 p{font-size:19px;color:#dcdce0;margin:0 0 14px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:28px 0 12px}
+.vid{position:relative;aspect-ratio:16/9;background:#000;border:2px dashed var(--line);border-radius:16px;display:grid;place-items:center;margin:18px 0 22px;overflow:hidden}
+.vid div{text-align:center;color:var(--dim);font-size:18px;font-weight:700}
+.vid svg{width:64px;height:64px;display:block;margin:0 auto 10px;fill:var(--gold)}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0 12px}
 .two a{display:block;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px;color:var(--text);text-decoration:none}
 .two a:hover{border-color:var(--gold)}
 .two b{display:block;font-size:24px;margin-bottom:6px}
@@ -32,12 +36,12 @@ li b{color:var(--text)}
 <main>
   <div class="k">A suggestion from a group owner</div>
   <h1>The Skool About page, built for the phone first</h1>
-  <p>Most people open a Skool group on a phone. On a phone today the About page shows a small video, six tiny thumbnails nobody can read, and no sidebar at all.</p>
-  <p>These two pages are working demos of the same About page with the same content Skool already allows. Nothing was added. The only change is how the screen is used.</p>
+  <div class="vid" id="loom"><div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" opacity=".25"/><path d="M10 8l6 4-6 4z"/></svg>The 3 minute video goes here</div></div>
+  <p>Watch the video first, then open each demo. They are the same About page with the same content Skool already allows. The only change is how the screen is used.</p>
 
   <div class="two">
-    <a href="/skool-phone"><b>Phone demo</b><span>Open it on a phone, or narrow your browser window.</span><br><i>Open the phone demo</i></a>
-    <a href="/skool-tablet"><b>Tablet demo</b><span>The phone design with more room, not the laptop layout made smaller.</span><br><i>Open the tablet demo</i></a>
+    <a href="https://stevenjamesconsulting.com/go/skool-demo-phone" target="_blank" rel="noopener"><b>Phone demo</b><span>Open it on a phone, or narrow your browser window.</span><br><i>Open the phone demo</i></a>
+    <a href="https://stevenjamesconsulting.com/go/skool-demo-tablet" target="_blank" rel="noopener"><b>Tablet demo</b><span>The phone design with more room, not the laptop layout made smaller.</span><br><i>Open the tablet demo</i></a>
   </div>
   <p class="tip">On a laptop each demo sits inside a device frame. On a real phone or tablet it fills the screen.</p>
 
