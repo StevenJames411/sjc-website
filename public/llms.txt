@@ -22,7 +22,7 @@ The audit scores 20 signals across three tiers:
 Most businesses score under 8/20. The audit is free. The fixes are what get implemented.
 
 ## About Steven Barchetti
-Founder of Steven James Consulting (ARV Venture Group LLC). Engineering and systems background. Builds AI operating systems for founder-led businesses that have outgrown duct-tape software stacks.
+Founder of Steven James Consulting (Tiger Digital Design LLC). Engineering and systems background. Builds AI operating systems for founder-led businesses that have outgrown duct-tape software stacks.
 
 ## Contact
 - Website: https://www.stevenjamesconsulting.com
