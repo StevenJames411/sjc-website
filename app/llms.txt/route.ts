@@ -43,8 +43,8 @@ Steven James Consulting works with coaches, authors and influencers who already 
 ## Other pages
 - [Home](https://stevenjamesconsulting.com/): Turn Your Attention Into Dollars.
 - [For Coaches, Authors and Influencers](https://stevenjamesconsulting.com/for-coaches-authors-and-influencers): why what you teach runs on the same six systems.
-- [Done For You](https://stevenjamesconsulting.com/done-for-you): the fifteen-stage system my team builds for a client, stage by stage. $40,000.00 to $60,000.00.
-- [Revenue Share Partnership](https://stevenjamesconsulting.com/revenue-share): the same fifteen-stage system, built with you. $3,995.00 to start. Two or three community members a month.
+- [Done For You](https://stevenjamesconsulting.com/done-for-you): the fifteen-stage system my team builds for a client, stage by stage.
+- [Revenue Share Partnership](https://stevenjamesconsulting.com/revenue-share): the same fifteen-stage system, built with you. Two or three community members a month.
 - [Apply](https://stevenjamesconsulting.com/apply): the three ways to work with us, each explained, with the next step for each.
 - [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, the blueprint for turning what you know into money.
 - [Funnel Hack Live](https://stevenjamesconsulting.com/funnel-hack-live): live on TikTok every weekday at 3 p.m. Central, with the replay on this page.
@@ -53,8 +53,8 @@ Steven James Consulting works with coaches, authors and influencers who already 
 - [Portfolio](https://stevenjamesconsulting.com/portfolio): live demo websites.
 
 ## What it costs
-- Done for you: $40,000.00 to $60,000.00. My team builds it and keeps it running.
-- Revenue Share Partnership: the same build for $3,995.00 to start. Two or three community members a month.
+- Done for you: my team builds it and keeps it running. The price is set on a discovery call.
+- Revenue Share Partnership: the same build, with you. Two or three community members a month. The terms are set on a discovery call.
 - The blueprint: the book, Attention To Dollars, $495.00, one payment, for sale now at https://stevenjamesconsulting.com/get-the-book.
 
 ## About Steven Barchetti
