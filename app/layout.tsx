@@ -199,7 +199,7 @@ const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Steven James Consulting",
-  legalName: "ARV Venture Group LLC",
+  legalName: "Tiger Digital Design LLC",
   url: SITE_URL,
   logo: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/sites/sjc-website/uploads/1791001773873-sjc-favicon-copper-round-512.png",
   email: "support@stevenjamesconsulting.com",

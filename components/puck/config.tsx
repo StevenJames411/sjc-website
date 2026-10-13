@@ -462,7 +462,7 @@ export const FOOTER_DEFAULTS = {
   email: "support@stevenjamesconsulting.com",
   privacyUrl: "https://www.privacypolicies.com/live/1cbbc5dd-5b42-4b68-abdd-a279a5e3b4f7",
   tosUrl: "https://www.privacypolicies.com/live/34bb5cc7-32b9-4449-ae32-7cfe78f34e45",
-  copyright: "ARV Venture Group LLC Parent Company · Steven James Consulting",
+  copyright: "Tiger Digital Design LLC Parent Company · Steven James Consulting",
   background: "",
   foreground: "",
   brandName: "",
