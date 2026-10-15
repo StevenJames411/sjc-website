@@ -21,14 +21,15 @@ export const dynamic = "force-dynamic";
 
 const BODY = `# Steven James Consulting
 
-> Steven James Consulting is a modern day talent agency for coaches, authors, speakers and influencers. We turn what you know into a premium product and build the fifteen-stage system that sells it. The formula: Attention + Your Product = Dollars. We turn your attention into dollars. Three ways to work with us: do it yourself with the book, done with you on a revenue share, or done for you by Steven Barchetti and his team.
+> Steven James Consulting is a marketing and AI implementation agency for business owners and influencers who already have people paying attention and something to sell. The formula: Attention + Your Offer = Dollars. We turn your attention into dollars. Three ways to work with us: do it yourself with the book, done with you on a revenue share, or done for you by Steven Barchetti and his team.
 
-Steven James Consulting works with coaches, authors and influencers who already have people paying attention to them and something they know that is worth selling. Most of them have about three quarters of it in place, but all of it sits on free social media, which is rented land. We build the piece that is missing: one website they own, with six business systems connected behind it as one Revenue Engine (Six Business Systems = One Revenue Engine), built in fifteen stages, and AI employees that keep it running beside their own small team. Steven Barchetti has run five businesses over forty years (a restaurant, mortgage, roofing, trucking and now technology) and built the systems in every one. The company runs on the same machine it builds for clients.
+The marketing that works is a hundred years old, and it still works. Two things changed: attention used to cost money and now there are dozens of free channels, and AI employees are close to free to run once the machine is built. Steven James Consulting is one of the first agencies building that for small and medium business owners and influencers. Most of our clients have about three quarters of it in place, but all of it sits on free social media, which is rented land. We build the piece that is missing: one website they own, with six business systems connected behind it as one Revenue Engine (Six Business Systems = One Revenue Engine), built in fifteen stages, and AI employees that keep it running beside their own small team. Steven Barchetti has run five businesses over forty years (a restaurant, mortgage, roofing, trucking and now technology) and built the systems in every one. The company runs on the same machine it builds for clients.
 
 ## Who it is for
-- Coaches with a program that works.
-- Authors whose book opens the door.
-- Influencers who have the attention and want income they own.
+Any business owner or influencer who already has people paying attention (followers, leads, past customers, a database) and something to sell. Each has its own page:
+- [Real Estate Teams](https://stevenjamesconsulting.com/real-estate-teams): fill your team's calendar with buyers and sellers.
+- [Clinics and Med Spas](https://stevenjamesconsulting.com/clinics-and-med-spas): fill your calendar with consultations that show up.
+- [Coaches, Authors and Influencers](https://stevenjamesconsulting.com/for-coaches-authors-and-influencers): you built the audience, now turn it into dollars.
 - They already have an audience and a small team. We take 5 to 10 clients at a time.
 
 ## The six business systems
@@ -42,13 +43,15 @@ Steven James Consulting works with coaches, authors and influencers who already 
 
 ## Other pages
 - [Home](https://stevenjamesconsulting.com/): Turn Your Attention Into Dollars.
+- [Real Estate Teams](https://stevenjamesconsulting.com/real-estate-teams): the system for realtor teams.
+- [Clinics and Med Spas](https://stevenjamesconsulting.com/clinics-and-med-spas): the system for clinics and med spas.
 - [For Coaches, Authors and Influencers](https://stevenjamesconsulting.com/for-coaches-authors-and-influencers): why what you teach runs on the same six systems.
 - [Done For You](https://stevenjamesconsulting.com/done-for-you): the fifteen-stage system my team builds for a client, stage by stage.
 - [Revenue Share Partnership](https://stevenjamesconsulting.com/revenue-share): the same fifteen-stage system, built with you. Two or three community members a month.
 - [Apply](https://stevenjamesconsulting.com/apply): the three ways to work with us, each explained, with the next step for each.
-- [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, the blueprint for turning what you know into money.
+- [Attention To Dollars](https://stevenjamesconsulting.com/attention-to-dollars): the book, the blueprint for turning your attention into dollars.
 - [Funnel Hack Live](https://stevenjamesconsulting.com/funnel-hack-live): live on TikTok every weekday at 3 p.m. Central, with the replay on this page.
-- [Podcast](https://stevenjamesconsulting.com/podcast): conversations with coaches, authors and influencers.
+- [Podcast](https://stevenjamesconsulting.com/podcast): conversations with business owners, coaches, authors and influencers.
 - [About](https://stevenjamesconsulting.com/about): Steven Barchetti, forty years and five businesses.
 - [Portfolio](https://stevenjamesconsulting.com/portfolio): live demo websites.
 

@@ -212,7 +212,7 @@ const organizationSchema = {
     "https://www.facebook.com/stevenjamesconsulting",
   ],
   description:
-    "Steven James Consulting is a modern day talent agency for coaches, authors, speakers and influencers. We turn what you know into a premium product and build the fifteen-stage system that sells it: your website, your own e-book, your own podcast, and AI employees answering for you. Founded by Steven Barchetti, who has run five businesses over forty years.",
+    "Steven James Consulting is a marketing and AI implementation agency for business owners and influencers who already have people paying attention and something to sell. Attention + Your Offer = Dollars. We build the marketing and the AI employees that turn that attention into booked appointments and sales: a website you own, free attention from every platform, and AI employees answering every lead. Founded by Steven Barchetti, who has run five businesses over forty years.",
 };
 
 const provider = { "@type": "Organization", name: "Steven James Consulting", url: SITE_URL };
@@ -221,12 +221,12 @@ const doneForYouSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
   name: "Done For You",
-  serviceType: "Talent agency for coaches, authors and influencers",
+  serviceType: "Marketing and AI implementation agency",
   provider,
   areaServed: "United States",
   url: `${SITE_URL}/done-for-you`,
   description:
-    "My team builds all fifteen stages for you: what you know packaged into a premium product, your own e-book, your own podcast, a website you own, and AI employees answering for you.",
+    "My team builds all fifteen stages for you: your offer packaged and sold, a website you own, your own e-book, your own podcast, and AI employees answering every lead and booking the appointment.",
   offers: { "@type": "AggregateOffer", priceCurrency: "USD", lowPrice: "40000.00", highPrice: "60000.00" },
 };
 
@@ -234,7 +234,7 @@ const revenueShareSchema = {
   "@context": "https://schema.org",
   "@type": "Service",
   name: "Revenue Share Partnership",
-  serviceType: "Talent agency for coaches, authors and influencers",
+  serviceType: "Marketing and AI implementation agency",
   provider,
   areaServed: "United States",
   url: `${SITE_URL}/revenue-share`,
