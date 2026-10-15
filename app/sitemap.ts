@@ -25,7 +25,9 @@ const SJC_PAGES: { path: string; priority: number }[] = [
   { path: "/", priority: 1 },
   { path: "/about", priority: 0.8 },
   { path: "/podcast", priority: 0.7 },
-  { path: "/faqs", priority: 0.7 },
+  { path: "/real-estate-teams", priority: 0.8 },
+  { path: "/clinics-and-med-spas", priority: 0.8 },
+  { path: "/for-coaches-authors-and-influencers", priority: 0.8 },
   // /websites is deliberately absent: the studio moved to its own domain and that address only
   // forwards. A sitemap listing a redirect tells Google to index the redirect.
 ];

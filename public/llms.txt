@@ -1,38 +1,14 @@
 # Steven James Consulting
 
-> AI Systems Architect and Fractional CTO helping owner-led businesses ($1M–$5M revenue) become findable, credible, and converting in the AI search era. Builds modular operating systems — not just software.
+> Steven James Consulting is a marketing and AI implementation agency for business owners and influencers who already have people paying attention and something to sell. The formula: Attention + Your Offer = Dollars.
 
-## What we do
-- 20-Point AI Visibility Audit (free, 60 seconds): scores businesses across the signals AI search engines (ChatGPT, Perplexity, Gemini) use to recommend companies
-- Fractional CTO services for owner-led businesses where the founder has become the system
-- Done-for-you AI automation and 24/7 AI receptionist setup
-- Custom AI operating systems built on the latest software, kept modular for easy upgrades
+The full, current summary is served at https://stevenjamesconsulting.com/llms.txt
 
-## Who we serve
-- Owner-led service businesses doing $1M–$5M in annual revenue
-- Founders who have hit the wall where they ARE the system and need it out of their head
-- B2B and consumer-service operators competing for AI-driven recommendations
-
-## How the audit works
-The audit scores 20 signals across three tiers:
-- **Foundation (Findable):** Schema markup, business listings, reviews
-- **Signal (Credible):** Content, citations, authority
-- **System (Converting):** Speed-to-lead, follow-up, document systems
-
-Most businesses score under 8/20. The audit is free. The fixes are what get implemented.
-
-## About Steven Barchetti
-Founder of Steven James Consulting (Tiger Digital Design LLC). Engineering and systems background. Builds AI operating systems for founder-led businesses that have outgrown duct-tape software stacks.
+## Who it is for
+- Real estate teams: https://stevenjamesconsulting.com/real-estate-teams
+- Clinics and med spas: https://stevenjamesconsulting.com/clinics-and-med-spas
+- Coaches, authors and influencers: https://stevenjamesconsulting.com/for-coaches-authors-and-influencers
 
 ## Contact
-- Website: https://www.stevenjamesconsulting.com
+- Website: https://stevenjamesconsulting.com
 - Email: support@stevenjamesconsulting.com
-- Phone: (210) 298-2343
-- Take the audit: https://ai-audit-tool-pearl.vercel.app
-
-## Key terms
-- AI Systems Architect
-- Fractional CTO for Agencies
-- Claude Code Consultant
-- AI Visibility Audit
-- AI Search Optimization (GEO / AIO / LLMO)

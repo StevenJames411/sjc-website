@@ -15,7 +15,7 @@ export const SHOW = {
   feed: "https://stevenjamesconsulting.com/podcast.xml",
   cover: "https://ddhmhtqvn5lepkpr.public.blob.vercel-storage.com/podcast/steven-james-consulting-podcast-cover-3000.jpg",
   description:
-    "Conversations with coaches, authors and influencers about turning what they know into a product and their attention into dollars. Long conversations with people who build things, hosted by Steven Barchetti of Steven James Consulting, a modern day talent agency. Attention + Your Product = Dollars.",
+    "Conversations with business owners, coaches, authors and influencers about turning their attention into dollars. Long conversations with people who build things, hosted by Steven Barchetti of Steven James Consulting, a marketing and AI implementation agency. Attention + Your Offer = Dollars.",
 };
 
 export type Episode = { slug: string; title: string; date: string; seconds: number; bytes: number; description: string };

@@ -21,12 +21,12 @@ export const SITE_NAME = "Steven James Consulting";
 export const SITE_DEFAULTS = {
   title: "Turn Your Attention Into Dollars | Steven James Consulting",
   description:
-    "A modern day talent agency for coaches, authors and influencers. We turn what you know into a premium product and build the fifteen-stage system that sells it. We turn your attention into dollars.",
-  ogTitle: "Steven James Consulting: A Modern Day Talent Agency",
+    "A marketing and AI implementation agency. Attention + Your Offer = Dollars. We build the marketing and the AI employees that turn your attention into booked appointments and sales.",
+  ogTitle: "Steven James Consulting: A Marketing And AI Implementation Agency",
   ogDescription:
-    "For coaches, authors and influencers. We turn what you know into a premium product and build the fifteen-stage system that sells it. We turn your attention into dollars.",
+    "For business owners and influencers with people paying attention and something to sell. Attention + Your Offer = Dollars.",
   twitterDescription:
-    "A modern day talent agency for coaches, authors and influencers. We turn your attention into dollars.",
+    "A marketing and AI implementation agency. Attention + Your Offer = Dollars.",
 };
 
 export type PageMetaFallback = {
