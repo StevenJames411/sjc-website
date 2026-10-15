@@ -69,7 +69,7 @@ export async function pageMetadata(slug: string, fb: PageMetaFallback) {
   const ogTitle = set || fb.ogTitle || fb.title || SITE_DEFAULTS.ogTitle;
   const ogDescription = setDesc || fb.ogDescription || fb.description || SITE_DEFAULTS.ogDescription;
   const siteName = str("businessName") || SITE_NAME;
-  const card = shareImage || (slug === "websites" ? "" : "/opengraph-image");
+  const card = shareImage || (slug === "websites" ? "" : "/opengraph-image.png");
 
   return {
     title: { absolute: title },

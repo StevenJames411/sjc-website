@@ -209,7 +209,7 @@ export function metadataFor(r: NonNullable<Resolved>, path: string, canonical?: 
   // and the card keeps winning" was false: 18 of 20 SJC pages shared with no picture and a
   // `summary` twitter card (measured 2026-09-27). Client sites keep the honest no-image case.
   const ogImage =
-    str("shareImage") || site.seo?.shareImage || firstImage(data) || (site.id === SJC ? "/opengraph-image" : "");
+    str("shareImage") || site.seo?.shareImage || firstImage(data) || (site.id === SJC ? "/opengraph-image.png" : "");
 
   const openGraph = {
         title: title || businessName,
