@@ -109,7 +109,7 @@ export function signEpub(bytes: Uint8Array, buyer: Buyer, code?: string): Uint8A
   const add =
     `<p style="margin-top:2em;letter-spacing:.14em;text-transform:uppercase;font-size:.8em">Signature Edition</p>` +
     `<p style="font-size:1.25em"><strong>Signed for ${xml(who(buyer))}</strong></p>` +
-    `<p><em>Steven Barchetti</em></p>` +
+    `<p><em>Steven James</em></p>` +
     `<p style="margin-top:2.5em;font-size:.75em;line-height:1.5">${xml(NOTE(buyer))}</p>`;
   const page = strFromU8(files[path]);
   const at = page.lastIndexOf("</div>");
