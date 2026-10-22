@@ -104,7 +104,9 @@ export default async function EditPage({
   // The site-wide look that lives inside the nav document (SJC's copper, 2026-10-22). The public page gets
   // it because it always renders the nav; the canvas renders one page without it, so the editor showed
   // the old blue and the tiger. Scoped to Puck's preview container so it can't repaint the editor itself.
-  const siteWideCss = scopeCss(chrome.map(siteWideStyles).join(""), "#preview-frame");
+  const siteWideCss = scopeCss(chrome.map(siteWideStyles).join(""), "#preview-frame", {
+    main: '[data-puck-dropzone^="root"]',
+  });
 
   return (
     <>

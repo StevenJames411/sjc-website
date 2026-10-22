@@ -13,11 +13,19 @@
 // which can never match, so every copper button stayed cyan in the canvas (2026-10-22).
 const ROOTISH = /^(?::root|html|body)(?:\s*>?\s*(?:html|body)(?![\w-]))*(?=$|[\s.:#[>+~])/;
 
-function scopeSelector(sel: string, scope: string): string {
-  const s = sel.trim();
+// Element names the canvas spells differently. The copper block alternates its section bands with
+// `main > :nth-child(odd|even)`; the live page has a <main>, the Puck canvas has its root drop zone instead
+// (same children, same order), so without this every band rendered black in the editor (2026-10-22).
+export type Aliases = Record<string, string>;
+const TYPE = (name: string) => new RegExp(`(^|[\\s>+~(])${name}(?=$|[\\s>+~.:#[)])`, "g");
+
+function scopeSelector(sel: string, scope: string, aliases: Aliases): string {
+  let s = sel.trim();
   if (!s) return s;
-  if (ROOTISH.test(s)) return s.replace(ROOTISH, scope);
-  return `${scope} ${s}`;
+  if (ROOTISH.test(s)) s = s.replace(ROOTISH, scope);
+  else s = `${scope} ${s}`;
+  for (const [name, to] of Object.entries(aliases)) s = s.replace(TYPE(name), `$1${to}`);
+  return s;
 }
 
 /** Find the `}` that closes the block opened at `open` (the index of its `{`). */
@@ -30,7 +38,7 @@ function closeOf(css: string, open: number): number {
   return css.length - 1;
 }
 
-export function scopeCss(css: string, scope: string): string {
+export function scopeCss(css: string, scope: string, aliases: Aliases = {}): string {
   const src = css.replace(/\/\*[\s\S]*?\*\//g, "");
   let out = "";
   let i = 0;
@@ -41,11 +49,11 @@ export function scopeCss(css: string, scope: string): string {
     const close = closeOf(src, open);
     const body = src.slice(open + 1, close);
     if (head.startsWith("@media") || head.startsWith("@supports")) {
-      out += `${head}{${scopeCss(body, scope)}}`;
+      out += `${head}{${scopeCss(body, scope, aliases)}}`;
     } else if (head.startsWith("@")) {
       out += `${head}{${body}}`;
     } else {
-      out += `${head.split(",").map((s) => scopeSelector(s, scope)).join(",")}{${body}}`;
+      out += `${head.split(",").map((s) => scopeSelector(s, scope, aliases)).join(",")}{${body}}`;
     }
     i = close + 1;
   }
