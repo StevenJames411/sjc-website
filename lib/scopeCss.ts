@@ -8,7 +8,10 @@
 // `:root`, `html` and `body` become the scope itself. @media is entered, @keyframes and @font-face pass
 // through untouched.
 
-const ROOTISH = /^(:root|html|body)(?=$|[\s.:#[>+~])/;
+// `:root`, `html`, `body` and any run of them (`html body a.sjc-cta` is how the copper block wins its
+// specificity fights) collapse into the scope. Prefixing instead gave `#preview-frame html body a…`,
+// which can never match, so every copper button stayed cyan in the canvas (2026-10-22).
+const ROOTISH = /^(?::root|html|body)(?:\s*>?\s*(?:html|body)(?![\w-]))*(?=$|[\s.:#[>+~])/;
 
 function scopeSelector(sel: string, scope: string): string {
   const s = sel.trim();
