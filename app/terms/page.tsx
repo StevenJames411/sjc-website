@@ -10,12 +10,12 @@ const SJC_METADATA: Metadata = {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const tenant = await tenantPageMetadata("terms");
+  const tenant = await tenantPageMetadata("terms", true);
   return tenant || SJC_METADATA;
 }
 
 export default async function TermsPage() {
-  const tenant = await tenantPage("terms");
+  const tenant = await tenantPage("terms", true);
   if (tenant) return tenant;
   return (
     <LegalPage eyebrow="Terms" title="Terms of Service and Text Message Terms">

@@ -20,12 +20,18 @@
 // people. scripts/check-route-folders.mjs fails the build on any folder that isn't wired here.
 import { notFound } from "next/navigation";
 import { resolveHost, publicUrlFor } from "@/lib/host";
-import { resolvePage, metadataFor, SitePageBody } from "@/lib/publicSitePage";
+import { resolvePage, metadataFor, SitePageBody, SJC } from "@/lib/publicSitePage";
 
 /** Resolve this slug the way app/[slug] would, for a host that isn't SJC. Null on SJC's own host. */
-async function forTenant(slug: string) {
+async function forTenant(slug: string, sjcOwnsIt = false) {
   const h = await resolveHost();
   if (h.kind === "sjc") return null;
+  // ⚠️ SJC'S OWN DOMAIN RESOLVES AS A "client" — the live site is a registry row (sjc-website) that
+  // claims the apex (lib/host.ts). So on stevenjamesconsulting.com a hand-written route is looked up
+  // among SJC's studio pages first, and 404s when no studio page has its name. /privacy and /terms
+  // (2026-10-22) exist ONLY in code, so they pass sjcOwnsIt: on SJC's own site the coded page wins.
+  // Every other route keeps the old reading, so a studio page of the same name still takes over.
+  if (sjcOwnsIt && h.kind === "client" && h.site.id === SJC) return null;
   // ⛔ A DEMO ADDRESS FOR A SITE THAT HAS BOUGHT ITS OWN DOMAIN IS DEAD. This guard sits above the
   // `h.site` read below, and that is not incidental: without it the address would fall through and
   // serve SJC's own /apply, /careers or /guest at somebody's retired demo URL.
@@ -43,16 +49,16 @@ async function forTenant(slug: string) {
  * A tenant with no page of that name gets notFound() — correct, and the whole point: it is THEIR
  * 404, not SJC's page wearing their domain.
  */
-export async function tenantPage(slug: string) {
-  const found = await forTenant(slug);
+export async function tenantPage(slug: string, sjcOwnsIt = false) {
+  const found = await forTenant(slug, sjcOwnsIt);
   if (!found) return null;
   if (!found.r) notFound();
   return <SitePageBody data={found.r.data} siteId={found.r.site.id} page={found.r.slug} />;
 }
 
 /** The matching metadata. Null when the caller should use SJC's own. */
-export async function tenantPageMetadata(slug: string) {
-  const found = await forTenant(slug);
+export async function tenantPageMetadata(slug: string, sjcOwnsIt = false) {
+  const found = await forTenant(slug, sjcOwnsIt);
   if (!found) return null;
   const { h, r } = found;
   if (!r) return {};

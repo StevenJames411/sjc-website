@@ -10,12 +10,12 @@ const SJC_METADATA: Metadata = {
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const tenant = await tenantPageMetadata("privacy");
+  const tenant = await tenantPageMetadata("privacy", true);
   return tenant || SJC_METADATA;
 }
 
 export default async function PrivacyPage() {
-  const tenant = await tenantPage("privacy");
+  const tenant = await tenantPage("privacy", true);
   if (tenant) return tenant;
   return (
     <LegalPage eyebrow="Privacy" title="Privacy Policy">
