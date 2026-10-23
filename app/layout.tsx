@@ -226,7 +226,7 @@ const doneForYouSchema = {
   areaServed: "United States",
   url: `${SITE_URL}/done-for-you`,
   description:
-    "My team builds all fifteen stages for you: your offer packaged and sold, a website you own, your own e-book, your own podcast, and AI employees answering every lead and booking the appointment.",
+    "My team builds all fifteen stages for you: your offer packaged and sold, a website you own, your own book, your own podcast, and AI employees answering every lead and booking the appointment.",
   offers: { "@type": "AggregateOffer", priceCurrency: "USD", lowPrice: "40000.00", highPrice: "60000.00" },
 };
 
