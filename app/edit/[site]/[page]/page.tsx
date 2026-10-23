@@ -12,6 +12,7 @@ import BrandStyle from "@/components/BrandStyle";
 import { readBrand } from "@/lib/brand";
 import { applyTypeScale, sizesIn } from "@/lib/typeScale";
 import { applyColorMap } from "@/lib/designColors";
+import { scopeCss, siteWideStyles } from "@/lib/scopeCss";
 
 // The builder for one page of one website: /edit/<site>/<page>.
 //
@@ -100,6 +101,12 @@ export default async function EditPage({
   // do nothing in the one place the work is done — the exact failure this file already carries two
   // comments about.
   const designCss = applyColorMap(applyTypeScale(designCssRaw, brand?.typeScale), brand?.colorMap);
+  // The site-wide look that lives inside the nav document (SJC's copper, 2026-10-22). The public page gets
+  // it because it always renders the nav; the canvas renders one page without it, so the editor showed
+  // the old blue and the tiger. Scoped to Puck's preview container so it can't repaint the editor itself.
+  const siteWideCss = scopeCss(chrome.map(siteWideStyles).join(""), "#preview-frame", {
+    main: '[data-puck-dropzone^="root"]',
+  });
 
   return (
     <>
@@ -107,6 +114,7 @@ export default async function EditPage({
       {designCss ? (
         <style id="design-css" dangerouslySetInnerHTML={{ __html: designCss }} />
       ) : null}
+      {siteWideCss ? <style id="site-wide-css" dangerouslySetInnerHTML={{ __html: siteWideCss }} /> : null}
       {/* ⚠️ THE BUILDER GETS THE SAME BUSINESS FACTS THE PUBLIC PAGE DOES.
           Without this the canvas rendered a literal `{{business.phone}}` in the nav — the public
           page wraps in SiteProvider and resolves it, the builder never did. Harmless on the live
