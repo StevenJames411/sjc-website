@@ -259,7 +259,7 @@ const bookSchema = {
   offers: {
     "@type": "Offer",
     priceCurrency: "USD",
-    price: "495.00",
+    price: "27.00",
     availability: "https://schema.org/InStock",
     url: `${SITE_URL}/get-the-book`,
   },

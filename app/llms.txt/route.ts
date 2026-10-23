@@ -58,7 +58,7 @@ Any business owner or influencer who already has people paying attention (follow
 ## What it costs
 - Done for you: my team builds it and keeps it running. The price is set on a discovery call.
 - Revenue Share Partnership: the same build, with you. Two or three community members a month. The terms are set on a discovery call.
-- The blueprint: the book, Attention To Dollars, $495.00, one payment, for sale now at https://stevenjamesconsulting.com/get-the-book.
+- The blueprint: the book, Attention To Dollars, $27.00 (it was $495.00), one payment, for sale now at https://stevenjamesconsulting.com/get-the-book.
 
 ## About Steven Barchetti
 Steven Barchetti has owned and run five businesses over forty years (restaurant, mortgage, roofing, trucking, and now technology) and was the person responsible for the systems in every one. Steven James Consulting is a team, with Steven personally on every account.

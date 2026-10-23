@@ -18,8 +18,11 @@ import { buyerCode, buyerCookies, ensureBuyer } from "@/lib/bookBuyers";
 export const dynamic = "force-dynamic";
 
 const STRIPE = "https://api.stripe.com/v1";
-// "Attention To Dollars", one-time. The price is whatever Stripe says it is; change it there, not here.
-const BOOK_PRICE = "price_1UMzL3GPJwwUDkyIreUYXQ4G";
+// "Attention To Dollars", one-time. $27.00 since 2026-10-23 (Steven: "slash the price... get the blueprint in
+// everybody's hands"); it was $495.00. A Stripe price cannot be edited, so a new price means a new id here.
+const BOOK_PRICE = "price_1UToeHGPJwwUDkyIHc8exXdI";
+// Every price the book has ever sold at, so a buyer from any of them can still ask for a fresh link.
+const BOOK_PRICES = [BOOK_PRICE, "price_1UMzL3GPJwwUDkyIreUYXQ4G"];
 const SITE = "https://stevenjamesconsulting.com";
 
 function key(): string {
@@ -252,7 +255,7 @@ export async function PUT(req: Request) {
         // This Stripe account sells other things too. Only an order for the BOOK opens the book's page.
         const items = await stripe(`/checkout/sessions/${s.id}/line_items?limit=10`);
         const prices = ((items.json?.data as { price?: { id?: string } }[]) || []).map((i) => i.price?.id);
-        if (prices.includes(BOOK_PRICE)) { order = s.id; break; }
+        if (prices.some((p) => p && BOOK_PRICES.includes(p))) { order = s.id; break; }
       }
     }
     if (!order) return done;
