@@ -33,12 +33,12 @@ Any business owner or influencer who already has people paying attention (follow
 - They already have an audience and a small team. We take 5 to 10 clients at a time.
 
 ## The six business systems
-- [Premium Smart Websites](https://stevenjamesconsulting.com/premium-smart-websites): one website you own that tells your story, sells your program or book, and books the call on the page.
-- [Automated Organic Content Engine](https://stevenjamesconsulting.com/automated-organic-content-engine): one recording becomes clips and episodes on every platform, all pointing back to your website.
-- [Speed to Lead](https://stevenjamesconsulting.com/speed-to-lead): every comment, message and form answered in under a minute, day or night.
-- [Automated Five Star Reviews](https://stevenjamesconsulting.com/automated-five-star-reviews): every client, student and reader asked for a testimonial, every time.
-- [CRM Mastery](https://stevenjamesconsulting.com/crm-mastery): one place for every relationship, put to work three ways: database reactivation, cross-sells and upsells to the people who already know, like and trust you.
-- [Paid Ads = Booked Appointments](https://stevenjamesconsulting.com/booked-appointments): added once the free attention is converting; what reaches you is a call on your calendar.
+- [We Get You Seen Every Day](https://stevenjamesconsulting.com/automated-organic-content-engine): one recording from you becomes clips on every platform, every day, each one sending people to the website you own (the Automated Organic Content Engine).
+- [We Package What You Sell](https://stevenjamesconsulting.com/premium-smart-websites): your offer, your own book and podcast, on a website that tells your story and books the call (Premium Smart Websites).
+- [We Turn Attention Into Appointments](https://stevenjamesconsulting.com/speed-to-lead): every comment, message, call and form answered in seconds, day or night, by AI employees who book them on your calendar (Speed to Lead).
+- [We Sell Again to the People Who Already Know You](https://stevenjamesconsulting.com/crm-mastery): past customers and followers turned back into sales with offers that fit them (CRM Mastery).
+- [We Build Your Five Star Reputation](https://stevenjamesconsulting.com/automated-five-star-reviews): every happy customer asked for a review, every time (Automated Five Star Reviews).
+- [Paid Ads When You're Ready](https://stevenjamesconsulting.com/booked-appointments): once the free attention is converting, ads put more appointments on your calendar (Paid Ads = Booked Appointments).
 - [AI Implementation](https://stevenjamesconsulting.com/ai-implementation): not a seventh service. The layer that connects the other six so they work as one.
 
 ## Other pages
