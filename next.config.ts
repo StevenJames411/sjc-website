@@ -53,6 +53,8 @@ const nextConfig: NextConfig = {
       // bios), retired for the builder page /funnel-hack-live with no redirect — so it 404'd.
       // Temporary on purpose: /live may become its own page again, and a 308 is cached forever.
       { source: "/live", destination: "/funnel-hack-live", permanent: false, has: sjcHost },
+      // The CRM Mastery page was /database-reactivation until it was renamed; old menus and emails still point there.
+      { source: "/database-reactivation", destination: "/crm-mastery", permanent: true, has: sjcHost },
       // Crawlers, readers and the 404 page ask for these fixed addresses; the tab icon itself is
       // declared in <head> from the site record. Same picture, so nothing 404s.
       { source: "/favicon.ico", destination: siteIcon, permanent: false, has: sjcHost },
