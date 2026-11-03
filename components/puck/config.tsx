@@ -540,13 +540,13 @@ export const IMAGE_DEFAULTS = {
 // This supersedes the customer-journey order described in the comment above. The nav, the home page and the number
 // on each system page were moved the same day; the strip below numbers by position.
 export const SIX_SYSTEMS = [
-  { slug: "/premium-smart-websites", name: "Premium Smart Websites", line: "One page you own that turns followers into buyers." },
-  { slug: "/automated-organic-content-engine", name: "Automated Organic Content Engine", line: "Send attention to the website you own, every day, without having to think about it." },
-  { slug: "/speed-to-lead", name: "Speed to Lead", line: "Answer every follower in seconds, day or night." },
-  { slug: "/automated-five-star-reviews", name: "Automated Five Star Reviews", line: "Turn every happy student and reader into a review." },
-  { slug: "/crm-mastery", name: "CRM Mastery", line: "Reactivation, cross-sells and upsells to the people who already know you." },
-  { slug: "/booked-appointments", name: "Paid Ads = Booked Appointments", line: "Buy attention that arrives as a sales call on your calendar." },
-  { slug: "/ai-implementation", name: "AI Implementation", line: "The layer that connects the other six systems so they get better every day." },
+  { slug: "/automated-organic-content-engine", name: "We Get You Seen Every Day", sub: "Automated Organic Content Engine", line: "One recording from you becomes clips on every platform, every day, each one sending people to the website you own." },
+  { slug: "/premium-smart-websites", name: "We Package What You Sell", sub: "Premium Smart Websites", line: "Your offer, your own book and podcast, on a website that tells your story and books the call." },
+  { slug: "/speed-to-lead", name: "We Turn Attention Into Appointments", sub: "Speed to Lead", line: "Every comment, message, call and form answered in seconds, day or night, by AI employees who book them on your calendar." },
+  { slug: "/crm-mastery", name: "We Sell Again to the People Who Already Know You", sub: "CRM Mastery", line: "Past customers and followers turned back into sales with offers that fit them." },
+  { slug: "/automated-five-star-reviews", name: "We Build Your Five Star Reputation", sub: "Automated Five Star Reviews", line: "Every happy customer asked for a review, every time." },
+  { slug: "/booked-appointments", name: "Paid Ads When You're Ready", sub: "Paid Ads = Booked Appointments", line: "Once the free attention is converting, ads put more appointments on your calendar." },
+  { slug: "/ai-implementation", name: "AI Implementation", sub: "", line: "The layer that connects the other six systems so they get better every day." },
 ];
 
 export const CONVERSATION_DEFAULTS = {
@@ -2789,7 +2789,7 @@ const baseConfig: Config<Props, RootProps> = {
         // sits on a LIGHT page, and gold on near-white is unreadable. The capsule supplies the ground
         // the gold needs — the same reason the menu pill is filled over Steven's photo.
         const GOLD = "#ffd700", GREEN = "#85bb65", LAYER_BG = "#0A0E27";
-        const chip = (x: { slug: string; name: string; line: string }, wide: boolean, n?: number) => {
+        const chip = (x: { slug: string; name: string; sub: string; line: string }, wide: boolean, n?: number) => {
           // ⛔ THE CARD FOR THE PAGE YOU ARE ON IS NOT A DIFFERENT COLOUR ANY MORE (Steven, 2026-09-18):
           // "Obviously, they need to be the same color. I don't know why number six is a different
           // color." The blue fill was a you-are-here marker; he read it as one card being wrong. All
@@ -2839,6 +2839,7 @@ const baseConfig: Config<Props, RootProps> = {
                 ) : null}
                 <span>{x.name}</span>
               </span>
+              {x.sub ? <span style={{ display: "block", marginTop: "4px", fontSize: "12px", fontWeight: 600, letterSpacing: ".04em", textTransform: "uppercase", color: body, opacity: 0.7 }}>{x.sub}</span> : null}
               <span style={{ display: "block", marginTop: "6px", fontSize: "15px", lineHeight: 1.4, color: layer ? GREEN : on ? "#E9F1F8" : body }}>
                 {x.line}
               </span>
